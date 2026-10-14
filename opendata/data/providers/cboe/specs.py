@@ -43,16 +43,16 @@ AVAILABLE_INDICES = ModelSpec(
     columns=(
         ColumnSpec("symbol", "str", source_key="index_symbol", required=True, units=""),
         ColumnSpec("name", "str", source_key="index_name", required=True),
-        ColumnSpec("exchange", "str"),
         ColumnSpec("currency", "str"),
         ColumnSpec("description", "str"),
         ColumnSpec("data_delay", "int", source_key="mkt_data_delay", units="minutes"),
-        ColumnSpec("open_time", "str", source_key="calc_start_time"),
-        ColumnSpec("close_time", "str", source_key="calc_end_time"),
+        ColumnSpec("open_time", "time", source_key="calc_start_time"),
+        ColumnSpec("close_time", "time", source_key="calc_end_time"),
         ColumnSpec("time_zone", "str"),
         ColumnSpec("tick_days", "str"),
         ColumnSpec("tick_frequency", "str"),
         ColumnSpec("tick_period", "str"),
+        ColumnSpec("exchange", "str"),
     ),
     scenario="指数目录发现：列出 cboe 发布的全部指数及其计算时段与延迟",
     error_prefix="CBOE",
@@ -68,7 +68,14 @@ AVAILABLE_INDICES = ModelSpec(
         "strings while preserving nulls. Cboe's public pages identify the feed but do not "
         "document these JSON fields' wire encodings; those source encodings remain unverified. "
         "Output-to-source key names follow the upstream public contract mapping and are not yet "
-        "SOURCE_VERIFIED against an official raw response example."
+        "SOURCE_VERIFIED against an official raw response example. The columns are declared in the "
+        "order ``CboeAvailableIndex`` publishes them -- ``exchange`` is that subclass's own field, "
+        "so it is last -- because the row class IS the reviewed contract and its field order is "
+        "part of the published shape. ``open_time``/``close_time`` are declared with the ``time`` "
+        "kind because the row field is ``datetime.time`` and the contract parses local clock text "
+        "(``08:30``) into it; a calendar-date kind is not what a session bound is, so the clock "
+        "kind is the spelling the declaration now carries. A body publishing non-clock text for "
+        "them is refused rather than guessed at."
     ),
 )
 
@@ -113,7 +120,7 @@ INDEX_CONSTITUENTS = ModelSpec(
         ColumnSpec("tick", "str"),
         ColumnSpec(
             "last_trade_time",
-            "str",
+            "date",
             units="ISO datetime text; official raw encoding unverified",
         ),
         ColumnSpec("asset_type", "str", source_key="type"),
@@ -122,8 +129,13 @@ INDEX_CONSTITUENTS = ModelSpec(
     error_prefix="CBOE",
     row_envelope=("symbol", "name", "currency"),
     notes=(
-        "The local contract parses last_trade_time to datetime and preserves explicit null. The "
-        "public Cboe contract describes change_percent as a normalized percentage, but Cboe's "
+        "The local contract parses last_trade_time to datetime and preserves explicit null, so the "
+        "column is declared with the temporal kind rather than the text kind it carried before: "
+        "the published ISO text is read as a moment, and benzinga's "
+        "``ColumnSpec('last_updated', 'date', source_key='updated')`` over a ``datetime`` row "
+        "field is this repo's precedent for that spelling. An unparseable published timestamp "
+        "stays the refusal the pinned cboe provider test names it. "
+        "The public Cboe contract describes change_percent as a normalized percentage, but Cboe's "
         "official public source material reviewed here does not establish the raw "
         "price_change_percent scale. This adapter therefore preserves the numeric source value "
         "without an unsupported scale conversion; percentage parity remains unverified. "
@@ -166,8 +178,8 @@ INDEX_SEARCH = ModelSpec(
         ColumnSpec("currency", "str"),
         ColumnSpec("description", "str"),
         ColumnSpec("data_delay", "int", source_key="mkt_data_delay", units="minutes"),
-        ColumnSpec("open_time", "str", source_key="calc_start_time"),
-        ColumnSpec("close_time", "str", source_key="calc_end_time"),
+        ColumnSpec("open_time", "time", source_key="calc_start_time"),
+        ColumnSpec("close_time", "time", source_key="calc_end_time"),
         ColumnSpec("time_zone", "str"),
         ColumnSpec("tick_days", "str"),
         ColumnSpec("tick_frequency", "str"),

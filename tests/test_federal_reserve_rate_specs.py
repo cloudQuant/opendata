@@ -102,11 +102,15 @@ SOFR_ROW_A = {
     "footnoteId": "S",
     "revisionIndicator": "R",
 }
-#: The three spellings the SOFR validator nulls before dividing (sofr.py:46-50), one per row,
+#: The sentinel spellings the SOFR validator nulls before dividing (sofr.py:46-50), one per row,
 #: and the published integer zero that is a value, not a sentinel (the division at :49 keeps 0).
-SOFR_EMPTY = {**SOFR_ROW_A, "effectiveDate": "2024-06-26", "percentRate": ""}
-SOFR_QUOTE = {**SOFR_ROW_A, "effectiveDate": "2024-06-27", "percentRate": "''"}
-SOFR_NA = {**SOFR_ROW_A, "effectiveDate": "2024-06-28", "percentRate": "NA"}
+#: C98 re-base: the spellings sit on ``percentPercentile1``, a nullable percent column. They
+#: cannot sit on ``percentRate`` -- the frozen contract makes SOFR.rate a required non-nullable
+#: float (models/federal_reserve_clean_nyfed.py:14), so a sentinel-spelled rate cell is a
+#: recorded refusal, not a null row (priced in DECLARED_GAPS["SOFR"], judged below).
+SOFR_EMPTY = {**SOFR_ROW_A, "effectiveDate": "2024-06-26", "percentPercentile1": ""}
+SOFR_QUOTE = {**SOFR_ROW_A, "effectiveDate": "2024-06-27", "percentPercentile1": "''"}
+SOFR_NA = {**SOFR_ROW_A, "effectiveDate": "2024-06-28", "percentPercentile1": "NA"}
 SOFR_ZERO = {**SOFR_ROW_A, "effectiveDate": "2024-06-29", "percentRate": 0}
 SOFR_ROWS = (SOFR_ROW_A, SOFR_EMPTY, SOFR_QUOTE, SOFR_NA, SOFR_ZERO)
 SOFR_DOCUMENT = {"refRates": [dict(row) for row in SOFR_ROWS]}
@@ -170,11 +174,15 @@ class TestDeclarationFace:
         assert FederalReserveSOFRFetcher.canonical_model == "SOFR"
 
     def test_the_facet_counts_are_the_upstream_validator_lists(self) -> None:
-        """9 scale stages and 1 sentinel column for FFR; 5 and 5 for SOFR.
+        """9 scale stages and 1 sentinel column for FFR; 5 scale and 4 sentinel for SOFR.
 
         The counts are the pinned validator populations, not this file's taste: nine divided
         fields (federal_funds_rate.py:63-75), the ('', "''") revision rewrite (:57-61), and
-        five divided published percent fields with the ('', "''", NA) nulling (sofr.py:34-50).
+        five divided published percent fields (sofr.py:34-44). C98 re-base: the SOFR sentinel
+        population is the four percentile columns (contract ``float | None``), not the five
+        percent columns; the sentinel that once covered ``rate`` (5 -> 4: rate removed) was a
+        declaration the frozen non-nullable SOFR.rate cannot serve, so a sentinel cell on that
+        column is now judged as a recorded refusal below.
         """
         assert len(FEDERAL_FUNDS_RATE.column_derives) == 9
         assert len(SOFR.column_derives) == 5
@@ -184,12 +192,12 @@ class TestDeclarationFace:
         sofr_sentinel = [c.name for c in SOFR.columns if c.null_sentinel]
         assert ffr_sentinel == ["revision_indicator"]
         assert sofr_sentinel == [
-            "rate",
             "percentile_1",
             "percentile_25",
             "percentile_75",
             "percentile_99",
         ]
+        assert "rate" not in sofr_sentinel
 
     def test_the_date_window_is_a_query_pair_not_a_path_composition(self) -> None:
         """sofr.py:83-86 and federal_funds_rate.py:116-119 interpolate startDate/endDate."""
@@ -287,18 +295,41 @@ class TestNullSentinels:
     @pytest.mark.parametrize("spelling", ["", "''", "NA"])
     def test_sofr_percent_cells_come_back_as_none_for_every_spelling(self, spelling: str) -> None:
         """sofr.py:48 nulls the spellings before the division at :49; the engine matches the
-        record text before the scale stage, so sentinel-plus-scale is one column, one order."""
-        document = {"refRates": [{**SOFR_ROW_A, "percentRate": spelling}]}
+        record text before the scale stage, so sentinel-plus-scale is one column, one order.
+
+        C98 re-base: the spelling lands on ``percentPercentile1``, a column the frozen contract
+        allows to be null; on ``rate`` the same cell is the recorded refusal judged below.
+        """
+        document = {"refRates": [{**SOFR_ROW_A, "percentPercentile1": spelling}]}
         row = fetched_rows(SOFR, document)[0]
-        assert row.rate is None
+        assert row.percentile_1 is None
         # The other percent cells of the same row still divide: the nulling is per cell.
-        assert row.percentile_1 == pytest.approx(0.051)
+        assert row.rate == pytest.approx(0.0533)
+
+    @pytest.mark.parametrize("spelling", ["", "''", "NA"])
+    def test_a_sentinel_spelled_sofr_rate_cell_is_a_recorded_refusal(self, spelling: str) -> None:
+        """The frozen SOFR.rate cannot hold the null a sentinel declares, so the cell refuses.
+
+        Upstream's None-at-:48 outcome for that column is unreachable under the contract; the
+        honest face keeps it a ValueTransformError (no sentinel declared on ``rate``) and prices
+        it in DECLARED_GAPS rather than shipping a declaration whose rows the model refuses.
+        """
+        document = {"refRates": [{**SOFR_ROW_A, "percentRate": spelling}]}
+        with pytest.raises(ValueTransformError):
+            fetched_rows(SOFR, document)
+        gap = DECLARED_GAPS["SOFR"]
+        assert "rate" in gap and "non-nullable" in gap
 
     def test_removing_a_sofr_sentinel_refuses_where_upstream_nulls(self) -> None:
         """Counterfact: without the facet the '' text reaches the scale stage and raises --
-        a refusal upstream never produces, so the reading differs in kind, not just value."""
+        a refusal upstream never produces, so the reading differs in kind, not just value.
+
+        C98 re-base: the arm tampered ``rate`` while ``rate`` still declared a sentinel; the
+        sentinel now lives only on the four nullable percentile columns, so the tamper moves to
+        ``percentile_1`` -- the same falsifiable direction, per-cell nulling still load-bearing.
+        """
         columns = tuple(
-            replace(column, null_sentinel=()) if column.name == "rate" else column
+            replace(column, null_sentinel=()) if column.name == "percentile_1" else column
             for column in SOFR.columns
         )
         tampered = replace(SOFR, columns=columns)

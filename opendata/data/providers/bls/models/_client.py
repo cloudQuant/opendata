@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 from opendata.data.http_client import HttpFetchError, get_shared_http_client
+from opendata.data.providers._engine.http_json import HttpGet, HttpResponse, ProviderEngineError
 from opendata.data.request_budget import RequestBudgetError
 
 BLS_DOWNLOAD_BASE_URL = "https://download.bls.gov/pub/time.series"
@@ -20,8 +21,13 @@ MAX_CATALOG_BYTES = 32 * 1024 * 1024
 _SURVEY_RE = re.compile(r"^[a-z]{2}$")
 
 
-class BlsProviderError(RuntimeError):
-    """Stable, credential-safe BLS model failures."""
+class BlsProviderError(ProviderEngineError):
+    """Stable, credential-safe BLS model failures.
+
+    BLS is an attributable engine refusal, so it carries the engine's typed
+    ``code``/``status``/``url``/``rejected``/``missing``/``invalid`` face alongside its own
+    ``incomplete`` marker (a batch that never completed must not read as a full answer).
+    """
 
     def __init__(
         self,
@@ -32,13 +38,12 @@ class BlsProviderError(RuntimeError):
         incomplete: bool = False,
     ) -> None:
         """Store only stable fields; never copy upstream body or key text."""
-        self.code = code
-        self.status = status
-        self.url = _safe_endpoint(url) if url is not None else None
+        super().__init__(
+            code,
+            status=status,
+            url=_safe_endpoint(url) if url is not None else None,
+        )
         self.incomplete = incomplete
-        detail = "" if status is None else f" status={status}"
-        detail += "" if self.url is None else f" url={self.url}"
-        super().__init__(code + detail)
 
 
 class BlsRequestBudgetError(BlsProviderError):
@@ -86,6 +91,26 @@ def _http_get(url: str, timeout: float | None) -> tuple[int, bytes]:
     return response.status_code, response.content
 
 
+def _seam_body(response: HttpResponse) -> bytes:
+    """Return the offline seam's body bytes for one BLS text document.
+
+    The governed client hands over ``content`` bytes; the repository's offline witness seam has
+    no raw-text carrier, so it supplies the same file losslessly as the list of its source lines.
+    """
+    if isinstance(response.payload, bytes):
+        return response.payload
+    if isinstance(response.payload, str):
+        return response.payload.encode("utf-8")
+    document = response.document
+    if isinstance(document, bytes):
+        return document
+    if isinstance(document, str):
+        return document.encode("utf-8")
+    if isinstance(document, list) and all(isinstance(line, str) for line in document):
+        return "\n".join(document).encode("utf-8")
+    raise BlsProviderError("BLS_CATALOG_BAD_RESPONSE")
+
+
 def _http_post_json(
     url: str,
     payload: dict[str, object],
@@ -120,12 +145,23 @@ def fetch_catalog(
     offset: int,
     limit: int,
     timeout: float | None,
+    transport: HttpGet | None = None,
 ) -> BlsRawCatalogPage:
     """Read a survey's full `.series` TSV, then return a bounded match page."""
     if _SURVEY_RE.fullmatch(survey) is None:
         raise BlsProviderError("BLS_INVALID_SURVEY")
     url = f"{BLS_DOWNLOAD_BASE_URL}/{survey}/{survey}.series"
-    status, body = _http_get(url, timeout)
+    if transport is None:
+        status, body = _http_get(url, timeout)
+    else:
+        response = transport(
+            url,
+            {},
+            timeout=timeout if timeout is not None else 30.0,
+            source="bls",
+            headers={"Accept": "text/plain"},
+        )
+        status, body = response.status, _seam_body(response)
     if status != 200:
         raise BlsProviderError("BLS_HTTP_ERROR", status=status, url=url)
     if not isinstance(body, bytes):
@@ -225,6 +261,7 @@ def fetch_observations(
     end_year: int,
     max_requests: int,
     timeout: float | None,
+    transport: HttpGet | None = None,
 ) -> list[dict[str, object]]:
     """Fetch the complete series/year matrix within official BLS limits."""
     api_key = _api_key_from_environment()
@@ -250,7 +287,24 @@ def fetch_observations(
             }
             if api_key is not None:
                 payload["registrationkey"] = api_key
-            status, body = _http_post_json(url, payload, timeout)
+            if transport is None:
+                status, body = _http_post_json(url, payload, timeout)
+            else:
+                response = transport(
+                    url,
+                    payload,
+                    timeout=timeout if timeout is not None else 30.0,
+                    source="bls",
+                    headers={"Content-Type": "application/json"},
+                )
+                if not 200 <= response.status < 300:
+                    raise BlsProviderError(
+                        "BLS_HTTP_ERROR",
+                        status=response.status,
+                        url=url,
+                        incomplete=True,
+                    )
+                status, body = response.status, json.dumps(response.document)
             if status != 200:
                 raise BlsProviderError("BLS_HTTP_ERROR", status=status, url=url, incomplete=True)
             document = _decode_json(body, url=url)

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model CashFlowStatementGrowth --phase counterfact --evidence-root docs/evidence/C101/fmp
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": ["growth_net_income"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": ["growth_net_income"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "a growth ratio is a signed percentage, never a flag; pydantic lax mode widens True to 1.0 and would publish a 100% net-income growth, so the adapter must refuse with FMP_BAD_SHAPE attributing invalid=('growth_net_income',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

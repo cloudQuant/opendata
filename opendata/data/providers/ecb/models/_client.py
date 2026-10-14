@@ -17,15 +17,19 @@ import io
 from typing import TYPE_CHECKING, Any
 
 from opendata.data.http_client import HttpFetchError, get_shared_http_client
+from opendata.data.providers._engine.http_json import ProviderEngineError
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from datetime import date
+
+    from opendata.data.providers._engine.http_json import HttpResponse
 
 ECB_DEFAULT_BASE_URL = "https://data-api.ecb.europa.eu"
 
 
-class EcbProviderError(RuntimeError):
-    """Stable failures of the ecb provider adapter.
+class EcbProviderError(ProviderEngineError):
+    """Stable, attributable failures of the ecb provider adapter.
 
     The message carries the request that produced the failure, matching
     the convention of the governed client in
@@ -34,27 +38,44 @@ class EcbProviderError(RuntimeError):
     an upstream without replaying the call by hand.
     """
 
-    def __init__(
-        self,
-        code: str,
-        *,
-        status: int | None = None,
-        url: str | None = None,
-    ) -> None:
-        """Store the stable failure code and the request behind it.
 
-        Args:
-            code: One of the provider's stable codes, for example
-                ``ECB_HTTP_ERROR``.
-            status: Upstream HTTP status, when a response was received.
-            url: Requested URL, passed without its query string.
-        """
-        self.code = code
-        self.status = status
-        self.url = url
-        detail = "" if status is None else f" status={status}"
-        detail += "" if url is None else f" url={url}"
-        super().__init__(code + detail)
+def seam_body(response: HttpResponse) -> bytes:
+    """Return the raw response bytes the offline seam hands to the XML parsers.
+
+    ``HttpResponse`` carries a parsed JSON ``document`` and an optional
+    ``payload``; an SDMX GenericData body is neither JSON nor a byte string
+    an in-memory transport can hand over. A witness therefore publishes the
+    body losslessly as the list of its own source lines, and the seam
+    rejoins them exactly once here so the production parser still reads the
+    bytes a real ECB response would have carried.
+    """
+    if response.payload is not None:
+        raw: bytes | str = response.payload
+    elif isinstance(response.document, (list, tuple)):
+        raw = "\n".join(str(line) for line in response.document)
+    else:
+        raw = response.document if isinstance(response.document, str) else ""
+    return raw.encode("utf-8") if isinstance(raw, str) else raw
+
+
+def seam_get(
+    transport: Any,  # noqa: ANN401 - the seam is the engine's HttpGet callable
+    url: str,
+    params: dict[str, str],
+    *,
+    timeout: float | None,
+    source: str,
+    headers: Mapping[str, str] | None = None,
+) -> HttpResponse:
+    """Send one GET through the offline transport seam and return its response."""
+    response: HttpResponse = transport(
+        url,
+        params,
+        timeout=timeout if timeout is not None else 30.0,
+        source=source,
+        headers=dict(headers or {}),
+    )
+    return response
 
 
 def _http_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquityQuote --phase counterfact --evidence-root docs/evidence/C101/cboe
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CboeAllAccessError", "refusal_code": "CBOE_LIVEVOL_BAD_INTEGER_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CboeAllAccessError", "refusal_code": "CBOE_LIVEVOL_BAD_INTEGER_FIELD", "rejected": [], "status": null}, "reason": "publishing a boolean where the quote route documents an integer board size is the adapter's own integer guard: pydantic would widen True to a 1-share bid, so the adapter must refuse with CBOE_LIVEVOL_BAD_INTEGER_FIELD rather than build a CboeEquityQuote whose bid_size is a flag; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

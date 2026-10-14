@@ -229,7 +229,9 @@ def _install_series_response(
     observations_by_id: dict[str, list[dict[str, str]]],
     requests: list[tuple[str, dict[str, str]]],
 ) -> None:
-    def http_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def http_get(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         del timeout
         requests.append((url, dict(params)))
         observations = observations_by_id[params["series_id"]]
@@ -287,7 +289,7 @@ def test_ameribor_rejects_invalid_choice_and_bad_nonnullable_rates_before_or_aft
     fetcher = AmeriborFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("invalid maturity must be rejected before I/O"),
+        lambda *args, **_kwargs: pytest.fail("invalid maturity must be rejected before I/O"),
     )
     with pytest.raises(ValidationError):
         fetcher.fetch(ctx=_context(fetcher), maturity="1m")
@@ -349,14 +351,14 @@ def test_ecb_invalid_type_rejected_before_io_and_429_redacts_api_key(
     fetcher = EuropeanCentralBankInterestRatesFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("invalid ECB rate type must be rejected before I/O"),
+        lambda *args, **_kwargs: pytest.fail("invalid ECB rate type must be rejected before I/O"),
     )
     with pytest.raises(ValidationError):
         fetcher.fetch(ctx=_context(fetcher), interest_rate_type="borrowing")
 
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda url, params, timeout: (429, "rate limit"),
+        lambda url, params, timeout, **_kwargs: (429, "rate limit"),
     )
     with pytest.raises(FredProviderError) as raised:
         fetcher.fetch(ctx=_context(fetcher), interest_rate_type="deposit")
@@ -405,7 +407,7 @@ def test_discount_window_rejects_unknown_frequency_and_bad_values(
     fetcher = DiscountWindowPrimaryCreditRateFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("invalid parameter must be rejected before I/O"),
+        lambda *args, **_kwargs: pytest.fail("invalid parameter must be rejected before I/O"),
     )
     with pytest.raises(ValidationError):
         fetcher.fetch(ctx=_context(fetcher), parameter="quarterly")
@@ -453,7 +455,7 @@ def test_tips_yields_rejects_unknown_tenor_and_bad_dates_and_duplicate_revisions
     fetcher = TipsYieldsFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("unsupported maturity must be rejected before I/O"),
+        lambda *args, **_kwargs: pytest.fail("unsupported maturity must be rejected before I/O"),
     )
     with pytest.raises(ValidationError):
         fetcher.fetch(ctx=_context(fetcher), maturity="7")

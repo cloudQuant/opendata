@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SOFR --phase counterfact --evidence-root docs/evidence/C101/federal_reserve
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "FEDERAL_RESERVE_SHAPE_INVALID", "rejected": ["rate"], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "FEDERAL_RESERVE_SHAPE_INVALID", "rejected": ["rate"], "status": null}, "reason": "SOFR declares percentRate as a float kind and the reviewed contract SOFR.rate is a required non-nullable float, so the engine's numeric guard must refuse a published flag as FEDERAL_RESERVE_SHAPE_INVALID rejected=('rate',) instead of letting True become a 1.0 rate; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

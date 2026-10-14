@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase counterfact --evidence-root docs/evidence/C101/econdb
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "publishing a boolean where the v1 series contract publishes a JSON number is the numeric guard's own refusal: pydantic strict mode and the adapter both reject a bool-as-quantity, so the adapter must surface ECONDB_SHAPE_INVALID as a ProviderEngineError with the typed refusal shape; untampered control produced 4 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -8,7 +8,11 @@ from pydantic import ValidationError
 
 from opendata.data.http_client import HttpFetchError, get_shared_http_client
 from opendata.data.protocol import QueryParams
-from opendata.data.providers.ecb.models._client import EcbProviderError
+from opendata.data.providers.ecb.models._client import (
+    EcbProviderError,
+    seam_body,
+    seam_get,
+)
 from opendata.data.providers.ecb.models._reference_client import (
     ECB_REFERENCE_ACCEPT,
     ECB_REFERENCE_BASE_URL,
@@ -35,6 +39,7 @@ from opendata.data.request_budget import (
 )
 
 if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
     from opendata.data.providers.ecb.models._series_sdmx import RawEcbSeriesRecord
 
 _BASE_URL = ECB_REFERENCE_BASE_URL
@@ -78,6 +83,7 @@ def _fetch_series(
     request_params: dict[str, str],
     max_records: int,
     timeout: float | None,
+    transport: HttpGet | None = None,
 ) -> tuple[RawEcbSeriesRecord, ...]:
     """Issue one governed GET and parse its complete bounded response."""
     if not series_key.startswith(f"{product}."):
@@ -91,19 +97,35 @@ def _fetch_series(
         **request_params,
     }
 
-    try:
-        response = get_shared_http_client().get(
+    if transport is not None:
+        response = seam_get(
+            transport,
             url,
-            params=request_params,
-            headers={"Accept": _ACCEPT},
+            request_params,
             timeout=timeout,
             source=_SOURCE,
+            headers={"Accept": _ACCEPT},
         )
-    except HttpFetchError as exc:
-        raise EcbProviderError("ECB_HTTP_ERROR", status=exc.status) from None
+        if response.status != 200:
+            raise EcbProviderError("ECB_HTTP_ERROR", status=response.status, url=url)
+        status = response.status
+        body = seam_body(response)
+    else:
+        try:
+            http_response = get_shared_http_client().get(
+                url,
+                params=request_params,
+                headers={"Accept": _ACCEPT},
+                timeout=timeout,
+                source=_SOURCE,
+            )
+        except HttpFetchError as exc:
+            raise EcbProviderError("ECB_HTTP_ERROR", status=exc.status) from None
 
-    if response.status_code != 200:
-        raise EcbProviderError("ECB_HTTP_ERROR", status=response.status_code)
+        if http_response.status_code != 200:
+            raise EcbProviderError("ECB_HTTP_ERROR", status=http_response.status_code)
+        status = http_response.status_code
+        body = http_response.content
 
     parser = (
         parse_yield_curve_generic_data
@@ -112,20 +134,21 @@ def _fetch_series(
     )
     try:
         return parser(
-            response.content,
+            body,
             max_body_bytes=DEFAULT_MAX_BODY_BYTES,
             max_xml_nodes=DEFAULT_MAX_XML_NODES,
             max_observations=min(max_records, DEFAULT_MAX_OBSERVATIONS),
             max_output_bytes=DEFAULT_MAX_OUTPUT_BYTES,
         )
     except ReferenceRatesParseError:
-        raise EcbProviderError("ECB_BAD_RESPONSE", status=response.status_code) from None
+        raise EcbProviderError("ECB_BAD_RESPONSE", status=status) from None
 
 
 def fetch_yield_curve(
     query: EcbYieldCurveQuery,
     *,
     timeout: float | None = None,
+    transport: HttpGet | None = None,
 ) -> tuple[RawEcbSeriesRecord, ...]:
     """Fetch one bounded YC series under its exact active request grant."""
     validated_query = _validate_scoped_query(
@@ -144,6 +167,7 @@ def fetch_yield_curve(
         request_params=params,
         max_records=validated_query.max_records,
         timeout=timeout,
+        transport=transport,
     )
 
 
@@ -151,6 +175,7 @@ def fetch_balance_of_payments(
     query: EcbBalanceOfPaymentsQuery,
     *,
     timeout: float | None = None,
+    transport: HttpGet | None = None,
 ) -> tuple[RawEcbSeriesRecord, ...]:
     """Fetch one bounded BPS series under its exact active request grant."""
     validated_query = _validate_scoped_query(
@@ -169,4 +194,5 @@ def fetch_balance_of_payments(
         request_params=params,
         max_records=validated_query.max_records,
         timeout=timeout,
+        transport=transport,
     )

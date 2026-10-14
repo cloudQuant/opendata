@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import re
 from datetime import date as date_type  # noqa: TC003 - Pydantic resolves at runtime.
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from pydantic import Field, StrictStr, field_validator, model_validator
 
@@ -14,6 +14,9 @@ from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryPara
 from opendata.data.providers.bls.models import _client
 from opendata.data.providers.bls.models._client import BlsProviderError
 from opendata.data.providers.bls.models._contracts import BlsFootnote, BlsObservation
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 
 class BlsSeriesQuery(QueryParams):
@@ -75,6 +78,8 @@ class BlsSeriesFetcher(Fetcher[BlsSeriesQuery, list[dict[str, object]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "BlsSeries"
+    row_model: ClassVar[type[BlsObservation]] = BlsObservation
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="bls_series",
@@ -97,6 +102,7 @@ class BlsSeriesFetcher(Fetcher[BlsSeriesQuery, list[dict[str, object]]]):
             end_year=end_year,
             max_requests=params.max_requests,
             timeout=ctx.timeout,
+            transport=self.http_transport,
         )
 
     def transform_data(

@@ -12,11 +12,12 @@ from __future__ import annotations
 
 import csv
 import io
+import types
 import zipfile
 from dataclasses import replace
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, get_args, get_origin
 from urllib.parse import urlsplit
 
 from opendata.data.protocol import FetchContext
@@ -53,6 +54,7 @@ _SAMPLE_VALUES: dict[str, tuple[object, ...]] = {
     "float": (0.5, 1.5, 2.5),
     "bool": (True, False, True),
     "date": ("2026-01-01", "2026-01-02", "2026-01-03"),
+    "time": ("08:30", "12:00", "16:00"),
     "enum": ("listed", "listed", "listed"),
     "str_list": (["one"], ["two", "three"], ["four"]),
 }
@@ -685,15 +687,72 @@ def record_vocabulary(spec: ModelSpec) -> list[str]:
     return keys
 
 
+#: Row-class temporal types, read once per declaration and held by the spec that produced them.
+#: Keying on ``id(spec)`` is only sound because the entry keeps the spec -- and with it its
+#: ``ColumnSpec`` tuple -- alive, so no cached id can be reused by a freed object.
+_ROW_TEMPORAL_TYPES: dict[int, tuple[ModelSpec, dict[int, type | None]]] = {}
+
+
+def _row_temporal_type(spec: ModelSpec, column: ColumnSpec) -> type | None:
+    """The temporal type ``column``'s own row field carries, or ``None`` when it carries none.
+
+    A domain whose semantics are reviewed publishes its row class, and
+    :func:`opendata.data.providers._engine.http_json.build_row_model` hands that class back for the
+    engine to build rows with; the declared kind is then the *reading* the declaration asks for,
+    while the field is the spelling the row prints. The two agree for every kind but the temporal
+    ones: a ``date``-kind column whose row field is a ``datetime`` -- benzinga's
+    ``ColumnSpec("last_updated", "date", source_key="updated")`` over a ``datetime`` field, and cboe
+    ``IndexConstituents.last_trade_time`` -- comes back as the midnight moment pydantic builds from
+    the same ISO text, not as the bare calendar date the kind names. Predicting the kind instead of
+    the field would make this fixture disagree with the row it is judging, which is the mismatch
+    :meth:`expected_row_value` exists to remove; the staged branch already does exactly this for a
+    float field, comparing ``float(produced)`` because that is what the row holds.
+
+    Returns:
+        ``date``, ``datetime`` or ``time`` when the row field is annotated with exactly one of
+        them, and ``None`` for a non-temporal field, a union this cannot read as one type, or a
+        declaration whose row class cannot be built at all -- in which case the caller keeps the
+        declared kind's own reading and the case that needs the class reports the declaration.
+    """
+    holder = _ROW_TEMPORAL_TYPES.get(id(spec))
+    if holder is None or holder[0] is not spec:
+        holder = (spec, {})
+        _ROW_TEMPORAL_TYPES[id(spec)] = holder
+    cache = holder[1]
+    if id(column) in cache:
+        return cache[id(column)]
+    resolved: type | None = None
+    try:
+        annotation = http_json.build_row_model(spec).model_fields[column.name].annotation
+    except (ValueError, KeyError):
+        annotation = None
+    members = [
+        argument
+        for argument in (
+            get_args(annotation)
+            if get_origin(annotation) in (Union, types.UnionType)
+            else (annotation,)
+        )
+        if argument is not type(None)
+    ]
+    if len(members) == 1 and members[0] in (date, datetime, time):
+        resolved = members[0]
+    cache[id(column)] = resolved
+    return resolved
+
+
 def expected_row_value(
     spec: ModelSpec, column: ColumnSpec, index: int = 0, query: Mapping[str, object] | None = None
 ) -> object:
     """The value the row at position ``index`` must carry for ``column``, given this module's body.
 
     The synthesis publishes the raw cell a JSON or text body would carry; the engine's declared kind
-    is what turns a ``date`` column into a ``date``, a stamped column's plan is what turns the query
-    parameter into the column, a record-sourced plan is what turns its cast's wire input into the
-    row's value, and a wide table's pivot header is what the timestamp column reads. Reading both
+    is what turns a ``date`` column into a ``date`` -- or, for a domain whose reviewed row class types
+    that field as a moment, into the midnight ``datetime`` the class itself prints, the reading
+    :func:`_row_temporal_type` takes from the row class rather than from the kind --, a stamped
+    column's plan is what turns the query parameter into the column, a record-sourced plan is what
+    turns its cast's wire input into the row's value, and a wide table's pivot header is what the
+    timestamp column reads. Reading both
     sides here is what keeps a fixture edit and the case that judges it from disagreeing about what
     "normalize the declared columns" promised. A column its plan repoints is answered with the same
     sample, because a repoint moves where in the record the value is published, not what value
@@ -753,10 +812,20 @@ def expected_row_value(
         ordered = ordered_cell(spec, column, index)
         if ordered is not None:
             published = ordered
+    # Both producers hand back the ISO string a body would carry; str() only says so to mypy.
+    text = str(published)
+    if column.kind == "time":
+        # The body carries the local clock text a JSON endpoint publishes; the row field is the
+        # ``time`` the declared kind names -- the same reading the ``date`` kind gets below.
+        return time.fromisoformat(text)
     if column.kind != "date":
         return published
-    # Both producers hand back the ISO string a body would carry; str() only says so to mypy.
-    return date.fromisoformat(str(published))
+    if _row_temporal_type(spec, column) is datetime:
+        # The reviewed contract reads a date-kind column as a moment, and the row prints the
+        # midnight instant pydantic built from this same ISO text. Predicting the bare date would
+        # have this fixture disagree with the row it is judging; see :func:`_row_temporal_type`.
+        return datetime.fromisoformat(text)
+    return date.fromisoformat(text)
 
 
 def _publish(record: dict[str, object], pointer: str, value: object) -> None:
@@ -1109,6 +1178,7 @@ def valid_query_kwargs(spec: ModelSpec) -> dict[str, object]:
                 "float": 1.5,
                 "bool": True,
                 "date": date(2026, 1, 1),
+                "time": time(9, 30),
                 "str_list": ["one"],
             }[parameter.kind]
         )

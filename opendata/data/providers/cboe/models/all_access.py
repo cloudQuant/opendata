@@ -6,7 +6,7 @@ import math
 import re
 from datetime import date as date_type
 from datetime import datetime
-from typing import Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 from zoneinfo import ZoneInfo
 
 from pydantic import Field, field_validator, model_validator
@@ -24,6 +24,9 @@ from opendata.data.models.congress_cboe_iter2 import (
 )
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.cboe.models import _all_access_client as _client
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 _MARKET_TZ = ZoneInfo("America/New_York")
 _EARLIEST_HISTORY_DATE = date_type(2011, 1, 1)
@@ -163,6 +166,9 @@ class CboeEquityHistoricalFetcher(Fetcher[CboeHistoricalQuery, list[dict[str, An
     """Fetch daily equity bars from Cboe's documented historical snapshot route."""
 
     async_mode = "bounded_thread"
+    #: The offline witness seam, handed to the All Access client on every request.
+    http_transport: ClassVar[HttpGet | None] = None
+    row_model: ClassVar[type[ContractModel]] = CboeEquityHistorical
     canonical_model: ClassVar[str | None] = "EquityHistorical"
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
@@ -187,7 +193,7 @@ class CboeEquityHistoricalFetcher(Fetcher[CboeHistoricalQuery, list[dict[str, An
         ctx: FetchContext,
     ) -> list[dict[str, Any]]:
         """Read trading dates and one official daily quote snapshot per trading date."""
-        return _fetch_daily_bars(params, ctx)
+        return _fetch_daily_bars(params, ctx, self.http_transport)
 
     def transform_data(
         self,
@@ -203,6 +209,7 @@ class CboeEtfHistoricalFetcher(CboeEquityHistoricalFetcher):
     """Fetch daily ETF bars through the same documented underlying-history route."""
 
     canonical_model = "EtfHistorical"
+    row_model: ClassVar[type[ContractModel]] = CboeEtfHistorical
     capability = Capability(
         asset_class="etf",
         domain="cboe_etf_historical",
@@ -230,6 +237,8 @@ class CboeEquityQuoteFetcher(Fetcher[CboeQuoteQuery, list[dict[str, Any]]]):
     """Fetch one delayed Cboe quote snapshot for a company symbol."""
 
     async_mode = "bounded_thread"
+    http_transport: ClassVar[HttpGet | None] = None
+    row_model: ClassVar[type[ContractModel]] = CboeEquityQuote
     canonical_model: ClassVar[str | None] = "EquityQuote"
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
@@ -254,6 +263,7 @@ class CboeEquityQuoteFetcher(Fetcher[CboeQuoteQuery, list[dict[str, Any]]]):
             "/market/underlying-quotes",
             params={"symbols": params.symbol, "date": params.date.isoformat(), "seq_no": "0"},
             context=ctx,
+            transport=self.http_transport,
         )
         rows = _client.require_rows(payload)
         selected = [row for row in rows if _source_symbol(row) == params.symbol]
@@ -277,6 +287,8 @@ class CboeEquitySearchFetcher(Fetcher[CboeEquitySearchQuery, list[dict[str, Any]
     """Search the authenticated All Access symbols endpoint, without web-page scraping."""
 
     async_mode = "bounded_thread"
+    http_transport: ClassVar[HttpGet | None] = None
+    row_model: ClassVar[type[ContractModel]] = CboeEquitySearchListing
     canonical_model: ClassVar[str | None] = "EquitySearch"
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
@@ -301,7 +313,11 @@ class CboeEquitySearchFetcher(Fetcher[CboeEquitySearchQuery, list[dict[str, Any]
         ctx: FetchContext,
     ) -> list[dict[str, Any]]:
         """Fetch published symbol/name pairs and apply the public search filter locally."""
-        rows = _client.require_rows(_client.get_json("/reference/symbols", params={}, context=ctx))
+        rows = _client.require_rows(
+            _client.get_json(
+                "/reference/symbols", params={}, context=ctx, transport=self.http_transport
+            )
+        )
         if len(rows) > 100_000:
             raise _client.CboeAllAccessError("CBOE_LIVEVOL_SYMBOL_LIMIT")
         needle = params.query.casefold() if params.query is not None else None
@@ -348,6 +364,8 @@ class CboeOptionsChainsFetcher(Fetcher[CboeOptionsChainsQuery, dict[str, Any] | 
     """Fetch synchronized delayed option/underlying snapshots from All Access."""
 
     async_mode = "bounded_thread"
+    http_transport: ClassVar[HttpGet | None] = None
+    row_model: ClassVar[type[ContractModel]] = CboeOptionsChains
     canonical_model: ClassVar[str | None] = "OptionsChains"
     capability: ClassVar[Capability] = Capability(
         asset_class="option",
@@ -386,6 +404,7 @@ class CboeOptionsChainsFetcher(Fetcher[CboeOptionsChainsQuery, dict[str, Any] | 
             "/market/option-and-underlying-quotes",
             params=request_params,
             context=ctx,
+            transport=self.http_transport,
         )
         if not isinstance(payload, list):
             raise _client.CboeAllAccessError("CBOE_LIVEVOL_BAD_CHAIN_SHAPE")
@@ -420,8 +439,12 @@ class CboeOptionsChainsFetcher(Fetcher[CboeOptionsChainsQuery, dict[str, Any] | 
             raise _client.CboeAllAccessError("CBOE_LIVEVOL_BAD_CHAIN_ROW") from None
 
 
-def _fetch_daily_bars(params: CboeHistoricalQuery, ctx: FetchContext) -> list[dict[str, Any]]:
-    trading_dates = _trading_dates(params, ctx)
+def _fetch_daily_bars(
+    params: CboeHistoricalQuery,
+    ctx: FetchContext,
+    transport: HttpGet | None,
+) -> list[dict[str, Any]]:
+    trading_dates = _trading_dates(params, ctx, transport)
     if len(trading_dates) > _MAX_HISTORY_TRADING_DAYS:
         raise _client.CboeAllAccessError("CBOE_LIVEVOL_HISTORY_REQUEST_LIMIT")
     result: list[dict[str, Any]] = []
@@ -435,6 +458,7 @@ def _fetch_daily_bars(params: CboeHistoricalQuery, ctx: FetchContext) -> list[di
                     "seq_no": "0",
                 },
                 context=ctx,
+                transport=transport,
             )
         )
         if any(_source_symbol(row) != params.symbol for row in rows):
@@ -450,6 +474,7 @@ def _fetch_daily_bars(params: CboeHistoricalQuery, ctx: FetchContext) -> list[di
 def _trading_dates(
     params: CboeHistoricalQuery,
     ctx: FetchContext,
+    transport: HttpGet | None,
 ) -> tuple[date_type, ...]:
     payload = _client.get_json(
         "/reference/trading-days",
@@ -458,6 +483,7 @@ def _trading_dates(
             "end_date": params.end_date.isoformat(),
         },
         context=ctx,
+        transport=transport,
     )
     if not isinstance(payload, list) or any(not isinstance(item, str) for item in payload):
         raise _client.CboeAllAccessError("CBOE_LIVEVOL_BAD_TRADING_DAYS")

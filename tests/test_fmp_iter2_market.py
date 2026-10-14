@@ -605,8 +605,9 @@ def test_provider_model_query_pins_financial_identity_and_serializes_contract_ro
         endpoint: str,
         params: dict[str, str],
         timeout: float | None,
+        transport: Any = None,
     ) -> list[dict[str, Any]]:
-        del timeout
+        del timeout, transport
         calls.append((endpoint, params))
         return raw_rows
 

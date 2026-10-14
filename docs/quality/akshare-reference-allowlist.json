@@ -206,7 +206,7 @@
       "category": "runtime-integration",
       "reviewed_date": "2026-10-10",
       "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "f02de03fbed815c0c8617dd2e07c9d6a161f3292630109a1029ff7ea4fce8613",
+      "sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
       "ast_exceptions": []
     },
     {
@@ -385,7 +385,7 @@
       "category": "source-adapter",
       "reviewed_date": "2026-10-08",
       "reviewer": "Qoder agent C65 re-pin; bound to scanner EXPECTED_METADATA_EXCEPTIONS",
-      "sha256": "5c145bd2a964824239beea5ec0cd95c00f0846797b0cfe5c924f9218555f4c99",
+      "sha256": "bbe848dc44ff2d8df452954d4529e5e9b1d0ea5b9143458830f595a76c5f8cff",
       "ast_exceptions": [
         {
           "kind": "akshare_provider_source",
@@ -426,7 +426,7 @@
       "category": "source-adapter",
       "reviewed_date": "2026-10-12",
       "reviewer": "Qoder agent C75; hash re-pinned after the federal_reserve provider replaced its reserved placeholder in the same tuple. Occurrences audited by content against 8a35e9a: still the same 3 lines (import PROVIDER as AKSHARE_PROVIDER at :13, two registrations at :89/:95, shifted by one line by the inserted federal_reserve import), and the scanner reports 0 module hits on both revisions. Original C72 note: hash re-pinned after the derived-registration rewrite, audited against the C66-reviewed revision 3f05f63. C89 primary re-pin of the 1 stale pin that gate run 7 member 2 reported (87 entries: 86 current, 1 stale, 0 absent): pin bytes belong to blob 4bf6a0d, moved by 083b7e4, which replaced `_reserved_provider(\"intrinio\", \"api_key\")` with the real INTRINIO_PROVIDER import+registration; akshare occurrences pinned=[13, 89, 95] live=[13, 90, 96] (n=3 both, +1 shift from the intrinio import line), the 3 line texts compare identical=True, and scan_source() on both revisions reports 0 findings / 0 modules, so the reviewed content is unchanged and this is a digest re-pin under the same approval, not a new approval. C97 re-pin of the 1 stale pin that this round's AC2-07 leg reported (87 entries: 86 current, 1 stale, 0 absent): the pinned blob belongs to 083b7e4 and the live bytes to e39c1b6, whose only catalog.py change was congress_gov replacing its `_reserved_provider` placeholder with the real provider import+registration; akshare occurrences pinned=[13, 90, 96] live=[13, 91, 97] (n=3 on both, a +1 shift from that inserted import line), the 3 line texts compare identical=True, and the 083b7e4..e39c1b6 diff touches no akshare-bearing line, so the reviewed content is unchanged and this is a digest re-pin under the same approval, not a new approval.",
-      "sha256": "fe9364af0eb885f7ac9fc148a1e35f3da5fb0d7d8a75503b9cd22d5e441723c9",
+      "sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
       "ast_exceptions": []
     },
     {
@@ -444,7 +444,7 @@
       "category": "source-adapter",
       "reviewed_date": "2026-10-01",
       "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "3c606621f6fbf9ba8e2f52914f25d9283b0378aecdd6ef81b853d7a35c4148b8",
+      "sha256": "67b09b4c8787d72dbbfe6099777e9098e54b79a3719b8f8191d05f0782ff452f",
       "ast_exceptions": []
     },
     {
@@ -453,7 +453,7 @@
       "category": "source-adapter",
       "reviewed_date": "2026-10-01",
       "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "c8f382b997d1a2fd2235dec6f66aa16d148480e25d9a267a74322d7fab1b12f8",
+      "sha256": "76814521861b37ad429c2a063347d8e4a39de50af644ba35c8ebbc6339c78ff1",
       "ast_exceptions": []
     },
     {
@@ -462,7 +462,7 @@
       "category": "source-adapter",
       "reviewed_date": "2026-10-01",
       "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "b3990ef76ff23b2abff0916173009fed70ea9c79f98261fd7503dcd0f263c44b",
+      "sha256": "018de24e9f39922c2c0c8d957c976f5cccf3bacd784831468955c043e044afe8",
       "ast_exceptions": []
     },
     {
@@ -595,7 +595,7 @@
       "category": "runtime-integration",
       "reviewed_date": "2026-10-10",
       "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=11==live=11、出现次数 pinned=11==live=11；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 1/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "8ee7aa471aeaeb889e8fb48453f9b1f61f791bd03779183949533d90d6d7840c",
+      "sha256": "f704f84443dfd576ad9b2ffd56db88f7a89bf14a02bdff90e33b94debb876c54",
       "ast_exceptions": []
     },
     {
@@ -757,7 +757,7 @@
       "category": "operations-tool",
       "reviewed_date": "2026-10-10",
       "reviewer": "Codex primary; authorized C65 criterion migration；C78 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 4960738 改动（bandit 腿改成读 findings 判定并加同字节双体对照臂），akshare 出现行 pinned=2 live=2 且逐行集合完全相同，扫描器 (module, kind) 命中多重集 pinned=live=1，新增 0 条 import/import_module/__import__ 形态行，没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C85 primary 复核 sha 漂移：pin 字节属 rev 4960738，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=2==live=2、出现次数 pinned=2==live=2；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增5 删5，其中 0/5 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "28f2b585ae2b0ebb575724b95c208f312d2c174456fa1f9c911883695dec3e3a",
+      "sha256": "bbeefba1c7f833774a20761c59e4ea1af719f20e9cfaca53db906b8001f665e7",
       "ast_exceptions": []
     },
     {

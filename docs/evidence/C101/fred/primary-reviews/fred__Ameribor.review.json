@@ -1,0 +1,396 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/fred/claims.json",
+    "sha256": "bba37f4b7f6755bff3fa095420c5f021fe8d97cbeeb21980e8412f2423978129"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/Ameribor/contract.json",
+          "sha256": "92985cafbcc1700bd51f47188250b205f9409bf12fbb1c380485afdeb75a2ea8"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "431cde27d29067436fcd41b0045765684e809d4fa50f6ac6a336434fa0eae2d7",
+            "before_sha256": "431cde27d29067436fcd41b0045765684e809d4fa50f6ac6a336434fa0eae2d7",
+            "path": "opendata/data/providers/fred/models/fixed_rates.py"
+          },
+          {
+            "after_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "before_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/Ameribor/counterfact.json",
+          "sha256": "24713b57b9ee6a884410849f441f2646e6f472d8f3aea32488089952dfd6a655"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "431cde27d29067436fcd41b0045765684e809d4fa50f6ac6a336434fa0eae2d7",
+            "before_sha256": "431cde27d29067436fcd41b0045765684e809d4fa50f6ac6a336434fa0eae2d7",
+            "path": "opendata/data/providers/fred/models/fixed_rates.py"
+          },
+          {
+            "after_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "before_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/Ameribor/direct.json",
+          "sha256": "cc81117c13534f30f9935a5e93790e34fbb9be9ca299fbaef565bbe2b86ab649"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "431cde27d29067436fcd41b0045765684e809d4fa50f6ac6a336434fa0eae2d7",
+            "before_sha256": "431cde27d29067436fcd41b0045765684e809d4fa50f6ac6a336434fa0eae2d7",
+            "path": "opendata/data/providers/fred/models/fixed_rates.py"
+          },
+          {
+            "after_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "before_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/Ameribor/implementation.json",
+          "sha256": "d2358b8e0257ea1d07d46438483e975568f515ccc2404a72b33e036ab3fb8fbb"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "431cde27d29067436fcd41b0045765684e809d4fa50f6ac6a336434fa0eae2d7",
+            "before_sha256": "431cde27d29067436fcd41b0045765684e809d4fa50f6ac6a336434fa0eae2d7",
+            "path": "opendata/data/providers/fred/models/fixed_rates.py"
+          },
+          {
+            "after_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "before_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/Ameribor/service.json",
+          "sha256": "8a36e6d67cd0d6bc825fb5eeb6e1f7e31629a46615affc1d146cc0291b3ea696"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "431cde27d29067436fcd41b0045765684e809d4fa50f6ac6a336434fa0eae2d7",
+            "before_sha256": "431cde27d29067436fcd41b0045765684e809d4fa50f6ac6a336434fa0eae2d7",
+            "path": "opendata/data/providers/fred/models/fixed_rates.py"
+          },
+          {
+            "after_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "before_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "Ameribor",
+  "model_identity": "fred::Ameribor",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "fred",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "Ameribor",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "Ameribor",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "Ameribor",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "Ameribor",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "Ameribor",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-14T14:06:07Z",
+  "reviewer_id": "iter2-acceptance-reviewer-fred",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "Ameribor"
+}

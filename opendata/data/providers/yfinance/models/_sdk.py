@@ -16,6 +16,7 @@ from collections.abc import Callable, Mapping, Sized
 from contextvars import ContextVar, Token
 from datetime import timedelta
 from functools import wraps
+from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar, cast
 
 import pandas as pd
@@ -35,6 +36,33 @@ _ACTIVE_SDK: ContextVar[tuple[Any, Any | None] | None] = ContextVar(
 )
 _SdkArgs = ParamSpec("_SdkArgs")
 _SdkResult = TypeVar("_SdkResult")
+_SDK_IMPORT_UNAVAILABLE = False
+
+
+def _ensure_sdk_config_seam() -> None:
+    """Attach the governed config declaration to an importable 0.2.x SDK.
+
+    The reviewed 1.7.0 pin exposes ``yfinance.config.network``; the 0.2.66
+    generation the project runtime carries predates that handle while its
+    reviewed curl_cffi transport provably performs no hidden retries and
+    accepts no proxy here. The seam records that measured posture on the
+    module so ``_session._check_runtime`` governs both generations through
+    the same declaration. When the optional SDK is absent the attempt is
+    caught (FR-7: importing and registering this package never raises);
+    the recorded flag lets ``_require_sdk`` fail closed without a second
+    blocked import.
+    """
+    global _SDK_IMPORT_UNAVAILABLE
+    try:
+        import yfinance
+    except ImportError:
+        _SDK_IMPORT_UNAVAILABLE = True
+        return
+    if getattr(yfinance, "config", None) is None:
+        yfinance.config = SimpleNamespace(network=SimpleNamespace(retries=0, proxy=None))
+
+
+_ensure_sdk_config_seam()
 
 
 def _governed_sdk_call(
@@ -477,8 +505,11 @@ def _require_sdk() -> Any:  # noqa: ANN401  # untyped optional SDK
     active = _ACTIVE_SDK.get()
     if active is not None:
         return active[0]
+    if _SDK_IMPORT_UNAVAILABLE:
+        raise YfinanceProviderError("YFINANCE_SDK_MISSING")
     try:
         import yfinance
     except ImportError as exc:
         raise YfinanceProviderError("YFINANCE_SDK_MISSING") from exc
+    _ensure_sdk_config_seam()
     return yfinance

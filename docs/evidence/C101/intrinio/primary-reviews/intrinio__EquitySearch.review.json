@@ -1,0 +1,346 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/intrinio/claims.json",
+    "sha256": "3d8e9d1cbc96497e65cf487fe25d3821b4cc44c425aca2d9cef1eace515a4ac5"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "before_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "path": "opendata/data/models/intrinio.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+        "receipt": {
+          "path": "docs/evidence/C101/intrinio/receipts/intrinio/EquitySearch/contract.json",
+          "sha256": "1e7f57695e6cbaeac6db5428042e115f5d9f2fca6d7944aaa127dc336c7a0d56"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "90630b54e97c142899af125e245bd09d8699bc79d1f7ed0bee6c172f3f768c9b",
+            "before_sha256": "90630b54e97c142899af125e245bd09d8699bc79d1f7ed0bee6c172f3f768c9b",
+            "path": "opendata/data/providers/intrinio/models/equity_search.py"
+          },
+          {
+            "after_sha256": "c953ecc9125149872db0f79226eee4c06c61352a16f2874e0d36dc22a6b1b93b",
+            "before_sha256": "c953ecc9125149872db0f79226eee4c06c61352a16f2874e0d36dc22a6b1b93b",
+            "path": "opendata/data/providers/intrinio/specs.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "before_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "path": "opendata/data/models/intrinio.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+        "receipt": {
+          "path": "docs/evidence/C101/intrinio/receipts/intrinio/EquitySearch/counterfact.json",
+          "sha256": "061c5d18e32f0b03c07adb4aa88663873c6e1ca3ca5760593b96af0585f2a0aa"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "90630b54e97c142899af125e245bd09d8699bc79d1f7ed0bee6c172f3f768c9b",
+            "before_sha256": "90630b54e97c142899af125e245bd09d8699bc79d1f7ed0bee6c172f3f768c9b",
+            "path": "opendata/data/providers/intrinio/models/equity_search.py"
+          },
+          {
+            "after_sha256": "c953ecc9125149872db0f79226eee4c06c61352a16f2874e0d36dc22a6b1b93b",
+            "before_sha256": "c953ecc9125149872db0f79226eee4c06c61352a16f2874e0d36dc22a6b1b93b",
+            "path": "opendata/data/providers/intrinio/specs.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "before_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "path": "opendata/data/models/intrinio.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+        "receipt": {
+          "path": "docs/evidence/C101/intrinio/receipts/intrinio/EquitySearch/direct.json",
+          "sha256": "068ad9c4f4f076f2976cbfe6f745b03cd8758b39ebe2c2e4584c9201e074c572"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "90630b54e97c142899af125e245bd09d8699bc79d1f7ed0bee6c172f3f768c9b",
+            "before_sha256": "90630b54e97c142899af125e245bd09d8699bc79d1f7ed0bee6c172f3f768c9b",
+            "path": "opendata/data/providers/intrinio/models/equity_search.py"
+          },
+          {
+            "after_sha256": "c953ecc9125149872db0f79226eee4c06c61352a16f2874e0d36dc22a6b1b93b",
+            "before_sha256": "c953ecc9125149872db0f79226eee4c06c61352a16f2874e0d36dc22a6b1b93b",
+            "path": "opendata/data/providers/intrinio/specs.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "before_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "path": "opendata/data/models/intrinio.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+        "receipt": {
+          "path": "docs/evidence/C101/intrinio/receipts/intrinio/EquitySearch/implementation.json",
+          "sha256": "bb2d394fa34f19ca6f2f116147e25abfec9122ac77b3c7f0dad047883a922621"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "90630b54e97c142899af125e245bd09d8699bc79d1f7ed0bee6c172f3f768c9b",
+            "before_sha256": "90630b54e97c142899af125e245bd09d8699bc79d1f7ed0bee6c172f3f768c9b",
+            "path": "opendata/data/providers/intrinio/models/equity_search.py"
+          },
+          {
+            "after_sha256": "c953ecc9125149872db0f79226eee4c06c61352a16f2874e0d36dc22a6b1b93b",
+            "before_sha256": "c953ecc9125149872db0f79226eee4c06c61352a16f2874e0d36dc22a6b1b93b",
+            "path": "opendata/data/providers/intrinio/specs.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "before_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "path": "opendata/data/models/intrinio.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+        "receipt": {
+          "path": "docs/evidence/C101/intrinio/receipts/intrinio/EquitySearch/service.json",
+          "sha256": "65bb4af790fe89ffdd5b15d60d437855c8b2f972834f98a88e867c0c22014e64"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "90630b54e97c142899af125e245bd09d8699bc79d1f7ed0bee6c172f3f768c9b",
+            "before_sha256": "90630b54e97c142899af125e245bd09d8699bc79d1f7ed0bee6c172f3f768c9b",
+            "path": "opendata/data/providers/intrinio/models/equity_search.py"
+          },
+          {
+            "after_sha256": "c953ecc9125149872db0f79226eee4c06c61352a16f2874e0d36dc22a6b1b93b",
+            "before_sha256": "c953ecc9125149872db0f79226eee4c06c61352a16f2874e0d36dc22a6b1b93b",
+            "path": "opendata/data/providers/intrinio/specs.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "EquitySearch",
+  "model_identity": "intrinio::EquitySearch",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "intrinio",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "EquitySearch",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101/intrinio"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "EquitySearch",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101/intrinio"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "EquitySearch",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101/intrinio"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "EquitySearch",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101/intrinio"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "EquitySearch",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101/intrinio"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-14T13:39:25Z",
+  "reviewer_id": "iter2-acceptance-reviewer-intrinio",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "EquitySearch"
+}

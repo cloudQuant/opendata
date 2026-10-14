@@ -1,0 +1,155 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/cboe/captures/cboe/OptionsChains/direct-exit0.txt",
+    "sha256": "48fe3204ff34261c045326d6f71a12f39ac846873c2f1b956623f8c722179833",
+    "size_bytes": 361,
+    "stdout_excerpt": "direct: fetcher=CboeOptionsChainsFetcher seam_requests=1 rows=1 row_class=CboeOptionsChains first_row_sha256=2d15fc7f922b8a98\nVERDICT=PASS\n"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model OptionsChains --phase direct --evidence-root docs/evidence/C101/cboe",
+    "executed_at_utc": "2026-10-14T13:30:04.301483+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+          "before_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+          "path": "opendata/data/models/congress_cboe_iter2.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+      "fixture": [
+        {
+          "after_sha256": "0d0a1de0c12d6c0c30d66f4fdd5852e446d6ed9d94ac29923ca3de33f9d22ab5",
+          "before_sha256": "0d0a1de0c12d6c0c30d66f4fdd5852e446d6ed9d94ac29923ca3de33f9d22ab5",
+          "path": "docs/evidence/C101/cboe/fixtures/cboe/OptionsChains.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+          "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+          "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "d2e87db02d7054c038847ab68d94119b638d5df7225156b361b802840111ce44",
+          "before_sha256": "d2e87db02d7054c038847ab68d94119b638d5df7225156b361b802840111ce44",
+          "path": "scripts/quality/iter2_witnesses/cboe.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+          "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+          "path": "opendata/data/providers/cboe/registration.py"
+        },
+        {
+          "after_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+          "before_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+          "path": "opendata/data/providers/cboe/provider.py"
+        },
+        {
+          "after_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+          "before_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+          "path": "opendata/data/providers/cboe/models/all_access.py"
+        },
+        {
+          "after_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+          "before_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+          "path": "opendata/data/providers/cboe/models/_all_access_client.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "cboe::OptionsChains",
+  "phase": "direct",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+        "before_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+        "path": "opendata/data/models/congress_cboe_iter2.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+    "fixture": [
+      {
+        "after_sha256": "0d0a1de0c12d6c0c30d66f4fdd5852e446d6ed9d94ac29923ca3de33f9d22ab5",
+        "before_sha256": "0d0a1de0c12d6c0c30d66f4fdd5852e446d6ed9d94ac29923ca3de33f9d22ab5",
+        "path": "docs/evidence/C101/cboe/fixtures/cboe/OptionsChains.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+        "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+        "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "d2e87db02d7054c038847ab68d94119b638d5df7225156b361b802840111ce44",
+        "before_sha256": "d2e87db02d7054c038847ab68d94119b638d5df7225156b361b802840111ce44",
+        "path": "scripts/quality/iter2_witnesses/cboe.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+        "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+        "path": "opendata/data/providers/cboe/registration.py"
+      },
+      {
+        "after_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+        "before_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+        "path": "opendata/data/providers/cboe/provider.py"
+      },
+      {
+        "after_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+        "before_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+        "path": "opendata/data/providers/cboe/models/all_access.py"
+      },
+      {
+        "after_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+        "before_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+        "path": "opendata/data/providers/cboe/models/_all_access_client.py"
+      }
+    ]
+  },
+  "provider": "cboe",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-cboe-OptionsChains",
+  "upstream_model": "OptionsChains"
+}

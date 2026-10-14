@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CompanyNews --phase counterfact --evidence-root docs/evidence/C101/tiingo
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "TIINGO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "TIINGO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "dropping the required integer 'id' makes the strict TiingoCompanyNews build refuse the item, so the adapter must surface TIINGO_SHAPE_INVALID rather than publish an unidentifiable news row; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

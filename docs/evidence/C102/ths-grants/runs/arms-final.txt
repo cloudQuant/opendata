@@ -1,0 +1,13 @@
+carrier: arms-final.txt
+captured_at_local=2026-10-15T01:59:21+08:00
+argv=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C102/probes/ths_grant_arms.py
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+arms-final_exit=0
+----------------------------------------------------------------------
+arm=control verdict=PASS observed=rows=1
+arm=wrong-model verdict=PASS observed=no exact request grant is configured requests_sent=0
+arm=no-ctx verdict=PASS observed=no exact request grant is configured requests_sent=0
+arm=injected-client verdict=PASS observed=scoped request transport is not verified requests_sent=0
+arm=live-smoke-quota verdict=PASS observed=task_attempts must be an integer from 0 through 10
+arm=attempt-bound verdict=PASS observed=request attempt allowance exhausted pages_seen=1
+face: arms=6 passed=6 failed=0 attempts=24 host=fuyao.test

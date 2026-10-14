@@ -1,0 +1,70 @@
+carrier: whole-suite-before-56-faces-derived.txt
+round: C103
+captured_at_local=2026-10-15T02:49:25+0800
+derivation=FAILED census + collected header + closing summary only; the raw transcript (bytes=80535) stays in /tmp/suite_rerun_4.log because whole-tree logs are not committed
+source_sha256_16=a7f36db6ea062175
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+whole_suite_exit=1 (both readings were red; the after-reading carries its own SUITE_EXIT=1 line in the body)
+----------------------------------------------------------------------
+face: failed_lines=56
+face: collected_header=collected 26551 items
+face: summary_line=========== 56 failed, 26221 passed, 274 skipped in 607.51s (0:10:07) ===========
+face: exit_markers_in_body=
+identity: failed + passed + skipped must equal the collected header
+----------------------------------------------------------------------
+FAILED tests/test_ac2_case_probe.py::test_self_test_closes_and_every_break_flips
+FAILED tests/test_acceptance_probe_gate.py::TestC51ZeroDepCells::test_the_judge_and_the_guard_module_count_the_same_surface
+FAILED tests/test_alert_matrix.py::TestCollection::test_every_leg_is_measured_or_counted_never_dropped
+FAILED tests/test_alert_matrix.py::TestCollection::test_a_leg_with_no_field_mapping_is_the_measured_majority
+FAILED tests/test_alert_matrix_model_domains.py::test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tables
+FAILED tests/test_authority_reconciliation.py::TestLiveTableMatchesLiveRegistry::test_domains_without_a_row_are_exactly_the_single_source_ones
+FAILED tests/test_c65_evidence_probes.py::test_ac6_02_reads_proven_on_the_repaired_tree_with_every_break_firing
+FAILED tests/test_congress_cboe_iter2.py::test_provider_model_service_injects_identity_and_serializes_typed_rows[CongressAmendments]
+FAILED tests/test_congress_gov_engine_provider.py::TestCongressGovIsARealProvider::test_a_provider_with_no_bindings_stays_unimplemented
+FAILED tests/test_congress_gov_engine_provider.py::TestTheEightRowAccounting::test_provider_bindings_and_declarations_stay_in_step
+FAILED tests/test_congress_gov_engine_provider.py::TestNothingHereIsLiveVerified::test_the_package_constructs_no_declaration
+FAILED tests/test_congress_gov_engine_provider.py::TestNothingHereIsLiveVerified::test_models_ships_no_fetcher_module
+FAILED tests/test_congress_gov_engine_provider.py::TestNothingHereIsLiveVerified::test_registration_verifies_nothing
+FAILED tests/test_data_catalog.py::TestFiveReadings::test_ready_provider_domains_publish_exact_query_service_metadata
+FAILED tests/test_e2e_opt_in_guard.py::test_no_test_outside_the_live_plane_builds_a_database_engine
+FAILED tests/test_ecb_reference_registration.py::test_real_ecb_bindings_register_three_canonical_models_without_auto_promotion
+FAILED tests/test_federal_reserve_domains.py::TestTheDomainsAreRegistered::test_the_retracted_yield_curve_domain_was_not_registered
+FAILED tests/test_finviz_provider.py::test_provider_descriptor_binds_four_models_and_leaves_three_gaps_unbound
+FAILED tests/test_first_model_bindings.py::test_registration_preserves_legacy_order_and_binds_eleven_models_exactly
+FAILED tests/test_fmp_iter2_market.py::test_provider_model_query_pins_financial_identity_and_serializes_contract_rows[balance-sheet]
+FAILED tests/test_fmp_iter2_market.py::test_provider_model_query_pins_financial_identity_and_serializes_contract_rows[balance-sheet-growth]
+FAILED tests/test_fmp_iter2_market.py::test_provider_model_query_pins_financial_identity_and_serializes_contract_rows[cash-flow]
+FAILED tests/test_fmp_iter2_market.py::test_provider_model_query_pins_financial_identity_and_serializes_contract_rows[cash-flow-growth]
+FAILED tests/test_fmp_iter2_market.py::test_provider_model_query_pins_financial_identity_and_serializes_contract_rows[income-statement]
+FAILED tests/test_fmp_iter2_market.py::test_provider_model_query_pins_financial_identity_and_serializes_contract_rows[income-statement-growth]
+FAILED tests/test_fmp_iter2_market.py::test_provider_model_query_pins_financial_identity_and_serializes_contract_rows[ratios]
+FAILED tests/test_fmp_iter2_market.py::test_provider_model_query_pins_financial_identity_and_serializes_contract_rows[key-metrics]
+FAILED tests/test_fmp_iter2_market.py::test_provider_model_query_pins_financial_identity_and_serializes_contract_rows[revenue-business-line]
+FAILED tests/test_fmp_iter2_market.py::test_provider_model_query_pins_financial_identity_and_serializes_contract_rows[revenue-geographic]
+FAILED tests/test_immutable_evidence.py::test_repository_manifest_sums_all_exact172_classification_findings
+FAILED tests/test_intrinio_insider_trading_spec.py::TestCensusRowIsDeclared::test_routable_bindings_include_the_engine_declarations
+FAILED tests/test_intrinio_not_declarable.py::TestTheThirtyEightRowAccounting::test_declared_models_are_the_runtime_bindings
+FAILED tests/test_oecd_engine_provider.py::TestProviderDescriptor::test_oecd_binds_only_its_two_hand_written_fetchers
+FAILED tests/test_oecd_engine_provider.py::TestProviderDescriptor::test_the_two_shipped_legs_stay_registered_and_verified
+FAILED tests/test_oecd_engine_provider.py::TestProviderDescriptor::test_the_retracted_model_identities_resolve_to_nothing
+FAILED tests/test_openbb_inventory_guard.py::test_shipped_record_agrees_with_the_tree
+FAILED tests/test_openbb_inventory_guard.py::test_report_exit_code_differs_between_the_two_records
+FAILED tests/test_openbb_inventory_guard.py::test_new_provider_specific_rights_rows_must_exist_in_registration_table
+FAILED tests/test_openbb_inventory_guard.py::test_every_declared_rights_row_is_load_bearing
+FAILED tests/test_p0_integration_surface.py::test_the_marked_set_is_the_reviewed_set
+FAILED tests/test_port_fidelity.py::test_ported_output_matches_upstream[bond_daily_sina]
+FAILED tests/test_provider_catalog.py::test_catalog_contains_34_sources_and_only_66_fetcher_bindings
+FAILED tests/test_provider_catalog.py::test_registration_and_legacy_fetchers_project_the_same_capabilities
+FAILED tests/test_provider_domains.py::test_production_domains_preserve_v1_legacy_entries_and_explicit_semantics
+FAILED tests/test_provider_domains.py::test_declared_domain_contracts_match_exact_registered_provider_models
+FAILED tests/test_provider_domains.py::test_exact_domain_identity_assertion_rejects_removed_and_added_domains
+FAILED tests/test_provider_domains.py::test_public_exports_match_reviewed_batch5_counts_and_types
+FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_typical_request_normalizes_the_declared_columns[federal_reserve::SvenssonYieldCurve]
+FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_typical_request_normalizes_the_declared_columns[tradingeconomics::EconomicCalendar]
+FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_optional_column_absent_reads_as_null[federal_reserve::FederalFundsRate]
+FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_optional_column_absent_reads_as_null[federal_reserve::OvernightBankFundingRate]
+FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_optional_column_absent_reads_as_null[federal_reserve::SOFR]
+FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_paging_drives_from_the_declaration_and_stops_on_a_short_page[federal_reserve::SvenssonYieldCurve]
+FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_declared_static_headers_are_sent_on_every_page[federal_reserve::SvenssonYieldCurve]
+FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_declared_static_query_is_sent_on_every_page[federal_reserve::SvenssonYieldCurve]
+FAILED tests/test_scheduled_patrol.py::TestScheduledPatrolExecution::test_production_domain_priority_is_the_requirement_defined_eight

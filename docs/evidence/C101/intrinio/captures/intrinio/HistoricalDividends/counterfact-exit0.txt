@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model HistoricalDividends --phase counterfact --evidence-root docs/evidence/C101/intrinio
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["amount"], "refusal_class": "ProviderEngineError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["amount"], "refusal_class": "ProviderEngineError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "amount is declared required with source_key 'dividend' and the contract row types it non-null, so an adjustment record that publishes no dividend is the split-only shape the declaration refuses to accept: INTRINIO_SHAPE_INVALID with missing=('amount',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

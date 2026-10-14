@@ -1,0 +1,15 @@
+=== census pin falsification arms ===
+[as expected] control -> descriptor: PASS :: ============================== 1 passed in 0.58s ===============================
+[as expected] control -> modeldomains: PASS :: ============================== 1 passed in 0.53s ===============================
+[as expected] control -> sloos: PASS :: ============================== 1 passed in 0.59s ===============================
+[as expected] control -> ods: PASS :: ============================== 1 passed in 0.56s ===============================
+[as expected] A canonical_ids_declared flip on one qsem identity -> descriptor: FAIL :: ============================== 1 failed in 0.59s ===============================
+[as expected] B canonical_ids_declared flip on the ths legacy identity -> modeldomains: FAIL :: ============================== 1 failed in 0.58s ===============================
+[as expected] C scenario_present rolled back on the SLOOS identity -> sloos: FAIL :: ============================== 1 failed in 0.68s ===============================
+[as expected] D domain_count back to 337 -> ods: FAIL :: ============================== 1 failed in 0.24s ===============================
+[restored byte-exact] tests/fixtures/registry_batch5_snapshot.json 3755f13aaba43989
+[restored byte-exact] tests/test_provider_domains.py c03b8abe16406681
+[restored byte-exact] tests/test_pipeline_jobs.py 34fe32f72b83f43c
+[restored byte-exact] tests/test_alert_matrix.py d941c417bd031040
+[restored byte-exact] tests/test_alert_matrix_model_domains.py 7b4dc53871ef9a18
+ARMS_VERDICT: OK

@@ -1,0 +1,40 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 287 items
+
+tests/test_yfinance_iter2_market.py .................................... [ 12%]
+........................................................................ [ 37%]
+....                                                                     [ 39%]
+tests/test_yfinance_iter2_statements.py ..................               [ 45%]
+tests/test_yfinance_iter2_budget.py ......................               [ 52%]
+tests/test_yfinance_provider.py .............................            [ 63%]
+tests/test_finviz_provider.py F...............................           [ 74%]
+tests/test_finviz_performance.py ..........................              [ 83%]
+tests/test_finviz_screener_binding.py s                                  [ 83%]
+tests/test_finviz_screener_first_page.py ........                        [ 86%]
+tests/test_federal_reserve_clean_rates.py .................              [ 92%]
+tests/test_ecb_provider.py ...................sss                        [100%]
+
+=================================== FAILURES ===================================
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_finviz_provider.py:378: AssertionError: assert {'CompareGrou...ormance', ...} == {'CompareGrou...'PriceTarget'}
+=========================== short test summary info ============================
+FAILED tests/test_finviz_provider.py::test_provider_descriptor_binds_four_models_and_leaves_three_gaps_unbound
+=================== 1 failed, 282 passed, 4 skipped in 1.26s ===================
+witness_run_exit=1
+face: passed=282 failed=1 skipped=4 over 10 files
+attribution: the single red is tests/test_finviz_provider.py::test_provider_descriptor_binds_four_models_and_leaves_three_gaps_unbound,
+  whose traceback frame is the test's own set-equality assert at test_finviz_provider.py:378 (a finviz model-name census),
+  not any line of the 13 files this round edited; it is one of the two set-equality reds already recorded in face.md section 3.
+coverage_note: these 10 files execute the 5 no-any-return sites (yfinance iter2/market_iter2, finviz/_source,
+  federal_reserve/clean_rates, ecb/_client) plus federal_reserve/_primary_dealer is covered by
+  tests/test_federal_reserve_clean_nyfed.py, tests/test_federal_reserve_iter2_models.py, tests/test_provider_federal_reserve.py.
+primary_dealer_witness: tests/test_federal_reserve_clean_nyfed.py tests/test_federal_reserve_iter2_models.py
+  tests/test_provider_federal_reserve.py -> 111 passed, 0 failed (rc=0)
+  line-execution proof: --cov=...federal_reserve.models._primary_dealer --cov-report=term-missing prints
+  "127 stmts / 24 miss / 62 br / 22 brpart / 75.66%  189-190, 192, 195, 201, 203, 214" -- the cast statement at
+  _primary_dealer.py:197-198 is NOT in the missing list, so the cast("Decimal", parse_decimal(...)) line ran.

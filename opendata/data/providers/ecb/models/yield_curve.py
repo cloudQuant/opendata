@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from pydantic import ValidationError
 
@@ -16,6 +16,9 @@ from opendata.data.providers.ecb.models._series_sdmx import (
     RawEcbSeriesRecord,
     normalize_yield_curve_records,
 )
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 
 def _validated_query(params: object) -> EcbYieldCurveQuery:
@@ -34,6 +37,8 @@ class EcbYieldCurveFetcher(Fetcher[EcbYieldCurveQuery, tuple[RawEcbSeriesRecord,
 
     async_mode: ClassVar[str] = "bounded_thread"
     canonical_model: ClassVar[str | None] = "YieldCurve"
+    row_model: ClassVar[type[EcbYieldCurveObservation]] = EcbYieldCurveObservation
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="yield_curve",
@@ -54,7 +59,7 @@ class EcbYieldCurveFetcher(Fetcher[EcbYieldCurveQuery, tuple[RawEcbSeriesRecord,
     ) -> tuple[RawEcbSeriesRecord, ...]:
         """Call the governed YC client with the query and caller timeout."""
         query = _validated_query(params)
-        return fetch_yield_curve(query, timeout=ctx.timeout)
+        return fetch_yield_curve(query, timeout=ctx.timeout, transport=self.http_transport)
 
     def transform_data(
         self,

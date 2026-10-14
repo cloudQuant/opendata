@@ -232,11 +232,19 @@ PROVIDER = Provider(
             "opendata.data.providers.intrinio.models.iter2_snapshots_clean",
             "IntrinioEtfPricePerformanceFetcher",
             canonical_model_ids=("EtfPricePerformance",),
+            scenario=(
+                "Intrinio ETF price performance（intrinio_etf_price_performance 域，"
+                "由 Intrinio 日度价格行计算 ETF 收益字段）"
+            ),
         ),
         LazyFetcherBinding(
             "opendata.data.providers.intrinio.models.iter2_snapshots_clean",
             "IntrinioMarketSnapshotsFetcher",
             canonical_model_ids=("MarketSnapshots",),
+            scenario=(
+                "Intrinio current Nasdaq market snapshots（intrinio_market_snapshots 域，"
+                "读取纳指实时报价并仅连接已验证 XNAS 证券 ID）"
+            ),
         ),
     ),
     credentials=(

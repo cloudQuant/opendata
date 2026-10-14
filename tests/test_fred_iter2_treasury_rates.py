@@ -120,7 +120,9 @@ def _install_paged_response(
     observations: list[dict[str, str]],
     requests: list[tuple[str, dict[str, str]]],
 ) -> None:
-    def http_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def http_get(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         del timeout
         requests.append((url, dict(params)))
         return 200, _page_response(
@@ -172,7 +174,9 @@ def test_treasury_constant_maturity_two_year_uses_dgs2(
 ) -> None:
     requested: list[str] = []
 
-    def one_observation(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def one_observation(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         del url, timeout
         requested.append(params["series_id"])
         return 200, _page_response(
@@ -191,7 +195,7 @@ def test_treasury_constant_maturity_rejects_bad_parameters_before_io(
 ) -> None:
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("invalid query must be rejected before I/O"),
+        lambda *args, **_kwargs: pytest.fail("invalid query must be rejected before I/O"),
     )
     fetcher = TreasuryConstantMaturityFetcher()
     with pytest.raises(ValidationError):
@@ -255,7 +259,7 @@ def test_selected_treasury_bill_rejects_bad_parameters_and_values_before_io(
 ) -> None:
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("invalid query must be rejected before I/O"),
+        lambda *args, **_kwargs: pytest.fail("invalid query must be rejected before I/O"),
     )
     fetcher = SelectedTreasuryBillFetcher()
     with pytest.raises(ValidationError):
@@ -281,7 +285,9 @@ def test_selected_treasury_bill_rate_limit_does_not_leak_key(
     monkeypatch.setenv("FRED_API_KEY", "private-test-token")
     requests: list[tuple[str, dict[str, str]]] = []
 
-    def rate_limited(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def rate_limited(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         del timeout
         requests.append((url, params))
         return 429, "Too Many Requests"
@@ -304,7 +310,9 @@ def test_selected_treasury_constant_maturity_maps_all_fixed_series(
     expected = {"10y": "DGS10", "5y": "DGS5", "1y": "DGS1", "6m": "DGS6MO", "3m": "DGS3MO"}
     requested_ids: list[str] = []
 
-    def one_observation(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def one_observation(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         del url, timeout
         requested_ids.append(params["series_id"])
         return 200, json.dumps(
@@ -330,7 +338,7 @@ def test_selected_treasury_constant_maturity_rejects_invalid_query_and_source_ro
 ) -> None:
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("invalid query must be rejected before I/O"),
+        lambda *args, **_kwargs: pytest.fail("invalid query must be rejected before I/O"),
     )
     fetcher = SelectedTreasuryConstantMaturityFetcher()
     with pytest.raises(ValidationError):
@@ -361,7 +369,7 @@ def test_selected_treasury_constant_maturity_429_and_vintage_mismatch(
 ) -> None:
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda url, params, timeout: (429, "Too Many Requests"),
+        lambda url, params, timeout, **_kwargs: (429, "Too Many Requests"),
     )
     with pytest.raises(FredProviderError) as exc_info:
         fetcher = SelectedTreasuryConstantMaturityFetcher()

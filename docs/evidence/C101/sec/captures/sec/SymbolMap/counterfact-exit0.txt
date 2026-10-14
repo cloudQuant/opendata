@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SymbolMap --phase counterfact --evidence-root docs/evidence/C101/sec
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_BAD_CIK", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_BAD_CIK", "rejected": [], "status": null}, "reason": "cik is a declared contract column and the SEC's own CIK is one to ten digits, so a directory record publishing a non-numeric CIK must be refused outright; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

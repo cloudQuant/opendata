@@ -93,7 +93,7 @@ ECONOMIC_CALENDAR = ModelSpec(
         ),
     ),
     columns=(
-        ColumnSpec("date", "str", source_key="Date", required=True, nullable=False),
+        ColumnSpec("date", "date", source_key="Date", required=True, nullable=False),
         ColumnSpec("country", "str", source_key="Country"),
         ColumnSpec("category", "str", source_key="Category"),
         ColumnSpec("event", "str", source_key="Event"),
@@ -114,7 +114,7 @@ ECONOMIC_CALENDAR = ModelSpec(
         ColumnSpec("ticker", "str", source_key="Ticker"),
         ColumnSpec("te_url", "str", source_key="URL"),
         ColumnSpec("source_url", "str", source_key="SourceURL"),
-        ColumnSpec("last_updated", "str", source_key="LastUpdate"),
+        ColumnSpec("last_updated", "date", source_key="LastUpdate"),
     ),
     static_query=(("f", "json"),),
     credential=TRADINGECONOMICS_CREDENTIAL,
@@ -131,7 +131,13 @@ ECONOMIC_CALENDAR = ModelSpec(
         "reference dates to date values. Date is UTC per the source schema; DateSpan is limited to "
         "0 (known timing) and 1 (estimated timing). The official calendar ceiling is 1,000 rows "
         "and 260 URL characters; oversized calendar-ID lists are split into bounded requests. "
-        "Unsupported filter combinations are refused pre-I/O."
+        "Unsupported filter combinations are refused pre-I/O. ``date`` and ``last_updated`` carry "
+        "the temporal kind because the reviewed row fields are ``datetime`` values read out of "
+        "TE's ISO text (``Date`` is this domain's ``time_field``); the source publishes them with "
+        "a clock component, so the text kind they declared before is not their contract type. "
+        "``date_span`` keeps the integer kind the schema publishes while its row field is "
+        "``Literal[0, 1]``: a body naming any other timing code is outside the documented schema "
+        "and is refused, never re-mapped."
     ),
 )
 

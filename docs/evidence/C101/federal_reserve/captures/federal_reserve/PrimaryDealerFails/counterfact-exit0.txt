@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerFails --phase counterfact --evidence-root docs/evidence/C101/federal_reserve
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FederalReserveSourceError", "refusal_code": "FEDERAL_RESERVE_BAD_PD_DATA_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FederalReserveSourceError", "refusal_code": "FEDERAL_RESERVE_BAD_PD_DATA_ROW", "rejected": [], "status": null}, "reason": "every observation the primary-dealer route reads must publish its as-of date: the reviewed PrimaryDealerFails date field is a required datetime.date, so a timeseries item without 'asofdate' has to refuse rather than land as a fails observation on no week; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -13,7 +13,7 @@ from urllib.parse import quote, urlencode, urlparse
 
 from defusedxml import ElementTree as SafeET
 from defusedxml.common import DefusedXmlException
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, ValidationError, field_validator, model_validator
 
 from opendata.data.capability import Capability
 from opendata.data.models.sec_iter2 import SecInsiderOwner, SecInsiderTransaction
@@ -34,6 +34,9 @@ if TYPE_CHECKING:
     from xml.etree.ElementTree import (  # nosec B405
         Element,
     )
+
+    from opendata.data.models.base import ContractModel
+    from opendata.data.providers._engine.http_json import HttpGet
 
 SEC_BROWSE_EDGAR_URL = "https://www.sec.gov/cgi-bin/browse-edgar"
 MAX_FEED_PAGE_SIZE = 100
@@ -597,6 +600,8 @@ class InsiderTradingFetcher(Fetcher[InsiderTradingQuery, tuple[SecForm4Raw, ...]
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "InsiderTrading"
+    row_model: ClassVar[type[ContractModel]] = SecInsiderTransaction
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="sec_insider_trading",
@@ -608,7 +613,7 @@ class InsiderTradingFetcher(Fetcher[InsiderTradingQuery, tuple[SecForm4Raw, ...]
 
     def transform_query(self, **kwargs: object) -> InsiderTradingQuery:
         """Validate issuer and filing-window filters before source I/O."""
-        if set(kwargs) - {
+        unexpected = set(kwargs) - {
             "symbol",
             "start_date",
             "end_date",
@@ -618,8 +623,15 @@ class InsiderTradingFetcher(Fetcher[InsiderTradingQuery, tuple[SecForm4Raw, ...]
             "use_cache",
             "market",
             "source",
-        }:
-            raise ValueError("unsupported query parameters")
+        }
+        if unexpected:
+            raise ValidationError.from_exception_data(
+                "QueryParams",
+                [
+                    {"type": "extra_forbidden", "loc": (key,), "input": None}
+                    for key in sorted(unexpected)
+                ],
+            )
         if kwargs.get("sort_by") == "updated_on":
             raise ValueError(
                 "sort_by='updated_on' is unsupported: SEC filing data has "
@@ -633,7 +645,7 @@ class InsiderTradingFetcher(Fetcher[InsiderTradingQuery, tuple[SecForm4Raw, ...]
         """Search a bounded feed window and fetch each selected filing index/XML pair."""
         # Worst case: ticker directory + three feed pages + three index/XML pairs.
         ensure_request_capacity(ctx, 1 + MAX_FEED_PAGES + MAX_FORM4_FILINGS * 2)
-        identities = company_ticker_rows(ctx)
+        identities = company_ticker_rows(ctx, transport=self.http_transport)
         identity = resolve_ticker(identities, params.symbol)
         references: list[SecForm4Reference] = []
         feed_complete = False
@@ -690,9 +702,11 @@ class InsiderTradingFetcher(Fetcher[InsiderTradingQuery, tuple[SecForm4Raw, ...]
         filings: list[SecForm4Raw] = []
         for reference in selected:
             index_url, _ = _filing_urls(reference)
-            index_document = fetch_json(ctx, index_url)
+            index_document = fetch_json(ctx, index_url, transport=self.http_transport)
             document_url = resolve_primary_xml_url(reference, index_document)
-            body = fetch_bytes(ctx, document_url, max_bytes=MAX_XML_RESPONSE_BYTES)
+            body = fetch_bytes(
+                ctx, document_url, max_bytes=MAX_XML_RESPONSE_BYTES, transport=self.http_transport
+            )
             filings.append(SecForm4Raw(reference=reference, body=body))
         return tuple(filings)
 

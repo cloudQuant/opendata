@@ -121,22 +121,39 @@ def test_catalog_contains_34_sources_and_only_66_fetcher_bindings() -> None:
 
     assert len(providers) == 34
     assert {provider.source for provider in providers} == EXPECTED_SOURCES
+    # Re-pinned after 360c61d (32-provider implementation surface): 14 sources moved from
+    # reserved to implemented, and the binding census grew 66 -> 342 with that wave plus the
+    # iter2 declarative/engine rows (live split: 325 hand-written facade fetchers + 17 engine).
     assert {provider.source for provider in providers if provider.is_implemented} == {
         "akshare",
+        "alpha_vantage",
         "benzinga",
         "bls",
         "cboe",
+        "cftc",
+        "congress_gov",
+        "deribit",
         "ecb",
         "econdb",
+        "eia",
+        "famafrench",
         "federal_reserve",
+        "finra",
         "finviz",
         "fmp",
         "fred",
+        "government_us",
         "imf",
         "intrinio",
+        "multpl",
+        "nasdaq",
         "oecd",
+        "sec",
         "ths",
         "tiingo",
+        "tmx",
+        "tradier",
+        "tradingeconomics",
         "yfinance",
     }
     declared_ids = {f"{source}::{spec.model}" for source, spec in engine_declared_models()}
@@ -150,9 +167,9 @@ def test_catalog_contains_34_sources_and_only_66_fetcher_bindings() -> None:
         f"{source}::{binding.canonical_model_ids[0]}" for source, binding in engine_bindings
     }
     assert engine_ids == declared_ids, "an engine binding's canonical id is the model it generates"
-    assert len(bindings) == 66
-    assert len(bindings) - len(engine_bindings) == 48
-    assert len(engine_bindings) == len(bindings) - 48
+    assert len(bindings) == 342
+    assert len(bindings) - len(engine_bindings) == 325
+    assert len(engine_bindings) == len(bindings) - 325
     print(
         f"\ncatalog bindings: total={len(bindings)} engine={len(engine_bindings)} "
         f"hand_written={len(bindings) - len(engine_bindings)} engine_ids={sorted(engine_ids)}"
@@ -163,7 +180,7 @@ def test_catalog_contains_34_sources_and_only_66_fetcher_bindings() -> None:
     )
 
     reserved = [provider for provider in providers if not provider.is_implemented]
-    assert len(reserved) == 18
+    assert len(reserved) == 4
     assert all(provider.health_check().status == "not_implemented" for provider in reserved)
     assert all(not provider.fetcher_bindings for provider in reserved)
 
@@ -247,15 +264,17 @@ def test_registration_and_legacy_fetchers_project_the_same_capabilities() -> Non
     source_fetchers = []
     mixed_facades: list[str] = []
     expected_counts = {
+        # Re-pinned after 360c61d: hand-written facade FETCHERS grew additively for fred
+        # (7->39), imf (3->11), yfinance (1->28) and fmp (2->69); the other five are unchanged.
         "akshare": 10,
         "ecb": 6,
-        "fred": 7,
-        "imf": 3,
+        "fred": 39,
+        "imf": 11,
         "oecd": 2,
         "ths": 11,
-        "yfinance": 1,
+        "yfinance": 28,
         "bls": 2,
-        "fmp": 2,
+        "fmp": 69,
     }
 
     for source, count in expected_counts.items():
@@ -290,16 +309,38 @@ def test_registration_and_legacy_fetchers_project_the_same_capabilities() -> Non
         _capability_identity(registry.resolve_model(source, spec.model).capability)
         for source, spec in declared_models
     }
+    # Census re-base 2026-10-14: the third leg is the live fetcher_bindings of every provider
+    # whose source has no hand-written facade above.
+    binding_legs = {
+        provider.source: {
+            _capability_identity(binding.load(provider.source).capability)
+            for binding in provider.fetcher_bindings
+        }
+        for provider in registration_order()
+        if provider.fetcher_bindings and provider.source not in expected_counts
+    }
+    declarative_bindings = set().union(*binding_legs.values())
+    print(
+        f"\ncapability census: hand_written={len(expected)} engine_declared={len(declared)} "
+        f"declarative_bindings={len(declarative_bindings)} over {len(binding_legs)} sources "
+        f"registered={len(registered)}"
+    )
     expected_registration_order = [
         provider.source for provider in registration_order() for _ in provider.fetcher_bindings
     ]
     assert len(expected) == len(source_fetchers)
     assert len(declared) == len(declared_models)
-    assert len(registered) == len(source_fetchers) + len(declared_models)
-    assert actual == expected | declared
+    assert len(registered) == len(expected | declared | declarative_bindings)
+    assert actual == expected | declared | declarative_bindings
     assert expected & declared == set()
     assert [capability.source for capability in registered] == expected_registration_order
     assert register_providers(registry) == []
+    # live counterfact: a dropped declarative binding must break the exact census identity.
+    unique_binding = next(iter(declarative_bindings - expected - declared))
+    assert (
+        len(registered)
+        != len(expected | declared | (declarative_bindings - {unique_binding}))
+    )
 
 
 @pytest.mark.parametrize("field,value", [("period", "1W"), ("market", "us")])
@@ -371,7 +412,9 @@ def test_health_check_reports_missing_keys_without_exposing_values(monkeypatch) 
     assert fred.missing_credentials == ("api_key",)
     assert ths.status == "missing_key"
     assert ths.missing_credentials == ("fuyao_api_key",)
-    assert eia_credential.name == "api_key"
+    # eia's credential row carries a descriptive name since 360c61d; the environment
+    # variable and the not-required-for-health claim are the load-bearing parts.
+    assert eia_credential.name == "EIA API key (required for STEO API queries)"
     assert eia_credential.environment_variable == "EIA_API_KEY"
     assert not eia_credential.required_for_health
     assert "FRED_API_KEY" not in repr(fred)

@@ -26,12 +26,15 @@ from opendata.data.providers.fmp.models._client import (
     FMPProviderError,
     FMPQueryLimitError,
     FMPQueryValidationError,
+    contract_shape_error,
     fetch_array,
 )
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from datetime import date as date_type
+
+    from opendata.data.providers._engine.http_json import HttpGet
 
 MAX_FINANCIAL_PERIODS = 1_000
 MAX_REVENUE_SEGMENTS = 10_000
@@ -80,16 +83,22 @@ def _bad_query(query_type: type[QueryParams], kwargs: dict[str, object]) -> Quer
     """Convert pydantic details into a stable, sanitized provider error."""
     try:
         return query_type.model_validate(kwargs)
-    except (ValidationError, TypeError, ValueError):
+    except ValidationError as exc:
+        raise FMPQueryValidationError.from_validation_error(exc) from None
+    except (TypeError, ValueError):
         raise FMPQueryValidationError() from None
 
 
 def _validated_record(model: type[ModelT], raw: Mapping[str, object]) -> ModelT:
-    """Build one explicit contract row and avoid leaking source response details."""
+    """Build one explicit contract row and avoid leaking source response details.
+
+    The refusal attributes the columns the row contract itself refused, translated through the
+    model's alias map, so a caller learns which documented cell the source broke.
+    """
     try:
         record = model.model_validate(raw)
-    except (ValidationError, TypeError, ValueError):
-        raise FMPProviderError("FMP_BAD_SHAPE") from None
+    except (ValidationError, TypeError, ValueError) as exc:
+        raise contract_shape_error(model, exc) from None
     return record
 
 
@@ -134,7 +143,10 @@ class _FinancialFetcher(Fetcher[FMPFinancialQuery, list[dict[str, Any]]]):
     canonical_model: ClassVar[str | None]
     endpoint: ClassVar[str]
     record_model: ClassVar[type[FMPFinancialPeriod]]
+    row_model: ClassVar[type[FMPFinancialPeriod]]
     capability: ClassVar[Capability]
+    #: The offline witness seam; ``None`` keeps the governed shared HTTP client in production.
+    http_transport: ClassVar[HttpGet | None] = None
 
     def transform_query(self, **kwargs: object) -> FMPFinancialQuery:
         """Reject unsupported filters and bad request limits before transport."""
@@ -154,6 +166,7 @@ class _FinancialFetcher(Fetcher[FMPFinancialQuery, list[dict[str, Any]]]):
                 "limit": str(params.limit),
             },
             ctx.timeout,
+            self.http_transport,
         )
 
     def transform_data(
@@ -176,6 +189,7 @@ class BalanceSheetFetcher(_FinancialFetcher):
     canonical_model = "BalanceSheet"
     endpoint = "balance-sheet-statement"
     record_model = BalanceSheet
+    row_model = BalanceSheet
     capability = Capability(
         asset_class="equity",
         domain="fmp_balance_sheet",
@@ -192,6 +206,7 @@ class BalanceSheetGrowthFetcher(_FinancialFetcher):
     canonical_model = "BalanceSheetGrowth"
     endpoint = "balance-sheet-statement-growth"
     record_model = BalanceSheetGrowth
+    row_model = BalanceSheetGrowth
     capability = Capability(
         asset_class="equity",
         domain="fmp_balance_sheet_growth",
@@ -208,6 +223,7 @@ class CashFlowStatementFetcher(_FinancialFetcher):
     canonical_model = "CashFlowStatement"
     endpoint = "cash-flow-statement"
     record_model = CashFlowStatement
+    row_model = CashFlowStatement
     capability = Capability(
         asset_class="equity",
         domain="fmp_cash_flow_statement",
@@ -224,6 +240,7 @@ class CashFlowStatementGrowthFetcher(_FinancialFetcher):
     canonical_model = "CashFlowStatementGrowth"
     endpoint = "cash-flow-statement-growth"
     record_model = CashFlowStatementGrowth
+    row_model = CashFlowStatementGrowth
     capability = Capability(
         asset_class="equity",
         domain="fmp_cash_flow_statement_growth",
@@ -240,6 +257,7 @@ class IncomeStatementFetcher(_FinancialFetcher):
     canonical_model = "IncomeStatement"
     endpoint = "income-statement"
     record_model = IncomeStatement
+    row_model = IncomeStatement
     capability = Capability(
         asset_class="equity",
         domain="fmp_income_statement",
@@ -256,6 +274,7 @@ class IncomeStatementGrowthFetcher(_FinancialFetcher):
     canonical_model = "IncomeStatementGrowth"
     endpoint = "income-statement-growth"
     record_model = IncomeStatementGrowth
+    row_model = IncomeStatementGrowth
     capability = Capability(
         asset_class="equity",
         domain="fmp_income_statement_growth",
@@ -272,6 +291,7 @@ class FinancialRatiosFetcher(_FinancialFetcher):
     canonical_model = "FinancialRatios"
     endpoint = "ratios"
     record_model = FinancialRatios
+    row_model = FinancialRatios
     capability = Capability(
         asset_class="equity",
         domain="fmp_financial_ratios",
@@ -288,6 +308,7 @@ class KeyMetricsFetcher(_FinancialFetcher):
     canonical_model = "KeyMetrics"
     endpoint = "key-metrics"
     record_model = KeyMetrics
+    row_model = KeyMetrics
     capability = Capability(
         asset_class="equity",
         domain="fmp_key_metrics",
@@ -306,7 +327,10 @@ class _RevenueSegmentFetcher(Fetcher[FMPRevenueSegmentQuery, list[dict[str, Any]
     endpoint: ClassVar[str]
     label_field: ClassVar[Literal["business_line", "region"]]
     record_model: ClassVar[type[RevenueBusinessLine] | type[RevenueGeographic]]
+    row_model: ClassVar[type[RevenueBusinessLine] | type[RevenueGeographic]]
     capability: ClassVar[Capability]
+    #: The offline witness seam; ``None`` keeps the governed shared HTTP client in production.
+    http_transport: ClassVar[HttpGet | None] = None
 
     def transform_query(self, **kwargs: object) -> FMPRevenueSegmentQuery:
         """Reject unsupported as-of/date/limit parameters before provider I/O."""
@@ -322,6 +346,7 @@ class _RevenueSegmentFetcher(Fetcher[FMPRevenueSegmentQuery, list[dict[str, Any]
             self.endpoint,
             {"symbol": params.symbol, "period": params.period, "structure": "flat"},
             ctx.timeout,
+            self.http_transport,
         )
 
     def transform_data(
@@ -402,6 +427,7 @@ class RevenueBusinessLineFetcher(_RevenueSegmentFetcher):
     endpoint = "revenue-product-segmentation"
     label_field = "business_line"
     record_model = RevenueBusinessLine
+    row_model = RevenueBusinessLine
     capability = Capability(
         asset_class="equity",
         domain="fmp_revenue_business_line",
@@ -419,6 +445,7 @@ class RevenueGeographicFetcher(_RevenueSegmentFetcher):
     endpoint = "revenue-geographic-segmentation"
     label_field = "region"
     record_model = RevenueGeographic
+    row_model = RevenueGeographic
     capability = Capability(
         asset_class="equity",
         domain="fmp_revenue_geographic",

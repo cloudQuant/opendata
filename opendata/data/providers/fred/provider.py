@@ -231,11 +231,16 @@ PROVIDER = Provider(
             "opendata.data.providers.fred.models.iter2_macro_remaining",
             "RetailPricesRemainingFetcher",
             canonical_model_ids=("RetailPrices",),
+            scenario="FRED Retail Average Prices（fred_retail_prices 域，查BLS平均零售价序列）",
         ),
         LazyFetcherBinding(
             "opendata.data.providers.fred.models.sloos",
             "FredSeniorLoanOfficerSurveyFetcher",
             canonical_model_ids=("SeniorLoanOfficerSurvey",),
+            scenario=(
+                "FRED Senior Loan Officer Survey（senior_loan_officer_survey 域，"
+                "取选定 SLOOS 类别的单页观察值）"
+            ),
         ),
     ),
     credentials=(

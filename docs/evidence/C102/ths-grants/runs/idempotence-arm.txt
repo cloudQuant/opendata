@@ -1,0 +1,20 @@
+carrier: idempotence-arm.txt
+captured_at_local=2026-10-15T01:59:20+08:00
+argv=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C102/probes/ths_idempotence_arm.py
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+idempotence-arm_exit=0
+----------------------------------------------------------------------
+face: fetch_sites=44 with_ctx=37 without_ctx=7
+face: ctx_offline_context_call_sites=37
+  NO_CTX line=1773 class=TestAgainstTheLiveFuyaoApi
+  NO_CTX line=1786 class=TestAgainstTheLiveFuyaoApi
+  NO_CTX line=1798 class=TestAgainstTheLiveFuyaoApi
+  NO_CTX line=1822 class=TestAgainstTheLiveFuyaoApi
+  NO_CTX line=1845 class=TestAgainstTheLiveFuyaoApi
+  NO_CTX line=1863 class=TestAgainstTheLiveFuyaoApi
+  NO_CTX line=1877 class=TestAgainstTheLiveFuyaoApi
+face: ctx_less_site_classes=['TestAgainstTheLiveFuyaoApi']
+arm_repeated_keyword: ast.parse ACCEPTS it (a parse-only guard would not stop corruption)
+arm_second_apply: duplicate_keyword=compile_refused (keyword argument repeated: ctx)
+arm_probe_guard: compiles_staged=True skips_already_granted=True
+verdict: PASS - 37 offline sites granted, the 7 e2e sites carry no fixture grant

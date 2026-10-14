@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from datetime import date, datetime
 from numbers import Real
-from typing import ClassVar, Literal, TypeVar
+from typing import ClassVar, Literal, TypeVar, cast
 
 import pandas as pd
 from pydantic import ValidationError, field_validator, model_validator
@@ -171,7 +171,7 @@ def _validated_query(
 def _as_date(value: object, *, field: str) -> date:
     """Convert an SDK date label without inventing a day from an unknown shape."""
     if isinstance(value, pd.Period):
-        return value.to_timestamp().date()
+        return cast("date", value.to_timestamp().date())
     if isinstance(value, (pd.Timestamp, datetime)):
         return value.date()
     if isinstance(value, date):

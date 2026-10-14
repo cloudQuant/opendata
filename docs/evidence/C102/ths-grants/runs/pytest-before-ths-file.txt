@@ -1,0 +1,95 @@
+carrier: pytest-before-ths-file.txt
+copied_at_local=2026-10-15T01:59:21+08:00
+source_log=/tmp/ths_after1.txt
+derivation=pre-repair direct run of the whole file; the 37 failing node ids are in the body
+pytest-before-ths-file_exit=not_captured_at_run_time (verdict read from the body)
+----------------------------------------------------------------------
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 107 items
+
+tests/test_ths_provider.py .....................................F.....F. [ 42%]
+.FF..FF..FF.......FFF..FF..FFFFFFFFF..FFFFFFFFF.FFFFF.Fsssssss           [100%]
+
+=================================== FAILURES ===================================
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/request_budget.py:106: ValueError: task_attempts must be an integer from 0 through 10
+=========================== short test summary info ============================
+FAILED tests/test_ths_provider.py::TestCredentials::test_auto_requires_key_but_explicit_fetch_keeps_credential_error
+FAILED tests/test_ths_provider.py::TestFetchStages::test_daily_fetch_returns_contract_rows
+FAILED tests/test_ths_provider.py::TestFetchStages::test_action_fetch_returns_events_newest_first
+FAILED tests/test_ths_provider.py::TestFetchStages::test_index_fetch_returns_contract_rows
+FAILED tests/test_ths_provider.py::TestFetchStages::test_constituent_fetch_stores_plain_codes_for_both_sides
+FAILED tests/test_ths_provider.py::TestFetchStages::test_constituent_fetch_resolves_a_bare_index_code
+FAILED tests/test_ths_provider.py::TestFetchStages::test_derivative_fetch_reads_the_timestamp_field[futures_daily-fetcher0-/api/futures/prices/daily]
+FAILED tests/test_ths_provider.py::TestFetchStages::test_derivative_fetch_reads_the_timestamp_field[option_daily-fetcher1-/api/options/prices/daily]
+FAILED tests/test_ths_provider.py::TestFinancialStatementAdapter::test_fetch_melts_the_wide_response_and_orders_it_ascending
+FAILED tests/test_ths_provider.py::TestFinancialStatementAdapter::test_fetch_resolves_a_bare_code_before_asking_for_a_statement
+FAILED tests/test_ths_provider.py::TestFinancialStatementAdapter::test_fetch_passes_the_report_period_window
+FAILED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_adjacent_trade_dates_come_from_the_neighbouring_rows
+FAILED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_no_window_parameter_is_sent
+FAILED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_requested_window_slices_the_published_coverage
+FAILED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_a_window_outside_coverage_fails_closed
+FAILED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_empty_calendar_fails_closed
+FAILED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_a_window_ending_before_coverage_fails_closed
+FAILED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_a_half_open_window_slices_from_either_edge
+FAILED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_pages_are_read_until_one_comes_back_short
+FAILED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_the_asset_type_filter_is_sent_as_asked
+FAILED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_pagination_that_never_ends_fails_closed
+FAILED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_a_repeated_code_across_pages_fails_closed
+FAILED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_empty_catalog_fails_closed
+FAILED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_a_catalog_without_a_snapshot_date_fails_closed
+FAILED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_an_in_market_contract_is_not_labelled_delisted
+FAILED tests/test_ths_provider.py::TestFundActionAdapter::test_events_land_per_unit_newest_first
+FAILED tests/test_ths_provider.py::TestFundActionAdapter::test_a_bare_code_is_resolved_before_the_history_call
+FAILED tests/test_ths_provider.py::TestFundActionAdapter::test_a_fund_that_never_distributed_comes_back_empty
+FAILED tests/test_ths_provider.py::TestFundActionAdapter::test_a_window_slices_the_history_without_a_second_call
+FAILED tests/test_ths_provider.py::TestFundActionAdapter::test_a_window_with_no_distribution_is_a_fact_not_a_failure
+FAILED tests/test_ths_provider.py::TestFundActionAdapter::test_rows_the_upstream_cannot_reconcile_fail_closed
+FAILED tests/test_ths_provider.py::TestFundEtfDailyAdapter::test_bars_land_unadjusted_and_ascending
+FAILED tests/test_ths_provider.py::TestFundEtfDailyAdapter::test_the_price_request_carries_no_adjust
+FAILED tests/test_ths_provider.py::TestFundEtfDailyAdapter::test_a_bare_code_is_resolved_before_the_dividend_call
+FAILED tests/test_ths_provider.py::TestFundEtfDailyAdapter::test_the_default_window_is_the_rolling_depth
+FAILED tests/test_ths_provider.py::TestFundEtfDailyAdapter::test_a_start_before_the_floor_is_refused_without_a_call
+FAILED tests/test_ths_provider.py::TestFundEtfDailyAdapter::test_empty_response_fails_closed
+=================== 37 failed, 63 passed, 7 skipped in 0.58s ===================

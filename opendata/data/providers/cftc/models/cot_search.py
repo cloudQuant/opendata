@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from pydantic import ValidationInfo, field_validator, model_validator
 
@@ -11,6 +11,10 @@ from opendata.data.capability import Capability
 from opendata.data.models.cftc import COTSearch
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.cftc.models import _client
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
+
 from opendata.data.providers.cftc.models.cot import (
     MAX_ROWS,
     PAGE_SIZE,
@@ -75,6 +79,8 @@ class COTSearchFetcher(Fetcher[COTSearchQuery, list[dict[str, Any]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "COTSearch"
+    row_model: ClassVar[type[COTSearch]] = COTSearch
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="derivatives",
         domain="cftc_market_directory",
@@ -101,7 +107,14 @@ class COTSearchFetcher(Fetcher[COTSearchQuery, list[dict[str, Any]]]):
         }
         if clauses:
             initial_query["$where"] = " AND ".join(clauses)
-        first = _client.array_rows(_client.get_json(url, params=initial_query, context=ctx))
+        first = _client.array_rows(
+            _client.get_json(
+                url,
+                params=initial_query,
+                context=ctx,
+                transport=self.http_transport,
+            )
+        )
         if not first:
             return []
         latest_date = _parse_source_date(first[0].get("report_date_as_yyyy_mm_dd"))
@@ -121,6 +134,7 @@ class COTSearchFetcher(Fetcher[COTSearchQuery, list[dict[str, Any]]]):
                         "$offset": str(offset),
                     },
                     context=ctx,
+                    transport=self.http_transport,
                 )
             )
             if len(page) > page_length:

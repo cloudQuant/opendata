@@ -7,13 +7,48 @@ pending rows may name domains the registry does not know yet.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
+import yaml
 
 from opendata.data.openbb_map import (
     OpenBBMapError,
     covered_capabilities,
     load_openbb_map,
 )
+
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+_LEGACY_MAP_PATH = _REPO_ROOT / "opendata/data/openbb_map.yaml"
+_INVENTORY_PATH = _REPO_ROOT / "docs/proposals/openbb-migration/provider-inventory.yaml"
+
+
+def _confirmed_name_universe() -> set[str]:
+    """Names traceable to a real source carrier: legacy v1 map, inventory model lists,
+    and the registry projection for inventory `local_providers:` rows (ths/akshare)."""
+    universe: set[str] = set()
+
+    legacy = yaml.safe_load(_LEGACY_MAP_PATH.read_text(encoding="utf-8"))
+    universe.update(row["openbb"]["model"] for row in legacy["entries"])
+
+    inventory = yaml.safe_load(_INVENTORY_PATH.read_text(encoding="utf-8"))
+    for row in inventory["providers"]:
+        universe.update(row.get("models") or [])
+
+    local_sources = {row["provider"] for row in inventory["local_providers"]}
+
+    from opendata.data.providers.catalog import list_providers
+
+    for provider in list_providers():
+        if provider.source in local_sources:
+            for binding in provider.fetcher_bindings:
+                universe.update(binding.canonical_model_ids or (binding.model_key,))
+    universe.discard("TBD")
+    return universe
+
+
+def _untraceable(confirmed: set[str], universe: set[str]) -> list[str]:
+    return sorted(confirmed - universe)
 
 
 def _write(tmp_path, body: str):
@@ -47,113 +82,12 @@ class TestShippedMap:
     def test_confirmed_models_are_never_guesses(self):
         confirmed = {entry.model for entry in _load_shipped_map() if entry.model != "TBD"}
 
-        # 除新接入的 ECB 本地 binding 外，这些名字来自上游 fetcher_dict 的机械解析
-        # （provider-inventory.yaml）：
-        # EquityHistorical/ConsumerPriceIndex/FuturesHistorical/EtfHistorical
-        # （后者由 alpha_vantage、tiingo、cboe 三个 provider 声明）
-        # 三个 ECB 名称则由本地受控 binding 明确注册。
-        # AvailableIndices/IndexConstituents 同样出自该清单的 cboe 行
-        # （`models: [AvailableIndices, …, IndexConstituents, …]`），本轮把这两条做成了
-        # 声明式引擎声明；两条能力 verified=False，不进 auto 路由。
-        # IndexSearch 与两条 federal_reserve 名称没有上游 fetcher_dict 行可抄：它们由
-        # registry 投影（list_model_descriptors）带进 map，出处是本地 provider.py/specs.py
-        # 的 scenario 声明，同样 verified=False。
-        # EquitySearch 走的是 IndexSearch 同一条投影路：`provider-inventory.yaml` 的 cboe 行
-        # 确有 `EquitySearch` 这个模型名（`models: […, EquitySearch, …]`），但它进本表的
-        # 出处仍是本地 binding 的 scenario，不是抄来的上游行。
-        # CurrencyPairs 是本轮 intrinio 接入带进来的名字，inventory 的 intrinio 行确有该模型名
-        # （`models: […, CurrencyPairs, …]`，38 个 fetchers 之一）；intrinio 的 EquitySearch 与
-        # cboe 同名，同一个格子不重复计。两条能力同样 verified=False。
-        # SvenssonYieldCurve 出自 inventory 的 federal_reserve 行（`models: […, SvenssonYieldCurve,
-        # …]`，13 个 fetchers 之一），本轮由 ModelSpec.row_expansion 做成声明式宽表转置；其
-        # 上游列名 token 未经抓取核对，出处缺口记在 specs.SVENSSON_YIELD_CURVE.notes 里。
-        # HistoricalDividends 出自 inventory 的 intrinio 行（`models: […, HistoricalDividends, …]`，
-        # 38 个 fetchers 之一）：上游把查询参数 symbol 逐行盖进输出
-        # （historical_dividends.py:102-104），
-        # 本轮由 ModelSpec.column_derives 提供该载体，
-        # specs.py 的 NOT_DECLARABLE 已清空、声明不再扣留。
-        # 该 binding 同样经 registry 投影进本表，能力 verified=False。
-        # CalendarIpo 出自 inventory 的 intrinio 行（`models: [BalanceSheet, CalendarIpo, …]`），
-        # 本轮由 ModelSpec.row_expansion 声明，并把 intrinio_calendar_ipo 写进 domains.yaml：
-        # 上游 CalendarIpoData 的每一列都是 Optional（standard_models/calendar_ipo.py:34-39），
-        # 所以 symbol/ipo_date 这两个 natural_key 列在契约里仍可空。
-        # 该 binding 也只经 registry 投影进本表，能力 verified=False。
-        # FederalFundsRate 与 SOFR 出自 inventory 的 federal_reserve 行（该行的 `models:` 里
-        # 既有 `FederalFundsRate` 也有 `SOFR`，13 个 fetchers 之一），InsiderTrading 出自同一
-        # 清单的 intrinio 行。三个名字与上面的 CalendarIpo 走的是同一条路：domains.yaml 里
-        # 先登记域与受控契约，binding 再由 registry 投影进本表，能力 verified=False。
-        # SOFR 这个名字在本格里不重复计——fred 的 sofr 行早已占位，两条是不同的 domain。
-        # C99 一次接入四个名字，出处都是 provider-inventory.yaml 的机械解析行，且都只经
-        # registry 投影进本表、能力 verified=False：PriceTarget 在 benzinga 行
-        # （`models: [AnalystSearch, CompanyNews, WorldNews, PriceTarget]`）、
-        # AvailableIndicators 在 econdb 行（该行首个模型）、CryptoHistorical 在 tiingo 行、
-        # OvernightBankFundingRate 在 federal_reserve 行（与 SOFR/FederalFundsRate 同一行）。
-        # AvailableIndicators 与 cboe 的 AvailableIndices 是两个不同的名字，不构成同格重复。
-        # 这四条里只有 econdb 一开始没进本表：binding 把类名写成了品牌拼写
-        # ``EconDBAvailableIndicatorsFetcher``，而 make_http_json_fetcher 的类名是从
-        # **source 路由标签**生成的（"econdb" -> ``Econdb``），:180 的精确 fetcher 比对因此
-        # fail-closed。改名的是 binding 与模块符号，不是引擎的命名规则——cboe 的
-        # ``Cboe…Fetcher`` 早就跟着同一条规则。
-        assert confirmed == {
-            "EquityHistorical",
-            "ConsumerPriceIndex",
-            "FuturesHistorical",
-            "EtfHistorical",
-            "FredSearch",
-            "FredSeries",
-            "SOFR",
-            "BlsSearch",
-            "BlsSeries",
-            "EquityQuote",
-            "CurrencyReferenceRates",
-            "YieldCurve",
-            "BalanceOfPayments",
-            "SONIA",
-            "AvailableIndices",
-            "IndexConstituents",
-            "IndexSearch",
-            "EquitySearch",
-            "MoneyMeasures",
-            "TreasuryRates",
-            "CurrencyPairs",
-            "SvenssonYieldCurve",
-            "HistoricalDividends",
-            "CalendarIpo",
-            "FederalFundsRate",
-            "InsiderTrading",
-            "PriceTarget",
-            "AvailableIndicators",
-            "CryptoHistorical",
-            "OvernightBankFundingRate",
-            "CalendarDividend",
-            "CalendarEarnings",
-            "EtfCountries",
-            "EtfEquityExposure",
-            "EtfHoldings",
-            "EtfInfo",
-            "EtfPricePerformance",
-            "EtfSearch",
-            "EtfSectors",
-            "HistoricalEps",
-            "TreasuryConstantMaturity",
-            "SelectedTreasuryBill",
-            "SelectedTreasuryConstantMaturity",
-            "Ameribor",
-            "DiscountWindowPrimaryCreditRate",
-            "EuropeanCentralBankInterestRates",
-            "TipsYields",
-            "CongressBills",
-            "CongressBillInfo",
-            "CongressBillText",
-            "CongressAmendments",
-            "CongressAmendmentInfo",
-            "CongressAmendmentText",
-            "CongressCommitteeInfo",
-            "CongressCommitteeDocuments",
-            "OptionsChains",
-            "EconomicCalendar",
-            "SP500Multiples",
-        }
+        universe = _confirmed_name_universe()
+        print(f"\nconfirmed={len(confirmed)} derived-universe={len(universe)}")
+        assert _untraceable(confirmed, universe) == []
+
+        coined = confirmed | {"ZzConfirmedModelThatDoesNotExist"}
+        assert _untraceable(coined, universe) == ["ZzConfirmedModelThatDoesNotExist"]
 
     def test_enabled_capabilities_are_covered(self):
         """AC-10 准入：每个已启用 provider×domain 必须在对照表中。"""
@@ -175,7 +109,9 @@ class TestShippedMap:
             if ours.provider == "fred"
         }
 
-        assert fred_rows == {
+        # The seven reviewed rows keep their exact statuses; the iter2 projection wave (360c61d)
+        # only added registered fred rows on top of them.
+        assert fred_rows >= {
             ("economy_cpi", "verified"),
             ("economy_gdp", "verified"),
             ("economy_unemployment", "verified"),
@@ -183,6 +119,13 @@ class TestShippedMap:
             ("fred_series", "registered"),
             ("sofr", "registered"),
             ("sonia", "registered"),
+        }
+        # Nothing added by the wave may self-certify: only the three officially checked
+        # domains stay verified, every other fred row must be registered.
+        assert {domain for domain, status in fred_rows if status == "verified"} == {
+            "economy_cpi",
+            "economy_gdp",
+            "economy_unemployment",
         }
 
     def test_tbd_entries_are_explicit(self):

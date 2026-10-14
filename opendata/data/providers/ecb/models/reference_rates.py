@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime
-from typing import ClassVar, Literal, cast
+from typing import TYPE_CHECKING, ClassVar, Literal, cast
 
 from pydantic import Field, StrictStr, field_validator, model_validator
 
@@ -18,6 +18,9 @@ from opendata.data.providers.ecb.models._reference_rates import (
     ReferenceRatesParseError,
     normalize_reference_rates,
 )
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 _CURRENCY_CODE = re.compile(r"[A-Z][A-Z0-9_-]{0,31}\Z")
 _MAX_QUOTE_CURRENCIES = 32
@@ -91,6 +94,8 @@ class EcbCurrencyReferenceRatesFetcher(
 
     async_mode: ClassVar[str] = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CurrencyReferenceRates"
+    row_model: ClassVar[type[CurrencyReferenceRate]] = CurrencyReferenceRate
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="currency",
         domain="currency_reference_rates",
@@ -110,7 +115,11 @@ class EcbCurrencyReferenceRatesFetcher(
         ctx: FetchContext,
     ) -> tuple[RawReferenceRateRecord, ...]:
         """Fetch source-native rows once through the governed ECB transport."""
-        return fetch_reference_rates(params, timeout=ctx.timeout)
+        return fetch_reference_rates(
+            params,
+            timeout=ctx.timeout,
+            transport=self.http_transport,
+        )
 
     def transform_data(
         self,

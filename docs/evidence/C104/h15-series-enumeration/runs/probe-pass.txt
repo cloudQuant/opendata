@@ -1,0 +1,26 @@
+carrier: probe-pass.txt
+round: C104 h15-series-enumeration
+captured_at_local=2026-10-15 03:15:32
+commit=270e373411951be1752d71206379da98762d5081 branch=dev
+worktree_dirty_files_at_capture=1528
+source_log=/tmp/c104_probe_pass.txt
+source_bytes=759
+source_sha256_16=8664a5ba6513fc91
+argv=python docs/evidence/C104/h15-series-enumeration/probes/h15_allowlist.py
+interpreter=gitleaks 8.30.1 / python 3.13.5 (envs/py313)
+probe_exit=0
+----------------------------------------------------------------------
+face: probe_const_allowed_regexes=6 config_regexes=6
+face: probe_const_equals_config_regexes=True
+face: twelfth_id_enumerated=True
+face: spec_distinct_source_key=37 series_id_shaped=19
+face: series_ids_enumerated_in_config=12 of 19
+face: staged_payload_files=1515
+arm current: exit=0 findings=0 identities=[]
+face: dropped_cfg_is_config_minus_one_line=True
+arm dropped: exit=1 findings=1 identities=['opendata/data/providers/federal_reserve/specs.py:342#generic-api-key']
+arm sibling: exit=1 findings=1 identities=['opendata/data/providers/federal_reserve/specs.py:342#generic-api-key']
+arm credential: exit=1 findings=1 identities=['opendata/data/providers/federal_reserve/specs.py:342#generic-api-key']
+face: workdir_removed=True
+verdict: PASS
+PROBE_EXIT=0

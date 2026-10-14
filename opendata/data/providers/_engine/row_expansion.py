@@ -22,7 +22,11 @@ failure, and a row set that came out empty after non-empty input refuses rather 
 the silent zero :func:`~opendata.data.providers._engine.decoders` was written to refuse. An empty
 source record list is a published empty answer. Within a non-empty parent list, an empty nested
 array contributes no rows and a missing array key is refused; if all non-empty parents yield no
-rows, the expansion still refuses.
+rows, the expansion still refuses. Pinned rule (measured, not assumed; held by
+``tests/test_engine_row_expansion.py::test_an_empty_exploded_dimension_drops_its_row_and_nothing_else``):
+a record whose exploded dimension is empty is DROPPED -- never emitted as a null-filled row,
+never refused per record -- and only the whole-answer zero of a non-empty source draws
+``EMPTY_RESULT``.
 
 Nothing here performs I/O.
 """

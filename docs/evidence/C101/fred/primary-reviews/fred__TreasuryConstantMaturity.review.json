@@ -1,0 +1,396 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/fred/claims.json",
+    "sha256": "bba37f4b7f6755bff3fa095420c5f021fe8d97cbeeb21980e8412f2423978129"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/TreasuryConstantMaturity/contract.json",
+          "sha256": "11845e8342c59362c4310175f385eec6d3315a71ad9106a2185b78619517bb76"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "56663db910eb1ac75c0c57bf85d29176b4e7c62983455531dbbff01b6c267e24",
+            "before_sha256": "56663db910eb1ac75c0c57bf85d29176b4e7c62983455531dbbff01b6c267e24",
+            "path": "opendata/data/providers/fred/models/treasury_rates.py"
+          },
+          {
+            "after_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "before_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/TreasuryConstantMaturity/counterfact.json",
+          "sha256": "53067c83b2c370a37a42fd92b2791bd375d8e2a3500213d40ec21d01a57cab8e"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "56663db910eb1ac75c0c57bf85d29176b4e7c62983455531dbbff01b6c267e24",
+            "before_sha256": "56663db910eb1ac75c0c57bf85d29176b4e7c62983455531dbbff01b6c267e24",
+            "path": "opendata/data/providers/fred/models/treasury_rates.py"
+          },
+          {
+            "after_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "before_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/TreasuryConstantMaturity/direct.json",
+          "sha256": "3134de99c8bcf3807b47295f1e59409f83217e9670ffbc0fd428ac16c15ef243"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "56663db910eb1ac75c0c57bf85d29176b4e7c62983455531dbbff01b6c267e24",
+            "before_sha256": "56663db910eb1ac75c0c57bf85d29176b4e7c62983455531dbbff01b6c267e24",
+            "path": "opendata/data/providers/fred/models/treasury_rates.py"
+          },
+          {
+            "after_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "before_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/TreasuryConstantMaturity/implementation.json",
+          "sha256": "9f42061d34466ccc8b6c1038714b2f7eb44b7b1002e5a880c44a71bd1e425dad"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "56663db910eb1ac75c0c57bf85d29176b4e7c62983455531dbbff01b6c267e24",
+            "before_sha256": "56663db910eb1ac75c0c57bf85d29176b4e7c62983455531dbbff01b6c267e24",
+            "path": "opendata/data/providers/fred/models/treasury_rates.py"
+          },
+          {
+            "after_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "before_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/TreasuryConstantMaturity/service.json",
+          "sha256": "eaa77557518c7042d8971ced7a9bcdbdf8f108b06d5d59c993471bf660b722eb"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "56663db910eb1ac75c0c57bf85d29176b4e7c62983455531dbbff01b6c267e24",
+            "before_sha256": "56663db910eb1ac75c0c57bf85d29176b4e7c62983455531dbbff01b6c267e24",
+            "path": "opendata/data/providers/fred/models/treasury_rates.py"
+          },
+          {
+            "after_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "before_sha256": "d105f6a0b77604eadf247d9ac349f7554836889eec347b7af4f9d50c2cf6a09c",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "TreasuryConstantMaturity",
+  "model_identity": "fred::TreasuryConstantMaturity",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "fred",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "TreasuryConstantMaturity",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "TreasuryConstantMaturity",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "TreasuryConstantMaturity",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "TreasuryConstantMaturity",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "TreasuryConstantMaturity",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-14T14:07:09Z",
+  "reviewer_id": "iter2-acceptance-reviewer-fred",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "TreasuryConstantMaturity"
+}

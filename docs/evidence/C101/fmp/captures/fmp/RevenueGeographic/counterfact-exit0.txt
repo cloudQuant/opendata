@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model RevenueGeographic --phase counterfact --evidence-root docs/evidence/C101/fmp
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": ["revenue"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": ["revenue"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "each named region in a flat segmentation map carries that region's revenue in reported-currency units as a JSON number; a magnitude-suffixed string under a region name is not a segment amount, so the adapter must refuse with FMP_BAD_SHAPE attributing invalid=('revenue',); untampered control produced 12 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

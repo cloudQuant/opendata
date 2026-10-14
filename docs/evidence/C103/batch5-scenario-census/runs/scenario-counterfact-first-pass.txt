@@ -1,0 +1,23 @@
+carrier: scenario-counterfact-first-pass.txt
+round: C103
+captured_at_local=2026-10-15T02:49:25+0800
+source_log=/tmp/c103_scenario_counterfact.txt
+source_bytes=1271
+source_sha256_16=37a3e4fd8c1587f7
+argv=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C103/batch5-scenario-census/probes/scenario_counterfact.py
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+scenario_counterfact_first_exit=not_captured_at_run_time (verdict read from the body)
+----------------------------------------------------------------------
+face: live_fixture_digest=786fb181884ea564c80c1883601d6aaaa3f1d56ba6758ce45727a68efbaa8d88
+face: test_literal_matches_live=True
+face: tamper_target=('oecd', 'GdpReal') rows_matched=1
+face: tampered_digest=f9bb80c252d57bc2b0e2211ca7f5f798fab5cbed23d72de397b050ce181c90a8
+face: tamper_scope=row_dicts_differing=1 fields_changed=['scenario_present']
+arm A: one re-based OECD row re-set to false, payload digest re-pinned
+face: armA_exit=1 counts={'summary_line': '1 failed in 1.55s', 'failed': 1, 'passed': 0, 'error': 0, 'collected_header': None, 'accounted': 1, 'scenarios_assert_line_in_report': True, 'oecd_gdp_real_named_in_report': True}
+arm B: untampered fixture, same shadow harness
+face: armB_exit=0 counts={'summary_line': '1 passed in 1.49s', 'failed': 0, 'passed': 1, 'error': 0, 'collected_header': None, 'accounted': 1, 'scenarios_assert_line_in_report': False, 'oecd_gdp_real_named_in_report': False}
+face: armA_failing_line='>           assert (binding.scenario is not None) is row["scenario_present"]'
+face: armA_names_the_gdp_real_row=True
+verdict: PASS - arm A fails the guard at (binding.scenario is not None) is row['scenario_present'] with exit 1; arm B passes the same shadow harness with exit 0
+face: shadow_removed=True tracked_files_unchanged=True

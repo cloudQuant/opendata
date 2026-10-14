@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import ac21_sandbox_policy_probe as probe
+from tests import ac21_sandbox_policy_probe as probe
 
 
 class FakeSocket:

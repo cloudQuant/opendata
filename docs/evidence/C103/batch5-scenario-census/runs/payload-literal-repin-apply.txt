@@ -1,0 +1,24 @@
+carrier: payload-literal-repin-apply.txt
+round: C103
+captured_at_local=2026-10-15T02:49:25+0800
+source_log=/tmp/c103_repin_apply.txt
+source_bytes=1556
+source_sha256_16=aa09916450886c28
+argv=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py --apply
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+payload_literal_repin_apply_exit=not_captured_at_run_time (verdict read from the body)
+----------------------------------------------------------------------
+face: snapshot_bytes=238509
+face: digest_recomputed_from_disk=786fb181884ea564c80c1883601d6aaaa3f1d56ba6758ce45727a68efbaa8d88
+face: digest_at_git_head=7ce0ca613405e10dc3616e2cd1e6964b957331eb068a20ce49d997927b49c9f8
+face: fixture_dirty_vs_head=True
+face: tests/test_provider_domains.py hex_literals_not_recorded_by_the_fixture=1 distinct=['a8715f16248ab2ce4d3e9e27200fc17b07fa2d888a2f45fc56d2e6f8e8e041a6']
+face: tests/test_provider_domains.py bytes_delta=0 lines_before=1990 lines_after=1990 differing_chars=59 inside_hex_window=True non_ascii_chars_before_literal=0
+face: tests/test_provider_domains.py stale_literal=a8715f16248ab2ce4d3e9e27200fc17b07fa2d888a2f45fc56d2e6f8e8e041a6 head_matches_original=False
+face: tests/test_pipeline_jobs.py hex_literals_not_recorded_by_the_fixture=1 distinct=['a8715f16248ab2ce4d3e9e27200fc17b07fa2d888a2f45fc56d2e6f8e8e041a6']
+face: tests/test_pipeline_jobs.py bytes_delta=0 lines_before=1859 lines_after=1859 differing_chars=59 inside_hex_window=True non_ascii_chars_before_literal=71
+face: tests/test_pipeline_jobs.py stale_literal=a8715f16248ab2ce4d3e9e27200fc17b07fa2d888a2f45fc56d2e6f8e8e041a6 head_matches_original=False
+face: carriers=2 stale_literals_across_carriers=['a8715f16248ab2ce4d3e9e27200fc17b07fa2d888a2f45fc56d2e6f8e8e041a6']
+face: applied tests/test_provider_domains.py readback_matches=True bytes=63851
+face: applied tests/test_pipeline_jobs.py readback_matches=True bytes=74017
+verdict: APPLIED - 2 payload literals re-pinned to 786fb181884ea564c80c1883601d6aaaa3f1d56ba6758ce45727a68efbaa8d88

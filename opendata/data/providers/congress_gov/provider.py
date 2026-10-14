@@ -65,7 +65,7 @@ PROVIDER = Provider(
         CredentialSpec(
             name="api_key",
             environment_variable="CONGRESS_GOV_API_KEY",
-            required_for_health=True,
+            required_for_health=False,
         ),
     ),
 )

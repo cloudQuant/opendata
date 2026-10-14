@@ -1,0 +1,48 @@
+carrier: docs-reidentity.txt
+round: C105 a2-probe-repair
+captured_at_local=2026-10-15 05:18:52
+commit=270e373411951be1752d71206379da98762d5081 branch=dev
+worktree_dirty_files_at_capture=1529
+source_log=/tmp/c105_reidentity_run.txt
+source_bytes=2900
+source_sha256_16=f9e919e3cb6cc21a
+argv=python docs/evidence/C105/a2-probe-repair/probes/docs_reidentity.py
+interpreter=gitleaks 8.30.1 / python 3.13.5 (envs/py313)
+reidentity_exit=0
+----------------------------------------------------------------------
+face: documents_in_scope=6 builder_lines=394 evidence_dirs_in_snapshot=4
+face: arm_head_exit=0 arm_live_exit=0 arm_prose_armed=True arm_claim_armed=True
+face: head_written=documents_written=6 live_written=documents_written=6
+identity: docs/evidence/C103/batch5-scenario-census/README.md bytes_same=False blocks_same=True tokens_same=True byte_delta=0 head_sha=650e7f30d76adcce live_sha=4dc495452d01962a
+identity: docs/evidence/C103/batch5-scenario-census/face.md bytes_same=True blocks_same=True tokens_same=True byte_delta=0 head_sha=5c80ef5b60dca863 live_sha=5c80ef5b60dca863
+identity: docs/evidence/C103/batch5-source-pins/README.md bytes_same=False blocks_same=True tokens_same=True byte_delta=-6 head_sha=69a243b23378e62f live_sha=625d266edc9394a2
+identity: docs/evidence/C103/batch5-source-pins/face.md bytes_same=True blocks_same=True tokens_same=True byte_delta=0 head_sha=360578c352d96080 live_sha=360578c352d96080
+identity: docs/evidence/C103/fmp-fetch-array-arity/README.md bytes_same=False blocks_same=True tokens_same=True byte_delta=2 head_sha=8d706636ccf7b421 live_sha=23f58de98359e4a1
+identity: docs/evidence/C103/fmp-fetch-array-arity/face.md bytes_same=True blocks_same=True tokens_same=True byte_delta=0 head_sha=30812b3d1416aa8e live_sha=30812b3d1416aa8e
+face: candidate_pool_prose=49 candidate_pool_claim=43
+face: control_prose_index=36 literal='/Users/yunjinqi/opt/anaconda3/envs/py313' into=docs/evidence/C103/fmp-fetch-array-arity/README.md blocks_moved=3 candidates_skipped=0
+face: control_claim_index=573 literal=' docs/evidence/C103/' into=docs/evidence/C103/fmp-fetch-array-arity/README.md tokens_moved=1 candidates_skipped=19
+    claim_skip #40 'fmp-fetch-array-arity' exit=1
+    claim_skip #42 'batch5-source-pins' exit=1
+    claim_skip #44 'batch5-scenario-census' exit=1
+    claim_skip #173 '/Users/yunjinqi/Docume' exit=1
+    claim_skip #177 'docs/evidence/C103' exit=1
+    claim_skip #260 'arity-ab-abc.txt' exit=1
+    claim_skip #281 'pin-rebase-dry.txt' exit=1
+    claim_skip #283 'pin-rebase-idempotence' exit=1
+    claim_skip #312 'scenario-census.txt' exit=1
+    claim_skip #314 'scenario-rebase-apply.' exit=1
+    claim_skip #316 'scenario-rebase-idempo' exit=1
+    claim_skip #318 'payload-literal-repin-' exit=1
+    claim_skip #320 'payload-literal-idempo' exit=1
+    claim_skip #322 'scenario-counterfact-r' exit=1
+    claim_skip #324 'pytest-selection-117-r' exit=1
+    claim_skip #326 'whole-suite-before-56-' exit=1
+    claim_skip #328 'whole-suite-after-39-f' exit=1
+    claim_skip #559 ' collected, ' level unchanged
+    claim_skip #563 ' collected, ' level unchanged
+face: control_arms_distinct=True levels_armed=2
+face: repo_restored=True stray_dirs_left=0
+verdict: PASS - bytes moved in 3 document(s) by re-wrapping only; every paragraph block and every claim token is intact, and each level is armed by its own clean builder run
+
+REIDENTITY_EXIT=0

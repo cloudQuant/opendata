@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase counterfact --evidence-root docs/evidence/C101/econdb
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "removing the required 'geography' metadata makes the reporting economy the 'country' column carries unresolvable, so the adapter must surface ECONDB_SHAPE_INVALID as a ProviderEngineError rather than publish a GDP row without the economy it belongs to; untampered control produced 4 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

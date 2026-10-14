@@ -13,7 +13,7 @@ import json
 import math
 from collections.abc import Mapping, Sequence
 from datetime import date
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator, model_validator
 
@@ -100,9 +100,20 @@ class FederalReserveSourceError(ValueError):
 class FederalReserveQueryError(ProviderEngineQueryError):
     """Invalid Federal Reserve query; details are intentionally not echoed."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        missing: Sequence[str] = (),
+        rejected: Sequence[str] = (),
+        invalid: Sequence[str] = (),
+    ) -> None:
         """Use a stable safe code recognized by the governed query service."""
-        super().__init__("FEDERAL_RESERVE_QUERY_INVALID")
+        super().__init__(
+            "FEDERAL_RESERVE_QUERY_INVALID",
+            missing=missing,
+            rejected=rejected,
+            invalid=invalid,
+        )
 
 
 class _DateQuery(BaseModel):
@@ -185,8 +196,21 @@ class _FederalReserveFetcher(Fetcher[Any, object]):
         """Validate query fields, including provider service identity injection."""
         try:
             return self.query_type.model_validate(kwargs)
-        except ValidationError:
-            raise FederalReserveQueryError() from None
+        except ValidationError as exc:
+            missing = sorted({str(e["loc"][0]) for e in exc.errors() if e["type"] == "missing"})
+            rejected = sorted(
+                {str(e["loc"][0]) for e in exc.errors() if e["type"] == "extra_forbidden"}
+            )
+            invalid = sorted(
+                {
+                    str(e["loc"][0])
+                    for e in exc.errors()
+                    if e["type"] not in {"missing", "extra_forbidden"} and e["loc"]
+                }
+            )
+            raise FederalReserveQueryError(
+                missing=missing, rejected=rejected, invalid=invalid
+            ) from None
         except (TypeError, ValueError) as exc:
             raise FederalReserveSourceError("invalid Federal Reserve query") from exc
 
@@ -202,7 +226,7 @@ class _FederalReserveFetcher(Fetcher[Any, object]):
             source=SOURCE,
             cache_context={"model": self.canonical_model},
         )
-        return response.content
+        return cast("bytes", response.content)
 
     @staticmethod
     def _text(payload: object, *, model: str) -> str:

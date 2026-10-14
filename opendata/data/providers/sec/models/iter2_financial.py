@@ -42,7 +42,10 @@ from opendata.data.providers.sec.models._common import (
 )
 
 if TYPE_CHECKING:
+    from pydantic_core import InitErrorDetails
+
     from opendata.data.models.base import ContractModel
+    from opendata.data.providers._engine.http_json import HttpGet
 
 MAX_FACT_ROWS = 100_000
 MAX_RESULT_ROWS = 5_000
@@ -418,7 +421,10 @@ def _add_growth_aliases(row: dict[str, object], kind: str) -> None:
 def _reject_unexpected(kwargs: dict[str, object], allowed: set[str]) -> None:
     unexpected = set(kwargs) - allowed - {"source", "market"}
     if unexpected:
-        raise ValueError(f"unsupported query parameters: {sorted(unexpected)}")
+        errors: list[InitErrorDetails] = [
+            {"type": "extra_forbidden", "loc": (key,), "input": None} for key in sorted(unexpected)
+        ]
+        raise ValidationError.from_exception_data("QueryParams", errors)
 
 
 def _date_value(value: object) -> date:
@@ -657,6 +663,7 @@ def _fetch_companyfacts(
     *,
     tags: frozenset[str],
     instant: bool,
+    transport: HttpGet | None = None,
 ) -> SecFactsRaw:
     company_name: str | None
     if params.cik is not None:
@@ -666,13 +673,13 @@ def _fetch_companyfacts(
         # The SEC ticker directory is one stage; the per-company XBRL response is the second.
         request_count = 2
         ensure_request_capacity(ctx, request_count)
-        rows = company_ticker_rows(ctx)
+        rows = company_ticker_rows(ctx, transport=transport)
         identity = resolve_ticker(rows, params.symbol or "")
         cik, symbol = identity["cik"], identity["ticker"]
         company_name = identity["name"]
     if params.cik is not None:
         company_name = None
-    document = fetch_json(ctx, f"{SEC_COMPANYFACTS_URL}/CIK{cik}.json")
+    document = fetch_json(ctx, f"{SEC_COMPANYFACTS_URL}/CIK{cik}.json", transport=transport)
     return _parse_companyfacts(
         document,
         cik=cik,
@@ -1326,6 +1333,8 @@ class _SecStatementFetcher(Fetcher[SecFinancialQuery, SecFactsRaw]):
     columns: ClassVar[dict[str, tuple[str, str]]]
     statement_kind: ClassVar[str]
     output_model: ClassVar[type[ContractModel]]
+    row_model: ClassVar[type[ContractModel]]
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability]
     canonical_model: ClassVar[str]
 
@@ -1354,7 +1363,13 @@ class _SecStatementFetcher(Fetcher[SecFinancialQuery, SecFactsRaw]):
         return params
 
     def extract_data(self, params: SecFinancialQuery, ctx: FetchContext) -> SecFactsRaw:
-        return _fetch_companyfacts(params, ctx, tags=self.tags, instant=self.instant)
+        return _fetch_companyfacts(
+            params,
+            ctx,
+            tags=self.tags,
+            instant=self.instant,
+            transport=self.http_transport,
+        )
 
     def transform_data(self, raw: SecFactsRaw, params: SecFinancialQuery) -> FetchResult:
         facts = _select_vintages(
@@ -1443,6 +1458,7 @@ class BalanceSheetFetcher(_SecStatementFetcher):
     columns = BALANCE_SHEET_COLUMNS
     statement_kind = "balance"
     output_model = SecBalanceSheetStatement
+    row_model: ClassVar[type[ContractModel]] = output_model
     capability = Capability(
         asset_class="stock",
         domain="sec_balance_sheet",
@@ -1463,6 +1479,7 @@ class BalanceSheetGrowthFetcher(_SecStatementFetcher):
     columns = BALANCE_SHEET_COLUMNS
     statement_kind = "balance"
     output_model = SecBalanceSheetGrowthRow
+    row_model: ClassVar[type[ContractModel]] = output_model
     capability = Capability(
         asset_class="stock",
         domain="sec_balance_sheet_growth",
@@ -1482,6 +1499,7 @@ class CashFlowStatementFetcher(_SecStatementFetcher):
     columns = CASH_FLOW_COLUMNS
     statement_kind = "cash_flow"
     output_model = SecCashFlowStatementRow
+    row_model: ClassVar[type[ContractModel]] = output_model
     capability = Capability(
         asset_class="stock",
         domain="sec_cash_flow_statement",
@@ -1502,6 +1520,7 @@ class CashFlowStatementGrowthFetcher(_SecStatementFetcher):
     columns = CASH_FLOW_COLUMNS
     statement_kind = "cash_flow"
     output_model = SecCashFlowStatementGrowthRow
+    row_model: ClassVar[type[ContractModel]] = output_model
     capability = Capability(
         asset_class="stock",
         domain="sec_cash_flow_statement_growth",
@@ -1521,6 +1540,7 @@ class IncomeStatementFetcher(_SecStatementFetcher):
     columns = INCOME_STATEMENT_COLUMNS
     statement_kind = "income"
     output_model = SecIncomeStatementRow
+    row_model: ClassVar[type[ContractModel]] = output_model
     capability = Capability(
         asset_class="stock",
         domain="sec_income_statement",
@@ -1541,6 +1561,7 @@ class IncomeStatementGrowthFetcher(_SecStatementFetcher):
     columns = INCOME_STATEMENT_COLUMNS
     statement_kind = "income"
     output_model = SecIncomeStatementGrowthRow
+    row_model: ClassVar[type[ContractModel]] = output_model
     capability = Capability(
         asset_class="stock",
         domain="sec_income_statement_growth",
@@ -1605,6 +1626,8 @@ class CompareCompanyFactsFetcher(Fetcher[CompareCompanyFactsQuery, tuple[SecRawF
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "CompareCompanyFacts"
+    row_model: ClassVar[type[ContractModel]] = SecCompanyFactComparison
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="sec_compare_company_facts",
@@ -1628,7 +1651,7 @@ class CompareCompanyFactsFetcher(Fetcher[CompareCompanyFactsQuery, tuple[SecRawF
         """Fetch each selected issuer's official CIK-prefixed companyfacts document."""
         symbols = params.symbol if isinstance(params.symbol, list) else [params.symbol]
         ensure_request_capacity(ctx, 1 + len(symbols))
-        identities = company_ticker_rows(ctx)
+        identities = company_ticker_rows(ctx, transport=self.http_transport)
         identities_by_symbol = {row["ticker"]: row for row in identities}
         selected: list[SecRawFact] = []
         for ticker in symbols:
@@ -1636,7 +1659,9 @@ class CompareCompanyFactsFetcher(Fetcher[CompareCompanyFactsQuery, tuple[SecRawF
             if identity is None:
                 raise SecProviderError("SEC_TICKER_NOT_FOUND")
             cik = identity["cik"]
-            document = fetch_json(ctx, f"{SEC_COMPANYFACTS_URL}/CIK{cik}.json")
+            document = fetch_json(
+                ctx, f"{SEC_COMPANYFACTS_URL}/CIK{cik}.json", transport=self.http_transport
+            )
             facts_root = document.get("facts")
             taxonomy = facts_root.get("us-gaap") if isinstance(facts_root, Mapping) else None
             if not isinstance(taxonomy, Mapping):

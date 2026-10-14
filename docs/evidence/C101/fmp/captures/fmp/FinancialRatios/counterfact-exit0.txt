@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model FinancialRatios --phase counterfact --evidence-root docs/evidence/C101/fmp
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["fiscal_period"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["fiscal_period"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the ratios route publishes 'period' to say whether a ratio set is annual or a quarter, and the requested frequency is checked against it; a row without it cannot be placed on the fiscal calendar, so the adapter must refuse with FMP_BAD_SHAPE attributing missing=('fiscal_period',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

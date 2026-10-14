@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model EuropeanCentralBankInterestRates --phase counterfact --evidence-root docs/evidence/C101/fred
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_PAGINATION_ERROR", "rejected": [], "status": 200}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_PAGINATION_ERROR", "rejected": [], "status": 200}, "reason": "dropping the page-header 'count' removes the documented result-size the shared FRED pager must know before it can bound records and pages, so the request must refuse with FRED_PAGINATION_ERROR surfaced as a ProviderEngineError-shaped FredProviderError instead of returning an unbounded ECB policy-rate page; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

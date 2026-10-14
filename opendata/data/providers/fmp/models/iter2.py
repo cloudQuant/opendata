@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date as date_type
 from datetime import datetime, timedelta, timezone
-from typing import Any, ClassVar, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
 from pydantic import Field, ValidationError, field_validator, model_validator
 
@@ -25,8 +25,12 @@ from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryPara
 from opendata.data.providers.fmp.models._client import (
     FMPProviderError,
     FMPQueryLimitError,
+    contract_shape_error,
     fetch_array,
 )
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 FMP_CALENDAR_PAGE_LIMIT = 4_000
 FMP_CALENDAR_MAX_DAYS = 90
@@ -204,6 +208,8 @@ class AvailableIndicesFetcher(Fetcher[AvailableIndicesQuery, list[dict[str, Any]
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "AvailableIndices"
+    row_model: ClassVar[type[AvailableIndex]] = AvailableIndex
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="index",
         domain="fmp_index_directory",
@@ -223,7 +229,7 @@ class AvailableIndicesFetcher(Fetcher[AvailableIndicesQuery, list[dict[str, Any]
         ctx: FetchContext,
     ) -> list[dict[str, Any]]:
         """Read the documented FMP stable index list route."""
-        return fetch_array("index-list", {}, ctx.timeout)
+        return fetch_array("index-list", {}, ctx.timeout, self.http_transport)
 
     def transform_data(
         self,
@@ -255,6 +261,8 @@ class CalendarDividendFetcher(Fetcher[CalendarDividendQuery, list[dict[str, Any]
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CalendarDividend"
+    row_model: ClassVar[type[DividendCalendarEvent]] = DividendCalendarEvent
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_dividend_calendar",
@@ -278,6 +286,7 @@ class CalendarDividendFetcher(Fetcher[CalendarDividendQuery, list[dict[str, Any]
             endpoint="dividends-calendar",
             params=params,
             timeout=ctx.timeout,
+            transport=self.http_transport,
         )
 
     def transform_data(
@@ -300,6 +309,8 @@ class CalendarEarningsFetcher(Fetcher[CalendarEarningsQuery, list[dict[str, Any]
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CalendarEarnings"
+    row_model: ClassVar[type[EarningsCalendarEvent]] = EarningsCalendarEvent
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_earnings_calendar",
@@ -324,6 +335,7 @@ class CalendarEarningsFetcher(Fetcher[CalendarEarningsQuery, list[dict[str, Any]
             params=params,
             timeout=ctx.timeout,
             extra_params={"includeReportTimes": "false"},
+            transport=self.http_transport,
         )
 
     def transform_data(
@@ -346,6 +358,8 @@ class CalendarEventsFetcher(Fetcher[CalendarEventsQuery, list[tuple[str, Contrac
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CalendarEvents"
+    row_model: ClassVar[type[FmpCalendarEvent]] = FmpCalendarEvent
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_calendar_events",
@@ -370,6 +384,7 @@ class CalendarEventsFetcher(Fetcher[CalendarEventsQuery, list[tuple[str, Contrac
         return _fetch_calendar_event_rows(
             params=params,
             timeout=ctx.timeout,
+            transport=self.http_transport,
         )
 
     def transform_data(
@@ -422,6 +437,8 @@ class CalendarIpoFetcher(Fetcher[CalendarQuery, list[dict[str, Any]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CalendarIpo"
+    row_model: ClassVar[type[IpoCalendarEvent]] = IpoCalendarEvent
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_ipo_calendar",
@@ -441,6 +458,7 @@ class CalendarIpoFetcher(Fetcher[CalendarQuery, list[dict[str, Any]]]):
             "ipos-calendar",
             {"from": params.start_date.isoformat(), "to": params.end_date.isoformat()},
             ctx.timeout,
+            self.http_transport,
         )
 
     def transform_data(self, raw: list[dict[str, Any]], params: CalendarQuery) -> FetchResult:
@@ -464,6 +482,8 @@ class CalendarSplitsFetcher(Fetcher[CalendarQuery, list[dict[str, Any]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CalendarSplits"
+    row_model: ClassVar[type[SplitsCalendarEvent]] = SplitsCalendarEvent
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_splits_calendar",
@@ -483,6 +503,7 @@ class CalendarSplitsFetcher(Fetcher[CalendarQuery, list[dict[str, Any]]]):
             endpoint="splits-calendar",
             params=params,
             timeout=ctx.timeout,
+            transport=self.http_transport,
         )
 
     def transform_data(self, raw: list[dict[str, Any]], params: CalendarQuery) -> FetchResult:
@@ -511,6 +532,8 @@ class EconomicCalendarFetcher(Fetcher[EconomicCalendarQuery, list[dict[str, Any]
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "EconomicCalendar"
+    row_model: ClassVar[type[EconomicCalendarEvent]] = EconomicCalendarEvent
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="fmp_economic_calendar",
@@ -533,7 +556,7 @@ class EconomicCalendarFetcher(Fetcher[EconomicCalendarQuery, list[dict[str, Any]
         query = {"from": params.start_date.isoformat(), "to": params.end_date.isoformat()}
         if params.country is not None:
             query["country"] = params.country
-        return fetch_array("economic-calendar", query, ctx.timeout)
+        return fetch_array("economic-calendar", query, ctx.timeout, self.http_transport)
 
     def transform_data(
         self,
@@ -563,6 +586,8 @@ class TreasuryRatesFetcher(Fetcher[TreasuryRatesQuery, list[dict[str, Any]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "TreasuryRates"
+    row_model: ClassVar[type[TreasuryRateObservation]] = TreasuryRateObservation
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="fmp_treasury_rates",
@@ -582,6 +607,7 @@ class TreasuryRatesFetcher(Fetcher[TreasuryRatesQuery, list[dict[str, Any]]]):
             "treasury-rates",
             {"from": params.start_date.isoformat(), "to": params.end_date.isoformat()},
             ctx.timeout,
+            self.http_transport,
         )
 
     def transform_data(
@@ -609,6 +635,8 @@ class MarketRiskPremiumFetcher(Fetcher[MarketRiskPremiumQuery, list[dict[str, An
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "RiskPremium"
+    row_model: ClassVar[type[MarketRiskPremium]] = MarketRiskPremium
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="fmp_market_risk_premium",
@@ -629,7 +657,7 @@ class MarketRiskPremiumFetcher(Fetcher[MarketRiskPremiumQuery, list[dict[str, An
     ) -> list[dict[str, Any]]:
         """Fetch the all-country snapshot without inventing provider filters."""
         del params
-        return fetch_array("market-risk-premium", {}, ctx.timeout)
+        return fetch_array("market-risk-premium", {}, ctx.timeout, self.http_transport)
 
     def transform_data(
         self,
@@ -656,6 +684,7 @@ def _fetch_calendar_pages(
     params: CalendarQuery,
     timeout: float | None,
     extra_params: dict[str, str] | None = None,
+    transport: HttpGet | None = None,
 ) -> list[dict[str, Any]]:
     """Read bounded zero-based pages and fail when the caller limit hides a tail."""
     rows: list[dict[str, Any]] = []
@@ -668,7 +697,7 @@ def _fetch_calendar_pages(
         }
         if extra_params is not None:
             request_params.update(extra_params)
-        page_rows = fetch_array(endpoint, request_params, timeout)
+        page_rows = fetch_array(endpoint, request_params, timeout, transport)
         requests_made += 1
         if len(page_rows) > FMP_CALENDAR_PAGE_LIMIT:
             raise FMPProviderError(
@@ -698,6 +727,7 @@ def _fetch_calendar_event_rows(
     *,
     params: CalendarEventsQuery,
     timeout: float | None,
+    transport: HttpGet | None = None,
 ) -> list[tuple[str, ContractModel]]:
     """Fetch all official company calendars under one combined request cap."""
     if params.start_date is None or params.end_date is None:
@@ -734,7 +764,7 @@ def _fetch_calendar_event_rows(
             if paginated:
                 request_params["page"] = str(page)
             request_params.update(extra_params)
-            page_rows = fetch_array(endpoint, request_params, timeout)
+            page_rows = fetch_array(endpoint, request_params, timeout, transport)
             requests_made += 1
 
             if paginated and len(page_rows) > FMP_CALENDAR_PAGE_LIMIT:
@@ -773,11 +803,11 @@ def _fetch_calendar_event_rows(
 
 
 def _validate_record(model: type[ModelT], item: dict[str, Any]) -> ModelT:
-    """Build one concrete contract or return a sanitized provider shape error."""
+    """Build one concrete contract row or attribute the columns that refused it."""
     try:
         return model.model_validate(item)
-    except (ValidationError, TypeError, ValueError):
-        raise FMPProviderError("FMP_BAD_SHAPE") from None
+    except (ValidationError, TypeError, ValueError) as exc:
+        raise contract_shape_error(model, exc) from None
 
 
 def _ensure_date_in_window(

@@ -1,0 +1,21 @@
+carrier: suite-whole-tree-before-after.txt
+derivation=face lines only; the raw logs stay in /tmp as the 90+ MB-scale full transcripts
+identity: failed_before - failed_after == 37 and passed_after - passed_before == 37, skipped and collected unchanged
+----------------------------------------------------------------------
+[before (C101 tree, ths still red)] source=/tmp/suite_rerun_3.log
+suite_rerun_3_exit=1 (derived: the body reports 93 failed; pytest exits 1 on any collected failure — the wrapper rc was not captured for this run)
+============================= test session starts ==============================
+collected 26551 items
+=================================== FAILURES ===================================
+=========================== short test summary info ============================
+========== 93 failed, 26184 passed, 274 skipped in 593.50s (0:09:53) ===========
+  ths_FAILED_lines_in_this_log=37
+
+[after (C102 repair applied)] source=/tmp/suite_rerun_4.log
+suite_rerun_4_exit=1 (captured verbatim from /tmp/suite_rerun_4.exit)
+============================= test session starts ==============================
+collected 26551 items
+=================================== FAILURES ===================================
+=========================== short test summary info ============================
+========== 56 failed, 26221 passed, 274 skipped in 607.51s (0:10:07) ===========
+  ths_FAILED_lines_in_this_log=0

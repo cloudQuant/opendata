@@ -6,10 +6,14 @@ import base64
 import re
 from collections.abc import Callable, Mapping
 from datetime import date, datetime, time, timezone
-from typing import Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 from urllib.parse import urlsplit
 
 from pydantic import Field, StrictInt, field_validator, model_validator
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
+    from opendata.data.providers._engine.http_json import HttpGet
 
 from opendata.data.capability import Capability
 from opendata.data.models.congress_cboe_iter2 import (
@@ -561,6 +565,8 @@ class CongressBillsFetcher(Fetcher[CongressBillsQuery, list[dict[str, Any]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CongressBills"
+    row_model: ClassVar[type[ContractModel]] = CongressBill
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="government",
         domain="congress_bills",
@@ -587,7 +593,9 @@ class CongressBillsFetcher(Fetcher[CongressBillsQuery, list[dict[str, Any]]]):
             "offset": str(params.offset),
             **_date_range_params(params),
         }
-        document = _required_document(_client.get_json(path, params=query, context=ctx))
+        document = _required_document(
+            _client.get_json(path, params=query, context=ctx, transport=self.http_transport)
+        )
         return _bounded_collection(document, "bills", "bill", params.limit)
 
     def transform_data(self, raw: list[dict[str, Any]], params: CongressBillsQuery) -> FetchResult:
@@ -601,6 +609,8 @@ class CongressBillInfoFetcher(Fetcher[CongressBillInfoQuery, dict[str, Any]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CongressBillInfo"
+    row_model: ClassVar[type[ContractModel]] = CongressBillInfo
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="government",
         domain="congress_bill_info",
@@ -621,7 +631,9 @@ class CongressBillInfoFetcher(Fetcher[CongressBillInfoQuery, dict[str, Any]]):
     def extract_data(self, params: CongressBillInfoQuery, ctx: FetchContext) -> dict[str, Any]:
         """Fetch and validate source data for the supplied query."""
         path = _bill_path(params.congress, params.bill_type, params.bill_number)
-        base_doc = _required_document(_client.get_json(path, params={}, context=ctx))
+        base_doc = _required_document(
+            _client.get_json(path, params={}, context=ctx, transport=self.http_transport)
+        )
         bill = _required_object(base_doc, "bill")
         result: dict[str, Any] = {"bill": bill, "components": {}}
         for component in params.include_components:
@@ -630,6 +642,7 @@ class CongressBillInfoFetcher(Fetcher[CongressBillInfoQuery, dict[str, Any]]):
                 f"{path}/{suffix}",
                 params={"limit": str(params.component_limit), "offset": "0"},
                 context=ctx,
+                transport=self.http_transport,
                 allow_not_found=True,
             )
             if component_doc is None:
@@ -688,6 +701,8 @@ class CongressBillTextFetcher(Fetcher[CongressBillTextQuery, list[dict[str, Any]
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CongressBillText"
+    row_model: ClassVar[type[ContractModel]] = CongressBillText
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="government",
         domain="congress_bill_text",
@@ -708,7 +723,12 @@ class CongressBillTextFetcher(Fetcher[CongressBillTextQuery, list[dict[str, Any]
         """Fetch and validate source data for the supplied query."""
         path = f"{_bill_path(params.congress, params.bill_type, params.bill_number)}/text"
         text_doc = _required_document(
-            _client.get_json(path, params={"limit": str(_PAGE_LIMIT), "offset": "0"}, context=ctx)
+            _client.get_json(
+                path,
+                params={"limit": str(_PAGE_LIMIT), "offset": "0"},
+                context=ctx,
+                transport=self.http_transport,
+            )
         )
         versions = _bounded_collection(text_doc, "textVersions", "item", _PAGE_LIMIT)
         _enforce_component_count(text_doc, len(versions), _PAGE_LIMIT)
@@ -721,7 +741,7 @@ class CongressBillTextFetcher(Fetcher[CongressBillTextQuery, list[dict[str, Any]
         result: list[dict[str, Any]] = []
         for version, format_item in documents:
             url = _format_url(format_item)
-            body, media_type = _client.get_document(url, context=ctx)
+            body, media_type = _client.get_document(url, context=ctx, transport=self.http_transport)
             result.append(
                 {
                     "congress": params.congress,
@@ -753,6 +773,8 @@ class CongressAmendmentsFetcher(Fetcher[CongressAmendmentsQuery, list[dict[str, 
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CongressAmendments"
+    row_model: ClassVar[type[ContractModel]] = CongressAmendment
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="government",
         domain="congress_amendments",
@@ -781,7 +803,9 @@ class CongressAmendmentsFetcher(Fetcher[CongressAmendmentsQuery, list[dict[str, 
             "offset": str(params.offset),
             **_date_range_params(params),
         }
-        document = _required_document(_client.get_json(path, params=query, context=ctx))
+        document = _required_document(
+            _client.get_json(path, params=query, context=ctx, transport=self.http_transport)
+        )
         return _bounded_collection(document, "amendments", "amendment", params.limit)
 
     def transform_data(
@@ -800,6 +824,8 @@ class CongressAmendmentInfoFetcher(Fetcher[CongressAmendmentInfoQuery, dict[str,
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CongressAmendmentInfo"
+    row_model: ClassVar[type[ContractModel]] = CongressAmendmentInfo
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="government",
         domain="congress_amendment_info",
@@ -817,7 +843,9 @@ class CongressAmendmentInfoFetcher(Fetcher[CongressAmendmentInfoQuery, dict[str,
     def extract_data(self, params: CongressAmendmentInfoQuery, ctx: FetchContext) -> dict[str, Any]:
         """Fetch and validate source data for the supplied query."""
         path = _amendment_path(params.congress, params.amendment_type, params.amendment_number)
-        document = _required_document(_client.get_json(path, params={}, context=ctx))
+        document = _required_document(
+            _client.get_json(path, params={}, context=ctx, transport=self.http_transport)
+        )
         amendment = _required_object(document, "amendment")
         components: dict[str, list[dict[str, Any]]] = {}
         for component in params.include_components:
@@ -826,6 +854,7 @@ class CongressAmendmentInfoFetcher(Fetcher[CongressAmendmentInfoQuery, dict[str,
                 f"{path}/{suffix}",
                 params={"limit": str(params.component_limit), "offset": "0"},
                 context=ctx,
+                transport=self.http_transport,
                 allow_not_found=True,
             )
             if child is None:
@@ -882,6 +911,8 @@ class CongressAmendmentTextFetcher(Fetcher[CongressAmendmentTextQuery, list[dict
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CongressAmendmentText"
+    row_model: ClassVar[type[ContractModel]] = CongressAmendmentText
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="government",
         domain="congress_amendment_text",
@@ -907,7 +938,12 @@ class CongressAmendmentTextFetcher(Fetcher[CongressAmendmentTextQuery, list[dict
             "/text"
         )
         document = _required_document(
-            _client.get_json(path, params={"limit": str(_PAGE_LIMIT), "offset": "0"}, context=ctx)
+            _client.get_json(
+                path,
+                params={"limit": str(_PAGE_LIMIT), "offset": "0"},
+                context=ctx,
+                transport=self.http_transport,
+            )
         )
         versions = _bounded_collection(document, "textVersions", "item", _PAGE_LIMIT)
         _enforce_component_count(document, len(versions), _PAGE_LIMIT)
@@ -920,7 +956,7 @@ class CongressAmendmentTextFetcher(Fetcher[CongressAmendmentTextQuery, list[dict
         rows: list[dict[str, Any]] = []
         for version, format_item in selections:
             url = _format_url(format_item)
-            body, media_type = _client.get_document(url, context=ctx)
+            body, media_type = _client.get_document(url, context=ctx, transport=self.http_transport)
             rows.append(
                 {
                     "congress": params.congress,
@@ -952,6 +988,8 @@ class CongressCommitteeInfoFetcher(Fetcher[CongressCommitteeInfoQuery, dict[str,
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CongressCommitteeInfo"
+    row_model: ClassVar[type[ContractModel]] = CongressCommitteeInfo
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="government",
         domain="congress_committee_info",
@@ -969,7 +1007,9 @@ class CongressCommitteeInfoFetcher(Fetcher[CongressCommitteeInfoQuery, dict[str,
     def extract_data(self, params: CongressCommitteeInfoQuery, ctx: FetchContext) -> dict[str, Any]:
         """Fetch and validate source data for the supplied query."""
         path = f"/committee/{params.chamber}/{params.committee_code}"
-        document = _required_document(_client.get_json(path, params={}, context=ctx))
+        document = _required_document(
+            _client.get_json(path, params={}, context=ctx, transport=self.http_transport)
+        )
         return _required_object(document, "committee")
 
     def transform_data(
@@ -1022,6 +1062,8 @@ class CongressCommitteeDocumentsFetcher(
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CongressCommitteeDocuments"
+    row_model: ClassVar[type[ContractModel]] = CongressCommitteeDocument
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="government",
         domain="congress_committee_documents",
@@ -1042,7 +1084,9 @@ class CongressCommitteeDocumentsFetcher(
         """Fetch and validate source data for the supplied query."""
         if params.document_category == "meeting_documents":
             path = f"/committee-meeting/{params.congress}/{params.chamber}/{params.event_id}"
-            document = _required_document(_client.get_json(path, params={}, context=ctx))
+            document = _required_document(
+                _client.get_json(path, params={}, context=ctx, transport=self.http_transport)
+            )
             meeting = _required_object(document, "committeeMeeting")
             if not _meeting_contains_committee(meeting, params.committee_code):
                 raise _client.CongressGovProviderError("CONGRESS_GOV_MEETING_COMMITTEE_MISMATCH")
@@ -1078,6 +1122,7 @@ class CongressCommitteeDocumentsFetcher(
                 path,
                 params={"limit": str(params.limit), "offset": str(params.offset)},
                 context=ctx,
+                transport=self.http_transport,
             )
         )
         collection = {

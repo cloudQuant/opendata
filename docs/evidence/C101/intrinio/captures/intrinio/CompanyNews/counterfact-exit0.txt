@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model CompanyNews --phase counterfact --evidence-root docs/evidence/C101/intrinio
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioShapeError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioShapeError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "publication_date is documented as ISO-8601 date-time text and the row types it as a required datetime, so a boolean in that cell is a shape failure the adapter must refuse with INTRINIO_SHAPE_INVALID rather than stamping a story dated True; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,1723 @@
+carrier: a2-before-33-probes.txt
+round: C105 a2-probe-repair
+captured_at_local=2026-10-15 05:18:52
+commit=270e373411951be1752d71206379da98762d5081 branch=dev
+worktree_dirty_files_at_capture=1529
+source_log=/tmp/c105_before_a2.txt
+source_bytes=84864
+source_sha256_16=9ff57179b976f54b
+argv=python scripts/quality/a2_check.py --files <the 33 probe targets>  # the before picture
+interpreter=gitleaks 8.30.1 / python 3.13.5 (envs/py313)
+before_a2_exit_exit=not_captured_at_run_time (verdict read from the body)
+----------------------------------------------------------------------
+A2 files (complete resolver): 33
+  docs/evidence/C101/census-rebase/probes/falsify_census_arms.py
+  docs/evidence/C101/census-rebase/probes/patch_head_attribution.py
+  docs/evidence/C101/census-rebase/probes/rebase_batch5_census.py
+  docs/evidence/C101/census-rebase/probes/rebase_descriptor_census.py
+  docs/evidence/C101/census-rebase/probes/verify_census_rebase.py
+  docs/evidence/C101/probes/cast_guard_census.py
+  docs/evidence/C101/probes/docstring_gap_census.py
+  docs/evidence/C101/probes/ecb_seam_body_shapes.py
+  docs/evidence/C101/probes/registry_scenario_census.py
+  docs/evidence/C101/probes/repin_reference_policy.py
+  docs/evidence/C101/probes/stale_fake_census.py
+  docs/evidence/C101/probes/stale_fake_repair.py
+  docs/evidence/C101/probes/suite_red_taxonomy.py
+  docs/evidence/C102/probes/archive_faces.py
+  docs/evidence/C102/probes/ths_format_audit.py
+  docs/evidence/C102/probes/ths_grant_arms.py
+  docs/evidence/C102/probes/ths_grant_repair.py
+  docs/evidence/C102/probes/ths_hunk_audit.py
+  docs/evidence/C102/probes/ths_idempotence_arm.py
+  docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py
+  docs/evidence/C103/batch5-scenario-census/probes/scenario_census.py
+  docs/evidence/C103/batch5-scenario-census/probes/scenario_counterfact.py
+  docs/evidence/C103/batch5-scenario-census/probes/scenario_rebase.py
+  docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py
+  docs/evidence/C103/fmp-fetch-array-arity/probes/arity_ab.py
+  docs/evidence/C103/probes/carrier_archiver.py
+  docs/evidence/C103/probes/document_builder.py
+  docs/evidence/C104/h15-series-enumeration/probes/carrier_archiver.py
+  docs/evidence/C104/h15-series-enumeration/probes/face_builder.py
+  docs/evidence/C104/h15-series-enumeration/probes/h15_allowlist.py
+  docs/evidence/C104/h15-series-enumeration/probes/payload_rescan.py
+  docs/evidence/C105/a2-probe-repair/probes/ast_witness.py
+  docs/evidence/C105/a2-probe-repair/probes/split_long_lines.py
+
+Static-tool execution partition: 33 file(s), 0 verified immutable snapshot(s) excluded.
+Historical Ruff findings: 149323 (NOT GREEN; historical evidence only).
+FAIL pinned Gitleaks file scan
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m4:14AM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 21.1ms[0m
+[90m4:14AM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m4:14AM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.3ms[0m
+[90m4:14AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m4:14AM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 4.92ms[0m
+[90m4:14AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/option/option_em.py returned 1: [90m4:14AM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.47ms[0m
+[90m4:14AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/stock/cons.py returned 1: [90m4:14AM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 42.7ms[0m
+[90m4:14AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m4:14AM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 21.4ms[0m
+[90m4:14AM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m4:14AM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.5ms[0m
+[90m4:14AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m4:14AM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 5.05ms[0m
+[90m4:14AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/option/option_em.py returned 1: [90m4:14AM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.62ms[0m
+[90m4:14AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/stock/cons.py returned 1: [90m4:14AM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 42.7ms[0m
+[90m4:14AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m4:15AM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 21ms[0m
+[90m4:15AM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m4:15AM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.4ms[0m
+[90m4:15AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m4:15AM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 5.01ms[0m
+[90m4:15AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/option/option_em.py returned 1: [90m4:15AM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.51ms[0m
+[90m4:15AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/stock/cons.py returned 1: [90m4:15AM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 42.7ms[0m
+[90m4:15AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m4:15AM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 21.5ms[0m
+[90m4:15AM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m4:15AM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.6ms[0m
+[90m4:15AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m4:15AM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 4.97ms[0m
+[90m4:15AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/option/option_em.py returned 1: [90m4:15AM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.77ms[0m
+[90m4:15AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/stock/cons.py returned 1: [90m4:15AM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 43.1ms[0m
+[90m4:15AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m4:16AM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 21.6ms[0m
+[90m4:16AM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m4:16AM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.4ms[0m
+[90m4:16AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m4:16AM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 4.93ms[0m
+[90m4:16AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/option/option_em.py returned 1: [90m4:16AM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.47ms[0m
+[90m4:16AM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/stock/cons.py returned 1: [90m4:16AM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 42.6ms[0m
+[90m4:16AM[0m [33mWRN[0m [1mleaks found: 1[0m
+ok   ruff check
+ok   ruff format --check
+FAIL mypy (33 unique target(s))
+mypy target results:
+  docs/evidence/C101/census-rebase/probes/falsify_census_arms.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C101/census-rebase/probes/patch_head_attribution.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C101/census-rebase/probes/rebase_batch5_census.py: exit=1 stdout_chars=357 stderr_chars=0
+    stdout:
+docs/evidence/C101/census-rebase/probes/rebase_batch5_census.py:52: error: Incompatible return value type (got "tuple[object, object, object]", expected "tuple[str, str, str]")  [return-value]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C101/census-rebase/probes/rebase_descriptor_census.py: exit=1 stdout_chars=353 stderr_chars=0
+    stdout:
+docs/evidence/C101/census-rebase/probes/rebase_descriptor_census.py:19: error: Need type annotation for "live_declared" (hint: "live_declared: dict[<type>, <type>] = ...")  [var-annotated]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C101/census-rebase/probes/verify_census_rebase.py: exit=1 stdout_chars=483 stderr_chars=0
+    stdout:
+docs/evidence/C101/census-rebase/probes/verify_census_rebase.py:72: error: Incompatible return value type (got "tuple[object, object, object]", expected "tuple[str, str, str]")  [return-value]
+docs/evidence/C101/census-rebase/probes/verify_census_rebase.py:143: error: Need type annotation for "moves"  [var-annotated]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C101/probes/cast_guard_census.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C101/probes/docstring_gap_census.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C101/probes/ecb_seam_body_shapes.py: exit=1 stdout_chars=292 stderr_chars=0
+    stdout:
+docs/evidence/C101/probes/ecb_seam_body_shapes.py:52: error: "bytes" has no attribute "encode"; maybe "decode"?  [attr-defined]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C101/probes/registry_scenario_census.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C101/probes/repin_reference_policy.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C101/probes/stale_fake_census.py: exit=1 stdout_chars=1722 stderr_chars=0
+    stdout:
+docs/evidence/C101/probes/stale_fake_census.py:212: error: Incompatible return value type (got "tuple[dict[str, str], dict[str, tuple[str, str]]]", expected "tuple[dict[str, str], dict[str, str]]")  [return-value]
+docs/evidence/C101/probes/stale_fake_census.py:238: error: Incompatible types in assignment (expression has type "str | None", variable has type "tuple[str, str] | None")  [assignment]
+docs/evidence/C101/probes/stale_fake_census.py:239: error: Incompatible return value type (got "tuple[str, str] | None", expected "str | None")  [return-value]
+docs/evidence/C101/probes/stale_fake_census.py:265: error: Incompatible return value type (got "AsyncFunctionDef | FunctionDef", expected "FunctionDef | None")  [return-value]
+docs/evidence/C101/probes/stale_fake_census.py:266: error: Incompatible return value type (got "AsyncFunctionDef | FunctionDef | None", expected "FunctionDef | None")  [return-value]
+docs/evidence/C101/probes/stale_fake_census.py:339: error: Incompatible return value type (got "tuple[str, list[str], bool, bool, AsyncFunctionDef | FunctionDef]", expected "tuple[str, list[str], bool, bool, expr | None]")  [return-value]
+docs/evidence/C101/probes/stale_fake_census.py:347: error: Incompatible return value type (got "tuple[str, list[str], bool, bool, FunctionDef]", expected "tuple[str, list[str], bool, bool, expr | None]")  [return-value]
+docs/evidence/C101/probes/stale_fake_census.py:415: error: Argument 3 to "_resolve_target" has incompatible type "dict[str, str]"; expected "dict[str, tuple[str, str]]"  [arg-type]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C101/probes/stale_fake_repair.py: exit=1 stdout_chars=1001 stderr_chars=0
+    stdout:
+docs/evidence/C101/probes/stale_fake_repair.py:68: error: "AST" has no attribute "lineno"  [attr-defined]
+docs/evidence/C101/probes/stale_fake_repair.py:68: error: "AST" has no attribute "col_offset"  [attr-defined]
+docs/evidence/C101/probes/stale_fake_repair.py:142: error: Dict entry 3 has incompatible type "str": "str"; expected "str": "int"  [dict-item]
+docs/evidence/C101/probes/stale_fake_repair.py:158: error: Argument 1 to "write_text" of "Path" has incompatible type "int"; expected "str"  [arg-type]
+docs/evidence/C101/probes/stale_fake_repair.py:165: error: Returning Any from function declared to return "dict[str, Any]"  [no-any-return]
+docs/evidence/C101/probes/stale_fake_repair.py:214: error: "object" not callable  [operator]
+docs/evidence/C101/probes/stale_fake_repair.py:215: error: "object" not callable  [operator]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C101/probes/suite_red_taxonomy.py: exit=1 stdout_chars=720 stderr_chars=0
+    stdout:
+docs/evidence/C101/probes/suite_red_taxonomy.py:125: error: "object" has no attribute "get"  [attr-defined]
+docs/evidence/C101/probes/suite_red_taxonomy.py:126: error: "object" has no attribute "get"  [attr-defined]
+docs/evidence/C101/probes/suite_red_taxonomy.py:151: error: "object" has no attribute "most_common"  [attr-defined]
+docs/evidence/C101/probes/suite_red_taxonomy.py:154: error: "object" has no attribute "most_common"  [attr-defined]
+docs/evidence/C101/probes/suite_red_taxonomy.py:158: error: "object" has no attribute "get"  [attr-defined]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C102/probes/archive_faces.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C102/probes/ths_format_audit.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C102/probes/ths_grant_arms.py: exit=1 stdout_chars=866 stderr_chars=0
+    stdout:
+docs/evidence/C102/probes/ths_grant_arms.py:43: error: Argument 1 to "module_from_spec" has incompatible type "ModuleSpec | None"; expected "ModuleSpec"  [arg-type]
+docs/evidence/C102/probes/ths_grant_arms.py:44: error: Item "None" of "ModuleSpec | None" has no attribute "name"  [union-attr]
+docs/evidence/C102/probes/ths_grant_arms.py:45: error: Item "None" of "ModuleSpec | None" has no attribute "loader"  [union-attr]
+docs/evidence/C102/probes/ths_grant_arms.py:45: error: Item "None" of "Loader | Any | None" has no attribute "exec_module"  [union-attr]
+docs/evidence/C102/probes/ths_grant_arms.py:107: error: Item "ContractModel" of "ContractModel | Any" has no attribute "symbol"  [union-attr]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C102/probes/ths_grant_repair.py: exit=1 stdout_chars=715 stderr_chars=0
+    stdout:
+docs/evidence/C102/probes/ths_grant_repair.py:56: error: Incompatible types in assignment (expression has type "expr", variable has type "Name | Attribute | Subscript | None")  [assignment]
+docs/evidence/C102/probes/ths_grant_repair.py:205: error: Argument 2 to "_receiver_model" has incompatible type "FunctionDef | AsyncFunctionDef"; expected "FunctionDef"  [arg-type]
+docs/evidence/C102/probes/ths_grant_repair.py:210: error: Argument 3 to "_open_paren" has incompatible type "tuple[int | None, int | None]"; expected "tuple[int, int]"  [arg-type]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C102/probes/ths_hunk_audit.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C102/probes/ths_idempotence_arm.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py: exit=1 stdout_chars=730 stderr_chars=0
+    stdout:
+docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py:128: error: Incompatible types in assignment (expression has type "bytes", variable has type "str")  [assignment]
+docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py:129: error: Argument 1 to "write_bytes" of "Path" has incompatible type "str"; expected "Buffer"  [arg-type]
+docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py:131: error: Non-overlapping equality check (left operand type: "bytes", right operand type: "str")  [comparison-overlap]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C103/batch5-scenario-census/probes/scenario_census.py: exit=1 stdout_chars=396 stderr_chars=0
+    stdout:
+docs/evidence/C103/batch5-scenario-census/probes/scenario_census.py:78: error: Argument 1 to "fields" has incompatible type "type[LazyFetcherBinding] | type[None]"; expected "DataclassInstance | type[DataclassInstance]"  [arg-type]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C103/batch5-scenario-census/probes/scenario_counterfact.py: exit=1 stdout_chars=307 stderr_chars=0
+    stdout:
+docs/evidence/C103/batch5-scenario-census/probes/scenario_counterfact.py:97: error: Unsupported left operand type for + ("object")  [operator]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C103/batch5-scenario-census/probes/scenario_rebase.py: exit=1 stdout_chars=356 stderr_chars=0
+    stdout:
+docs/evidence/C103/batch5-scenario-census/probes/scenario_rebase.py:352: error: Incompatible types in assignment (expression has type "str", variable has type "tuple[str, str]")  [assignment]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C103/fmp-fetch-array-arity/probes/arity_ab.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C103/probes/carrier_archiver.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C103/probes/document_builder.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C104/h15-series-enumeration/probes/carrier_archiver.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C104/h15-series-enumeration/probes/face_builder.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C104/h15-series-enumeration/probes/h15_allowlist.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C104/h15-series-enumeration/probes/payload_rescan.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C105/a2-probe-repair/probes/ast_witness.py: exit=1 stdout_chars=445 stderr_chars=0
+    stdout:
+docs/evidence/C105/a2-probe-repair/probes/ast_witness.py:85: error: Returning Any from function declared to return "AST"  [no-any-return]
+docs/evidence/C105/a2-probe-repair/probes/ast_witness.py:91: error: Missing positional argument "type_ignores" in call to "Module"  [call-arg]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C105/a2-probe-repair/probes/split_long_lines.py: exit=1 stdout_chars=898 stderr_chars=0
+    stdout:
+docs/evidence/C105/a2-probe-repair/probes/split_long_lines.py:62: error: "AST" has no attribute "end_lineno"  [attr-defined]
+docs/evidence/C105/a2-probe-repair/probes/split_long_lines.py:62: error: "AST" has no attribute "lineno"  [attr-defined]
+docs/evidence/C105/a2-probe-repair/probes/split_long_lines.py:63: error: "AST" has no attribute "lineno"  [attr-defined]
+docs/evidence/C105/a2-probe-repair/probes/split_long_lines.py:65: error: "AST" has no attribute "lineno"  [attr-defined]
+docs/evidence/C105/a2-probe-repair/probes/split_long_lines.py:65: error: "AST" has no attribute "col_offset"  [attr-defined]
+docs/evidence/C105/a2-probe-repair/probes/split_long_lines.py:67: error: "AST" has no attribute "lineno"  [attr-defined]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+FAIL bandit
+{
+  "errors": [],
+  "generated_at": "2026-10-14T20:16:42Z",
+  "metrics": {
+    "./docs/evidence/C101/census-rebase/probes/falsify_census_arms.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 177,
+      "nosec": 0,
+      "skipped_tests": 2
+    },
+    "./docs/evidence/C101/census-rebase/probes/patch_head_attribution.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 117,
+      "nosec": 0,
+      "skipped_tests": 5
+    },
+    "./docs/evidence/C101/census-rebase/probes/rebase_batch5_census.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 117,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C101/census-rebase/probes/rebase_descriptor_census.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 124,
+      "nosec": 0,
+      "skipped_tests": 4
+    },
+    "./docs/evidence/C101/census-rebase/probes/verify_census_rebase.py": {
+      "CONFIDENCE.HIGH": 4,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 4,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 232,
+      "nosec": 0,
+      "skipped_tests": 1
+    },
+    "./docs/evidence/C101/probes/cast_guard_census.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 108,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C101/probes/docstring_gap_census.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 66,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C101/probes/ecb_seam_body_shapes.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 73,
+      "nosec": 0,
+      "skipped_tests": 1
+    },
+    "./docs/evidence/C101/probes/registry_scenario_census.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 94,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C101/probes/repin_reference_policy.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 183,
+      "nosec": 0,
+      "skipped_tests": 2
+    },
+    "./docs/evidence/C101/probes/stale_fake_census.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 526,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C101/probes/stale_fake_repair.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 1,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 251,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C101/probes/suite_red_taxonomy.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 147,
+      "nosec": 0,
+      "skipped_tests": 1
+    },
+    "./docs/evidence/C102/probes/archive_faces.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 120,
+      "nosec": 0,
+      "skipped_tests": 2
+    },
+    "./docs/evidence/C102/probes/ths_format_audit.py": {
+      "CONFIDENCE.HIGH": 7,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 7,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 50,
+      "nosec": 0,
+      "skipped_tests": 3
+    },
+    "./docs/evidence/C102/probes/ths_grant_arms.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 186,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C102/probes/ths_grant_repair.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 236,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C102/probes/ths_hunk_audit.py": {
+      "CONFIDENCE.HIGH": 3,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 3,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 81,
+      "nosec": 0,
+      "skipped_tests": 2
+    },
+    "./docs/evidence/C102/probes/ths_idempotence_arm.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 92,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py": {
+      "CONFIDENCE.HIGH": 2,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 112,
+      "nosec": 0,
+      "skipped_tests": 1
+    },
+    "./docs/evidence/C103/batch5-scenario-census/probes/scenario_census.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 96,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C103/batch5-scenario-census/probes/scenario_counterfact.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 198,
+      "nosec": 0,
+      "skipped_tests": 2
+    },
+    "./docs/evidence/C103/batch5-scenario-census/probes/scenario_rebase.py": {
+      "CONFIDENCE.HIGH": 2,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 483,
+      "nosec": 0,
+      "skipped_tests": 2
+    },
+    "./docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 149,
+      "nosec": 0,
+      "skipped_tests": 1
+    },
+    "./docs/evidence/C103/fmp-fetch-array-arity/probes/arity_ab.py": {
+      "CONFIDENCE.HIGH": 2,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 188,
+      "nosec": 0,
+      "skipped_tests": 2
+    },
+    "./docs/evidence/C103/probes/carrier_archiver.py": {
+      "CONFIDENCE.HIGH": 3,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 3,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 330,
+      "nosec": 0,
+      "skipped_tests": 25
+    },
+    "./docs/evidence/C103/probes/document_builder.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 315,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C104/h15-series-enumeration/probes/carrier_archiver.py": {
+      "CONFIDENCE.HIGH": 2,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 126,
+      "nosec": 0,
+      "skipped_tests": 2
+    },
+    "./docs/evidence/C104/h15-series-enumeration/probes/face_builder.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 63,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C104/h15-series-enumeration/probes/h15_allowlist.py": {
+      "CONFIDENCE.HIGH": 2,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 210,
+      "nosec": 0,
+      "skipped_tests": 2
+    },
+    "./docs/evidence/C104/h15-series-enumeration/probes/payload_rescan.py": {
+      "CONFIDENCE.HIGH": 3,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 3,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 95,
+      "nosec": 0,
+      "skipped_tests": 4
+    },
+    "./docs/evidence/C105/a2-probe-repair/probes/ast_witness.py": {
+      "CONFIDENCE.HIGH": 2,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 282,
+      "nosec": 0,
+      "skipped_tests": 2
+    },
+    "./docs/evidence/C105/a2-probe-repair/probes/split_long_lines.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 169,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "_totals": {
+      "CONFIDENCE.HIGH": 38,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 37,
+      "SEVERITY.MEDIUM": 1,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 5796,
+      "nosec": 0,
+      "skipped_tests": 66
+    }
+  },
+  "results": [
+    {
+      "code": "8 import shutil\n9 import subprocess\n10 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C101/census-rebase/probes/falsify_census_arms.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 9,
+      "line_range": [
+        9
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "10 import json\n11 import subprocess\n12 from collections import Counter\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C101/census-rebase/probes/verify_census_rebase.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 11,
+      "line_range": [
+        11
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "21 FIXTURE = Path(\"tests/fixtures/registry_batch5_snapshot.json\")\n22 HEAD_COMMIT = subprocess.run(\n23     [\"git\", \"rev-parse\", \"HEAD\"],  # noqa: S607\n24     capture_output=True,\n25     text=True,\n26     check=True,  # nosec B404\n27 ).stdout.strip()\n28 HEAD_PIN_BYTES = subprocess.run(  # nosec B603  # noqa: S603\n",
+      "col_offset": 14,
+      "end_col_offset": 1,
+      "filename": "./docs/evidence/C101/census-rebase/probes/verify_census_rebase.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 22,
+      "line_range": [
+        22,
+        23,
+        24,
+        25,
+        26,
+        27
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "21 FIXTURE = Path(\"tests/fixtures/registry_batch5_snapshot.json\")\n22 HEAD_COMMIT = subprocess.run(\n23     [\"git\", \"rev-parse\", \"HEAD\"],  # noqa: S607\n24     capture_output=True,\n25     text=True,\n26     check=True,  # nosec B404\n27 ).stdout.strip()\n28 HEAD_PIN_BYTES = subprocess.run(  # nosec B603  # noqa: S603\n",
+      "col_offset": 14,
+      "end_col_offset": 1,
+      "filename": "./docs/evidence/C101/census-rebase/probes/verify_census_rebase.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 22,
+      "line_range": [
+        22,
+        23,
+        24,
+        25,
+        26,
+        27
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "27 ).stdout.strip()\n28 HEAD_PIN_BYTES = subprocess.run(  # nosec B603  # noqa: S603\n29     [\"git\", \"show\", f\"{HEAD_COMMIT}:tests/fixtures/registry_batch5_snapshot.json\"],  # nosec B404  # noqa: S607\n30     capture_output=True,\n31     check=True,\n32 ).stdout\n33 snap = json.loads(FIXTURE.read_bytes())\n",
+      "col_offset": 17,
+      "end_col_offset": 1,
+      "filename": "./docs/evidence/C101/census-rebase/probes/verify_census_rebase.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 28,
+      "line_range": [
+        28,
+        29,
+        30,
+        31,
+        32
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "62 def _git_show(rev: str, rel: str) -> str | None:\n63     proc = subprocess.run(  # nosec B603  # fixed argv, repo-relative path  # nosec B603  # noqa: S603\n64         [\"git\", \"show\", f\"{rev}:{rel}\"],  # nosec B404  # noqa: S607\n65         cwd=REPO,\n66         capture_output=True,\n67         text=True,\n68     )\n69     return proc.stdout if proc.returncode == 0 else None\n",
+      "col_offset": 11,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C101/probes/repin_reference_policy.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 63,
+      "line_range": [
+        63,
+        64,
+        65,
+        66,
+        67,
+        68
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "201     namespace: dict[str, Any] = {}\n202     exec(compile(source, f\"<seed-{shape}>\", \"exec\"), namespace)  # noqa: S102 (arm harness)\n203     recorder = _Recorder()\n",
+      "col_offset": 4,
+      "end_col_offset": 63,
+      "filename": "./docs/evidence/C101/probes/stale_fake_repair.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Use of exec detected.",
+      "line_number": 202,
+      "line_range": [
+        202
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b102_exec_used.html",
+      "test_id": "B102",
+      "test_name": "exec_used"
+    },
+    {
+      "code": "9 import datetime\n10 import subprocess\n11 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C102/probes/archive_faces.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 10,
+      "line_range": [
+        10
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "10 import shutil\n11 import subprocess\n12 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C102/probes/ths_format_audit.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 11,
+      "line_range": [
+        11
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "21     WORK.mkdir(parents=True, exist_ok=True)\n22     head = subprocess.run(\n23         [\"git\", \"show\", \"HEAD:tests/test_ths_provider.py\"],  # nosec B404  # noqa: S607\n24         cwd=ROOT,\n25         capture_output=True,\n26         text=True,\n27         check=True,\n28     ).stdout\n29     original = WORK / \"ths_head.py\"\n",
+      "col_offset": 11,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C102/probes/ths_format_audit.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 22,
+      "line_range": [
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "21     WORK.mkdir(parents=True, exist_ok=True)\n22     head = subprocess.run(\n23         [\"git\", \"show\", \"HEAD:tests/test_ths_provider.py\"],  # nosec B404  # noqa: S607\n24         cwd=ROOT,\n25         capture_output=True,\n26         text=True,\n27         check=True,\n28     ).stdout\n29     original = WORK / \"ths_head.py\"\n",
+      "col_offset": 11,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C102/probes/ths_format_audit.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 22,
+      "line_range": [
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "33 \n34     format_proc = subprocess.run([\"ruff\", \"format\", str(copy)], capture_output=True, text=True)  # nosec B603 # nosec B404  # noqa: S603, S607\n35     reflow = subprocess.run(  # nosec B603  # noqa: S603\n",
+      "col_offset": 18,
+      "end_col_offset": 95,
+      "filename": "./docs/evidence/C102/probes/ths_format_audit.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 34,
+      "line_range": [
+        34
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "34     format_proc = subprocess.run([\"ruff\", \"format\", str(copy)], capture_output=True, text=True)  # nosec B603 # nosec B404  # noqa: S603, S607\n35     reflow = subprocess.run(  # nosec B603  # noqa: S603\n36         [\"diff\", \"-u\", str(original), str(copy)],  # noqa: S607\n37         capture_output=True,\n38         text=True,  # nosec B404\n39     )\n40     pending = subprocess.run(\n",
+      "col_offset": 13,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C102/probes/ths_format_audit.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 35,
+      "line_range": [
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "39     )\n40     pending = subprocess.run(\n41         [\"ruff\", \"format\", \"--diff\", \"tests/test_ths_provider.py\"],  # nosec B404  # noqa: S607\n42         cwd=ROOT,\n43         capture_output=True,\n44         text=True,\n45     )\n46 \n",
+      "col_offset": 14,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C102/probes/ths_format_audit.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 40,
+      "line_range": [
+        40,
+        41,
+        42,
+        43,
+        44,
+        45
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "39     )\n40     pending = subprocess.run(\n41         [\"ruff\", \"format\", \"--diff\", \"tests/test_ths_provider.py\"],  # nosec B404  # noqa: S607\n42         cwd=ROOT,\n43         capture_output=True,\n44         text=True,\n45     )\n46 \n",
+      "col_offset": 14,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C102/probes/ths_format_audit.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 40,
+      "line_range": [
+        40,
+        41,
+        42,
+        43,
+        44,
+        45
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "9 \n10 import subprocess\n11 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C102/probes/ths_hunk_audit.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 10,
+      "line_range": [
+        10
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "61     \"\"\"Audit what the working-tree diff to the ths module really changes, hunk by hunk.\"\"\"\n62     diff_text = subprocess.run(  # nosec B603  # noqa: S603\n63         [\"git\", \"diff\", \"-U0\", \"--\", TARGET],  # noqa: S607\n64         cwd=ROOT,\n65         capture_output=True,\n66         text=True,\n67         check=True,  # nosec B404\n68     ).stdout\n69     blocks = hunks(diff_text)\n",
+      "col_offset": 16,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C102/probes/ths_hunk_audit.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 62,
+      "line_range": [
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "70     orphans = [b for b in blocks if not any(tok in \"\\n\".join(b[\"added\"]) for tok in MY_TOKENS)]\n71     numstat = subprocess.run(  # nosec B603  # noqa: S603\n72         [\"git\", \"diff\", \"--numstat\", \"--\", TARGET],  # noqa: S607\n73         cwd=ROOT,\n74         capture_output=True,\n75         text=True,  # nosec B404\n76     ).stdout.strip()\n77     print(\n",
+      "col_offset": 14,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C102/probes/ths_hunk_audit.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 71,
+      "line_range": [
+        71,
+        72,
+        73,
+        74,
+        75,
+        76
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "22 import re\n23 import subprocess\n24 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 23,
+      "line_range": [
+        23
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "46     \"\"\"Return the committed bytes of ``rel`` at HEAD, refusing the run when HEAD lacks it.\"\"\"\n47     proc = subprocess.run(  # nosec B603  # noqa: S603\n48         [\"git\", \"show\", f\"HEAD:{rel}\"],  # noqa: S607\n49         cwd=REPO,\n50         capture_output=True,\n51         check=False,  # nosec B404\n52     )\n53     if proc.returncode:\n",
+      "col_offset": 11,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 47,
+      "line_range": [
+        47,
+        48,
+        49,
+        50,
+        51,
+        52
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "24 import shutil\n25 import subprocess\n26 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C103/batch5-scenario-census/probes/scenario_counterfact.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 25,
+      "line_range": [
+        25
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "22 import json\n23 import subprocess\n24 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C103/batch5-scenario-census/probes/scenario_rebase.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 23,
+      "line_range": [
+        23
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "69     for rev in revisions:\n70         proc = subprocess.run(  # nosec B603  # noqa: S603\n71             [\"git\", \"show\", f\"{rev}:{SNAPSHOT_REL}\"],  # noqa: S607\n72             cwd=REPO,\n73             capture_output=True,\n74             check=False,  # nosec B404\n75         )\n76         if proc.returncode:\n",
+      "col_offset": 15,
+      "end_col_offset": 9,
+      "filename": "./docs/evidence/C103/batch5-scenario-census/probes/scenario_rebase.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 70,
+      "line_range": [
+        70,
+        71,
+        72,
+        73,
+        74,
+        75
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "169     \"\"\"Run one argv in the repository and return its stripped stdout.\"\"\"\n170     import subprocess\n171 \n",
+      "col_offset": 4,
+      "end_col_offset": 21,
+      "filename": "./docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 170,
+      "line_range": [
+        170
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "24 import re\n25 import subprocess\n26 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C103/fmp-fetch-array-arity/probes/arity_ab.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 25,
+      "line_range": [
+        25
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "112     \"\"\"Run the HEAD copy and the worktree copy of the module as the two contrast arms.\"\"\"\n113     head_bytes = subprocess.run(  # nosec B603  # noqa: S603\n114         [\"git\", \"show\", f\"HEAD:{REL}\"],  # nosec B404  # noqa: S607\n115         cwd=REPO,\n116         capture_output=True,\n117         text=True,\n118         check=True,\n119     ).stdout\n120     tracked_bytes = (REPO / REL).read_text()\n",
+      "col_offset": 17,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C103/fmp-fetch-array-arity/probes/arity_ab.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 113,
+      "line_range": [
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "16 import hashlib\n17 import subprocess\n18 from datetime import datetime\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C103/probes/carrier_archiver.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 17,
+      "line_range": [
+        17
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "311         print(f\"file: {rel} bytes={size}\")\n312     rc = subprocess.run(\n313         [\"git\", \"-c\", \"core.quotepath=off\", \"status\", \"--porcelain\", \"--\", \"docs/evidence/C103\"],  # nosec B404  # noqa: S607\n314         cwd=REPO,\n315         capture_output=True,\n316         text=True,\n317         check=False,\n318     ).stdout\n319     print(f\"face: git_status_lines={len([line for line in rc.splitlines() if line.strip()])}\")\n",
+      "col_offset": 9,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C103/probes/carrier_archiver.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 312,
+      "line_range": [
+        312,
+        313,
+        314,
+        315,
+        316,
+        317,
+        318
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "311         print(f\"file: {rel} bytes={size}\")\n312     rc = subprocess.run(\n313         [\"git\", \"-c\", \"core.quotepath=off\", \"status\", \"--porcelain\", \"--\", \"docs/evidence/C103\"],  # nosec B404  # noqa: S607\n314         cwd=REPO,\n315         capture_output=True,\n316         text=True,\n317         check=False,\n318     ).stdout\n319     print(f\"face: git_status_lines={len([line for line in rc.splitlines() if line.strip()])}\")\n",
+      "col_offset": 9,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C103/probes/carrier_archiver.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 312,
+      "line_range": [
+        312,
+        313,
+        314,
+        315,
+        316,
+        317,
+        318
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "15 import re\n16 import subprocess\n17 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C104/h15-series-enumeration/probes/carrier_archiver.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 16,
+      "line_range": [
+        16
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "71     \"\"\"Run git with literal arguments in the repository and return its stdout.\"\"\"\n72     done = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled\n73         [\"git\", *args],  # noqa: S607\n74         cwd=REPO,\n75         capture_output=True,\n76         text=True,\n77         shell=False,\n78         check=False,  # nosec B404\n79     )\n80     return done.stdout.strip() if done.returncode == 0 else \"\"\n",
+      "col_offset": 11,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C104/h15-series-enumeration/probes/carrier_archiver.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 72,
+      "line_range": [
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "31 import shutil\n32 import subprocess\n33 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C104/h15-series-enumeration/probes/h15_allowlist.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 32,
+      "line_range": [
+        32
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "72         report.unlink()\n73     done = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled\n74         [  # nosec B404  # noqa: S607\n75             \"gitleaks\",\n76             \"detect\",\n77             \"--no-git\",\n78             \"--source\",\n79             str(source),\n80             \"--config\",\n81             str(cfg),\n82             \"--redact=20\",\n83             \"-f\",\n84             \"json\",\n85             \"-r\",\n86             str(report),\n87             \"--no-banner\",\n88         ],\n89         cwd=workdir,\n90         capture_output=True,\n91         text=True,\n92         shell=False,\n93         check=False,\n94     )\n95     if not report.exists():\n",
+      "col_offset": 11,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C104/h15-series-enumeration/probes/h15_allowlist.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 73,
+      "line_range": [
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "14 import shutil\n15 import subprocess\n16 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C104/h15-series-enumeration/probes/payload_rescan.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 15,
+      "line_range": [
+        15
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "33     p\n34     for p in subprocess.run(  # nosec B603  # literal argv, shell disabled\n35         [\"git\", \"diff\", \"--cached\", \"--name-only\", \"-z\"],  # nosec B404  # noqa: S607\n36         cwd=REPO,\n37         capture_output=True,\n38         text=True,\n39         shell=False,\n40         check=True,\n41     ).stdout.split(\"\\0\")\n42     if p\n",
+      "col_offset": 13,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C104/h15-series-enumeration/probes/payload_rescan.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 34,
+      "line_range": [
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "69     REPORT.unlink()\n70 done = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled\n71     [  # nosec B404  # noqa: S607\n72         \"gitleaks\",\n73         \"detect\",\n74         \"--no-git\",\n75         \"--source\",\n76         str(PAYLOAD),\n77         \"--config\",\n78         str(REPO / \".gitleaks.toml\"),\n79         \"--redact=20\",\n80         \"-f\",\n81         \"json\",\n82         \"-r\",\n83         str(REPORT),\n84         \"--no-banner\",\n85     ],\n86     cwd=REPO,\n87     capture_output=True,\n88     text=True,\n89     shell=False,\n90     check=False,\n91 )\n92 print(f\"face: scan_exit={done.returncode}\")\n",
+      "col_offset": 7,
+      "end_col_offset": 1,
+      "filename": "./docs/evidence/C104/h15-series-enumeration/probes/payload_rescan.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 70,
+      "line_range": [
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    },
+    {
+      "code": "28 import pathlib\n29 import subprocess\n30 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./docs/evidence/C105/a2-probe-repair/probes/ast_witness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 29,
+      "line_range": [
+        29
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "160     \"\"\"The pre-repair bytes from the git index, or None when the file is not staged.\"\"\"\n161     proc = subprocess.run(  # nosec B603  # noqa: S603\n162         [\"git\", \"show\", f\":{path}\"],  # noqa: S607\n163         capture_output=True,\n164         text=True,\n165     )\n166     return proc.stdout if proc.returncode == 0 else None\n",
+      "col_offset": 11,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C105/a2-probe-repair/probes/ast_witness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Starting a process with a partial executable path",
+      "line_number": 161,
+      "line_range": [
+        161,
+        162,
+        163,
+        164,
+        165
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+      "test_id": "B607",
+      "test_name": "start_process_with_partial_path"
+    }
+  ]
+}[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C101/probes/suite_red_taxonomy.py:110
+[tester]	WARNING	nosec encountered (B603), but no failed test on file ./docs/evidence/C102/probes/ths_format_audit.py:34
+[tester]	WARNING	nosec encountered (B603), but no failed test on file ./docs/evidence/C102/probes/ths_hunk_audit.py:71
+[tester]	WARNING	nosec encountered (B603), but no failed test on file ./docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py:172
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:31
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:32
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:35
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:38
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:39
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:42
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:45
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:46
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:49
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:52
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:53
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:57
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:60
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:61
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:66
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:70
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:71
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:76
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:81
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:82
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:85
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:88
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:89
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:92
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:95
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:96
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:99
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:102
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:103
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:106
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:111
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:112
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:115
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:118
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:119
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:122
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:125
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:126
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:131
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:134
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:135
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:139
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:142
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:143
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:146
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:149
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:150
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:153
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:156
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:157
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:162
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:165
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:166
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:172
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:175
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:176
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:179
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:182
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:183
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:186
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:189
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:190
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:195
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:199
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:200
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:202
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:207
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:210
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:211
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:213
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:214
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:269
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:270
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:274
+[tester]	WARNING	nosec encountered (B108), but no failed test on file ./docs/evidence/C103/probes/carrier_archiver.py:275
+[tester]	WARNING	nosec encountered (B603), but no failed test on file ./docs/evidence/C104/h15-series-enumeration/probes/payload_rescan.py:34
+FAIL: A2 gate failed on: immutable evidence secret scan, mypy, bandit
+
+before_findings_ruff=5
+before_marker=FAIL: A2 gate failed
+
+before_a2_exit=1

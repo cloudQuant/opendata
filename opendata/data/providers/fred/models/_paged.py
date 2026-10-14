@@ -12,6 +12,8 @@ from opendata.data.providers.fred.models._client import FredProviderError
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from opendata.data.providers._engine.http_json import HttpGet
+
 
 class FredQueryLimitError(FredProviderError):
     """A complete FRED result cannot fit inside the declared query budget."""
@@ -31,6 +33,7 @@ def fetch_series_search_pages(
     max_records: int,
     max_pages: int,
     timeout: float | None,
+    transport: HttpGet | None = None,
 ) -> list[dict[str, Any]]:
     """Fetch all requested catalog pages, failing if a declared bound is hit."""
     return _fetch_pages(
@@ -43,6 +46,7 @@ def fetch_series_search_pages(
         max_pages=max_pages,
         timeout=timeout,
         identity=lambda item: json.dumps(item.get("id"), sort_keys=True),
+        transport=transport,
     )
 
 
@@ -54,6 +58,7 @@ def fetch_observation_pages(
     max_records: int,
     max_pages: int,
     timeout: float | None,
+    transport: HttpGet | None = None,
 ) -> list[dict[str, Any]]:
     """Fetch all requested observation pages, preserving real-time revisions."""
     return _fetch_pages(
@@ -69,6 +74,7 @@ def fetch_observation_pages(
             [item.get("date"), item.get("realtime_start"), item.get("realtime_end")],
             sort_keys=True,
         ),
+        transport=transport,
     )
 
 
@@ -83,6 +89,7 @@ def _fetch_pages(
     max_pages: int,
     timeout: float | None,
     identity: Callable[[dict[str, Any]], str],
+    transport: HttpGet | None = None,
 ) -> list[dict[str, Any]]:
     """Read a stable count/offset result set with explicit record/page caps."""
     api_key = _client.require_api_key()
@@ -108,7 +115,7 @@ def _fetch_pages(
             "limit": str(bounded_page_size),
             "offset": str(current_offset),
         }
-        status, body = _client._http_get(url, request_params, timeout)
+        status, body = _client._http_get(url, request_params, timeout, transport=transport)
         if status != 200:
             raise FredProviderError("FRED_HTTP_ERROR", status=status, url=url)
         try:

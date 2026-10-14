@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, NoReturn
+from typing import TYPE_CHECKING, Any, NoReturn
 
 from opendata.data.http_client import get_shared_http_client
 from opendata.data.providers.fred.models import _client
@@ -14,6 +14,9 @@ from opendata.data.providers.fred.models._fixed_observation_pages import (
     validate_fixed_query,
 )
 from opendata.data.providers.fred.models._sofr_query import FredSofrQuery
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 _SOURCE = "fred"
 _CANONICAL_MODEL = "SOFR"
@@ -38,7 +41,7 @@ def _raise_query_limit(limit_kind: str, maximum: int) -> NoReturn:
     raise _SofrQueryLimitError(limit_kind, maximum) from None
 
 
-def _pager_spec() -> FixedObservationPagerSpec[FredSofrQuery]:
+def _pager_spec(transport: HttpGet | None = None) -> FixedObservationPagerSpec[FredSofrQuery]:
     """Build an immutable call-local spec from the existing SOFR test seams."""
     return FixedObservationPagerSpec(
         query_type=FredSofrQuery,
@@ -53,6 +56,7 @@ def _pager_spec() -> FixedObservationPagerSpec[FredSofrQuery]:
         require_api_key=_client.require_api_key,
         json_loads=json.loads,
         raise_query_limit=_raise_query_limit,
+        transport=transport,
     )
 
 
@@ -81,11 +85,12 @@ def fetch_sofr_pages(
     query: FredSofrQuery,
     *,
     timeout: float | None = None,
+    transport: HttpGet | None = None,
 ) -> tuple[dict[str, Any], ...]:
     """Fetch the complete bounded set of FRED SOFR page envelopes."""
     return fetch_fixed_observation_pages(
         query,
-        spec=_pager_spec(),
+        spec=_pager_spec(transport),
         timeout=timeout,
         final_validate=_validate_pages,
     )

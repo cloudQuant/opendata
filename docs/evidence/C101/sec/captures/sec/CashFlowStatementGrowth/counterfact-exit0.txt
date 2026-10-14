@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CashFlowStatementGrowth --phase counterfact --evidence-root docs/evidence/C101/sec
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_XBRL_BAD_FACT", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_XBRL_BAD_FACT", "rejected": [], "status": null}, "reason": "accession is a declared contract column that identifies the filing vintage the growth comparison is drawn from, so an observation published without its accn cannot be attributed to a filing and must be refused; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

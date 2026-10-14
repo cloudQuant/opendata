@@ -14,13 +14,15 @@ from typing import Any
 import pytest
 from openpyxl import Workbook
 
-from opendata.data.domains import DomainSpec
+from opendata.data.domains import DomainSpec, contract_model
+from opendata.data.models.federal_reserve_clean_nyfed import (
+    PrimaryDealerFails,
+    PrimaryDealerPositioning,
+)
 from opendata.data.models.federal_reserve_macro import (
     FederalReserveCentralBankHolding,
     FederalReserveFomcDocument,
     FederalReserveInflationExpectations,
-    FederalReservePrimaryDealerFail,
-    FederalReservePrimaryDealerPosition,
     FederalReserveTotalFactorProductivity,
     FederalReserveYieldCurve,
 )
@@ -156,8 +158,8 @@ def _h15_csv(*, malformed_header: bool = False) -> bytes:
 def _domain_spec(domain: str, model_type: type[Any]) -> DomainSpec:
     model_name = {
         FederalReserveYieldCurve: "YieldCurve",
-        FederalReservePrimaryDealerFail: "PrimaryDealerFails",
-        FederalReservePrimaryDealerPosition: "PrimaryDealerPositioning",
+        PrimaryDealerFails: "PrimaryDealerFails",
+        PrimaryDealerPositioning: "PrimaryDealerPositioning",
         FederalReserveCentralBankHolding: "CentralBankHoldings",
         FederalReserveInflationExpectations: "InflationExpectations",
         FederalReserveTotalFactorProductivity: "TotalFactorProductivity",
@@ -165,8 +167,8 @@ def _domain_spec(domain: str, model_type: type[Any]) -> DomainSpec:
     }[model_type]
     time_field, natural_key = {
         "YieldCurve": ("date", ("date", "maturity")),
-        "PrimaryDealerFails": ("date", ("date", "key_id")),
-        "PrimaryDealerPositioning": ("date", ("date", "key_id")),
+        "PrimaryDealerFails": ("date", ("date", "symbol")),
+        "PrimaryDealerPositioning": ("date", ("date", "symbol")),
         "CentralBankHoldings": ("date", ("date", "security_type", "cusip")),
         "InflationExpectations": ("date", ("date",)),
         "TotalFactorProductivity": ("period", ("period", "vintage_date")),
@@ -198,7 +200,9 @@ def _install_service_mocks(monkeypatch: pytest.MonkeyPatch, model: str) -> None:
             _primary_dealer, "get_json", _primary_dealer_responses("DEALER POSITION")
         )
     elif model == "CentralBankHoldings":
-        monkeypatch.setattr(central_bank_holdings, "get_json", lambda *_args: _soma_document())
+        monkeypatch.setattr(
+            central_bank_holdings, "get_json", lambda *_args, **_kwargs: _soma_document()
+        )
     elif model == "InflationExpectations":
         monkeypatch.setattr(inflation_expectations, "get_bytes", lambda *_args: _inflation_book())
     elif model == "TotalFactorProductivity":
@@ -213,24 +217,29 @@ def _install_service_mocks(monkeypatch: pytest.MonkeyPatch, model: str) -> None:
         raise AssertionError(model)
 
 
+_PD_FAILS_DESCRIPTION = (
+    "TREASURY INFLATION-PROTECTED SECURITIES (TIPS): DEALER FINANCING FAILS TO DELIVER"
+)
+_PD_POSITION_DESCRIPTION = (
+    "TOTAL U.S. TREASURY SECURITIES (EXCLUDING TIPS) DEALER POSITION LONG - SHORT"
+)
+
+
 def _primary_dealer_responses(description: str) -> Any:
     if "POSITION" in description:
         key_id = "PDPOSGST-TOT"
-        source_description = (
-            "TOTAL U.S. TREASURY SECURITIES (EXCLUDING TIPS) DEALER POSITION LONG - SHORT"
-        )
+        source_description = _PD_POSITION_DESCRIPTION
+        # The reviewed positioning contract publishes a whole USD-million position.
+        value = "12500.00"
     else:
         key_id = "PDFTD-UST"
-        source_description = (
-            "TREASURY INFLATION-PROTECTED SECURITIES (TIPS): DEALER FINANCING FAILS TO DELIVER"
-        )
+        source_description = _PD_FAILS_DESCRIPTION
+        value = "12.50"
 
-    def get_json(url: str, _timeout: float | None = None) -> dict[str, object]:
+    def get_json(url: str, _timeout: float | None = None, **_kwargs) -> dict[str, object]:
         if url.endswith("/list/timeseries.json"):
             return {"pd": {"timeseries": [{"keyid": key_id, "description": source_description}]}}
-        return {
-            "pd": {"timeseries": [{"asofdate": "2024-06-26", "keyid": key_id, "value": "12.50"}]}
-        }
+        return {"pd": {"timeseries": [{"asofdate": "2024-06-26", "keyid": key_id, "value": value}]}}
 
     return get_json
 
@@ -313,11 +322,11 @@ def _fomc_html() -> str:
 _MODELS = {
     "YieldCurve": (FederalReserveYieldCurve, "www.federalreserve.gov"),
     "PrimaryDealerFails": (
-        FederalReservePrimaryDealerFail,
+        PrimaryDealerFails,
         "markets.newyorkfed.org",
     ),
     "PrimaryDealerPositioning": (
-        FederalReservePrimaryDealerPosition,
+        PrimaryDealerPositioning,
         "markets.newyorkfed.org",
     ),
     "CentralBankHoldings": (
@@ -368,6 +377,30 @@ def test_integration_handoff_semantics_reference_typed_contract_fields() -> None
         )
         assert set(semantic_fields) <= contract_fields
         assert not (set(spec.filter_dims) & query_only_fields)
+
+
+def test_declared_row_models_are_their_domain_contracts() -> None:
+    """Guard the face the governed service actually revalidates rows against.
+
+    ``provider_model_query._serialize_contract_row`` compares every row with
+    ``contract_model(domain)`` rather than with the fetcher's own class, so a bound fetcher that
+    builds a look-alike contract passes its direct leg and refuses on the service leg. The
+    primary-dealer rows did exactly that, and the fake ``DomainSpec`` injected by the sibling
+    test below could not see it.
+    """
+    declaring = [
+        fetcher
+        for fetcher in PROVIDER.fetchers
+        if getattr(type(fetcher), "row_model", None) is not None
+    ]
+    assert declaring, "no bound federal_reserve fetcher declares a row model"
+    for fetcher in declaring:
+        contract_type = contract_model(fetcher.capability.domain)
+        assert type(fetcher).row_model is contract_type, (
+            f"{fetcher.canonical_model} builds "
+            f"{type(fetcher).row_model.__module__}.{type(fetcher).row_model.__name__} while "
+            f"{fetcher.capability.domain} declares {contract_type.__name__}"
+        )
 
 
 @pytest.mark.parametrize("model", tuple(_MODELS))
@@ -449,9 +482,20 @@ def test_provider_model_query_injects_identity_and_serializes_typed_rows(
     if model == "YieldCurve":
         assert row == {"date": "2024-06-25", "maturity": "10Y", "rate": 0.0423}
     elif model == "PrimaryDealerFails":
-        assert row["amount_usd_millions"] == "12.50"
+        assert row == {
+            "date": "2024-06-26",
+            "symbol": "PDFTD-UST",
+            "title": _PD_FAILS_DESCRIPTION,
+            "value": 12.5,
+        }
     elif model == "PrimaryDealerPositioning":
-        assert row["position_usd_millions"] == "12.50"
+        assert row == {
+            "date": "2024-06-26",
+            "symbol": "PDPOSGST-TOT",
+            "name": "PDPOSGST-TOT",
+            "title": _PD_POSITION_DESCRIPTION,
+            "value": 12500,
+        }
     elif model == "CentralBankHoldings":
         assert row["date"] == "2024-06-26" and row["total"] == "12000000000.00025"
     elif model == "InflationExpectations":
@@ -631,7 +675,7 @@ def test_soma_detail_selector_preserves_security_fields_and_thousands_unit(
     query = fetcher.transform_query(date="2024-06-26", holding_type="bills")
     requested: list[str] = []
 
-    def get_json(url: str, _timeout: float | None = None) -> dict[str, object]:
+    def get_json(url: str, _timeout: float | None = None, **_kwargs) -> dict[str, object]:
         requested.append(url)
         return _soma_detail_document()
 
@@ -684,7 +728,7 @@ def test_soma_wam_selector_is_grouped_and_emits_documented_extension(
     )
     requested: list[str] = []
 
-    def get_json(url: str, _timeout: float | None = None) -> dict[str, object]:
+    def get_json(url: str, _timeout: float | None = None, **_kwargs) -> dict[str, object]:
         requested.append(url)
         return _soma_wam_document(
             agency=url.startswith("https://markets.newyorkfed.org/api/soma/agency/")
@@ -758,7 +802,7 @@ def test_soma_selector_routes_follow_documented_priority(
     monkeypatch.setattr(
         central_bank_holdings,
         "get_json",
-        lambda url, _timeout=None: requested.append(url) or {},
+        lambda url, _timeout=None, **_kwargs: requested.append(url) or {},
     )
     fetcher.extract_data(parsed, FetchContext(timeout=5))
     assert requested == [expected_url]
@@ -800,7 +844,7 @@ def test_primary_dealer_api_refuses_malformed_catalog_shape(
     monkeypatch.setattr(
         _primary_dealer,
         "get_json",
-        lambda *_args: {"pd": {"timeseries": {"wrong": "container"}}},
+        lambda *_args, **_kwargs: {"pd": {"timeseries": {"wrong": "container"}}},
     )
     with pytest.raises(ValueError, match="FEDERAL_RESERVE_BAD_PD_DEFINITIONS"):
         _primary_dealer.fetch_primary_dealer_series(

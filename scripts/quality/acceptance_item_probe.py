@@ -1817,6 +1817,12 @@ GENERIC_API_KEY_ALLOWED_REGEXES: Final = (
     # The alternation enumerates those eleven ids one by one, so `source_key="<a real key>"` stays
     # reported; docs/evidence/C75/gitleaks-counterfactual.py measures that boundary both ways.
     r"^RIFLGFC(M01|M03|M06|Y01|Y02|Y03|Y05|Y07|Y10|Y20|Y30)_N\.B$",
+    # C104: the H.15 4-week bill series, the twelfth id the pinned week-4 capture's header row 5
+    # publishes (LAST, positionally -- specs.py:52 records the twelve). A twelfth exact literal, so
+    # the enumeration stays id-scoped: docs/evidence/C104/h15-series-enumeration/probes/
+    # h15_allowlist.py plants RIFSGFSW08_N.B and a credential-shaped value under the same
+    # source_key= and both stay reported.
+    r"^RIFSGFSW04_N\.B$",
     # C89: the value generic-api-key captures for a ONE-LINE `CredentialSpec(name="api_key",
     # environment_variable="...")` is the next kwarg's NAME, whatever the slot holds -- measured on
     # the real committed line and on three value mutations, all four capture

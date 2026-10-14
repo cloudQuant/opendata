@@ -1,0 +1,448 @@
+{
+  "claims": [
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase implementation --evidence-root docs/evidence/C101/multpl",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T13:19:38.642916+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+            "before_sha256": "e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+            "path": "opendata/data/models/multpl.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+        "fixture": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a039fad9e75482b69502f560311338e70f4c5c270fac2733e0e878b4ac6422e4",
+            "before_sha256": "a039fad9e75482b69502f560311338e70f4c5c270fac2733e0e878b4ac6422e4",
+            "path": "scripts/quality/iter2_witnesses/multpl.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a039fad9e75482b69502f560311338e70f4c5c270fac2733e0e878b4ac6422e4",
+            "before_sha256": "a039fad9e75482b69502f560311338e70f4c5c270fac2733e0e878b4ac6422e4",
+            "path": "scripts/quality/iter2_witnesses/multpl.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a5cf7eeb7b3fa32b8bbe670860ea327405a05ced7574a6780bf26224275551e8",
+            "before_sha256": "a5cf7eeb7b3fa32b8bbe670860ea327405a05ced7574a6780bf26224275551e8",
+            "path": "opendata/data/providers/multpl/registration.py"
+          },
+          {
+            "after_sha256": "fb17df5aebb359a59182e4130f76bd4f8fa0dadb51abd6c55b4e574abde0b135",
+            "before_sha256": "fb17df5aebb359a59182e4130f76bd4f8fa0dadb51abd6c55b4e574abde0b135",
+            "path": "opendata/data/providers/multpl/provider.py"
+          },
+          {
+            "after_sha256": "2517671b4bf1d47fcbe941fd33972dbddfa2492f3488670e00b8f3d36076e953",
+            "before_sha256": "2517671b4bf1d47fcbe941fd33972dbddfa2492f3488670e00b8f3d36076e953",
+            "path": "opendata/data/providers/multpl/models/sp500_multiples.py"
+          },
+          {
+            "after_sha256": "0bd2c4c29e8c653a4a56e62f9f6efde6e17b41a6b3062aa1786dd3e452fa9527",
+            "before_sha256": "0bd2c4c29e8c653a4a56e62f9f6efde6e17b41a6b3062aa1786dd3e452fa9527",
+            "path": "opendata/data/providers/multpl/specs.py"
+          }
+        ]
+      },
+      "provider": "multpl",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "multpl::SP500Multiples",
+        "path": "docs/evidence/C101/multpl/receipts/multpl/SP500Multiples/implementation.json",
+        "sha256": "7330e2468b755815b28b8e627a70c22157a2f8cb19f4bec6f354b5aff743076b"
+      },
+      "status": "PASS",
+      "upstream_model": "SP500Multiples"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase direct --evidence-root docs/evidence/C101/multpl",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T13:19:39.458895+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+            "before_sha256": "e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+            "path": "opendata/data/models/multpl.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+        "fixture": [
+          {
+            "after_sha256": "466fb03bd2646d144e4a23e65b79d42ca712332720f211f4ff40c0020063fc72",
+            "before_sha256": "466fb03bd2646d144e4a23e65b79d42ca712332720f211f4ff40c0020063fc72",
+            "path": "docs/evidence/C101/multpl/fixtures/multpl/SP500Multiples.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a039fad9e75482b69502f560311338e70f4c5c270fac2733e0e878b4ac6422e4",
+            "before_sha256": "a039fad9e75482b69502f560311338e70f4c5c270fac2733e0e878b4ac6422e4",
+            "path": "scripts/quality/iter2_witnesses/multpl.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a5cf7eeb7b3fa32b8bbe670860ea327405a05ced7574a6780bf26224275551e8",
+            "before_sha256": "a5cf7eeb7b3fa32b8bbe670860ea327405a05ced7574a6780bf26224275551e8",
+            "path": "opendata/data/providers/multpl/registration.py"
+          },
+          {
+            "after_sha256": "fb17df5aebb359a59182e4130f76bd4f8fa0dadb51abd6c55b4e574abde0b135",
+            "before_sha256": "fb17df5aebb359a59182e4130f76bd4f8fa0dadb51abd6c55b4e574abde0b135",
+            "path": "opendata/data/providers/multpl/provider.py"
+          },
+          {
+            "after_sha256": "2517671b4bf1d47fcbe941fd33972dbddfa2492f3488670e00b8f3d36076e953",
+            "before_sha256": "2517671b4bf1d47fcbe941fd33972dbddfa2492f3488670e00b8f3d36076e953",
+            "path": "opendata/data/providers/multpl/models/sp500_multiples.py"
+          },
+          {
+            "after_sha256": "0bd2c4c29e8c653a4a56e62f9f6efde6e17b41a6b3062aa1786dd3e452fa9527",
+            "before_sha256": "0bd2c4c29e8c653a4a56e62f9f6efde6e17b41a6b3062aa1786dd3e452fa9527",
+            "path": "opendata/data/providers/multpl/specs.py"
+          }
+        ]
+      },
+      "provider": "multpl",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "multpl::SP500Multiples",
+        "path": "docs/evidence/C101/multpl/receipts/multpl/SP500Multiples/direct.json",
+        "sha256": "2b8a3f93a7b8dc114d62ba8abd22444bc0b68a0ecc90ed9b71303d498bb209cb"
+      },
+      "status": "PASS",
+      "upstream_model": "SP500Multiples"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase service --evidence-root docs/evidence/C101/multpl",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T13:19:40.448359+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+            "before_sha256": "e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+            "path": "opendata/data/models/multpl.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+        "fixture": [
+          {
+            "after_sha256": "466fb03bd2646d144e4a23e65b79d42ca712332720f211f4ff40c0020063fc72",
+            "before_sha256": "466fb03bd2646d144e4a23e65b79d42ca712332720f211f4ff40c0020063fc72",
+            "path": "docs/evidence/C101/multpl/fixtures/multpl/SP500Multiples.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a039fad9e75482b69502f560311338e70f4c5c270fac2733e0e878b4ac6422e4",
+            "before_sha256": "a039fad9e75482b69502f560311338e70f4c5c270fac2733e0e878b4ac6422e4",
+            "path": "scripts/quality/iter2_witnesses/multpl.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a5cf7eeb7b3fa32b8bbe670860ea327405a05ced7574a6780bf26224275551e8",
+            "before_sha256": "a5cf7eeb7b3fa32b8bbe670860ea327405a05ced7574a6780bf26224275551e8",
+            "path": "opendata/data/providers/multpl/registration.py"
+          },
+          {
+            "after_sha256": "fb17df5aebb359a59182e4130f76bd4f8fa0dadb51abd6c55b4e574abde0b135",
+            "before_sha256": "fb17df5aebb359a59182e4130f76bd4f8fa0dadb51abd6c55b4e574abde0b135",
+            "path": "opendata/data/providers/multpl/provider.py"
+          },
+          {
+            "after_sha256": "2517671b4bf1d47fcbe941fd33972dbddfa2492f3488670e00b8f3d36076e953",
+            "before_sha256": "2517671b4bf1d47fcbe941fd33972dbddfa2492f3488670e00b8f3d36076e953",
+            "path": "opendata/data/providers/multpl/models/sp500_multiples.py"
+          },
+          {
+            "after_sha256": "0bd2c4c29e8c653a4a56e62f9f6efde6e17b41a6b3062aa1786dd3e452fa9527",
+            "before_sha256": "0bd2c4c29e8c653a4a56e62f9f6efde6e17b41a6b3062aa1786dd3e452fa9527",
+            "path": "opendata/data/providers/multpl/specs.py"
+          }
+        ]
+      },
+      "provider": "multpl",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "multpl::SP500Multiples",
+        "path": "docs/evidence/C101/multpl/receipts/multpl/SP500Multiples/service.json",
+        "sha256": "3bd4340d4ca2cea0edc062913ceaea48646754da988a0517e4bb31030aa55ec9"
+      },
+      "status": "PASS",
+      "upstream_model": "SP500Multiples"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase contract --evidence-root docs/evidence/C101/multpl",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T13:19:41.270436+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+            "before_sha256": "e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+            "path": "opendata/data/models/multpl.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+        "fixture": [
+          {
+            "after_sha256": "466fb03bd2646d144e4a23e65b79d42ca712332720f211f4ff40c0020063fc72",
+            "before_sha256": "466fb03bd2646d144e4a23e65b79d42ca712332720f211f4ff40c0020063fc72",
+            "path": "docs/evidence/C101/multpl/fixtures/multpl/SP500Multiples.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a039fad9e75482b69502f560311338e70f4c5c270fac2733e0e878b4ac6422e4",
+            "before_sha256": "a039fad9e75482b69502f560311338e70f4c5c270fac2733e0e878b4ac6422e4",
+            "path": "scripts/quality/iter2_witnesses/multpl.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a5cf7eeb7b3fa32b8bbe670860ea327405a05ced7574a6780bf26224275551e8",
+            "before_sha256": "a5cf7eeb7b3fa32b8bbe670860ea327405a05ced7574a6780bf26224275551e8",
+            "path": "opendata/data/providers/multpl/registration.py"
+          },
+          {
+            "after_sha256": "fb17df5aebb359a59182e4130f76bd4f8fa0dadb51abd6c55b4e574abde0b135",
+            "before_sha256": "fb17df5aebb359a59182e4130f76bd4f8fa0dadb51abd6c55b4e574abde0b135",
+            "path": "opendata/data/providers/multpl/provider.py"
+          },
+          {
+            "after_sha256": "2517671b4bf1d47fcbe941fd33972dbddfa2492f3488670e00b8f3d36076e953",
+            "before_sha256": "2517671b4bf1d47fcbe941fd33972dbddfa2492f3488670e00b8f3d36076e953",
+            "path": "opendata/data/providers/multpl/models/sp500_multiples.py"
+          },
+          {
+            "after_sha256": "0bd2c4c29e8c653a4a56e62f9f6efde6e17b41a6b3062aa1786dd3e452fa9527",
+            "before_sha256": "0bd2c4c29e8c653a4a56e62f9f6efde6e17b41a6b3062aa1786dd3e452fa9527",
+            "path": "opendata/data/providers/multpl/specs.py"
+          }
+        ]
+      },
+      "provider": "multpl",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "multpl::SP500Multiples",
+        "path": "docs/evidence/C101/multpl/receipts/multpl/SP500Multiples/contract.json",
+        "sha256": "a762014d1faf52c0a96d422620d3192b8ceca88a2b7e0046b5ee79cf35bd214f"
+      },
+      "status": "PASS",
+      "upstream_model": "SP500Multiples"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase counterfact --evidence-root docs/evidence/C101/multpl",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T13:19:42.105416+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+            "before_sha256": "e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+            "path": "opendata/data/models/multpl.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
+        "fixture": [
+          {
+            "after_sha256": "466fb03bd2646d144e4a23e65b79d42ca712332720f211f4ff40c0020063fc72",
+            "before_sha256": "466fb03bd2646d144e4a23e65b79d42ca712332720f211f4ff40c0020063fc72",
+            "path": "docs/evidence/C101/multpl/fixtures/multpl/SP500Multiples.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a039fad9e75482b69502f560311338e70f4c5c270fac2733e0e878b4ac6422e4",
+            "before_sha256": "a039fad9e75482b69502f560311338e70f4c5c270fac2733e0e878b4ac6422e4",
+            "path": "scripts/quality/iter2_witnesses/multpl.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a5cf7eeb7b3fa32b8bbe670860ea327405a05ced7574a6780bf26224275551e8",
+            "before_sha256": "a5cf7eeb7b3fa32b8bbe670860ea327405a05ced7574a6780bf26224275551e8",
+            "path": "opendata/data/providers/multpl/registration.py"
+          },
+          {
+            "after_sha256": "fb17df5aebb359a59182e4130f76bd4f8fa0dadb51abd6c55b4e574abde0b135",
+            "before_sha256": "fb17df5aebb359a59182e4130f76bd4f8fa0dadb51abd6c55b4e574abde0b135",
+            "path": "opendata/data/providers/multpl/provider.py"
+          },
+          {
+            "after_sha256": "2517671b4bf1d47fcbe941fd33972dbddfa2492f3488670e00b8f3d36076e953",
+            "before_sha256": "2517671b4bf1d47fcbe941fd33972dbddfa2492f3488670e00b8f3d36076e953",
+            "path": "opendata/data/providers/multpl/models/sp500_multiples.py"
+          },
+          {
+            "after_sha256": "0bd2c4c29e8c653a4a56e62f9f6efde6e17b41a6b3062aa1786dd3e452fa9527",
+            "before_sha256": "0bd2c4c29e8c653a4a56e62f9f6efde6e17b41a6b3062aa1786dd3e452fa9527",
+            "path": "opendata/data/providers/multpl/specs.py"
+          }
+        ]
+      },
+      "provider": "multpl",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "multpl::SP500Multiples",
+        "path": "docs/evidence/C101/multpl/receipts/multpl/SP500Multiples/counterfact.json",
+        "sha256": "fc7a272bd3d10eb446d6a42b5bc95ea47613601b54256887776a9bac80193734"
+      },
+      "status": "PASS",
+      "upstream_model": "SP500Multiples"
+    }
+  ],
+  "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
+  "primary_reviews": [
+    {
+      "decision": "ACCEPT",
+      "provider": "multpl",
+      "receipt": {
+        "model_identity": "multpl::SP500Multiples",
+        "path": "docs/evidence/C101/multpl/primary-reviews/multpl__SP500Multiples.review.json",
+        "sha256": "f7a27d550ce792ce3264e5e23f0a02d9e359c2f05f814be283986cfa58e4be3f"
+      },
+      "reviewed_at_utc": "2026-10-14T13:19:50Z",
+      "reviewer_id": "iter2-acceptance-reviewer-multpl",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "SP500Multiples"
+    }
+  ],
+  "schema_version": 1
+}

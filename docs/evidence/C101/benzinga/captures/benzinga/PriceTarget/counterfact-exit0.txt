@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase counterfact --evidence-root docs/evidence/C101/benzinga
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "BENZINGA_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "BENZINGA_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "publishing a non-integer 'updated' cell makes the documented epoch-seconds converter refuse the record; the adapter must surface BENZINGA_SHAPE_INVALID as a ProviderEngineError carrying code/status/rejected/missing/invalid; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

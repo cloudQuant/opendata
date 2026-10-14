@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import math
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date as date_type
 from typing import TYPE_CHECKING, Any, Generic, NoReturn, Protocol, TypeVar, cast
 
@@ -25,6 +25,8 @@ from opendata.data.request_budget import (
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, Sequence
+
+    from opendata.data.providers._engine.http_json import HttpGet
 
 _QueryT = TypeVar("_QueryT", bound=FredSeriesQuery)
 _DATE_PATTERN = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}\Z")
@@ -83,6 +85,10 @@ class FixedObservationPagerSpec(Generic[_QueryT]):
     require_api_key: Callable[[], object]
     json_loads: Callable[..., object]
     raise_query_limit: Callable[[str, int], NoReturn]
+    #: A transport seam for offline witnesses. ``None`` runs the governed HTTP client, so every
+    #: production call still passes through admission and attempt accounting; a probe supplies
+    #: ``FixedResponseTransport`` and never reaches a socket.
+    transport: HttpGet | None = None
 
 
 class _BadJsonError(ValueError):
@@ -303,6 +309,16 @@ def _decode_page(
     return cast("dict[str, Any]", document)
 
 
+def _transport_body(response: Any) -> bytes:  # noqa: ANN401 - the seam answers with an HttpResponse
+    """Project an offline-seam response onto the raw JSON body the governed decoder reads."""
+    payload = getattr(response, "payload", None)
+    if isinstance(payload, bytes):
+        return payload
+    if isinstance(payload, str):
+        return payload.encode("utf-8")
+    return json.dumps(response.document, ensure_ascii=False).encode("utf-8")
+
+
 def _request_page(
     params: dict[str, str],
     *,
@@ -313,23 +329,34 @@ def _request_page(
 ) -> tuple[dict[str, Any], int, int]:
     """Fetch and decode one page through the central governed HTTP client."""
     _check_scopes_live(spec, scopes)
-    try:
-        response = spec.get_http_client().get(
+    transport = spec.transport
+    if transport is not None:
+        response = transport(
             spec.url,
-            params=params,
-            timeout=timeout,
+            params,
+            timeout=timeout if timeout is not None else 30.0,
             source=spec.source,
         )
-    except HttpFetchError as exc:
-        _raise_provider_error(spec, "FRED_HTTP_ERROR", status=exc.status)
+        status = response.status
+        body = _transport_body(response)
+    else:
+        try:
+            client_response = spec.get_http_client().get(
+                spec.url,
+                params=params,
+                timeout=timeout,
+                source=spec.source,
+            )
+        except HttpFetchError as exc:
+            _raise_provider_error(spec, "FRED_HTTP_ERROR", status=exc.status)
+        status = cast("int", client_response.status_code)
+        body = cast("bytes", client_response.content)
     _check_scopes_live(spec, scopes)
 
-    status = response.status_code
     if type(status) is not int:
         _raise_provider_error(spec, "FRED_BAD_RESPONSE")
     if status != 200:
         _raise_provider_error(spec, "FRED_HTTP_ERROR", status=status)
-    body = response.content
     if type(body) is not bytes:
         _raise_provider_error(spec, "FRED_BAD_RESPONSE", status=status)
     body_size = len(body)
@@ -585,8 +612,16 @@ def fetch_fixed_observation_pages(
     spec: FixedObservationPagerSpec[_QueryT],
     timeout: float | None,
     final_validate: Callable[[tuple[dict[str, Any], ...], _QueryT], object],
+    transport: HttpGet | None = None,
 ) -> tuple[dict[str, Any], ...]:
-    """Fetch all bounded FRED pages after exact query and scope admission."""
+    """Fetch all bounded FRED pages after exact query and scope admission.
+
+    ``transport`` is the repository's offline witness seam: when supplied it answers every
+    page request in place of the governed HTTP client, and no socket is opened. Production
+    callers pass nothing and keep the governed client path unchanged.
+    """
+    if transport is not None and spec.transport is not transport:
+        spec = replace(spec, transport=transport)
     validated_query = validate_fixed_query(query, spec)
     scopes = _validate_active_scopes(spec)
     api_key = spec.require_api_key()

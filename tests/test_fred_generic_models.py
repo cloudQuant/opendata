@@ -85,7 +85,9 @@ def test_search_fetches_all_pages_and_normalizes_typed_catalog_rows(
     ]
     requests: list[tuple[str, dict[str, str], float | None]] = []
 
-    def fake_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def fake_get(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         requests.append((url, params, timeout))
         return 200, responses.pop(0)
 
@@ -155,7 +157,9 @@ def test_series_pages_preserve_revisions_and_keep_transform_separate_from_units(
     ]
     requests: list[tuple[str, dict[str, str], float | None]] = []
 
-    def fake_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def fake_get(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         requests.append((url, params, timeout))
         return 200, responses.pop(0)
 
@@ -200,7 +204,9 @@ def test_series_vintage_dates_map_to_comma_list_without_realtime_window(
     monkeypatch.setenv("FRED_API_KEY", "offline-test-key")
     requests: list[dict[str, str]] = []
 
-    def fake_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def fake_get(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         requests.append(params)
         return 200, _envelope(
             "observations",
@@ -236,7 +242,9 @@ def test_series_frequency_aggregation_and_descending_response_order_are_preserve
     monkeypatch.setenv("FRED_API_KEY", "offline-test-key")
     requests: list[dict[str, str]] = []
 
-    def fake_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def fake_get(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         requests.append(params)
         return 200, _envelope(
             "observations",
@@ -301,7 +309,9 @@ def test_series_unknown_alternate_json_rows_fail_closed_without_disabling_type(
     monkeypatch.setenv("FRED_API_KEY", "offline-test-key")
     requests: list[dict[str, str]] = []
 
-    def fake_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def fake_get(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         requests.append(params)
         return 200, _envelope(
             "observations",
@@ -328,7 +338,9 @@ def test_as_of_is_sent_as_a_single_day_vintage_and_dot_is_nullable(
     monkeypatch.setenv("FRED_API_KEY", "offline-test-key")
     requests: list[dict[str, str]] = []
 
-    def fake_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def fake_get(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         requests.append(params)
         return 200, _envelope(
             "observations",
@@ -367,7 +379,7 @@ def test_missing_or_empty_observation_value_fails_but_dot_is_the_null_sentinel(
 def test_search_rejects_bad_query_before_transport(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("invalid query must not perform HTTP"),
+        lambda *args, **_kwargs: pytest.fail("invalid query must not perform HTTP"),
     )
     fetcher = FredSearchFetcher()
     with pytest.raises(ValidationError):
@@ -393,7 +405,7 @@ def test_search_rejects_invalid_filter_query_before_transport(
 ) -> None:
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("invalid query must not perform HTTP"),
+        lambda *args, **_kwargs: pytest.fail("invalid query must not perform HTTP"),
     )
     with pytest.raises(ValidationError):
         _fetch_with_dynamic_query(FredSearchFetcher().fetch, {"search_text": "GDP", **query})
@@ -409,7 +421,9 @@ def test_search_filter_fields_are_independently_optional_and_transmitted(
     monkeypatch.setenv("FRED_API_KEY", "offline-test-key")
     requests: list[dict[str, str]] = []
 
-    def fake_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def fake_get(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         requests.append(params)
         return 200, _envelope("seriess", [], count=0, limit=1000)
 
@@ -463,7 +477,7 @@ def test_series_rejects_invalid_query_before_transport(
 ) -> None:
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("invalid query must not perform HTTP"),
+        lambda *args, **_kwargs: pytest.fail("invalid query must not perform HTTP"),
     )
     with pytest.raises(ValidationError):
         _fetch_with_dynamic_query(FredSeriesFetcher().fetch, query)
@@ -542,7 +556,7 @@ def test_search_rejects_incomplete_or_inconsistent_pages(
     response_iter = iter(responses)
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda url, params, timeout: (200, next(response_iter)),
+        lambda url, params, timeout, **_kwargs: (200, next(response_iter)),
     )
     kwargs: dict[str, object] = {"search_text": "GDP", "page_size": 1, "max_records": 5}
     if expected_code in {"FRED_PAGINATION_CONFLICT"} or len(responses) == 2:
@@ -569,7 +583,7 @@ def test_search_reports_query_budget_limit_instead_of_returning_partial_rows(
     monkeypatch.setenv("FRED_API_KEY", "offline-test-key")
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda url, params, timeout: (
+        lambda url, params, timeout, **_kwargs: (
             200,
             _envelope("seriess", [_catalog_item()], count=count, offset=0),
         ),
@@ -597,7 +611,7 @@ def test_missing_key_and_http_errors_fail_without_leaking_key(
     )
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("missing key must fail before HTTP"),
+        lambda *args, **_kwargs: pytest.fail("missing key must fail before HTTP"),
     )
     with pytest.raises(FredProviderError) as missing:
         FredSeriesFetcher().fetch(
@@ -609,7 +623,9 @@ def test_missing_key_and_http_errors_fail_without_leaking_key(
     monkeypatch.setenv("FRED_API_KEY", "must-not-leak")
     requests: list[tuple[str, dict[str, str]]] = []
 
-    def rate_limited(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def rate_limited(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         requests.append((url, params))
         return 429, "rate limited"
 

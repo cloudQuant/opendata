@@ -110,7 +110,9 @@ def fake_client(
 ) -> dict[str, list[object]]:
     calls: dict[str, list[object]] = {"fetch": [], "validate": [], "attempts": []}
 
-    def fake_fetch(query_value: FredIorbQuery, *, timeout: float | None = None) -> object:
+    def fake_fetch(
+        query_value: FredIorbQuery, *, timeout: float | None = None, **_kwargs
+    ) -> object:
         calls["fetch"].append((query_value, timeout))
         scopes = current_request_scopes()
         if scopes:

@@ -29,7 +29,7 @@ from opendata.data.providers._engine.row_expansion import (
 from opendata.data.providers._engine.value_transform import DerivePlan
 
 #: Value domains the engine can encode, validate and normalize.
-ValueKind = Literal["str", "int", "float", "bool", "date", "enum", "str_list"]
+ValueKind = Literal["str", "int", "float", "bool", "date", "time", "enum", "str_list"]
 
 #: Body shapes the engine decodes into record rows. ``json`` reads the parsed document; the
 #: delimited kinds read the response bytes themselves, never a file name or a URL suffix.
@@ -52,7 +52,7 @@ AsyncMode = Literal["bounded_thread", "unsupported"]
 #: and the engine only decides where the document it is applied to comes from.
 RowExpansionPlan = NestedArrayExpansion | SeriesPivotPlan | WideTablePivotPlan | RecordRepointPlan
 
-_IDENTIFIER_TYPES = frozenset({"str", "int", "float", "bool", "date", "enum", "str_list"})
+_IDENTIFIER_TYPES = frozenset({"str", "int", "float", "bool", "date", "time", "enum", "str_list"})
 
 #: The ops :class:`RowFilterSpec` can evaluate, checked against the literal because a declaration
 #: that reached the fetch stage with an unknown op would select nothing and come back as a
@@ -465,8 +465,10 @@ class PaginationSpec:
         cursor_key: Query key carrying the returned cursor, for ``cursor``.
         cursor_field: Response field holding the next cursor.
         strict_nullable_string: Whether a cursor response field must be present and contain either
-            ``None`` (terminal) or a non-empty string. This is opt-in because older declarations
-            preserve their existing cursor semantics.
+            ``None`` (terminal) or a non-empty string. A page that omits the field is terminal only
+            on the evidence it publishes -- a reached declared total, or records with no further
+            continuation declared; an empty page that omits the field stays the shape refusal.
+            This is opt-in because older declarations preserve their existing cursor semantics.
         total_key: Response field holding the declared total, when published.
         max_pages: Hard bound; exceeding it is reported as incomplete.
         max_rows: Hard bound; exceeding it is reported as incomplete.

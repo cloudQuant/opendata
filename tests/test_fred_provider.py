@@ -133,7 +133,9 @@ class TestClient:
     ) -> None:
         requested: list[tuple[str, dict[str, str]]] = []
 
-        def _get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+        def _get(
+            url: str, params: dict[str, str], timeout: float | None, **_kwargs
+        ) -> tuple[int, str]:
             requested.append((url, params))
             return 429, "Too Many Requests"
 
@@ -150,7 +152,7 @@ class TestClient:
     def test_http_error_fails_closed(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
             "opendata.data.providers.fred.models._client._http_get",
-            lambda url, params, timeout: (429, "Too Many Requests"),
+            lambda url, params, timeout, **_kwargs: (429, "Too Many Requests"),
         )
         with pytest.raises(FredProviderError) as err:
             FredCpiFetcher().extract_data(
@@ -161,7 +163,7 @@ class TestClient:
     def test_malformed_body_fails_closed(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
             "opendata.data.providers.fred.models._client._http_get",
-            lambda url, params, timeout: (200, "<html>blocked</html>"),
+            lambda url, params, timeout, **_kwargs: (200, "<html>blocked</html>"),
         )
         with pytest.raises(FredProviderError) as err:
             FredCpiFetcher().extract_data(

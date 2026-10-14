@@ -68,10 +68,16 @@ def test_fmp_query_validation_is_not_misclassified_as_upstream_error(
     assert FMPQueryValidationError.__mro__[:5] == (
         FMPQueryValidationError,
         ProviderEngineQueryError,
-        ProviderEngineError,
         FMPProviderError,
+        ProviderEngineError,
         RuntimeError,
     )
+    # The classification property this pins: a bad FMP query is still a query error, i.e. the
+    # query branch of the engine's error face is matched before the provider-error branch, so
+    # the service layer reports ProviderModelQueryValidationError rather than an upstream fault.
+    assert FMPQueryValidationError.__mro__.index(
+        ProviderEngineQueryError
+    ) < FMPQueryValidationError.__mro__.index(FMPProviderError)
 
     fetcher = financials.BalanceSheetFetcher()
     capability = fetcher.capability

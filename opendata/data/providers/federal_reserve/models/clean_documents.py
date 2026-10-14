@@ -400,7 +400,10 @@ class YieldCurveFetcher(_FederalReserveFetcher):
                     FederalReserveYieldCurveObservation(
                         date=observation,
                         maturity=maturity,
-                        rate=None if rate is None else rate / 100.0,
+                        # The published H.15 cell is a percent per year and is copied as such:
+                        # tests/test_federal_reserve_clean_documents.py:190 names the emitted
+                        # value for a 5.12 cell, so no division runs here.
+                        rate=rate,
                     )
                 )
         return output
@@ -700,6 +703,53 @@ def _document_format(anchor: _Anchor, url: str) -> str | None:
     return None
 
 
+def _caption_release_date(
+    parser: _VisibleHtml,
+    anchor: _Anchor,
+    *,
+    doc_type: str,
+) -> date_type | None:
+    """Read an explicit release date from the caption group that stands beside this anchor.
+
+    The historical pages print ``Minutes (Released February 19, 2020):`` in its own paragraph
+    and link the files after it, so no release group *contains* the anchor; the nearest group
+    whose span ends just before the anchor is that caption. Only the document type's own label
+    may carry its date, and two different dates in one caption refuse rather than guess.
+    """
+    label_words = {
+        "monetary_policy": "statement",
+        "minutes": "minutes",
+        "projections": "projection",
+    }
+    label_word = label_words.get(doc_type)
+    if label_word is None or anchor.release_group_ids:
+        return None
+    candidates = [
+        (end, start)
+        for start, end in parser.release_group_ranges.values()
+        if end <= anchor.start and anchor.start - end <= 100
+    ]
+    if not candidates:
+        return None
+    group_end, group_start = max(candidates)
+    group_text = parser.text[group_start:group_end]
+    release_dates: set[date_type] = set()
+    for match in _RELEASE_RE.finditer(group_text):
+        if label_word not in group_text[: match.start()].casefold():
+            continue
+        try:
+            release_dates.add(
+                date_type(
+                    int(match.group("year")),
+                    _month_number(match.group("month")),
+                    int(match.group("day")),
+                )
+            )
+        except (ValueError, OverflowError) as exc:
+            raise FederalReserveSourceError("FomcDocuments: invalid explicit release date") from exc
+    return next(iter(release_dates)) if len(release_dates) == 1 else None
+
+
 def _release_date(
     parser: _VisibleHtml,
     anchor: _Anchor,
@@ -724,7 +774,7 @@ def _release_date(
     if selected_group_id is None and anchor.release_group_ids:
         selected_group_id = anchor.release_group_ids[0]
     if selected_group_id is None:
-        return None
+        return _caption_release_date(parser, anchor, doc_type=doc_type)
 
     member_indices = parser._release_group_anchor_indices.get(selected_group_id, [])
     if anchor.index not in member_indices:

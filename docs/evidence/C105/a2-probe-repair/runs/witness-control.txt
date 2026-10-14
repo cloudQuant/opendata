@@ -1,0 +1,19 @@
+carrier: witness-control.txt
+round: C105 a2-probe-repair
+captured_at_local=2026-10-15 05:18:52
+commit=270e373411951be1752d71206379da98762d5081 branch=dev
+worktree_dirty_files_at_capture=1529
+source_log=/tmp/c105_witness_control_run.txt
+source_bytes=407
+source_sha256_16=6b21d9219a31fd35
+argv=python docs/evidence/C105/a2-probe-repair/probes/ast_witness.py --control
+interpreter=gitleaks 8.30.1 / python 3.13.5 (envs/py313)
+control_exit=0
+----------------------------------------------------------------------
+face: control_probe=docs/evidence/C101/census-rebase/probes/falsify_census_arms.py untampered_status=identical tampered_status=moved tampered_findings=2
+face:   control dropped_value='tests/fixtures/registry_batch5_snapshot.json'
+face:   control added_value='tests/fixtures/registry_batch5_snapshot.json!'
+face: control_arm=as expected
+face: mode=control controls_passed=1 controls_failed=0
+
+CONTROL_EXIT=0

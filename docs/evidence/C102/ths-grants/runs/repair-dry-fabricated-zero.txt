@@ -1,0 +1,46 @@
+carrier: repair-dry-fabricated-zero.txt
+copied_at_local=2026-10-15T01:59:21+08:00
+source_log=/tmp/ths_dry.txt
+derivation=my first rewriter run: it split Class::method ids on '.' and printed insertions=0
+repair-dry-fabricated-zero_exit=not_captured_at_run_time (verdict read from the body)
+----------------------------------------------------------------------
+face: failing_nodes=37 fetcher_classes=11 insertions=0 unique_insertions=0 unresolved=0 uncovered_nodes=37
+models_used=0:
+  UNCOVERED tests/test_ths_provider.py::TestCredentials::test_auto_requires_key_but_explicit_fetch_keeps_credential_error
+  UNCOVERED tests/test_ths_provider.py::TestFetchStages::test_daily_fetch_returns_contract_rows
+  UNCOVERED tests/test_ths_provider.py::TestFetchStages::test_action_fetch_returns_events_newest_first
+  UNCOVERED tests/test_ths_provider.py::TestFetchStages::test_index_fetch_returns_contract_rows
+  UNCOVERED tests/test_ths_provider.py::TestFetchStages::test_constituent_fetch_stores_plain_codes_for_both_sides
+  UNCOVERED tests/test_ths_provider.py::TestFetchStages::test_constituent_fetch_resolves_a_bare_index_code
+  UNCOVERED tests/test_ths_provider.py::TestFetchStages::test_derivative_fetch_reads_the_timestamp_field[futures_daily-fetcher0-/api/futures/prices/daily]
+  UNCOVERED tests/test_ths_provider.py::TestFetchStages::test_derivative_fetch_reads_the_timestamp_field[option_daily-fetcher1-/api/options/prices/daily]
+  UNCOVERED tests/test_ths_provider.py::TestFinancialStatementAdapter::test_fetch_melts_the_wide_response_and_orders_it_ascending
+  UNCOVERED tests/test_ths_provider.py::TestFinancialStatementAdapter::test_fetch_resolves_a_bare_code_before_asking_for_a_statement
+  UNCOVERED tests/test_ths_provider.py::TestFinancialStatementAdapter::test_fetch_passes_the_report_period_window
+  UNCOVERED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_adjacent_trade_dates_come_from_the_neighbouring_rows
+  UNCOVERED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_no_window_parameter_is_sent
+  UNCOVERED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_requested_window_slices_the_published_coverage
+  UNCOVERED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_a_window_outside_coverage_fails_closed
+  UNCOVERED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_empty_calendar_fails_closed
+  UNCOVERED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_a_window_ending_before_coverage_fails_closed
+  UNCOVERED tests/test_ths_provider.py::TestTradingCalendarAdapter::test_a_half_open_window_slices_from_either_edge
+  UNCOVERED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_pages_are_read_until_one_comes_back_short
+  UNCOVERED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_the_asset_type_filter_is_sent_as_asked
+  UNCOVERED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_pagination_that_never_ends_fails_closed
+  UNCOVERED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_a_repeated_code_across_pages_fails_closed
+  UNCOVERED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_empty_catalog_fails_closed
+  UNCOVERED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_a_catalog_without_a_snapshot_date_fails_closed
+  UNCOVERED tests/test_ths_provider.py::TestInstrumentCatalogAdapter::test_an_in_market_contract_is_not_labelled_delisted
+  UNCOVERED tests/test_ths_provider.py::TestFundActionAdapter::test_events_land_per_unit_newest_first
+  UNCOVERED tests/test_ths_provider.py::TestFundActionAdapter::test_a_bare_code_is_resolved_before_the_history_call
+  UNCOVERED tests/test_ths_provider.py::TestFundActionAdapter::test_a_fund_that_never_distributed_comes_back_empty
+  UNCOVERED tests/test_ths_provider.py::TestFundActionAdapter::test_a_window_slices_the_history_without_a_second_call
+  UNCOVERED tests/test_ths_provider.py::TestFundActionAdapter::test_a_window_with_no_distribution_is_a_fact_not_a_failure
+  UNCOVERED tests/test_ths_provider.py::TestFundActionAdapter::test_rows_the_upstream_cannot_reconcile_fail_closed
+  UNCOVERED tests/test_ths_provider.py::TestFundEtfDailyAdapter::test_bars_land_unadjusted_and_ascending
+  UNCOVERED tests/test_ths_provider.py::TestFundEtfDailyAdapter::test_the_price_request_carries_no_adjust
+  UNCOVERED tests/test_ths_provider.py::TestFundEtfDailyAdapter::test_a_bare_code_is_resolved_before_the_dividend_call
+  UNCOVERED tests/test_ths_provider.py::TestFundEtfDailyAdapter::test_the_default_window_is_the_rolling_depth
+  UNCOVERED tests/test_ths_provider.py::TestFundEtfDailyAdapter::test_a_start_before_the_floor_is_refused_without_a_call
+  UNCOVERED tests/test_ths_provider.py::TestFundEtfDailyAdapter::test_empty_response_fails_closed
+verdict: refused (every failing node needs one resolvable fetch site)

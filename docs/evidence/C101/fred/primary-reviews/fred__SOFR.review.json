@@ -1,0 +1,396 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/fred/claims.json",
+    "sha256": "bba37f4b7f6755bff3fa095420c5f021fe8d97cbeeb21980e8412f2423978129"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+            "before_sha256": "df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+            "path": "opendata/data/models/fred_sofr.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/SOFR/contract.json",
+          "sha256": "5194714234a079251af3b8e37acf831572cc4e291cc98368285f2166e44d1161"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "f9d46ee37a3333565e817c1e6d716436cd25b20096c168b3fd875b4566722184",
+            "before_sha256": "f9d46ee37a3333565e817c1e6d716436cd25b20096c168b3fd875b4566722184",
+            "path": "opendata/data/providers/fred/models/sofr.py"
+          },
+          {
+            "after_sha256": "273cdf8371ba128c2bc80ec680829424e9d1d64ec423b61725ef8ae9560b7dff",
+            "before_sha256": "273cdf8371ba128c2bc80ec680829424e9d1d64ec423b61725ef8ae9560b7dff",
+            "path": "opendata/data/providers/fred/models/_sofr_client.py"
+          },
+          {
+            "after_sha256": "fa8ef152a237e5b64e0bd0d80d8ef682af961174f883afe310421d498cbdd12a",
+            "before_sha256": "fa8ef152a237e5b64e0bd0d80d8ef682af961174f883afe310421d498cbdd12a",
+            "path": "opendata/data/providers/fred/models/_fixed_observation_pages.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+            "before_sha256": "df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+            "path": "opendata/data/models/fred_sofr.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/SOFR/counterfact.json",
+          "sha256": "ce89d571ea3021949ee7ffd847d13138ce1ce8a555bb2ac4e8484dd80a5b5057"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "f9d46ee37a3333565e817c1e6d716436cd25b20096c168b3fd875b4566722184",
+            "before_sha256": "f9d46ee37a3333565e817c1e6d716436cd25b20096c168b3fd875b4566722184",
+            "path": "opendata/data/providers/fred/models/sofr.py"
+          },
+          {
+            "after_sha256": "273cdf8371ba128c2bc80ec680829424e9d1d64ec423b61725ef8ae9560b7dff",
+            "before_sha256": "273cdf8371ba128c2bc80ec680829424e9d1d64ec423b61725ef8ae9560b7dff",
+            "path": "opendata/data/providers/fred/models/_sofr_client.py"
+          },
+          {
+            "after_sha256": "fa8ef152a237e5b64e0bd0d80d8ef682af961174f883afe310421d498cbdd12a",
+            "before_sha256": "fa8ef152a237e5b64e0bd0d80d8ef682af961174f883afe310421d498cbdd12a",
+            "path": "opendata/data/providers/fred/models/_fixed_observation_pages.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+            "before_sha256": "df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+            "path": "opendata/data/models/fred_sofr.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/SOFR/direct.json",
+          "sha256": "6ab0b946852b43f3a89823ac823ac2123d8329792220eb79cb4c00a03bbaf5c8"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "f9d46ee37a3333565e817c1e6d716436cd25b20096c168b3fd875b4566722184",
+            "before_sha256": "f9d46ee37a3333565e817c1e6d716436cd25b20096c168b3fd875b4566722184",
+            "path": "opendata/data/providers/fred/models/sofr.py"
+          },
+          {
+            "after_sha256": "273cdf8371ba128c2bc80ec680829424e9d1d64ec423b61725ef8ae9560b7dff",
+            "before_sha256": "273cdf8371ba128c2bc80ec680829424e9d1d64ec423b61725ef8ae9560b7dff",
+            "path": "opendata/data/providers/fred/models/_sofr_client.py"
+          },
+          {
+            "after_sha256": "fa8ef152a237e5b64e0bd0d80d8ef682af961174f883afe310421d498cbdd12a",
+            "before_sha256": "fa8ef152a237e5b64e0bd0d80d8ef682af961174f883afe310421d498cbdd12a",
+            "path": "opendata/data/providers/fred/models/_fixed_observation_pages.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+            "before_sha256": "df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+            "path": "opendata/data/models/fred_sofr.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/SOFR/implementation.json",
+          "sha256": "d58211baaf5e89973d58e75830e67b21f37d6e4d033261f6fae5d9dfe50044f8"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "f9d46ee37a3333565e817c1e6d716436cd25b20096c168b3fd875b4566722184",
+            "before_sha256": "f9d46ee37a3333565e817c1e6d716436cd25b20096c168b3fd875b4566722184",
+            "path": "opendata/data/providers/fred/models/sofr.py"
+          },
+          {
+            "after_sha256": "273cdf8371ba128c2bc80ec680829424e9d1d64ec423b61725ef8ae9560b7dff",
+            "before_sha256": "273cdf8371ba128c2bc80ec680829424e9d1d64ec423b61725ef8ae9560b7dff",
+            "path": "opendata/data/providers/fred/models/_sofr_client.py"
+          },
+          {
+            "after_sha256": "fa8ef152a237e5b64e0bd0d80d8ef682af961174f883afe310421d498cbdd12a",
+            "before_sha256": "fa8ef152a237e5b64e0bd0d80d8ef682af961174f883afe310421d498cbdd12a",
+            "path": "opendata/data/providers/fred/models/_fixed_observation_pages.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+            "before_sha256": "df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+            "path": "opendata/data/models/fred_sofr.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:df50835bf6b36151ce7f897dc2c2a9d8cb1f05a2d2533e7e62b1747ede98b2d7",
+        "receipt": {
+          "path": "docs/evidence/C101/fred/receipts/fred/SOFR/service.json",
+          "sha256": "80f61f971c83adc55ca64680ef6039d5bb8469dabd2340a71658edc49ac83a28"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "f9d46ee37a3333565e817c1e6d716436cd25b20096c168b3fd875b4566722184",
+            "before_sha256": "f9d46ee37a3333565e817c1e6d716436cd25b20096c168b3fd875b4566722184",
+            "path": "opendata/data/providers/fred/models/sofr.py"
+          },
+          {
+            "after_sha256": "273cdf8371ba128c2bc80ec680829424e9d1d64ec423b61725ef8ae9560b7dff",
+            "before_sha256": "273cdf8371ba128c2bc80ec680829424e9d1d64ec423b61725ef8ae9560b7dff",
+            "path": "opendata/data/providers/fred/models/_sofr_client.py"
+          },
+          {
+            "after_sha256": "fa8ef152a237e5b64e0bd0d80d8ef682af961174f883afe310421d498cbdd12a",
+            "before_sha256": "fa8ef152a237e5b64e0bd0d80d8ef682af961174f883afe310421d498cbdd12a",
+            "path": "opendata/data/providers/fred/models/_fixed_observation_pages.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "SOFR",
+  "model_identity": "fred::SOFR",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "fred",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "SOFR",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "SOFR",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "SOFR",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "SOFR",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fred",
+        "--model",
+        "SOFR",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101/fred"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-14T14:06:40Z",
+  "reviewer_id": "iter2-acceptance-reviewer-fred",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "SOFR"
+}

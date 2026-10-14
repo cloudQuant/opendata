@@ -106,6 +106,7 @@ def _install_http_get(
         url: str,
         params: dict[str, str],
         timeout: float | None,
+        **_kwargs,
     ) -> tuple[int, str]:
         del timeout
         scopes = current_request_scopes()

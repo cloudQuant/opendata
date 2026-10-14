@@ -203,7 +203,7 @@ def _assets_companyfacts_document(*, cik: int = 320193) -> dict[str, Any]:
 
 
 def _patch_json(monkeypatch: pytest.MonkeyPatch, module: Any, document: object) -> None:
-    monkeypatch.setattr(module, "fetch_json", lambda _ctx, _url: document)
+    monkeypatch.setattr(module, "fetch_json", lambda _ctx, _url, **_kwargs: document)
 
 
 def test_cik_map_fixture_is_typed_and_malformed_directory_fails(
@@ -212,7 +212,7 @@ def test_cik_map_fixture_is_typed_and_malformed_directory_fails(
     monkeypatch.setattr(
         directory,
         "company_ticker_rows",
-        lambda _ctx: common.parse_ticker_directory(_json("cik-map", "positive.json")),
+        lambda _ctx, **_kwargs: common.parse_ticker_directory(_json("cik-map", "positive.json")),
     )
     rows = directory.CikMapFetcher().fetch(
         ctx=_ctx(), symbol="AAPL", offset=0, limit=1, market="us", source="sec"
@@ -224,7 +224,7 @@ def test_cik_map_fixture_is_typed_and_malformed_directory_fails(
     monkeypatch.setattr(
         directory,
         "company_ticker_rows",
-        lambda _ctx: common.parse_ticker_directory(_json("cik-map", "negative.json")),
+        lambda _ctx, **_kwargs: common.parse_ticker_directory(_json("cik-map", "negative.json")),
     )
     with pytest.raises(common.SecProviderError, match="SEC_TICKER_DIRECTORY_BAD_SHAPE"):
         directory.CikMapFetcher().fetch(ctx=_ctx(), symbol="AAPL")
@@ -236,7 +236,7 @@ def test_symbol_map_fixture_accepts_public_query_and_returns_symbol(
     monkeypatch.setattr(
         directory,
         "company_ticker_rows",
-        lambda _ctx: common.parse_ticker_directory(_json("symbol-map", "positive.json")),
+        lambda _ctx, **_kwargs: common.parse_ticker_directory(_json("symbol-map", "positive.json")),
     )
     rows = directory.SymbolMapFetcher().fetch(ctx=_ctx(), query="Apple")
     assert type(rows[0]) is SecSymbolMapRecord
@@ -248,7 +248,7 @@ def test_symbol_map_fixture_accepts_public_query_and_returns_symbol(
     monkeypatch.setattr(
         directory,
         "company_ticker_rows",
-        lambda _ctx: common.parse_ticker_directory(_json("symbol-map", "negative.json")),
+        lambda _ctx, **_kwargs: common.parse_ticker_directory(_json("symbol-map", "negative.json")),
     )
     with pytest.raises(common.SecProviderError, match="SEC_BAD_CIK"):
         directory.SymbolMapFetcher().fetch(ctx=_ctx(), query="Apple")
@@ -258,7 +258,9 @@ def test_equity_search_fixture_pagination_and_bad_shape(monkeypatch: pytest.Monk
     monkeypatch.setattr(
         directory,
         "exchange_ticker_rows",
-        lambda _ctx: common.parse_ticker_directory(_json("equity-search", "positive.json")),
+        lambda _ctx, **_kwargs: common.parse_ticker_directory(
+            _json("equity-search", "positive.json")
+        ),
     )
     rows = directory.EquitySearchFetcher().fetch(ctx=_ctx(), query="apple", offset=0, limit=1)
     assert rows[0].exchange == "Nasdaq"
@@ -267,7 +269,9 @@ def test_equity_search_fixture_pagination_and_bad_shape(monkeypatch: pytest.Monk
     monkeypatch.setattr(
         directory,
         "exchange_ticker_rows",
-        lambda _ctx: common.parse_ticker_directory(_json("equity-search", "negative.json")),
+        lambda _ctx, **_kwargs: common.parse_ticker_directory(
+            _json("equity-search", "negative.json")
+        ),
     )
     with pytest.raises(common.SecProviderError, match="SEC_TICKER_DIRECTORY_BAD_SHAPE"):
         directory.EquitySearchFetcher().fetch(ctx=_ctx())
@@ -991,7 +995,7 @@ def test_compare_companyfacts_public_multi_symbol_default_fact_and_bad_date(
     monkeypatch.setattr(
         financial,
         "company_ticker_rows",
-        lambda _ctx: common.parse_ticker_directory(ticker_document),
+        lambda _ctx, **_kwargs: common.parse_ticker_directory(ticker_document),
     )
     _patch_json(monkeypatch, financial, malformed)
     with pytest.raises(common.SecProviderError, match="SEC_XBRL_BAD_FACT"):
@@ -1086,7 +1090,7 @@ def _insider_fetcher_inputs(
     monkeypatch.setattr(
         insider,
         "company_ticker_rows",
-        lambda _ctx: common.parse_ticker_directory(
+        lambda _ctx, **_kwargs: common.parse_ticker_directory(
             _json("insider-trading", "tickers-positive.json")
         ),
     )
@@ -1277,7 +1281,7 @@ def test_provider_model_query_injects_sec_identity_and_serializes_typed_result(
     monkeypatch.setattr(
         directory,
         "company_ticker_rows",
-        lambda _ctx: common.parse_ticker_directory(_json("cik-map", "positive.json")),
+        lambda _ctx, **_kwargs: common.parse_ticker_directory(_json("cik-map", "positive.json")),
     )
     descriptor = SimpleNamespace(
         source="sec",
@@ -1440,7 +1444,9 @@ def test_sec_user_agent_and_multistage_budget_fail_before_transport(
     monkeypatch.setattr(
         insider,
         "company_ticker_rows",
-        lambda *_args: (_ for _ in ()).throw(AssertionError("budget preflight must precede I/O")),
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("budget preflight must precede I/O")
+        ),
     )
     with pytest.raises(RequestAttemptLimitError, match="SEC_REQUEST_BUDGET_EXCEEDED") as exhausted:
         insider.InsiderTradingFetcher().extract_data(query, context)

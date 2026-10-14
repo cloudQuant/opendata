@@ -7,7 +7,7 @@ from collections.abc import Callable, Mapping
 from datetime import date as date_type
 from datetime import datetime, timezone
 from numbers import Integral, Real
-from typing import ClassVar, Literal, TypeVar
+from typing import ClassVar, Literal, TypeVar, cast
 
 import pandas as pd
 from pydantic import field_validator, model_validator
@@ -215,7 +215,7 @@ def _as_history_date(value: object, *, field: str, interval: str) -> date_type |
     if isinstance(value, pd.Timestamp):
         if pd.isna(value):
             raise YfinanceProviderError(f"YFINANCE_{field.upper()}_INVALID")
-        return value.to_pydatetime()
+        return cast("datetime", value.to_pydatetime())
     if isinstance(value, datetime):
         return value
     if isinstance(value, str):

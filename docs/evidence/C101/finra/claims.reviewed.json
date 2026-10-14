@@ -1,0 +1,888 @@
+{
+  "claims": [
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase implementation --evidence-root docs/evidence/C101/finra",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T13:28:32.670195+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "fixture": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "before_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "path": "scripts/quality/iter2_witnesses/finra.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "before_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "path": "scripts/quality/iter2_witnesses/finra.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "fb2487db17420ff8493bd2e4bedb551446d525cb58b47af99738354341ac784b",
+            "before_sha256": "fb2487db17420ff8493bd2e4bedb551446d525cb58b47af99738354341ac784b",
+            "path": "opendata/data/providers/finra/models/otc_aggregate.py"
+          }
+        ]
+      },
+      "provider": "finra",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "finra::OTCAggregate",
+        "path": "docs/evidence/C101/finra/receipts/finra/OTCAggregate/implementation.json",
+        "sha256": "cf7e686bde4a0bd5500bc395e4cc03d5b0b210b0cc430518b25d62681b59d7ad"
+      },
+      "status": "PASS",
+      "upstream_model": "OTCAggregate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase direct --evidence-root docs/evidence/C101/finra",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T13:28:33.489510+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "fixture": [
+          {
+            "after_sha256": "e1b9391992321645fac190442c4c7b22534e2e3c1688973959b6ad0a66882cca",
+            "before_sha256": "e1b9391992321645fac190442c4c7b22534e2e3c1688973959b6ad0a66882cca",
+            "path": "docs/evidence/C101/finra/fixtures/finra/OTCAggregate.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "before_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "path": "scripts/quality/iter2_witnesses/finra.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "fb2487db17420ff8493bd2e4bedb551446d525cb58b47af99738354341ac784b",
+            "before_sha256": "fb2487db17420ff8493bd2e4bedb551446d525cb58b47af99738354341ac784b",
+            "path": "opendata/data/providers/finra/models/otc_aggregate.py"
+          }
+        ]
+      },
+      "provider": "finra",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "finra::OTCAggregate",
+        "path": "docs/evidence/C101/finra/receipts/finra/OTCAggregate/direct.json",
+        "sha256": "a1de5ee9612357dfb35a38a1383ca5ceac096933b27b4a5b1a61444def2d80b5"
+      },
+      "status": "PASS",
+      "upstream_model": "OTCAggregate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase service --evidence-root docs/evidence/C101/finra",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T13:28:34.467630+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "fixture": [
+          {
+            "after_sha256": "e1b9391992321645fac190442c4c7b22534e2e3c1688973959b6ad0a66882cca",
+            "before_sha256": "e1b9391992321645fac190442c4c7b22534e2e3c1688973959b6ad0a66882cca",
+            "path": "docs/evidence/C101/finra/fixtures/finra/OTCAggregate.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "before_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "path": "scripts/quality/iter2_witnesses/finra.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "fb2487db17420ff8493bd2e4bedb551446d525cb58b47af99738354341ac784b",
+            "before_sha256": "fb2487db17420ff8493bd2e4bedb551446d525cb58b47af99738354341ac784b",
+            "path": "opendata/data/providers/finra/models/otc_aggregate.py"
+          }
+        ]
+      },
+      "provider": "finra",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "finra::OTCAggregate",
+        "path": "docs/evidence/C101/finra/receipts/finra/OTCAggregate/service.json",
+        "sha256": "11fc66286f207aa63a35399b43b139383ef6a16748472085174455ac87c50e2a"
+      },
+      "status": "PASS",
+      "upstream_model": "OTCAggregate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase contract --evidence-root docs/evidence/C101/finra",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T13:28:35.282116+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "fixture": [
+          {
+            "after_sha256": "e1b9391992321645fac190442c4c7b22534e2e3c1688973959b6ad0a66882cca",
+            "before_sha256": "e1b9391992321645fac190442c4c7b22534e2e3c1688973959b6ad0a66882cca",
+            "path": "docs/evidence/C101/finra/fixtures/finra/OTCAggregate.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "before_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "path": "scripts/quality/iter2_witnesses/finra.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "fb2487db17420ff8493bd2e4bedb551446d525cb58b47af99738354341ac784b",
+            "before_sha256": "fb2487db17420ff8493bd2e4bedb551446d525cb58b47af99738354341ac784b",
+            "path": "opendata/data/providers/finra/models/otc_aggregate.py"
+          }
+        ]
+      },
+      "provider": "finra",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "finra::OTCAggregate",
+        "path": "docs/evidence/C101/finra/receipts/finra/OTCAggregate/contract.json",
+        "sha256": "2acb4f3217849a4c4e4137064c70588f483fdfc164c026f694dc197e65ec3dbb"
+      },
+      "status": "PASS",
+      "upstream_model": "OTCAggregate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase counterfact --evidence-root docs/evidence/C101/finra",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T13:28:36.100728+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "fixture": [
+          {
+            "after_sha256": "e1b9391992321645fac190442c4c7b22534e2e3c1688973959b6ad0a66882cca",
+            "before_sha256": "e1b9391992321645fac190442c4c7b22534e2e3c1688973959b6ad0a66882cca",
+            "path": "docs/evidence/C101/finra/fixtures/finra/OTCAggregate.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "before_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "path": "scripts/quality/iter2_witnesses/finra.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "fb2487db17420ff8493bd2e4bedb551446d525cb58b47af99738354341ac784b",
+            "before_sha256": "fb2487db17420ff8493bd2e4bedb551446d525cb58b47af99738354341ac784b",
+            "path": "opendata/data/providers/finra/models/otc_aggregate.py"
+          }
+        ]
+      },
+      "provider": "finra",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "finra::OTCAggregate",
+        "path": "docs/evidence/C101/finra/receipts/finra/OTCAggregate/counterfact.json",
+        "sha256": "62af6d2c973b5464262d5669e3f1413b762cf8eeacd5f25febe32c86fc2cdb03"
+      },
+      "status": "PASS",
+      "upstream_model": "OTCAggregate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase implementation --evidence-root docs/evidence/C101/finra",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T13:28:36.931198+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "fixture": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "before_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "path": "scripts/quality/iter2_witnesses/finra.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "before_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "path": "scripts/quality/iter2_witnesses/finra.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "before_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "path": "opendata/data/providers/finra/models/equity_short_interest.py"
+          }
+        ]
+      },
+      "provider": "finra",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "finra::EquityShortInterest",
+        "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/implementation.json",
+        "sha256": "7713e99a4a7569511eec522d2ca3fe10ff0d1fca060bfef64d713c055a03c1e0"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityShortInterest"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase direct --evidence-root docs/evidence/C101/finra",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T13:28:37.759353+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "fixture": [
+          {
+            "after_sha256": "4cdf46f814afcb43419e143b9247ae687c4edc37124bc186edb4dabc82f72726",
+            "before_sha256": "4cdf46f814afcb43419e143b9247ae687c4edc37124bc186edb4dabc82f72726",
+            "path": "docs/evidence/C101/finra/fixtures/finra/EquityShortInterest.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "before_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "path": "scripts/quality/iter2_witnesses/finra.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "before_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "path": "opendata/data/providers/finra/models/equity_short_interest.py"
+          }
+        ]
+      },
+      "provider": "finra",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "finra::EquityShortInterest",
+        "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/direct.json",
+        "sha256": "0fca53713967fbff343ed01d1a2c0e07e5d3c218ac98d9a7377670d3ce0c9271"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityShortInterest"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase service --evidence-root docs/evidence/C101/finra",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T13:28:38.754246+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "fixture": [
+          {
+            "after_sha256": "4cdf46f814afcb43419e143b9247ae687c4edc37124bc186edb4dabc82f72726",
+            "before_sha256": "4cdf46f814afcb43419e143b9247ae687c4edc37124bc186edb4dabc82f72726",
+            "path": "docs/evidence/C101/finra/fixtures/finra/EquityShortInterest.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "before_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "path": "scripts/quality/iter2_witnesses/finra.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "before_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "path": "opendata/data/providers/finra/models/equity_short_interest.py"
+          }
+        ]
+      },
+      "provider": "finra",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "finra::EquityShortInterest",
+        "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/service.json",
+        "sha256": "bdb53685815b2d400a0b58c67b00bf14eea0afb4d8a970221654b12721a7c1cc"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityShortInterest"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase contract --evidence-root docs/evidence/C101/finra",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T13:28:39.621350+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "fixture": [
+          {
+            "after_sha256": "4cdf46f814afcb43419e143b9247ae687c4edc37124bc186edb4dabc82f72726",
+            "before_sha256": "4cdf46f814afcb43419e143b9247ae687c4edc37124bc186edb4dabc82f72726",
+            "path": "docs/evidence/C101/finra/fixtures/finra/EquityShortInterest.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "before_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "path": "scripts/quality/iter2_witnesses/finra.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "before_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "path": "opendata/data/providers/finra/models/equity_short_interest.py"
+          }
+        ]
+      },
+      "provider": "finra",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "finra::EquityShortInterest",
+        "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/contract.json",
+        "sha256": "bdc8c3ef931d95528a7aa9b0249a2d0f9dfafd8b41384fa12f8a701c17604b82"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityShortInterest"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase counterfact --evidence-root docs/evidence/C101/finra",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T13:28:40.438013+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "fixture": [
+          {
+            "after_sha256": "4cdf46f814afcb43419e143b9247ae687c4edc37124bc186edb4dabc82f72726",
+            "before_sha256": "4cdf46f814afcb43419e143b9247ae687c4edc37124bc186edb4dabc82f72726",
+            "path": "docs/evidence/C101/finra/fixtures/finra/EquityShortInterest.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "before_sha256": "19bcfbd7baf6942e32577c4a4f2c098e668099ce66f0f6d4d76c502b198a33a9",
+            "path": "scripts/quality/iter2_witnesses/finra.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "before_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "path": "opendata/data/providers/finra/models/equity_short_interest.py"
+          }
+        ]
+      },
+      "provider": "finra",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "finra::EquityShortInterest",
+        "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/counterfact.json",
+        "sha256": "b415005da9974d4fd2b708bcf86f054e5276d351b4222de0f3d0c4c0c4d8807c"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityShortInterest"
+    }
+  ],
+  "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
+  "primary_reviews": [
+    {
+      "decision": "ACCEPT",
+      "provider": "finra",
+      "receipt": {
+        "model_identity": "finra::EquityShortInterest",
+        "path": "docs/evidence/C101/finra/primary-reviews/finra__EquityShortInterest.review.json",
+        "sha256": "671efa1c26ebd51b000fa710c13743c0b3a430a5c5d557e7aea67e7371621577"
+      },
+      "reviewed_at_utc": "2026-10-14T13:28:48Z",
+      "reviewer_id": "iter2-acceptance-reviewer-finra",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "EquityShortInterest"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "finra",
+      "receipt": {
+        "model_identity": "finra::OTCAggregate",
+        "path": "docs/evidence/C101/finra/primary-reviews/finra__OTCAggregate.review.json",
+        "sha256": "10ee8507c0bd2db9f57a226429da4bc14ca3c008342a3e3e58b308097fee2fa3"
+      },
+      "reviewed_at_utc": "2026-10-14T13:28:53Z",
+      "reviewer_id": "iter2-acceptance-reviewer-finra",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "OTCAggregate"
+    }
+  ],
+  "schema_version": 1
+}

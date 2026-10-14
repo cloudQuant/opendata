@@ -1,0 +1,25 @@
+carrier: c105-probes-own-a2.txt
+round: C105 a2-probe-repair
+captured_at_local=2026-10-15 05:18:52
+commit=270e373411951be1752d71206379da98762d5081 branch=dev
+worktree_dirty_files_at_capture=1529
+source_log=/tmp/c105_own_planes.txt
+source_bytes=581
+source_sha256_16=f1d3f4c1a5185bf4
+argv=python /tmp/c105_own_planes.py  # the four planes over this round's own probes
+interpreter=gitleaks 8.30.1 / python 3.13.5 (envs/py313)
+own_planes_exit=0
+----------------------------------------------------------------------
+face: own_probes=5
+  probe: docs/evidence/C105/a2-probe-repair/probes/ast_witness.py
+  probe: docs/evidence/C105/a2-probe-repair/probes/carrier_archiver.py
+  probe: docs/evidence/C105/a2-probe-repair/probes/docs_reidentity.py
+  probe: docs/evidence/C105/a2-probe-repair/probes/face_writer.py
+  probe: docs/evidence/C105/a2-probe-repair/probes/split_long_lines.py
+All checks passed!
+face: ruff_check_exit=0
+5 files already formatted
+face: ruff_format_exit=0
+face: mypy_targets=5 targets_with_errors=0 mypy_errors_total=0
+face: bandit_exit=0 bandit_results_total=0
+OWN_PLANES_EXIT=0

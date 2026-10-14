@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model BalanceSheetGrowth --phase counterfact --evidence-root docs/evidence/C101/fmp
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": ["growth_total_assets"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": ["growth_total_assets"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the growth route publishes a year-over-year ratio as a JSON number; a percent-formatted string is not that number, and pydantic would keep the row by dropping the cell, so the adapter must refuse with FMP_BAD_SHAPE attributing invalid=('growth_total_assets',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

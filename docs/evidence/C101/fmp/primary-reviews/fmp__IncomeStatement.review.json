@@ -1,0 +1,346 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/fmp/claims.json",
+    "sha256": "d32e754a5919c1665174e8d3f1965a7cdba8c65cf67b5ffe84b24184dcd985f1"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+            "before_sha256": "e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+            "path": "opendata/data/models/fmp_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+        "receipt": {
+          "path": "docs/evidence/C101/fmp/receipts/fmp/IncomeStatement/contract.json",
+          "sha256": "41ed891e0bc160c0f02b0e12dca885d0ff328ec74a17d75f86839326d559ae70"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+            "before_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+            "path": "opendata/data/providers/fmp/registration.py"
+          },
+          {
+            "after_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+            "before_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+            "path": "opendata/data/providers/fmp/provider.py"
+          },
+          {
+            "after_sha256": "5f6865d4b6d1161ae69ee98b22ea584e2281b0aeddb6311dcb79db60fe3fce0f",
+            "before_sha256": "5f6865d4b6d1161ae69ee98b22ea584e2281b0aeddb6311dcb79db60fe3fce0f",
+            "path": "opendata/data/providers/fmp/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+            "before_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+            "path": "opendata/data/providers/fmp/models/_client.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+            "before_sha256": "e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+            "path": "opendata/data/models/fmp_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+        "receipt": {
+          "path": "docs/evidence/C101/fmp/receipts/fmp/IncomeStatement/counterfact.json",
+          "sha256": "733bcabbb9b8aa2b939e950f8daebb98ccc8421f3972558b68841e97ae9b7adb"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+            "before_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+            "path": "opendata/data/providers/fmp/registration.py"
+          },
+          {
+            "after_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+            "before_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+            "path": "opendata/data/providers/fmp/provider.py"
+          },
+          {
+            "after_sha256": "5f6865d4b6d1161ae69ee98b22ea584e2281b0aeddb6311dcb79db60fe3fce0f",
+            "before_sha256": "5f6865d4b6d1161ae69ee98b22ea584e2281b0aeddb6311dcb79db60fe3fce0f",
+            "path": "opendata/data/providers/fmp/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+            "before_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+            "path": "opendata/data/providers/fmp/models/_client.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+            "before_sha256": "e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+            "path": "opendata/data/models/fmp_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+        "receipt": {
+          "path": "docs/evidence/C101/fmp/receipts/fmp/IncomeStatement/direct.json",
+          "sha256": "e7df64ffb75e5e21815275c7ba9b85c5b73a89e0b53d83dc268f52b886936db4"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+            "before_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+            "path": "opendata/data/providers/fmp/registration.py"
+          },
+          {
+            "after_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+            "before_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+            "path": "opendata/data/providers/fmp/provider.py"
+          },
+          {
+            "after_sha256": "5f6865d4b6d1161ae69ee98b22ea584e2281b0aeddb6311dcb79db60fe3fce0f",
+            "before_sha256": "5f6865d4b6d1161ae69ee98b22ea584e2281b0aeddb6311dcb79db60fe3fce0f",
+            "path": "opendata/data/providers/fmp/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+            "before_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+            "path": "opendata/data/providers/fmp/models/_client.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+            "before_sha256": "e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+            "path": "opendata/data/models/fmp_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+        "receipt": {
+          "path": "docs/evidence/C101/fmp/receipts/fmp/IncomeStatement/implementation.json",
+          "sha256": "60f0ba4a7029597534cd06f653b73155d0c5cc14abb70929026e8a366e7fd286"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+            "before_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+            "path": "opendata/data/providers/fmp/registration.py"
+          },
+          {
+            "after_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+            "before_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+            "path": "opendata/data/providers/fmp/provider.py"
+          },
+          {
+            "after_sha256": "5f6865d4b6d1161ae69ee98b22ea584e2281b0aeddb6311dcb79db60fe3fce0f",
+            "before_sha256": "5f6865d4b6d1161ae69ee98b22ea584e2281b0aeddb6311dcb79db60fe3fce0f",
+            "path": "opendata/data/providers/fmp/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+            "before_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+            "path": "opendata/data/providers/fmp/models/_client.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+            "before_sha256": "e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+            "path": "opendata/data/models/fmp_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
+        "receipt": {
+          "path": "docs/evidence/C101/fmp/receipts/fmp/IncomeStatement/service.json",
+          "sha256": "5f0767215a05aee45201620f95d1702df75a078b0ae42a9e02893a9951caa3c4"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+            "before_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+            "path": "opendata/data/providers/fmp/registration.py"
+          },
+          {
+            "after_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+            "before_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+            "path": "opendata/data/providers/fmp/provider.py"
+          },
+          {
+            "after_sha256": "5f6865d4b6d1161ae69ee98b22ea584e2281b0aeddb6311dcb79db60fe3fce0f",
+            "before_sha256": "5f6865d4b6d1161ae69ee98b22ea584e2281b0aeddb6311dcb79db60fe3fce0f",
+            "path": "opendata/data/providers/fmp/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+            "before_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+            "path": "opendata/data/providers/fmp/models/_client.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "IncomeStatement",
+  "model_identity": "fmp::IncomeStatement",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "fmp",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fmp",
+        "--model",
+        "IncomeStatement",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101/fmp"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fmp",
+        "--model",
+        "IncomeStatement",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101/fmp"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fmp",
+        "--model",
+        "IncomeStatement",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101/fmp"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fmp",
+        "--model",
+        "IncomeStatement",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101/fmp"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "fmp",
+        "--model",
+        "IncomeStatement",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101/fmp"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-14T13:43:12Z",
+  "reviewer_id": "iter2-acceptance-reviewer-fmp",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "IncomeStatement"
+}

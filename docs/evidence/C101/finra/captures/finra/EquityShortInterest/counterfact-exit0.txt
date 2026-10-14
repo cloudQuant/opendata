@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase counterfact --evidence-root docs/evidence/C101/finra
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FinraProviderError", "refusal_code": "FINRA_SHORT_INTEREST_BAD_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FinraProviderError", "refusal_code": "FINRA_SHORT_INTEREST_BAD_ROW", "rejected": [], "status": null}, "reason": "publishing the text cell '142.5K' where the settlement record documents a numeric short-position quantity makes the strict EquityShortInterest row refuse the record, so the adapter surfaces FINRA_SHORT_INTEREST_BAD_ROW for the page rather than dropping the settlement or inventing a quantity; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

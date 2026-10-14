@@ -1,0 +1,42 @@
+carrier: pytest-selection-before.txt
+round: C103
+captured_at_local=2026-10-15T02:49:25+0800
+source_log=/tmp/c103_batch5_before.txt
+source_bytes=3125
+source_sha256_16=d6ab1dec20f995ec
+argv=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_provider_domains.py tests/test_pipeline_jobs.py tests/test_alert_matrix.py tests/test_alert_matrix_model_domains.py -q --no-cov -p no:cacheprovider --tb=line
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+pytest_selection_before_exit=not_captured_at_run_time (7 failed; pytest exits 1 on any collected failure)
+----------------------------------------------------------------------
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 117 items
+
+tests/test_provider_domains.py FFFF..                                    [  5%]
+tests/test_alert_matrix.py ..F..F...............................         [ 36%]
+tests/test_alert_matrix_model_domains.py .F......                        [ 43%]
+tests/test_pipeline_jobs.py ............................................ [ 81%]
+......................                                                   [100%]
+
+=================================== FAILURES ===================================
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_provider_domains.py:1368: AssertionError: opendata/data/providers/yfinance/models/iter2.py
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_provider_domains.py:1368: AssertionError: opendata/data/providers/yfinance/models/iter2.py
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_provider_domains.py:1368: AssertionError: opendata/data/providers/yfinance/models/iter2.py
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_provider_domains.py:1368: AssertionError: opendata/data/providers/yfinance/models/iter2.py
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:39: AssertionError: opendata/data/providers/yfinance/models/iter2.py
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:39: AssertionError: opendata/data/providers/yfinance/models/iter2.py
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix_model_domains.py:56: AssertionError: opendata/data/providers/yfinance/models/iter2.py
+=========================== short test summary info ============================
+FAILED tests/test_provider_domains.py::test_production_domains_preserve_v1_legacy_entries_and_explicit_semantics
+FAILED tests/test_provider_domains.py::test_declared_domain_contracts_match_exact_registered_provider_models
+FAILED tests/test_provider_domains.py::test_exact_domain_identity_assertion_rejects_removed_and_added_domains
+FAILED tests/test_provider_domains.py::test_public_exports_match_reviewed_batch5_counts_and_types
+FAILED tests/test_alert_matrix.py::TestCollection::test_every_leg_is_measured_or_counted_never_dropped
+FAILED tests/test_alert_matrix.py::TestCollection::test_a_leg_with_no_field_mapping_is_the_measured_majority
+FAILED tests/test_alert_matrix_model_domains.py::test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tables
+======================== 7 failed, 110 passed in 0.97s =========================

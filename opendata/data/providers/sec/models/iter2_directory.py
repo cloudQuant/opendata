@@ -11,6 +11,9 @@ from pydantic import Field, ValidationError, field_validator
 if TYPE_CHECKING:
     from pydantic_core import InitErrorDetails
 
+    from opendata.data.models.base import ContractModel
+    from opendata.data.providers._engine.http_json import HttpGet
+
 from opendata.data.capability import Capability
 from opendata.data.models.sec_iter2 import (
     SecCikMapRecord,
@@ -54,9 +57,11 @@ def _filter_page(rows: tuple[_RowT, ...], offset: int, limit: int) -> tuple[_Row
     return rows[offset : offset + limit]
 
 
-def _fund_ticker_rows(ctx: FetchContext) -> tuple[dict[str, str | None], ...]:
+def _fund_ticker_rows(
+    ctx: FetchContext, *, transport: HttpGet | None = None
+) -> tuple[dict[str, str | None], ...]:
     """Parse the SEC fund ticker file, whose rows identify ticker, CIK, series, and class."""
-    document = fetch_json(ctx, SEC_FUND_TICKERS_URL)
+    document = fetch_json(ctx, SEC_FUND_TICKERS_URL, transport=transport)
     fields = document.get("fields")
     data = document.get("data")
     if (
@@ -134,6 +139,8 @@ class CikMapFetcher(Fetcher[CikMapQuery, tuple[dict[str, str], ...]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "CikMap"
+    row_model: ClassVar[type[ContractModel]] = SecCikMapRecord
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="sec_cik_map",
@@ -154,7 +161,7 @@ class CikMapFetcher(Fetcher[CikMapQuery, tuple[dict[str, str], ...]]):
         """Fetch the SEC ticker directory after checking its one-request budget."""
         del params
         ensure_request_capacity(ctx, 1)
-        return company_ticker_rows(ctx)
+        return company_ticker_rows(ctx, transport=self.http_transport)
 
     def transform_data(self, raw: tuple[dict[str, str], ...], params: CikMapQuery) -> FetchResult:
         """Filter, page, and validate CIK-map output rows."""
@@ -190,6 +197,8 @@ class SymbolMapFetcher(Fetcher[SymbolMapQuery, tuple[dict[str, str], ...]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "SymbolMap"
+    row_model: ClassVar[type[ContractModel]] = SecSymbolMapRecord
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="sec_symbol_map",
@@ -210,7 +219,7 @@ class SymbolMapFetcher(Fetcher[SymbolMapQuery, tuple[dict[str, str], ...]]):
         """Fetch the SEC ticker directory after checking its one-request budget."""
         del params
         ensure_request_capacity(ctx, 1)
-        return company_ticker_rows(ctx)
+        return company_ticker_rows(ctx, transport=self.http_transport)
 
     def transform_data(
         self, raw: tuple[dict[str, str], ...], params: SymbolMapQuery
@@ -262,6 +271,8 @@ class EquitySearchFetcher(Fetcher[EquitySearchQuery, tuple[dict[str, str | None]
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "EquitySearch"
+    row_model: ClassVar[type[ContractModel]] = SecEquitySearchRecord
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="sec_equity_search",
@@ -288,9 +299,10 @@ class EquitySearchFetcher(Fetcher[EquitySearchQuery, tuple[dict[str, str | None]
         """Fetch the SEC exchange-ticker file after checking its one-request budget."""
         ensure_request_capacity(ctx, 1)
         if params.is_fund is True:
-            return _fund_ticker_rows(ctx)
+            return _fund_ticker_rows(ctx, transport=self.http_transport)
         return tuple(
-            {**row, "series_id": None, "class_id": None} for row in exchange_ticker_rows(ctx)
+            {**row, "series_id": None, "class_id": None}
+            for row in exchange_ticker_rows(ctx, transport=self.http_transport)
         )
 
     def transform_data(
@@ -392,6 +404,8 @@ class SicSearchFetcher(Fetcher[SicSearchQuery, bytes]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "SicSearch"
+    row_model: ClassVar[type[ContractModel]] = SecSicCode
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="sec_sic_search",
@@ -412,7 +426,7 @@ class SicSearchFetcher(Fetcher[SicSearchQuery, bytes]):
         """Fetch the official SIC table after checking its one-request budget."""
         del params
         ensure_request_capacity(ctx, 1)
-        return fetch_bytes(ctx, SEC_SIC_URL)
+        return fetch_bytes(ctx, SEC_SIC_URL, transport=self.http_transport)
 
     def transform_data(self, raw: bytes, params: SicSearchQuery) -> FetchResult:
         """Parse the official SIC table and return typed matching rows."""

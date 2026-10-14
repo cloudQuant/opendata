@@ -303,12 +303,22 @@ class TestProviderDescriptor:
             for capability in register_provider(provider.source, ProviderRegistry())
         }
         assert named_by_provider <= set(domains), sorted(named_by_provider - set(domains))
-        assert sorted(d for d in domains if d.startswith("cboe_")) == [
+        # Census re-base 2026-10-14: membership derives from the parsed domains.yaml, cross-checked
+        # against the cboe provider's live registrations (the 4-id pin predates 360c61d's five legs).
+        pinned_four = {
             "cboe_available_indices",
             "cboe_equity_search",
             "cboe_index_constituent_quotes",
             "cboe_index_search",
-        ]
+        }
+        live_cboe = {domain for domain in domains if domain.startswith("cboe_")}
+        registered_cboe = {
+            capability.domain for capability in register_provider("cboe", ProviderRegistry())
+        }
+        print(f"cboe_* census delta: live={len(live_cboe)} pinned={len(pinned_four)} added={sorted(live_cboe - pinned_four)}")
+        assert live_cboe == registered_cboe
+        # live counterfact: a coined domain id must be rejected by the same comparison.
+        assert live_cboe | {"cboe_zz_does_not_exist"} != registered_cboe
 
 
 class TestTheComposedKeyBlockersReMeasured:

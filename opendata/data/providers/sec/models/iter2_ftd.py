@@ -10,10 +10,10 @@ import zipfile
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from html.parser import HTMLParser
-from typing import ClassVar, Literal
+from typing import TYPE_CHECKING, ClassVar, Literal
 from urllib.parse import urljoin, urlparse
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, ValidationError, field_validator, model_validator
 
 from opendata.data.capability import Capability
 from opendata.data.models.sec_iter2 import SecFtdRecord
@@ -24,6 +24,10 @@ from opendata.data.providers.sec.models._common import (
     ensure_request_capacity,
     fetch_bytes,
 )
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
+    from opendata.data.providers._engine.http_json import HttpGet
 
 SEC_FTD_PAGE_URL = "https://www.sec.gov/data-research/sec-markets-data/fails-deliver-data"
 MAX_FTD_ARCHIVE_BYTES = 20 * 1024 * 1024
@@ -260,6 +264,8 @@ class EquityFtdFetcher(Fetcher[EquityFtdQuery, tuple[bytes, ...]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "EquityFTD"
+    row_model: ClassVar[type[ContractModel]] = SecFtdRecord
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="sec_equity_ftd",
@@ -271,15 +277,22 @@ class EquityFtdFetcher(Fetcher[EquityFtdQuery, tuple[bytes, ...]]):
 
     def transform_query(self, **kwargs: object) -> EquityFtdQuery:
         """Validate public ticker, report pagination, and injected identity fields."""
-        if set(kwargs) - {
+        unexpected = set(kwargs) - {
             "symbol",
             "limit",
             "skip_reports",
             "use_cache",
             "market",
             "source",
-        }:
-            raise ValueError("unsupported query parameters")
+        }
+        if unexpected:
+            raise ValidationError.from_exception_data(
+                "QueryParams",
+                [
+                    {"type": "extra_forbidden", "loc": (key,), "input": None}
+                    for key in sorted(unexpected)
+                ],
+            )
         return EquityFtdQuery.model_validate(kwargs)
 
     def extract_data(self, params: EquityFtdQuery, ctx: FetchContext) -> tuple[bytes, ...]:
@@ -287,10 +300,15 @@ class EquityFtdFetcher(Fetcher[EquityFtdQuery, tuple[bytes, ...]]):
         limit = params.limit or 24
         skip_reports = params.skip_reports or 0
         ensure_request_capacity(ctx, limit + 1)
-        page = fetch_bytes(ctx, SEC_FTD_PAGE_URL, max_bytes=MAX_TEXT_RESPONSE_BYTES)
+        page = fetch_bytes(
+            ctx, SEC_FTD_PAGE_URL, max_bytes=MAX_TEXT_RESPONSE_BYTES, transport=self.http_transport
+        )
         links = parse_ftd_archive_links(page)
         selected = _select_recent_archives(links, skip_reports=skip_reports, limit=limit)
-        return tuple(fetch_bytes(ctx, url, max_bytes=MAX_FTD_ARCHIVE_BYTES) for url in selected)
+        return tuple(
+            fetch_bytes(ctx, url, max_bytes=MAX_FTD_ARCHIVE_BYTES, transport=self.http_transport)
+            for url in selected
+        )
 
     def transform_data(self, raw: tuple[bytes, ...], params: EquityFtdQuery) -> FetchResult:
         """Parse selected report archives and retain matching public ticker rows."""

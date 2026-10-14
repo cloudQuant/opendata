@@ -1,0 +1,12 @@
+population: guard_backed_casts=7
+GUARDED opendata/data/providers/sec/models/_common.py:206 :: cast("int"
+GUARDED opendata/data/providers/sec/models/_common.py:209 :: cast("bytes"
+GUARDED opendata/data/providers/congress_gov/models/_client.py:158 :: cast("int"
+GUARDED opendata/data/providers/congress_gov/models/_client.py:219 :: cast("int"
+GUARDED opendata/data/providers/congress_gov/models/_client.py:222 :: cast("bytes"
+GUARDED opendata/data/providers/fred/models/_fixed_observation_pages.py:352 :: cast("int"
+GUARDED opendata/data/providers/fred/models/_fixed_observation_pages.py:353 :: cast("bytes"
+face: guarded=7 unguarded=0
+cast_census_exit=0
+arm: opendata/data/providers/sec/models/_common.py:206 guard_present=True guard_deleted=False -> PASS
+cast_arm_exit=0

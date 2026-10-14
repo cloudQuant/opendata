@@ -79,8 +79,10 @@ MONEY_MEASURES_ROWS = (
     ",,,,,\n"
 )
 #: The 1959 row as the eight declared columns read it: MDL_N.M and MMFGB_N.M publish blank.
+#: month is the contract's date (models/federal_reserve_clean_rates.py:15): the declared %Y-%m
+#: cast reads 1959-01 as the first of its month.
 MONEY_MEASURES_1959 = {
-    "month": "1959-01",
+    "month": date(1959, 1, 1),
     "m1": 142.2,
     "m2": 289.8,
     "currency": 28.4,
@@ -90,7 +92,7 @@ MONEY_MEASURES_1959 = {
     "retail_money_market_funds": None,
 }
 MONEY_MEASURES_2024 = {
-    "month": "2024-05",
+    "month": date(2024, 5, 1),
     "m1": 17943.5,
     "m2": 20851.9,
     "currency": 2264.5,
@@ -100,39 +102,48 @@ MONEY_MEASURES_2024 = {
     "retail_money_market_funds": 1816.9,
 }
 
-#: The H.15 header, transcribed from the recorded capture; TreasuryRates is its only reader here.
+#: The H.15 header, transcribed from the pinned capture (sha256 23f3ed8ae67b4d7d, header row 5):
+#: twelve series ids plus Time Period, RIFSGFSW04_N.B published LAST. TreasuryRates reads it.
 H15_HEADER = (
     "Time Period,RIFLGFCM01_N.B,RIFLGFCM03_N.B,RIFLGFCM06_N.B,RIFLGFCY01_N.B,RIFLGFCY02_N.B,"
-    "RIFLGFCY03_N.B,RIFLGFCY05_N.B,RIFLGFCY07_N.B,RIFLGFCY10_N.B,RIFLGFCY20_N.B,RIFLGFCY30_N.B"
+    "RIFLGFCY03_N.B,RIFLGFCY05_N.B,RIFLGFCY07_N.B,RIFLGFCY10_N.B,RIFLGFCY20_N.B,RIFLGFCY30_N.B,"
+    "RIFSGFSW04_N.B"
 )
 #: A row of published percents, a row that prints the source's ND sentinel, and the last row.
-#: All three are verbatim rows of that capture, so each has the header's twelve fields.
+#: All three are verbatim rows of the capture (lines 7, 36, 16307), each with the header's
+#: thirteen fields; the 2024 row prints its week_4 (5.23) in the last column.
 H15_ROWS = (
-    "1962-01-02,,,,3.22,,3.70,3.88,,4.06,4.07,\n"
-    "1962-02-12,,,,ND,,ND,ND,,ND,ND,\n"
-    "2024-06-25,5.43,5.49,5.37,5.10,4.65,4.45,4.25,4.23,4.23,4.46,4.36\n"
+    "1962-01-02,,,,3.22,,3.70,3.88,,4.06,4.07,,\n"
+    "1962-02-12,,,,ND,,ND,ND,,ND,ND,,\n"
+    "2024-06-25,5.43,5.49,5.37,5.10,4.65,4.45,4.25,4.23,4.23,4.46,4.36,5.23\n"
 )
+#: The float readings follow the ruling of 2026-10-14: the engine matches the ND sentinel on the
+#: published text before coercion, so float | None (models/federal_reserve_clean_rates.py) holds.
 H15_1962 = {
     "date": date(1962, 1, 2),
+    "week_4": None,
     "month_1": None,
+    "month_2": None,
     "month_3": None,
     "month_6": None,
-    "year_1": "3.22",
+    "year_1": 3.22,
     "year_2": None,
-    "year_3": "3.70",
-    "year_5": "3.88",
+    "year_3": 3.70,
+    "year_5": 3.88,
     "year_7": None,
-    "year_10": "4.06",
-    "year_20": "4.07",
+    "year_10": 4.06,
+    "year_20": 4.07,
     "year_30": None,
 }
 #: The same table one row later. Every maturity it prints is the source's own missing-data token or
 #: a blank cell, and the declaration spells both as no value: its ``null_sentinel=("ND",)`` on the
-#: eleven str columns rewrites the token to the same ``None`` a blank becomes, which is what
-#: upstream's ``.replace("ND", nan)`` (treasury_rates.py:97) produces before it divides by 100.
+#: twelve sourced float columns rewrites the token to the same ``None`` a blank becomes, which is
+#: what upstream's ``.replace("ND", nan)`` (treasury_rates.py:97) produces before coercing.
 H15_ND = {
     "date": date(1962, 2, 12),
+    "week_4": None,
     "month_1": None,
+    "month_2": None,
     "month_3": None,
     "month_6": None,
     "year_1": None,
@@ -146,17 +157,19 @@ H15_ND = {
 }
 H15_2024 = {
     "date": date(2024, 6, 25),
-    "month_1": "5.43",
-    "month_3": "5.49",
-    "month_6": "5.37",
-    "year_1": "5.10",
-    "year_2": "4.65",
-    "year_3": "4.45",
-    "year_5": "4.25",
-    "year_7": "4.23",
-    "year_10": "4.23",
-    "year_20": "4.46",
-    "year_30": "4.36",
+    "week_4": 5.23,
+    "month_1": 5.43,
+    "month_2": None,
+    "month_3": 5.49,
+    "month_6": 5.37,
+    "year_1": 5.10,
+    "year_2": 4.65,
+    "year_3": 4.45,
+    "year_5": 4.25,
+    "year_7": 4.23,
+    "year_10": 4.23,
+    "year_20": 4.46,
+    "year_30": 4.36,
 }
 
 #: The five metadata rows the capture puts before its header, first cells transcribed verbatim;
@@ -517,7 +530,7 @@ class TestRowsByValue:
         assert [line.split(",", 1)[0] for line in published] == ["2024-05", "1959-01"]
         fetcher, _ = served(case, case.packaged(case.header, *published))
         emitted = rows_of(fetcher, MONEY_MEASURES)
-        assert [row.month for row in emitted] == ["1959-01", "2024-05"]
+        assert [row.month for row in emitted] == [date(1959, 1, 1), date(2024, 5, 1)]
         assert len(emitted) == len(published)
 
     def test_the_declared_eight_columns_come_out_of_a_thirty_column_row(self) -> None:
@@ -532,11 +545,10 @@ class TestRowsByValue:
     def test_blank_cells_and_the_nd_token_are_both_nulls(self) -> None:
         """Empty cells and the published ``ND`` both become the engine's null.
 
-        The sentinel is declared, not assumed: ``null_sentinel=("ND",)`` on the eleven maturity
-        columns is the declaration that makes the token read as no value, which is what upstream's
-        ``.replace("ND", nan)`` (treasury_rates.py:97) does before dividing by 100 at :115. A cell
-        that is neither blank nor the token is still copied verbatim, so the ``str`` columns keep
-        the published percent text.
+        The sentinel is declared, not assumed: ``null_sentinel=("ND",)`` on the twelve sourced
+        float maturity columns is the declaration that makes the token read as no value, which is
+        what upstream's ``.replace("ND", nan)`` (treasury_rates.py:97) does before coercing cells.
+        A cell that is neither blank nor the token is coerced to the float the contract carries.
         """
         treasury_rates = CASES[1]
         fetcher, _ = served(treasury_rates, treasury_rates.shipped_package)

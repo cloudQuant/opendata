@@ -339,12 +339,20 @@ class OwnedMysql:
         try:
             _validate_mysql_image_inspection(image_inspection.stdout)
         except RuntimeError:
+            # ``_docker`` attaches a raw-stderr digest on the real path; fakes may
+            # return a plain CompletedProcess, so fall back to hashing the stderr
+            # bytes the process actually carried instead of failing with an
+            # AttributeError and losing the verdict.
+            stderr_sha256 = getattr(image_inspection, "stderr_sha256", None)
+            stderr_bytes = getattr(image_inspection, "stderr_bytes", None)
+            if stderr_sha256 is None:
+                stderr_sha256, stderr_bytes = _stderr_fingerprint(image_inspection.stderr)
             raise DockerCommandError(
                 failure_class="PinnedImageDigestMismatch",
                 stage="image-inspect",
                 return_code=image_inspection.returncode,
-                stderr_sha256=image_inspection.stderr_sha256,
-                stderr_bytes=image_inspection.stderr_bytes,
+                stderr_sha256=stderr_sha256,
+                stderr_bytes=stderr_bytes,
             ) from None
         network = self._docker(
             [

@@ -111,7 +111,9 @@ def _install_response(
 ) -> list[tuple[str, dict[str, str]]]:
     requests: list[tuple[str, dict[str, str]]] = []
 
-    def http_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def http_get(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         del timeout
         requests.append((url, dict(params)))
         observations = observations_by_series[params["series_id"]]
@@ -140,7 +142,9 @@ def _install_release_response(
     requests: list[tuple[str, dict[str, str]]] = []
     values_by_date = values_by_date or {"2026-09-01": "12.5"}
 
-    def http_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def http_get(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         del timeout
         requests.append((url, dict(params)))
         requested_date = params.get("observation_date")
@@ -599,7 +603,7 @@ def test_manufacturing_csv_topic_validation_rejects_whole_query_before_io(
     fetcher = fetcher_type()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("invalid multi-topic query must fail before I/O"),
+        lambda *args, **_kwargs: pytest.fail("invalid multi-topic query must fail before I/O"),
     )
 
     with pytest.raises(ValidationError):
@@ -779,7 +783,7 @@ def test_invalid_public_survey_frequency_fails_before_io(
     fetcher = fetcher_type()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("invalid frequency must fail before I/O"),
+        lambda *args, **_kwargs: pytest.fail("invalid frequency must fail before I/O"),
     )
 
     with pytest.raises(ValidationError):
@@ -847,7 +851,7 @@ def test_total_page_budget_fails_before_io(
     fetcher = MortgageIndicesFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("aggregate page budget must fail before I/O"),
+        lambda *args, **_kwargs: pytest.fail("aggregate page budget must fail before I/O"),
     )
     with pytest.raises(FredProviderError, match="FRED_BAD_QUERY"):
         fetcher.fetch(
@@ -860,7 +864,7 @@ def test_total_page_budget_fails_before_io(
 def test_invalid_queries_are_rejected_before_io(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("invalid queries must fail before I/O"),
+        lambda *args, **_kwargs: pytest.fail("invalid queries must fail before I/O"),
     )
     with pytest.raises(ValidationError):
         ConsumerPriceIndexFetcher().fetch(
@@ -922,14 +926,16 @@ def test_missing_key_and_rate_limit_are_explicit_errors(
     )
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("missing API key must fail before HTTP"),
+        lambda *args, **_kwargs: pytest.fail("missing API key must fail before HTTP"),
     )
     with pytest.raises(FredProviderError, match="FRED_API_KEY_MISSING"):
         fetcher.fetch(ctx=_context(fetcher))
 
     monkeypatch.setenv("FRED_API_KEY", "synthetic-test-key")
 
-    def rate_limited(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    def rate_limited(
+        url: str, params: dict[str, str], timeout: float | None, **_kwargs
+    ) -> tuple[int, str]:
         del url, params, timeout
         return 429, "rate limited"
 
@@ -1007,7 +1013,9 @@ def test_retail_prices_rejects_unmapped_public_selectors_before_io(
     fetcher = RetailPricesFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("unsupported RetailPrices selectors must fail before I/O"),
+        lambda *args, **_kwargs: pytest.fail(
+            "unsupported RetailPrices selectors must fail before I/O"
+        ),
     )
     assert len(iter2_macro._RETAIL_ITEM_CHOICES) == 51
     assert set(iter2_macro._RETAIL_ITEM_CHOICES) == (
@@ -1089,7 +1097,7 @@ def test_retail_prices_rate_limit_and_page_budget_are_explicit(
     )
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: pytest.fail("missing key must fail before HTTP"),
+        lambda *args, **_kwargs: pytest.fail("missing key must fail before HTTP"),
     )
     with pytest.raises(FredProviderError, match="FRED_API_KEY_MISSING"):
         fetcher.fetch(ctx=_context(fetcher), item="bacon")
@@ -1097,7 +1105,7 @@ def test_retail_prices_rate_limit_and_page_budget_are_explicit(
     monkeypatch.setenv("FRED_API_KEY", "synthetic-test-key")
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *args: (429, "rate limited"),
+        lambda *args, **_kwargs: (429, "rate limited"),
     )
     with pytest.raises(FredProviderError) as error:
         fetcher.fetch(ctx=_context(fetcher), item="bacon")

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from datetime import date as date_type  # noqa: TC003 - Pydantic resolves this at runtime.
-from typing import Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from pydantic import Field, ValidationError, field_validator, model_validator
 
@@ -13,6 +13,10 @@ from opendata.data.models import SeriesCatalogItem
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.fred.models._client import FredProviderError
 from opendata.data.providers.fred.models._paged import fetch_series_search_pages
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
+    from opendata.data.providers._engine.http_json import HttpGet
 
 
 class FredSearchQuery(QueryParams):
@@ -95,6 +99,9 @@ class FredSearchFetcher(Fetcher[FredSearchQuery, list[dict[str, Any]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "FredSearch"
+    row_model: ClassVar[type[ContractModel]] = SeriesCatalogItem
+    #: Offline witness seam; ``None`` keeps the governed production HTTP client path.
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="fred_search",
@@ -123,6 +130,7 @@ class FredSearchFetcher(Fetcher[FredSearchQuery, list[dict[str, Any]]]):
             max_records=params.max_records,
             max_pages=params.max_pages,
             timeout=ctx.timeout,
+            transport=self.http_transport,
         )
 
     def transform_data(self, raw: list[dict[str, Any]], params: FredSearchQuery) -> FetchResult:

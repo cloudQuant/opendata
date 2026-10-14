@@ -150,11 +150,13 @@ def _install_fakes(
 ) -> list[tuple[str, object, float | None]]:
     calls: list[tuple[str, object, float | None]] = []
 
-    def fake_yc(query: EcbYieldCurveQuery, *, timeout: float | None = None) -> Any:
+    def fake_yc(query: EcbYieldCurveQuery, *, timeout: float | None = None, **_kwargs) -> Any:
         calls.append(("yc", query, timeout))
         return yc_rows
 
-    def fake_bps(query: EcbBalanceOfPaymentsQuery, *, timeout: float | None = None) -> Any:
+    def fake_bps(
+        query: EcbBalanceOfPaymentsQuery, *, timeout: float | None = None, **_kwargs
+    ) -> Any:
         calls.append(("bps", query, timeout))
         return bps_rows
 

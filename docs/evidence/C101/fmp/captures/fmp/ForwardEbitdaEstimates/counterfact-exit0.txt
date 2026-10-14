@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model ForwardEbitdaEstimates --phase counterfact --evidence-root docs/evidence/C101/fmp
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": ["ebitda_low"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": ["ebitda_low"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the projection reads the EBITDA low end straight out of the consensus row, where it is published in currency units as a JSON number; a magnitude-suffixed string is not that number, so the adapter must refuse with FMP_BAD_SHAPE attributing invalid=('ebitda_low',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

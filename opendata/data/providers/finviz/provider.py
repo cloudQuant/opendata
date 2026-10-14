@@ -51,11 +51,18 @@ PROVIDER = Provider(
             _PERFORMANCE_FETCHER_MODULE,
             "FinvizPricePerformanceFetcher",
             canonical_model_ids=("PricePerformance",),
+            scenario=(
+                "Finviz股票价格表现（finviz_price_performance 域，返回股票报价页有界的公开收益率）"
+            ),
         ),
         LazyFetcherBinding(
             _PERFORMANCE_FETCHER_MODULE,
             "FinvizEtfPricePerformanceFetcher",
             canonical_model_ids=("EtfPricePerformance",),
+            scenario=(
+                "Finviz ETF价格表现（finviz_etf_price_performance 域，"
+                "精确 ETF 分类后返回报价页有界收益率）"
+            ),
         ),
     ),
     credentials=(),

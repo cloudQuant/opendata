@@ -358,6 +358,41 @@ def test_expand_nested_array_allows_empty_records_but_refuses_empty_children() -
     _assert_refusal(excinfo, EMPTY_RESULT, pointer="holdings", saw_contains="2 record(s)")
 
 
+def test_an_empty_exploded_dimension_drops_its_row_and_nothing_else() -> None:
+    """PINNED SEMANTIC: an empty exploded dimension drops the record; only the total zero refuses.
+
+    The three readings expansion could take -- drop, publish a null-filled row, or refuse per
+    record -- are told apart on one document. Each arm fails if the semantic changes: publishing
+    a null row grows ``rows`` with a ``w is None`` carrier for fund ``A``/``C``; a per-record
+    refusal raises on a document that has published rows at all; reserving the drop for the
+    all-empty list alone answers three rows or ``EMPTY_RESULT`` for this mixed one; and letting
+    the all-empty case pass silently drops the arm below, which keeps ``EMPTY_RESULT`` exactly
+    where the shipped typed-refusal contract puts the silent zero.
+    """
+    plan = NestedArrayExpansion(
+        records_pointer="recs",
+        child_array_pointer="holdings",
+        child_fields=(FieldMapping("w", "w"),),
+        parent_fields=(FieldMapping("fund", "fund", required=False),),
+    )
+    rows = expand_nested_array(
+        {
+            "recs": [
+                {"fund": "A", "holdings": []},
+                {"fund": "B", "holdings": [{"w": 1.0}]},
+                {"fund": "C", "holdings": []},
+            ]
+        },
+        plan,
+    )
+    assert rows == [{"fund": "B", "w": 1.0}]
+    assert not any(row["w"] is None for row in rows), "no null-filled row stands in for []"
+    assert {row["fund"] for row in rows} == {"B"}, "the empty parents published no row"
+    with pytest.raises(RowExpansionError) as excinfo:
+        expand_nested_array({"recs": [{"fund": "A", "holdings": []}]}, plan)
+    _assert_refusal(excinfo, EMPTY_RESULT, pointer="holdings", saw_contains="1 record(s)")
+
+
 # -------------------------------------------------------------------------------- pivot_series
 
 

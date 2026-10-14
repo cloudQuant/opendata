@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model LatestFinancialReports --phase counterfact --evidence-root docs/evidence/C101/sec
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_DAILY_INDEX_BAD_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_DAILY_INDEX_BAD_ROW", "rejected": [], "status": null}, "reason": "the daily master index documents exactly five pipe-delimited columns per entry, so a published line that does not split into five cannot be mapped onto the declared CIK, name, form type, date and filename; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

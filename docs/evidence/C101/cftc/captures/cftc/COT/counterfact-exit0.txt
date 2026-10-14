@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COT --phase counterfact --evidence-root docs/evidence/C101/cftc
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CFTCProviderError", "refusal_code": "CFTC_BAD_DATE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CFTCProviderError", "refusal_code": "CFTC_BAD_DATE", "rejected": [], "status": null}, "reason": "publishing a report date carrying an intraday time breaks the documented weekly calendar-date contract, so the reader must refuse with CFTC_BAD_DATE instead of silently truncating the timestamp into a date the COT row cannot trace back to a report week; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

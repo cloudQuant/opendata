@@ -3628,35 +3628,35 @@ domains:
     filter_dims: []
     storage_mode: "upsert"
     permissions: ["query"]
-  central_bank_holdings:
+  federal_reserve_central_bank_holdings:
     display_name: "Federal Reserve SOMA Holdings"
     rest_path: "macro/federal-reserve-central-bank-holdings"
-    contract: "CentralBankHoldings"
-    temporal_kind: "series"
+    contract: "FederalReserveCentralBankHolding"
+    temporal_kind: "snapshot"
     time_field: "date"
-    natural_key: ["date", "record_type", "security_type", "cusip"]
-    filter_dims: ["record_type", "security_type", "cusip"]
-    storage_mode: "transient"
+    natural_key: ["date", "security_type", "cusip"]
+    filter_dims: ["security_type", "cusip"]
+    storage_mode: "upsert"
     permissions: ["query"]
-  inflation_expectations:
+  federal_reserve_inflation_expectations:
     display_name: "Federal Reserve Inflation Expectations"
     rest_path: "macro/federal-reserve-inflation-expectations"
-    contract: "InflationExpectations"
+    contract: "FederalReserveInflationExpectations"
     temporal_kind: "series"
     time_field: "date"
     natural_key: ["date"]
     filter_dims: []
-    storage_mode: "transient"
+    storage_mode: "upsert"
     permissions: ["query"]
-  total_factor_productivity:
+  federal_reserve_total_factor_productivity:
     display_name: "Federal Reserve Total Factor Productivity"
     rest_path: "macro/federal-reserve-total-factor-productivity"
-    contract: "TotalFactorProductivity"
+    contract: "FederalReserveTotalFactorProductivity"
     temporal_kind: "series"
-    time_field: "date"
-    natural_key: ["date", "variable"]
-    filter_dims: ["variable"]
-    storage_mode: "transient"
+    time_field: "period"
+    natural_key: ["period", "vintage_date"]
+    filter_dims: []
+    storage_mode: "upsert"
     permissions: ["query"]
   federal_reserve_fomc_documents:
     display_name: "Federal Reserve FOMC Documents"

@@ -22,6 +22,7 @@ from opendata.data.providers.fmp.models._client import (
     FMPProviderError,
     FMPQueryLimitError,
     FMPQueryValidationError,
+    contract_shape_error,
     fetch_array,
 )
 from opendata.data.providers.fmp.models.iter2 import TreasuryRatesQuery
@@ -30,6 +31,7 @@ if TYPE_CHECKING:
     from datetime import date as date_type
 
     from opendata.data.models.base import ContractModel
+    from opendata.data.providers._engine.http_json import HttpGet
 
 ModelT = TypeVar("ModelT", bound="ContractModel")
 QueryT = TypeVar("QueryT", bound=QueryParams)
@@ -88,6 +90,9 @@ class _AnalystEstimatesFetcher(Fetcher[AnalystEstimatesQuery, list[dict[str, Any
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None]
     capability: ClassVar[Capability]
+    row_model: ClassVar[type[ContractModel]]
+    #: The offline witness seam; ``None`` keeps the governed shared HTTP client in production.
+    http_transport: ClassVar[HttpGet | None] = None
 
     def transform_query(self, **kwargs: object) -> AnalystEstimatesQuery:
         return _validated_query(AnalystEstimatesQuery, kwargs)
@@ -106,6 +111,7 @@ class _AnalystEstimatesFetcher(Fetcher[AnalystEstimatesQuery, list[dict[str, Any
                 "limit": str(params.limit),
             },
             ctx.timeout,
+            self.http_transport,
         )
 
 
@@ -113,6 +119,7 @@ class AnalystEstimatesFetcher(_AnalystEstimatesFetcher):
     """Fetch the documented full analyst-estimates row shape."""
 
     canonical_model = "AnalystEstimates"
+    row_model = AnalystEstimate
     capability = Capability(
         asset_class="equity",
         domain="fmp_analyst_estimates",
@@ -136,6 +143,7 @@ class ForwardEbitdaEstimatesFetcher(_AnalystEstimatesFetcher):
     """Project forward EBITDA fields from the official analyst-estimates response."""
 
     canonical_model = "ForwardEbitdaEstimates"
+    row_model = ForwardEbitdaEstimate
     capability = Capability(
         asset_class="equity",
         domain="fmp_forward_ebitda_estimates",
@@ -168,6 +176,7 @@ class ForwardEpsEstimatesFetcher(_AnalystEstimatesFetcher):
     """Project forward EPS fields from the official analyst-estimates response."""
 
     canonical_model = "ForwardEpsEstimates"
+    row_model = ForwardEpsEstimate
     capability = Capability(
         asset_class="equity",
         domain="fmp_forward_eps_estimates",
@@ -227,6 +236,7 @@ class EsgScoreFetcher(Fetcher[EsgScoreQuery, list[dict[str, Any]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "EsgScore"
+    row_model: ClassVar[type[ContractModel]] = FmpEsgScore
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="fmp_esg_score",
@@ -235,6 +245,8 @@ class EsgScoreFetcher(Fetcher[EsgScoreQuery, list[dict[str, Any]]]):
         source="fmp",
         verified=False,
     )
+    #: The offline witness seam; ``None`` keeps the governed shared HTTP client in production.
+    http_transport: ClassVar[HttpGet | None] = None
 
     def transform_query(self, **kwargs: object) -> EsgScoreQuery:
         """Validate the symbol and reject unsupported dates before network I/O."""
@@ -242,7 +254,12 @@ class EsgScoreFetcher(Fetcher[EsgScoreQuery, list[dict[str, Any]]]):
 
     def extract_data(self, params: EsgScoreQuery, ctx: FetchContext) -> list[dict[str, Any]]:
         """Read the documented ESG disclosures route for one symbol."""
-        return fetch_array("esg-disclosures", {"symbol": params.symbol}, ctx.timeout)
+        return fetch_array(
+            "esg-disclosures",
+            {"symbol": params.symbol},
+            ctx.timeout,
+            self.http_transport,
+        )
 
     def transform_data(self, raw: list[dict[str, Any]], params: EsgScoreQuery) -> FetchResult:
         """Validate score components, symbol identity, duplicates, and the local row bound."""
@@ -303,6 +320,7 @@ class NportDisclosureFetcher(Fetcher[NportDisclosureQuery, list[dict[str, Any]]]
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "NportDisclosure"
+    row_model: ClassVar[type[ContractModel]] = NportDisclosureHolding
     capability: ClassVar[Capability] = Capability(
         asset_class="fund",
         domain="fmp_nport_disclosure",
@@ -311,6 +329,8 @@ class NportDisclosureFetcher(Fetcher[NportDisclosureQuery, list[dict[str, Any]]]
         source="fmp",
         verified=False,
     )
+    #: The offline witness seam; ``None`` keeps the governed shared HTTP client in production.
+    http_transport: ClassVar[HttpGet | None] = None
 
     def transform_query(self, **kwargs: object) -> NportDisclosureQuery:
         """Validate the requested fund and filing period before network I/O."""
@@ -329,7 +349,7 @@ class NportDisclosureFetcher(Fetcher[NportDisclosureQuery, list[dict[str, Any]]]
         }
         if params.cik is not None:
             request["cik"] = params.cik
-        return fetch_array("funds/disclosure", request, ctx.timeout)
+        return fetch_array("funds/disclosure", request, ctx.timeout, self.http_transport)
 
     def transform_data(
         self,
@@ -344,8 +364,8 @@ class NportDisclosureFetcher(Fetcher[NportDisclosureQuery, list[dict[str, Any]]]
             try:
                 payload = {**item, "fund_symbol": params.symbol}
                 record = NportDisclosureHolding.model_validate(payload)
-            except (ValidationError, TypeError, ValueError):
-                raise FMPProviderError("FMP_BAD_SHAPE") from None
+            except (ValidationError, TypeError, ValueError) as exc:
+                raise contract_shape_error(NportDisclosureHolding, exc) from None
             if params.cik is not None and record.cik != params.cik:
                 raise FMPProviderError("FMP_CIK_FILTER_MISMATCH")
             identity = (record.cik, record.date, record.accepted_date, record.symbol, record.cusip)
@@ -365,6 +385,7 @@ class YieldCurveFetcher(Fetcher[YieldCurveQuery, list[dict[str, Any]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "YieldCurve"
+    row_model: ClassVar[type[ContractModel]] = FmpYieldCurveObservation
     capability: ClassVar[Capability] = Capability(
         asset_class="rates",
         domain="fmp_yield_curve",
@@ -373,6 +394,8 @@ class YieldCurveFetcher(Fetcher[YieldCurveQuery, list[dict[str, Any]]]):
         source="fmp",
         verified=False,
     )
+    #: The offline witness seam; ``None`` keeps the governed shared HTTP client in production.
+    http_transport: ClassVar[HttpGet | None] = None
 
     def transform_query(self, **kwargs: object) -> YieldCurveQuery:
         """Validate the bounded U.S. Treasury date range before network I/O."""
@@ -384,6 +407,7 @@ class YieldCurveFetcher(Fetcher[YieldCurveQuery, list[dict[str, Any]]]):
             "treasury-rates",
             {"from": params.start_date.isoformat(), "to": params.end_date.isoformat()},
             ctx.timeout,
+            self.http_transport,
         )
 
     def transform_data(
@@ -427,7 +451,9 @@ def _validated_query(
 ) -> QueryT:
     try:
         return query_type.model_validate(kwargs)
-    except (ValidationError, TypeError, ValueError):
+    except ValidationError as exc:
+        raise FMPQueryValidationError.from_validation_error(exc) from None
+    except (TypeError, ValueError):
         raise FMPQueryValidationError() from None
 
 
@@ -453,8 +479,8 @@ def _validated_estimate_rows(
 def _validate_record(model: type[ModelT], item: dict[str, Any]) -> ModelT:
     try:
         return model.model_validate(item)
-    except (ValidationError, TypeError, ValueError):
-        raise FMPProviderError("FMP_BAD_SHAPE") from None
+    except (ValidationError, TypeError, ValueError) as exc:
+        raise contract_shape_error(model, exc) from None
 
 
 def _check_record_budget(rows: list[dict[str, Any]], maximum: int) -> None:

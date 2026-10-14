@@ -132,13 +132,16 @@ paths = [
 [[rules]]
 id = "generic-api-key"
 [rules.allowlist]
-description = "SDMX dataflow keys are public identifiers; API_KEY_FAILURE_DELAY_SECONDS=0.05 is the non-secret delay setting after an empty template value; rows_pointer=refRates is an engine field assignment naming a public release-table section; RIFLGFC*_N.B are the Federal Reserve H.15 maturity series identifiers declared as ColumnSpec.source_key; environment_variable= is the next kwarg's NAME swallowed as the value of a one-line CredentialSpec whose credential is read from the environment."
+description = "SDMX dataflow keys are public identifiers; API_KEY_FAILURE_DELAY_SECONDS=0.05 is the non-secret delay setting after an empty template value; rows_pointer=refRates is an engine field assignment naming a public release-table section; RIFLGFC*_N.B are the Federal Reserve H.15 maturity series identifiers declared as ColumnSpec.source_key; RIFSGFSW04_N.B is the twelfth, the H.15 4-week bill series the pinned week-4 capture prints last (specs.py:342, capture sha256 23f3ed8ae67b4d7d, header row 5 field 12); environment_variable= is the next kwarg's NAME swallowed as the value of a one-line CredentialSpec whose credential is read from the environment."
 regexTarget = "secret"
 regexes = [
   '''^[A-Z0-9]{1,12}(\.[A-Z0-9_]{1,14}){3,}$''',
   '''^API_KEY_FAILURE_DELAY_SECONDS=0\.05$''',
   '''^rows_pointer=refRates$''',
   '''^RIFLGFC(M01|M03|M06|Y01|Y02|Y03|Y05|Y07|Y10|Y20|Y30)_N\.B$''',
+  # C104: the twelfth H.15 id, added on its own line so C75's arms [16]/[17] -- which commit and
+  # drop "this one regex" -- still mean the eleven they were measured on.
+  '''^RIFSGFSW04_N\.B$''',
   '''^environment_variable=$''',
 ]
 

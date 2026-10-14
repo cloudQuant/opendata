@@ -153,6 +153,10 @@ PROVIDER = Provider(
             "opendata.data.providers.sec.models.iter2_institutions",
             "InstitutionsSearchFetcher",
             canonical_model_ids=("InstitutionsSearch",),
+            scenario=(
+                "SEC Form 13F institution directory（sec_institutions_search 域，"
+                "检索最新 13F 批次中的申报机构）"
+            ),
         ),
     ),
     credentials=(),

@@ -178,9 +178,11 @@ class TestContractNamesExactlyTheDeclaredColumns:
     ) -> None:
         """The time column is required and non-null; every measure accepts the published null.
 
-        TreasuryRates' maturities stay ``str`` because the pinned body prints its own ``ND``
-        token -- a numeric field would refuse real rows -- and MoneyMeasures reads its blank
-        sentinel as ``None``, which a bare ``float`` field would reject.
+        TreasuryRates' maturities are ``float | None`` and the declaration's
+        ``null_sentinel=("ND",)`` matches the token the pinned body prints (capture
+        23f3ed8ae67b4d7d: 8,551 ``ND`` cells) before coercion -- ruling of 2026-10-14 --
+        and MoneyMeasures reads its blank sentinel as ``None``, which a bare ``float``
+        field would reject.
         """
         contract = contract_model(domain)
         for column in spec.columns:
@@ -316,21 +318,32 @@ class TestDriftIsRefused:
 class TestPublishedTokenTypes:
     """The two type decisions a reviewer will be asked to justify, pinned as behaviour."""
 
-    def test_money_month_is_a_source_string_and_required(self) -> None:
+    def test_money_month_is_a_contract_date_read_from_the_source_string(self) -> None:
+        """Re-based 2026-10-14: the contract's month is a date; the declared %Y-%m cast in
+        specs.py is what reads the body's 1959-01 into date(1959, 1, 1) -- a str field would
+        accept the raw cell and this arm would go red."""
         contract = contract_model("federal_reserve_money_measures")
-        row = contract(month="1959-01", m1=1.0)
-        assert row.month == "1959-01"
-        assert row.m2 is None
+        row = contract(month=date(1959, 1, 1), m1=1.0, m2=2.0)
+        assert row.month == date(1959, 1, 1)
         with pytest.raises(ValidationError):
-            contract(m1=1.0)
+            contract(month="1959-01", m1=1.0, m2=2.0)
+        with pytest.raises(ValidationError):
+            contract(month=date(1959, 1, 1), m1=1.0)
+        with pytest.raises(ValidationError):
+            contract(m1=1.0, m2=2.0)
 
-    def test_treasury_maturity_keeps_the_published_nd_token(self) -> None:
+    def test_treasury_maturity_is_float_and_the_contract_refuses_the_nd_token(self) -> None:
+        """Re-based per the 2026-10-14 ruling: float | None with null_sentinel=("ND",) -- the
+        ENGINE nulls the token before coercion; the contract itself still refuses the raw text,
+        so a str column here would flip the raises green-to-false."""
         contract = contract_model("federal_reserve_treasury_rates")
-        row = contract(date=date(1962, 1, 2), month_1="ND", year_10="4.62")
-        assert row.month_1 == "ND"
-        assert row.year_10 == "4.62"
+        row = contract(date=date(1962, 1, 2), month_1=None, year_10="4.62", week_4=5.71)
+        assert row.month_1 is None
+        assert row.year_10 == 4.62
+        assert row.week_4 == 5.71
         assert row.year_2 is None
-        # A numeric maturity column would have refused the very row the body publishes.
+        with pytest.raises(ValidationError):
+            contract(date=date(1962, 1, 2), month_1="ND")
         args = set(contract.model_fields["month_1"].annotation.__args__)
-        assert args == {str, type(None)}
+        assert args == {float, type(None)}
         assert contract.model_fields["date"].annotation is date

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model TreasuryConstantMaturity --phase counterfact --evidence-root docs/evidence/C101/fred
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "publishing a non-numeric 'value' token breaks the documented 'rate' contract column of the Treasury constant-maturity row (a finite float, or null only for FRED's '.' sentinel), so the adapter must refuse with FRED_BAD_OBSERVATION surfaced as a ProviderEngineError-shaped FredProviderError instead of coercing; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

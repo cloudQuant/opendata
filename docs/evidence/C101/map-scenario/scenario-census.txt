@@ -1,0 +1,12 @@
+population: descriptors=329 capabilities=351 map_entries=346
+face: no_scenario=0 covered_pairs=351 registry_pairs=351 uncovered=0 overcovered=1
+arm: oecd/CompositeLeadingIndicator scenario=None -> RAISED: registry model oecd/CompositeLeadingIndicator has no scenario
+arm: restored_scenario_chars=45 -> PASS
+reading: overcovered=1 is one status=pending legacy plan row, excluded from covered_capabilities by design
+  model=TBD scenario=财务指标（dwd 财务域） row=(ths,financial_indicator) status=pending
+conformance face (tests/test_provider_conformance.py, same argv as the gate leg):
+  before: 351 FAILED lines for this file in the full-suite log (571 failed total)
+  after:  1404 passed, 0 failed (rc=0) -- the 351 that were red here are the whole of the file's reds
+scenario_census_exit=0
+scenario_arm_exit=0
+conformance_run_exit=0

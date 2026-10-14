@@ -76,16 +76,21 @@ SVENSSON_FIELDS: Final[tuple[str, ...]] = (
 )
 
 
-def _row(timestamp: str, prefix: str, headers: tuple[str, ...] = SVENSSON_HEADERS) -> str:
-    """One wide CSV row whose every cell is tagged with that column's header position."""
-    return ",".join((timestamp, *(f"{prefix}{index:02d}" for index in range(len(headers)))))
+def _row(timestamp: str, base: str, headers: tuple[str, ...] = SVENSSON_HEADERS) -> str:
+    """One wide CSV row whose every cell is the number tagging its row base and column position.
+
+    The frozen contract publishes each series column as ``float | None``
+    (``opendata/data/models/federal_reserve_clean_rates.py``), so the canned body must publish
+    cells the contract can read: ``{base}.{position:02d}`` is distinct per (row, column) pair.
+    """
+    return ",".join((timestamp, *(f"{base}.{index:02d}" for index in range(len(headers)))))
 
 
 #: Two published dates, deliberately out of order so the pivot's timestamp ordering is under test.
-#: Every cell carries its column position, which is what makes a mis-paired ``source_key`` answer
-#: with a different column's value instead of passing silently.
+#: Every cell carries its column position as that column's own decimal, which is what makes a
+#: mis-paired ``source_key`` answer with a different column's value instead of passing silently.
 SVENSSON_BODY = "\n".join(
-    (",".join(("Date", *SVENSSON_HEADERS)), _row("2024-01-02", "a"), _row("2024-01-01", "b"), "")
+    (",".join(("Date", *SVENSSON_HEADERS)), _row("2024-01-02", "2"), _row("2024-01-01", "1"), "")
 )
 
 #: The same table with BETA3 missing from the header, so a declared series column is one the
@@ -93,7 +98,7 @@ SVENSSON_BODY = "\n".join(
 BODY_WITHOUT_A_SERIES = "\n".join(
     (
         ",".join(("Date", *(key for key in SVENSSON_HEADERS if key != "BETA3"))),
-        _row("2024-01-01", "b", tuple(key for key in SVENSSON_HEADERS if key != "BETA3")),
+        _row("2024-01-01", "1", tuple(key for key in SVENSSON_HEADERS if key != "BETA3")),
         "",
     )
 )
@@ -164,8 +169,8 @@ class TestDeclaredExpansion:
         """The alignment arm: a mis-paired source key answers with another column's tagged value."""
         earlier, later = _fetch(SVENSSON_BODY)
         for position, field in enumerate(SVENSSON_FIELDS):
-            assert getattr(earlier, field) == f"b{position:02d}", field
-            assert getattr(later, field) == f"a{position:02d}", field
+            assert getattr(earlier, field) == float(f"1.{position:02d}"), field
+            assert getattr(later, field) == float(f"2.{position:02d}"), field
 
     def test_a_declaration_naming_no_stage_resolves_the_list_as_before(self) -> None:
         """The byte-identical arm: row_expansion defaults empty, so nothing is routed."""
@@ -192,7 +197,7 @@ class TestExpansionRefusals:
     def test_a_timestamp_header_the_body_calls_DATE_is_a_refusal(self) -> None:  # noqa: N802
         """The published token is Date, so the uppercase spelling first guessed here is not it."""
         with pytest.raises(Exception) as caught:
-            _fetch("\n".join((",".join(("DATE", *SVENSSON_HEADERS)), _row("2024-01-01", "b"), "")))
+            _fetch("\n".join((",".join(("DATE", *SVENSSON_HEADERS)), _row("2024-01-01", "1"), "")))
         error = caught.value
         assert isinstance(error, RowExpansionError), f"a {type(error).__name__} escaped: {error}"
         assert error.reason == MISSING_POINTER

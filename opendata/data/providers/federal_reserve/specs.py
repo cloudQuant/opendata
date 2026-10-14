@@ -30,18 +30,14 @@ equally carried. The upstream helper is not a helper: each of the three models i
 ``make_request(url)`` plus ``pandas.read_csv(BytesIO(r.content), header=5, ...)``
 (money_measures.py:77-78, treasury_rates.py:93-95, yield_curve.py:72-73), and those line numbers,
 the ``header=5`` count and the release constants below were re-read from the installed extension
-(openbb_federal_reserve 1.6.2) rather than remembered. The *response* numbers are on weaker ground:
-they were read from a capture at
-``providers/federal_reserve/tests/record/http/test_federal_reserve_fetchers/*.yaml``, and that root
-is not in this tree -- no ``providers/`` directory, no ``record/`` directory, and the installed
-package contains no ``RIFLGFC`` string at all. So the header cells, row counts and ``ND`` census
-below are assertions this file carries, not bytes a reader can re-measure here, and the test cannot
-falsify them either: it hand-types the same eleven names into its own fixture, so it proves
-spec-to-row mapping and nothing about the release. One more asymmetry belongs here: upstream names
-that table *positionally* (``df.columns = ["date"] + maturities``, treasury_rates.py:96 over the
-list at :18-29), so it never reads the header cells our ``source_key`` values are matched against. A
-wrong name therefore yields null columns rather than a refusal. Fetching and archiving the capture
-as a hashed fixture is the fix, and it needs the live-upstream authorization this phase lacks.
+(openbb_federal_reserve 1.6.2) rather than remembered. The H.15 *response* numbers below were
+re-measured against the pinned capture
+``docs/evidence/C100/federal-reserve/captures/h15-treasury-rates-plus-week4-20261012.csv``
+(sha256 ``23f3ed8ae67b4d7d``); the H.6 numbers stay transcriptions of the upstream models -- no
+H.6 capture is in this tree. One asymmetry the capture keeps: upstream names that table
+*positionally* (``df.columns = ["date"] + maturities``, treasury_rates.py:96 over the list at
+:18-29), so it never reads the header cells our ``source_key`` values are matched against; a
+wrong name yields null columns rather than a refusal.
 
 * MoneyMeasures (``rel=H6``, CRLF file of 790 logical CSV rows, 30 columns): logical row 5 is the
   header and publishes ``Time Period``, ``M1_N.M``, ``M2_N.M``, ``MCU_N.M``, ``MDD_N.M``,
@@ -49,20 +45,22 @@ as a hashed fixture is the fix, and it needs the live-upstream authorization thi
   ``M2.M``, ``MCU.M``, ``MDD.M``, ``MDL.M``, ``MDTS.M``, ``MMFGB.M`` and twelve more reserves/base
   ids. Rows 0-4 are ``Series Description`` / ``Unit:`` / ``Multiplier:`` / ``Currency:`` /
   ``Unique Identifier:`` metadata. Period cells are ``1959-01``.
-* TreasuryRates and YieldCurve read the same download (``rel=H15``, 16306 CRLF rows, 12 columns):
+* TreasuryRates and YieldCurve read the same download (``rel=H15``): the pinned week-4 capture's
   header row 5 publishes ``Time Period``, ``RIFLGFCM01_N.B``, ``RIFLGFCM03_N.B``,
   ``RIFLGFCM06_N.B``, ``RIFLGFCY01_N.B``, ``RIFLGFCY02_N.B``, ``RIFLGFCY03_N.B``,
   ``RIFLGFCY05_N.B``, ``RIFLGFCY07_N.B``, ``RIFLGFCY10_N.B``, ``RIFLGFCY20_N.B``,
-  ``RIFLGFCY30_N.B``; period cells are ``1962-01-02``. The same body carries 8003 ``ND`` cells and
-  30245 empty ones -- which is why the maturity columns below are ``str`` and not ``float``. Those
-  eleven ids are the whole published tenor set: no ``RIFLGFCM02_N.B`` and no ``RIFLGFCYW04_N.B``
-  occur anywhere in the pinned captures, which is why this declaration publishes 12 columns and not
-  the 14 the shared ``TreasuryRatesData`` base class can carry.
+  ``RIFLGFCY30_N.B`` and ``RIFSGFSW04_N.B`` -- twelve ids, the 4-week bill printed LAST,
+  positionally (sha256 23f3ed8ae67b4d7d); period cells are ``1962-01-02``. That body carries
+  8,551 ``ND`` cells and 40,570 blank ones over 16,898 data rows -- why the maturity columns
+  below are ``float`` with ``null_sentinel=("ND",)`` (the sentinel matches the published text
+  before coercion, so ``ND`` and blank both read as the ``None`` the contract holds) and not
+  ``str``. No package in this repo's captures prints a 2-month series (no ``RIFLGFCM02_N.B``
+  occurs anywhere), which is why ``month_2`` is declared with no source key at all.
 
-The preamble every one of these bodies leads with is declared, not assumed. The Fed package is not
-a table from byte zero: five metadata rows (``Series Description`` / ``Unit:`` / ``Multiplier:`` /
-``Currency:`` / ``Unique Identifier:``) come before the header, and upstream discards them by
-*counting* them -- ``pd.read_csv(..., header=5)`` -- which is why each declaration below carries
+The preamble every one of these bodies leads with is declared, not assumed: five metadata rows
+(``Series Description`` / ``Unit:`` / ``Multiplier:`` / ``Currency:`` / ``Unique Identifier:``)
+come before the header, and upstream discards them by *counting* them --
+``pd.read_csv(..., header=5)`` -- which is why each declaration below carries
 ``decoder=DecoderSpec(kind="csv", preamble_rows=5)``. The engine skips that many rows from its
 blank-filtered row list, the same list pandas counts because blank-line skipping is on upstream too,
 so a count off by one is a refusal (the header lands on a data row, or on nothing) rather than a
@@ -87,6 +85,7 @@ from opendata.data.providers._engine.spec import (
     RowOrderSpec,
 )
 from opendata.data.providers._engine.value_transform import (
+    CastSpec,
     DerivePlan,
     DeriveStage,
     ScaleSpec,
@@ -160,8 +159,8 @@ def _download_params() -> tuple[ParamSpec, ...]:
 #: ``.replace("ND", nan)`` over the eleven maturity columns before dividing them by 100 at :115, and
 #: SvenssonYieldCurve's own validator (:1062-1082) nulls ``""``, ``NA``, ``ND`` and ``N/A`` before
 #: any float coercion. The numeric ``-999.99`` that validator also recognises is deliberately not
-#: carried here: these columns are declared ``str`` because the body prints the text tokens, and a
-#: sentinel is matched on the text the source publishes before coercion.
+#: carried here: a sentinel is matched on the published text before coercion, so it can only spell
+#: text tokens, never a number.
 H6_NULL_SENTINEL: Final[tuple[str, ...]] = ("ND",)
 H15_NULL_SENTINEL: Final[tuple[str, ...]] = ("ND",)
 SVENSSON_NULL_SENTINEL: Final[tuple[str, ...]] = ("", "NA", "ND", "N/A")
@@ -215,25 +214,32 @@ MONEY_MEASURES = ModelSpec(
     columns=(
         ColumnSpec(
             "month",
-            "str",
+            "date",
             source_key="Time Period",
             required=True,
             nullable=False,
             units="source format %Y-%m",
         ),
+        # The reviewed contract FederalReserveMoneyMeasure declares m1 and m2 as required,
+        # non-nullable floats (models/federal_reserve_clean_rates.py:16-17), and the clean fetcher
+        # refuses a row whose M1 or M2 cell is missing (models/clean_rates.py:417-418). A null
+        # sentinel is therefore not declarable here: the engine rejects a sentinel on a column the
+        # row model refuses to leave null (spec.py:450-453).
         ColumnSpec(
             "m1",
             "float",
             source_key="M1_N.M",
             units="currency, multiplier 1e+09",
-            null_sentinel=H6_NULL_SENTINEL,
+            required=True,
+            nullable=False,
         ),
         ColumnSpec(
             "m2",
             "float",
             source_key="M2_N.M",
             units="currency, multiplier 1e+09",
-            null_sentinel=H6_NULL_SENTINEL,
+            required=True,
+            nullable=False,
         ),
         ColumnSpec(
             "currency",
@@ -246,6 +252,16 @@ MONEY_MEASURES = ModelSpec(
             "demand_deposits",
             "float",
             source_key="MDD_N.M",
+            null_sentinel=H6_NULL_SENTINEL,
+        ),
+        # The reviewed contract FederalReserveMoneyMeasure declares retail_money_market_funds
+        # before the MDL/MDTS pair (models/federal_reserve_clean_rates.py), and
+        # tests/test_federal_reserve_domains.py pins the declaration's order to the contract's.
+        ColumnSpec(
+            "retail_money_market_funds",
+            "float",
+            source_key="MMFGB_N.M",
+            units="currency, multiplier 1e+09",
             null_sentinel=H6_NULL_SENTINEL,
         ),
         ColumnSpec(
@@ -262,17 +278,21 @@ MONEY_MEASURES = ModelSpec(
             units="currency, multiplier 1e+09",
             null_sentinel=H6_NULL_SENTINEL,
         ),
-        ColumnSpec(
-            "retail_money_market_funds",
-            "float",
-            source_key="MMFGB_N.M",
-            units="currency, multiplier 1e+09",
-            null_sentinel=H6_NULL_SENTINEL,
-        ),
     ),
     scenario="货币供应量月表：取出 H.6 发布表在五行元数据之后的七个货币总量序列",
     error_prefix="FEDERAL_RESERVE",
     decoder=DecoderSpec(kind="csv", preamble_rows=5),
+    column_derives=(
+        DerivePlan(
+            column="month",
+            stages=(DeriveStage(kind="cast", cast=CastSpec.date_string("%Y-%m")),),
+            note=(
+                "The body prints 1959-01 and the contract FederalReserveMoneyMeasure.month is a "
+                "date (models/federal_reserve_clean_rates.py:15); this cast reads the %Y-%m cell "
+                "as the first of its month, the way upstream's to_datetime does."
+            ),
+        ),
+    ),
     order_by=RowOrderSpec(column="Time Period", direction="asc", limit=None),
     notes=(
         "The preamble is declared, not assumed: five metadata rows precede the header in the "
@@ -283,15 +303,18 @@ MONEY_MEASURES = ModelSpec(
         "declaration keeps 8, matching the seven series upstream selects by name plus Time Period "
         "(money_measures.py:80-84). The kept ids are the _N.M (not seasonally adjusted) set, "
         "because adjusted defaults to True; adjusted=False selects the seasonally adjusted M1.M "
-        "family instead, and a column choice driven by a parameter is not declarable. month is "
-        "str because the source publishes 1959-01, which no declared date kind can parse -- "
-        "upstream converts it with to_datetime. Upstream also maps ND and - to null, coerces each "
+        "family instead, and a column choice driven by a parameter is not declarable. month is a "
+        "date, the type its contract carries (models/federal_reserve_clean_rates.py:15): the "
+        "body publishes 1959-01 and the declared %Y-%m cast reads it as the first of that "
+        "month, the step upstream does with to_datetime. Upstream also maps ND and - to null, coerces each "
         "cell with float(), filters the window in pandas after the whole download (default ten "
         "years, money_measures.py:87-90) and sorts the transformed data ascending by month "
         "(money_measures.py:112); order_by declares that sort on the record key the download "
         "publishes (Time Period, the source_key of month), with limit=None so every kept row is "
         "returned, and the engine reads a blank cell -- the sentinel this capture actually uses -- "
-        "as null."
+        "as null. ND is declared on the five optional _N.M columns; on m1 and m2 it is not, "
+        "because the contract makes both required and non-nullable, and an ND rewrite would "
+        "produce exactly the null that row model refuses."
     ),
 )
 
@@ -309,79 +332,95 @@ TREASURY_RATES = ModelSpec(
     static_query=_download_constants("H15", "bf17364827e38702b42a58cf8eaa3f78"),
     columns=(
         ColumnSpec("date", "date", source_key="Time Period", required=True, nullable=False),
+        # The 4-week bill series the pinned capture publishes LAST in its header (positional, not
+        # beside the short tenors): h15-treasury-rates-plus-week4-20261012.csv, sha256
+        # 23f3ed8ae67b4d7d, header row 5, field 12. The contract carries it as float | None
+        # (models/federal_reserve_clean_rates.py:34).
         ColumnSpec(
-            "month_1",
-            "str",
-            source_key="RIFLGFCM01_N.B",
+            "week_4",
+            "float",
+            source_key="RIFSGFSW04_N.B",
             units="percent per year",
             null_sentinel=H15_NULL_SENTINEL,
         ),
         ColumnSpec(
+            "month_1",
+            "float",
+            source_key="RIFLGFCM01_N.B",
+            units="percent per year",
+            null_sentinel=H15_NULL_SENTINEL,
+        ),
+        # The contract's public 2-month field; no H.15 package in this repo's captures prints a
+        # 2-month series (no RIFLGFCM02_N.B occurs in 23f3ed8ae67b4d7d), so it is declared with NO
+        # source key -- the shape the engine reads as absent-and-null -- and no sentinel, because
+        # there is no published cell for one to match. models/clean_rates.py keeps it None too.
+        ColumnSpec("month_2", "float", units="percent per year"),
+        ColumnSpec(
             "month_3",
-            "str",
+            "float",
             source_key="RIFLGFCM03_N.B",
             units="percent per year",
             null_sentinel=H15_NULL_SENTINEL,
         ),
         ColumnSpec(
             "month_6",
-            "str",
+            "float",
             source_key="RIFLGFCM06_N.B",
             units="percent per year",
             null_sentinel=H15_NULL_SENTINEL,
         ),
         ColumnSpec(
             "year_1",
-            "str",
+            "float",
             source_key="RIFLGFCY01_N.B",
             units="percent per year",
             null_sentinel=H15_NULL_SENTINEL,
         ),
         ColumnSpec(
             "year_2",
-            "str",
+            "float",
             source_key="RIFLGFCY02_N.B",
             units="percent per year",
             null_sentinel=H15_NULL_SENTINEL,
         ),
         ColumnSpec(
             "year_3",
-            "str",
+            "float",
             source_key="RIFLGFCY03_N.B",
             units="percent per year",
             null_sentinel=H15_NULL_SENTINEL,
         ),
         ColumnSpec(
             "year_5",
-            "str",
+            "float",
             source_key="RIFLGFCY05_N.B",
             units="percent per year",
             null_sentinel=H15_NULL_SENTINEL,
         ),
         ColumnSpec(
             "year_7",
-            "str",
+            "float",
             source_key="RIFLGFCY07_N.B",
             units="percent per year",
             null_sentinel=H15_NULL_SENTINEL,
         ),
         ColumnSpec(
             "year_10",
-            "str",
+            "float",
             source_key="RIFLGFCY10_N.B",
             units="percent per year",
             null_sentinel=H15_NULL_SENTINEL,
         ),
         ColumnSpec(
             "year_20",
-            "str",
+            "float",
             source_key="RIFLGFCY20_N.B",
             units="percent per year",
             null_sentinel=H15_NULL_SENTINEL,
         ),
         ColumnSpec(
             "year_30",
-            "str",
+            "float",
             source_key="RIFLGFCY30_N.B",
             units="percent per year",
             null_sentinel=H15_NULL_SENTINEL,
@@ -393,19 +432,21 @@ TREASURY_RATES = ModelSpec(
     notes=(
         "The preamble is a declared count, not a guess: five metadata rows precede the header, "
         "upstream drops them with read_csv header=5, and preamble_rows=5 states the same count "
-        "here, so this record publishes the 12-column table after them, "
-        "under the ids the header really prints. The eleven maturity columns are str on purpose: "
-        "the pinned body carries its own missing-data token ND in 8003 cells, and a float column "
-        "would refuse those rows with FEDERAL_RESERVE_SHAPE_INVALID -- declaring them numeric "
-        "would describe a body the source does not publish. Upstream replaces ND with null, "
-        "divides every maturity by 100 (treasury_rates.py:114-115) so its contract speaks "
-        "normalized percent, drops rows that are entirely empty (treasury_rates.py:99), renames "
-        "the 12 columns positionally rather than by name (treasury_rates.py:96), and applies its "
+        "here, so this record publishes the table after them, "
+        "under the ids the header really prints, plus the week_4 id the pinned week-4 capture "
+        "prints last (23f3ed8ae67b4d7d) and the source-less month_2 field no package prints. "
+        "The twelve sourced maturity columns are float with null_sentinel=H15_NULL_SENTINEL: "
+        "the body prints its missing-data token ND in 8,551 cells (measured over the capture), "
+        "the sentinel matches that published text BEFORE coercion, and both the token and the "
+        "40,570 blank cells therefore reach the contract's float | None fields as None "
+        "(models/federal_reserve_clean_rates.py:33-45) instead of forcing the column to str. "
+        "Upstream replaces ND with null, divides every maturity by 100 (treasury_rates.py:97, "
+        ":114-115), drops rows that are entirely empty (treasury_rates.py:99), renames the "
+        "columns positionally rather than by name (treasury_rates.py:96), and applies its "
         "one-year default window in pandas after the whole download. The engine keeps the "
-        "published percent scale, keeps all-empty rows as null rows, and reads both blank "
-        "and the ND token as null -- the token half is declared, not assumed: "
-        "null_sentinel=H15_NULL_SENTINEL on each of the eleven columns is this round's C97 kernel "
-        "in production use, and it is the same replace upstream does at treasury_rates.py:97."
+        "published percent scale (the contract retains native rate bases), keeps all-empty rows "
+        "as null rows, and reads both blank and the ND token as null -- the token half is "
+        "declared, not assumed, and it is the same replace upstream does at treasury_rates.py:97."
     ),
 )
 
@@ -509,7 +550,7 @@ SVENSSON_YIELD_CURVE = ModelSpec(
         "grew ModelSpec.column_derives -- and since C97 it has a sentinel-to-null map: "
         "null_sentinel=SVENSSON_NULL_SENTINEL declares the four text tokens on every one of the 99 "
         "series columns, so a cast stage no longer refuses the cells the contract was written to "
-        "absorb and the H.15 body's 8003 ND cells read as nulls. What the field still cannot spell "
+        "absorb and the H.15 body's 8,551 ND cells (capture 23f3ed8ae67b4d7d) read as nulls. What the field still cannot spell "
         "is -999.99: a sentinel is matched on the published text before coercion and these columns "
         "are str, so that one missing-value number stays priced in DECLARED_GAPS. Declaring the "
         "source tokens is the honest face; the cast is one step behind them and is not declared "
@@ -699,7 +740,13 @@ SOFR = ModelSpec(
             "float",
             source_key="percentRate",
             units="published percent",
-            null_sentinel=SOFR_NULL_SENTINEL,
+            # NO null_sentinel: the frozen contract SOFR (models/federal_reserve_clean_nyfed.py:14)
+            # makes ``rate`` a required non-nullable float, so the rewrite a sentinel declares
+            # (sentinel text -> None) lands on a row model that refuses the null -- the same
+            # MONEY_MEASURES m1/m2 reading: a sentinel is not declarable on a column the row model
+            # refuses to leave null. A sentinel-spelled rate cell is an honest recorded refusal
+            # (ValueTransformError at the scale stage, upstream's own None-at-:48 outcome is not
+            # reachable under this contract) and is priced in DECLARED_GAPS.
         ),
         ColumnSpec(
             "percentile_1",
@@ -730,6 +777,43 @@ SOFR = ModelSpec(
             null_sentinel=SOFR_NULL_SENTINEL,
         ),
         ColumnSpec("volume", "float", source_key="volumeInBillions", units="billions of USD"),
+        # The reviewed contract SOFR (models/federal_reserve_clean_nyfed.py) carries the four
+        # SOFRAI columns the New York Fed publishes on its second endpoint
+        # (average30day/average90day/average180day/index, the aliases the join in
+        # models/clean_nyfed.py::_SofraiApiRecord reads and the keys the offline fixtures in
+        # tests/test_federal_reserve_clean_nyfed.py replay). This declaration is the one-GET
+        # sofr/search.json row: those keys are absent from its records and read as null, which
+        # is exactly how the contract's own optionals describe a sofr-only day. No sentinel and no
+        # scale stage is declared on them: the upstream SOFR validator's nulling and dividing lists
+        # (sofr.py:34-50) reach the five published percent columns only. Since the C98 re-base the
+        # two populations differ: 5 scale plans (rate plus the four percentiles) but 4 sentinel
+        # columns (percentile_1/25/75/99) -- no sentinel is declarable on ``rate``, whose frozen
+        # contract row refuses the null a sentinel would produce.
+        # tests/test_federal_reserve_rate_specs.py pins both populations.
+        ColumnSpec(
+            "average_30d",
+            "float",
+            source_key="average30day",
+            units="percent per year",
+        ),
+        ColumnSpec(
+            "average_90d",
+            "float",
+            source_key="average90day",
+            units="percent per year",
+        ),
+        ColumnSpec(
+            "average_180d",
+            "float",
+            source_key="average180day",
+            units="percent per year",
+        ),
+        ColumnSpec(
+            "index",
+            "float",
+            source_key="index",
+            units="SOFR index (index number, not a percent)",
+        ),
     ),
     column_derives=_percent_fraction_derives(SOFR_PERCENT_FIELDS),
     order_by=RowOrderSpec(column="effectiveDate", direction="asc", limit=None),
@@ -740,8 +824,13 @@ SOFR = ModelSpec(
         "list (sofr.py:83-92), and sofr.py:83-86 composes the URL by interpolating startDate and "
         "endDate into the QUERY STRING -- a query-pair shape the two ParamSpecs carry, not a path "
         "composition, so no path facet was invented for it. Field names and source keys come from "
-        "the pinned contract's __alias_dict__ (:24-32). Each of the five published percent "
-        "columns declares BOTH null_sentinel=SOFR_NULL_SENTINEL and a scale stage: the validator "
+        "the pinned contract's __alias_dict__ (:24-32). Four of the five published percent "
+        "columns -- the percentiles, nullable on the contract -- declare BOTH "
+        "null_sentinel=SOFR_NULL_SENTINEL and a scale stage; the fifth, ``rate``, declares the "
+        "scale stage only, because the frozen contract SOFR.rate is a required non-nullable float "
+        "and a sentinel rewrite to null would land on a row model that refuses it (the "
+        "MONEY_MEASURES m1/m2 reading): a sentinel-spelled rate cell is a recorded refusal, priced "
+        "in DECLARED_GAPS. The validator "
         "at :46-50 nulls None/''/\"''\"/NA BEFORE dividing (:49), and the engine matches a "
         "sentinel on the record text before the stage runs, so sentinel-plus-scale on one "
         "record-sourced column is the same composition, in the same order. A published 0 is not a "
@@ -750,12 +839,15 @@ SOFR = ModelSpec(
         "the ascending date sort (:108) with no cap. C98 registered the domain "
         "federal_reserve_sofr in domains.yaml with all six semantics fields (series / "
         "time_field=date / natural_key=[date] / filter_dims=[date] / storage_mode=transient / "
-        "permissions=[query]) and bound the reviewed contract FederalReserveSofr, so "
+        "permissions=[query]) and bound the reviewed contract SOFR, so "
         "build_row_model publishes that class instead of synthesizing a SOFRRow look-alike -- "
-        "measured on this spec: the contract's 7 fields against the 7 declared columns leave an "
-        "empty symmetric difference in both directions. What remains outside the declaration "
-        "(an explicit JSON null on a staged column, a float-spelled cell) is priced in "
-        "DECLARED_GAPS."
+        "measured on this spec: the contract's 11 fields against the 11 declared columns leave "
+        "an empty symmetric difference in both directions; the four SOFRAI columns "
+        "(average_30d/average_90d/average_180d/index) are published by the SECOND endpoint and "
+        "are absent from this one-GET body, so they read null here. What remains outside the "
+        "declaration (an explicit JSON null on a staged column, a float-spelled cell, and the "
+        "sentinel-spelled rate cell the frozen non-null contract cannot hold) is priced "
+        "in DECLARED_GAPS."
     ),
 )
 
@@ -817,6 +909,12 @@ OVERNIGHT_BANK_FUNDING_RATE = ModelSpec(
             "percentile_99", "float", source_key="percentPercentile99", units="published percent"
         ),
         ColumnSpec("volume", "float", source_key="volumeInBillions", units="billions of USD"),
+        # The reviewed contract FederalReserveOvernightBankFundingRate
+        # (models/federal_reserve_clean_rates.py) carries the NY Fed's revision indicator as a
+        # public field, and the clean reader names the record key it comes from
+        # (models/clean_rates.py::OvernightBankFundingRateFetcher reads item["revisionIndicator"]
+        # and refuses a non-string cell). It rides this declaration as the nullable str it is.
+        ColumnSpec("revision_indicator", "str", source_key="revisionIndicator"),
     ),
     column_derives=_percent_fraction_derives(OBFR_PERCENT_FIELDS),
     order_by=RowOrderSpec(column="effectiveDate", direction="asc", limit=None),
@@ -834,16 +932,17 @@ OVERNIGHT_BANK_FUNDING_RATE = ModelSpec(
         "validator at sofr.py:48 nulls '', \"''\" and NA before dividing, this one divides "
         "whatever is not None, so there is no published text token this column nulls ahead of "
         "the cast (the C92 sentinel claim the census refuted, re-measured on the oracle at "
-        ":57-61). The revision_indicator validator (:41-45) is dead text FOR THE PUBLISHED ROW: "
-        "transform_data pops type/revisionIndicator/footnoteId (:117-119) before validation, so "
-        "the row carries no revision cell; normalize_record reads declared columns only, so all "
-        "three pops are no-ops here and none is declared, exactly as for SOFR's :103-105. "
-        "order_by declares the ascending date sort (:122) with no cap. The census need set "
+        ":57-61). The revision_indicator validator (:41-45) ran after transform_data had popped "
+        "the key upstream, but the reviewed contract kept the published cell as a public field "
+        "(models/federal_reserve_clean_rates.py FederalReserveOvernightBankFundingRate), so this "
+        "declaration carries revision_indicator as the nullable str read straight off "
+        "revisionIndicator. order_by declares the ascending date sort (:122) with no cap. The "
+        "census need set "
         "(published_value_rescale, client_side_sort, relative_date_default) is complete: all "
         "three facets ship as columns.rescale, rows.order_limit and param.relative_default, "
         "which is why this row was in roadmap shipped_cover_rows rather than the build pool. "
         "C99 registered this domain in domains.yaml beside federal_reserve_sofr and bound the "
-        "reviewed contract FederalReserveOvernightBankFundingRate: its 7 fields against the 7 "
+        "reviewed contract FederalReserveOvernightBankFundingRate: its 8 fields against the 8 "
         "declared columns leave an empty symmetric difference, so no row class is synthesized."
     ),
 )
@@ -858,11 +957,15 @@ DECLARED_GAPS: dict[str, str] = {
     "float column here refuses it rather than passing it through; float coercion of cells; "
     "client-side date window and month sort; adjusted picks between the _N.M and .M column "
     "families. The ND half of the old 'ND/- to null sentinel map' text is declared since C97: "
-    "null_sentinel=H6_NULL_SENTINEL on the seven _N.M columns.",
-    "TreasuryRates": "divide every maturity by 100 (the columns are declared str, so no rescale "
-    "stage runs on them); drop all-empty rows; positional (not named) column rename; client-side "
-    "date window. ND to null is declared since C97: null_sentinel=H15_NULL_SENTINEL on the eleven "
-    "RIFLGFC* columns, matching treasury_rates.py:97.",
+    "null_sentinel=H6_NULL_SENTINEL on the five optional _N.M columns. It is not declared on m1 "
+    "and m2: the reviewed contract makes both required and non-nullable, and the engine refuses a "
+    "sentinel on a column whose row model cannot hold the null the rewrite would produce.",
+    "TreasuryRates": "divide every maturity by 100 (upstream normalizes to fractions, "
+    "treasury_rates.py:114-115; the float columns here keep the published percent the contract "
+    "describes, models/federal_reserve_clean_rates.py FederalReserveTreasuryRate); drop all-empty "
+    "rows; positional (not named) column rename; client-side date window. ND to null is declared: "
+    "null_sentinel=H15_NULL_SENTINEL on the twelve sourced maturity columns, matching "
+    "treasury_rates.py:97; month_2 declares no source key and reads null.",
     "SvenssonYieldCurve": "the numeric -999.99 that the pinned validator (:1062-1082) treats as a "
     "missing TAU2 is NOT declared: a sentinel is matched on the published text before coercion and "
     "this model's columns are str, so carrying it would mean casting the cell first. The four text "
@@ -888,6 +991,12 @@ DECLARED_GAPS: dict[str, str] = {
     "SOFR": "same two kernel-priced refusals as FederalFundsRate: a JSON-float percent cell (the "
     "float-to-exact-decimal cast is absent) and an explicit null on a staged column, which the "
     "validator at sofr.py:48 maps to None but no sentinel can spell (a sentinel matches text). "
+    "Since the C98 re-base a THIRD refusal is priced: a sentinel-spelled rate cell ('', \"''\", NA) "
+    "is kept as a recorded ValueTransformError, not nulled -- no sentinel is declarable on "
+    "``rate``, because the frozen contract SOFR.rate (models/federal_reserve_clean_nyfed.py:14) "
+    "is a required non-nullable float and the sentinel rewrite's null would refuse at the row "
+    "model (the MONEY_MEASURES m1/m2 reading); upstream's None-at-:48 outcome for that cell is "
+    "unreachable under this contract. "
     "The validator list (:36-37) also names target_range_upper/target_range_lower, keys the "
     "contract's own __alias_dict__ (:24-32) does not publish, so those two arms divide nothing "
     "here and declare nothing. Upstream raises EmptyDataError on a missing or empty refRates "

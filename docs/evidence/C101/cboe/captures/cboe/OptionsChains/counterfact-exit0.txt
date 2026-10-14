@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model OptionsChains --phase counterfact --evidence-root docs/evidence/C101/cboe
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CboeAllAccessError", "refusal_code": "CBOE_LIVEVOL_BAD_OPTION_TYPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CboeAllAccessError", "refusal_code": "CBOE_LIVEVOL_BAD_OPTION_TYPE", "rejected": [], "status": null}, "reason": "the option-and-underlying route enumerates a contract as 'C' or 'P' and the contract column narrows that to call/put; a published 'X' is neither, so the adapter must refuse with CBOE_LIVEVOL_BAD_OPTION_TYPE instead of guessing which side of the chain the contract is on; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

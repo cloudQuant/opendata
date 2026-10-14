@@ -9,7 +9,7 @@ API when ``FUYAO_API_KEY`` is configured.
 from __future__ import annotations
 
 import json
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
 import httpx
@@ -24,7 +24,7 @@ from opendata.data.models import (
     Instrument,
     TradingCalendar,
 )
-from opendata.data.protocol import FetchContext
+from opendata.data.protocol import FetchContext, Fetcher
 from opendata.data.providers.ths.endpoints import FUND_ETF_DEPTH_DAYS, millis_to_trading_date
 from opendata.data.providers.ths.models._client import (
     ThsProviderError,
@@ -48,7 +48,15 @@ from opendata.data.providers.ths.models.stock_action import ThsStockActionFetche
 from opendata.data.providers.ths.models.stock_daily import ThsStockDailyFetcher
 from opendata.data.providers.ths.models.trading_calendar import ThsTradingCalendarFetcher
 from opendata.data.providers.ths.registration import FETCHERS, register
+from opendata.data.providers.ths.transport.rate_limiter import FuyaoRateLimiter
 from opendata.data.registry import ProviderRegistry, authority_baseline, get_registry
+from opendata.data.request_budget import (
+    GrantDecision,
+    RequestBudget,
+    RequestBudgetProfile,
+    RequestGrant,
+    RequestOperation,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -59,6 +67,57 @@ DAY_MS = 1704124800000  # 2024-01-02 00:00 +08:00
 
 #: 快照端点的 ``data.timestamp`` 是**请求时刻**（实测带毫秒），不是上海零点。
 SNAPSHOT_MS = DAY_MS + 4_000_000  # 2024-01-02 01:06:40 +08:00
+
+#: The mock host, and the only host a fixture grant may allow.
+MOCK_HOST = "fuyao.test"
+
+#: ``Fetcher.fetch`` refuses a canonical model whose budget carries no matching
+#: grant before any I/O, so every offline fetch below has to state its own grant.
+#: The widest offline loop is the instrument catalog (``MAX_PAGES`` = 20 pages,
+#: plus a code-resolution lookup), which is over the live-smoke source ceiling of
+#: three — so the fixture declares the bounded-request profile, as the engine's own
+#: test fixture does. 24 leaves the adapter's own page cap as the binding guard.
+OFFLINE_ATTEMPTS = 24
+
+
+def _offline_context(model: str | Fetcher, *, attempts: int = OFFLINE_ATTEMPTS) -> FetchContext:
+    """Build one finite fixture grant for this fetcher's exact model identity.
+
+    The grant authorizes the fake transport in this file only; it does not state
+    that fuyao granted live access to any of these models.
+
+    Args:
+        model: The canonical model name, or the fetcher whose own declaration
+            carries it (a parametrized test cannot name one model up front).
+        attempts: Sends allowed for the call, for both the task and the source.
+
+    Returns:
+        A :class:`FetchContext` with a budget that allows exactly this model's
+        QUERY operation against :data:`MOCK_HOST`.
+    """
+    canonical_model = model if isinstance(model, str) else model.canonical_model
+    if canonical_model is None:
+        raise ValueError("offline fixture needs a declared canonical model")
+    grant = RequestGrant(
+        source="ths",
+        canonical_model=canonical_model,
+        operation=RequestOperation.QUERY,
+        decision=GrantDecision.ALLOWED,
+        rights_evidence="test-fixture:offline-only:mock-transport",
+        task_attempts=attempts,
+        source_attempts=attempts,
+        allowed_hosts=frozenset({MOCK_HOST}),
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=5),
+        profile=RequestBudgetProfile.BOUNDED_REQUEST,
+    )
+    return FetchContext(
+        request_budget=RequestBudget(
+            task_attempts=attempts,
+            source_attempts=attempts,
+            grants=(grant,),
+            profile=RequestBudgetProfile.BOUNDED_REQUEST,
+        )
+    )
 
 
 def _envelope(items: list[dict]) -> bytes:
@@ -199,9 +258,17 @@ def _factory(handler):  # httpx handler
 def _mock_client(handler) -> FuyaoHttpClient:  # httpx handler
     from opendata.data.providers.ths import FuyaoCredentials, FuyaoHttpClient
 
+    # ``client=`` marks the transport as not-verified, so the scoped lane refuses
+    # it; ``mock_transport=`` is the offline seam and lets the class build the
+    # restricted client itself. The bucket is deliberately wider than the default
+    # (burst 10 @ 5/s): these cases measure the adapters' own page caps, and a
+    # 20-page catalog loop would trip local throttling before cap #20.
     return FuyaoHttpClient(
-        credentials=FuyaoCredentials("ths-test-key", base_url="https://fuyao.test"),
-        client=httpx.Client(transport=httpx.MockTransport(handler)),
+        credentials=FuyaoCredentials("ths-test-key", base_url=f"https://{MOCK_HOST}"),
+        mock_transport=httpx.MockTransport(handler),
+        backoff_base_seconds=0.0,
+        backoff_jitter_seconds=0.0,
+        rate_limiter=FuyaoRateLimiter(rate_per_second=1000.0, burst=OFFLINE_ATTEMPTS),
         sleep=lambda seconds: None,
     )
 
@@ -628,7 +695,7 @@ class TestCredentials:
         monkeypatch.delenv("FUYAO_API_KEY", raising=False)
         routed = registry.resolve_domain("stock_daily", source="ths")
         with pytest.raises(ThsProviderError, match="THS_NOT_CONFIGURED"):
-            routed.fetch(symbol="600519.SH")
+            routed.fetch(ctx=_offline_context("stock_daily"), symbol="600519.SH")
 
     def test_missing_key_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.delenv("FUYAO_API_KEY", raising=False)
@@ -691,7 +758,10 @@ class TestFetchStages:
         )
         fetcher = ThsStockDailyFetcher()
         rows = fetcher.fetch(
-            symbol="600519.SH", start_date=date(2024, 1, 2), end_date=date(2024, 1, 5)
+            ctx=_offline_context("stock_daily"),
+            symbol="600519.SH",
+            start_date=date(2024, 1, 2),
+            end_date=date(2024, 1, 5),
         )
 
         assert isinstance(rows, tuple)
@@ -736,7 +806,7 @@ class TestFetchStages:
             "opendata.data.providers.ths.models.stock_action.client", _factory(handler)
         )
         fetcher = ThsStockActionFetcher()
-        events = fetcher.fetch(symbol="600519.SH")
+        events = fetcher.fetch(ctx=_offline_context("stock_action"), symbol="600519.SH")
 
         assert all(isinstance(event, CorporateAction) for event in events)
         assert [event.ex_date for event in events] == [date(2024, 1, 3), date(2024, 1, 2)]
@@ -756,7 +826,10 @@ class TestFetchStages:
             "opendata.data.providers.ths.models.index_daily.client", _factory(handler)
         )
         rows = ThsIndexDailyFetcher().fetch(
-            symbol="000300.SH", start_date=date(2024, 1, 2), end_date=date(2024, 1, 3)
+            ctx=_offline_context("index_daily"),
+            symbol="000300.SH",
+            start_date=date(2024, 1, 2),
+            end_date=date(2024, 1, 3),
         )
 
         assert seen["path"] == "/api/a-share-index/prices/historical"
@@ -801,7 +874,9 @@ class TestFetchStages:
         monkeypatch.setattr(
             "opendata.data.providers.ths.models.index_constituent.client", _factory(handler)
         )
-        rows = ThsIndexConstituentFetcher().fetch(symbol="000300.SH")
+        rows = ThsIndexConstituentFetcher().fetch(
+            ctx=_offline_context("index_constituent"), symbol="000300.SH"
+        )
 
         assert seen["path"] == "/api/a-share-index/constituents/ths-stock-list"
         assert "thscode=000300.SH" in seen["params"]  # 上游只认带后缀的写法
@@ -832,7 +907,9 @@ class TestFetchStages:
         monkeypatch.setattr(
             "opendata.data.providers.ths.models.index_constituent.client", _factory(handler)
         )
-        rows = ThsIndexConstituentFetcher().fetch(symbol="000300")
+        rows = ThsIndexConstituentFetcher().fetch(
+            ctx=_offline_context("index_constituent"), symbol="000300"
+        )
 
         assert rows[0].index_symbol == "000300"
         assert "/api/meta/tickers/list" in seen
@@ -880,6 +957,7 @@ class TestFetchStages:
             f"opendata.data.providers.ths.models.{module}.client", _factory(handler)
         )
         rows = fetcher.fetch(
+            ctx=_offline_context(fetcher),
             symbol="CU2610.SHF" if module == "futures_daily" else "10011514.SH",
             start_date=date(2024, 1, 2),
             end_date=date(2024, 1, 3),
@@ -964,7 +1042,9 @@ class TestFinancialStatementAdapter:
         monkeypatch.setattr(
             "opendata.data.providers.ths.models.financial_statement.client", _factory(handler)
         )
-        rows = ThsFinancialStatementFetcher().fetch(symbol="600519.SH", statement_type="income")
+        rows = ThsFinancialStatementFetcher().fetch(
+            ctx=_offline_context("financial_statement"), symbol="600519.SH", statement_type="income"
+        )
 
         assert seen["path"] == "/api/a-share/financials/income-statements"
         assert "thscode=600519.SH" in seen["params"]
@@ -994,7 +1074,11 @@ class TestFinancialStatementAdapter:
         monkeypatch.setattr(
             "opendata.data.providers.ths.models.financial_statement.client", _factory(handler)
         )
-        rows = ThsFinancialStatementFetcher().fetch(symbol="600519", statement_type="资产负债表")
+        rows = ThsFinancialStatementFetcher().fetch(
+            ctx=_offline_context("financial_statement"),
+            symbol="600519",
+            statement_type="资产负债表",
+        )
 
         assert seen == ["/api/meta/tickers/search", "/api/a-share/financials/balance-sheets"]
         assert {row.statement_type for row in rows} == {"balance"}
@@ -1015,6 +1099,7 @@ class TestFinancialStatementAdapter:
             "opendata.data.providers.ths.models.financial_statement.client", _factory(handler)
         )
         ThsFinancialStatementFetcher().fetch(
+            ctx=_offline_context("financial_statement"),
             symbol="300750.SZ",
             statement_type="现金流量表",
             period="quarterly",
@@ -1078,7 +1163,9 @@ class TestTradingCalendarAdapter:
         self, monkeypatch: pytest.MonkeyPatch
     ):
         """01-02 / 01-03 / 01-05 三行 ⇒ 01-03 的下一交易日是 01-05，中间那个空档不解释。"""
-        days = self._fetcher(monkeypatch, [self._day(0), self._day(1), self._day(3)]).fetch()
+        days = self._fetcher(monkeypatch, [self._day(0), self._day(1), self._day(3)]).fetch(
+            ctx=_offline_context("trading_calendar")
+        )
 
         assert [day.date for day in days] == [
             date(2024, 1, 2),
@@ -1097,7 +1184,9 @@ class TestTradingCalendarAdapter:
         """实测六个候选窗口参数全被忽略 ⇒ 不发参数，不假装能定窗。"""
         seen: list[str] = []
         self._fetcher(monkeypatch, [self._day(0)], seen).fetch(
-            start_date=date(2024, 1, 2), end_date=date(2024, 1, 3)
+            ctx=_offline_context("trading_calendar"),
+            start_date=date(2024, 1, 2),
+            end_date=date(2024, 1, 3),
         )
 
         assert "?" not in seen[0]
@@ -1117,7 +1206,11 @@ class TestTradingCalendarAdapter:
     def test_requested_window_slices_the_published_coverage(self, monkeypatch: pytest.MonkeyPatch):
         fetcher = self._fetcher(monkeypatch, [self._day(0), self._day(1), self._day(3)])
 
-        rows = fetcher.fetch(start_date=date(2024, 1, 3), end_date=date(2024, 1, 5))
+        rows = fetcher.fetch(
+            ctx=_offline_context("trading_calendar"),
+            start_date=date(2024, 1, 3),
+            end_date=date(2024, 1, 5),
+        )
 
         assert [row.date for row in rows] == [date(2024, 1, 3), date(2024, 1, 5)]
 
@@ -1126,33 +1219,45 @@ class TestTradingCalendarAdapter:
         fetcher = self._fetcher(monkeypatch, [self._day(0), self._day(1)])
 
         with pytest.raises(ThsProviderError, match="THS_CALENDAR_OUT_OF_COVERAGE"):
-            fetcher.fetch(start_date=date(2030, 1, 1), end_date=date(2030, 1, 31))
+            fetcher.fetch(
+                ctx=_offline_context("trading_calendar"),
+                start_date=date(2030, 1, 1),
+                end_date=date(2030, 1, 31),
+            )
 
     def test_empty_calendar_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
         fetcher = self._fetcher(monkeypatch, [])
 
         with pytest.raises(ThsProviderError, match="THS_EMPTY_RESPONSE"):
-            fetcher.fetch()
+            fetcher.fetch(ctx=_offline_context("trading_calendar"))
 
     def test_a_window_ending_before_coverage_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
         """只给 `end_date` 也可能整段在 coverage 之外 —— 两侧都得拦，不能只拦一侧。"""
         fetcher = self._fetcher(monkeypatch, [self._day(1), self._day(3)])
 
         with pytest.raises(ThsProviderError, match="THS_CALENDAR_OUT_OF_COVERAGE"):
-            fetcher.fetch(end_date=date(2023, 12, 31))
+            fetcher.fetch(ctx=_offline_context("trading_calendar"), end_date=date(2023, 12, 31))
 
     def test_a_half_open_window_slices_from_either_edge(self, monkeypatch: pytest.MonkeyPatch):
         """单端窗口照样要切对：上游不收窗口，切片发生在本层。"""
         fetcher = self._fetcher(monkeypatch, [self._day(0), self._day(1), self._day(3)])
 
-        assert [row.date for row in fetcher.fetch(start_date=date(2024, 1, 3))] == [
+        assert [
+            row.date
+            for row in fetcher.fetch(
+                ctx=_offline_context("trading_calendar"), start_date=date(2024, 1, 3)
+            )
+        ] == [
             date(2024, 1, 3),
             date(2024, 1, 5),
         ]
         # 先推邻接再切片 ⇒ 被切掉的行仍参与 prev/next，右端那一行的下一交易日
         # 是真实交易日，不是切口。
         assert [
-            (row.date, row.next_trade_date) for row in fetcher.fetch(end_date=date(2024, 1, 3))
+            (row.date, row.next_trade_date)
+            for row in fetcher.fetch(
+                ctx=_offline_context("trading_calendar"), end_date=date(2024, 1, 3)
+            )
         ] == [
             (date(2024, 1, 2), date(2024, 1, 3)),
             (date(2024, 1, 3), date(2024, 1, 5)),
@@ -1184,7 +1289,9 @@ class TestInstrumentCatalogAdapter:
             seen.append(offset)
             return httpx.Response(200, content=_envelope_at(pages[offset], SNAPSHOT_MS))
 
-        rows = self._patch(monkeypatch, handler).fetch(asset_type="a-share")
+        rows = self._patch(monkeypatch, handler).fetch(
+            ctx=_offline_context("instrument"), asset_type="a-share"
+        )
 
         assert seen == ["0", "2"]
         assert all(isinstance(row, Instrument) for row in rows)
@@ -1200,7 +1307,9 @@ class TestInstrumentCatalogAdapter:
             rows = [_instrument_row("600519.SH")]
             return httpx.Response(200, content=_envelope_at(rows, SNAPSHOT_MS))
 
-        self._patch(monkeypatch, handler).fetch(asset_type="futures")
+        self._patch(monkeypatch, handler).fetch(
+            ctx=_offline_context("instrument"), asset_type="futures"
+        )
 
         assert seen["path"] == "/api/meta/tickers/list"
         assert "asset_type=futures" in seen["params"]
@@ -1224,7 +1333,9 @@ class TestInstrumentCatalogAdapter:
             )
 
         with pytest.raises(ThsProviderError, match="THS_INSTRUMENT_PAGINATION_STUCK"):
-            self._patch(monkeypatch, handler).fetch(asset_type="a-share")
+            self._patch(monkeypatch, handler).fetch(
+                ctx=_offline_context("instrument"), asset_type="a-share"
+            )
 
         assert len(calls) == 4
 
@@ -1244,7 +1355,9 @@ class TestInstrumentCatalogAdapter:
             )
 
         with pytest.raises(ThsProviderError, match="THS_INSTRUMENT_DUPLICATE_SYMBOL"):
-            self._patch(monkeypatch, handler).fetch(asset_type="a-share")
+            self._patch(monkeypatch, handler).fetch(
+                ctx=_offline_context("instrument"), asset_type="a-share"
+            )
 
     def test_query_requires_a_documented_asset_type(self):
         fetcher = ThsInstrumentFetcher()
@@ -1269,7 +1382,9 @@ class TestInstrumentCatalogAdapter:
             return httpx.Response(200, content=_envelope_at([], SNAPSHOT_MS))
 
         with pytest.raises(ThsProviderError, match="THS_EMPTY_RESPONSE"):
-            self._patch(monkeypatch, handler).fetch(asset_type="a-share")
+            self._patch(monkeypatch, handler).fetch(
+                ctx=_offline_context("instrument"), asset_type="a-share"
+            )
 
     def test_a_catalog_without_a_snapshot_date_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
         """status 由快照日推导：信封不给基准日，这一页就不可用。"""
@@ -1278,7 +1393,9 @@ class TestInstrumentCatalogAdapter:
             return httpx.Response(200, content=_envelope([_instrument_row("600519.SH")]))
 
         with pytest.raises(ThsProviderError, match="THS_INSTRUMENT_SNAPSHOT_DATE_MISSING"):
-            self._patch(monkeypatch, handler).fetch(asset_type="a-share")
+            self._patch(monkeypatch, handler).fetch(
+                ctx=_offline_context("instrument"), asset_type="a-share"
+            )
 
     def test_an_in_market_contract_is_not_labelled_delisted(self, monkeypatch: pytest.MonkeyPatch):
         """旧判据（``end_date`` 非空即退市）把 874 个在市月份合约全标 delisted。"""
@@ -1302,7 +1419,9 @@ class TestInstrumentCatalogAdapter:
                 ),
             )
 
-        rows = self._patch(monkeypatch, handler).fetch(asset_type="futures")
+        rows = self._patch(monkeypatch, handler).fetch(
+            ctx=_offline_context("instrument"), asset_type="futures"
+        )
 
         assert [row.status for row in rows] == ["active"]
         assert rows[0].delist_date == date(2026, 12, 18)  # 最后交易日，不是 12-21 交割日
@@ -1336,7 +1455,9 @@ class TestFundActionAdapter:
                 ),
             )
 
-        events = self._patch(monkeypatch, handler).fetch(symbol="510300.SH")
+        events = self._patch(monkeypatch, handler).fetch(
+            ctx=_offline_context("fund_action"), symbol="510300.SH"
+        )
 
         assert seen["path"] == "/api/fund/corporate-actions/dividends"
         assert "thscode=510300.SH" in seen["params"]
@@ -1356,7 +1477,9 @@ class TestFundActionAdapter:
             assert dict(request.url.params)["thscode"] == "510300.SH"
             return httpx.Response(200, content=_dividend_envelope([_fund_dividend_row(DAY_MS)]))
 
-        events = self._patch(monkeypatch, handler).fetch(symbol="510300")
+        events = self._patch(monkeypatch, handler).fetch(
+            ctx=_offline_context("fund_action"), symbol="510300"
+        )
 
         assert len(events) == 1
         assert events[0].symbol == "510300.SH"
@@ -1369,7 +1492,12 @@ class TestFundActionAdapter:
         def handler(request: httpx.Request) -> httpx.Response:
             return httpx.Response(200, content=_dividend_envelope([placeholder], count=0))
 
-        assert self._patch(monkeypatch, handler).fetch(symbol="159915.SZ") == ()
+        assert (
+            self._patch(monkeypatch, handler).fetch(
+                ctx=_offline_context("fund_action"), symbol="159915.SZ"
+            )
+            == ()
+        )
 
     def test_a_window_slices_the_history_without_a_second_call(
         self, monkeypatch: pytest.MonkeyPatch
@@ -1390,7 +1518,10 @@ class TestFundActionAdapter:
             )
 
         events = self._patch(monkeypatch, handler).fetch(
-            symbol="510300.SH", start_date=date(2024, 1, 1), end_date=date(2024, 1, 2)
+            ctx=_offline_context("fund_action"),
+            symbol="510300.SH",
+            start_date=date(2024, 1, 1),
+            end_date=date(2024, 1, 2),
         )
 
         assert [event.cash_dividend for event in events] == [0.123]  # 2023 那笔在窗口之外
@@ -1405,7 +1536,9 @@ class TestFundActionAdapter:
             )
 
         assert (
-            self._patch(monkeypatch, handler).fetch(symbol="510300.SH", start_date=date(2030, 1, 1))
+            self._patch(monkeypatch, handler).fetch(
+                ctx=_offline_context("fund_action"), symbol="510300.SH", start_date=date(2030, 1, 1)
+            )
             == ()
         )
 
@@ -1422,7 +1555,9 @@ class TestFundActionAdapter:
             )
 
         with pytest.raises(FuyaoError, match="fund_dividend_count_mismatch"):
-            self._patch(monkeypatch, handler).fetch(symbol="510300.SH")
+            self._patch(monkeypatch, handler).fetch(
+                ctx=_offline_context("fund_action"), symbol="510300.SH"
+            )
 
     def test_query_requires_a_symbol(self):
         fetcher = ThsFundActionFetcher()
@@ -1468,7 +1603,10 @@ class TestFundEtfDailyAdapter:
             )
 
         bars = self._patch(monkeypatch, handler).fetch(
-            symbol="510300.SH", start_date=date(2024, 1, 2), end_date=date(2024, 1, 31)
+            ctx=_offline_context("fund_etf_daily"),
+            symbol="510300.SH",
+            start_date=date(2024, 1, 2),
+            end_date=date(2024, 1, 31),
         )
 
         # 分红腿先走：拿不到事件流就不该发价格请求（D10 禁止前复权入库）
@@ -1489,7 +1627,10 @@ class TestFundEtfDailyAdapter:
             return httpx.Response(200, content=_envelope([_bar_row()]))
 
         self._patch(monkeypatch, handler).fetch(
-            symbol="510300.SH", start_date=date(2024, 1, 2), end_date=date(2024, 2, 1)
+            ctx=_offline_context("fund_etf_daily"),
+            symbol="510300.SH",
+            start_date=date(2024, 1, 2),
+            end_date=date(2024, 2, 1),
         )
 
         assert seen == {
@@ -1517,7 +1658,10 @@ class TestFundEtfDailyAdapter:
             return httpx.Response(200, content=_envelope([_bar_row()]))
 
         bars = self._patch(monkeypatch, handler).fetch(
-            symbol="510300", start_date=date(2024, 1, 2), end_date=date(2024, 1, 31)
+            ctx=_offline_context("fund_etf_daily"),
+            symbol="510300",
+            start_date=date(2024, 1, 2),
+            end_date=date(2024, 1, 31),
         )
 
         assert len(calls) == 3
@@ -1538,7 +1682,9 @@ class TestFundEtfDailyAdapter:
             starts.append(int(dict(request.url.params)["start"]))
             return httpx.Response(200, content=_envelope([_bar_row()]))
 
-        self._patch(monkeypatch, handler).fetch(symbol="510300.SH")
+        self._patch(monkeypatch, handler).fetch(
+            ctx=_offline_context("fund_etf_daily"), symbol="510300.SH"
+        )
 
         floor = date(2026, 9, 25) - timedelta(days=FUND_ETF_DEPTH_DAYS)
         # 深度比单次跨度多一天 ⇒ 满窗口必然两块，首块正落在地板上
@@ -1558,7 +1704,11 @@ class TestFundEtfDailyAdapter:
             return httpx.Response(200, content=_envelope([]))
 
         with pytest.raises(FuyaoError, match="fund_window_depth"):
-            self._patch(monkeypatch, handler).fetch(symbol="510300.SH", start_date=date(2015, 1, 1))
+            self._patch(monkeypatch, handler).fetch(
+                ctx=_offline_context("fund_etf_daily"),
+                symbol="510300.SH",
+                start_date=date(2015, 1, 1),
+            )
 
         assert calls == []
 
@@ -1587,7 +1737,10 @@ class TestFundEtfDailyAdapter:
 
         with pytest.raises(ThsProviderError, match="THS_EMPTY_RESPONSE"):
             self._patch(monkeypatch, handler).fetch(
-                symbol="510300.SH", start_date=date(2024, 1, 2), end_date=date(2024, 1, 31)
+                ctx=_offline_context("fund_etf_daily"),
+                symbol="510300.SH",
+                start_date=date(2024, 1, 2),
+                end_date=date(2024, 1, 31),
             )
 
 

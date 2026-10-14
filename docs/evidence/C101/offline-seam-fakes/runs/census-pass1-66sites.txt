@@ -1,0 +1,83 @@
+population: seams=47 seam_names=41 seams_forwarded=34
+population: setattr_sites=1373 seam_named_sites=166
+face: stale_sites=66 in_files=14 unknown_target=0 unknown_fake=0
+stale: tests/test_ecb_series_fetchers.py:161 seam=opendata/data/providers/ecb/models/_series_client.py::fetch_yield_curve fake=fake_yc declared=['query', 'timeout']
+stale: tests/test_ecb_series_fetchers.py:162 seam=opendata/data/providers/ecb/models/_series_client.py::fetch_balance_of_payments fake=fake_bps declared=['query', 'timeout']
+stale: tests/test_federal_reserve_iter2_models.py:682 seam=opendata/data/providers/federal_reserve/_iter2_client.py::get_json fake=get_json declared=['url', '_timeout']
+stale: tests/test_federal_reserve_iter2_models.py:737 seam=opendata/data/providers/federal_reserve/_iter2_client.py::get_json fake=get_json declared=['url', '_timeout']
+stale: tests/test_federal_reserve_iter2_models.py:802 seam=opendata/data/providers/federal_reserve/_iter2_client.py::get_json fake=lambda declared=['url', '_timeout']
+stale: tests/test_federal_reserve_iter2_models.py:844 seam=opendata/data/providers/federal_reserve/_iter2_client.py::get_json fake=lambda declared=[]
+stale: tests/test_federal_reserve_iter2_models.py:195 seam=opendata/data/providers/federal_reserve/_iter2_client.py::get_json fake=_primary_dealer_responses()->get_json declared=['url', '_timeout']
+stale: tests/test_federal_reserve_iter2_models.py:199 seam=opendata/data/providers/federal_reserve/_iter2_client.py::get_json fake=_primary_dealer_responses()->get_json declared=['url', '_timeout']
+stale: tests/test_federal_reserve_iter2_models.py:203 seam=opendata/data/providers/federal_reserve/_iter2_client.py::get_json fake=lambda declared=[]
+stale: tests/test_fred_generic_models.py:92 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:162 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:212 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:251 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:313 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:340 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:368 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_generic_models.py:394 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_generic_models.py:416 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:464 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_generic_models.py:543 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:570 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:598 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_generic_models.py:616 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=rate_limited declared=['url', 'params', 'timeout']
+stale: tests/test_fred_iorb_fetcher.py:136 seam=opendata/data/providers/fred/models/_iorb_client.py::fetch_iorb_pages fake=fake_fetch declared=['query_value', 'timeout']
+stale: tests/test_fred_iter2_auxiliary.py:133 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=http_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_iter2_auxiliary.py:300 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_auxiliary.py:459 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_auxiliary.py:608 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_auxiliary.py:724 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_auxiliary.py:858 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_federal_funds.py:147 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=http_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_iter2_federal_funds.py:210 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_federal_funds.py:310 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=too_many_requests declared=['url', 'params', 'timeout']
+stale: tests/test_fred_iter2_federal_funds.py:435 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_fixed_rates.py:242 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=http_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_iter2_fixed_rates.py:288 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_fixed_rates.py:350 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_fixed_rates.py:357 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=['url', 'params', 'timeout']
+stale: tests/test_fred_iter2_fixed_rates.py:406 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_fixed_rates.py:454 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_treasury_rates.py:132 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=http_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_iter2_treasury_rates.py:182 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=one_observation declared=['url', 'params', 'timeout']
+stale: tests/test_fred_iter2_treasury_rates.py:192 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_treasury_rates.py:256 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_treasury_rates.py:289 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=rate_limited declared=['url', 'params', 'timeout']
+stale: tests/test_fred_iter2_treasury_rates.py:319 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=one_observation declared=['url', 'params', 'timeout']
+stale: tests/test_fred_iter2_treasury_rates.py:331 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_iter2_treasury_rates.py:362 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=['url', 'params', 'timeout']
+stale: tests/test_fred_macro_iter2.py:130 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=http_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_macro_iter2.py:178 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=http_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_macro_iter2.py:600 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_macro_iter2.py:780 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_macro_iter2.py:848 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_macro_iter2.py:861 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_macro_iter2.py:923 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_macro_iter2.py:936 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=rate_limited declared=['url', 'params', 'timeout']
+stale: tests/test_fred_macro_iter2.py:1008 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_macro_iter2.py:1090 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_macro_iter2.py:1098 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=[]
+stale: tests/test_fred_provider.py:140 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_provider.py:151 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=['url', 'params', 'timeout']
+stale: tests/test_fred_provider.py:162 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=lambda declared=['url', 'params', 'timeout']
+stale: tests/test_fred_sloos.py:117 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=http_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_sofr_fetcher.py:126 seam=opendata/data/providers/fred/models/_sofr_client.py::fetch_sofr_pages fake=fake_fetch declared=['query', 'timeout']
+stale: tests/test_fred_sonia_fetcher.py:180 seam=opendata/data/providers/fred/models/_sonia_client.py::fetch_sonia_pages fake=fake_fetch declared=['query', 'timeout']
+stale: tests/test_sec_documents_iter2.py:546 seam=opendata/data/providers/sec/models/_common.py::fetch_json fake=lambda declared=['ctx', 'url']
+by_file: tests/test_fred_generic_models.py stale=14
+by_file: tests/test_fred_macro_iter2.py stale=11
+by_file: tests/test_fred_iter2_treasury_rates.py stale=8
+by_file: tests/test_federal_reserve_iter2_models.py stale=7
+by_file: tests/test_fred_iter2_auxiliary.py stale=6
+by_file: tests/test_fred_iter2_fixed_rates.py stale=6
+by_file: tests/test_fred_iter2_federal_funds.py stale=4
+by_file: tests/test_fred_provider.py stale=3
+by_file: tests/test_ecb_series_fetchers.py stale=2
+by_file: tests/test_fred_iorb_fetcher.py stale=1
+by_file: tests/test_fred_sloos.py stale=1
+by_file: tests/test_fred_sofr_fetcher.py stale=1
+by_file: tests/test_fred_sonia_fetcher.py stale=1
+by_file: tests/test_sec_documents_iter2.py stale=1

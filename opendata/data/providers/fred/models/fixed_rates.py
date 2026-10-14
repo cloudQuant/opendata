@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import re
 from datetime import date as date_type
-from typing import Any, ClassVar, Literal, TypeAlias
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeAlias
 
 from pydantic import ValidationError
 
@@ -20,6 +20,10 @@ from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryPara
 from opendata.data.providers.fred.models._client import FredProviderError
 from opendata.data.providers.fred.models.series import FredSeriesFetcher, FredSeriesQuery
 from opendata.data.providers.fred.models.treasury_rates import _FixedRateQuery
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
+    from opendata.data.providers._engine.http_json import HttpGet
 
 AmeriborFrequency: TypeAlias = Literal[
     "a", "q", "m", "w", "wef", "weth", "wew", "wetu", "wem", "wesu", "wesa", "bwew", "bwem"
@@ -141,8 +145,11 @@ class _FixedSeriesFetcher(Fetcher[QueryParams, list[dict[str, Any]]]):
     async_mode = "bounded_thread"
     query_model: ClassVar[type[QueryParams]]
     output_model: ClassVar[type[Any]]
+    row_model: ClassVar[type[ContractModel]]
     canonical_model: ClassVar[str | None]
     capability: ClassVar[Capability]
+    #: Offline witness seam; ``None`` keeps the governed production HTTP client path.
+    http_transport: ClassVar[HttpGet | None] = None
 
     def transform_query(self, **kwargs: object) -> QueryParams:
         """Reject unknown choices and invalid date/PIT combinations before I/O."""
@@ -180,7 +187,9 @@ class _FixedSeriesFetcher(Fetcher[QueryParams, list[dict[str, Any]]]):
                         "aggregation_method": getattr(params, "aggregation_method", "avg"),
                     }
                 )
-                observations = FredSeriesFetcher().extract_data(observation_query, ctx)
+                inner = FredSeriesFetcher()
+                inner.http_transport = self.http_transport
+                observations = inner.extract_data(observation_query, ctx)
                 rows.extend(
                     {"_selection": selection, "_series_id": series_id, "observation": item}
                     for item in observations
@@ -258,6 +267,7 @@ class AmeriborFetcher(_FixedSeriesFetcher):
     )
     query_model = AmeriborQuery
     output_model = FredAmeribor
+    row_model: ClassVar[type[ContractModel]] = FredAmeribor
 
     def selected_series(self, params: QueryParams) -> list[tuple[str, str]]:
         """Resolve `all` to the five separately identified active series."""
@@ -304,6 +314,7 @@ class DiscountWindowPrimaryCreditRateFetcher(_FixedSeriesFetcher):
     )
     query_model = DiscountWindowPrimaryCreditRateQuery
     output_model = FredDiscountWindowPrimaryCreditRate
+    row_model: ClassVar[type[ContractModel]] = FredDiscountWindowPrimaryCreditRate
     _FREQUENCY_BY_PARAMETER: ClassVar[dict[str, DiscountWindowFrequency | None]] = {
         "daily_excl_weekend": None,
         "daily": None,
@@ -361,6 +372,7 @@ class EuropeanCentralBankInterestRatesFetcher(_FixedSeriesFetcher):
     )
     query_model = EuropeanCentralBankInterestRatesQuery
     output_model = FredEuropeanCentralBankInterestRate
+    row_model: ClassVar[type[ContractModel]] = FredEuropeanCentralBankInterestRate
 
     def selected_series(
         self,
@@ -402,6 +414,7 @@ class TipsYieldsFetcher(_FixedSeriesFetcher):
     )
     query_model = TipsYieldsQuery
     output_model = FredTipsYield
+    row_model: ClassVar[type[ContractModel]] = FredTipsYield
 
     def selected_series(self, params: QueryParams) -> list[tuple[str, str]]:
         """Select one fixed maturity or all four official curve series."""

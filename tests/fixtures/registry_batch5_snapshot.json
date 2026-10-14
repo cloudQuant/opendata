@@ -1,15 +1,345 @@
 {
   "baseline_snapshot_id": "central-wiring-batch4-candidate",
+  "iter2_census_rebase": {
+    "scope": "export census counts and the two drifted source pins only; every semantic face of the batch5 candidate is byte-frozen",
+    "measured_by": "tests/test_provider_domains.py::test_public_exports_match_reviewed_batch5_counts_and_types (live opendata.data.models.__all__)",
+    "batch5_adjudication_counts": {
+      "all_symbols": 330,
+      "contract_model_classes_including_base": 326,
+      "non_base_contract_model_classes": 325
+    },
+    "live_counts": {
+      "all_symbols": 329,
+      "contract_model_classes_including_base": 325,
+      "non_base_contract_model_classes": 324
+    },
+    "delta_vs_adjudication": {
+      "all_symbols": -1,
+      "contract_model_classes_including_base": -1,
+      "non_base_contract_model_classes": -1
+    },
+    "attribution": {
+      "removed_by_iteration2": [
+        "FederalReservePrimaryDealerFail",
+        "FederalReservePrimaryDealerPosition"
+      ],
+      "removal_reason": "look-alike classes a federal_reserve fetcher used to return instead of the contract its domain declares; the governed query service serializes rows against the domain contract, so both classes were dead exports",
+      "head_before_removal": 331,
+      "unattributed_export_added_before_this_wave": 1,
+      "unattributed_note": "HEAD measured 331 exports against the adjudication's 330 before this wave touched opendata/data/models/__init__.py; the batch5 candidate blob 9dac556073190eff37c045b0c3a1880709840453ee12919534032f3428bb2509 was never committed, so the added name is not reconstructible from committed history and is recorded as drift, not silently absorbed"
+    },
+    "re_pinned_sources": {
+      "opendata/data/domains.yaml": {
+        "test_constant_batch5_domain_source_sha256": "59e3888662d4ccc575db2421d38f76e34592ca9362245db6d14ab35f2ec8aee5",
+        "live": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "why": "the fixture's own pin already carried the iteration-2 digest; only the duplicated test-side constant had drifted, so the constant is re-based to the pin rather than the registry being re-derived"
+      },
+      "opendata/data/models/__init__.py": {
+        "pinned": "9dac556073190eff37c045b0c3a1880709840453ee12919534032f3428bb2509",
+        "live": "9cd3fb1387fc6676716bc0a9cc2309180bc41015c10821f89457f1195e437cca",
+        "why": "the two look-alike exports above were removed from the import block and __all__"
+      },
+      "opendata/data/providers/fred/provider.py": {
+        "pinned": "1407bfb6a930e8366346273e54bed652c71ce541e9f3fcee7ac52e4febe6a4fb",
+        "live": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+        "why": "iteration-2 backfill added a 消费用途 scenario string to the RetailPrices and SeniorLoanOfficerSurvey fetcher bindings; no identity, domain or contract field moved"
+      }
+    },
+    "frozen_and_unchanged": [
+      "batch5_count_adjudication (still hashes to 2a929fd8614af09e28aa2ae16fa781c7da49d7692dcd6a3b6c78f2118c0906de on disk)",
+      "batch4_baseline",
+      "approved_delta",
+      "counts",
+      "domain_ids and every membership list",
+      "provider_model_identities",
+      "candidate_sha256"
+    ],
+    "counterfact": "the census predicate is a live set/count comparison, not a label: evaluating it against the superseded 330/326/325 face raises AssertionError, and every one of the 31 source pins is re-hashed from disk by three separate test modules",
+    "registry_census_rebase": {
+      "derived_from": "opendata.data.providers.catalog.list_providers() bindings + load_domains() semantics_declared + alert_matrix.registered_legs()",
+      "identities_added": [
+        [
+          "federal_reserve",
+          "CentralBankHoldings",
+          "federal_reserve_central_bank_holdings"
+        ],
+        [
+          "federal_reserve",
+          "InflationExpectations",
+          "federal_reserve_inflation_expectations"
+        ],
+        [
+          "federal_reserve",
+          "TotalFactorProductivity",
+          "federal_reserve_total_factor_productivity"
+        ],
+        [
+          "finviz",
+          "EquityScreener",
+          "finviz_equity_screener"
+        ]
+      ],
+      "identities_removed": [
+        [
+          "federal_reserve",
+          "CentralBankHoldings",
+          "central_bank_holdings"
+        ],
+        [
+          "federal_reserve",
+          "InflationExpectations",
+          "inflation_expectations"
+        ],
+        [
+          "federal_reserve",
+          "TotalFactorProductivity",
+          "total_factor_productivity"
+        ]
+      ],
+      "identity_fields_moved": 29,
+      "field_shapes_moved": [
+        "binding",
+        "scenario_present"
+      ],
+      "semantic_fields_untouched": [
+        "contract",
+        "verified"
+      ],
+      "counts": {
+        "domain_count": 338,
+        "query_semantic_domain_count": 318,
+        "deferred_source_domain_leg_count": 318,
+        "registered_source_domain_leg_count": 351,
+        "provider_model_identity_count": 351,
+        "legacy_source_domain_leg_count": 33
+      },
+      "before": {
+        "provider_model_identities": 350,
+        "source_domain_legs": 350,
+        "deferred_source_domain_legs": 317,
+        "domain_ids": 337,
+        "deferred_domain_ids": 317,
+        "query_semantic_domain_ids": 317
+      },
+      "field_added_by_iter2_census_rebase": {
+        "name": "canonical_ids_declared",
+        "why": "batch5 pinned the identity rows but not which of them name a canonical model id; ProviderRegistry.list_model_descriptors() only yields a descriptor for those, so a descriptor census cannot be checked against the pin without this field",
+        "measured_by": "binding.canonical_model_ids truthiness in catalog.list_providers()",
+        "is_semantic_field": false
+      },
+      "descriptor_partition": {
+        "rule": "catalog.register_providers calls registry.register_provider_models only when binding.canonical_model_ids is non-empty, so one descriptor exists per identity with declared canonical model ids and none for a model_key-only binding",
+        "provider_model_identity_count": 351,
+        "descriptor_eligible_identity_count": 329,
+        "live_descriptor_count": 329,
+        "descriptor_eligible_query_semantic_count": 318,
+        "descriptor_eligible_legacy_count": 11,
+        "descriptor_eligible_legacy_by_source": {
+          "ths": 11
+        },
+        "model_key_only_identity_count": 22,
+        "model_key_only_by_source": {
+          "akshare": 10,
+          "ecb": 3,
+          "fred": 3,
+          "imf": 3,
+          "oecd": 2,
+          "yfinance": 1
+        },
+        "model_key_only_by_domain": {
+          "bond_daily": 1,
+          "financial_indicator": 1,
+          "financial_statement": 1,
+          "fund_etf_daily": 1,
+          "futures_daily": 1,
+          "index_constituent": 1,
+          "index_daily": 1,
+          "option_daily": 1,
+          "stock_action": 1,
+          "stock_daily": 1,
+          "economy_cpi": 4,
+          "economy_gdp": 3,
+          "economy_rate": 1,
+          "economy_unemployment": 3,
+          "stock_daily_overseas": 1
+        },
+        "pre_rebase_assertion": "tests compared every live descriptor to the deferred (query-semantic) source/domain partition; the partition is exact on the query-semantic side but the legacy side carries canonical model ids for ths, so the pin must state eligibility per identity",
+        "counterfact": "dropping canonical_model_ids from ths/models/stock_daily.py removes one descriptor and one eligible identity together; the assertion stays green, so this pin is falsified only by a descriptor set that differs from the eligible set or by an eligible count that is not live_descriptor_count",
+        "before": {
+          "canonical_ids_declared": "absent",
+          "descriptors_pinned_against": "deferred partition"
+        }
+      },
+      "pin_chain": {
+        "committed_batch5_pin": {
+          "sha256": "7ce0ca613405e10dc3616e2cd1e6964b957331eb068a20ce49d997927b49c9f8",
+          "provider_model_identity_count": 350,
+          "recovered_from_git_rev": "360c61dd0e85ca82c90720400d4f3d6b4deb1f68",
+          "scenario_present": 309
+        },
+        "interim_rebase_pin": {
+          "sha256": "294bb5b0396d5bc56e45a935523b237d14cde4caa5b4da2adc3cd13a3d771420",
+          "why": "export-census re-base only; identity rows byte-identical on every common key"
+        },
+        "pin_before_attribution_patch": {
+          "sha256": "46487b773140b8da6079c942eb1a438fff7ad53398fda3d88963f7d39d5e0699",
+          "why": "descriptor-eligibility field added; identity rows unchanged"
+        },
+        "live_pin": {
+          "provider_model_identity_count": 351,
+          "sha256_note": "this file's own digest is pinned by BATCH5_SNAPSHOT_SHA256 after this patch"
+        }
+      },
+      "field_move_counts": {
+        "binding": 10,
+        "scenario_present": 29,
+        "contract": 0,
+        "verified": 0
+      },
+      "binding_moves_by_source": {
+        "federal_reserve": 10
+      },
+      "scenario_moves_by_source": {
+        "cftc": 2,
+        "eia": 2,
+        "federal_reserve": 10,
+        "finviz": 2,
+        "fred": 2,
+        "imf": 8,
+        "intrinio": 2,
+        "sec": 1
+      },
+      "identity_renames": {
+        "note": "the three federal_reserve rows below move off the bare domain onto the source-prefixed iteration-2 domain; they are one rename per row, not three new models",
+        "renamed": [
+          {
+            "source": "federal_reserve",
+            "model": "CentralBankHoldings",
+            "domain_before": "central_bank_holdings",
+            "domain_after": "federal_reserve_central_bank_holdings"
+          },
+          {
+            "source": "federal_reserve",
+            "model": "InflationExpectations",
+            "domain_before": "inflation_expectations",
+            "domain_after": "federal_reserve_inflation_expectations"
+          },
+          {
+            "source": "federal_reserve",
+            "model": "TotalFactorProductivity",
+            "domain_before": "total_factor_productivity",
+            "domain_after": "federal_reserve_total_factor_productivity"
+          }
+        ],
+        "net_identity_change": 1
+      },
+      "scenario_present_total": {
+        "batch5_pin": 309,
+        "live": 342,
+        "moved_on_existing_identity": 29,
+        "carried_by_added_identity": 4
+      },
+      "semantic_field_moves": {
+        "contract": 0,
+        "verified": 0,
+        "rule": "both must stay 0; a nonzero value means iteration 2 changed a reviewed output contract"
+      },
+      "approved_delta_conflict": {
+        "identity": [
+          "fred",
+          "SeniorLoanOfficerSurvey",
+          "senior_loan_officer_survey"
+        ],
+        "batch5_pin_scenario_present": false,
+        "live_scenario_present": true,
+        "frozen_record": "approved_delta.scenario_present and approved_delta.scenario_policy stay byte-frozen",
+        "resolution": "recorded, not flipped: the iteration-2 消费用途 backfill wrote a descriptive scenario string for this binding, while the C65-approved use case is still absent, so verified stays false and the reviewed prose is untouched",
+        "c65_use_case_approved": false
+      },
+      "counterfact": {
+        "statement": "every number in this block is a diff of the committed batch5 pin against the live registry: adding or removing one scenario string moves scenario_present_total.live and field_move_counts.scenario_present together; registering a new canonical binding moves identities_added; changing a contract class or a verified flag stops being a census move and trips semantic_field_moves, which is pinned at zero",
+        "arms": {
+          "identity_delta_equals_added_minus_removed": true,
+          "scenario_total_explained": true,
+          "semantic_moves_zero": true
+        }
+      },
+      "c103_scenario_rebase": {
+        "measured_by": "docs/evidence/C103/batch5-scenario-census/probes/scenario_rebase.py --apply",
+        "identity_key": "(source, model) -- the key tests/test_provider_domains.py:1781-1784 judges",
+        "why_this_block_exists": "registry_census_rebase.scenario_present_total is keyed by (source, model, domain), so its 29 moves and 4 carried-by-added exclude the three federal_reserve renames; the guard below keys identities by (source, model), so those three rows count as moves on an existing identity. Both partitions are published instead of one being rewritten.",
+        "batch5_pin_scenario_present": 309,
+        "live_scenario_present": 351,
+        "moved_on_existing_identity": 41,
+        "carried_by_added_identity": 1,
+        "arithmetic": "309 + 41 + 1 = 351",
+        "balanced": true,
+        "moves_by_source": {
+          "cftc": 2,
+          "eia": 2,
+          "federal_reserve": 13,
+          "finviz": 2,
+          "fred": 2,
+          "imf": 8,
+          "intrinio": 2,
+          "oecd": 9,
+          "sec": 1
+        },
+        "oecd_moves_this_round": 9,
+        "binding_moves": 13,
+        "binding_moves_by_source": {
+          "federal_reserve": 13
+        },
+        "contract_moves_all": 3,
+        "contract_moves_outside_renames": 0,
+        "verified_moves": 0,
+        "verified_move_rule": "any nonzero value here is a reviewed-output-contract change and is refused",
+        "resolvable_denominator": {
+          "common_identities": 350,
+          "judged_for_contract": 328,
+          "judged_for_verified": 328,
+          "unresolvable": 22,
+          "model_key_only_identity_count": 22,
+          "unresolvable_note": "the 22 identities resolve_model cannot reach are the model_key-only cohort counted at registry_census_rebase.descriptor_partition.model_key_only_identity_count"
+        },
+        "fixture_rows_scenario_present_before": 342,
+        "fixture_rows_scenario_present_after": 351,
+        "fixture_total_equals_live_after_write": true,
+        "rows_flipped_this_round": [
+          "oecd/CompositeLeadingIndicator: False -> True",
+          "oecd/ConsumerPriceIndex: False -> True",
+          "oecd/CountryInterestRates: False -> True",
+          "oecd/GdpForecast: False -> True",
+          "oecd/GdpNominal: False -> True",
+          "oecd/GdpReal: False -> True",
+          "oecd/HousePriceIndex: False -> True",
+          "oecd/SharePriceIndex: False -> True",
+          "oecd/Unemployment: False -> True"
+        ],
+        "export_counts_this_round": {
+          "written_by_this_probe": false,
+          "gate": "each value is refused unless live_counts and candidate_counts both equal it",
+          "measured": {
+            "all_symbols": 329,
+            "contract_model_classes_including_base": 325,
+            "non_base_contract_model_classes": 324,
+            "non_contract_exports": 4
+          }
+        },
+        "refusal_arms": "the probe returns 1 without writing on: a contract/verified/domain move outside identity_renames, any removed live identity, an unbalanced move split, an empty flip set, an export count that disagrees with live, a serializer round-trip that is not byte-identical, or any frozen field that would move in the write"
+      }
+    }
+  },
   "candidate_counts": {
-    "basis": "Manual arithmetic from the pinned batch4 snapshot plus the candidate-approved single SLOOS provider/domain identity; export counts distinguish all __all__ symbols, ContractModel classes including the base, and non-base ContractModel classes, as recorded by the pinned batch5 count adjudication.",
-    "domain_specs": 337,
-    "fixed_bound": 317,
-    "fixed_identities": 350,
+    "basis": "Export census re-derived from the live opendata.data.models.__all__ at iteration-2 head (see iter2_census_rebase); domain/identity counts remain the batch5 manual arithmetic from the pinned batch4 snapshot plus the candidate-approved single SLOOS provider/domain identity. The three export counts below supersede the batch5 count adjudication's 330/326/325, which stays hashed unchanged at 2a929fd8614af09e28aa2ae16fa781c7da49d7692dcd6a3b6c78f2118c0906de.",
+    "domain_specs": 338,
+    "fixed_bound": 318,
+    "fixed_identities": 351,
     "fixed_unbound": 33,
-    "provider_model_legs": 350,
-    "all_symbols": 330,
-    "contract_model_classes_including_base": 326,
-    "non_base_contract_model_classes": 325,
+    "provider_model_legs": 351,
+    "all_symbols": 329,
+    "contract_model_classes_including_base": 325,
+    "non_base_contract_model_classes": 324,
     "non_contract_exports": [
       {
         "name": "BlsCatalogPage",
@@ -97,18 +427,21 @@
     "ods_legs": "The 33 registered source/domain legs on the 20 legacy domains remain split by the 10 explicit legacy freshness-field mappings present in the pinned AkShare/THS mapping YAMLs; the remaining 23 are explicitly unmapped."
   },
   "counts": {
-    "deferred_domain_count": 317,
-    "deferred_source_domain_leg_count": 317,
-    "domain_count": 337,
+    "deferred_domain_count": 318,
+    "deferred_source_domain_leg_count": 318,
+    "domain_count": 338,
     "legacy_dwd_domain_count": 20,
     "legacy_source_domain_leg_count": 33,
     "mapped_ods_leg_count": 10,
-    "provider_model_identity_count": 350,
+    "provider_model_identity_count": 351,
     "queried_table_count": 30,
-    "query_semantic_domain_count": 317,
-    "registered_source_domain_leg_count": 350,
+    "query_semantic_domain_count": 318,
+    "registered_source_domain_leg_count": 351,
     "unmapped_ods_leg_count": 23,
-    "warehouse_table_catalog_count": 53
+    "warehouse_table_catalog_count": 53,
+    "descriptor_eligible_identity_count": 329,
+    "model_key_only_identity_count": 22,
+    "descriptor_eligible_legacy_identity_count": 11
   },
   "deferred_domain_ids": [
     "alpha_vantage_equity_historical",
@@ -131,7 +464,6 @@
     "cboe_index_historical",
     "cboe_index_search",
     "cboe_options_chains",
-    "central_bank_holdings",
     "cftc_commitment_of_traders",
     "cftc_market_directory",
     "commercial_paper",
@@ -181,20 +513,24 @@
     "famafrench_international_index_returns",
     "famafrench_regional_portfolio_returns",
     "famafrench_us_portfolio_returns",
+    "federal_reserve_central_bank_holdings",
     "federal_reserve_federal_funds_rate",
     "federal_reserve_fomc_documents",
+    "federal_reserve_inflation_expectations",
     "federal_reserve_money_measures",
     "federal_reserve_overnight_bank_funding_rate",
     "federal_reserve_primary_dealer_fails",
     "federal_reserve_primary_dealer_positioning",
     "federal_reserve_sofr",
     "federal_reserve_svensson_yield_curve",
+    "federal_reserve_total_factor_productivity",
     "federal_reserve_treasury_rates",
     "federal_reserve_yield_curve",
     "finra_equity_short_interest",
     "finra_otc_aggregate",
     "finviz_compare_groups",
     "finviz_equity_info",
+    "finviz_equity_screener",
     "finviz_etf_price_performance",
     "finviz_key_metrics",
     "finviz_price_performance",
@@ -302,7 +638,6 @@
     "imf_maritime_chokepoint_volume",
     "imf_port_info",
     "imf_port_volume",
-    "inflation_expectations",
     "intrinio_balance_sheet",
     "intrinio_calendar_ipo",
     "intrinio_cash_flow_statement",
@@ -394,7 +729,6 @@
     "tmx_historical_dividends",
     "tmx_index_constituents",
     "tmx_price_target_consensus",
-    "total_factor_productivity",
     "tradier_equity_historical",
     "tradier_equity_quote",
     "tradier_equity_search",
@@ -443,10 +777,6 @@
       "source": "alpha_vantage"
     },
     {
-      "domain": "balance_of_payments",
-      "source": "ecb"
-    },
-    {
       "domain": "benzinga_analyst_search",
       "source": "benzinga"
     },
@@ -469,10 +799,6 @@
     {
       "domain": "bls_series",
       "source": "bls"
-    },
-    {
-      "domain": "bond_indices",
-      "source": "fred"
     },
     {
       "domain": "cboe_available_indices",
@@ -511,24 +837,12 @@
       "source": "cboe"
     },
     {
-      "domain": "central_bank_holdings",
-      "source": "federal_reserve"
-    },
-    {
       "domain": "cftc_commitment_of_traders",
       "source": "cftc"
     },
     {
       "domain": "cftc_market_directory",
       "source": "cftc"
-    },
-    {
-      "domain": "commercial_paper",
-      "source": "fred"
-    },
-    {
-      "domain": "commodity_spot_prices",
-      "source": "fred"
     },
     {
       "domain": "congress_amendment_info",
@@ -563,10 +877,6 @@
       "source": "congress_gov"
     },
     {
-      "domain": "currency_reference_rates",
-      "source": "ecb"
-    },
-    {
       "domain": "deribit_futures_curve",
       "source": "deribit"
     },
@@ -585,6 +895,18 @@
     {
       "domain": "deribit_options_chains",
       "source": "deribit"
+    },
+    {
+      "domain": "balance_of_payments",
+      "source": "ecb"
+    },
+    {
+      "domain": "currency_reference_rates",
+      "source": "ecb"
+    },
+    {
+      "domain": "yield_curve",
+      "source": "ecb"
     },
     {
       "domain": "econdb_available_indicators",
@@ -611,80 +933,12 @@
       "source": "econdb"
     },
     {
-      "domain": "economic_calendar",
-      "source": "tradingeconomics"
-    },
-    {
-      "domain": "economy_imf_available_indicators",
-      "source": "imf"
-    },
-    {
-      "domain": "economy_imf_cpi",
-      "source": "imf"
-    },
-    {
-      "domain": "economy_imf_direction_of_trade",
-      "source": "imf"
-    },
-    {
-      "domain": "economy_imf_indicators",
-      "source": "imf"
-    },
-    {
-      "domain": "economy_oecd_cli",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_cpi",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_gdp_forecast",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_gdp_nominal",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_gdp_real",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_house_price_index",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_interest_rates",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_share_price_index",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_unemployment",
-      "source": "oecd"
-    },
-    {
       "domain": "energy_petroleum_status_report",
       "source": "eia"
     },
     {
       "domain": "energy_short_term_energy_outlook",
       "source": "eia"
-    },
-    {
-      "domain": "equity_historical",
-      "source": "fmp"
-    },
-    {
-      "domain": "equity_quote",
-      "source": "fmp"
-    },
-    {
-      "domain": "euro_short_term_rate",
-      "source": "fred"
     },
     {
       "domain": "famafrench_breakpoints",
@@ -711,11 +965,19 @@
       "source": "famafrench"
     },
     {
+      "domain": "federal_reserve_central_bank_holdings",
+      "source": "federal_reserve"
+    },
+    {
       "domain": "federal_reserve_federal_funds_rate",
       "source": "federal_reserve"
     },
     {
       "domain": "federal_reserve_fomc_documents",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_inflation_expectations",
       "source": "federal_reserve"
     },
     {
@@ -743,6 +1005,10 @@
       "source": "federal_reserve"
     },
     {
+      "domain": "federal_reserve_total_factor_productivity",
+      "source": "federal_reserve"
+    },
+    {
       "domain": "federal_reserve_treasury_rates",
       "source": "federal_reserve"
     },
@@ -767,6 +1033,10 @@
       "source": "finviz"
     },
     {
+      "domain": "finviz_equity_screener",
+      "source": "finviz"
+    },
+    {
       "domain": "finviz_etf_price_performance",
       "source": "finviz"
     },
@@ -781,6 +1051,14 @@
     {
       "domain": "finviz_price_target",
       "source": "finviz"
+    },
+    {
+      "domain": "equity_historical",
+      "source": "fmp"
+    },
+    {
+      "domain": "equity_quote",
+      "source": "fmp"
     },
     {
       "domain": "fmp_analyst_estimates",
@@ -1051,6 +1329,22 @@
       "source": "fmp"
     },
     {
+      "domain": "bond_indices",
+      "source": "fred"
+    },
+    {
+      "domain": "commercial_paper",
+      "source": "fred"
+    },
+    {
+      "domain": "commodity_spot_prices",
+      "source": "fred"
+    },
+    {
+      "domain": "euro_short_term_rate",
+      "source": "fred"
+    },
+    {
       "domain": "fred_ameribor",
       "source": "fred"
     },
@@ -1155,6 +1449,30 @@
       "source": "fred"
     },
     {
+      "domain": "hqm_corporate_bond",
+      "source": "fred"
+    },
+    {
+      "domain": "iorb",
+      "source": "fred"
+    },
+    {
+      "domain": "senior_loan_officer_survey",
+      "source": "fred"
+    },
+    {
+      "domain": "sofr",
+      "source": "fred"
+    },
+    {
+      "domain": "sonia",
+      "source": "fred"
+    },
+    {
+      "domain": "spot_rate",
+      "source": "fred"
+    },
+    {
       "domain": "government_us_commodity_psd_data",
       "source": "government_us"
     },
@@ -1175,8 +1493,20 @@
       "source": "government_us"
     },
     {
-      "domain": "hqm_corporate_bond",
-      "source": "fred"
+      "domain": "economy_imf_available_indicators",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_cpi",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_direction_of_trade",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_indicators",
+      "source": "imf"
     },
     {
       "domain": "imf_maritime_chokepoint_info",
@@ -1193,10 +1523,6 @@
     {
       "domain": "imf_port_volume",
       "source": "imf"
-    },
-    {
-      "domain": "inflation_expectations",
-      "source": "federal_reserve"
     },
     {
       "domain": "intrinio_balance_sheet",
@@ -1347,8 +1673,8 @@
       "source": "intrinio"
     },
     {
-      "domain": "iorb",
-      "source": "fred"
+      "domain": "sp500_multiples",
+      "source": "multpl"
     },
     {
       "domain": "nasdaq_calendar_dividend",
@@ -1385,6 +1711,42 @@
     {
       "domain": "nasdaq_top_retail",
       "source": "nasdaq"
+    },
+    {
+      "domain": "economy_oecd_cli",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_cpi",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_gdp_forecast",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_gdp_nominal",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_gdp_real",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_house_price_index",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_interest_rates",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_share_price_index",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_unemployment",
+      "source": "oecd"
     },
     {
       "domain": "sec_balance_sheet",
@@ -1483,26 +1845,6 @@
       "source": "sec"
     },
     {
-      "domain": "senior_loan_officer_survey",
-      "source": "fred"
-    },
-    {
-      "domain": "sofr",
-      "source": "fred"
-    },
-    {
-      "domain": "sonia",
-      "source": "fred"
-    },
-    {
-      "domain": "sp500_multiples",
-      "source": "multpl"
-    },
-    {
-      "domain": "spot_rate",
-      "source": "fred"
-    },
-    {
       "domain": "tiingo_company_news",
       "source": "tiingo"
     },
@@ -1563,10 +1905,6 @@
       "source": "tmx"
     },
     {
-      "domain": "total_factor_productivity",
-      "source": "federal_reserve"
-    },
-    {
       "domain": "tradier_equity_historical",
       "source": "tradier"
     },
@@ -1585,6 +1923,10 @@
     {
       "domain": "tradier_options_chains",
       "source": "tradier"
+    },
+    {
+      "domain": "economic_calendar",
+      "source": "tradingeconomics"
     },
     {
       "domain": "yfinance_balance_sheet",
@@ -1693,10 +2035,6 @@
     {
       "domain": "yfinance_share_statistics",
       "source": "yfinance"
-    },
-    {
-      "domain": "yield_curve",
-      "source": "ecb"
     }
   ],
   "domain_ids": [
@@ -1721,7 +2059,6 @@
     "cboe_index_historical",
     "cboe_index_search",
     "cboe_options_chains",
-    "central_bank_holdings",
     "cftc_commitment_of_traders",
     "cftc_market_directory",
     "commercial_paper",
@@ -1775,14 +2112,17 @@
     "famafrench_international_index_returns",
     "famafrench_regional_portfolio_returns",
     "famafrench_us_portfolio_returns",
+    "federal_reserve_central_bank_holdings",
     "federal_reserve_federal_funds_rate",
     "federal_reserve_fomc_documents",
+    "federal_reserve_inflation_expectations",
     "federal_reserve_money_measures",
     "federal_reserve_overnight_bank_funding_rate",
     "federal_reserve_primary_dealer_fails",
     "federal_reserve_primary_dealer_positioning",
     "federal_reserve_sofr",
     "federal_reserve_svensson_yield_curve",
+    "federal_reserve_total_factor_productivity",
     "federal_reserve_treasury_rates",
     "federal_reserve_yield_curve",
     "financial_indicator",
@@ -1791,6 +2131,7 @@
     "finra_otc_aggregate",
     "finviz_compare_groups",
     "finviz_equity_info",
+    "finviz_equity_screener",
     "finviz_etf_price_performance",
     "finviz_key_metrics",
     "finviz_price_performance",
@@ -1904,7 +2245,6 @@
     "imf_port_volume",
     "index_constituent",
     "index_daily",
-    "inflation_expectations",
     "instrument",
     "intrinio_balance_sheet",
     "intrinio_calendar_ipo",
@@ -2002,7 +2342,6 @@
     "tmx_historical_dividends",
     "tmx_index_constituents",
     "tmx_price_target_consensus",
-    "total_factor_productivity",
     "tradier_equity_historical",
     "tradier_equity_quote",
     "tradier_equity_search",
@@ -2254,7 +2593,8 @@
       "model": "bond_daily",
       "scenario_present": true,
       "source": "akshare",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.akshare.models.financial_indicator:AkshareFinancialIndicatorFetcher",
@@ -2263,7 +2603,8 @@
       "model": "financial_indicator",
       "scenario_present": true,
       "source": "akshare",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.akshare.models.financial_statement:AkshareFinancialStatementFetcher",
@@ -2272,7 +2613,8 @@
       "model": "financial_statement",
       "scenario_present": true,
       "source": "akshare",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.akshare.models.fund_etf_daily:AkshareFundEtfDailyFetcher",
@@ -2281,7 +2623,8 @@
       "model": "fund_etf_daily",
       "scenario_present": true,
       "source": "akshare",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.akshare.models.futures_daily:AkshareFuturesDailyFetcher",
@@ -2290,7 +2633,8 @@
       "model": "futures_daily",
       "scenario_present": true,
       "source": "akshare",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.akshare.models.index_constituent:AkshareIndexConstituentFetcher",
@@ -2299,7 +2643,8 @@
       "model": "index_constituent",
       "scenario_present": true,
       "source": "akshare",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.akshare.models.index_daily:AkshareIndexDailyFetcher",
@@ -2308,7 +2653,8 @@
       "model": "index_daily",
       "scenario_present": true,
       "source": "akshare",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.akshare.models.option_daily:AkshareOptionDailyFetcher",
@@ -2317,7 +2663,8 @@
       "model": "option_daily",
       "scenario_present": true,
       "source": "akshare",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.akshare.models.stock_action:AkshareStockActionFetcher",
@@ -2326,7 +2673,8 @@
       "model": "stock_action",
       "scenario_present": true,
       "source": "akshare",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.akshare.models.stock_daily:AkshareStockDailyFetcher",
@@ -2335,7 +2683,8 @@
       "model": "stock_daily",
       "scenario_present": true,
       "source": "akshare",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.alpha_vantage.models.equity_historical:AlphaVantageEquityHistoricalFetcher",
@@ -2344,7 +2693,8 @@
       "model": "EquityHistorical",
       "scenario_present": true,
       "source": "alpha_vantage",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.alpha_vantage.models.etf_historical:AlphaVantageEtfHistoricalFetcher",
@@ -2353,7 +2703,8 @@
       "model": "EtfHistorical",
       "scenario_present": true,
       "source": "alpha_vantage",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.alpha_vantage.models.historical_eps:AlphaVantageHistoricalEpsFetcher",
@@ -2362,7 +2713,8 @@
       "model": "HistoricalEps",
       "scenario_present": true,
       "source": "alpha_vantage",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.benzinga.models.iter2:BenzingaAnalystSearchFetcher",
@@ -2371,7 +2723,8 @@
       "model": "AnalystSearch",
       "scenario_present": true,
       "source": "benzinga",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.benzinga.models.iter2:BenzingaCompanyNewsFetcher",
@@ -2380,7 +2733,8 @@
       "model": "CompanyNews",
       "scenario_present": true,
       "source": "benzinga",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.benzinga.models.price_target:BenzingaPriceTargetFetcher",
@@ -2389,7 +2743,8 @@
       "model": "PriceTarget",
       "scenario_present": true,
       "source": "benzinga",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.benzinga.models.iter2:BenzingaWorldNewsFetcher",
@@ -2398,7 +2753,8 @@
       "model": "WorldNews",
       "scenario_present": true,
       "source": "benzinga",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.bls.models.search:BlsSearchFetcher",
@@ -2407,7 +2763,8 @@
       "model": "BlsSearch",
       "scenario_present": true,
       "source": "bls",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.bls.models.series:BlsSeriesFetcher",
@@ -2416,7 +2773,8 @@
       "model": "BlsSeries",
       "scenario_present": true,
       "source": "bls",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.cboe.models.available_indices:CboeAvailableIndicesFetcher",
@@ -2425,7 +2783,8 @@
       "model": "AvailableIndices",
       "scenario_present": true,
       "source": "cboe",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.cboe.models.all_access:CboeEquityHistoricalFetcher",
@@ -2434,7 +2793,8 @@
       "model": "EquityHistorical",
       "scenario_present": true,
       "source": "cboe",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.cboe.models.all_access:CboeEquityQuoteFetcher",
@@ -2443,7 +2803,8 @@
       "model": "EquityQuote",
       "scenario_present": true,
       "source": "cboe",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.cboe.models.all_access:CboeEquitySearchFetcher",
@@ -2452,7 +2813,8 @@
       "model": "EquitySearch",
       "scenario_present": true,
       "source": "cboe",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.cboe.models.all_access:CboeEtfHistoricalFetcher",
@@ -2461,7 +2823,8 @@
       "model": "EtfHistorical",
       "scenario_present": true,
       "source": "cboe",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.cboe.models.index_constituents:CboeIndexConstituentsFetcher",
@@ -2470,7 +2833,8 @@
       "model": "IndexConstituents",
       "scenario_present": true,
       "source": "cboe",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.cboe.models.index_historical_public:CboeIndexHistoricalFetcher",
@@ -2479,7 +2843,8 @@
       "model": "IndexHistorical",
       "scenario_present": true,
       "source": "cboe",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.cboe.models.index_search:CboeIndexSearchFetcher",
@@ -2488,7 +2853,8 @@
       "model": "IndexSearch",
       "scenario_present": true,
       "source": "cboe",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.cboe.models.all_access:CboeOptionsChainsFetcher",
@@ -2497,25 +2863,28 @@
       "model": "OptionsChains",
       "scenario_present": true,
       "source": "cboe",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.cftc.models.cot:COTFetcher",
       "contract": "COT",
       "domain": "cftc_commitment_of_traders",
       "model": "COT",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "cftc",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.cftc.models.cot_search:COTSearchFetcher",
       "contract": "COTSearch",
       "domain": "cftc_market_directory",
       "model": "COTSearch",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "cftc",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.congress_gov.models.iter2:CongressAmendmentInfoFetcher",
@@ -2524,7 +2893,8 @@
       "model": "CongressAmendmentInfo",
       "scenario_present": true,
       "source": "congress_gov",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.congress_gov.models.iter2:CongressAmendmentTextFetcher",
@@ -2533,7 +2903,8 @@
       "model": "CongressAmendmentText",
       "scenario_present": true,
       "source": "congress_gov",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.congress_gov.models.iter2:CongressAmendmentsFetcher",
@@ -2542,7 +2913,8 @@
       "model": "CongressAmendments",
       "scenario_present": true,
       "source": "congress_gov",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.congress_gov.models.iter2:CongressBillInfoFetcher",
@@ -2551,7 +2923,8 @@
       "model": "CongressBillInfo",
       "scenario_present": true,
       "source": "congress_gov",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.congress_gov.models.iter2:CongressBillTextFetcher",
@@ -2560,7 +2933,8 @@
       "model": "CongressBillText",
       "scenario_present": true,
       "source": "congress_gov",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.congress_gov.models.iter2:CongressBillsFetcher",
@@ -2569,7 +2943,8 @@
       "model": "CongressBills",
       "scenario_present": true,
       "source": "congress_gov",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.congress_gov.models.iter2:CongressCommitteeDocumentsFetcher",
@@ -2578,7 +2953,8 @@
       "model": "CongressCommitteeDocuments",
       "scenario_present": true,
       "source": "congress_gov",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.congress_gov.models.iter2:CongressCommitteeInfoFetcher",
@@ -2587,7 +2963,8 @@
       "model": "CongressCommitteeInfo",
       "scenario_present": true,
       "source": "congress_gov",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.deribit.models.fetchers:DeribitFuturesCurveFetcher",
@@ -2596,7 +2973,8 @@
       "model": "FuturesCurve",
       "scenario_present": true,
       "source": "deribit",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.deribit.models.fetchers:DeribitFuturesHistoricalFetcher",
@@ -2605,7 +2983,8 @@
       "model": "FuturesHistorical",
       "scenario_present": true,
       "source": "deribit",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.deribit.models.fetchers:DeribitFuturesInfoFetcher",
@@ -2614,7 +2993,8 @@
       "model": "FuturesInfo",
       "scenario_present": true,
       "source": "deribit",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.deribit.models.fetchers:DeribitFuturesInstrumentsFetcher",
@@ -2623,7 +3003,8 @@
       "model": "FuturesInstruments",
       "scenario_present": true,
       "source": "deribit",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.deribit.models.fetchers:DeribitOptionsChainsFetcher",
@@ -2632,7 +3013,8 @@
       "model": "OptionsChains",
       "scenario_present": true,
       "source": "deribit",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ecb.models.balance_of_payments:EcbBalanceOfPaymentsFetcher",
@@ -2641,7 +3023,8 @@
       "model": "BalanceOfPayments",
       "scenario_present": true,
       "source": "ecb",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ecb.models.reference_rates:EcbCurrencyReferenceRatesFetcher",
@@ -2650,7 +3033,8 @@
       "model": "CurrencyReferenceRates",
       "scenario_present": true,
       "source": "ecb",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ecb.models.yield_curve:EcbYieldCurveFetcher",
@@ -2659,7 +3043,8 @@
       "model": "YieldCurve",
       "scenario_present": true,
       "source": "ecb",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ecb.models.cpi:EcbCpiFetcher",
@@ -2668,7 +3053,8 @@
       "model": "cpi",
       "scenario_present": true,
       "source": "ecb",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.ecb.models.gdp:EcbGdpFetcher",
@@ -2677,7 +3063,8 @@
       "model": "gdp",
       "scenario_present": true,
       "source": "ecb",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.ecb.models.rate:EcbRateFetcher",
@@ -2686,7 +3073,8 @@
       "model": "rate",
       "scenario_present": true,
       "source": "ecb",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.econdb.models.available_indicators:EcondbAvailableIndicatorsFetcher",
@@ -2695,7 +3083,8 @@
       "model": "AvailableIndicators",
       "scenario_present": true,
       "source": "econdb",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.econdb.models.iter2:EconDBEconomicIndicatorsFetcher",
@@ -2704,7 +3093,8 @@
       "model": "EconomicIndicators",
       "scenario_present": true,
       "source": "econdb",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.econdb.models.iter2:EconDBGdpNominalFetcher",
@@ -2713,7 +3103,8 @@
       "model": "GdpNominal",
       "scenario_present": true,
       "source": "econdb",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.econdb.models.iter2:EconDBGdpRealFetcher",
@@ -2722,7 +3113,8 @@
       "model": "GdpReal",
       "scenario_present": true,
       "source": "econdb",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.econdb.models.iter2:EconDBPortVolumeFetcher",
@@ -2731,7 +3123,8 @@
       "model": "PortVolume",
       "scenario_present": true,
       "source": "econdb",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.econdb.models.iter2:EconDBYieldCurveFetcher",
@@ -2740,25 +3133,28 @@
       "model": "YieldCurve",
       "scenario_present": true,
       "source": "econdb",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.eia.models.petroleum_status_report:PetroleumStatusReportFetcher",
       "contract": "PetroleumStatusReport",
       "domain": "energy_petroleum_status_report",
       "model": "PetroleumStatusReport",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "eia",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.eia.models.short_term_energy_outlook:ShortTermEnergyOutlookFetcher",
       "contract": "ShortTermEnergyOutlook",
       "domain": "energy_short_term_energy_outlook",
       "model": "ShortTermEnergyOutlook",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "eia",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchBreakpointsFetcher",
@@ -2767,7 +3163,8 @@
       "model": "FamaFrenchBreakpoints",
       "scenario_present": true,
       "source": "famafrench",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchCountryPortfolioReturnsFetcher",
@@ -2776,7 +3173,8 @@
       "model": "FamaFrenchCountryPortfolioReturns",
       "scenario_present": true,
       "source": "famafrench",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchFactorsFetcher",
@@ -2785,7 +3183,8 @@
       "model": "FamaFrenchFactors",
       "scenario_present": true,
       "source": "famafrench",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchInternationalIndexReturnsFetcher",
@@ -2794,7 +3193,8 @@
       "model": "FamaFrenchInternationalIndexReturns",
       "scenario_present": true,
       "source": "famafrench",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchRegionalPortfolioReturnsFetcher",
@@ -2803,7 +3203,8 @@
       "model": "FamaFrenchRegionalPortfolioReturns",
       "scenario_present": true,
       "source": "famafrench",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchUSPortfolioReturnsFetcher",
@@ -2812,124 +3213,138 @@
       "model": "FamaFrenchUSPortfolioReturns",
       "scenario_present": true,
       "source": "famafrench",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_economy:CentralBankHoldingsFetcher",
-      "contract": "CentralBankHoldings",
-      "domain": "central_bank_holdings",
+      "binding": "opendata.data.providers.federal_reserve.models.central_bank_holdings:FederalReserveCentralBankHoldingsFetcher",
+      "contract": "FederalReserveCentralBankHolding",
+      "domain": "federal_reserve_central_bank_holdings",
       "model": "CentralBankHoldings",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_rates:FederalFundsRateFetcher",
+      "binding": "opendata.data.providers.federal_reserve.models.federal_funds_rate:FederalReserveFederalFundsRateFetcher",
       "contract": "FederalReserveFederalFundsRate",
       "domain": "federal_reserve_federal_funds_rate",
       "model": "FederalFundsRate",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_documents:FomcDocumentsFetcher",
+      "binding": "opendata.data.providers.federal_reserve.models.fomc_documents:FederalReserveFomcDocumentsFetcher",
       "contract": "FederalReserveFomcDocument",
       "domain": "federal_reserve_fomc_documents",
       "model": "FomcDocuments",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_economy:InflationExpectationsFetcher",
-      "contract": "InflationExpectations",
-      "domain": "inflation_expectations",
+      "binding": "opendata.data.providers.federal_reserve.models.inflation_expectations:FederalReserveInflationExpectationsFetcher",
+      "contract": "FederalReserveInflationExpectations",
+      "domain": "federal_reserve_inflation_expectations",
       "model": "InflationExpectations",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_rates:MoneyMeasuresFetcher",
+      "binding": "opendata.data.providers.federal_reserve.models.money_measures:FederalReserveMoneyMeasuresFetcher",
       "contract": "FederalReserveMoneyMeasure",
       "domain": "federal_reserve_money_measures",
       "model": "MoneyMeasures",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_rates:OvernightBankFundingRateFetcher",
+      "binding": "opendata.data.providers.federal_reserve.models.overnight_bank_funding_rate:FederalReserveOvernightBankFundingRateFetcher",
       "contract": "FederalReserveOvernightBankFundingRate",
       "domain": "federal_reserve_overnight_bank_funding_rate",
       "model": "OvernightBankFundingRate",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_nyfed:PrimaryDealerFailsFetcher",
+      "binding": "opendata.data.providers.federal_reserve.models.primary_dealer_fails:FederalReservePrimaryDealerFailsFetcher",
       "contract": "PrimaryDealerFails",
       "domain": "federal_reserve_primary_dealer_fails",
       "model": "PrimaryDealerFails",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_nyfed:PrimaryDealerPositioningFetcher",
+      "binding": "opendata.data.providers.federal_reserve.models.primary_dealer_positioning:FederalReservePrimaryDealerPositioningFetcher",
       "contract": "PrimaryDealerPositioning",
       "domain": "federal_reserve_primary_dealer_positioning",
       "model": "PrimaryDealerPositioning",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_nyfed:SOFRFetcher",
+      "binding": "opendata.data.providers.federal_reserve.models.sofr:FederalReserveSOFRFetcher",
       "contract": "SOFR",
       "domain": "federal_reserve_sofr",
       "model": "SOFR",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_rates:SvenssonYieldCurveFetcher",
+      "binding": "opendata.data.providers.federal_reserve.models.svensson_yield_curve:FederalReserveSvenssonYieldCurveFetcher",
       "contract": "FederalReserveSvenssonYieldCurve",
       "domain": "federal_reserve_svensson_yield_curve",
       "model": "SvenssonYieldCurve",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_economy:TotalFactorProductivityFetcher",
-      "contract": "TotalFactorProductivity",
-      "domain": "total_factor_productivity",
+      "binding": "opendata.data.providers.federal_reserve.models.total_factor_productivity:FederalReserveTotalFactorProductivityFetcher",
+      "contract": "FederalReserveTotalFactorProductivity",
+      "domain": "federal_reserve_total_factor_productivity",
       "model": "TotalFactorProductivity",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_rates:TreasuryRatesFetcher",
+      "binding": "opendata.data.providers.federal_reserve.models.treasury_rates:FederalReserveTreasuryRatesFetcher",
       "contract": "FederalReserveTreasuryRate",
       "domain": "federal_reserve_treasury_rates",
       "model": "TreasuryRates",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
-      "binding": "opendata.data.providers.federal_reserve.models.clean_documents:YieldCurveFetcher",
+      "binding": "opendata.data.providers.federal_reserve.models.yield_curve:FederalReserveYieldCurveFetcher",
       "contract": "FederalReserveYieldCurveObservation",
       "domain": "federal_reserve_yield_curve",
       "model": "YieldCurve",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "federal_reserve",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.finra.models.equity_short_interest:EquityShortInterestFetcher",
@@ -2938,7 +3353,8 @@
       "model": "EquityShortInterest",
       "scenario_present": true,
       "source": "finra",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.finra.models.otc_aggregate:OTCAggregateFetcher",
@@ -2947,7 +3363,8 @@
       "model": "OTCAggregate",
       "scenario_present": true,
       "source": "finra",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.finviz.models.fetchers:FinvizCompareGroupsFetcher",
@@ -2956,7 +3373,8 @@
       "model": "CompareGroups",
       "scenario_present": true,
       "source": "finviz",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.finviz.models.fetchers:FinvizEquityInfoFetcher",
@@ -2965,16 +3383,28 @@
       "model": "EquityInfo",
       "scenario_present": true,
       "source": "finviz",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.finviz.models.fetchers:FinvizEquityScreenerFetcher",
+      "contract": "FinvizEquityScreener",
+      "domain": "finviz_equity_screener",
+      "model": "EquityScreener",
+      "scenario_present": true,
+      "source": "finviz",
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.finviz.models.price_performance:FinvizEtfPricePerformanceFetcher",
       "contract": "FinvizEtfPricePerformance",
       "domain": "finviz_etf_price_performance",
       "model": "EtfPricePerformance",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "finviz",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.finviz.models.fetchers:FinvizKeyMetricsFetcher",
@@ -2983,16 +3413,18 @@
       "model": "KeyMetrics",
       "scenario_present": true,
       "source": "finviz",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.finviz.models.price_performance:FinvizPricePerformanceFetcher",
       "contract": "FinvizPricePerformance",
       "domain": "finviz_price_performance",
       "model": "PricePerformance",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "finviz",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.finviz.models.fetchers:FinvizPriceTargetFetcher",
@@ -3001,7 +3433,8 @@
       "model": "PriceTarget",
       "scenario_present": true,
       "source": "finviz",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:AnalystEstimatesFetcher",
@@ -3010,7 +3443,8 @@
       "model": "AnalystEstimates",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2:AvailableIndicesFetcher",
@@ -3019,7 +3453,8 @@
       "model": "AvailableIndices",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_financials:BalanceSheetFetcher",
@@ -3028,7 +3463,8 @@
       "model": "BalanceSheet",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_financials:BalanceSheetGrowthFetcher",
@@ -3037,7 +3473,8 @@
       "model": "BalanceSheetGrowth",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2:CalendarDividendFetcher",
@@ -3046,7 +3483,8 @@
       "model": "CalendarDividend",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2:CalendarEarningsFetcher",
@@ -3055,7 +3493,8 @@
       "model": "CalendarEarnings",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2:CalendarEventsFetcher",
@@ -3064,7 +3503,8 @@
       "model": "CalendarEvents",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2:CalendarIpoFetcher",
@@ -3073,7 +3513,8 @@
       "model": "CalendarIpo",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2:CalendarSplitsFetcher",
@@ -3082,7 +3523,8 @@
       "model": "CalendarSplits",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_financials:CashFlowStatementFetcher",
@@ -3091,7 +3533,8 @@
       "model": "CashFlowStatement",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_financials:CashFlowStatementGrowthFetcher",
@@ -3100,7 +3543,8 @@
       "model": "CashFlowStatementGrowth",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:CompanyFilingsFetcher",
@@ -3109,7 +3553,8 @@
       "model": "CompanyFilings",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:CompanyNewsFetcher",
@@ -3118,7 +3563,8 @@
       "model": "CompanyNews",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:CryptoHistoricalFetcher",
@@ -3127,7 +3573,8 @@
       "model": "CryptoHistorical",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:CryptoSearchFetcher",
@@ -3136,7 +3583,8 @@
       "model": "CryptoSearch",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:CurrencyHistoricalFetcher",
@@ -3145,7 +3593,8 @@
       "model": "CurrencyHistorical",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:CurrencyPairsFetcher",
@@ -3154,7 +3603,8 @@
       "model": "CurrencyPairs",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:CurrencySnapshotsFetcher",
@@ -3163,7 +3613,8 @@
       "model": "CurrencySnapshots",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:DiscoveryFilingsFetcher",
@@ -3172,7 +3623,8 @@
       "model": "DiscoveryFilings",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:EarningsCallTranscriptFetcher",
@@ -3181,7 +3633,8 @@
       "model": "EarningsCallTranscript",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2:EconomicCalendarFetcher",
@@ -3190,7 +3643,8 @@
       "model": "EconomicCalendar",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:EquityActiveFetcher",
@@ -3199,7 +3653,8 @@
       "model": "EquityActive",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:EquityGainersFetcher",
@@ -3208,7 +3663,8 @@
       "model": "EquityGainers",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.equity_historical:EquityHistoricalFetcher",
@@ -3217,7 +3673,8 @@
       "model": "EquityHistorical",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:EquityInfoFetcher",
@@ -3226,7 +3683,8 @@
       "model": "EquityInfo",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:EquityLosersFetcher",
@@ -3235,7 +3693,8 @@
       "model": "EquityLosers",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:EquityOwnershipFetcher",
@@ -3244,7 +3703,8 @@
       "model": "EquityOwnership",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:EquityPeersFetcher",
@@ -3253,7 +3713,8 @@
       "model": "EquityPeers",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.equity_quote:EquityQuoteFetcher",
@@ -3262,7 +3723,8 @@
       "model": "EquityQuote",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:EquityScreenerFetcher",
@@ -3271,7 +3733,8 @@
       "model": "EquityScreener",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:EsgScoreFetcher",
@@ -3280,7 +3743,8 @@
       "model": "EsgScore",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfCountriesFetcher",
@@ -3289,7 +3753,8 @@
       "model": "EtfCountries",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfEquityExposureFetcher",
@@ -3298,7 +3763,8 @@
       "model": "EtfEquityExposure",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfHistoricalFetcher",
@@ -3307,7 +3773,8 @@
       "model": "EtfHistorical",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfHoldingsFetcher",
@@ -3316,7 +3783,8 @@
       "model": "EtfHoldings",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfInfoFetcher",
@@ -3325,7 +3793,8 @@
       "model": "EtfInfo",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfPricePerformanceFetcher",
@@ -3334,7 +3803,8 @@
       "model": "EtfPricePerformance",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfSearchFetcher",
@@ -3343,7 +3813,8 @@
       "model": "EtfSearch",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfSectorsFetcher",
@@ -3352,7 +3823,8 @@
       "model": "EtfSectors",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:ExecutiveCompensationFetcher",
@@ -3361,7 +3833,8 @@
       "model": "ExecutiveCompensation",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_financials:FinancialRatiosFetcher",
@@ -3370,7 +3843,8 @@
       "model": "FinancialRatios",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:ForwardEbitdaEstimatesFetcher",
@@ -3379,7 +3853,8 @@
       "model": "ForwardEbitdaEstimates",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:ForwardEpsEstimatesFetcher",
@@ -3388,7 +3863,8 @@
       "model": "ForwardEpsEstimates",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:GovernmentTradesFetcher",
@@ -3397,7 +3873,8 @@
       "model": "GovernmentTrades",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalDividendsFetcher",
@@ -3406,7 +3883,8 @@
       "model": "HistoricalDividends",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalEmployeesFetcher",
@@ -3415,7 +3893,8 @@
       "model": "HistoricalEmployees",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalEpsFetcher",
@@ -3424,7 +3903,8 @@
       "model": "HistoricalEps",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalMarketCapFetcher",
@@ -3433,7 +3913,8 @@
       "model": "HistoricalMarketCap",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalSplitsFetcher",
@@ -3442,7 +3923,8 @@
       "model": "HistoricalSplits",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_financials:IncomeStatementFetcher",
@@ -3451,7 +3933,8 @@
       "model": "IncomeStatement",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_financials:IncomeStatementGrowthFetcher",
@@ -3460,7 +3943,8 @@
       "model": "IncomeStatementGrowth",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:IndexConstituentsFetcher",
@@ -3469,7 +3953,8 @@
       "model": "IndexConstituents",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:IndexHistoricalFetcher",
@@ -3478,7 +3963,8 @@
       "model": "IndexHistorical",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:InsiderTradingFetcher",
@@ -3487,7 +3973,8 @@
       "model": "InsiderTrading",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:InstitutionalOwnershipFetcher",
@@ -3496,7 +3983,8 @@
       "model": "InstitutionalOwnership",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:KeyExecutivesFetcher",
@@ -3505,7 +3993,8 @@
       "model": "KeyExecutives",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_financials:KeyMetricsFetcher",
@@ -3514,7 +4003,8 @@
       "model": "KeyMetrics",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:MarketSnapshotsFetcher",
@@ -3523,7 +4013,8 @@
       "model": "MarketSnapshots",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:NportDisclosureFetcher",
@@ -3532,7 +4023,8 @@
       "model": "NportDisclosure",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:PricePerformanceFetcher",
@@ -3541,7 +4033,8 @@
       "model": "PricePerformance",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:PriceTargetFetcher",
@@ -3550,7 +4043,8 @@
       "model": "PriceTarget",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:PriceTargetConsensusFetcher",
@@ -3559,7 +4053,8 @@
       "model": "PriceTargetConsensus",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_financials:RevenueBusinessLineFetcher",
@@ -3568,7 +4063,8 @@
       "model": "RevenueBusinessLine",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_financials:RevenueGeographicFetcher",
@@ -3577,7 +4073,8 @@
       "model": "RevenueGeographic",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2:MarketRiskPremiumFetcher",
@@ -3586,7 +4083,8 @@
       "model": "RiskPremium",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_market:ShareStatisticsFetcher",
@@ -3595,7 +4093,8 @@
       "model": "ShareStatistics",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2:TreasuryRatesFetcher",
@@ -3604,7 +4103,8 @@
       "model": "TreasuryRates",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_disclosures:WorldNewsFetcher",
@@ -3613,7 +4113,8 @@
       "model": "WorldNews",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:YieldCurveFetcher",
@@ -3622,7 +4123,8 @@
       "model": "YieldCurve",
       "scenario_present": true,
       "source": "fmp",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.fixed_rates:AmeriborFetcher",
@@ -3631,7 +4133,8 @@
       "model": "Ameribor",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_auxiliary:BalanceOfPaymentsFetcher",
@@ -3640,7 +4143,8 @@
       "model": "BalanceOfPayments",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_rates_extra:BondIndicesFetcher",
@@ -3649,7 +4153,8 @@
       "model": "BondIndices",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_rates_extra:CommercialPaperFetcher",
@@ -3658,7 +4163,8 @@
       "model": "CommercialPaper",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_rates_extra:CommoditySpotPricesFetcher",
@@ -3667,7 +4173,8 @@
       "model": "CommoditySpotPrices",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_macro:ConsumerPriceIndexFetcher",
@@ -3676,7 +4183,8 @@
       "model": "ConsumerPriceIndex",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.fixed_rates:DiscountWindowPrimaryCreditRateFetcher",
@@ -3685,7 +4193,8 @@
       "model": "DiscountWindowPrimaryCreditRate",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_auxiliary:EconomicCalendarFetcher",
@@ -3694,7 +4203,8 @@
       "model": "EconomicCalendar",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_rates_extra:EuroShortTermRateFetcher",
@@ -3703,7 +4213,8 @@
       "model": "EuroShortTermRate",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.fixed_rates:EuropeanCentralBankInterestRatesFetcher",
@@ -3712,7 +4223,8 @@
       "model": "EuropeanCentralBankInterestRates",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.federal_funds:FederalFundsRateFetcher",
@@ -3721,7 +4233,8 @@
       "model": "FederalFundsRate",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_auxiliary:FredRegionalFetcher",
@@ -3730,7 +4243,8 @@
       "model": "FredRegional",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_auxiliary:FredReleaseTableFetcher",
@@ -3739,7 +4253,8 @@
       "model": "FredReleaseTable",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.search:FredSearchFetcher",
@@ -3748,7 +4263,8 @@
       "model": "FredSearch",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.series:FredSeriesFetcher",
@@ -3757,7 +4273,8 @@
       "model": "FredSeries",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_rates_extra:HighQualityMarketCorporateBondFetcher",
@@ -3766,7 +4283,8 @@
       "model": "HighQualityMarketCorporateBond",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iorb:FredIorbFetcher",
@@ -3775,7 +4293,8 @@
       "model": "IORB",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_macro:ManufacturingOutlookNYFetcher",
@@ -3784,7 +4303,8 @@
       "model": "ManufacturingOutlookNY",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_macro:ManufacturingOutlookTexasFetcher",
@@ -3793,7 +4313,8 @@
       "model": "ManufacturingOutlookTexas",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_macro:MortgageIndicesFetcher",
@@ -3802,7 +4323,8 @@
       "model": "MortgageIndices",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_macro:NonFarmPayrollsFetcher",
@@ -3811,7 +4333,8 @@
       "model": "NonFarmPayrolls",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.federal_funds:OvernightBankFundingRateFetcher",
@@ -3820,7 +4343,8 @@
       "model": "OvernightBankFundingRate",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_auxiliary:ProjectionsFetcher",
@@ -3829,7 +4353,8 @@
       "model": "PROJECTIONS",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_macro:PersonalConsumptionExpendituresFetcher",
@@ -3838,16 +4363,18 @@
       "model": "PersonalConsumptionExpenditures",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_macro_remaining:RetailPricesRemainingFetcher",
       "contract": "FredRetailPrice",
       "domain": "fred_retail_prices",
       "model": "RetailPrices",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.sofr:FredSofrFetcher",
@@ -3856,7 +4383,8 @@
       "model": "SOFR",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.sonia:FredSoniaFetcher",
@@ -3865,7 +4393,8 @@
       "model": "SONIA",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.treasury_rates:SelectedTreasuryBillFetcher",
@@ -3874,7 +4403,8 @@
       "model": "SelectedTreasuryBill",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.treasury_rates:SelectedTreasuryConstantMaturityFetcher",
@@ -3883,16 +4413,18 @@
       "model": "SelectedTreasuryConstantMaturity",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.sloos:FredSeniorLoanOfficerSurveyFetcher",
       "contract": "FredSeniorLoanOfficerSurvey",
       "domain": "senior_loan_officer_survey",
       "model": "SeniorLoanOfficerSurvey",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_rates_extra:SpotRateFetcher",
@@ -3901,7 +4433,8 @@
       "model": "SpotRate",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_macro:SurveyOfEconomicConditionsChicagoFetcher",
@@ -3910,7 +4443,8 @@
       "model": "SurveyOfEconomicConditionsChicago",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.fixed_rates:TipsYieldsFetcher",
@@ -3919,7 +4453,8 @@
       "model": "TipsYields",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.treasury_rates:TreasuryConstantMaturityFetcher",
@@ -3928,7 +4463,8 @@
       "model": "TreasuryConstantMaturity",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_macro:UniversityOfMichiganFetcher",
@@ -3937,7 +4473,8 @@
       "model": "UniversityOfMichigan",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.iter2_rates_extra:YieldCurveFetcher",
@@ -3946,7 +4483,8 @@
       "model": "YieldCurve",
       "scenario_present": true,
       "source": "fred",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.fred.models.cpi:FredCpiFetcher",
@@ -3955,7 +4493,8 @@
       "model": "cpi",
       "scenario_present": true,
       "source": "fred",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.fred.models.gdp:FredGdpFetcher",
@@ -3964,7 +4503,8 @@
       "model": "gdp",
       "scenario_present": true,
       "source": "fred",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.fred.models.unemployment:FredUnemploymentFetcher",
@@ -3973,7 +4513,8 @@
       "model": "unemployment",
       "scenario_present": true,
       "source": "fred",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.government_us.models.commodity_psd_data:CommodityPsdDataFetcher",
@@ -3982,7 +4523,8 @@
       "model": "CommodityPsdData",
       "scenario_present": true,
       "source": "government_us",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.government_us.models.commodity_psd_report:CommodityPsdReportFetcher",
@@ -3991,7 +4533,8 @@
       "model": "CommodityPsdReport",
       "scenario_present": true,
       "source": "government_us",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.government_us.models.treasury_auctions:TreasuryAuctionsFetcher",
@@ -4000,7 +4543,8 @@
       "model": "TreasuryAuctions",
       "scenario_present": true,
       "source": "government_us",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.government_us.models.weather_bulletin:WeatherBulletinFetcher",
@@ -4009,7 +4553,8 @@
       "model": "WeatherBulletin",
       "scenario_present": true,
       "source": "government_us",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.government_us.models.weather_bulletin_download:WeatherBulletinDownloadFetcher",
@@ -4018,79 +4563,88 @@
       "model": "WeatherBulletinDownload",
       "scenario_present": true,
       "source": "government_us",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.imf.models.iter2:ImfAvailableIndicatorsFetcher",
       "contract": "ImfAvailableIndicator",
       "domain": "economy_imf_available_indicators",
       "model": "AvailableIndicators",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "imf",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.imf.models.iter2:ImfConsumerPriceIndexFetcher",
       "contract": "ImfConsumerPriceIndex",
       "domain": "economy_imf_cpi",
       "model": "ConsumerPriceIndex",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "imf",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.imf.models.iter2:ImfDirectionOfTradeFetcher",
       "contract": "ImfDirectionOfTrade",
       "domain": "economy_imf_direction_of_trade",
       "model": "DirectionOfTrade",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "imf",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.imf.models.iter2:ImfEconomicIndicatorFetcher",
       "contract": "ImfEconomicIndicator",
       "domain": "economy_imf_indicators",
       "model": "EconomicIndicators",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "imf",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.imf.models.portwatch:ImfChokePointInfoFetcher",
       "contract": "ImfMaritimeChokePointInfo",
       "domain": "imf_maritime_chokepoint_info",
       "model": "MaritimeChokePointInfo",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "imf",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.imf.models.portwatch:ImfChokePointVolumeFetcher",
       "contract": "ImfMaritimeChokePointVolume",
       "domain": "imf_maritime_chokepoint_volume",
       "model": "MaritimeChokePointVolume",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "imf",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.imf.models.portwatch:ImfPortInfoFetcher",
       "contract": "ImfPortInfo",
       "domain": "imf_port_info",
       "model": "PortInfo",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "imf",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.imf.models.portwatch:ImfPortVolumeFetcher",
       "contract": "ImfPortVolume",
       "domain": "imf_port_volume",
       "model": "PortVolume",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "imf",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.imf.models.cpi:ImfCpiFetcher",
@@ -4099,7 +4653,8 @@
       "model": "cpi",
       "scenario_present": true,
       "source": "imf",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.imf.models.gdp:ImfGdpFetcher",
@@ -4108,7 +4663,8 @@
       "model": "gdp",
       "scenario_present": true,
       "source": "imf",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.imf.models.unemployment:ImfUnemploymentFetcher",
@@ -4117,7 +4673,8 @@
       "model": "unemployment",
       "scenario_present": true,
       "source": "imf",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioBalanceSheetFetcher",
@@ -4126,7 +4683,8 @@
       "model": "BalanceSheet",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.calendar_ipo:IntrinioCalendarIpoFetcher",
@@ -4135,7 +4693,8 @@
       "model": "CalendarIpo",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioCashFlowStatementFetcher",
@@ -4144,7 +4703,8 @@
       "model": "CashFlowStatement",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioCompanyFilingsFetcher",
@@ -4153,7 +4713,8 @@
       "model": "CompanyFilings",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioCompanyNewsFetcher",
@@ -4162,7 +4723,8 @@
       "model": "CompanyNews",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.currency_pairs:IntrinioCurrencyPairsFetcher",
@@ -4171,7 +4733,8 @@
       "model": "CurrencyPairs",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEquityHistoricalFetcher",
@@ -4180,7 +4743,8 @@
       "model": "EquityHistorical",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEquityInfoFetcher",
@@ -4189,7 +4753,8 @@
       "model": "EquityInfo",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEquityQuoteFetcher",
@@ -4198,7 +4763,8 @@
       "model": "EquityQuote",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.equity_search:IntrinioEquitySearchFetcher",
@@ -4207,7 +4773,8 @@
       "model": "EquitySearch",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEtfHistoricalFetcher",
@@ -4216,7 +4783,8 @@
       "model": "EtfHistorical",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEtfHoldingsFetcher",
@@ -4225,7 +4793,8 @@
       "model": "EtfHoldings",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEtfInfoFetcher",
@@ -4234,16 +4803,18 @@
       "model": "EtfInfo",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_snapshots_clean:IntrinioEtfPricePerformanceFetcher",
       "contract": "IntrinioEtfPricePerformance",
       "domain": "intrinio_etf_price_performance",
       "model": "EtfPricePerformance",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEtfSearchFetcher",
@@ -4252,7 +4823,8 @@
       "model": "EtfSearch",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioFinancialRatiosFetcher",
@@ -4261,7 +4833,8 @@
       "model": "FinancialRatios",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioForwardEbitdaEstimatesFetcher",
@@ -4270,7 +4843,8 @@
       "model": "ForwardEbitdaEstimates",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioForwardEpsEstimatesFetcher",
@@ -4279,7 +4853,8 @@
       "model": "ForwardEpsEstimates",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioForwardPeEstimatesFetcher",
@@ -4288,7 +4863,8 @@
       "model": "ForwardPeEstimates",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioForwardSalesEstimatesFetcher",
@@ -4297,7 +4873,8 @@
       "model": "ForwardSalesEstimates",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioFredSeriesFetcher",
@@ -4306,7 +4883,8 @@
       "model": "FredSeries",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioHistoricalAttributesFetcher",
@@ -4315,7 +4893,8 @@
       "model": "HistoricalAttributes",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.historical_dividends:IntrinioHistoricalDividendsFetcher",
@@ -4324,7 +4903,8 @@
       "model": "HistoricalDividends",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioHistoricalMarketCapFetcher",
@@ -4333,7 +4913,8 @@
       "model": "HistoricalMarketCap",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioIncomeStatementFetcher",
@@ -4342,7 +4923,8 @@
       "model": "IncomeStatement",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioIndexHistoricalFetcher",
@@ -4351,7 +4933,8 @@
       "model": "IndexHistorical",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.insider_trading:IntrinioInsiderTradingFetcher",
@@ -4360,7 +4943,8 @@
       "model": "InsiderTrading",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioKeyMetricsFetcher",
@@ -4369,7 +4953,8 @@
       "model": "KeyMetrics",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioLatestAttributesFetcher",
@@ -4378,16 +4963,18 @@
       "model": "LatestAttributes",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_snapshots_clean:IntrinioMarketSnapshotsFetcher",
       "contract": "IntrinioMarketSnapshot",
       "domain": "intrinio_market_snapshots",
       "model": "MarketSnapshots",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioOptionsChainsFetcher",
@@ -4396,7 +4983,8 @@
       "model": "OptionsChains",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioOptionsUnusualFetcher",
@@ -4405,7 +4993,8 @@
       "model": "OptionsUnusual",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioPriceTargetConsensusFetcher",
@@ -4414,7 +5003,8 @@
       "model": "PriceTargetConsensus",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioReportedFinancialsFetcher",
@@ -4423,7 +5013,8 @@
       "model": "ReportedFinancials",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioSearchAttributesFetcher",
@@ -4432,7 +5023,8 @@
       "model": "SearchAttributes",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioShareStatisticsFetcher",
@@ -4441,7 +5033,8 @@
       "model": "ShareStatistics",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioWorldNewsFetcher",
@@ -4450,7 +5043,8 @@
       "model": "WorldNews",
       "scenario_present": true,
       "source": "intrinio",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.multpl.models.sp500_multiples:SP500MultiplesFetcher",
@@ -4459,7 +5053,8 @@
       "model": "SP500Multiples",
       "scenario_present": true,
       "source": "multpl",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.nasdaq.models.calendar_dividend:CalendarDividendFetcher",
@@ -4468,7 +5063,8 @@
       "model": "CalendarDividend",
       "scenario_present": true,
       "source": "nasdaq",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.nasdaq.models.calendar_earnings:CalendarEarningsFetcher",
@@ -4477,7 +5073,8 @@
       "model": "CalendarEarnings",
       "scenario_present": true,
       "source": "nasdaq",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.nasdaq.models.calendar_ipo:CalendarIpoFetcher",
@@ -4486,7 +5083,8 @@
       "model": "CalendarIpo",
       "scenario_present": true,
       "source": "nasdaq",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.nasdaq.models.company_filings:CompanyFilingsFetcher",
@@ -4495,7 +5093,8 @@
       "model": "CompanyFilings",
       "scenario_present": true,
       "source": "nasdaq",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.nasdaq.models.economic_calendar:EconomicCalendarFetcher",
@@ -4504,7 +5103,8 @@
       "model": "EconomicCalendar",
       "scenario_present": true,
       "source": "nasdaq",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.nasdaq.models.equity_screener:EquityScreenerFetcher",
@@ -4513,7 +5113,8 @@
       "model": "EquityScreener",
       "scenario_present": true,
       "source": "nasdaq",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.nasdaq.models.equity_search:EquitySearchFetcher",
@@ -4522,7 +5123,8 @@
       "model": "EquitySearch",
       "scenario_present": true,
       "source": "nasdaq",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.nasdaq.models.historical_dividends:HistoricalDividendsFetcher",
@@ -4531,7 +5133,8 @@
       "model": "HistoricalDividends",
       "scenario_present": true,
       "source": "nasdaq",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.nasdaq.models.top_retail:TopRetailFetcher",
@@ -4540,88 +5143,98 @@
       "model": "TopRetail",
       "scenario_present": true,
       "source": "nasdaq",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.oecd.models.iter2:OecdCompositeLeadingIndicatorFetcher",
       "contract": "OecdCompositeLeadingIndicator",
       "domain": "economy_oecd_cli",
       "model": "CompositeLeadingIndicator",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "oecd",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.oecd.models.iter2:OecdConsumerPriceIndexFetcher",
       "contract": "OecdConsumerPriceIndex",
       "domain": "economy_oecd_cpi",
       "model": "ConsumerPriceIndex",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "oecd",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.oecd.models.iter2:OecdCountryInterestRateFetcher",
       "contract": "OecdCountryInterestRate",
       "domain": "economy_oecd_interest_rates",
       "model": "CountryInterestRates",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "oecd",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.oecd.models.iter2:OecdGdpForecastFetcher",
       "contract": "OecdGdpForecast",
       "domain": "economy_oecd_gdp_forecast",
       "model": "GdpForecast",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "oecd",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.oecd.models.iter2:OecdGdpNominalFetcher",
       "contract": "OecdGdpNominal",
       "domain": "economy_oecd_gdp_nominal",
       "model": "GdpNominal",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "oecd",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.oecd.models.iter2:OecdGdpRealFetcher",
       "contract": "OecdGdpReal",
       "domain": "economy_oecd_gdp_real",
       "model": "GdpReal",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "oecd",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.oecd.models.iter2:OecdHousePriceIndexFetcher",
       "contract": "OecdHousePriceIndex",
       "domain": "economy_oecd_house_price_index",
       "model": "HousePriceIndex",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "oecd",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.oecd.models.iter2:OecdSharePriceIndexFetcher",
       "contract": "OecdSharePriceIndex",
       "domain": "economy_oecd_share_price_index",
       "model": "SharePriceIndex",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "oecd",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.oecd.models.iter2:OecdUnemploymentFetcher",
       "contract": "OecdUnemployment",
       "domain": "economy_oecd_unemployment",
       "model": "Unemployment",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "oecd",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.oecd.models.cpi:OecdCpiFetcher",
@@ -4630,7 +5243,8 @@
       "model": "cpi",
       "scenario_present": true,
       "source": "oecd",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.oecd.models.unemployment:OecdUnemploymentFetcher",
@@ -4639,7 +5253,8 @@
       "model": "unemployment",
       "scenario_present": true,
       "source": "oecd",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": false
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_financial:BalanceSheetFetcher",
@@ -4648,7 +5263,8 @@
       "model": "BalanceSheet",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_financial:BalanceSheetGrowthFetcher",
@@ -4657,7 +5273,8 @@
       "model": "BalanceSheetGrowth",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_financial:CashFlowStatementFetcher",
@@ -4666,7 +5283,8 @@
       "model": "CashFlowStatement",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_financial:CashFlowStatementGrowthFetcher",
@@ -4675,7 +5293,8 @@
       "model": "CashFlowStatementGrowth",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_directory:CikMapFetcher",
@@ -4684,7 +5303,8 @@
       "model": "CikMap",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_documents:CompanyFilingsFetcher",
@@ -4693,7 +5313,8 @@
       "model": "CompanyFilings",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_financial:CompareCompanyFactsFetcher",
@@ -4702,7 +5323,8 @@
       "model": "CompareCompanyFacts",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_ftd:EquityFtdFetcher",
@@ -4711,7 +5333,8 @@
       "model": "EquityFTD",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_directory:EquitySearchFetcher",
@@ -4720,7 +5343,8 @@
       "model": "EquitySearch",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_documents:FilingsFetcher",
@@ -4729,7 +5353,8 @@
       "model": "Filings",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_documents:Form13FHRFetcher",
@@ -4738,7 +5363,8 @@
       "model": "Form13FHR",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_financial:IncomeStatementFetcher",
@@ -4747,7 +5373,8 @@
       "model": "IncomeStatement",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_financial:IncomeStatementGrowthFetcher",
@@ -4756,7 +5383,8 @@
       "model": "IncomeStatementGrowth",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_insider:InsiderTradingFetcher",
@@ -4765,16 +5393,18 @@
       "model": "InsiderTrading",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_institutions:InstitutionsSearchFetcher",
       "contract": "SecInstitutionSearchResult",
       "domain": "sec_institutions_search",
       "model": "InstitutionsSearch",
-      "scenario_present": false,
+      "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_documents:LatestFinancialReportsFetcher",
@@ -4783,7 +5413,8 @@
       "model": "LatestFinancialReports",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_documents:ManagementDiscussionAnalysisFetcher",
@@ -4792,7 +5423,8 @@
       "model": "ManagementDiscussionAnalysis",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_documents:NportDisclosureFetcher",
@@ -4801,7 +5433,8 @@
       "model": "NportDisclosure",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_documents:RssLitigationFetcher",
@@ -4810,7 +5443,8 @@
       "model": "RssLitigation",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_documents:SchemaFilesFetcher",
@@ -4819,7 +5453,8 @@
       "model": "SchemaFiles",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_documents:SecFilingFetcher",
@@ -4828,7 +5463,8 @@
       "model": "SecFiling",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_documents:SecHtmFileFetcher",
@@ -4837,7 +5473,8 @@
       "model": "SecHtmFile",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_directory:SicSearchFetcher",
@@ -4846,7 +5483,8 @@
       "model": "SicSearch",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.sec.models.iter2_directory:SymbolMapFetcher",
@@ -4855,7 +5493,8 @@
       "model": "SymbolMap",
       "scenario_present": true,
       "source": "sec",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ths.models.financial_statement:ThsFinancialStatementFetcher",
@@ -4864,7 +5503,8 @@
       "model": "financial_statement",
       "scenario_present": true,
       "source": "ths",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ths.models.fund_action:ThsFundActionFetcher",
@@ -4873,7 +5513,8 @@
       "model": "fund_action",
       "scenario_present": true,
       "source": "ths",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ths.models.fund_etf_daily:ThsFundEtfDailyFetcher",
@@ -4882,7 +5523,8 @@
       "model": "fund_etf_daily",
       "scenario_present": true,
       "source": "ths",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ths.models.futures_daily:ThsFuturesDailyFetcher",
@@ -4891,7 +5533,8 @@
       "model": "futures_daily",
       "scenario_present": true,
       "source": "ths",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ths.models.index_constituent:ThsIndexConstituentFetcher",
@@ -4900,7 +5543,8 @@
       "model": "index_constituent",
       "scenario_present": true,
       "source": "ths",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ths.models.index_daily:ThsIndexDailyFetcher",
@@ -4909,7 +5553,8 @@
       "model": "index_daily",
       "scenario_present": true,
       "source": "ths",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ths.models.instrument:ThsInstrumentFetcher",
@@ -4918,7 +5563,8 @@
       "model": "instrument",
       "scenario_present": true,
       "source": "ths",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ths.models.option_daily:ThsOptionDailyFetcher",
@@ -4927,7 +5573,8 @@
       "model": "option_daily",
       "scenario_present": true,
       "source": "ths",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ths.models.stock_action:ThsStockActionFetcher",
@@ -4936,7 +5583,8 @@
       "model": "stock_action",
       "scenario_present": true,
       "source": "ths",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ths.models.stock_daily:ThsStockDailyFetcher",
@@ -4945,7 +5593,8 @@
       "model": "stock_daily",
       "scenario_present": true,
       "source": "ths",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.ths.models.trading_calendar:ThsTradingCalendarFetcher",
@@ -4954,7 +5603,8 @@
       "model": "trading_calendar",
       "scenario_present": true,
       "source": "ths",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tiingo.models.iter2:TiingoCompanyNewsFetcher",
@@ -4963,7 +5613,8 @@
       "model": "CompanyNews",
       "scenario_present": true,
       "source": "tiingo",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tiingo.models.crypto_historical:TiingoCryptoHistoricalFetcher",
@@ -4972,7 +5623,8 @@
       "model": "CryptoHistorical",
       "scenario_present": true,
       "source": "tiingo",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tiingo.models.iter2:TiingoCurrencyHistoricalFetcher",
@@ -4981,7 +5633,8 @@
       "model": "CurrencyHistorical",
       "scenario_present": true,
       "source": "tiingo",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tiingo.models.iter2:TiingoEquityHistoricalFetcher",
@@ -4990,7 +5643,8 @@
       "model": "EquityHistorical",
       "scenario_present": true,
       "source": "tiingo",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tiingo.models.iter2:TiingoEtfHistoricalFetcher",
@@ -4999,7 +5653,8 @@
       "model": "EtfHistorical",
       "scenario_present": true,
       "source": "tiingo",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tiingo.models.iter2:TiingoTrailingDividendYieldFetcher",
@@ -5008,7 +5663,8 @@
       "model": "TrailingDividendYield",
       "scenario_present": true,
       "source": "tiingo",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tiingo.models.iter2:TiingoWorldNewsFetcher",
@@ -5017,7 +5673,8 @@
       "model": "WorldNews",
       "scenario_present": true,
       "source": "tiingo",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tmx.models.fetchers:CompanyFilingsFetcher",
@@ -5026,7 +5683,8 @@
       "model": "CompanyFilings",
       "scenario_present": true,
       "source": "tmx",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tmx.models.fetchers:EquityHistoricalFetcher",
@@ -5035,7 +5693,8 @@
       "model": "EquityHistorical",
       "scenario_present": true,
       "source": "tmx",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tmx.models.fetchers:EquityInfoFetcher",
@@ -5044,7 +5703,8 @@
       "model": "EquityInfo",
       "scenario_present": true,
       "source": "tmx",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tmx.models.fetchers:EquityQuoteFetcher",
@@ -5053,7 +5713,8 @@
       "model": "EquityQuote",
       "scenario_present": true,
       "source": "tmx",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tmx.models.fetchers:EquitySearchFetcher",
@@ -5062,7 +5723,8 @@
       "model": "EquitySearch",
       "scenario_present": true,
       "source": "tmx",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tmx.models.fetchers:HistoricalDividendsFetcher",
@@ -5071,7 +5733,8 @@
       "model": "HistoricalDividends",
       "scenario_present": true,
       "source": "tmx",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tmx.models.fetchers:IndexConstituentsFetcher",
@@ -5080,7 +5743,8 @@
       "model": "IndexConstituents",
       "scenario_present": true,
       "source": "tmx",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tmx.models.fetchers:PriceTargetConsensusFetcher",
@@ -5089,7 +5753,8 @@
       "model": "PriceTargetConsensus",
       "scenario_present": true,
       "source": "tmx",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tradier.models.equity_historical:TradierEquityHistoricalFetcher",
@@ -5098,7 +5763,8 @@
       "model": "EquityHistorical",
       "scenario_present": true,
       "source": "tradier",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tradier.models.equity_quote:TradierEquityQuoteFetcher",
@@ -5107,7 +5773,8 @@
       "model": "EquityQuote",
       "scenario_present": true,
       "source": "tradier",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tradier.models.equity_search:TradierEquitySearchFetcher",
@@ -5116,7 +5783,8 @@
       "model": "EquitySearch",
       "scenario_present": true,
       "source": "tradier",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tradier.models.etf_historical:TradierEtfHistoricalFetcher",
@@ -5125,7 +5793,8 @@
       "model": "EtfHistorical",
       "scenario_present": true,
       "source": "tradier",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tradier.models.options_chains:TradierOptionsChainsFetcher",
@@ -5134,7 +5803,8 @@
       "model": "OptionsChains",
       "scenario_present": true,
       "source": "tradier",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.tradingeconomics.models.economic_calendar:TradingEconomicsEconomicCalendarFetcher",
@@ -5143,7 +5813,8 @@
       "model": "EconomicCalendar",
       "scenario_present": true,
       "source": "tradingeconomics",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceBalanceSheetFetcher",
@@ -5152,7 +5823,8 @@
       "model": "BalanceSheet",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceCashFlowStatementFetcher",
@@ -5161,7 +5833,8 @@
       "model": "CashFlowStatement",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceCompanyNewsFetcher",
@@ -5170,7 +5843,8 @@
       "model": "CompanyNews",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceCryptoHistoricalFetcher",
@@ -5179,7 +5853,8 @@
       "model": "CryptoHistorical",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceCurrencyHistoricalFetcher",
@@ -5188,7 +5863,8 @@
       "model": "CurrencyHistorical",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityActiveFetcher",
@@ -5197,7 +5873,8 @@
       "model": "EquityActive",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityAggressiveSmallCapsFetcher",
@@ -5206,7 +5883,8 @@
       "model": "EquityAggressiveSmallCaps",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityGainersFetcher",
@@ -5215,7 +5893,8 @@
       "model": "EquityGainers",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityHistoricalFetcher",
@@ -5224,7 +5903,8 @@
       "model": "EquityHistorical",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityInfoFetcher",
@@ -5233,7 +5913,8 @@
       "model": "EquityInfo",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityLosersFetcher",
@@ -5242,7 +5923,8 @@
       "model": "EquityLosers",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityQuoteFetcher",
@@ -5251,7 +5933,8 @@
       "model": "EquityQuote",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityScreenerFetcher",
@@ -5260,7 +5943,8 @@
       "model": "EquityScreener",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityUndervaluedGrowthFetcher",
@@ -5269,7 +5953,8 @@
       "model": "EquityUndervaluedGrowth",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityUndervaluedLargeCapsFetcher",
@@ -5278,7 +5963,8 @@
       "model": "EquityUndervaluedLargeCaps",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEtfHistoricalFetcher",
@@ -5287,7 +5973,8 @@
       "model": "EtfHistorical",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEtfInfoFetcher",
@@ -5296,7 +5983,8 @@
       "model": "EtfInfo",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceFuturesHistoricalFetcher",
@@ -5305,7 +5993,8 @@
       "model": "FuturesHistorical",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceGrowthTechEquitiesFetcher",
@@ -5314,7 +6003,8 @@
       "model": "GrowthTechEquities",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceHistoricalDividendsFetcher",
@@ -5323,7 +6013,8 @@
       "model": "HistoricalDividends",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceIncomeStatementFetcher",
@@ -5332,7 +6023,8 @@
       "model": "IncomeStatement",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceIndexHistoricalFetcher",
@@ -5341,7 +6033,8 @@
       "model": "IndexHistorical",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceKeyExecutivesFetcher",
@@ -5350,7 +6043,8 @@
       "model": "KeyExecutives",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceKeyMetricsFetcher",
@@ -5359,7 +6053,8 @@
       "model": "KeyMetrics",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceOptionsChainsFetcher",
@@ -5368,7 +6063,8 @@
       "model": "OptionsChains",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinancePriceTargetFetcher",
@@ -5377,7 +6073,8 @@
       "model": "PriceTargetConsensus",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceShareStatisticsFetcher",
@@ -5386,7 +6083,8 @@
       "model": "ShareStatistics",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.stock_daily:YfinanceStockDailyFetcher",
@@ -5395,7 +6093,8 @@
       "model": "stock_daily",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": true
+      "verified": true,
+      "canonical_ids_declared": false
     }
   ],
   "query_semantic_domain_ids": [
@@ -5419,7 +6118,6 @@
     "cboe_index_historical",
     "cboe_index_search",
     "cboe_options_chains",
-    "central_bank_holdings",
     "cftc_commitment_of_traders",
     "cftc_market_directory",
     "commercial_paper",
@@ -5469,20 +6167,24 @@
     "famafrench_international_index_returns",
     "famafrench_regional_portfolio_returns",
     "famafrench_us_portfolio_returns",
+    "federal_reserve_central_bank_holdings",
     "federal_reserve_federal_funds_rate",
     "federal_reserve_fomc_documents",
+    "federal_reserve_inflation_expectations",
     "federal_reserve_money_measures",
     "federal_reserve_overnight_bank_funding_rate",
     "federal_reserve_primary_dealer_fails",
     "federal_reserve_primary_dealer_positioning",
     "federal_reserve_sofr",
     "federal_reserve_svensson_yield_curve",
+    "federal_reserve_total_factor_productivity",
     "federal_reserve_treasury_rates",
     "federal_reserve_yield_curve",
     "finra_equity_short_interest",
     "finra_otc_aggregate",
     "finviz_compare_groups",
     "finviz_equity_info",
+    "finviz_equity_screener",
     "finviz_etf_price_performance",
     "finviz_key_metrics",
     "finviz_price_performance",
@@ -5590,7 +6292,6 @@
     "imf_maritime_chokepoint_volume",
     "imf_port_info",
     "imf_port_volume",
-    "inflation_expectations",
     "intrinio_balance_sheet",
     "intrinio_calendar_ipo",
     "intrinio_cash_flow_statement",
@@ -5682,7 +6383,6 @@
     "tmx_historical_dividends",
     "tmx_index_constituents",
     "tmx_price_target_consensus",
-    "total_factor_productivity",
     "tradier_equity_historical",
     "tradier_equity_quote",
     "tradier_equity_search",
@@ -5722,6 +6422,46 @@
   "snapshot_status": "MANUAL_EXPECTED_FIXTURE_NOT_ACCEPTANCE",
   "source_domain_legs": [
     {
+      "domain": "bond_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "financial_indicator",
+      "source": "akshare"
+    },
+    {
+      "domain": "financial_statement",
+      "source": "akshare"
+    },
+    {
+      "domain": "fund_etf_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "futures_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "index_constituent",
+      "source": "akshare"
+    },
+    {
+      "domain": "index_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "option_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "stock_action",
+      "source": "akshare"
+    },
+    {
+      "domain": "stock_daily",
+      "source": "akshare"
+    },
+    {
       "domain": "alpha_vantage_equity_historical",
       "source": "alpha_vantage"
     },
@@ -5732,10 +6472,6 @@
     {
       "domain": "alpha_vantage_historical_eps",
       "source": "alpha_vantage"
-    },
-    {
-      "domain": "balance_of_payments",
-      "source": "ecb"
     },
     {
       "domain": "benzinga_analyst_search",
@@ -5760,14 +6496,6 @@
     {
       "domain": "bls_series",
       "source": "bls"
-    },
-    {
-      "domain": "bond_daily",
-      "source": "akshare"
-    },
-    {
-      "domain": "bond_indices",
-      "source": "fred"
     },
     {
       "domain": "cboe_available_indices",
@@ -5806,24 +6534,12 @@
       "source": "cboe"
     },
     {
-      "domain": "central_bank_holdings",
-      "source": "federal_reserve"
-    },
-    {
       "domain": "cftc_commitment_of_traders",
       "source": "cftc"
     },
     {
       "domain": "cftc_market_directory",
       "source": "cftc"
-    },
-    {
-      "domain": "commercial_paper",
-      "source": "fred"
-    },
-    {
-      "domain": "commodity_spot_prices",
-      "source": "fred"
     },
     {
       "domain": "congress_amendment_info",
@@ -5858,10 +6574,6 @@
       "source": "congress_gov"
     },
     {
-      "domain": "currency_reference_rates",
-      "source": "ecb"
-    },
-    {
       "domain": "deribit_futures_curve",
       "source": "deribit"
     },
@@ -5880,6 +6592,30 @@
     {
       "domain": "deribit_options_chains",
       "source": "deribit"
+    },
+    {
+      "domain": "balance_of_payments",
+      "source": "ecb"
+    },
+    {
+      "domain": "currency_reference_rates",
+      "source": "ecb"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "ecb"
+    },
+    {
+      "domain": "economy_gdp",
+      "source": "ecb"
+    },
+    {
+      "domain": "economy_rate",
+      "source": "ecb"
+    },
+    {
+      "domain": "yield_curve",
+      "source": "ecb"
     },
     {
       "domain": "econdb_available_indicators",
@@ -5906,124 +6642,12 @@
       "source": "econdb"
     },
     {
-      "domain": "economic_calendar",
-      "source": "tradingeconomics"
-    },
-    {
-      "domain": "economy_cpi",
-      "source": "ecb"
-    },
-    {
-      "domain": "economy_cpi",
-      "source": "fred"
-    },
-    {
-      "domain": "economy_cpi",
-      "source": "imf"
-    },
-    {
-      "domain": "economy_cpi",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_gdp",
-      "source": "ecb"
-    },
-    {
-      "domain": "economy_gdp",
-      "source": "fred"
-    },
-    {
-      "domain": "economy_gdp",
-      "source": "imf"
-    },
-    {
-      "domain": "economy_imf_available_indicators",
-      "source": "imf"
-    },
-    {
-      "domain": "economy_imf_cpi",
-      "source": "imf"
-    },
-    {
-      "domain": "economy_imf_direction_of_trade",
-      "source": "imf"
-    },
-    {
-      "domain": "economy_imf_indicators",
-      "source": "imf"
-    },
-    {
-      "domain": "economy_oecd_cli",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_cpi",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_gdp_forecast",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_gdp_nominal",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_gdp_real",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_house_price_index",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_interest_rates",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_share_price_index",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_oecd_unemployment",
-      "source": "oecd"
-    },
-    {
-      "domain": "economy_rate",
-      "source": "ecb"
-    },
-    {
-      "domain": "economy_unemployment",
-      "source": "fred"
-    },
-    {
-      "domain": "economy_unemployment",
-      "source": "imf"
-    },
-    {
-      "domain": "economy_unemployment",
-      "source": "oecd"
-    },
-    {
       "domain": "energy_petroleum_status_report",
       "source": "eia"
     },
     {
       "domain": "energy_short_term_energy_outlook",
       "source": "eia"
-    },
-    {
-      "domain": "equity_historical",
-      "source": "fmp"
-    },
-    {
-      "domain": "equity_quote",
-      "source": "fmp"
-    },
-    {
-      "domain": "euro_short_term_rate",
-      "source": "fred"
     },
     {
       "domain": "famafrench_breakpoints",
@@ -6050,11 +6674,19 @@
       "source": "famafrench"
     },
     {
+      "domain": "federal_reserve_central_bank_holdings",
+      "source": "federal_reserve"
+    },
+    {
       "domain": "federal_reserve_federal_funds_rate",
       "source": "federal_reserve"
     },
     {
       "domain": "federal_reserve_fomc_documents",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_inflation_expectations",
       "source": "federal_reserve"
     },
     {
@@ -6082,24 +6714,16 @@
       "source": "federal_reserve"
     },
     {
+      "domain": "federal_reserve_total_factor_productivity",
+      "source": "federal_reserve"
+    },
+    {
       "domain": "federal_reserve_treasury_rates",
       "source": "federal_reserve"
     },
     {
       "domain": "federal_reserve_yield_curve",
       "source": "federal_reserve"
-    },
-    {
-      "domain": "financial_indicator",
-      "source": "akshare"
-    },
-    {
-      "domain": "financial_statement",
-      "source": "akshare"
-    },
-    {
-      "domain": "financial_statement",
-      "source": "ths"
     },
     {
       "domain": "finra_equity_short_interest",
@@ -6118,6 +6742,10 @@
       "source": "finviz"
     },
     {
+      "domain": "finviz_equity_screener",
+      "source": "finviz"
+    },
+    {
       "domain": "finviz_etf_price_performance",
       "source": "finviz"
     },
@@ -6132,6 +6760,14 @@
     {
       "domain": "finviz_price_target",
       "source": "finviz"
+    },
+    {
+      "domain": "equity_historical",
+      "source": "fmp"
+    },
+    {
+      "domain": "equity_quote",
+      "source": "fmp"
     },
     {
       "domain": "fmp_analyst_estimates",
@@ -6402,6 +7038,34 @@
       "source": "fmp"
     },
     {
+      "domain": "bond_indices",
+      "source": "fred"
+    },
+    {
+      "domain": "commercial_paper",
+      "source": "fred"
+    },
+    {
+      "domain": "commodity_spot_prices",
+      "source": "fred"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "fred"
+    },
+    {
+      "domain": "economy_gdp",
+      "source": "fred"
+    },
+    {
+      "domain": "economy_unemployment",
+      "source": "fred"
+    },
+    {
+      "domain": "euro_short_term_rate",
+      "source": "fred"
+    },
+    {
       "domain": "fred_ameribor",
       "source": "fred"
     },
@@ -6506,24 +7170,28 @@
       "source": "fred"
     },
     {
-      "domain": "fund_action",
-      "source": "ths"
+      "domain": "hqm_corporate_bond",
+      "source": "fred"
     },
     {
-      "domain": "fund_etf_daily",
-      "source": "akshare"
+      "domain": "iorb",
+      "source": "fred"
     },
     {
-      "domain": "fund_etf_daily",
-      "source": "ths"
+      "domain": "senior_loan_officer_survey",
+      "source": "fred"
     },
     {
-      "domain": "futures_daily",
-      "source": "akshare"
+      "domain": "sofr",
+      "source": "fred"
     },
     {
-      "domain": "futures_daily",
-      "source": "ths"
+      "domain": "sonia",
+      "source": "fred"
+    },
+    {
+      "domain": "spot_rate",
+      "source": "fred"
     },
     {
       "domain": "government_us_commodity_psd_data",
@@ -6546,8 +7214,32 @@
       "source": "government_us"
     },
     {
-      "domain": "hqm_corporate_bond",
-      "source": "fred"
+      "domain": "economy_cpi",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_gdp",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_available_indicators",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_cpi",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_direction_of_trade",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_indicators",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_unemployment",
+      "source": "imf"
     },
     {
       "domain": "imf_maritime_chokepoint_info",
@@ -6564,30 +7256,6 @@
     {
       "domain": "imf_port_volume",
       "source": "imf"
-    },
-    {
-      "domain": "index_constituent",
-      "source": "akshare"
-    },
-    {
-      "domain": "index_constituent",
-      "source": "ths"
-    },
-    {
-      "domain": "index_daily",
-      "source": "akshare"
-    },
-    {
-      "domain": "index_daily",
-      "source": "ths"
-    },
-    {
-      "domain": "inflation_expectations",
-      "source": "federal_reserve"
-    },
-    {
-      "domain": "instrument",
-      "source": "ths"
     },
     {
       "domain": "intrinio_balance_sheet",
@@ -6738,8 +7406,8 @@
       "source": "intrinio"
     },
     {
-      "domain": "iorb",
-      "source": "fred"
+      "domain": "sp500_multiples",
+      "source": "multpl"
     },
     {
       "domain": "nasdaq_calendar_dividend",
@@ -6778,12 +7446,48 @@
       "source": "nasdaq"
     },
     {
-      "domain": "option_daily",
-      "source": "akshare"
+      "domain": "economy_cpi",
+      "source": "oecd"
     },
     {
-      "domain": "option_daily",
-      "source": "ths"
+      "domain": "economy_oecd_cli",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_cpi",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_gdp_forecast",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_gdp_nominal",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_gdp_real",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_house_price_index",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_interest_rates",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_share_price_index",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_unemployment",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_unemployment",
+      "source": "oecd"
     },
     {
       "domain": "sec_balance_sheet",
@@ -6882,28 +7586,36 @@
       "source": "sec"
     },
     {
-      "domain": "senior_loan_officer_survey",
-      "source": "fred"
+      "domain": "financial_statement",
+      "source": "ths"
     },
     {
-      "domain": "sofr",
-      "source": "fred"
+      "domain": "fund_action",
+      "source": "ths"
     },
     {
-      "domain": "sonia",
-      "source": "fred"
+      "domain": "fund_etf_daily",
+      "source": "ths"
     },
     {
-      "domain": "sp500_multiples",
-      "source": "multpl"
+      "domain": "futures_daily",
+      "source": "ths"
     },
     {
-      "domain": "spot_rate",
-      "source": "fred"
+      "domain": "index_constituent",
+      "source": "ths"
     },
     {
-      "domain": "stock_action",
-      "source": "akshare"
+      "domain": "index_daily",
+      "source": "ths"
+    },
+    {
+      "domain": "instrument",
+      "source": "ths"
+    },
+    {
+      "domain": "option_daily",
+      "source": "ths"
     },
     {
       "domain": "stock_action",
@@ -6911,15 +7623,11 @@
     },
     {
       "domain": "stock_daily",
-      "source": "akshare"
-    },
-    {
-      "domain": "stock_daily",
       "source": "ths"
     },
     {
-      "domain": "stock_daily_overseas",
-      "source": "yfinance"
+      "domain": "trading_calendar",
+      "source": "ths"
     },
     {
       "domain": "tiingo_company_news",
@@ -6982,10 +7690,6 @@
       "source": "tmx"
     },
     {
-      "domain": "total_factor_productivity",
-      "source": "federal_reserve"
-    },
-    {
       "domain": "tradier_equity_historical",
       "source": "tradier"
     },
@@ -7006,8 +7710,12 @@
       "source": "tradier"
     },
     {
-      "domain": "trading_calendar",
-      "source": "ths"
+      "domain": "economic_calendar",
+      "source": "tradingeconomics"
+    },
+    {
+      "domain": "stock_daily_overseas",
+      "source": "yfinance"
     },
     {
       "domain": "yfinance_balance_sheet",
@@ -7116,10 +7824,6 @@
     {
       "domain": "yfinance_share_statistics",
       "source": "yfinance"
-    },
-    {
-      "domain": "yield_curve",
-      "source": "ecb"
     }
   ],
   "source_hashes_sha256": {
@@ -7138,20 +7842,20 @@
     "docs/evidence/C100/integration/preimages/central-wiring-batch5-preimages.tar": "199504b85daa64da366036868cfe675a100860718c09b277714447af398251dc",
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/receipt.json": "f2e3eb877e7a1ec4f6a080ebbe60137330e50b38d8d5224ac186e0950191bef3",
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/smoke.json": "224c2475432ea6fca4b2c6e1442718ae2b0b829386530bf97a5361fb79897dc9",
-    "docs/\u8fed\u4ee3\u8ba1\u5212/\u8fed\u4ee32-\u7edf\u4e00Provider\u67b6\u6784\u4e0e\u5168\u91cf\u80fd\u529b\u8865\u9f50/\u6a21\u578b\u7ea7\u4efb\u52a1\u6e05\u5355.csv": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5",
-    "opendata/data/domains.yaml": "59e3888662d4ccc575db2421d38f76e34592ca9362245db6d14ab35f2ec8aee5",
+    "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5",
+    "opendata/data/domains.yaml": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
     "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
     "opendata/data/mappings/ths.yaml": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418",
-    "opendata/data/models/__init__.py": "9dac556073190eff37c045b0c3a1880709840453ee12919534032f3428bb2509",
+    "opendata/data/models/__init__.py": "9cd3fb1387fc6676716bc0a9cc2309180bc41015c10821f89457f1195e437cca",
     "opendata/data/models/finviz_performance.py": "1c0df807da91d8cb2fb1b5720431ce7d68bbacd3d4eb746fa2ff34ca5bf07b86",
     "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
     "opendata/data/models/yfinance_iter2.py": "7f7091ebbe366457446a31d8c12068d8b0a2f5dc96d48be1abce60554e68009c",
     "opendata/data/providers/finviz/models/price_performance.py": "273b0818f3e5471a3213ccff01de2511f1ce2c4f8c11ed8bbba30b37ec519f0d",
     "opendata/data/providers/fred/models/sloos.py": "d960cb231bc4b9cc51f4df2f02111c7c18f630f9e223a67bda665908a36e0f39",
-    "opendata/data/providers/fred/provider.py": "1407bfb6a930e8366346273e54bed652c71ce541e9f3fcee7ac52e4febe6a4fb",
+    "opendata/data/providers/fred/provider.py": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
     "opendata/data/providers/fred/sloos_series.py": "2b45fe84a37ffb2596f1e22c6b50fc4b028ccf24c924d410041eed550d2fe228",
-    "opendata/data/providers/yfinance/models/iter2.py": "c7341d4a1169381cc48846182a1c51b485587bfd031eb4ece22eab2316d68f88",
-    "opendata/data/providers/yfinance/models/market_iter2.py": "2feebf5a386af8a98a66de9716033f6375a2089264134c239bae43e8a6d1246a",
+    "opendata/data/providers/yfinance/models/iter2.py": "88fd4471823a7db319d7d08b25fc5f65a92999cc275e9844583633bbd395f7af",
+    "opendata/data/providers/yfinance/models/market_iter2.py": "3678f6c8a851822730660ac80d360785723ce426bddead0ad9c059db9e3060ea",
     "tests/fixtures/registry_batch3_snapshot.json": "7cb85126743f7fa77e60139f61ebc3c23da2cd4f9ace189bb6e798e2d93d1153",
     "tests/fixtures/registry_batch4_snapshot.json": "a7e184a61fb3d533fdb7e5ad102954e01bbfcd78797625bcf3060b43378f0376"
   },

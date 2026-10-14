@@ -1,0 +1,31 @@
+carrier: scenario-census.txt
+round: C103
+captured_at_local=2026-10-15T02:49:25+0800
+source_log=/tmp/c103_scenario_census.txt
+source_bytes=984
+source_sha256_16=27e864c788f51b84
+argv=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C103/batch5-scenario-census/probes/scenario_census.py
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+scenario_census_exit=0 (recorded in the body)
+----------------------------------------------------------------------
+face: snapshot_rows=351 live_bindings=351
+face: identity_sets_equal=True
+face: rows_without_live_binding=0
+face: binding_fields=['canonical_model_ids', 'class_name', 'module', 'scenario']
+face: scenario_move_rows=9
+face: scenario_moves_by_source={'oecd': 9}
+face: live_scenario_present_total=351
+face: pin_scenario_present_total=342
+face: documented_scenario_moves_by_source={}
+face: documented_scenario_present_total={}
+face: documented_field_move_counts={}
+face: documented_matches_live=False
+face: move_directions={'on': 9}
+face: example oecd/CompositeLeadingIndicator pin=False live=True
+face: example oecd/ConsumerPriceIndex pin=False live=True
+face: example oecd/CountryInterestRates pin=False live=True
+face: example oecd/GdpForecast pin=False live=True
+face: example oecd/GdpNominal pin=False live=True
+face: example oecd/GdpReal pin=False live=True
+verdict: MEASURED - 9 scenario moves over 351 pinned identities, documented census does not match live
+scenario_census_exit=0

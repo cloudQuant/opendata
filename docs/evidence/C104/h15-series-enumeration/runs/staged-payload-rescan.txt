@@ -1,0 +1,22 @@
+carrier: staged-payload-rescan.txt
+round: C104 h15-series-enumeration
+captured_at_local=2026-10-15 03:15:32
+commit=270e373411951be1752d71206379da98762d5081 branch=dev
+worktree_dirty_files_at_capture=1528
+source_log=/tmp/c104_rescan.txt
+source_bytes=463
+source_sha256_16=b3739425f7ef7ba1
+argv=python docs/evidence/C104/h15-series-enumeration/probes/payload_rescan.py
+interpreter=gitleaks 8.30.1 / python 3.13.5 (envs/py313)
+rescan_exit=0
+----------------------------------------------------------------------
+argv=gitleaks detect --no-git --source /tmp/c104_scan_payload --config <edited .gitleaks.toml> --redact=20 -f json --no-banner
+identity only: file:line#rule. No flagged text is written to this output.
+face: staged_paths=1528 copied=1528 bytes=28848593
+face: missing_on_disk=0
+face: c104_files_in_payload=11
+face: config_edits_in_payload=['.gitleaks.toml', 'scripts/quality/acceptance_item_probe.py']
+face: scan_exit=0
+face: findings=0
+verdict: PASS
+RESCAN_EXIT=0

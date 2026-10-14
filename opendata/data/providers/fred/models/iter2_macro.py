@@ -50,7 +50,9 @@ from opendata.data.providers.fred.models.iter2_auxiliary import (
 from opendata.data.providers.fred.models.series import FredSeriesFetcher, FredSeriesQuery
 
 if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
     from opendata.data.models.fred_iter2 import FredReleaseTable
+    from opendata.data.providers._engine.http_json import HttpGet
 
 _DATE_TOKEN = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}\Z")
 _MAX_TOTAL_PAGES = 20
@@ -873,6 +875,9 @@ class _FixedMacroFetcher(Fetcher[_MacroQueryT, list[dict[str, Any]]], Generic[_M
     query_model: ClassVar[type[_MacroQueryT]]
     canonical_model: ClassVar[str | None]
     capability: ClassVar[Capability]
+    row_model: ClassVar[type[ContractModel]]
+    #: Offline witness seam; ``None`` keeps the governed production HTTP client path.
+    http_transport: ClassVar[HttpGet | None] = None
 
     def transform_query(self, **kwargs: object) -> _MacroQueryT:
         return self.query_model.model_validate(kwargs)
@@ -921,7 +926,9 @@ class _FixedMacroFetcher(Fetcher[_MacroQueryT, list[dict[str, Any]]], Generic[_M
                         "aggregation_method": getattr(checked, "aggregation_method", "avg"),
                     }
                 )
-                observations = FredSeriesFetcher().extract_data(query, ctx)
+                inner = FredSeriesFetcher()
+                inner.http_transport = self.http_transport
+                observations = inner.extract_data(query, ctx)
                 rows.extend(
                     {
                         "_selection": selection,
@@ -1206,6 +1213,7 @@ class ConsumerPriceIndexFetcher(_FixedMacroFetcher[ConsumerPriceIndexQuery]):
         verified=False,
     )
     query_model = ConsumerPriceIndexQuery
+    row_model: ClassVar[type[ContractModel]] = FredConsumerPriceIndex
 
     def selected_series(self, params: ConsumerPriceIndexQuery) -> list[tuple[str, str]]:
         """Return the one FRED CPI series selected by this query."""
@@ -1288,6 +1296,7 @@ class NonFarmPayrollsFetcher(_ReleaseTableMacroFetcher[NonFarmPayrollsQuery]):
     query_model = NonFarmPayrollsQuery
     release_id = "50"
     output_model = FredNonFarmPayroll
+    row_model: ClassVar[type[ContractModel]] = FredNonFarmPayroll
     category_element_ids = _NFP_ELEMENT_IDS
 
     def selected_series(self, params: NonFarmPayrollsQuery) -> list[tuple[str, str]]:
@@ -1330,6 +1339,7 @@ class PersonalConsumptionExpendituresFetcher(
     query_model = PersonalConsumptionExpendituresQuery
     release_id = "54"
     output_model = FredPersonalConsumptionExpenditure
+    row_model: ClassVar[type[ContractModel]] = FredPersonalConsumptionExpenditure
     category_element_ids = _PCE_ELEMENT_IDS
 
     def selected_series(
@@ -1370,6 +1380,7 @@ class UniversityOfMichiganFetcher(_FixedMacroFetcher[UniversityOfMichiganQuery])
         verified=False,
     )
     query_model = UniversityOfMichiganQuery
+    row_model: ClassVar[type[ContractModel]] = FredUniversityOfMichigan
     series_by_field: ClassVar[dict[str, str]] = {
         "consumer_sentiment": "UMCSENT",
         "inflation_expectation": "MICH",
@@ -1405,6 +1416,7 @@ class MortgageIndicesFetcher(_FixedMacroFetcher[MortgageIndicesQuery]):
         verified=False,
     )
     query_model = MortgageIndicesQuery
+    row_model: ClassVar[type[ContractModel]] = FredMortgageIndex
     series_by_index: ClassVar[dict[str, str]] = {
         "conforming_30y": "OBMMIC30YF",
         "conforming_30y_na": "OBMMIC30YFNA",
@@ -1479,6 +1491,7 @@ class ManufacturingOutlookNYFetcher(_FixedMacroFetcher[ManufacturingOutlookNYQue
         verified=False,
     )
     query_model = ManufacturingOutlookNYQuery
+    row_model: ClassVar[type[ContractModel]] = FredManufacturingOutlookNY
     topic_codes: ClassVar[dict[str, str]] = {
         "business_outlook": "GAF",
         "hours_worked": "AWC",
@@ -1560,6 +1573,7 @@ class ManufacturingOutlookTexasFetcher(_FixedMacroFetcher[ManufacturingOutlookTe
         verified=False,
     )
     query_model = ManufacturingOutlookTexasQuery
+    row_model: ClassVar[type[ContractModel]] = FredManufacturingOutlookTexas
     topic_codes: ClassVar[dict[str, str]] = {
         "business_activity": "BACT",
         "business_outlook": "FCOLK",
@@ -1641,6 +1655,7 @@ class SurveyOfEconomicConditionsChicagoFetcher(
         verified=False,
     )
     query_model = SurveyOfEconomicConditionsChicagoQuery
+    row_model: ClassVar[type[ContractModel]] = FredSurveyOfEconomicConditionsChicago
     series_by_field: ClassVar[dict[str, str]] = {
         "activity_index": "CFSBCACTIVITY",
         "one_year_outlook": "CFSBCOUTLOOK",
@@ -1685,6 +1700,7 @@ class RetailPricesFetcher(_FixedMacroFetcher[RetailPricesQuery]):
         verified=False,
     )
     query_model = RetailPricesQuery
+    row_model: ClassVar[type[ContractModel]] = FredRetailPrice
 
     def selected_series(self, params: RetailPricesQuery) -> list[tuple[str, str]]:
         """Map the exact item and region to its BLS series identifier."""

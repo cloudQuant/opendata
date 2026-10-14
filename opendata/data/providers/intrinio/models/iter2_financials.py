@@ -72,8 +72,21 @@ class IntrinioFinancialError(ProviderEngineError):
     """Stable, sanitized error raised by this financial slice."""
 
 
-def _fail(code: str, *, status: int | None = None) -> IntrinioFinancialError:
-    return IntrinioFinancialError(f"INTRINIO_FINANCIALS_{code}", status=status)
+def _fail(
+    code: str,
+    *,
+    status: int | None = None,
+    rejected: tuple[str, ...] = (),
+    missing: tuple[str, ...] = (),
+    invalid: tuple[str, ...] = (),
+) -> IntrinioFinancialError:
+    return IntrinioFinancialError(
+        f"INTRINIO_FINANCIALS_{code}",
+        status=status,
+        rejected=rejected,
+        missing=missing,
+        invalid=invalid,
+    )
 
 
 def _strict_validate(model: type[_M], payload: object) -> _M:
@@ -298,7 +311,26 @@ class _ForwardPeQuery(QueryParams):
 def _validate_query(model: type[_M], kwargs: dict[str, object]) -> _M:
     try:
         return model.model_validate(kwargs)
-    except (ValidationError, TypeError, ValueError):
+    except ValidationError as error:
+        details = error.errors()
+        missing = sorted({str(entry["loc"][0]) for entry in details if entry["type"] == "missing"})
+        rejected = sorted(
+            {str(entry["loc"][0]) for entry in details if entry["type"] == "extra_forbidden"}
+        )
+        invalid = sorted(
+            {
+                str(entry["loc"][0])
+                for entry in details
+                if entry["type"] not in {"missing", "extra_forbidden"} and entry["loc"]
+            }
+        )
+        raise _fail(
+            "BAD_QUERY",
+            rejected=tuple(rejected),
+            missing=tuple(missing),
+            invalid=tuple(invalid),
+        ) from None
+    except (TypeError, ValueError):
         raise _fail("BAD_QUERY") from None
 
 

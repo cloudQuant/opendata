@@ -1,0 +1,59 @@
+summary: ========== 571 failed, 25706 passed, 274 skipped in 620.18s (0:10:20) ==========
+population: failed=571 errors=0 passed=25706 skipped=274 failing_files=43
+cross_check: failed_lines_parsed=571 arithmetic=26551
+--- failures by test file (top 25)
+   351  tests/test_provider_conformance.py
+    37  tests/test_ths_provider.py
+    26  tests/test_fred_macro_iter2.py
+    18  tests/test_fred_generic_models.py
+    17  tests/test_sec_iter2.py
+    15  tests/test_sec_documents_iter2.py
+    10  tests/test_fmp_iter2_market.py
+    10  tests/test_fred_iter2_fixed_rates.py
+     8  tests/test_provider_model_contracts.py
+     6  tests/test_fred_iter2_auxiliary.py
+     6  tests/test_fred_iter2_federal_funds.py
+     6  tests/test_fred_iter2_treasury_rates.py
+     5  tests/test_congress_gov_engine_provider.py
+     5  tests/test_openbb_map.py
+     4  tests/test_openbb_inventory_guard.py
+     4  tests/test_openbb_map_registry_projection.py
+     4  tests/test_provider_domains.py
+     3  tests/test_fred_iorb_fetcher.py
+     3  tests/test_fred_sofr_fetcher.py
+     3  tests/test_fred_sonia_fetcher.py
+     3  tests/test_oecd_engine_provider.py
+     3  tests/test_sec_institutions.py
+     2  tests/test_alert_matrix.py
+     2  tests/test_ecb_series_fetchers.py
+     2  tests/test_provider_catalog.py
+--- one-line traceback signature (top 25)
+   360  opendata.data.openbb_map.OpenBBMapError
+    59  TypeError
+    43  opendata.data.providers.fred.models._client.FredProviderError
+    37  opendata.data.request_budget.RequestAuthorizationError
+    36  AssertionError
+    19  opendata.services.provider_model_query.ProviderModelQueryUpstreamError
+     8  opendata.data.providers._engine.http_json.ProviderEngineError
+     2  assert False
+     1  pydantic_core._pydantic_core.ValidationError
+     1  Failed
+     1  assert (1, 1) == (1, 0)
+     1  IndexError
+     1  KeyError
+     1  scripts.codemod.compare_with_upstream.ReplayRequestMismatchError
+--- traceback frames landing in the files this round edited
+     8  opendata/data/providers/_engine/http_json.py
+     0  opendata/data/providers/congress_gov/models/_client.py
+     0  opendata/data/providers/ecb/models/_client.py
+     0  opendata/data/providers/federal_reserve/models/_primary_dealer.py
+     0  opendata/data/providers/federal_reserve/models/clean_rates.py
+     0  opendata/data/providers/finviz/_source.py
+     0  opendata/data/providers/fred/models/_fixed_observation_pages.py
+     0  opendata/data/providers/fred/models/series.py
+     0  opendata/data/providers/intrinio/models/iter2_financials.py
+     0  opendata/data/providers/intrinio/models/iter2_news_attributes.py
+     0  opendata/data/providers/sec/models/_common.py
+     0  opendata/data/providers/yfinance/models/iter2.py
+     0  opendata/data/providers/yfinance/models/market_iter2.py
+face: edited_file_frames=8 over 13 files

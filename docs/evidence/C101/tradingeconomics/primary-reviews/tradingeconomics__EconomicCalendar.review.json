@@ -1,0 +1,371 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/tradingeconomics/claims.json",
+    "sha256": "20250cd149e1f913f9df5cccdab1c54af3916788b5b4e82bcd357c187330cd61"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+            "before_sha256": "23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+            "path": "opendata/data/models/tradingeconomics.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+        "receipt": {
+          "path": "docs/evidence/C101/tradingeconomics/receipts/tradingeconomics/EconomicCalendar/contract.json",
+          "sha256": "fa5ad483d485969e7622b31b5c4ab2d2ec0b19b7fc9ae194b38875707b9d8acf"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "edf322d962c0909c5ad3d6df068202ecd9d295d267c0954e473b0a4fba3dc094",
+            "before_sha256": "edf322d962c0909c5ad3d6df068202ecd9d295d267c0954e473b0a4fba3dc094",
+            "path": "opendata/data/providers/tradingeconomics/registration.py"
+          },
+          {
+            "after_sha256": "12be9655b3f7cbe1dddacdec5c68b3a37860c16e5bde17468bd2456610f9f1a4",
+            "before_sha256": "12be9655b3f7cbe1dddacdec5c68b3a37860c16e5bde17468bd2456610f9f1a4",
+            "path": "opendata/data/providers/tradingeconomics/provider.py"
+          },
+          {
+            "after_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "before_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "path": "opendata/data/providers/tradingeconomics/models/economic_calendar.py"
+          },
+          {
+            "after_sha256": "523b3dbac61faec1604b3b57d21dcbee977a335c9741091a01a09c3670bbdf1e",
+            "before_sha256": "523b3dbac61faec1604b3b57d21dcbee977a335c9741091a01a09c3670bbdf1e",
+            "path": "opendata/data/providers/tradingeconomics/specs.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+            "before_sha256": "23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+            "path": "opendata/data/models/tradingeconomics.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+        "receipt": {
+          "path": "docs/evidence/C101/tradingeconomics/receipts/tradingeconomics/EconomicCalendar/counterfact.json",
+          "sha256": "2eb9a379d8f57cacbd57f852cfa3a8ce8213f77b3cf59f2219c899b61ae683c6"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "edf322d962c0909c5ad3d6df068202ecd9d295d267c0954e473b0a4fba3dc094",
+            "before_sha256": "edf322d962c0909c5ad3d6df068202ecd9d295d267c0954e473b0a4fba3dc094",
+            "path": "opendata/data/providers/tradingeconomics/registration.py"
+          },
+          {
+            "after_sha256": "12be9655b3f7cbe1dddacdec5c68b3a37860c16e5bde17468bd2456610f9f1a4",
+            "before_sha256": "12be9655b3f7cbe1dddacdec5c68b3a37860c16e5bde17468bd2456610f9f1a4",
+            "path": "opendata/data/providers/tradingeconomics/provider.py"
+          },
+          {
+            "after_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "before_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "path": "opendata/data/providers/tradingeconomics/models/economic_calendar.py"
+          },
+          {
+            "after_sha256": "523b3dbac61faec1604b3b57d21dcbee977a335c9741091a01a09c3670bbdf1e",
+            "before_sha256": "523b3dbac61faec1604b3b57d21dcbee977a335c9741091a01a09c3670bbdf1e",
+            "path": "opendata/data/providers/tradingeconomics/specs.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+            "before_sha256": "23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+            "path": "opendata/data/models/tradingeconomics.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+        "receipt": {
+          "path": "docs/evidence/C101/tradingeconomics/receipts/tradingeconomics/EconomicCalendar/direct.json",
+          "sha256": "e9fdcdb943e916ea8d49aab834c7db041881115bb1eb90f81f2dfe73312ad3e8"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "edf322d962c0909c5ad3d6df068202ecd9d295d267c0954e473b0a4fba3dc094",
+            "before_sha256": "edf322d962c0909c5ad3d6df068202ecd9d295d267c0954e473b0a4fba3dc094",
+            "path": "opendata/data/providers/tradingeconomics/registration.py"
+          },
+          {
+            "after_sha256": "12be9655b3f7cbe1dddacdec5c68b3a37860c16e5bde17468bd2456610f9f1a4",
+            "before_sha256": "12be9655b3f7cbe1dddacdec5c68b3a37860c16e5bde17468bd2456610f9f1a4",
+            "path": "opendata/data/providers/tradingeconomics/provider.py"
+          },
+          {
+            "after_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "before_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "path": "opendata/data/providers/tradingeconomics/models/economic_calendar.py"
+          },
+          {
+            "after_sha256": "523b3dbac61faec1604b3b57d21dcbee977a335c9741091a01a09c3670bbdf1e",
+            "before_sha256": "523b3dbac61faec1604b3b57d21dcbee977a335c9741091a01a09c3670bbdf1e",
+            "path": "opendata/data/providers/tradingeconomics/specs.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+            "before_sha256": "23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+            "path": "opendata/data/models/tradingeconomics.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+        "receipt": {
+          "path": "docs/evidence/C101/tradingeconomics/receipts/tradingeconomics/EconomicCalendar/implementation.json",
+          "sha256": "e655d3702d166f92db0a11b5d85ac528575854fec0677b3391a109c2c149620d"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "edf322d962c0909c5ad3d6df068202ecd9d295d267c0954e473b0a4fba3dc094",
+            "before_sha256": "edf322d962c0909c5ad3d6df068202ecd9d295d267c0954e473b0a4fba3dc094",
+            "path": "opendata/data/providers/tradingeconomics/registration.py"
+          },
+          {
+            "after_sha256": "12be9655b3f7cbe1dddacdec5c68b3a37860c16e5bde17468bd2456610f9f1a4",
+            "before_sha256": "12be9655b3f7cbe1dddacdec5c68b3a37860c16e5bde17468bd2456610f9f1a4",
+            "path": "opendata/data/providers/tradingeconomics/provider.py"
+          },
+          {
+            "after_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "before_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "path": "opendata/data/providers/tradingeconomics/models/economic_calendar.py"
+          },
+          {
+            "after_sha256": "523b3dbac61faec1604b3b57d21dcbee977a335c9741091a01a09c3670bbdf1e",
+            "before_sha256": "523b3dbac61faec1604b3b57d21dcbee977a335c9741091a01a09c3670bbdf1e",
+            "path": "opendata/data/providers/tradingeconomics/specs.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+            "before_sha256": "23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+            "path": "opendata/data/models/tradingeconomics.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:23082945ccfa4e192d585b6c9b89e40ff5d14309477930bf6c35e8963dde176e",
+        "receipt": {
+          "path": "docs/evidence/C101/tradingeconomics/receipts/tradingeconomics/EconomicCalendar/service.json",
+          "sha256": "989061239980abf7e6f36821430e4b4a90160e4fced9acbb22a1e6596eeb643b"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "edf322d962c0909c5ad3d6df068202ecd9d295d267c0954e473b0a4fba3dc094",
+            "before_sha256": "edf322d962c0909c5ad3d6df068202ecd9d295d267c0954e473b0a4fba3dc094",
+            "path": "opendata/data/providers/tradingeconomics/registration.py"
+          },
+          {
+            "after_sha256": "12be9655b3f7cbe1dddacdec5c68b3a37860c16e5bde17468bd2456610f9f1a4",
+            "before_sha256": "12be9655b3f7cbe1dddacdec5c68b3a37860c16e5bde17468bd2456610f9f1a4",
+            "path": "opendata/data/providers/tradingeconomics/provider.py"
+          },
+          {
+            "after_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "before_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "path": "opendata/data/providers/tradingeconomics/models/economic_calendar.py"
+          },
+          {
+            "after_sha256": "523b3dbac61faec1604b3b57d21dcbee977a335c9741091a01a09c3670bbdf1e",
+            "before_sha256": "523b3dbac61faec1604b3b57d21dcbee977a335c9741091a01a09c3670bbdf1e",
+            "path": "opendata/data/providers/tradingeconomics/specs.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "EconomicCalendar",
+  "model_identity": "tradingeconomics::EconomicCalendar",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "tradingeconomics",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradingeconomics",
+        "--model",
+        "EconomicCalendar",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101/tradingeconomics"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradingeconomics",
+        "--model",
+        "EconomicCalendar",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101/tradingeconomics"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradingeconomics",
+        "--model",
+        "EconomicCalendar",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101/tradingeconomics"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradingeconomics",
+        "--model",
+        "EconomicCalendar",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101/tradingeconomics"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradingeconomics",
+        "--model",
+        "EconomicCalendar",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101/tradingeconomics"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-14T13:18:23Z",
+  "reviewer_id": "iter2-acceptance-reviewer-tradingeconomics",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "EconomicCalendar"
+}

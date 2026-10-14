@@ -31,9 +31,9 @@ import re
 import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, time
 from types import SimpleNamespace
-from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal, cast
+from typing import TYPE_CHECKING, Annotated, Any, Literal, cast
 
 from pydantic import BeforeValidator, ConfigDict, ValidationError, create_model
 
@@ -46,8 +46,10 @@ from opendata.data.providers._engine.key_composition import (
     render_composite_key,
 )
 from opendata.data.providers._engine.row_expansion import (
+    EMPTY_RESULT,
     NestedArrayExpansion,
     RecordRepointPlan,
+    RowExpansionError,
     SeriesPivotPlan,
     WideTablePivotPlan,
     expand_nested_array,
@@ -141,6 +143,8 @@ def _column_type(column: ColumnSpec) -> Any:  # noqa: ANN401 - dynamic pydantic 
     """Map a declared column kind onto a pydantic-validated annotation."""
     if column.kind == "date":
         return date
+    if column.kind == "time":
+        return time
     if column.kind == "str_list":
         return list[str]
     if column.kind == "enum":
@@ -155,6 +159,8 @@ def _param_type(parameter: ParamSpec) -> Any:  # noqa: ANN401 - dynamic pydantic
     """Map a declared parameter kind onto a pydantic-validated annotation."""
     if parameter.kind == "date":
         return date
+    if parameter.kind == "time":
+        return time
     if parameter.kind == "str_list":
         return list[str]
     if parameter.kind == "enum":
@@ -367,7 +373,7 @@ def render_path(spec: ModelSpec, query: object, *, now: date | None = None) -> s
         )
         if value is None:
             raise ProviderEngineError(f"{spec.error_prefix}_QUERY_INVALID", url=path)
-        text = value.isoformat() if isinstance(value, date) else str(value)
+        text = value.isoformat() if isinstance(value, (date, time)) else str(value)
         # A declared code table belongs to the parameter, not to the place its value is used, so a
         # mapped placeholder segment carries the upstream spelling too -- and an unmapped one is
         # refused here rather than sent as the caller's own text, which would address a resource no
@@ -445,6 +451,10 @@ def _encode_value(parameter: ParamSpec, value: object, spec: ModelSpec) -> str:
         return _serialise_value(parameter, value, spec)
     if isinstance(value, date):
         return value.isoformat()
+    if isinstance(value, time):
+        # The clock kind renders ISO for the same reason the date kind does: the wire text a
+        # session bound needs is the one the published contract prints.
+        return value.isoformat()
     if isinstance(value, bool):
         return "true" if value else "false"
     if isinstance(value, list):
@@ -515,6 +525,27 @@ def _apply_value_map(parameter: ParamSpec, text: str, spec: ModelSpec) -> str:
     return mapped
 
 
+def _emptiness_is_declared_elsewhere(spec: ModelSpec) -> bool:
+    """Whether the declaration already owns a channel that spells "understood, nothing".
+
+    Paging is that channel. A declaration with a strategy other than ``"none"`` ends its walk on
+    the answer the *page* gives -- a short page for ``page``/``offset``, an absent or ``None``
+    cursor for ``cursor`` -- both read by :func:`_next_cursor` and
+    :func:`_cursor_absence_is_terminal`, so it is the paging guard that judges a page which
+    rebuilt no row. Three pinned arms say so: ``test_intrinio_engine_provider.py:565-571`` scripts
+    ``{rows_pointer: [], next_page: None}`` and asks for zero rows in one send, ``:842`` scripts
+    the same body over the legacy non-strict cursor and asks for the same answer, and ``:697``
+    omits the cursor key altogether and asks for ``INTRINIO_SHAPE_INVALID`` with
+    ``missing=('next_page',)`` -- the cursor guard's own refusal, which a stage-walk answer raised
+    first would overwrite.
+
+    An unpaged declaration has published no such channel: nothing in its envelope terminates a
+    walk or answers for it, so its rebuilt zero is the silent result :func:`_expand_rows` exists
+    to refuse, and it is refused.
+    """
+    return spec.pagination.kind != "none"
+
+
 def _expand_rows(records: list[Any], spec: ModelSpec) -> list[Any]:
     """Route the resolved record list through the stages the declaration named.
 
@@ -531,6 +562,18 @@ def _expand_rows(records: list[Any], spec: ModelSpec) -> list[Any]:
             record position that made it a shape failure. A row set the stages could not produce
             is attributed, never answered with the empty frame that would pass as a published
             zero.
+        RowExpansionError: ``EMPTY_RESULT`` additionally ends a stage walk that rebuilt no row --
+            a paged declaration is excused, because :func:`_emptiness_is_declared_elsewhere` finds
+            its empty answer already carried by the paging guard. The kernels themselves answer an
+            empty *input* with an empty list: ``repoint_records([], plan) == []`` and
+            ``expand_nested_array`` over a document whose parent list is empty are their reviewed
+            behaviour (``test_engine_row_expansion.py:355``, ``:689``), and a repoint or explode
+            plan over no parents has no record whose projection failed. The refusal therefore
+            belongs to the stage boundary rather than to either kernel, because a declaration that
+            *named* stages promised rebuilt rows: a rebuilt set of zero is the same silent zero
+            the pivot kernels already refuse from inside (:mod:`.row_expansion`:570-571 for a wide
+            table, :485-486 for a series join). A declaration that names no stage keeps "the path
+            published nothing" as the legitimate empty result :func:`resolve_rows` documents.
     """
     if not spec.row_expansion:
         return records
@@ -549,6 +592,13 @@ def _expand_rows(records: list[Any], spec: ModelSpec) -> list[Any]:
                 f"{spec.error_prefix}_SHAPE_INVALID",
                 rejected=(f"row expansion stage {index} is {type(stage).__name__}",),
             )
+    if not expanded and not _emptiness_is_declared_elsewhere(spec):
+        last = spec.row_expansion[-1]
+        raise RowExpansionError(
+            EMPTY_RESULT,
+            pointer=str(getattr(last, "records_pointer", spec.rows_pointer) or ""),
+            saw=f"{len(records)} published record(s) rebuilt no row",
+        )
     return expanded
 
 
@@ -562,7 +612,10 @@ def resolve_rows(document: object, pointer: str, spec: ModelSpec) -> list[Any]:
     A declaration that names ``row_expansion`` does not stop at the record list: what
     comes back is the list the declared stages produce from it, so the rows normalized
     downstream are the exploded/pivoted ones. A declaration that names none -- every
-    declaration written before the field existed -- returns the resolved list itself.
+    declaration written before the field existed -- returns the resolved list itself, and
+    only that flat reading, or an expansion whose own paging carries the empty answer
+    (:func:`_emptiness_is_declared_elsewhere`), keeps "the path published nothing" as the
+    zero-row answer above.
     """
     current = document
     if pointer:
@@ -911,15 +964,60 @@ def effective_page_size(spec: ModelSpec, params: Mapping[str, str]) -> int:
     return paging_page_size(spec)
 
 
-def _next_cursor(document: object, spec: ModelSpec) -> str | None:
-    """Read the continuation cursor from a response document."""
+def _cursor_absence_is_terminal(
+    document: object,
+    spec: ModelSpec,
+    *,
+    rows_on_page: int,
+    collected: int,
+) -> bool:
+    """Whether a strict cursor field's absence reads as terminal for this page.
+
+    The page's own published evidence decides, and nothing else is consulted: a declared total
+    the fetch has now reached says no further page is declared, and so does a page that carried
+    records while publishing no continuation and no unmet total. A page that carried nothing,
+    met no total and omitted the field names nothing that would end the walk -- the empty answer
+    the strict contract declares is the empty list *plus* an explicit-null cursor -- so its
+    absence stays the shape failure the guard was opted into for.
+    """
+    total = _declared_total(document, spec)
+    if total is not None:
+        return collected >= total
+    return rows_on_page > 0
+
+
+def _next_cursor(
+    document: object,
+    spec: ModelSpec,
+    *,
+    rows_on_page: int,
+    collected: int,
+) -> str | None:
+    """Read the continuation cursor from a response document.
+
+    Under ``strict_nullable_string`` the cursor field is the continuation channel the declaration
+    opted into: a non-empty string continues, an explicit ``None`` terminates, and any other
+    published value is a shape failure. A page that omits the field entirely splits on the
+    evidence the page itself carries -- absent because terminal against absent while more pages
+    are declared (:func:`_cursor_absence_is_terminal`): the contract suite's terminal cursor page
+    publishes no cursor key at all, while the endpoint's own empty-page shape (empty record list,
+    no cursor key, no met total) is the refusal this guard exists to keep.
+    """
     field_name = spec.pagination.cursor_field
     if spec.pagination.strict_nullable_string:
-        if not isinstance(document, dict) or field_name is None or field_name not in document:
+        if not isinstance(document, dict) or field_name is None:
             raise ProviderEngineError(
                 f"{spec.error_prefix}_SHAPE_INVALID",
                 missing=() if field_name is None else (field_name,),
             )
+        if field_name not in document:
+            if not _cursor_absence_is_terminal(
+                document, spec, rows_on_page=rows_on_page, collected=collected
+            ):
+                raise ProviderEngineError(
+                    f"{spec.error_prefix}_SHAPE_INVALID", missing=(field_name,)
+                )
+            return None
         value = document[field_name]
         if value is None:
             return None
@@ -1000,7 +1098,7 @@ def fetch_pages(
         if collected > paging.max_rows:
             raise ProviderEngineError(f"{spec.error_prefix}_INCOMPLETE", url=url)
         if paging.kind == "cursor":
-            cursor = _next_cursor(document, spec)
+            cursor = _next_cursor(document, spec, rows_on_page=len(rows), collected=collected)
             if cursor is None:
                 break
             if paging.strict_nullable_string:
@@ -1313,8 +1411,12 @@ def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, An
         row_model = declared_row_model
         #: A transport seam for offline verification. ``None`` runs the governed HTTP client, so
         #: every production call still passes through admission, deadlines and attempt accounting;
-        #: a test constructs the fetcher with a fake and never reaches a socket.
-        http_transport: ClassVar[HttpGet | None] = None
+        #: a test constructs the fetcher with a fake and never reaches a socket. A delegating
+        #: fetcher hands its own seam to the inner fetcher per instance
+        #: (``inner.http_transport = ...``), which is why this is an instance attribute with a
+        #: class-level default rather than a ``ClassVar``: writing it through the instance is the
+        #: documented injection form, and ``ClassVar`` makes mypy refuse exactly that line.
+        http_transport: HttpGet | None = None
 
         def transform_query(self, **kwargs: object) -> Any:  # noqa: ANN401 - generated query
             """Reject anything the declaration does not accept, before any I/O."""

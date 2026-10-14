@@ -1,0 +1,29 @@
+=== iteration-2 registry census re-base judge ===
+live census: {"deferred_source_domain_leg_count": 318, "descriptor_eligible_identity_count": 329, "domain_count": 338, "live_descriptor_count": 329, "provider_model_identity_count": 351, "query_semantic_domain_count": 318, "registered_source_domain_leg_count": 351}
+batch5_count_adjudication.counts: {"all_symbols": 330, "contract_model_classes_including_base": 326, "domain_specs": 337, "fixed_bound": 317, "fixed_identities": 350, "fixed_unbound": 33, "non_base_contract_model_classes": 325, "non_contract_exports": ["BlsCatalogPage", "FredOutputType", "FredSeniorLoanOfficerSurveyQuery", "FredTransformUnits"], "provider_descriptors": 34, "provider_model_legs": 350}
+[PASS] pinned domain ids == live
+[PASS] pinned query-semantic ids == live
+[PASS] pinned identities == live bindings
+[PASS] deferred legs are the query-semantic legs
+[PASS] descriptor set == canonical-eligible set
+[PASS] canonical_ids_declared matches live
+[PASS] identity count pin == live
+[PASS] eligible + model_key_only == identities
+[PASS] eligible legacy rows are all ths
+[PASS] semantic fields moved 0 vs batch5 pin
+[PASS] scenario total explained by attribution
+[PASS] identity delta == added - removed
+[PASS] legacy legs unchanged at 33
+[PASS] frozen adjudication block byte-identical to the committed pin
+[PASS] export census delta re-derives
+[PASS] approved_delta still reviewed-absent scenario
+fixture_sha256=3755f13aaba43989373aa44c6ca3f43fa9aabd2e0b2681b100628cac0d9a7bc3
+[PASS] tests/test_provider_domains.py pins exactly the live fixture digest; found=['3755f13aaba43989373aa44c6ca3f43fa9aabd2e0b2681b100628cac0d9a7bc3']
+[PASS] tests/test_pipeline_jobs.py pins exactly the live fixture digest; found=['3755f13aaba43989373aa44c6ca3f43fa9aabd2e0b2681b100628cac0d9a7bc3']
+head_commit=270e373411951be1752d71206379da98762d5081 head_pin_sha256=7ce0ca613405e10dc3616e2cd1e6964b957331eb068a20ce49d997927b49c9f8
+moves vs committed batch5 pin: {'binding': 10, 'scenario_present': 29}
+scenario_present by source (moved rows): {'federal_reserve': 10, 'cftc': 2, 'intrinio': 2, 'fred': 2, 'imf': 8, 'eia': 2, 'sec': 1, 'finviz': 2}
+binding moves by source: {'federal_reserve': 10}
+[PASS] counterfact: one eligibility flip turns 2 face(s) FAIL -> ['descriptor set == canonical-eligible set', 'canonical_ids_declared matches live']
+census_verify_failed=0
+CENSUS_VERIFY_EXIT: GREEN

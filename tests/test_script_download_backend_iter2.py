@@ -675,7 +675,9 @@ def test_mysql_start_uses_publishable_bridge_and_loopback_only(
 
     def fake_docker(args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
         docker_calls.append(args)
-        if args[:2] == ["network", "create"]:
+        if args[:2] == ["image", "inspect"]:
+            stdout = json.dumps([ac21_harness.MYSQL_IMAGE_REFERENCE]) + "\n"
+        elif args[:2] == ["network", "create"]:
             stdout = f"{network_id}\n"
         elif args[:2] == ["volume", "create"]:
             stdout = f"{lease.volume_name}\n"
@@ -812,6 +814,12 @@ def test_mysql_partial_network_create_recovers_exact_owned_network(
     def fake_docker(args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
         nonlocal daemon_created
         docker_calls.append(args)
+        if args[:2] == ["image", "inspect"]:
+            # The pinned-image guard runs first; the fake must satisfy it so the
+            # scenario under test is the partial create, not the digest pin.
+            return subprocess.CompletedProcess(
+                args, 0, stdout=json.dumps([ac21_harness.MYSQL_IMAGE_REFERENCE]), stderr=""
+            )
         if args[:2] == ["network", "create"]:
             daemon_created = True
             if create_response == "error":
@@ -944,6 +952,12 @@ def test_mysql_partial_create_recovers_by_exact_owned_identity(
     def fake_docker(args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
         nonlocal daemon_created
         docker_calls.append(args)
+        if args[:2] == ["image", "inspect"]:
+            # The pinned-image guard runs first; the fake must satisfy it so the
+            # scenario under test is the partial create, not the digest pin.
+            return subprocess.CompletedProcess(
+                args, 0, stdout=json.dumps([ac21_harness.MYSQL_IMAGE_REFERENCE]), stderr=""
+            )
         if args[:2] == ["network", "create"]:
             stdout = f"{network_id}\n"
         elif args[:2] == ["volume", "create"]:

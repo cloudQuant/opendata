@@ -1,0 +1,577 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 16727 items
+
+tests/test_ecb_provider.py ...................sss                        [  0%]
+tests/test_ecb_reference_fetcher.py .................................... [  0%]
+....                                                                     [  0%]
+tests/test_ecb_reference_parser.py ..................................... [  0%]
+...............................                                          [  0%]
+tests/test_ecb_reference_registration.py F....                           [  0%]
+tests/test_ecb_series_client.py ..............                           [  0%]
+tests/test_ecb_series_contract.py ...................................... [  1%]
+........................................................................ [  1%]
+....................                                                     [  1%]
+tests/test_ecb_series_fetchers.py FF.................                    [  1%]
+tests/test_ecb_series_parser.py .......................................  [  2%]
+tests/test_ecb_series_query.py ......................................... [  2%]
+............................................................             [  2%]
+tests/test_ecb_series_registration.py ......                             [  2%]
+tests/test_intrinio_engine_provider.py ................................. [  2%]
+...............................                                          [  3%]
+tests/test_intrinio_financials_iter2.py ................................ [  3%]
+....                                                                     [  3%]
+tests/test_intrinio_financials_runtime_annotations.py .                  [  3%]
+tests/test_intrinio_insider_trading_spec.py .F.......................    [  3%]
+tests/test_intrinio_market_clean_iter2.py .............................. [  3%]
+.................                                                        [  3%]
+tests/test_intrinio_news_attributes_iter2.py ........................... [  3%]
+......                                                                   [  3%]
+tests/test_intrinio_not_declarable.py ..F............................... [  4%]
+............................................                             [  4%]
+tests/test_intrinio_snapshots_clean.py .............                     [  4%]
+tests/test_fred_estr_contract.py ....................................... [  4%]
+........................................................                 [  4%]
+tests/test_fred_estr_query.py .......................................... [  5%]
+........................................................................ [  5%]
+........................................................................ [  6%]
+........................................................................ [  6%]
+........................................................................ [  6%]
+........................................................................ [  7%]
+........................................................................ [  7%]
+........................................................................ [  8%]
+........................................................................ [  8%]
+........................................................................ [  9%]
+........................................................................ [  9%]
+........................................................................ [  9%]
+........................................................................ [ 10%]
+........................................................................ [ 10%]
+........................................................................ [ 11%]
+........................................................................ [ 11%]
+........................................................................ [ 12%]
+........................................................................ [ 12%]
+........................................................................ [ 12%]
+........................................................................ [ 13%]
+........................................................................ [ 13%]
+........................................................................ [ 14%]
+........................................................................ [ 14%]
+........................................................................ [ 15%]
+........................................................................ [ 15%]
+........................................................................ [ 16%]
+........................................................................ [ 16%]
+........................................................................ [ 16%]
+........................................................................ [ 17%]
+........................................................................ [ 17%]
+........................................................................ [ 18%]
+........................................................................ [ 18%]
+........................................................................ [ 19%]
+........................................................................ [ 19%]
+........................................................................ [ 19%]
+........................................................................ [ 20%]
+........................................................................ [ 20%]
+........................................................................ [ 21%]
+........................................................................ [ 21%]
+........................................................................ [ 22%]
+........................................................................ [ 22%]
+........................................................................ [ 22%]
+........................................................................ [ 23%]
+........................................................................ [ 23%]
+........................................................................ [ 24%]
+........................................................................ [ 24%]
+........................................................................ [ 25%]
+........................................................................ [ 25%]
+........................................................................ [ 25%]
+........................................................................ [ 26%]
+........................................................................ [ 26%]
+........................................................................ [ 27%]
+........................................................................ [ 27%]
+........................................................................ [ 28%]
+........................................................................ [ 28%]
+........................................................................ [ 28%]
+........................................................................ [ 29%]
+........................................................................ [ 29%]
+........................................................................ [ 30%]
+........................................................................ [ 30%]
+........................................................................ [ 31%]
+........................................................................ [ 31%]
+........................................................................ [ 31%]
+........................................................................ [ 32%]
+........................................................................ [ 32%]
+........................................................................ [ 33%]
+........................................................................ [ 33%]
+........................................................................ [ 34%]
+........................................................................ [ 34%]
+........................................................................ [ 34%]
+........................................................................ [ 35%]
+........................................................................ [ 35%]
+........................................................................ [ 36%]
+........................................................................ [ 36%]
+........................................................................ [ 37%]
+........................................................................ [ 37%]
+........................................................................ [ 37%]
+........................................................................ [ 38%]
+........................................................................ [ 38%]
+........................................................................ [ 39%]
+........................................................................ [ 39%]
+........................................................................ [ 40%]
+........................................................................ [ 40%]
+........................................................................ [ 40%]
+........................................................................ [ 41%]
+........................................................................ [ 41%]
+........................................................................ [ 42%]
+........................................................................ [ 42%]
+........................................................................ [ 43%]
+........................................................................ [ 43%]
+........................................................................ [ 43%]
+........................................................................ [ 44%]
+........................................................................ [ 44%]
+........................................................................ [ 45%]
+........................................................................ [ 45%]
+........................................................................ [ 46%]
+........................................................................ [ 46%]
+........................................................................ [ 47%]
+........................................................................ [ 47%]
+........................................................................ [ 47%]
+........................................................................ [ 48%]
+........................................................................ [ 48%]
+........................................................................ [ 49%]
+........................................................................ [ 49%]
+........................................................................ [ 50%]
+........................................................................ [ 50%]
+........................................................................ [ 50%]
+........................................................................ [ 51%]
+........................................................................ [ 51%]
+........................................................................ [ 52%]
+........................................................................ [ 52%]
+........................................................................ [ 53%]
+........................................................................ [ 53%]
+........................................................................ [ 53%]
+........................................................................ [ 54%]
+........................................................................ [ 54%]
+........................................................................ [ 55%]
+........................................................................ [ 55%]
+........................................................................ [ 56%]
+........................................................................ [ 56%]
+........................................................................ [ 56%]
+........................................................................ [ 57%]
+........................................................................ [ 57%]
+........................................................................ [ 58%]
+........................................................................ [ 58%]
+........................................................................ [ 59%]
+........................................................................ [ 59%]
+........................................................................ [ 59%]
+........................................................................ [ 60%]
+........................................................................ [ 60%]
+........................................................................ [ 61%]
+........................................................................ [ 61%]
+........................................................................ [ 62%]
+........................................................................ [ 62%]
+........................................................................ [ 62%]
+........................................................................ [ 63%]
+........................................................................ [ 63%]
+........................................................................ [ 64%]
+........................................................................ [ 64%]
+........................................................................ [ 65%]
+........................................................................ [ 65%]
+........................................................................ [ 65%]
+........................................................................ [ 66%]
+........................................................................ [ 66%]
+........................................................................ [ 67%]
+........................................................................ [ 67%]
+........................................................................ [ 68%]
+........................................................................ [ 68%]
+........................................................................ [ 68%]
+........................................................................ [ 69%]
+........................................................................ [ 69%]
+........................................................................ [ 70%]
+........................................................................ [ 70%]
+........................................................................ [ 71%]
+........................................................................ [ 71%]
+........................................................................ [ 71%]
+........................................................................ [ 72%]
+........................................................................ [ 72%]
+........................................................................ [ 73%]
+........................................................................ [ 73%]
+........................................................................ [ 74%]
+........................................................................ [ 74%]
+........................................................................ [ 74%]
+........................................................................ [ 75%]
+........................................................................ [ 75%]
+........................................................................ [ 76%]
+........................................................................ [ 76%]
+........................................................................ [ 77%]
+........................................................................ [ 77%]
+........................................................................ [ 77%]
+........................................................................ [ 78%]
+........................................................................ [ 78%]
+........................................................................ [ 79%]
+........................................................................ [ 79%]
+........................................................................ [ 80%]
+........................................................................ [ 80%]
+........................................................................ [ 81%]
+........................................................................ [ 81%]
+........................................................................ [ 81%]
+........................................................................ [ 82%]
+........................................................................ [ 82%]
+........................................................................ [ 83%]
+........................................................................ [ 83%]
+.                                                                        [ 83%]
+tests/test_fred_generic_models.py FFFF................FFF..........FF... [ 83%]
+...............FFFFFFFFF.                                                [ 83%]
+tests/test_fred_iorb_client.py .....................................     [ 84%]
+tests/test_fred_iorb_contract.py ....................................... [ 84%]
+...............                                                          [ 84%]
+tests/test_fred_iorb_fetcher.py .F.............FF.                       [ 84%]
+tests/test_fred_iorb_query.py .......................................... [ 84%]
+...................................................                      [ 85%]
+tests/test_fred_iter2_auxiliary.py ..........FFFFFF                      [ 85%]
+tests/test_fred_iter2_federal_funds.py FF...FFF.F                        [ 85%]
+tests/test_fred_iter2_fixed_rates.py F.FFFFFFF.F.F.                      [ 85%]
+tests/test_fred_iter2_treasury_rates.py FF..F.FF.F                       [ 85%]
+tests/test_fred_macro_iter2.py F.....FFFFFFF.............FFFFFFFFFFFF... [ 85%]
+.............F...FF..............................F.FF..................  [ 86%]
+tests/test_fred_macro_remaining.py ............                          [ 86%]
+tests/test_fred_provider.py .................                            [ 86%]
+tests/test_fred_query_context.py ...........                             [ 86%]
+tests/test_fred_rates_extra_iter2.py ..............................      [ 86%]
+tests/test_fred_sloos.py ........................                        [ 86%]
+tests/test_fred_sofr_client.py ......................................... [ 86%]
+........................................................                 [ 87%]
+tests/test_fred_sofr_contract.py ....................................... [ 87%]
+.......................................                                  [ 87%]
+tests/test_fred_sofr_fetcher.py ........................................ [ 87%]
+........................................................................ [ 88%]
+................................................................FFF      [ 88%]
+tests/test_fred_sofr_query.py .......................................... [ 89%]
+........................................................................ [ 89%]
+...................                                                      [ 89%]
+tests/test_fred_sofr_registration.py .........                           [ 89%]
+tests/test_fred_sonia_client.py ........................................ [ 89%]
+.........................                                                [ 90%]
+tests/test_fred_sonia_contract.py ...................................... [ 90%]
+....................................................                     [ 90%]
+tests/test_fred_sonia_fetcher.py ....................................... [ 90%]
+........................................................................ [ 91%]
+........................................................................ [ 91%]
+.....F...FF                                                              [ 91%]
+tests/test_fred_sonia_query.py ......................................... [ 92%]
+........................................................................ [ 92%]
+.........................................................                [ 92%]
+tests/test_fred_sonia_registration.py .................                  [ 92%]
+tests/test_yfinance_iter2_budget.py ......................               [ 93%]
+tests/test_yfinance_iter2_market.py .................................... [ 93%]
+........................................................................ [ 93%]
+....                                                                     [ 93%]
+tests/test_yfinance_iter2_statements.py ..................               [ 93%]
+tests/test_yfinance_provider.py .............................            [ 93%]
+tests/test_sec_documents_iter2.py .........FFFFFFFFFFFFFFF..             [ 94%]
+tests/test_sec_engine_provider.py .....................                  [ 94%]
+tests/test_sec_institutions.py .........FFF.............                 [ 94%]
+tests/test_sec_iter2.py ....FFF......FFFFFFF..................FF.....FF. [ 94%]
+......FFF.                                                               [ 94%]
+tests/test_security.py ......................                            [ 94%]
+tests/test_security_full.py ...............                              [ 94%]
+tests/test_congress_gov_engine_provider.py ...F..F...................... [ 95%]
+....FF.F..........                                                       [ 95%]
+tests/test_finviz_performance.py ..........................              [ 95%]
+tests/test_finviz_provider.py F...............................           [ 95%]
+tests/test_finviz_screener_binding.py s                                  [ 95%]
+tests/test_finviz_screener_first_page.py ........                        [ 95%]
+tests/test_federal_reserve_clean_documents.py ............               [ 95%]
+tests/test_federal_reserve_clean_economy.py ............................ [ 95%]
+.                                                                        [ 95%]
+tests/test_federal_reserve_clean_nyfed.py .............................. [ 96%]
+.......                                                                  [ 96%]
+tests/test_federal_reserve_clean_rates.py .................              [ 96%]
+tests/test_federal_reserve_domains.py ....F....................          [ 96%]
+tests/test_federal_reserve_iter2_models.py ............................. [ 96%]
+........                                                                 [ 96%]
+tests/test_federal_reserve_obfr_spec.py ...........                      [ 96%]
+tests/test_federal_reserve_rate_specs.py ............................... [ 96%]
+..                                                                       [ 96%]
+tests/test_provider_engine_contract.py ................................. [ 97%]
+.................................                                        [ 97%]
+tests/test_provider_engine_decoders.py ................................. [ 97%]
+......................                                                   [ 97%]
+tests/test_engine_body_request.py ...................................... [ 97%]
+..........................................                               [ 98%]
+tests/test_engine_contract_fixture_arms.py .....                         [ 98%]
+tests/test_engine_key_composition.py ...............................     [ 98%]
+tests/test_engine_multi_request.py ................................      [ 98%]
+tests/test_engine_null_sentinel.py ..................                    [ 98%]
+tests/test_engine_row_expansion.py ..................................... [ 98%]
+...............                                                          [ 98%]
+tests/test_engine_row_expansion_spec.py ............                     [ 98%]
+tests/test_engine_row_filters.py ....................................... [ 99%]
+..                                                                       [ 99%]
+tests/test_engine_row_order.py ..................................        [ 99%]
+tests/test_engine_serialised_param_spec.py ................              [ 99%]
+tests/test_engine_service_identity_iter2.py .....                        [ 99%]
+tests/test_engine_value_map_and_composite_path.py ...................    [ 99%]
+tests/test_engine_value_transform.py ................................... [ 99%]
+...........................                                              [100%]
+
+=================================== FAILURES ===================================
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_ecb_reference_registration.py:227: AssertionError: assert 351 == 62
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/ecb/models/yield_curve.py:62: TypeError: _install_fakes.<locals>.fake_yc() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/ecb/models/balance_of_payments.py:64: TypeError: _install_fakes.<locals>.fake_bps() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_intrinio_insider_trading_spec.py:236: AssertionError: assert {'BalanceShee...cyPairs', ...} == {'BalanceShee...cyPairs', ...}
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_intrinio_not_declarable.py:176: AssertionError: assert {'BalanceShee...cyPairs', ...} == {'BalanceShee...cyPairs', ...}
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_fetches_all_pages_and_normalizes_typed_catalog_rows.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_series_pages_preserve_revisions_and_keep_transform_separate_from_units.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_series_vintage_dates_map_to_comma_list_without_realtime_window.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_series_frequency_aggregation_and_descending_response_order_are_preserved.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_series_unknown_alternate_json_rows_fail_closed_without_disabling_type.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_series_unknown_alternate_json_rows_fail_closed_without_disabling_type.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_as_of_is_sent_as_a_single_day_vintage_and_dot_is_nullable.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_filter_fields_are_independently_optional_and_transmitted.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_filter_fields_are_independently_optional_and_transmitted.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_rejects_incomplete_or_inconsistent_pages.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_rejects_incomplete_or_inconsistent_pages.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_rejects_incomplete_or_inconsistent_pages.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_rejects_incomplete_or_inconsistent_pages.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_rejects_incomplete_or_inconsistent_pages.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_rejects_incomplete_or_inconsistent_pages.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_reports_query_budget_limit_instead_of_returning_partial_rows.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_reports_query_budget_limit_instead_of_returning_partial_rows.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_missing_key_and_http_errors_fail_without_leaking_key.<locals>.rate_limited() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/services/provider_model_query.py:144: opendata.services.provider_model_query.ProviderModelQueryUpstreamError
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iorb.py:65: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_OBSERVATION
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iorb.py:65: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_OBSERVATION
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/services/provider_model_query.py:144: opendata.services.provider_model_query.ProviderModelQueryUpstreamError
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_auxiliary.py:825: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_fred_iter2_auxiliary.py:777: AssertionError: Regex pattern did not match.
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/services/provider_model_query.py:144: opendata.services.provider_model_query.ProviderModelQueryUpstreamError
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_auxiliary.py:995: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_fred_iter2_auxiliary.py:871: AssertionError: Regex pattern did not match.
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/federal_funds.py:135: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/federal_funds.py:135: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_fred_iter2_federal_funds.py:297: AssertionError: Regex pattern did not match.
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/services/provider_model_query.py:144: opendata.services.provider_model_query.ProviderModelQueryUpstreamError
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/federal_funds.py:274: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/services/provider_model_query.py:144: opendata.services.provider_model_query.ProviderModelQueryUpstreamError
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/fixed_rates.py:198: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/fixed_rates.py:198: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_fred_iter2_fixed_rates.py:363: AssertionError: assert 'FRED_BAD_QUERY' == 'FRED_HTTP_ERROR'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/fixed_rates.py:198: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/fixed_rates.py:198: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/fixed_rates.py:198: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/fixed_rates.py:198: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/fixed_rates.py:198: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/fixed_rates.py:198: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/services/provider_model_query.py:144: opendata.services.provider_model_query.ProviderModelQueryUpstreamError
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: _install_paged_response.<locals>.http_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_treasury_constant_maturity_two_year_uses_dgs2.<locals>.one_observation() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: _install_paged_response.<locals>.http_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_selected_treasury_bill_rate_limit_does_not_leak_key.<locals>.rate_limited() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_selected_treasury_constant_maturity_maps_all_fixed_series.<locals>.one_observation() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_selected_treasury_constant_maturity_429_and_vintage_mismatch.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_fred_macro_iter2.py:939: AssertionError: assert 'FRED_BAD_QUERY' == 'FRED_HTTP_ERROR'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/iter2_macro.py:941: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_QUERY
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_fred_macro_iter2.py:1104: AssertionError: assert 'FRED_BAD_QUERY' == 'FRED_HTTP_ERROR'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/services/provider_model_query.py:144: opendata.services.provider_model_query.ProviderModelQueryUpstreamError
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/sofr.py:74: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_OBSERVATION
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/sofr.py:74: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_OBSERVATION
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_fred_sofr_fetcher.py:521: assert False
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/sonia.py:69: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_OBSERVATION
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/sonia.py:69: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_OBSERVATION
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/sonia.py:69: opendata.data.providers.fred.models._client.FredProviderError: FRED_BAD_OBSERVATION
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:437: TypeError: _queue_json.<locals>.fetch_json() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:437: TypeError: _queue_json.<locals>.fetch_json() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:701: TypeError: _queue_json.<locals>.fetch_json() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:830: TypeError: _queue_bytes.<locals>.fetch_bytes() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:880: TypeError: _queue_bytes.<locals>.fetch_bytes() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:975: TypeError: _queue_bytes.<locals>.fetch_bytes() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:975: TypeError: _queue_bytes.<locals>.fetch_bytes() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:1169: TypeError: _queue_bytes.<locals>.fetch_bytes() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:218: TypeError: test_mda_positive_and_missing_section_fixture.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:1467: TypeError: _queue_json.<locals>.fetch_json() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:1467: TypeError: _queue_json.<locals>.fetch_json() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:1467: TypeError: _queue_json.<locals>.fetch_json() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:1735: TypeError: _queue_json.<locals>.fetch_json() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:1735: TypeError: _queue_json.<locals>.fetch_json() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_documents.py:1735: TypeError: _queue_json.<locals>.fetch_json() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_institutions.py:483: TypeError: test_default_and_none_cache_options_preserve_fetch_bytes_compatibility.<locals>.legacy_fetch_bytes() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_institutions.py:483: TypeError: test_default_and_none_cache_options_preserve_fetch_bytes_compatibility.<locals>.legacy_fetch_bytes() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_institutions.py:483: TypeError: test_default_and_none_cache_options_preserve_fetch_bytes_compatibility.<locals>.legacy_fetch_bytes() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_directory.py:164: TypeError: test_cik_map_fixture_is_typed_and_malformed_directory_fails.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_directory.py:222: TypeError: test_symbol_map_fixture_accepts_public_query_and_returns_symbol.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_directory.py:305: TypeError: test_equity_search_fixture_pagination_and_bad_shape.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_financial.py:682: TypeError: _patch_json.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_financial.py:682: TypeError: _patch_json.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_financial.py:682: TypeError: _patch_json.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_financial.py:682: TypeError: _patch_json.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_financial.py:682: TypeError: _patch_json.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_financial.py:682: TypeError: _patch_json.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_financial.py:682: TypeError: _patch_json.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_financial.py:682: TypeError: _patch_json.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_financial.py:682: TypeError: _patch_json.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_financial.py:682: TypeError: _patch_json.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_financial.py:1654: TypeError: test_compare_companyfacts_public_multi_symbol_default_fact_and_bad_date.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/sec/models/iter2_insider.py:648: TypeError: _insider_fetcher_inputs.<locals>.<lambda>() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/services/provider_model_query.py:144: opendata.services.provider_model_query.ProviderModelQueryUpstreamError
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/services/provider_model_query.py:144: opendata.services.provider_model_query.ProviderModelQueryUpstreamError
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_congress_gov_engine_provider.py:215: AssertionError: assert True is False
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_congress_gov_engine_provider.py:241: AssertionError: assert 8 == 0
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_congress_gov_engine_provider.py:359: AssertionError: assert (LazyFetcherB...正案原始文档'), ...) == ()
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_congress_gov_engine_provider.py:367: AssertionError: assert ['__init__.py...', 'iter2.py'] == ['__init__.py']
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_congress_gov_engine_provider.py:378: AssertionError: assert [Capability(a...coded.'), ...] == []
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_finviz_provider.py:378: AssertionError: assert {'CompareGrou...ormance', ...} == {'CompareGrou...'PriceTarget'}
+/Users/yunjinqi/Documents/new_projects/opendata/tests/test_federal_reserve_domains.py:159: AssertionError: assert 'federal_reserve_yield_curve' not in {'alpha_vantage_equity_historical': DomainSpec(display_name='Alpha Vantage Equity Historical', rest_path='alphavantage..., 'frequency', 'ref_area', 'counterpart_area', 'unit_measure'), storage_mode='transient', permissions=('query',)), ...}
+=========================== short test summary info ============================
+FAILED tests/test_ecb_reference_registration.py::test_real_ecb_bindings_register_three_canonical_models_without_auto_promotion
+FAILED tests/test_ecb_series_fetchers.py::test_sync_async_and_raw_async_share_the_bounded_fetcher_contract[yield-curve]
+FAILED tests/test_ecb_series_fetchers.py::test_sync_async_and_raw_async_share_the_bounded_fetcher_contract[balance-of-payments]
+FAILED tests/test_intrinio_insider_trading_spec.py::TestCensusRowIsDeclared::test_routable_bindings_include_the_engine_declarations
+FAILED tests/test_intrinio_not_declarable.py::TestTheThirtyEightRowAccounting::test_declared_models_are_the_runtime_bindings
+FAILED tests/test_fred_generic_models.py::test_search_fetches_all_pages_and_normalizes_typed_catalog_rows
+FAILED tests/test_fred_generic_models.py::test_series_pages_preserve_revisions_and_keep_transform_separate_from_units
+FAILED tests/test_fred_generic_models.py::test_series_vintage_dates_map_to_comma_list_without_realtime_window
+FAILED tests/test_fred_generic_models.py::test_series_frequency_aggregation_and_descending_response_order_are_preserved
+FAILED tests/test_fred_generic_models.py::test_series_unknown_alternate_json_rows_fail_closed_without_disabling_type[2]
+FAILED tests/test_fred_generic_models.py::test_series_unknown_alternate_json_rows_fail_closed_without_disabling_type[3]
+FAILED tests/test_fred_generic_models.py::test_as_of_is_sent_as_a_single_day_vintage_and_dot_is_nullable
+FAILED tests/test_fred_generic_models.py::test_search_filter_fields_are_independently_optional_and_transmitted[query0]
+FAILED tests/test_fred_generic_models.py::test_search_filter_fields_are_independently_optional_and_transmitted[query1]
+FAILED tests/test_fred_generic_models.py::test_search_rejects_incomplete_or_inconsistent_pages[responses0-FRED_PAGINATION_ERROR]
+FAILED tests/test_fred_generic_models.py::test_search_rejects_incomplete_or_inconsistent_pages[responses1-FRED_PAGINATION_ERROR]
+FAILED tests/test_fred_generic_models.py::test_search_rejects_incomplete_or_inconsistent_pages[responses2-FRED_PAGINATION_ERROR]
+FAILED tests/test_fred_generic_models.py::test_search_rejects_incomplete_or_inconsistent_pages[responses3-FRED_PAGINATION_ERROR]
+FAILED tests/test_fred_generic_models.py::test_search_rejects_incomplete_or_inconsistent_pages[responses4-FRED_PAGINATION_CONFLICT]
+FAILED tests/test_fred_generic_models.py::test_search_rejects_incomplete_or_inconsistent_pages[responses5-FRED_PAGINATION_ERROR]
+FAILED tests/test_fred_generic_models.py::test_search_reports_query_budget_limit_instead_of_returning_partial_rows[3-2-5-max_records]
+FAILED tests/test_fred_generic_models.py::test_search_reports_query_budget_limit_instead_of_returning_partial_rows[3-5-2-max_pages]
+FAILED tests/test_fred_generic_models.py::test_missing_key_and_http_errors_fail_without_leaking_key
+FAILED tests/test_fred_iorb_fetcher.py::test_provider_model_query_injects_identity_and_serializes_iorb_rows
+FAILED tests/test_fred_iorb_fetcher.py::test_extraction_passes_timeout_and_retains_full_page_tuple
+FAILED tests/test_fred_iorb_fetcher.py::test_raw_async_and_capture_paths_keep_envelopes_before_normalization
+FAILED tests/test_fred_iter2_auxiliary.py::test_balance_of_payments_joins_only_official_us_quarterly_series_and_serializes
+FAILED tests/test_fred_iter2_auxiliary.py::test_balance_of_payments_pit_nullable_columns_and_parameter_bounds
+FAILED tests/test_fred_iter2_auxiliary.py::test_balance_of_payments_rejects_conflicting_vintages_and_rate_limit
+FAILED tests/test_fred_iter2_auxiliary.py::test_fomc_projections_join_seven_verified_series_with_vintage_and_typed_service_output
+FAILED tests/test_fred_iter2_auxiliary.py::test_fomc_long_run_uses_distinct_official_ids_and_missing_values_stay_null
+FAILED tests/test_fred_iter2_auxiliary.py::test_fomc_query_conflicts_and_pagination_limit_fail_closed
+FAILED tests/test_fred_iter2_federal_funds.py::test_federal_funds_maps_documented_fred_series_and_retains_private_vintages
+FAILED tests/test_fred_iter2_federal_funds.py::test_effr_only_fetches_primary_series_and_leaves_companions_null
+FAILED tests/test_fred_iter2_federal_funds.py::test_fred_pagination_limit_and_throttling_are_reported_without_key_leak
+FAILED tests/test_fred_iter2_federal_funds.py::test_provider_model_query_injects_fred_identity_and_serializes_typed_rows
+FAILED tests/test_fred_iter2_federal_funds.py::test_fred_obfr_maps_six_official_series_and_aligns_nullable_companions
+FAILED tests/test_fred_iter2_federal_funds.py::test_fred_obfr_provider_query_injects_source_market_and_typed_output
+FAILED tests/test_fred_iter2_fixed_rates.py::test_ameribor_maps_five_series_pages_and_output_shape
+FAILED tests/test_fred_iter2_fixed_rates.py::test_ecb_rate_series_mapping_pit_paging_and_dot_missing
+FAILED tests/test_fred_iter2_fixed_rates.py::test_ecb_invalid_type_rejected_before_io_and_429_redacts_api_key
+FAILED tests/test_fred_iter2_fixed_rates.py::test_discount_window_frequency_is_an_explicit_fred_aggregation[daily_excl_weekend-None]
+FAILED tests/test_fred_iter2_fixed_rates.py::test_discount_window_frequency_is_an_explicit_fred_aggregation[daily-None]
+FAILED tests/test_fred_iter2_fixed_rates.py::test_discount_window_frequency_is_an_explicit_fred_aggregation[weekly-w]
+FAILED tests/test_fred_iter2_fixed_rates.py::test_discount_window_frequency_is_an_explicit_fred_aggregation[monthly-m]
+FAILED tests/test_fred_iter2_fixed_rates.py::test_discount_window_frequency_is_an_explicit_fred_aggregation[annual-a]
+FAILED tests/test_fred_iter2_fixed_rates.py::test_tips_yields_maps_all_four_curve_tenors_and_preserves_contract
+FAILED tests/test_fred_iter2_fixed_rates.py::test_provider_model_query_injects_identity_and_serializes_ecb_rows
+FAILED tests/test_fred_iter2_treasury_rates.py::test_treasury_constant_maturity_maps_pit_pages_and_output_shape
+FAILED tests/test_fred_iter2_treasury_rates.py::test_treasury_constant_maturity_two_year_uses_dgs2
+FAILED tests/test_fred_iter2_treasury_rates.py::test_selected_treasury_bill_maps_dt_b_and_validates_vintage
+FAILED tests/test_fred_iter2_treasury_rates.py::test_selected_treasury_bill_rate_limit_does_not_leak_key
+FAILED tests/test_fred_iter2_treasury_rates.py::test_selected_treasury_constant_maturity_maps_all_fixed_series
+FAILED tests/test_fred_iter2_treasury_rates.py::test_selected_treasury_constant_maturity_429_and_vintage_mismatch
+FAILED tests/test_fred_macro_iter2.py::test_cpi_maps_transform_frequency_and_serializes_contract
+FAILED tests/test_fred_macro_iter2.py::test_michigan_series_merge_keeps_missing_sentinel_nullable
+FAILED tests/test_fred_macro_iter2.py::test_mortgage_primary_expands_to_seven_official_indices
+FAILED tests/test_fred_macro_iter2.py::test_mortgage_ltv_group_expands_only_to_verified_components
+FAILED tests/test_fred_macro_iter2.py::test_new_orders_manufacturing_rows_merge_from_four_series[ManufacturingOutlookNYFetcher-expected_ids0]
+FAILED tests/test_fred_macro_iter2.py::test_new_orders_manufacturing_rows_merge_from_four_series[ManufacturingOutlookTexasFetcher-expected_ids1]
+FAILED tests/test_fred_macro_iter2.py::test_manufacturing_csv_topics_merge_by_date_and_topic_without_crossing_fields[ManufacturingOutlookNYFetcher-prices_paid, new_orders,prices_paid-topic_order0]
+FAILED tests/test_fred_macro_iter2.py::test_manufacturing_csv_topics_merge_by_date_and_topic_without_crossing_fields[ManufacturingOutlookTexasFetcher-new_orders_growth,business_outlook,new_orders_growth-topic_order1]
+FAILED tests/test_fred_macro_iter2.py::test_public_survey_frequencies_map_to_fred_wire_tokens[annual-a-UniversityOfMichiganFetcher-query_fields0]
+FAILED tests/test_fred_macro_iter2.py::test_public_survey_frequencies_map_to_fred_wire_tokens[annual-a-ManufacturingOutlookNYFetcher-query_fields1]
+FAILED tests/test_fred_macro_iter2.py::test_public_survey_frequencies_map_to_fred_wire_tokens[annual-a-ManufacturingOutlookTexasFetcher-query_fields2]
+FAILED tests/test_fred_macro_iter2.py::test_public_survey_frequencies_map_to_fred_wire_tokens[annual-a-SurveyOfEconomicConditionsChicagoFetcher-query_fields3]
+FAILED tests/test_fred_macro_iter2.py::test_public_survey_frequencies_map_to_fred_wire_tokens[quarter-q-UniversityOfMichiganFetcher-query_fields0]
+FAILED tests/test_fred_macro_iter2.py::test_public_survey_frequencies_map_to_fred_wire_tokens[quarter-q-ManufacturingOutlookNYFetcher-query_fields1]
+FAILED tests/test_fred_macro_iter2.py::test_public_survey_frequencies_map_to_fred_wire_tokens[quarter-q-ManufacturingOutlookTexasFetcher-query_fields2]
+FAILED tests/test_fred_macro_iter2.py::test_public_survey_frequencies_map_to_fred_wire_tokens[quarter-q-SurveyOfEconomicConditionsChicagoFetcher-query_fields3]
+FAILED tests/test_fred_macro_iter2.py::test_public_survey_frequencies_map_to_fred_wire_tokens[None-None-UniversityOfMichiganFetcher-query_fields0]
+FAILED tests/test_fred_macro_iter2.py::test_public_survey_frequencies_map_to_fred_wire_tokens[None-None-ManufacturingOutlookNYFetcher-query_fields1]
+FAILED tests/test_fred_macro_iter2.py::test_public_survey_frequencies_map_to_fred_wire_tokens[None-None-ManufacturingOutlookTexasFetcher-query_fields2]
+FAILED tests/test_fred_macro_iter2.py::test_public_survey_frequencies_map_to_fred_wire_tokens[None-None-SurveyOfEconomicConditionsChicagoFetcher-query_fields3]
+FAILED tests/test_fred_macro_iter2.py::test_chicago_nine_series_merge_supports_bounded_paging
+FAILED tests/test_fred_macro_iter2.py::test_missing_key_and_rate_limit_are_explicit_errors
+FAILED tests/test_fred_macro_iter2.py::test_source_page_record_limit_is_not_silently_truncated
+FAILED tests/test_fred_macro_iter2.py::test_retail_prices_fetches_and_serializes_a_typed_observation
+FAILED tests/test_fred_macro_iter2.py::test_retail_prices_rate_limit_and_page_budget_are_explicit
+FAILED tests/test_fred_macro_iter2.py::test_provider_model_query_injects_identity_and_serializes_retail_price
+FAILED tests/test_fred_sofr_fetcher.py::test_sync_async_and_captured_paths_use_runtime_grant_and_keep_page_headers
+FAILED tests/test_fred_sofr_fetcher.py::test_cancelled_context_and_exhausted_budget_stop_before_client
+FAILED tests/test_fred_sofr_fetcher.py::test_same_fetcher_instance_serializes_async_client_calls
+FAILED tests/test_fred_sonia_fetcher.py::test_extraction_keeps_complete_page_envelope_and_passes_context_timeout
+FAILED tests/test_fred_sonia_fetcher.py::test_sync_async_and_captured_paths_preserve_pages_and_timeout
+FAILED tests/test_fred_sonia_fetcher.py::test_cancelled_context_and_exhausted_budget_stop_before_client
+FAILED tests/test_sec_documents_iter2.py::test_company_filings_positive_and_malformed_fixture
+FAILED tests/test_sec_documents_iter2.py::test_filings_positive_and_malformed_fixture
+FAILED tests/test_sec_documents_iter2.py::test_sec_filing_positive_and_unsafe_index_fixture
+FAILED tests/test_sec_documents_iter2.py::test_sec_html_file_positive_and_empty_document_fixture
+FAILED tests/test_sec_documents_iter2.py::test_rss_litigation_positive_and_dtd_fixture
+FAILED tests/test_sec_documents_iter2.py::test_schema_files_positive_and_dtd_fixture
+FAILED tests/test_sec_documents_iter2.py::test_schema_file_period_and_balance_literals_are_validated_in_memory
+FAILED tests/test_sec_documents_iter2.py::test_latest_financial_reports_positive_and_bad_filename_fixture
+FAILED tests/test_sec_documents_iter2.py::test_mda_positive_and_missing_section_fixture
+FAILED tests/test_sec_documents_iter2.py::test_form_13f_hr_positive_and_missing_fields_fixture
+FAILED tests/test_sec_documents_iter2.py::test_form_13f_hr_legacy_value_uses_filing_date_unit
+FAILED tests/test_sec_documents_iter2.py::test_form_13f_hr_preserves_other_manager_row_identity
+FAILED tests/test_sec_documents_iter2.py::test_nport_disclosure_positive_and_missing_holdings_fixture
+FAILED tests/test_sec_documents_iter2.py::test_nport_disclosure_preserves_other_identifier_row_identity
+FAILED tests/test_sec_documents_iter2.py::test_nport_disclosure_acceptance_datetime_is_not_report_period
+FAILED tests/test_sec_institutions.py::test_default_and_none_cache_options_preserve_fetch_bytes_compatibility[default]
+FAILED tests/test_sec_institutions.py::test_default_and_none_cache_options_preserve_fetch_bytes_compatibility[none-defaults-to-true]
+FAILED tests/test_sec_institutions.py::test_default_and_none_cache_options_preserve_fetch_bytes_compatibility[true]
+FAILED tests/test_sec_iter2.py::test_cik_map_fixture_is_typed_and_malformed_directory_fails
+FAILED tests/test_sec_iter2.py::test_symbol_map_fixture_accepts_public_query_and_returns_symbol
+FAILED tests/test_sec_iter2.py::test_equity_search_fixture_pagination_and_bad_shape
+FAILED tests/test_sec_iter2.py::test_companyfacts_statement_models_have_independent_positive_negative_fixtures[balance-sheet-BalanceSheetFetcher-total_assets-100.0-SEC_XBRL_BAD_FACT]
+FAILED tests/test_sec_iter2.py::test_companyfacts_statement_models_have_independent_positive_negative_fixtures[balance-sheet-growth-BalanceSheetGrowthFetcher-growth_total_assets-0.25-SEC_XBRL_BAD_FACT]
+FAILED tests/test_sec_iter2.py::test_companyfacts_statement_models_have_independent_positive_negative_fixtures[cash-flow-statement-CashFlowStatementFetcher-net_cash_from_operating_activities-80.0-SEC_XBRL_BAD_FACT]
+FAILED tests/test_sec_iter2.py::test_companyfacts_statement_models_have_independent_positive_negative_fixtures[cash-flow-statement-growth-CashFlowStatementGrowthFetcher-growth_net_cash_from_operating_activities-0.33333333333333326-missing-prior]
+FAILED tests/test_sec_iter2.py::test_companyfacts_statement_models_have_independent_positive_negative_fixtures[income-statement-IncomeStatementFetcher-net_income-80.0-SEC_XBRL_BAD_FACT]
+FAILED tests/test_sec_iter2.py::test_companyfacts_statement_models_have_independent_positive_negative_fixtures[income-statement-growth-IncomeStatementGrowthFetcher-growth_net_income-0.33333333333333326-missing-prior]
+FAILED tests/test_sec_iter2.py::test_companyfacts_quarter_normalization_ttm_and_growth_require_contiguous_periods
+FAILED tests/test_sec_iter2.py::test_companyfacts_statement_rows_group_tags_and_do_not_mix_currency_units
+FAILED tests/test_sec_iter2.py::test_companyfacts_statement_vintages_distinguish_latest_pit_and_preliminary
+FAILED tests/test_sec_iter2.py::test_companyfacts_separates_filed_date_from_period_and_preflights_query
+FAILED tests/test_sec_iter2.py::test_compare_companyfacts_public_multi_symbol_default_fact_and_bad_date
+FAILED tests/test_sec_iter2.py::test_insider_trading_multi_stage_fixture_and_negative_index_xml
+FAILED tests/test_sec_iter2.py::test_provider_model_query_injects_sec_identity_and_serializes_typed_result
+FAILED tests/test_sec_iter2.py::test_ftd_and_insider_provider_queries_emit_public_numeric_json
+FAILED tests/test_congress_gov_engine_provider.py::TestCongressGovIsARealProvider::test_a_provider_with_no_bindings_stays_unimplemented
+FAILED tests/test_congress_gov_engine_provider.py::TestTheEightRowAccounting::test_provider_bindings_and_declarations_stay_in_step
+FAILED tests/test_congress_gov_engine_provider.py::TestNothingHereIsLiveVerified::test_the_package_constructs_no_declaration
+FAILED tests/test_congress_gov_engine_provider.py::TestNothingHereIsLiveVerified::test_models_ships_no_fetcher_module
+FAILED tests/test_congress_gov_engine_provider.py::TestNothingHereIsLiveVerified::test_registration_verifies_nothing
+FAILED tests/test_finviz_provider.py::test_provider_descriptor_binds_four_models_and_leaves_three_gaps_unbound
+FAILED tests/test_federal_reserve_domains.py::TestTheDomainsAreRegistered::test_the_retracted_yield_curve_domain_was_not_registered
+================ 128 failed, 16595 passed, 4 skipped in 22.19s =================

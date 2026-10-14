@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CompanyFilings --phase counterfact --evidence-root docs/evidence/C101/sec
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_SUBMISSIONS_BAD_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_SUBMISSIONS_BAD_ROW", "rejected": [], "status": null}, "reason": "accession_number is a declared contract column and the SEC documents it as nnnnnnnnnn-nn-nnnnnn, so a row whose accession is not an accession must be refused instead of losing the filing's identity; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

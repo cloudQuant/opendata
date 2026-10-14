@@ -108,8 +108,6 @@ from opendata.data.models.federal_reserve_clean_rates import (
 from opendata.data.models.federal_reserve_macro import (
     FederalReserveCentralBankHolding,
     FederalReserveInflationExpectations,
-    FederalReservePrimaryDealerFail,
-    FederalReservePrimaryDealerPosition,
     FederalReserveSofr,
     FederalReserveTotalFactorProductivity,
     FederalReserveYieldCurve,
@@ -653,8 +651,6 @@ __all__ = [
     "FederalReserveCentralBankHolding",
     "FederalReserveFomcDocument",
     "FederalReserveInflationExpectations",
-    "FederalReservePrimaryDealerFail",
-    "FederalReservePrimaryDealerPosition",
     "FederalReserveTotalFactorProductivity",
     "FederalReserveYieldCurve",
     "FredBalanceOfPayments",

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from pydantic import field_validator, model_validator
 
@@ -11,6 +11,9 @@ from opendata.data.capability import Capability
 from opendata.data.models.finra import EquityShortInterest
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.finra.models import _client
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 DATASET_URL = f"{_client.API_BASE}/data/group/otcmarket/name/consolidatedshortinterest"
 FIELDS = (
@@ -56,6 +59,8 @@ class EquityShortInterestFetcher(
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "EquityShortInterest"
+    row_model: ClassVar[type[EquityShortInterest]] = EquityShortInterest
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="finra_equity_short_interest",
@@ -77,7 +82,7 @@ class EquityShortInterestFetcher(
         self, params: EquityShortInterestQuery, ctx: FetchContext
     ) -> list[dict[str, Any]]:
         """Request the selected symbol using FINRA's documented compare filter."""
-        token = _client.access_token(ctx)
+        token = _client.access_token(ctx, transport=self.http_transport)
         return _client.post_rows(
             DATASET_URL,
             token=token,
@@ -86,6 +91,7 @@ class EquityShortInterestFetcher(
                 {"fieldName": "symbolCode", "fieldValue": params.symbol, "compareType": "EQUAL"}
             ],
             context=ctx,
+            transport=self.http_transport,
         )
 
     def transform_data(

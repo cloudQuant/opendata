@@ -283,6 +283,11 @@ def test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tab
             for source, model, domain in expected_model_domains
             if domain in expected_deferred
         }
+        expected_descriptor_model_domains = {
+            (model["source"], model["model"], model["domain"])
+            for model in expected_models
+            if model["canonical_ids_declared"]
+        }
         expected_legacy_model_domains = expected_model_domains - expected_registered_model_domains
         expected_legacy_model_legs = {
             (domain, source) for source, _model, domain in expected_legacy_model_domains
@@ -310,17 +315,24 @@ def test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tab
         assert expected_deferred_legs | expected_legacy_legs == expected_legs
         assert expected_deferred_legs.isdisjoint(expected_legacy_legs)
         assert declared_static_bindings == expected_static_bindings
-        assert actual_model_domains == expected_registered_model_domains
+        assert (
+            len(expected_descriptor_model_domains)
+            == snapshot["counts"]["descriptor_eligible_identity_count"]
+        )
+        assert actual_model_domains == expected_descriptor_model_domains
+        assert {
+            identity for identity in actual_model_domains if identity[2] in expected_deferred
+        } == expected_registered_model_domains
         assert expected_legacy_model_legs == expected_legacy_legs
-        assert len(expected_models) == 350
-        assert len(legs) == len(expected_domain_ids) == 337
+        assert len(expected_models) == 351
+        assert len(legs) == len(expected_domain_ids) == 338
         assert set(legs) == expected_domain_ids
         assert actual_legs == expected_legs
-        assert len(actual_legs) == 350
+        assert len(actual_legs) == 351
         assert set(snapshot["deferred_domain_ids"]) == expected_query_domains
         assert scope.domains == len(expected_legacy_domains) == 20
         assert scope.deferred_domains == expected_deferred
-        assert scope.deferred_legs == len(expected_deferred_legs) == 317
+        assert scope.deferred_legs == len(expected_deferred_legs) == 318
         assert scope.source_legs == len(expected_mapped_ods) == 10
         assert scope.unmapped_legs == len(snapshot["unmapped_ods_legs"]) == 23
         assert scope.domains + len(scope.deferred_domains) == len(expected_domain_ids)
@@ -343,7 +355,7 @@ def test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tab
         assert expected_measured_ods_tables.isdisjoint(expected_dwd_tables)
         scope_dict = scope.as_dict()
         assert scope_dict["deferred_domains"] == list(expected_deferred)
-        assert scope_dict["deferred_legs"] == 317
+        assert scope_dict["deferred_legs"] == 318
     finally:
         _dispose_empty_engine(engine, statements)
 

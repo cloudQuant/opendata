@@ -1,0 +1,54 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 739 items
+
+tests/test_fred_generic_models.py .FFF................FFF..........FF... [  5%]
+.........................                                                [  8%]
+tests/test_fred_iter2_auxiliary.py ................                      [ 10%]
+tests/test_fred_iter2_federal_funds.py ..........                        [ 12%]
+tests/test_fred_iter2_fixed_rates.py ..............                      [ 13%]
+tests/test_fred_iter2_treasury_rates.py .......F..                       [ 15%]
+tests/test_fred_macro_iter2.py ......................................... [ 20%]
+.......................................................................  [ 30%]
+tests/test_fred_provider.py .................                            [ 32%]
+tests/test_fred_iorb_fetcher.py ..................                       [ 35%]
+tests/test_fred_sloos.py ........................                        [ 38%]
+tests/test_fred_sofr_fetcher.py ........................................ [ 43%]
+........................................................................ [ 53%]
+...................................................................      [ 62%]
+tests/test_fred_sonia_fetcher.py ....................................... [ 67%]
+........................................................................ [ 77%]
+........................................................................ [ 87%]
+...........                                                              [ 88%]
+tests/test_ecb_series_fetchers.py ...................                    [ 91%]
+tests/test_federal_reserve_iter2_models.py ............................. [ 95%]
+........                                                                 [ 96%]
+tests/test_sec_documents_iter2.py ..........................             [100%]
+
+=================================== FAILURES ===================================
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_series_pages_preserve_revisions_and_keep_transform_separate_from_units.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_series_vintage_dates_map_to_comma_list_without_realtime_window.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_series_frequency_aggregation_and_descending_response_order_are_preserved.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_series_unknown_alternate_json_rows_fail_closed_without_disabling_type.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_series_unknown_alternate_json_rows_fail_closed_without_disabling_type.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_as_of_is_sent_as_a_single_day_vintage_and_dot_is_nullable.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_filter_fields_are_independently_optional_and_transmitted.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_search_filter_fields_are_independently_optional_and_transmitted.<locals>.fake_get() got an unexpected keyword argument 'transport'
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/fred/models/_paged.py:118: TypeError: test_selected_treasury_constant_maturity_maps_all_fixed_series.<locals>.one_observation() got an unexpected keyword argument 'transport'
+=========================== short test summary info ============================
+FAILED tests/test_fred_generic_models.py::test_series_pages_preserve_revisions_and_keep_transform_separate_from_units
+FAILED tests/test_fred_generic_models.py::test_series_vintage_dates_map_to_comma_list_without_realtime_window
+FAILED tests/test_fred_generic_models.py::test_series_frequency_aggregation_and_descending_response_order_are_preserved
+FAILED tests/test_fred_generic_models.py::test_series_unknown_alternate_json_rows_fail_closed_without_disabling_type[2]
+FAILED tests/test_fred_generic_models.py::test_series_unknown_alternate_json_rows_fail_closed_without_disabling_type[3]
+FAILED tests/test_fred_generic_models.py::test_as_of_is_sent_as_a_single_day_vintage_and_dot_is_nullable
+FAILED tests/test_fred_generic_models.py::test_search_filter_fields_are_independently_optional_and_transmitted[query0]
+FAILED tests/test_fred_generic_models.py::test_search_filter_fields_are_independently_optional_and_transmitted[query1]
+FAILED tests/test_fred_iter2_treasury_rates.py::test_selected_treasury_constant_maturity_maps_all_fixed_series
+======================== 9 failed, 730 passed in 1.54s =========================
+subset_exit=1 (echoed by the harness stdout, not by pytest)

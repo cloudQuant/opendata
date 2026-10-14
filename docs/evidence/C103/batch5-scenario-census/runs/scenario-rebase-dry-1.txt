@@ -1,0 +1,52 @@
+carrier: scenario-rebase-dry-1.txt
+round: C103
+captured_at_local=2026-10-15T02:49:25+0800
+source_log=/tmp/c103_scenario_dry.txt
+source_bytes=5374
+source_sha256_16=7fbca3bc838fe33a
+argv=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C103/batch5-scenario-census/probes/scenario_rebase.py
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+scenario_rebase_dry_exit=not_captured_at_run_time (verdict read from the body)
+----------------------------------------------------------------------
+face: iter2_census_rebase_keys=['attribution', 'batch5_adjudication_counts', 'counterfact', 'delta_vs_adjudication', 'frozen_and_unchanged', 'live_counts', 'measured_by', 're_pinned_sources', 'registry_census_rebase', 'scope']
+face: registry_census_rebase_keys=['approved_delta_conflict', 'before', 'binding_moves_by_source', 'counterfact', 'counts', 'derived_from', 'descriptor_partition', 'field_added_by_iter2_census_rebase', 'field_move_counts', 'field_shapes_moved', 'identities_added', 'identities_removed', 'identity_fields_moved', 'identity_renames', 'pin_chain', 'scenario_moves_by_source', 'scenario_present_total', 'semantic_field_moves', 'semantic_fields_untouched']
+face: recorded_pin_sha=7ce0ca613405e10dc3616e2cd1e6964b957331eb068a20ce49d997927b49c9f8
+face: candidate_revisions=1
+face: recovered_pin_rev=360c61dd0e85ca82c90720400d4f3d6b4deb1f68
+face: pin_rows=350 pin_scenario_present=309
+face: fixture_rows=351 fixture_scenario_present=342
+face: live_bindings=351 unresolvable=22
+face: unresolvable_examples=['ecb/cpi:LookupError', 'ecb/gdp:LookupError', 'ecb/rate:LookupError', 'fred/cpi:LookupError', 'fred/gdp:LookupError']
+face: domain_spec_missing=0 []
+face: live_rows=351 live_scenario_present_total=351
+face: identities_added=1 identities_removed=0 net=1
+face: added_examples=[('finviz', 'EquityScreener')]
+face: scenario_moves_on_existing=41 by_source={'cftc': 2, 'eia': 2, 'federal_reserve': 13, 'finviz': 2, 'fred': 2, 'imf': 8, 'intrinio': 2, 'oecd': 9, 'sec': 1}
+face: carried_by_added_identity=1
+face: binding_moves=13 by_source={'federal_reserve': 13}
+face: semantic_moves=contract=3 verified=0 (contract judged on 328, verified on 328 of 350 common identities)
+face: domain_moves=3 [('federal_reserve', 'CentralBankHoldings'), ('federal_reserve', 'InflationExpectations'), ('federal_reserve', 'TotalFactorProductivity')]
+face: arithmetic_balanced=True
+face: documented_totals_before={'batch5_pin': 309, 'live': 342, 'moved_on_existing_identity': 29, 'carried_by_added_identity': 4}
+face: documented_field_moves_before={'binding': 10, 'scenario_present': 29, 'contract': 0, 'verified': 0}
+face: documented_moves_by_source_before={'cftc': 2, 'eia': 2, 'federal_reserve': 10, 'finviz': 2, 'fred': 2, 'imf': 8, 'intrinio': 2, 'sec': 1}
+face: documented_binding_moves_before={'federal_reserve': 10}
+face: documented_identity_add_remove_before=[['federal_reserve', 'CentralBankHoldings', 'federal_reserve_central_bank_holdings'], ['federal_reserve', 'InflationExpectations', 'federal_reserve_inflation_expectations'], ['federal_reserve', 'TotalFactorProductivity', 'federal_reserve_total_factor_productivity'], ['finviz', 'EquityScreener', 'finviz_equity_screener']]/[['federal_reserve', 'CentralBankHoldings', 'central_bank_holdings'], ['federal_reserve', 'InflationExpectations', 'inflation_expectations'], ['federal_reserve', 'TotalFactorProductivity', 'total_factor_productivity']]
+face: documented_semantic_field_moves_before={'contract': 0, 'verified': 0, 'rule': 'both must stay 0; a nonzero value means iteration 2 changed a reviewed output contract'}
+face: documented_derived_from=opendata.data.providers.catalog.list_providers() bindings + load_domains() semantics_declared + alert_matrix.registered_legs()
+face: documented_re_pinned_sources={'opendata/data/domains.yaml': {'test_constant_batch5_domain_source_sha256': '59e3888662d4ccc575db2421d38f76e34592ca9362245db6d14ab35f2ec8aee5', 'live': '044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca', 'why': "the fixture's own pin already carried the iteration-2 digest; only the duplicated test-side constant had drifted, so the constant is re-based to the pin rather than the registry being re-derived"}, 'opendata/data/models/__init__.py': {'pinned': '9dac556073190eff37c045b0c3a1880709840453ee12919534032f3428bb2509', 'live': '9cd3fb1387fc6676716bc0a9cc2309180bc41015c10821f89457f1195e437cca', 'why': 'the two look-alike exports above were removed from the import block and __all__'}, 'opendata/data/providers/fred/provider.py': {'pinned': '1407bfb6a930e8366346273e54bed652c71ce541e9f3fcee7ac52e4febe6a4fb', 'live': 'fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea', 'why': 'iteration-2 backfill added a 消费用途 scenario string to the RetailPrices and SeniorLoanOfficerSurvey fetcher bindings; no identity, domain or contract field moved'}}
+face: frozen_and_unchanged=['batch5_count_adjudication (still hashes to 2a929fd8614af09e28aa2ae16fa781c7da49d7692dcd6a3b6c78f2118c0906de on disk)', 'batch4_baseline', 'approved_delta', 'counts', 'domain_ids and every membership list', 'provider_model_identities', 'candidate_sha256']
+face: fixture_row_flips_needed=9
+face: flip oecd/CompositeLeadingIndicator False -> True
+face: flip oecd/ConsumerPriceIndex False -> True
+face: flip oecd/CountryInterestRates False -> True
+face: flip oecd/GdpForecast False -> True
+face: flip oecd/GdpNominal False -> True
+face: flip oecd/GdpReal False -> True
+face: flip oecd/HousePriceIndex False -> True
+face: flip oecd/SharePriceIndex False -> True
+face: flip oecd/Unemployment False -> True
+verdict: REFUSED - a contract/verified move is semantic, the block pins those at zero
+face: semantic_move ('federal_reserve', 'CentralBankHoldings')
+face: semantic_move ('federal_reserve', 'InflationExpectations')
+face: semantic_move ('federal_reserve', 'TotalFactorProductivity')

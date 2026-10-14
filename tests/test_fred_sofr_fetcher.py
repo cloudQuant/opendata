@@ -107,7 +107,7 @@ def wire_fake_client(
     """Install deterministic Fetcher-stage stubs, never actual HTTP logic."""
     calls: dict[str, list[object]] = {"fetch": [], "attempts": [], "validate": []}
 
-    def fake_fetch(query: FredSofrQuery, *, timeout: float | None = None) -> object:
+    def fake_fetch(query: FredSofrQuery, *, timeout: float | None = None, **_kwargs) -> object:
         calls["fetch"].append((query, timeout))
         reserve_scoped_attempt(current_request_scopes(), "fred", "api.stlouisfed.org")
         calls["attempts"].append((query, timeout))

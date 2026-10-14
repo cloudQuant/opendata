@@ -1,0 +1,16 @@
+carrier: arms-first-5-of-6.txt
+copied_at_local=2026-10-15T01:59:21+08:00
+source_log=/tmp/ths_arms1.txt
+derivation=first arm pass: attempt-bound failed because my arm omitted the required asset_type field
+arms-first-5-of-6_exit=not_captured_at_run_time (verdict read from the body)
+----------------------------------------------------------------------
+arm=control verdict=PASS observed=rows=1
+arm=wrong-model verdict=PASS observed=no exact request grant is configured requests_sent=0
+arm=no-ctx verdict=PASS observed=no exact request grant is configured requests_sent=0
+arm=injected-client verdict=PASS observed=scoped request transport is not verified requests_sent=0
+arm=live-smoke-quota verdict=PASS observed=task_attempts must be an integer from 0 through 10
+arm=attempt-bound verdict=FAIL observed=ValidationError: 1 validation error for ThsInstrumentQuery
+asset_type
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+face: arms=6 passed=5 failed=1 attempts=24 host=fuyao.test

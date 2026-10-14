@@ -1,0 +1,46 @@
+carrier: repair-dry-borrowed-identity.txt
+copied_at_local=2026-10-15T01:59:21+08:00
+source_log=/tmp/ths_dry2.txt
+derivation=second run: models_used=9 because the parametrized receiver borrowed a sibling's model
+repair-dry-borrowed-identity_exit=not_captured_at_run_time (verdict read from the body)
+----------------------------------------------------------------------
+face: failing_nodes=37 fetcher_classes=11 insertions=37 unique_insertions=37 unresolved=0 uncovered_nodes=0
+models_used=9:financial_statement,fund_action,fund_etf_daily,index_constituent,index_daily,instrument,stock_action,stock_daily,trading_calendar
+  site line=693 model=stock_daily
+  site line=755 model=stock_daily
+  site line=801 model=stock_action
+  site line=820 model=index_daily
+  site line=866 model=index_constituent
+  site line=897 model=index_constituent
+  site line=944 model=stock_daily
+  site line=1029 model=financial_statement
+  site line=1059 model=financial_statement
+  site line=1079 model=financial_statement
+  site line=1143 model=trading_calendar
+  site line=1161 model=trading_calendar
+  site line=1182 model=trading_calendar
+  site line=1191 model=trading_calendar
+  site line=1197 model=trading_calendar
+  site line=1204 model=trading_calendar
+  site line=1210 model=trading_calendar
+  site line=1217 model=trading_calendar
+  site line=1249 model=instrument
+  site line=1265 model=instrument
+  site line=1289 model=instrument
+  site line=1309 model=instrument
+  site line=1334 model=instrument
+  site line=1343 model=instrument
+  site line=1367 model=instrument
+  site line=1401 model=fund_action
+  site line=1421 model=fund_action
+  site line=1434 model=fund_action
+  site line=1454 model=fund_action
+  site line=1470 model=fund_action
+  site line=1487 model=fund_action
+  site line=1532 model=fund_etf_daily
+  site line=1553 model=fund_etf_daily
+  site line=1581 model=fund_etf_daily
+  site line=1603 model=fund_etf_daily
+  site line=1623 model=fund_etf_daily
+  site line=1651 model=fund_etf_daily
+verdict: dry run, nothing written

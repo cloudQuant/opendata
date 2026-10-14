@@ -15,6 +15,7 @@ from opendata.data.capability import Capability
 from opendata.data.http_client import HttpFetchError, get_shared_http_client
 from opendata.data.models.multpl import SP500Frequency, SP500Metric, SP500Multiples
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
+from opendata.data.providers._engine.http_json import HttpGet, HttpResponse, ProviderEngineError
 from opendata.data.providers.multpl.specs import METRIC_PAGES, MULTPL_BASE_URL, MetricPage
 from opendata.data.request_budget import RequestBudgetError
 
@@ -38,15 +39,17 @@ _DATE_PATTERN = re.compile(r"^([A-Za-z]{3,4})\s+(\d{1,2}),\s+(\d{4})$")
 _NUMBER_PATTERN = re.compile(r"^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$")
 
 
-class MultplProviderError(RuntimeError):
-    """A stable, sanitized Multpl response or transport failure."""
+class MultplProviderError(ProviderEngineError):
+    """A stable, sanitized Multpl response or transport failure.
+
+    It is the engine's attributable refusal for this source, so a shape failure carries the
+    typed ``code``/``status``/``url``/``rejected``/``missing``/``invalid`` face the governed
+    callers expect in addition to Multpl's own stable code vocabulary.
+    """
 
     def __init__(self, code: str, *, status: int | None = None) -> None:
         """Keep the public error to a code and optional HTTP status."""
-        self.code = code
-        self.status = status
-        detail = "" if status is None else f" status={status}"
-        super().__init__(code + detail)
+        super().__init__(code, status=status)
 
 
 class SP500MultiplesQuery(QueryParams):
@@ -262,11 +265,42 @@ def _selected_metrics(metric: SP500Metric | None) -> tuple[SP500Metric, ...]:
     return tuple(METRIC_PAGES)
 
 
+def _response_body(response: HttpResponse) -> str:
+    """Return the page body exactly as the transport delivered it.
+
+    A governed HTTP client hands over ``payload``; the repository's offline witness seam has no
+    raw-text carrier, so it supplies the same page losslessly as the list of its source lines.
+    Anything else is a transport the parser was never given a page by.
+    """
+    if isinstance(response.payload, str):
+        return response.payload
+    if isinstance(response.payload, bytes):
+        return response.payload.decode("utf-8")
+    if isinstance(response.document, str):
+        return response.document
+    if isinstance(response.document, list) and all(
+        isinstance(line, str) for line in response.document
+    ):
+        return "\n".join(response.document)
+    raise MultplProviderError("MULTPL_BAD_HTML")
+
+
+def _http_status_code(status: int) -> str:
+    """Name the documented failure for one non-2xx page status."""
+    if status == 429:
+        return "MULTPL_RATE_LIMITED"
+    if status == 403:
+        return "MULTPL_BLOCKED"
+    return "MULTPL_HTTP_ERROR"
+
+
 class SP500MultiplesFetcher(Fetcher[SP500MultiplesQuery, tuple[SourceObservation, ...]]):
     """Fetch Multpl valuation tables and return typed contract rows."""
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "SP500Multiples"
+    row_model: ClassVar[type[SP500Multiples]] = SP500Multiples
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="index",
         domain="sp500_multiples",
@@ -276,6 +310,24 @@ class SP500MultiplesFetcher(Fetcher[SP500MultiplesQuery, tuple[SourceObservation
         verified=False,
         notes="Public HTML tables are parsed; cross-source verification is pending.",
     )
+
+    def _get_html(self, url: str, timeout: float | None) -> str:
+        """Read one public page, through the offline seam when a witness installed one."""
+        transport = self.http_transport
+        if transport is None:
+            status, html = _http_get_html(url, timeout)
+        else:
+            response = transport(
+                url,
+                {},
+                timeout=_DEFAULT_TIMEOUT_SECONDS if timeout is None else float(timeout),
+                source="multpl",
+                headers={"Accept": "text/html"},
+            )
+            status, html = response.status, _response_body(response)
+        if not 200 <= status < 300:
+            raise MultplProviderError(_http_status_code(status), status=status)
+        return html
 
     def transform_query(self, **kwargs: object) -> SP500MultiplesQuery:
         """Validate source, metric, and inclusive date bounds before any request."""
@@ -291,15 +343,7 @@ class SP500MultiplesFetcher(Fetcher[SP500MultiplesQuery, tuple[SourceObservation
         for metric in _selected_metrics(params.metric):
             page = METRIC_PAGES[metric]
             url = f"{MULTPL_BASE_URL}{page.path}"
-            status, html = _http_get_html(url, ctx.timeout)
-            if not 200 <= status < 300:
-                if status == 429:
-                    code = "MULTPL_RATE_LIMITED"
-                elif status == 403:
-                    code = "MULTPL_BLOCKED"
-                else:
-                    code = "MULTPL_HTTP_ERROR"
-                raise MultplProviderError(code, status=status)
+            html = self._get_html(url, ctx.timeout)
             observations.extend(parse_table(html, metric, page))
         return tuple(observations)
 

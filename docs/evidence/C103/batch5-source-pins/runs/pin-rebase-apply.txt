@@ -1,0 +1,37 @@
+carrier: pin-rebase-apply.txt
+round: C103
+captured_at_local=2026-10-15T02:49:25+0800
+source_log=/tmp/c103_rebase_apply.txt
+source_bytes=2017
+source_sha256_16=5fc6dcf676807719
+argv=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py --apply
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+pin_rebase_apply_exit=not_captured_at_run_time (verdict read from the body)
+----------------------------------------------------------------------
+face: repo_root=/Users/yunjinqi/Documents/new_projects/opendata
+face: argv=['--apply']
+face: pin_entries=31
+face: snapshot_payload_sha_before=3755f13aaba43989373aa44c6ca3f43fa9aabd2e0b2681b100628cac0d9a7bc3
+face: candidate_sha256_before=775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e
+face: matched=29 stale=2 missing=0
+face: stale[opendata/data/providers/yfinance/models/iter2.py] before=c7341d4a1169381cc48846182a1c51b485587bfd031eb4ece22eab2316d68f88
+face: stale[opendata/data/providers/yfinance/models/iter2.py] live =88fd4471823a7db319d7d08b25fc5f65a92999cc275e9844583633bbd395f7af
+face: stale[opendata/data/providers/yfinance/models/iter2.py] vs_HEAD_numstat=2	2	opendata/data/providers/yfinance/models/iter2.py
+face: stale[opendata/data/providers/yfinance/models/market_iter2.py] before=2feebf5a386af8a98a66de9716033f6375a2089264134c239bae43e8a6d1246a
+face: stale[opendata/data/providers/yfinance/models/market_iter2.py] live =3678f6c8a851822730660ac80d360785723ce426bddead0ad9c059db9e3060ea
+face: stale[opendata/data/providers/yfinance/models/market_iter2.py] vs_HEAD_numstat=2	2	opendata/data/providers/yfinance/models/market_iter2.py
+face: snapshot_payload_sha_after=a8715f16248ab2ce4d3e9e27200fc17b07fa2d888a2f45fc56d2e6f8e8e041a6
+face: candidate_sha256_after=775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e
+face: candidate_unchanged=True
+face: snapshot_id_unchanged=True
+face: snapshot_status_unchanged=True
+face: counts_unchanged=True
+face: identities_unchanged=True
+face: pin_keys_unchanged=True
+face: bytes_delta=0
+face: literal[tests/test_provider_domains.py] occurrences_of_old_payload_sha=1
+face: literal[tests/test_pipeline_jobs.py] occurrences_of_old_payload_sha=1
+face: applied snapshot=True
+face: applied[tests/test_provider_domains.py] new_literal_present=True stale_literal=False
+face: applied[tests/test_pipeline_jobs.py] new_literal_present=True stale_literal=False
+verdict: APPLIED - 2 source pins re-based from live bytes and 2 payload literals re-pinned

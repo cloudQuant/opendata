@@ -16,14 +16,17 @@ import json
 from typing import TYPE_CHECKING, Any
 
 from opendata.data.http_client import HttpFetchError, get_shared_http_client
+from opendata.data.providers._engine.http_json import ProviderEngineError
 
 if TYPE_CHECKING:
     from datetime import date
 
+    from opendata.data.providers._engine.http_json import HttpGet
+
 FRED_DEFAULT_BASE_URL = "https://api.stlouisfed.org"
 
 
-class FredProviderError(RuntimeError):
+class FredProviderError(ProviderEngineError):
     """Stable failures of the fred provider adapter.
 
     The message carries the request that produced the failure, matching
@@ -31,6 +34,10 @@ class FredProviderError(RuntimeError):
     :mod:`opendata.data.http_client`. Health patrol logs one line per
     failure, so a code alone ("FRED_HTTP_ERROR") cannot be attributed to
     an upstream without replaying the call by hand.
+
+    It reuses the engine's typed refusal shape (code, status, url, and the
+    column-attribution triples) so one attributable failure vocabulary is
+    shared by every governed provider adapter.
     """
 
     def __init__(
@@ -49,12 +56,7 @@ class FredProviderError(RuntimeError):
             url: Requested URL. Only ever the query-free form: the API
                 key travels as a parameter and must not reach a log line.
         """
-        self.code = code
-        self.status = status
-        self.url = url
-        detail = "" if status is None else f" status={status}"
-        detail += "" if url is None else f" url={url}"
-        super().__init__(code + detail)
+        super().__init__(code, status=status, url=url)
 
 
 def require_api_key() -> str:
@@ -79,8 +81,36 @@ def require_api_key() -> str:
     raise FredProviderError("FRED_API_KEY_MISSING")
 
 
-def _http_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
-    """Governed GET returning ``(status, text)``; monkeypatched in tests."""
+def _response_text(response: Any) -> str:  # noqa: ANN401 - the seam answers with an HttpResponse
+    """Project a witness-seam response onto the ``(status, text)`` pair callers normalize."""
+    payload = getattr(response, "payload", None)
+    if isinstance(payload, bytes):
+        return payload.decode("utf-8")
+    if isinstance(payload, str):
+        return payload
+    return json.dumps(response.document, ensure_ascii=False)
+
+
+def _http_get(
+    url: str,
+    params: dict[str, str],
+    timeout: float | None,
+    transport: HttpGet | None = None,
+) -> tuple[int, str]:
+    """Governed GET returning ``(status, text)``; monkeypatched in tests.
+
+    ``transport`` is the repository's offline witness seam: when an authorized
+    probe supplies one, the request is answered by that fixed transport and
+    never reaches the network. Without it the governed shared client serves.
+    """
+    if transport is not None:
+        response = transport(
+            url,
+            params,
+            timeout=timeout if timeout is not None else 30.0,
+            source="fred",
+        )
+        return response.status, _response_text(response)
     try:
         response = get_shared_http_client().get(
             url,

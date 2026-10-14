@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from opendata.data.capability import Capability
 from opendata.data.models.fred_iorb import FredIorbObservation
@@ -14,6 +14,10 @@ from opendata.data.providers.fred.models._iorb_client import (
 )
 from opendata.data.providers.fred.models._iorb_query import FredIorbQuery
 from opendata.data.request_budget import RequestBudgetError
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
+    from opendata.data.providers._engine.http_json import HttpGet
 
 
 class FredIorbFetcher(Fetcher[FredIorbQuery, tuple[dict[str, Any], ...]]):
@@ -30,6 +34,9 @@ class FredIorbFetcher(Fetcher[FredIorbQuery, tuple[dict[str, Any], ...]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "IORB"
+    row_model: ClassVar[type[ContractModel]] = FredIorbObservation
+    #: Offline witness seam; ``None`` keeps the governed production HTTP client path.
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="iorb",
@@ -51,7 +58,7 @@ class FredIorbFetcher(Fetcher[FredIorbQuery, tuple[dict[str, Any], ...]]):
         """Fetch every page only after exact query revalidation."""
         query = _checked_query(params)
         try:
-            pages = fetch_iorb_pages(query, timeout=ctx.timeout)
+            pages = fetch_iorb_pages(query, timeout=ctx.timeout, transport=self.http_transport)
         except (FredProviderError, RequestBudgetError):
             raise
         except Exception:

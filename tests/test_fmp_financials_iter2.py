@@ -145,14 +145,15 @@ def test_each_fixed_identity_has_a_typed_offline_response_fixture(
 ) -> None:
     """Each independent FMP sample maps through its exact route to its own model."""
     raw = _fixture(name)
-    calls: list[tuple[str, dict[str, str], float | None]] = []
+    calls: list[tuple[str, dict[str, str], float | None, Any]] = []
 
     def fake_fetch_array(
         called_endpoint: str,
         params: dict[str, str],
         timeout: float | None,
+        transport: Any = None,
     ) -> list[dict[str, Any]]:
-        calls.append((called_endpoint, params, timeout))
+        calls.append((called_endpoint, params, timeout, transport))
         return deepcopy(raw)
 
     monkeypatch.setattr(financials, "fetch_array", fake_fetch_array)
@@ -168,6 +169,8 @@ def test_each_fixed_identity_has_a_typed_offline_response_fixture(
             if endpoint not in ("revenue-product-segmentation", "revenue-geographic-segmentation")
             else {"symbol": "AAPL", "period": "annual", "structure": "flat"},
             1.0,
+            # The witness seam stays unset: this leg must use the governed shared client.
+            None,
         )
     ]
     row = rows[0]

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model SearchAttributes --phase counterfact --evidence-root docs/evidence/C101/intrinio
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioShapeError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioShapeError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "sequence is the tag's integer position in its statement (_optional_integer refuses a bool outright), so a flag in that cell is INTRINIO_SHAPE_INVALID rather than a tag catalogped at line 1; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

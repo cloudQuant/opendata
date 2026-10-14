@@ -1,0 +1,18 @@
+carrier: payload-literal-idempotence-arm.txt
+round: C103
+captured_at_local=2026-10-15T02:49:25+0800
+source_log=/tmp/c103_repin_dry2.txt
+source_bytes=599
+source_sha256_16=777a91f3c9b4eec6
+argv=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py   (dry, after the apply: the re-pinned digest is now recorded by the fixture itself, so 0 candidates remain)
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+payload_literal_repin_dry_exit=1 (re-captured this turn)
+----------------------------------------------------------------------
+argv=python docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py (dry)
+face: snapshot_bytes=238509
+face: digest_recomputed_from_disk=786fb181884ea564c80c1883601d6aaaa3f1d56ba6758ce45727a68efbaa8d88
+face: digest_at_git_head=7ce0ca613405e10dc3616e2cd1e6964b957331eb068a20ce49d997927b49c9f8
+face: fixture_dirty_vs_head=True
+face: tests/test_provider_domains.py hex_literals_not_recorded_by_the_fixture=0 distinct=[]
+verdict: REFUSED - tests/test_provider_domains.py has 0 candidate payload literals; refusing to guess which one hashes the snapshot
+payload_literal_repin_dry_exit=1

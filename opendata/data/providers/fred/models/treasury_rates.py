@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import re
 from datetime import date as date_type
-from typing import Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from pydantic import Field, ValidationError, field_validator, model_validator
 
@@ -18,6 +18,10 @@ from opendata.data.models.fred_iter2 import (
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.fred.models._client import FredProviderError
 from opendata.data.providers.fred.models.series import FredSeriesFetcher, FredSeriesQuery
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
+    from opendata.data.providers._engine.http_json import HttpGet
 
 _DATE_TOKEN = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}\Z")
 
@@ -139,7 +143,10 @@ class _FixedFredRateFetcher(Fetcher[_FixedRateQuery, list[dict[str, Any]]]):
             | FredSelectedTreasuryConstantMaturity
         ]
     ]
+    row_model: ClassVar[type[ContractModel]]
     series_by_maturity: ClassVar[dict[str, str]]
+    #: Offline witness seam; ``None`` keeps the governed production HTTP client path.
+    http_transport: ClassVar[HttpGet | None] = None
 
     def transform_query(self, **kwargs: object) -> _FixedRateQuery:
         """Validate all query parameters before any source request."""
@@ -167,7 +174,9 @@ class _FixedFredRateFetcher(Fetcher[_FixedRateQuery, list[dict[str, Any]]]):
             )
         except (KeyError, TypeError, ValueError, ValidationError) as exc:
             raise FredProviderError("FRED_BAD_QUERY") from exc
-        return FredSeriesFetcher().extract_data(observations_query, ctx)
+        inner = FredSeriesFetcher()
+        inner.http_transport = self.http_transport
+        return inner.extract_data(observations_query, ctx)
 
     def transform_data(
         self,
@@ -247,6 +256,7 @@ class TreasuryConstantMaturityFetcher(_FixedFredRateFetcher):
     )
     query_model = TreasuryConstantMaturityQuery
     output_model = FredTreasuryConstantMaturity
+    row_model: ClassVar[type[ContractModel]] = FredTreasuryConstantMaturity
     series_by_maturity = {"3m": "DGS3MO", "2y": "DGS2"}
 
 
@@ -264,6 +274,7 @@ class SelectedTreasuryBillFetcher(_FixedFredRateFetcher):
     )
     query_model = SelectedTreasuryBillQuery
     output_model = FredSelectedTreasuryBill
+    row_model: ClassVar[type[ContractModel]] = FredSelectedTreasuryBill
     series_by_maturity = {"3m": "DTB3", "6m": "DTB6"}
 
 
@@ -281,6 +292,7 @@ class SelectedTreasuryConstantMaturityFetcher(_FixedFredRateFetcher):
     )
     query_model = SelectedTreasuryConstantMaturityQuery
     output_model = FredSelectedTreasuryConstantMaturity
+    row_model: ClassVar[type[ContractModel]] = FredSelectedTreasuryConstantMaturity
     series_by_maturity = {
         "10y": "DGS10",
         "5y": "DGS5",

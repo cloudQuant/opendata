@@ -31,6 +31,9 @@ if TYPE_CHECKING:
 
     from pydantic_core import InitErrorDetails
 
+    from opendata.data.models.base import ContractModel
+    from opendata.data.providers._engine.http_json import HttpGet
+
 SEC_13F_DATASETS_PAGE_URL = "https://www.sec.gov/data-research/sec-markets-data/form-13f-data-sets"
 SEC_13F_ARCHIVE_PATH = "/files/datastandardsinnovation/data/form-13f-data-sets/"
 MAX_DATASETS_PAGE_BYTES = 2 * 1024 * 1024
@@ -454,6 +457,8 @@ class InstitutionsSearchFetcher(Fetcher[InstitutionsSearchQuery, _ParsedBatch]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "InstitutionsSearch"
+    row_model: ClassVar[type[ContractModel]] = SecInstitutionSearchResult
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="sec_institutions_search",
@@ -479,6 +484,7 @@ class InstitutionsSearchFetcher(Fetcher[InstitutionsSearchQuery, _ParsedBatch]):
             ctx,
             SEC_13F_DATASETS_PAGE_URL,
             max_bytes=MAX_DATASETS_PAGE_BYTES,
+            transport=self.http_transport,
             **cache_options,
         )
         batch = _discover_latest_batch(page)
@@ -486,6 +492,7 @@ class InstitutionsSearchFetcher(Fetcher[InstitutionsSearchQuery, _ParsedBatch]):
             ctx,
             batch.url,
             max_bytes=MAX_DATASET_ARCHIVE_BYTES,
+            transport=self.http_transport,
             **cache_options,
         )
         return _parse_dataset_archive(archive, batch)

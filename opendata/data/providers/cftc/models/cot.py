@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
-from typing import Any, ClassVar, Literal, get_args
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, get_args
 
 from pydantic import Field, field_validator, model_validator
 
@@ -13,6 +13,9 @@ from opendata.data.capability import Capability
 from opendata.data.models.cftc import COT
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.cftc.models import _client
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 REPORT_DATASETS: dict[tuple[str, bool], str] = {
     ("legacy", False): "jun7-fc8e",
@@ -406,6 +409,8 @@ class COTFetcher(Fetcher[COTQuery, list[dict[str, Any]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "COT"
+    row_model: ClassVar[type[COT]] = COT
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="derivatives",
         domain="cftc_commitment_of_traders",
@@ -450,6 +455,7 @@ class COTFetcher(Fetcher[COTQuery, list[dict[str, Any]]]):
                         "$offset": "0",
                     },
                     context=ctx,
+                    transport=self.http_transport,
                 )
             )
             if not latest:
@@ -472,7 +478,9 @@ class COTFetcher(Fetcher[COTQuery, list[dict[str, Any]]]):
             }
             if where:
                 query["$where"] = where
-            page = _client.array_rows(_client.get_json(url, params=query, context=ctx))
+            page = _client.array_rows(
+                _client.get_json(url, params=query, context=ctx, transport=self.http_transport)
+            )
             if len(page) > page_length:
                 raise _client.CFTCProviderError("CFTC_BAD_PAGE")
             rows.extend(page)

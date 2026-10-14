@@ -153,7 +153,7 @@ def wire_fake_client(
     """Patch the two client seams without changing imported module identity."""
     calls: dict[str, list[object]] = {"fetch": [], "validate": [], "attempts": []}
 
-    def fake_fetch(query: FredSoniaQuery, *, timeout: float | None = None) -> object:
+    def fake_fetch(query: FredSoniaQuery, *, timeout: float | None = None, **_kwargs) -> object:
         calls["fetch"].append((query, timeout))
         if current_request_scopes():
             reserve_scoped_attempt(

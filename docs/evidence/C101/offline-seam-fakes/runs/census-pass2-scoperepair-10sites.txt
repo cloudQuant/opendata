@@ -1,0 +1,18 @@
+population: seams=47 seam_names=41 seams_forwarded=34
+population: setattr_sites=1373 seam_named_sites=166
+face: stale_sites=10 in_files=4 unknown_target=0 unknown_fake=0
+stale: tests/test_federal_reserve_iter2_models.py:682 seam=opendata/data/providers/federal_reserve/_iter2_client.py::get_json fake=get_json declared=['url', '_timeout']
+stale: tests/test_federal_reserve_iter2_models.py:737 seam=opendata/data/providers/federal_reserve/_iter2_client.py::get_json fake=get_json declared=['url', '_timeout']
+stale: tests/test_fred_generic_models.py:164 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:214 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:253 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:315 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:342 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_generic_models.py:418 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=fake_get declared=['url', 'params', 'timeout']
+stale: tests/test_fred_iter2_treasury_rates.py:325 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=one_observation declared=['url', 'params', 'timeout']
+stale: tests/test_fred_macro_iter2.py:180 seam=opendata/data/providers/fred/models/_client.py::_http_get fake=http_get declared=['url', 'params', 'timeout']
+by_file: tests/test_fred_generic_models.py stale=6
+by_file: tests/test_federal_reserve_iter2_models.py stale=2
+by_file: tests/test_fred_iter2_treasury_rates.py stale=1
+by_file: tests/test_fred_macro_iter2.py stale=1
+observed_exit=0

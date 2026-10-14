@@ -24,7 +24,8 @@ Four facets, each with a pre-named reading:
   at :79-80) and ``endDate`` as the request date (the ``datetime.now()`` fill at :78, 81-82);
 * the sentinel ABSENCE — a published ``""`` percent cell is REFUSED (the kernel reads staged
   columns as exact decimal text and upstream's ``v / 100`` at :60 would raise too), and the
-  counterfact shows a wrongly declared SOFR-style sentinel would swallow it into ``None``.
+  counterfact shows a wrongly declared SOFR-style sentinel nulls the cell before the stage and
+  the pinned contract's required ``rate: float`` then refuses that null (C100 digest 452b4367).
 """
 
 from __future__ import annotations
@@ -36,6 +37,7 @@ import pytest
 
 from opendata.data.providers._engine.http_json import (
     HttpResponse,
+    ProviderEngineError,
     build_query_model,
     encode_query,
     make_http_json_fetcher,
@@ -219,8 +221,13 @@ class TestSentinelAbsenceFacet:
         with pytest.raises((ValueTransformError, ValueError)):
             rows_of(fetcher, OVERNIGHT_BANK_FUNDING_RATE)
 
-    def test_break_by_declaring_the_sofr_sentinel_and_the_refusal_turns_into_a_null(self) -> None:
-        """Counterfact: a wrongly copied sentinel reads the refused cell as None."""
+    def test_break_by_declaring_the_sofr_sentinel_and_the_pinned_contract_refuses_the_null(
+        self,
+    ) -> None:
+        """Counterfact: the wrongly copied sentinel rewrites "" to None before the stage, and
+        the pinned required rate: float field (models/federal_reserve_clean_rates.py, C100
+        digest 452b43673cf4) refuses exactly that null -- a refusal of a different kind than
+        the clean arm's stage error, which is what this arm measures."""
         columns = tuple(
             replace(c, null_sentinel=SOFR_NULL_SENTINEL) if c.name == "rate" else c
             for c in OVERNIGHT_BANK_FUNDING_RATE.columns
@@ -228,5 +235,6 @@ class TestSentinelAbsenceFacet:
         maimed = replace(OVERNIGHT_BANK_FUNDING_RATE, columns=columns)
         rows = ({**OBFR_ROW_NEW, "effectiveDate": "2024-06-26", "percentRate": ""},)
         fetcher, _ = served(maimed, rows)
-        emitted = rows_of(fetcher, maimed)
-        assert emitted[0].rate is None
+        with pytest.raises(ProviderEngineError) as raised:
+            rows_of(fetcher, maimed)
+        assert list(raised.value.rejected) == ["rate"]

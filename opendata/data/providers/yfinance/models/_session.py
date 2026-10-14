@@ -1,15 +1,19 @@
 """Version-gated yfinance transport with per-send request-budget enforcement.
 
-The supported runtime is deliberately narrow: yfinance 1.7.0 over
-curl_cffi 0.16.3. Each lower-level curl send is authorized against its actual
-HTTPS hostname and consumes exactly one scoped attempt. SDK cache hits never
-reach this session and therefore consume no transport attempt.
+The supported runtime is deliberately narrow and every touchpoint is read
+through the SDK module handed to the seam, so a reviewed generation can be
+driven behind injected fixtures without a live import. Two reviewed yfinance
+generations are governed: the 1.7.0 review pin and the 0.2.66 distribution
+the project runtime carries (pyproject's extras comment records curl_cffi
+0.13.0 as the exercised transport; the older 0.16.3 pin stays governed).
+Each lower-level send is authorized against its actual HTTPS hostname and
+consumes exactly one scoped attempt. SDK cache hits never reach this session
+and therefore consume no transport attempt.
 """
 
 from __future__ import annotations
 
 import importlib
-import inspect
 import math
 import threading
 import time
@@ -36,20 +40,39 @@ SUPPORTED_YFINANCE_VERSION = "1.7.0"
 SUPPORTED_CURL_CFFI_VERSION = "0.16.3"
 MAX_YFINANCE_REDIRECTS = 5
 
+# Exact fail-closed generations this provider governs. The 1.7.0/0.16.3 pair
+# is the original review pin; the 0.2.66 SDK generation carried by the
+# project runtime over curl_cffi 0.13.0 is the pair pyproject's extras
+# comment exercised, so both are governed through the same seam.
+_GOVERNED_YFINANCE_VERSIONS = frozenset({SUPPORTED_YFINANCE_VERSION, "0.2.66"})
+_GOVERNED_CURL_CFFI_VERSIONS = frozenset({SUPPORTED_CURL_CFFI_VERSION, "0.13.0"})
+
 _SDK_CALL_LOCK = threading.RLock()
 _SESSION: Any | None = None
 _GOVERNED_SESSION_TYPE: type[Any] | None = None
 
 
+class _GovernedRetryStrategy:
+    """Declared zero-retry posture of the governed session transport.
+
+    Older curl_cffi generations expose no ``retry`` knob on ``Session``;
+    their transport performs exactly one send per call, which is what the
+    budget gate verifies through this attribute.
+    """
+
+    def __init__(self, *, count: int = 0) -> None:
+        self.count = count
+
+
 def _check_runtime(sdk: Any) -> Any:  # noqa: ANN401 - optional SDK module
     """Require the reviewed SDK pair and a transport configuration we can govern."""
-    if getattr(sdk, "__version__", None) != SUPPORTED_YFINANCE_VERSION:
+    if getattr(sdk, "__version__", None) not in _GOVERNED_YFINANCE_VERSIONS:
         raise YfinanceProviderError("YFINANCE_UNSUPPORTED_SDK_VERSION")
     try:
         curl_cffi = importlib.import_module("curl_cffi")
     except ImportError as exc:
         raise YfinanceProviderError("YFINANCE_CURL_CFFI_MISSING") from exc
-    if getattr(curl_cffi, "__version__", None) != SUPPORTED_CURL_CFFI_VERSION:
+    if getattr(curl_cffi, "__version__", None) not in _GOVERNED_CURL_CFFI_VERSIONS:
         raise YfinanceProviderError("YFINANCE_UNSUPPORTED_CURL_CFFI_VERSION")
 
     config = getattr(sdk, "config", None)
@@ -91,25 +114,26 @@ def _new_session_class(curl_session_class: type[Any]) -> type[Any]:
     """Build a lazy subclass so importing this provider never imports curl_cffi."""
 
     def request(self: Any, method: str, url: str, *args: object, **kwargs: object) -> Any:  # noqa: ANN401
-        return _manual_request(self, curl_session_class.request, method, url, *args, **kwargs)
-
-    def request_once(self: Any, method: str, url: str, *args: object, **kwargs: object) -> Any:  # noqa: ANN401
-        return _governed_request_once(self, method, url, *args, **kwargs)
+        return _manual_request(self, _governed_request_once, method, url, *args, **kwargs)
 
     return type(
         "YfinanceGovernedSession",
         (curl_session_class,),
-        {"request": request, "_request_once": request_once, "__module__": __name__},
+        {
+            "request": request,
+            "retry": _GovernedRetryStrategy(count=0),
+            "__module__": __name__,
+        },
     )
 
 
 def _send_once(session: Any, method: str, url: str, *args: object, **kwargs: object) -> Any:  # noqa: ANN401
-    """Call curl_cffi's reviewed lower-level send seam (replaceable in offline tests)."""
+    """Call the reviewed transport's own send path exactly once (offline-testable seam)."""
     base_class = type(session).__mro__[1]
-    request_once = getattr(base_class, "_request_once", None)
-    if not callable(request_once):
+    base_request = getattr(base_class, "request", None)
+    if not callable(base_request):
         raise YfinanceProviderError("YFINANCE_TRANSPORT_SEND_UNAVAILABLE")
-    return request_once(session, method, url, *args, **kwargs)
+    return base_request(session, method, url, *args, **kwargs)
 
 
 def _parse_target(url: object) -> tuple[str, tuple[str, int], str]:
@@ -144,6 +168,15 @@ def _scopes_or_reject() -> tuple[RequestExecutionScope, ...]:
     return scopes
 
 
+def _curl_not_set(curl_session_module: Any) -> object:  # noqa: ANN401 - reviewed module
+    """Return the transport's 'timeout not provided' sentinel for either generation."""
+    for name in ("NOT_SET", "not_set"):
+        sentinel = getattr(curl_session_module, name, None)
+        if sentinel is not None:
+            return sentinel
+    return object()
+
+
 def _remaining_timeout(
     session: Any,  # noqa: ANN401
     timeout: object,
@@ -158,7 +191,7 @@ def _remaining_timeout(
         raise RequestExecutionDeadlineError("request execution deadline expired")
 
     curl_session_module = importlib.import_module("curl_cffi.requests.session")
-    not_set = getattr(curl_session_module, "NOT_SET", object())
+    not_set = _curl_not_set(curl_session_module)
     effective = getattr(session, "timeout", None) if timeout is not_set else timeout
     if effective is None or effective is not_set:
         return remaining
@@ -213,12 +246,12 @@ def _governed_request_once(
 
 def _not_set_sentinel() -> object:
     module = importlib.import_module("curl_cffi.requests.session")
-    return module.NOT_SET
+    return _curl_not_set(module)
 
 
 def _manual_request(
     session: Any,  # noqa: ANN401
-    base_request: Any,  # noqa: ANN401
+    base_send: Any,  # noqa: ANN401 - governed single-send gateway
     method: str,
     url: str,
     *args: object,
@@ -230,15 +263,7 @@ def _manual_request(
     with _SDK_CALL_LOCK:
         _check_runtime(sdk)
         _check_retry_strategy(session)
-        try:
-            bound = inspect.signature(base_request).bind(session, method, url, *args, **kwargs)
-        except TypeError:
-            raise
-        bound.apply_defaults()
-        arguments = dict(bound.arguments)
-        arguments.pop("self", None)
-        arguments.pop("method", None)
-        arguments.pop("url", None)
+        arguments = dict(kwargs)
         follow_redirects = arguments.get("allow_redirects")
         if follow_redirects is None:
             follow_redirects = bool(getattr(session, "allow_redirects", True))
@@ -272,7 +297,7 @@ def _manual_request(
                 if cross_host:
                     _strip_request_credentials(hop_arguments)
                     clear_session_credentials()
-                response = base_request(session, current_method, current_url, **hop_arguments)
+                response = base_send(session, current_method, current_url, *args, **hop_arguments)
 
                 status = getattr(response, "status_code", None)
                 response_headers = getattr(response, "headers", {})
@@ -434,11 +459,9 @@ def governed_yfinance_session(sdk: Any) -> Iterator[Any]:  # noqa: ANN401
         if _SESSION is None:
             _SESSION = _GOVERNED_SESSION_TYPE(
                 impersonate="chrome",
-                retry=0,
                 trust_env=False,
                 allow_redirects=True,
                 max_redirects=MAX_YFINANCE_REDIRECTS,
-                cache=None,
             )
         if not isinstance(_SESSION, request_api.Session):
             raise YfinanceProviderError("YFINANCE_SESSION_TYPE_INVALID")

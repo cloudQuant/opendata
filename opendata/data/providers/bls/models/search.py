@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from pydantic import Field, field_validator
 
@@ -12,6 +12,9 @@ from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryPara
 from opendata.data.providers.bls.models import _client
 from opendata.data.providers.bls.models._client import BlsProviderError, BlsRawCatalogPage
 from opendata.data.providers.bls.models._contracts import BlsCatalogItem, BlsCatalogPage
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 
 class BlsSearchQuery(QueryParams):
@@ -47,6 +50,8 @@ class BlsSearchFetcher(Fetcher[BlsSearchQuery, BlsRawCatalogPage]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "BlsSearch"
+    row_model: ClassVar[type[BlsCatalogItem]] = BlsCatalogItem
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="bls_search",
@@ -68,6 +73,7 @@ class BlsSearchFetcher(Fetcher[BlsSearchQuery, BlsRawCatalogPage]):
             offset=params.offset,
             limit=params.limit,
             timeout=ctx.timeout,
+            transport=self.http_transport,
         )
 
     def transform_data(self, raw: BlsRawCatalogPage, params: BlsSearchQuery) -> FetchResult:

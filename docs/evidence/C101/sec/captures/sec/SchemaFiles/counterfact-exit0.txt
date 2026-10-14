@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SchemaFiles --phase counterfact --evidence-root docs/evidence/C101/sec
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_SCHEMA_BAD_PERIOD_TYPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_SCHEMA_BAD_PERIOD_TYPE", "rejected": [], "status": null}, "reason": "period_type is a declared contract column that the XBRL 2.1 specification allows only as instant or duration, so a taxonomy element published with any other value is refused rather than stored as an unparseable concept; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

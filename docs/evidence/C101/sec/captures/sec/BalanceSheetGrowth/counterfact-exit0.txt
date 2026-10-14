@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model BalanceSheetGrowth --phase counterfact --evidence-root docs/evidence/C101/sec
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_XBRL_BAD_FACT", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_XBRL_BAD_FACT", "rejected": [], "status": null}, "reason": "filing_date is a declared contract column and the companyfacts API publishes filed as an ISO calendar date, so an impossible month must refuse the observation instead of becoming a null or guessed filing date; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

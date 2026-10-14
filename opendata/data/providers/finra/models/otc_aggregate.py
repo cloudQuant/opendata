@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from datetime import date
-from typing import Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from pydantic import field_validator, model_validator
 
@@ -12,6 +12,9 @@ from opendata.data.capability import Capability
 from opendata.data.models.finra import OTCAggregate
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.finra.models import _client
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 DATASET_URL = f"{_client.API_BASE}/data/group/otcmarket/name/weeklysummary"
 PARTITIONS_URL = f"{_client.API_BASE}/partitions/group/otcmarket/name/weeklysummary"
@@ -56,6 +59,8 @@ class OTCAggregateFetcher(Fetcher[OTCAggregateQuery, list[dict[str, Any]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "OTCAggregate"
+    row_model: ClassVar[type[OTCAggregate]] = OTCAggregate
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="finra_otc_aggregate",
@@ -72,12 +77,13 @@ class OTCAggregateFetcher(Fetcher[OTCAggregateQuery, list[dict[str, Any]]]):
 
     def extract_data(self, params: OTCAggregateQuery, ctx: FetchContext) -> list[dict[str, Any]]:
         """Resolve the latest source partition and page its bounded row set."""
-        token = _client.access_token(ctx)
+        token = _client.access_token(ctx, transport=self.http_transport)
         partition_doc, _ = _client.get_json(
             PARTITIONS_URL,
             params=None,
             token=token,
             context=ctx,
+            transport=self.http_transport,
         )
         week_start = self._latest_week(partition_doc, TIER_SOURCE_CODE[params.tier])
         filters = [
@@ -96,6 +102,7 @@ class OTCAggregateFetcher(Fetcher[OTCAggregateQuery, list[dict[str, Any]]]):
             fields=FIELDS,
             compare_filters=filters,
             context=ctx,
+            transport=self.http_transport,
         )
 
     def transform_data(

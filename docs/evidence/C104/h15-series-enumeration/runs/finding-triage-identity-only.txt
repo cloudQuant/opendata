@@ -1,0 +1,43 @@
+carrier: finding-triage-identity-only.txt
+round: C104 h15-series-enumeration
+captured_at_local=2026-10-15 03:15:32
+commit=270e373411951be1752d71206379da98762d5081 branch=dev
+worktree_dirty_files_at_capture=1528
+source_log=/tmp/c104_triage.txt
+source_bytes=2176
+source_sha256_16=d56d5ec32da1a55f
+argv=python - (identity-only triage of /tmp/c103_gl_shipped.json + /tmp/c103_gl_free.json)
+interpreter=gitleaks 8.30.1 / python 3.13.5 (envs/py313)
+triage_exit=0
+----------------------------------------------------------------------
+identity only: file:line#rule + value lengths. No secret text is written here.
+face: allowlist_free_config=every rules.allowlist removed
+face: allowlist_free_findings=18
+  opendata/data/providers/federal_reserve/specs.py:342#generic-api-key value_len=14
+  opendata/data/providers/federal_reserve/specs.py:349#generic-api-key value_len=14
+  opendata/data/providers/federal_reserve/specs.py:361#generic-api-key value_len=14
+  opendata/data/providers/federal_reserve/specs.py:368#generic-api-key value_len=14
+  opendata/data/providers/federal_reserve/specs.py:375#generic-api-key value_len=14
+  opendata/data/providers/federal_reserve/specs.py:382#generic-api-key value_len=14
+  opendata/data/providers/federal_reserve/specs.py:389#generic-api-key value_len=14
+  opendata/data/providers/federal_reserve/specs.py:396#generic-api-key value_len=14
+  opendata/data/providers/federal_reserve/specs.py:403#generic-api-key value_len=14
+  opendata/data/providers/federal_reserve/specs.py:410#generic-api-key value_len=14
+  opendata/data/providers/federal_reserve/specs.py:417#generic-api-key value_len=14
+  opendata/data/providers/federal_reserve/specs.py:424#generic-api-key value_len=14
+  tests/test_ecb_series_fetchers.py:40#generic-api-key value_len=30
+  tests/test_ecb_series_fetchers.py:41#generic-api-key value_len=45
+  tests/test_ecb_series_fetchers.py:42#generic-api-key value_len=45
+  tests/test_ecb_series_fetchers.py:368#generic-api-key value_len=30
+  tests/test_ecb_series_fetchers.py:374#generic-api-key value_len=45
+  tests/test_ecb_series_fetchers.py:464#generic-api-key value_len=30
+face: allowlist_free_files=2
+face: shipped_config_config=repo .gitleaks.toml as it stood pre-edit
+face: shipped_config_findings=1
+  opendata/data/providers/federal_reserve/specs.py:342#generic-api-key value_len=14
+face: shipped_config_files=1
+verdict: 18 findings allowlist-free, 1 under the shipped config; every flagged value is a Fed
+H.15 or ECB Data Portal public series key. The single shipped-config miss is
+opendata/data/providers/federal_reserve/specs.py:342, the twelfth H.15 id while
+.gitleaks.toml enumerated eleven. Closed by enumeration, not by a value class.
+triage_exit=0

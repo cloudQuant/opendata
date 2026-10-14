@@ -172,7 +172,12 @@ CRYPTO_HISTORICAL = ModelSpec(
         "normalization. Upstream warns (does not raise) for a requested ticker the response lacks "
         "(:163-167) and for an object whose priceData is empty (:172-175); this declaration is "
         "silent on both -- a missing priceData key is the kernel's MISSING_POINTER refusal and an "
-        "empty array contributes no rows, which the kernel documents as a published answer of none."
+        "empty array contributes no rows, which the kernel documents as a published answer of "
+        "none. That reading is the kernel's, not a loosening here: "
+        ":func:`expand_nested_array` returns an empty row list when the parent list itself is "
+        "empty (row_expansion.py:397-398) and raises ``EMPTY_RESULT`` only when published parents "
+        "produced no rows (:439-444), so no facet of this declaration turns an empty document "
+        "into that refusal."
     ),
 )
 

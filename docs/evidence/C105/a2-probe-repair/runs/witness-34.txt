@@ -1,0 +1,83 @@
+carrier: witness-34.txt
+round: C105 a2-probe-repair
+captured_at_local=2026-10-15 05:18:52
+commit=270e373411951be1752d71206379da98762d5081 branch=dev
+worktree_dirty_files_at_capture=1529
+source_log=/tmp/c105_witness34_run.txt
+source_bytes=10319
+source_sha256_16=5791d9fe516c0a7c
+argv=python docs/evidence/C105/a2-probe-repair/probes/ast_witness.py <the 34 targets>
+interpreter=gitleaks 8.30.1 / python 3.13.5 (envs/py313)
+witness_exit=1
+----------------------------------------------------------------------
+face: file=docs/evidence/C101/census-rebase/probes/falsify_census_arms.py status=values_intact top_level_delta=1 added_imports=1 pruned_imports=0 restructured_families=3 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C101/census-rebase/probes/falsify_census_arms.py restructured=For[3->3],ImportFrom[1->2],Try:block[1->1]
+face:   docs/evidence/C101/census-rebase/probes/falsify_census_arms.py added_import=Callable
+face: file=docs/evidence/C101/census-rebase/probes/patch_head_attribution.py status=identical top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=0 whitespace_pairs=0 value_moves=0
+face: file=docs/evidence/C101/census-rebase/probes/rebase_batch5_census.py status=values_intact top_level_delta=1 added_imports=0 pruned_imports=2 restructured_families=5 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C101/census-rebase/probes/rebase_batch5_census.py restructured=Assign:key[1->0],For[2->2],FunctionDef:key[0->1],Import[1->2],ImportFrom[6->4]
+face:   docs/evidence/C101/census-rebase/probes/rebase_batch5_census.py pruned_import=ProviderRegistry
+face:   docs/evidence/C101/census-rebase/probes/rebase_batch5_census.py pruned_import=register_providers
+face: file=docs/evidence/C101/census-rebase/probes/rebase_descriptor_census.py status=identical top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=0 whitespace_pairs=0 value_moves=0
+face: file=docs/evidence/C101/census-rebase/probes/verify_census_rebase.py status=values_intact top_level_delta=1 added_imports=1 pruned_imports=0 restructured_families=3 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C101/census-rebase/probes/verify_census_rebase.py restructured=Assign:turned[1->1],FunctionDef:judge[1->1],ImportFrom[6->7]
+face:   docs/evidence/C101/census-rebase/probes/verify_census_rebase.py added_import=Any
+face: file=docs/evidence/C101/probes/cast_guard_census.py status=identical top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=0 whitespace_pairs=0 value_moves=0
+face: file=docs/evidence/C101/probes/docstring_gap_census.py status=values_intact top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=1 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C101/probes/docstring_gap_census.py restructured=FunctionDef:missing_symbols[1->1]
+face: file=docs/evidence/C101/probes/ecb_seam_body_shapes.py status=identical top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=0 whitespace_pairs=0 value_moves=0
+face: file=docs/evidence/C101/probes/registry_scenario_census.py status=identical top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=0 whitespace_pairs=0 value_moves=0
+face: file=docs/evidence/C101/probes/repin_reference_policy.py status=identical top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=0 whitespace_pairs=0 value_moves=0
+face: file=docs/evidence/C101/probes/stale_fake_census.py status=values_intact top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=1 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C101/probes/stale_fake_census.py restructured=FunctionDef:_resolve_target[1->1]
+face: file=docs/evidence/C101/probes/stale_fake_repair.py status=values_intact top_level_delta=2 added_imports=1 pruned_imports=0 restructured_families=4 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C101/probes/stale_fake_repair.py restructured=ClassDef:_Staged[0->1],FunctionDef:_counters[0->1],FunctionDef:repair_files[1->1],ImportFrom[3->3]
+face:   docs/evidence/C101/probes/stale_fake_repair.py added_import=TypedDict
+face: file=docs/evidence/C101/probes/suite_red_taxonomy.py status=import_churn top_level_delta=1 added_imports=1 pruned_imports=0 restructured_families=1 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C101/probes/suite_red_taxonomy.py restructured=ImportFrom[3->4]
+face:   docs/evidence/C101/probes/suite_red_taxonomy.py added_import=Any
+face: file=docs/evidence/C102/probes/archive_faces.py status=import_churn top_level_delta=1 added_imports=0 pruned_imports=1 restructured_families=1 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C102/probes/archive_faces.py restructured=Import[4->3]
+face:   docs/evidence/C102/probes/archive_faces.py pruned_import=shutil
+face: file=docs/evidence/C102/probes/ths_format_audit.py status=identical top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=0 whitespace_pairs=0 value_moves=0
+face: file=docs/evidence/C102/probes/ths_grant_arms.py status=values_intact top_level_delta=2 added_imports=1 pruned_imports=0 restructured_families=4 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C102/probes/ths_grant_arms.py restructured=FunctionDef:_load_test_module[1->1],FunctionDef:main[1->1],If:block[1->2],ImportFrom[3->4]
+face:   docs/evidence/C102/probes/ths_grant_arms.py added_import=TYPE_CHECKING
+face: file=docs/evidence/C102/probes/ths_grant_repair.py status=values_intact top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=2 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C102/probes/ths_grant_repair.py restructured=FunctionDef:_class_models[1->1],FunctionDef:main[1->1]
+face: file=docs/evidence/C102/probes/ths_hunk_audit.py status=import_churn top_level_delta=1 added_imports=0 pruned_imports=1 restructured_families=1 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C102/probes/ths_hunk_audit.py restructured=Import[3->2]
+face:   docs/evidence/C102/probes/ths_hunk_audit.py pruned_import=re
+face: file=docs/evidence/C102/probes/ths_idempotence_arm.py status=values_intact top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=1 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C102/probes/ths_idempotence_arm.py restructured=FunctionDef:fetch_sites[1->1]
+face: file=docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py status=values_intact top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=1 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C103/batch5-scenario-census/probes/payload_literal_repin.py restructured=FunctionDef:main[1->1]
+face: file=docs/evidence/C103/batch5-scenario-census/probes/scenario_census.py status=values_intact top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=1 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C103/batch5-scenario-census/probes/scenario_census.py restructured=FunctionDef:main[1->1]
+face: file=docs/evidence/C103/batch5-scenario-census/probes/scenario_counterfact.py status=values_intact top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=2 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C103/batch5-scenario-census/probes/scenario_counterfact.py restructured=FunctionDef:main[1->1],FunctionDef:run_guard[1->1]
+face: file=docs/evidence/C103/batch5-scenario-census/probes/scenario_rebase.py status=values_intact top_level_delta=1 added_imports=0 pruned_imports=1 restructured_families=2 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C103/batch5-scenario-census/probes/scenario_rebase.py restructured=FunctionDef:main[1->1],Import[5->4]
+face:   docs/evidence/C103/batch5-scenario-census/probes/scenario_rebase.py pruned_import=re
+face: file=docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py status=values_intact top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=1 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py restructured=FunctionDef:main[1->1]
+face: file=docs/evidence/C103/fmp-fetch-array-arity/probes/arity_ab.py status=identical top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=0 whitespace_pairs=0 value_moves=0
+face: file=docs/evidence/C103/probes/carrier_archiver.py status=identical top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=0 whitespace_pairs=0 value_moves=0
+face: file=docs/evidence/C103/probes/document_builder.py status=moved top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=4 whitespace_pairs=37 value_moves=4
+face:   docs/evidence/C103/probes/document_builder.py restructured=FunctionDef:module_split[1->1],FunctionDef:readme_census[1->1],FunctionDef:readme_fmp[1->1],FunctionDef:readme_pins[1->1]
+face:   docs/evidence/C103/probes/document_builder.py dropped_value=' OECD scenario rows: a census move, and the conflict underneath it\n\n## The disag...(+287)'
+face:   docs/evidence/C103/probes/document_builder.py dropped_value='snapshot_rows=\\d+ live_bindings=(\\d+)'
+face:   docs/evidence/C103/probes/document_builder.py added_value='\n\n## The disagreement, measured\n\nThe batch5 oracle pins ``scenario_present`` per...(+221)'
+face:   docs/evidence/C103/probes/document_builder.py added_value=' OECD scenario rows: a census move, and the conflict underneath it'
+face: file=docs/evidence/C104/h15-series-enumeration/probes/carrier_archiver.py status=identical top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=0 whitespace_pairs=0 value_moves=0
+face: file=docs/evidence/C104/h15-series-enumeration/probes/face_builder.py status=identical top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=0 whitespace_pairs=0 value_moves=0
+face: file=docs/evidence/C104/h15-series-enumeration/probes/h15_allowlist.py status=identical top_level_delta=0 added_imports=0 pruned_imports=0 restructured_families=0 whitespace_pairs=0 value_moves=0
+face: file=docs/evidence/C104/h15-series-enumeration/probes/payload_rescan.py status=values_intact top_level_delta=1 added_imports=0 pruned_imports=0 restructured_families=2 whitespace_pairs=0 value_moves=0
+face:   docs/evidence/C104/h15-series-enumeration/probes/payload_rescan.py restructured=Assign:_CONFIG_EDITS[0->1],Expr[11->11]
+face: file=docs/evidence/C105/a2-probe-repair/probes/ast_witness.py status=pre_state_absent
+face: file=docs/evidence/C105/a2-probe-repair/probes/docs_reidentity.py status=pre_state_absent
+face: file=docs/evidence/C105/a2-probe-repair/probes/split_long_lines.py status=pre_state_absent
+face: targets=34 ast_identical=12 values_intact=15 import_churn=3 whitespace_reflow=0 value_moves=1 pre_state_absent=3 findings=4
+verdict: FAIL - a repair moved a printed string value, not only its line length
+
+WITNESS_EXIT=1

@@ -677,11 +677,6 @@ def _merge_optional_values(
             current[field] = value
 
 
-def _percent_fraction(value: float | None) -> float | None:
-    """Convert one published percentage observation to a unit fraction."""
-    return None if value is None else value / 100.0
-
-
 class SOFRFetcher(Fetcher[SOFRQuery, _SofrSnapshot]):
     """Fetch daily SOFR and left-join the NY Fed SOFRAI enrichment by date."""
 
@@ -734,7 +729,7 @@ class SOFRFetcher(Fetcher[SOFRQuery, _SofrSnapshot]):
         )
 
     def transform_data(self, raw: _SofrSnapshot, params: SOFRQuery) -> FetchResult:
-        """Normalize source units and preserve rates lacking historical averages."""
+        """Copy the published percent cells unchanged and keep rates lacking averages."""
         if not isinstance(raw, _SofrSnapshot):
             raise NyfedProviderError("NYFED_BAD_SHAPE")
 
@@ -780,11 +775,11 @@ class SOFRFetcher(Fetcher[SOFRQuery, _SofrSnapshot]):
             output.append(
                 SOFR(
                     date=day,
-                    rate=rate / 100.0,
-                    percentile_1=_percent_fraction(values["percentile_1"]),
-                    percentile_25=_percent_fraction(values["percentile_25"]),
-                    percentile_75=_percent_fraction(values["percentile_75"]),
-                    percentile_99=_percent_fraction(values["percentile_99"]),
+                    rate=rate,
+                    percentile_1=values["percentile_1"],
+                    percentile_25=values["percentile_25"],
+                    percentile_75=values["percentile_75"],
+                    percentile_99=values["percentile_99"],
                     volume=values["volume"],
                     average_30d=enrichment.get("average_30d"),
                     average_90d=enrichment.get("average_90d"),

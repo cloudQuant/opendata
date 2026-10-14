@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 
 from opendata.data.http_client import HttpFetchError, get_shared_http_client
+from opendata.data.providers._engine.http_json import HttpGet, ProviderEngineError
 from opendata.data.request_budget import RequestBudgetError
 
 if TYPE_CHECKING:
@@ -26,14 +27,15 @@ _DEFAULT_TIMEOUT = 20.0
 _TOKEN_RE = re.compile(r"^[A-Za-z0-9._~+/=-]{1,8192}$")
 
 
-class FinraProviderError(RuntimeError):
-    """Stable sanitized provider error that never retains credentials or bodies."""
+class FinraProviderError(ProviderEngineError):
+    """Stable sanitized provider error that never retains credentials or bodies.
+
+    It is the engine's attributable refusal for FINRA, so a shape failure carries the typed
+    ``code``/``status``/``url``/``rejected``/``missing``/``invalid`` face governed callers read.
+    """
 
     def __init__(self, code: str, *, status: int | None = None) -> None:
-        self.code = code
-        self.status = status
-        suffix = "" if status is None else f" status={status}"
-        super().__init__(code + suffix)
+        super().__init__(code, status=status)
 
 
 def _validate_url(url: str, allowed_hosts: frozenset[str]) -> None:
@@ -50,6 +52,38 @@ def _validate_url(url: str, allowed_hosts: frozenset[str]) -> None:
         raise FinraProviderError("FINRA_URL_REJECTED")
 
 
+def _seam_response(
+    transport: HttpGet,
+    url: str,
+    *,
+    params: dict[str, str] | None,
+    headers: dict[str, str] | None,
+    timeout: float,
+) -> tuple[bytes, dict[str, str]]:
+    """Answer one FINRA leg from the repository's offline witness seam.
+
+    ``HttpResponse`` carries a single JSON document and no response headers, so an offline
+    fixture publishes a table keyed by request path in which each entry names that leg's body
+    and the headers FINRA returns with it -- ``Record-Total`` among them, because the pager reads
+    it. A leg the fixture never prepared fails loudly rather than answering with another leg's
+    body.
+    """
+    response = transport(url, dict(params or {}), timeout=timeout, source="finra", headers=headers)
+    if not 200 <= response.status < 300:
+        raise FinraProviderError("FINRA_HTTP_ERROR", status=response.status)
+    table = response.document
+    if not isinstance(table, dict):
+        raise FinraProviderError("FINRA_SEAM_TABLE_MISSING")
+    entry = table.get(urlsplit(url).path)
+    if not isinstance(entry, dict) or "body" not in entry:
+        raise FinraProviderError("FINRA_SEAM_RESPONSE_MISSING")
+    declared = entry.get("headers") or {}
+    if not isinstance(declared, dict):
+        raise FinraProviderError("FINRA_SEAM_RESPONSE_MISSING")
+    body = json.dumps(entry["body"], ensure_ascii=False).encode("utf-8")
+    return body, {str(key): str(value) for key, value in declared.items()}
+
+
 def _request(
     method: str,
     url: str,
@@ -59,8 +93,20 @@ def _request(
     params: dict[str, str] | None = None,
     headers: dict[str, str] | None = None,
     json_body: dict[str, object] | None = None,
+    transport: HttpGet | None = None,
 ) -> tuple[bytes, dict[str, str]]:
     _validate_url(url, allowed_hosts)
+    if transport is not None:
+        seam_timeout = (
+            _DEFAULT_TIMEOUT if context.timeout is None else min(_DEFAULT_TIMEOUT, context.timeout)
+        )
+        return _seam_response(
+            transport,
+            url,
+            params=params,
+            headers=headers,
+            timeout=seam_timeout,
+        )
     timeout = (
         _DEFAULT_TIMEOUT if context.timeout is None else min(_DEFAULT_TIMEOUT, context.timeout)
     )
@@ -99,7 +145,7 @@ def _parse_json(body: bytes, *, error: str) -> object:
         raise FinraProviderError(error) from None
 
 
-def access_token(context: FetchContext) -> str:
+def access_token(context: FetchContext, *, transport: HttpGet | None = None) -> str:
     """Exchange the official FINRA client credential for one short-lived token."""
     client_id = os.environ.get("FINRA_API_CLIENT_ID", "")
     client_secret = os.environ.get("FINRA_API_CLIENT_SECRET", "")
@@ -121,6 +167,7 @@ def access_token(context: FetchContext) -> str:
         headers={"Accept": "application/json", "Authorization": f"Basic {authorization}"},
         context=context,
         allowed_hosts=FIP_HOSTS,
+        transport=transport,
     )
     document = _parse_json(body, error="FINRA_TOKEN_BAD_JSON")
     if not isinstance(document, dict):
@@ -151,6 +198,7 @@ def get_json(
     params: dict[str, str] | None,
     token: str,
     context: FetchContext,
+    transport: HttpGet | None = None,
 ) -> tuple[object, dict[str, str]]:
     """Fetch one bounded official FINRA JSON metadata document."""
     body, response_headers = _request(
@@ -164,6 +212,7 @@ def get_json(
         },
         context=context,
         allowed_hosts=API_HOSTS,
+        transport=transport,
     )
     content_type = _header(response_headers, "Content-Type").casefold()
     if "html" in content_type:
@@ -178,6 +227,7 @@ def post_rows(
     fields: tuple[str, ...],
     compare_filters: list[dict[str, str]],
     context: FetchContext,
+    transport: HttpGet | None = None,
 ) -> list[dict[str, Any]]:
     """Read all rows in a capped offset window or refuse an incomplete page set."""
     rows: list[dict[str, Any]] = []
@@ -203,6 +253,7 @@ def post_rows(
             json_body=payload,
             context=context,
             allowed_hosts=API_HOSTS,
+            transport=transport,
         )
         document = _parse_json(body, error="FINRA_BAD_JSON")
         if not isinstance(document, list) or any(not isinstance(row, dict) for row in document):

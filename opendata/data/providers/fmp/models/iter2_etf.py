@@ -199,7 +199,9 @@ def _bad_query(query_type: type[QueryParams], kwargs: dict[str, object]) -> Quer
     """Translate query validation failures into a stable sanitized provider error."""
     try:
         return query_type.model_validate(kwargs)
-    except (ValidationError, TypeError, ValueError):
+    except ValidationError as exc:
+        raise FMPQueryValidationError.from_validation_error(exc) from None
+    except (TypeError, ValueError):
         raise FMPQueryValidationError() from None
 
 

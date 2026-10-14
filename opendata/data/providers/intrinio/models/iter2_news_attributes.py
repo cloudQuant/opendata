@@ -45,6 +45,7 @@ from opendata.data.models.intrinio_news_attributes import (
     IntrinioWorldNews,
 )
 from opendata.data.protocol import FetchContext, Fetcher
+from opendata.data.providers._engine.http_json import HttpGet, ProviderEngineError
 from opendata.data.request_budget import RequestBudgetError
 
 if TYPE_CHECKING:
@@ -78,15 +79,20 @@ DEFAULT_TIMEOUT = 20.0
 MAX_TIMEOUT = 25.0
 
 
-class IntrinioProviderError(RuntimeError):
-    """Stable, sanitized errors from the Intrinio adapter."""
+class IntrinioProviderError(ProviderEngineError):
+    """Stable, sanitized errors from the Intrinio adapter.
 
-    def __init__(self, code: str, *, status: int | None = None) -> None:
-        """Create an adapter error using a non-sensitive code and status."""
-        self.code = code
-        self.status = status
-        suffix = "" if status is None else f" status={status}"
-        super().__init__(code + suffix)
+    The adapter speaks the engine's typed refusal because a refusal a witness cannot attribute is
+    a refusal nobody can check: ``code``/``status``/``url`` and the ``rejected``/``missing``/
+    ``invalid`` faces are the same typed attributes the declarative intrinio models publish, and
+    the message keeps this adapter's existing ``code status=N`` spelling. This class stays a
+    :class:`RuntimeError` through the engine base, so every existing caller and test that caught
+    the adapter's own errors catches them unchanged.
+    """
+
+    def __init__(self, code: str, *, status: int | None = None, url: str | None = None) -> None:
+        """Create an adapter error using a non-sensitive code, status and request."""
+        super().__init__(code, status=status, url=url)
 
 
 class IntrinioShapeError(IntrinioProviderError):
@@ -546,6 +552,7 @@ class _IntrinioFetcher(Fetcher[Any, Any]):
     row_model: ClassVar[type[ContractModel]]
     canonical_model: ClassVar[str]
     http_client: _HttpClient | None = None
+    http_transport: ClassVar[HttpGet | None] = None
 
     def transform_query(self, **kwargs: object) -> BaseModel:
         try:
@@ -573,13 +580,31 @@ class _IntrinioFetcher(Fetcher[Any, Any]):
         call_budget: _CallBudget,
     ) -> object:
         call_budget.reserve()
-        client = self.http_client if self.http_client is not None else get_shared_http_client()
         timeout = DEFAULT_TIMEOUT if ctx.timeout is None else min(float(ctx.timeout), MAX_TIMEOUT)
+        headers = {"Accept": "application/json", "Authorization": f"Bearer {self._key()}"}
+        transport = self.http_transport
+        if transport is not None:
+            # The repository's offline witness seam (the same one EconDB and Benzinga adapters
+            # speak): one declared request, answered in-memory from a fixture document. The
+            # governed client below stays the production default whenever no transport is bound.
+            response = transport(
+                url,
+                dict(params or {}),
+                timeout=timeout,
+                source=SOURCE,
+                headers=headers,
+            )
+            if response.status == 429:
+                raise IntrinioProviderError("INTRINIO_RATE_LIMITED", status=429, url=url)
+            if response.status < 200 or response.status >= 300:
+                raise IntrinioProviderError("INTRINIO_HTTP_ERROR", status=response.status, url=url)
+            return response.document
+        client = self.http_client if self.http_client is not None else get_shared_http_client()
         try:
-            response = client.get(
+            client_response = client.get(
                 url,
                 params=params,
-                headers={"Accept": "application/json", "Authorization": f"Bearer {self._key()}"},
+                headers=headers,
                 timeout=timeout,
                 source=SOURCE,
                 cache_context={"model": self.canonical_model},
@@ -591,14 +616,14 @@ class _IntrinioFetcher(Fetcher[Any, Any]):
             raise IntrinioProviderError(code, status=exc.status) from None
         except Exception:
             raise IntrinioProviderError("INTRINIO_TRANSPORT_ERROR") from None
-        status = getattr(response, "status_code", None)
+        status = getattr(client_response, "status_code", None)
         if not isinstance(status, int):
             raise IntrinioShapeError("INTRINIO_HTTP_RESPONSE_INVALID")
         if status == 429:
             raise IntrinioProviderError("INTRINIO_RATE_LIMITED", status=status)
         if status < 200 or status >= 300:
             raise IntrinioProviderError("INTRINIO_HTTP_ERROR", status=status)
-        body = getattr(response, "content", None)
+        body = getattr(client_response, "content", None)
         if not isinstance(body, bytes) or len(body) > MAX_BODY_BYTES:
             raise IntrinioShapeError("INTRINIO_BODY_INVALID")
         try:

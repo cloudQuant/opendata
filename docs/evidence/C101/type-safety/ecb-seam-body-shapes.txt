@@ -1,0 +1,10 @@
+population: shapes=5 ecb_seam_body_external_caller_files=2
+OK bytes payload: -> b'<Root/>'
+OK str payload: -> b'<Root/>'
+OK list document: -> b'<Root>\n<Child/>'
+OK str document: -> b'<Root/>'
+OK empty document: -> b''
+face: shapes_ok=5 of 5
+ecb_census_exit=0
+arm: old line `raw.encode('utf-8')` on bytes payload -> AttributeError('bytes' object has no attribute 'encode') PASS
+ecb_arm_exit=0

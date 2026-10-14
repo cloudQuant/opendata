@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import email.utils
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from html.parser import HTMLParser
@@ -19,6 +20,9 @@ from pydantic import Field, ValidationError, field_validator, model_validator
 
 if TYPE_CHECKING:
     from pydantic_core import InitErrorDetails
+
+    from opendata.data.models.base import ContractModel
+    from opendata.data.providers._engine.http_json import HttpGet
 
 from opendata.data.capability import Capability
 from opendata.data.models.sec_documents import (
@@ -162,6 +166,22 @@ def _text_value(value: object) -> str | None:
     return value.strip() or None
 
 
+def _fiscal_year_end_text(value: object) -> str | None:
+    """Render the Submissions API's ``fiscalYearEnd`` as the month/day text pair it publishes.
+
+    EDGAR's Submissions document carries ``fiscalYearEnd`` as an object with ``month`` and
+    ``day`` keys, while some mirrored payloads publish the same value as one text token. Both are
+    normalized onto the contract's text column; a payload naming neither is refused.
+    """
+    if isinstance(value, Mapping):
+        month = _text_value(value.get("month"))
+        day = _text_value(value.get("day"))
+        if month is None or day is None:
+            raise SecProviderError("SEC_SUBMISSIONS_BAD_FISCAL_YEAR_END")
+        return f"{month.zfill(2)}{day.zfill(2)}"
+    return _text_value(value)
+
+
 def _validate_filename(value: str, code: str) -> str:
     if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,199}", value) is None:
         raise SecProviderError(code)
@@ -184,12 +204,18 @@ def _parse_int(value: object, *, code: str, allow_none: bool = True) -> int | No
     return result
 
 
-def _resolve_cik(ctx: FetchContext, symbol: str | None, cik: str | None) -> tuple[str, str | None]:
+def _resolve_cik(
+    ctx: FetchContext,
+    symbol: str | None,
+    cik: str | None,
+    *,
+    transport: HttpGet | None = None,
+) -> tuple[str, str | None]:
     if cik is not None:
         return canonical_cik(cik), None
     if symbol is None:
         raise SecProviderError("SEC_SYMBOL_REQUIRED")
-    row = resolve_ticker(company_ticker_rows(ctx), symbol)
+    row = resolve_ticker(company_ticker_rows(ctx, transport=transport), symbol)
     return row["cik"], row["name"]
 
 
@@ -401,13 +427,14 @@ def _load_filings(
     end_date: date | None,
     history_pages: int = 0,
     max_requests: int | None = None,
+    transport: HttpGet | None = None,
 ) -> tuple[str, str, tuple[_FilingRow, ...]]:
     request_bound = (1 if symbol is not None else 0) + 1 + history_pages
     if max_requests is not None:
         request_bound = max(request_bound, max_requests)
     ensure_request_capacity(ctx, request_bound)
-    resolved_cik, resolved_name = _resolve_cik(ctx, symbol, cik)
-    document = fetch_json(ctx, _submission_url(resolved_cik))
+    resolved_cik, resolved_name = _resolve_cik(ctx, symbol, cik, transport=transport)
+    document = fetch_json(ctx, _submission_url(resolved_cik), transport=transport)
     parsed_cik, name, recent, history = _parse_filing_arrays(document)
     if parsed_cik != resolved_cik:
         raise SecProviderError("SEC_SUBMISSIONS_CIK_MISMATCH")
@@ -435,7 +462,7 @@ def _load_filings(
                 raise SecProviderError("SEC_HISTORY_PAGE_LIMIT_EXCEEDED")
             for item in overlapping:
                 filename = item["name"]
-                historical = fetch_json(ctx, f"{_SUBMISSION_ROOT}/{filename}")
+                historical = fetch_json(ctx, f"{_SUBMISSION_ROOT}/{filename}", transport=transport)
                 hist_cik, _, hist_rows, _ = _parse_filing_arrays(historical)
                 if hist_cik != resolved_cik:
                     raise SecProviderError("SEC_SUBMISSIONS_CIK_MISMATCH")
@@ -546,6 +573,8 @@ class CompanyFilingsFetcher(Fetcher[CompanyFilingsQuery, tuple[SecCompanyFiling,
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "CompanyFilings"
+    row_model: ClassVar[type[ContractModel]] = SecCompanyFiling
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="sec_company_filings",
@@ -574,6 +603,7 @@ class CompanyFilingsFetcher(Fetcher[CompanyFilingsQuery, tuple[SecCompanyFiling,
             start_date=params.start_date,
             end_date=params.end_date,
             history_pages=params.history_pages,
+            transport=self.http_transport,
         )
         return tuple(
             _company_filing_record(cik, row)
@@ -643,6 +673,8 @@ class SecFilingFetcher(Fetcher[SecFilingQuery, SecFilingHeader]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "SecFiling"
+    row_model: ClassVar[type[ContractModel]] = SecFilingHeader
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="sec_filing",
@@ -666,7 +698,7 @@ class SecFilingFetcher(Fetcher[SecFilingQuery, SecFilingHeader]):
                 raise SecProviderError("SEC_FILING_QUERY_IDENTITY_MISSING")
             cik, accession = params.cik, params.accession_number
         ensure_request_capacity(ctx, 2)
-        submission = fetch_json(ctx, _submission_url(cik))
+        submission = fetch_json(ctx, _submission_url(cik), transport=self.http_transport)
         parsed_cik, name, rows, _ = _parse_filing_arrays(submission)
         if parsed_cik != cik:
             raise SecProviderError("SEC_SUBMISSIONS_CIK_MISMATCH")
@@ -674,7 +706,7 @@ class SecFilingFetcher(Fetcher[SecFilingQuery, SecFilingHeader]):
         if filing is None:
             raise SecProviderError("SEC_FILING_NOT_IN_SUBMISSIONS")
         index_url = f"{_archive_base(cik, accession)}/index.json"
-        index = fetch_json(ctx, index_url)
+        index = fetch_json(ctx, index_url, transport=self.http_transport)
         documents = _parse_index_documents(index, cik, accession)
         submission_meta = submission
         tickers_value = (
@@ -689,7 +721,7 @@ class SecFilingFetcher(Fetcher[SecFilingQuery, SecFilingHeader]):
         sic_name = _text_value(submission_meta.get("sicDescription"))
         if sic is None or sic_name is None:
             raise SecProviderError("SEC_SUBMISSIONS_MISSING_SIC")
-        fiscal_year_end = _text_value(submission_meta.get("fiscalYearEnd"))
+        fiscal_year_end = _fiscal_year_end_text(submission_meta.get("fiscalYearEnd"))
         cover_page = (
             SecFilingCoverPage(
                 registrant_name=name,
@@ -776,6 +808,8 @@ class SecHtmFileFetcher(Fetcher[SecHtmFileQuery, SecHtmFileData]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "SecHtmFile"
+    row_model: ClassVar[type[ContractModel]] = SecHtmFileData
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="sec_htm_file",
@@ -793,12 +827,17 @@ class SecHtmFileFetcher(Fetcher[SecHtmFileQuery, SecHtmFileData]):
     def extract_data(self, params: SecHtmFileQuery, ctx: FetchContext) -> SecHtmFileData:
         """Fetch SEC source data and parse it into typed models."""
         ensure_request_capacity(ctx, 1)
-        body = fetch_bytes(ctx, params.url, max_bytes=MAX_TEXT_RESPONSE_BYTES)
+        body = fetch_bytes(
+            ctx, params.url, max_bytes=MAX_TEXT_RESPONSE_BYTES, transport=self.http_transport
+        )
         try:
             content = body.decode("utf-8")
         except UnicodeDecodeError:
             raise SecProviderError("SEC_HTML_BAD_ENCODING") from None
-        return SecHtmFileData(url=params.url, content=content)
+        try:
+            return SecHtmFileData(url=params.url, content=content)
+        except ValidationError:
+            raise SecProviderError("SEC_HTML_CONTRACT_INVALID") from None
 
     def transform_data(self, raw: SecHtmFileData, params: SecHtmFileQuery) -> FetchResult:
         """Return typed records through the fetcher protocol."""
@@ -817,6 +856,8 @@ class RssLitigationFetcher(Fetcher[RssLitigationQuery, tuple[SecRssLitigationIte
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "RssLitigation"
+    row_model: ClassVar[type[ContractModel]] = SecRssLitigationItem
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="public_data",
         domain="sec_rss_litigation",
@@ -836,7 +877,12 @@ class RssLitigationFetcher(Fetcher[RssLitigationQuery, tuple[SecRssLitigationIte
     ) -> tuple[SecRssLitigationItem, ...]:
         """Fetch SEC source data and parse it into typed models."""
         ensure_request_capacity(ctx, 1)
-        body = fetch_bytes(ctx, _LITIGATION_RSS_URL, max_bytes=MAX_XML_RESPONSE_BYTES)
+        body = fetch_bytes(
+            ctx,
+            _LITIGATION_RSS_URL,
+            max_bytes=MAX_XML_RESPONSE_BYTES,
+            transport=self.http_transport,
+        )
         root = _safe_xml(body, "SEC_RSS_BAD_XML")
         candidates = [
             element
@@ -903,6 +949,8 @@ class SchemaFilesFetcher(Fetcher[SchemaFilesQuery, tuple[SecSchemaFile, ...]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "SchemaFiles"
+    row_model: ClassVar[type[ContractModel]] = SecSchemaFile
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="public_data",
         domain="sec_schema_files",
@@ -924,12 +972,19 @@ class SchemaFilesFetcher(Fetcher[SchemaFilesQuery, tuple[SecSchemaFile, ...]]):
         ensure_request_capacity(ctx, 2)
         base = f"https://xbrl.sec.gov/{params.taxonomy}/{params.year}"
         schema_url = f"{base}/{params.taxonomy}-{params.year}.xsd"
-        body = fetch_bytes(ctx, schema_url, max_bytes=MAX_XML_RESPONSE_BYTES)
+        body = fetch_bytes(
+            ctx, schema_url, max_bytes=MAX_XML_RESPONSE_BYTES, transport=self.http_transport
+        )
         root = _safe_xml(body, "SEC_SCHEMA_BAD_XML")
         label_urls = _label_linkbase_urls(root, schema_url, params.taxonomy, params.year)
         labels: dict[str, str] = {}
         if label_urls:
-            label_body = fetch_bytes(ctx, label_urls[0], max_bytes=MAX_XML_RESPONSE_BYTES)
+            label_body = fetch_bytes(
+                ctx,
+                label_urls[0],
+                max_bytes=MAX_XML_RESPONSE_BYTES,
+                transport=self.http_transport,
+            )
             labels = _parse_labels(
                 _safe_xml(label_body, "SEC_SCHEMA_BAD_LABEL_XML"), params.taxonomy
             )
@@ -1084,6 +1139,8 @@ class LatestFinancialReportsFetcher(
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "LatestFinancialReports"
+    row_model: ClassVar[type[ContractModel]] = SecLatestFinancialReport
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="sec_latest_financial_reports",
@@ -1109,7 +1166,9 @@ class LatestFinancialReportsFetcher(
             f"https://www.sec.gov/Archives/edgar/daily-index/{filed.year}/QTR{quarter}/"
             f"master.{filed:%Y%m%d}.idx"
         )
-        body = fetch_bytes(ctx, url, max_bytes=MAX_TEXT_RESPONSE_BYTES)
+        body = fetch_bytes(
+            ctx, url, max_bytes=MAX_TEXT_RESPONSE_BYTES, transport=self.http_transport
+        )
         try:
             text_body = body.decode("ascii")
         except UnicodeDecodeError:
@@ -1218,6 +1277,8 @@ class ManagementDiscussionAnalysisFetcher(
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "ManagementDiscussionAnalysis"
+    row_model: ClassVar[type[ContractModel]] = SecManagementDiscussionAnalysis
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="sec_management_discussion_analysis",
@@ -1238,14 +1299,17 @@ class ManagementDiscussionAnalysisFetcher(
         """Fetch SEC source data and parse it into typed models."""
         period_num = int(params.period[1])
         ensure_request_capacity(ctx, 3)
-        cik, _ = _resolve_cik(ctx, params.symbol, None)
-        _, name, rows, _ = _parse_filing_arrays(fetch_json(ctx, _submission_url(cik)))
+        cik, _ = _resolve_cik(ctx, params.symbol, None, transport=self.http_transport)
+        submissions = fetch_json(ctx, _submission_url(cik), transport=self.http_transport)
+        _, name, rows, _ = _parse_filing_arrays(submissions)
         filing = _select_period_filing(rows, params.year, period_num, forms=("10-K", "10-Q"))
         if filing.primary_document is None:
             raise SecProviderError("SEC_MDA_PRIMARY_DOCUMENT_MISSING")
         _validate_filename(filing.primary_document, "SEC_MDA_PRIMARY_DOCUMENT_BAD")
         url = f"{_archive_base(cik, filing.accession)}/{filing.primary_document}"
-        body = fetch_bytes(ctx, url, max_bytes=MAX_TEXT_RESPONSE_BYTES)
+        body = fetch_bytes(
+            ctx, url, max_bytes=MAX_TEXT_RESPONSE_BYTES, transport=self.http_transport
+        )
         try:
             document = body.decode("utf-8")
         except UnicodeDecodeError:
@@ -1378,6 +1442,8 @@ class Form13FHRFetcher(Fetcher[Form13FHRQuery, tuple[SecForm13FHRHolding, ...]])
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "Form13FHR"
+    row_model: ClassVar[type[ContractModel]] = SecForm13FHRHolding
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="sec_form_13f_hr",
@@ -1397,13 +1463,18 @@ class Form13FHRFetcher(Fetcher[Form13FHRQuery, tuple[SecForm13FHRHolding, ...]])
     ) -> tuple[SecForm13FHRHolding, ...]:
         """Fetch SEC source data and parse it into typed models."""
         ensure_request_capacity(ctx, 4 if params.symbol is not None else 3)
-        cik, _ = _resolve_cik(ctx, params.symbol, params.cik)
-        _, manager_name, rows, _ = _parse_filing_arrays(fetch_json(ctx, _submission_url(cik)))
+        cik, _ = _resolve_cik(ctx, params.symbol, params.cik, transport=self.http_transport)
+        submissions = fetch_json(ctx, _submission_url(cik), transport=self.http_transport)
+        _, manager_name, rows, _ = _parse_filing_arrays(submissions)
         filing = _select_disclosure_filing(
             rows, forms={"13F-HR", "13F-HR/A"}, year=params.year, quarter=params.quarter
         )
         documents = _parse_index_documents(
-            fetch_json(ctx, f"{_archive_base(cik, filing.accession)}/index.json"),
+            fetch_json(
+                ctx,
+                f"{_archive_base(cik, filing.accession)}/index.json",
+                transport=self.http_transport,
+            ),
             cik,
             filing.accession,
         )
@@ -1417,7 +1488,12 @@ class Form13FHRFetcher(Fetcher[Form13FHRQuery, tuple[SecForm13FHRHolding, ...]])
             raise SecProviderError("SEC_13F_INFORMATION_TABLE_NOT_FOUND")
         information_table = candidates[0]
         xml_root = _safe_xml(
-            fetch_bytes(ctx, information_table.url, max_bytes=MAX_XML_RESPONSE_BYTES),
+            fetch_bytes(
+                ctx,
+                information_table.url,
+                max_bytes=MAX_XML_RESPONSE_BYTES,
+                transport=self.http_transport,
+            ),
             "SEC_13F_BAD_XML",
         )
         rows_xml = [
@@ -1625,6 +1701,8 @@ class NportDisclosureFetcher(Fetcher[NportDisclosureQuery, SecNportFiling]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str] = "NportDisclosure"
+    row_model: ClassVar[type[ContractModel]] = SecNportDisclosureHolding
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="fund",
         domain="sec_nport_disclosure",
@@ -1645,7 +1723,8 @@ class NportDisclosureFetcher(Fetcher[NportDisclosureQuery, SecNportFiling]):
         """Fetch SEC source data and parse it into typed models."""
         ensure_request_capacity(ctx, 4 if params.symbol is not None else 3)
         if params.symbol is not None:
-            rows = _parse_mutual_fund_directory(fetch_json(ctx, _MF_TICKER_URL))
+            directory = fetch_json(ctx, _MF_TICKER_URL, transport=self.http_transport)
+            rows = _parse_mutual_fund_directory(directory)
             cik = resolve_ticker(rows, params.symbol)["cik"]
             symbol = params.symbol
         else:
@@ -1653,7 +1732,8 @@ class NportDisclosureFetcher(Fetcher[NportDisclosureQuery, SecNportFiling]):
                 raise SecProviderError("SEC_QUERY_IDENTITY_MISSING")
             cik = params.cik
             symbol = None
-        _, name, filings, _ = _parse_filing_arrays(fetch_json(ctx, _submission_url(cik)))
+        submissions = fetch_json(ctx, _submission_url(cik), transport=self.http_transport)
+        _, name, filings, _ = _parse_filing_arrays(submissions)
         filing = _select_disclosure_filing(
             filings,
             forms={"NPORT-P", "NPORT-P/A"},
@@ -1663,7 +1743,11 @@ class NportDisclosureFetcher(Fetcher[NportDisclosureQuery, SecNportFiling]):
         )
         if filing.report_date is None:
             raise SecProviderError("SEC_NPORT_REPORT_PERIOD_MISSING")
-        index = fetch_json(ctx, f"{_archive_base(cik, filing.accession)}/index.json")
+        index = fetch_json(
+            ctx,
+            f"{_archive_base(cik, filing.accession)}/index.json",
+            transport=self.http_transport,
+        )
         documents = _parse_index_documents(index, cik, filing.accession)
         xml_files = [item for item in documents if item.name.lower().endswith(".xml")]
         if not xml_files:
@@ -1673,7 +1757,10 @@ class NportDisclosureFetcher(Fetcher[NportDisclosureQuery, SecNportFiling]):
             xml_files[0],
         )
         root = _safe_xml(
-            fetch_bytes(ctx, primary.url, max_bytes=MAX_XML_RESPONSE_BYTES), "SEC_NPORT_BAD_XML"
+            fetch_bytes(
+                ctx, primary.url, max_bytes=MAX_XML_RESPONSE_BYTES, transport=self.http_transport
+            ),
+            "SEC_NPORT_BAD_XML",
         )
         investment_nodes = [
             element

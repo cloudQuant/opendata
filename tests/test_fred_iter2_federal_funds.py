@@ -135,6 +135,7 @@ def _install_response(
         url: str,
         params: dict[str, str],
         timeout: float | None,
+        **_kwargs,
     ) -> tuple[int, str]:
         del timeout
         requests.append((url, dict(params)))
@@ -209,7 +210,7 @@ def test_invalid_query_is_rejected_before_io(monkeypatch: pytest.MonkeyPatch) ->
     fetcher = FederalFundsRateFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *_args: pytest.fail("invalid query must fail before FRED I/O"),
+        lambda *_args, **_kwargs: pytest.fail("invalid query must fail before FRED I/O"),
     )
     with pytest.raises(ValidationError):
         fetcher.transform_query(start_date="2026-10-02", end_date="2026-10-01")
@@ -302,6 +303,7 @@ def test_fred_pagination_limit_and_throttling_are_reported_without_key_leak(
         url: str,
         params: dict[str, str],
         timeout: float | None,
+        **_kwargs,
     ) -> tuple[int, str]:
         del timeout
         assert "api_key" not in url and "test-key" not in url
@@ -434,7 +436,7 @@ def test_fred_obfr_rejects_bad_query_and_required_rate_missing(
     fetcher = OvernightBankFundingRateFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *_args: pytest.fail("invalid query must fail before FRED I/O"),
+        lambda *_args, **_kwargs: pytest.fail("invalid query must fail before FRED I/O"),
     )
     with pytest.raises(ValidationError):
         fetcher.transform_query(start_date="2026-10-09", end_date="2026-10-08")

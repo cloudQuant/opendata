@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model FredSearch --phase counterfact --evidence-root docs/evidence/C101/fred
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_SERIES", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_SERIES", "rejected": [], "status": null}, "reason": "dropping the required 'title' makes the strict catalog row contract refuse the record; the search adapter must surface FRED_BAD_SERIES as a ProviderEngineError-shaped FredProviderError rather than publishing a nameless catalog entry; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,34 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 739 items
+
+tests/test_fred_generic_models.py ...................................... [  5%]
+.........................                                                [  8%]
+tests/test_fred_iter2_auxiliary.py ................                      [ 10%]
+tests/test_fred_iter2_federal_funds.py ..........                        [ 12%]
+tests/test_fred_iter2_fixed_rates.py ..............                      [ 13%]
+tests/test_fred_iter2_treasury_rates.py ..........                       [ 15%]
+tests/test_fred_macro_iter2.py ......................................... [ 20%]
+.......................................................................  [ 30%]
+tests/test_fred_provider.py .................                            [ 32%]
+tests/test_fred_iorb_fetcher.py ..................                       [ 35%]
+tests/test_fred_sloos.py ........................                        [ 38%]
+tests/test_fred_sofr_fetcher.py ........................................ [ 43%]
+........................................................................ [ 53%]
+...................................................................      [ 62%]
+tests/test_fred_sonia_fetcher.py ....................................... [ 67%]
+........................................................................ [ 77%]
+........................................................................ [ 87%]
+...........                                                              [ 88%]
+tests/test_ecb_series_fetchers.py ...................                    [ 91%]
+tests/test_federal_reserve_iter2_models.py ............................. [ 95%]
+........                                                                 [ 96%]
+tests/test_sec_documents_iter2.py ..........................             [100%]
+
+============================= 739 passed in 1.33s ==============================
+observed_exit=0

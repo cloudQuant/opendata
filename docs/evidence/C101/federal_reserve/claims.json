@@ -1,0 +1,3295 @@
+{
+  "claims": [
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model CentralBankHoldings --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:35:34.775718+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "implementation",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::CentralBankHoldings",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "CentralBankHoldings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model CentralBankHoldings --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:35:34.775921+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "direct",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::CentralBankHoldings",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "CentralBankHoldings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model CentralBankHoldings --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:35:34.775927+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "service",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::CentralBankHoldings",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "CentralBankHoldings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model CentralBankHoldings --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:35:34.775933+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "contract",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::CentralBankHoldings",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "CentralBankHoldings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model CentralBankHoldings --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:35:34.775943+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::CentralBankHoldings",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "CentralBankHoldings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FederalFundsRate --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:35:36.728305+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "fixture": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "1873d94964176246710279c059ab940414444ec14d8d7d510734c81e7b780493",
+            "before_sha256": "1873d94964176246710279c059ab940414444ec14d8d7d510734c81e7b780493",
+            "path": "opendata/data/providers/federal_reserve/models/federal_funds_rate.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::FederalFundsRate",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/FederalFundsRate/implementation.json",
+        "sha256": "c9d9fa530500cd6b431a5e13b25c6b2a7faa8e41cffd9d6ad0a0df62520c25b1"
+      },
+      "status": "PASS",
+      "upstream_model": "FederalFundsRate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FederalFundsRate --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:35:38.269611+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "fixture": [
+          {
+            "after_sha256": "e35ec41261b8306090c2befbc0678e13e5ea9f9bcc097b0857958e5c438b789a",
+            "before_sha256": "e35ec41261b8306090c2befbc0678e13e5ea9f9bcc097b0857958e5c438b789a",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/FederalFundsRate.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "1873d94964176246710279c059ab940414444ec14d8d7d510734c81e7b780493",
+            "before_sha256": "1873d94964176246710279c059ab940414444ec14d8d7d510734c81e7b780493",
+            "path": "opendata/data/providers/federal_reserve/models/federal_funds_rate.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::FederalFundsRate",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/FederalFundsRate/direct.json",
+        "sha256": "e74bef82b6456efed12c76757613d52dcbe947aff654e4a211f64ad8e921e9f2"
+      },
+      "status": "PASS",
+      "upstream_model": "FederalFundsRate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FederalFundsRate --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:35:39.812302+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "fixture": [
+          {
+            "after_sha256": "e35ec41261b8306090c2befbc0678e13e5ea9f9bcc097b0857958e5c438b789a",
+            "before_sha256": "e35ec41261b8306090c2befbc0678e13e5ea9f9bcc097b0857958e5c438b789a",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/FederalFundsRate.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "1873d94964176246710279c059ab940414444ec14d8d7d510734c81e7b780493",
+            "before_sha256": "1873d94964176246710279c059ab940414444ec14d8d7d510734c81e7b780493",
+            "path": "opendata/data/providers/federal_reserve/models/federal_funds_rate.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::FederalFundsRate",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/FederalFundsRate/service.json",
+        "sha256": "b8de1b11930fc1962a267e740409876118d85322e05ca6abff089b420b20ca52"
+      },
+      "status": "PASS",
+      "upstream_model": "FederalFundsRate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FederalFundsRate --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:35:41.374856+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "fixture": [
+          {
+            "after_sha256": "e35ec41261b8306090c2befbc0678e13e5ea9f9bcc097b0857958e5c438b789a",
+            "before_sha256": "e35ec41261b8306090c2befbc0678e13e5ea9f9bcc097b0857958e5c438b789a",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/FederalFundsRate.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "1873d94964176246710279c059ab940414444ec14d8d7d510734c81e7b780493",
+            "before_sha256": "1873d94964176246710279c059ab940414444ec14d8d7d510734c81e7b780493",
+            "path": "opendata/data/providers/federal_reserve/models/federal_funds_rate.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::FederalFundsRate",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/FederalFundsRate/contract.json",
+        "sha256": "f1fa8d772d9848d373698df6b1d205eb5a5dbadbcfed76bc9367e99339735fdc"
+      },
+      "status": "PASS",
+      "upstream_model": "FederalFundsRate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FederalFundsRate --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:35:42.919601+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "fixture": [
+          {
+            "after_sha256": "e35ec41261b8306090c2befbc0678e13e5ea9f9bcc097b0857958e5c438b789a",
+            "before_sha256": "e35ec41261b8306090c2befbc0678e13e5ea9f9bcc097b0857958e5c438b789a",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/FederalFundsRate.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "1873d94964176246710279c059ab940414444ec14d8d7d510734c81e7b780493",
+            "before_sha256": "1873d94964176246710279c059ab940414444ec14d8d7d510734c81e7b780493",
+            "path": "opendata/data/providers/federal_reserve/models/federal_funds_rate.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::FederalFundsRate",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/FederalFundsRate/counterfact.json",
+        "sha256": "feabb89144bc218735d8bce82a25187db5c1ccf406be7a86db0cd92e1c2b8931"
+      },
+      "status": "PASS",
+      "upstream_model": "FederalFundsRate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FomcDocuments --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:35:42.921850+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "implementation",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::FomcDocuments",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "FomcDocuments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FomcDocuments --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:35:42.921866+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "direct",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::FomcDocuments",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "FomcDocuments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FomcDocuments --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:35:42.921871+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "service",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::FomcDocuments",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "FomcDocuments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FomcDocuments --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:35:42.921874+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "contract",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::FomcDocuments",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "FomcDocuments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FomcDocuments --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:35:42.921878+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::FomcDocuments",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "FomcDocuments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model InflationExpectations --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:35:42.921884+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "implementation",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::InflationExpectations",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "InflationExpectations"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model InflationExpectations --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:35:42.921888+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "direct",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::InflationExpectations",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "InflationExpectations"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model InflationExpectations --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:35:42.921892+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "service",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::InflationExpectations",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "InflationExpectations"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model InflationExpectations --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:35:42.921895+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "contract",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::InflationExpectations",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "InflationExpectations"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model InflationExpectations --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:35:42.921899+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::InflationExpectations",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "InflationExpectations"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model MoneyMeasures --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:35:42.921904+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "implementation",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::MoneyMeasures",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "MoneyMeasures"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model MoneyMeasures --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:35:42.921909+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "direct",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::MoneyMeasures",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "MoneyMeasures"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model MoneyMeasures --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:35:42.921912+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "service",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::MoneyMeasures",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "MoneyMeasures"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model MoneyMeasures --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:35:42.921918+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "contract",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::MoneyMeasures",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "MoneyMeasures"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model MoneyMeasures --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:35:42.921921+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::MoneyMeasures",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "MoneyMeasures"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model OvernightBankFundingRate --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:35:44.427171+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "fixture": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "5bea8d7ab79dce8bcfd45081e45f09b11bc4b467de63f0b2641d536eb8517537",
+            "before_sha256": "5bea8d7ab79dce8bcfd45081e45f09b11bc4b467de63f0b2641d536eb8517537",
+            "path": "opendata/data/providers/federal_reserve/models/overnight_bank_funding_rate.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::OvernightBankFundingRate",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/OvernightBankFundingRate/implementation.json",
+        "sha256": "d93dee4e5922de66c2e96de8161f254a7a3c1522bbb845aa7d33ce5bb5b80fcb"
+      },
+      "status": "PASS",
+      "upstream_model": "OvernightBankFundingRate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model OvernightBankFundingRate --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:35:45.928631+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "fixture": [
+          {
+            "after_sha256": "18f684a1abbee9dc256e2aa4dd8b075365bc1d3b3a49b9b3136b0dd7a2e463eb",
+            "before_sha256": "18f684a1abbee9dc256e2aa4dd8b075365bc1d3b3a49b9b3136b0dd7a2e463eb",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/OvernightBankFundingRate.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "5bea8d7ab79dce8bcfd45081e45f09b11bc4b467de63f0b2641d536eb8517537",
+            "before_sha256": "5bea8d7ab79dce8bcfd45081e45f09b11bc4b467de63f0b2641d536eb8517537",
+            "path": "opendata/data/providers/federal_reserve/models/overnight_bank_funding_rate.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::OvernightBankFundingRate",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/OvernightBankFundingRate/direct.json",
+        "sha256": "836427e9b756d687b536ff67602cc34e31dc426ddd70d1cd9bb874f722ca2d13"
+      },
+      "status": "PASS",
+      "upstream_model": "OvernightBankFundingRate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model OvernightBankFundingRate --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:35:47.497172+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "fixture": [
+          {
+            "after_sha256": "18f684a1abbee9dc256e2aa4dd8b075365bc1d3b3a49b9b3136b0dd7a2e463eb",
+            "before_sha256": "18f684a1abbee9dc256e2aa4dd8b075365bc1d3b3a49b9b3136b0dd7a2e463eb",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/OvernightBankFundingRate.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "5bea8d7ab79dce8bcfd45081e45f09b11bc4b467de63f0b2641d536eb8517537",
+            "before_sha256": "5bea8d7ab79dce8bcfd45081e45f09b11bc4b467de63f0b2641d536eb8517537",
+            "path": "opendata/data/providers/federal_reserve/models/overnight_bank_funding_rate.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::OvernightBankFundingRate",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/OvernightBankFundingRate/service.json",
+        "sha256": "e52aed1464c90fdc37edb53793531147be606c3744865e20d821a71e06308b9a"
+      },
+      "status": "PASS",
+      "upstream_model": "OvernightBankFundingRate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model OvernightBankFundingRate --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:35:49.001481+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "fixture": [
+          {
+            "after_sha256": "18f684a1abbee9dc256e2aa4dd8b075365bc1d3b3a49b9b3136b0dd7a2e463eb",
+            "before_sha256": "18f684a1abbee9dc256e2aa4dd8b075365bc1d3b3a49b9b3136b0dd7a2e463eb",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/OvernightBankFundingRate.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "5bea8d7ab79dce8bcfd45081e45f09b11bc4b467de63f0b2641d536eb8517537",
+            "before_sha256": "5bea8d7ab79dce8bcfd45081e45f09b11bc4b467de63f0b2641d536eb8517537",
+            "path": "opendata/data/providers/federal_reserve/models/overnight_bank_funding_rate.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::OvernightBankFundingRate",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/OvernightBankFundingRate/contract.json",
+        "sha256": "3f72abb3bee2fe367d7c085e1abd34d6d489cc8fa923c839935a31a7046db68a"
+      },
+      "status": "PASS",
+      "upstream_model": "OvernightBankFundingRate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model OvernightBankFundingRate --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:35:50.481014+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "fixture": [
+          {
+            "after_sha256": "18f684a1abbee9dc256e2aa4dd8b075365bc1d3b3a49b9b3136b0dd7a2e463eb",
+            "before_sha256": "18f684a1abbee9dc256e2aa4dd8b075365bc1d3b3a49b9b3136b0dd7a2e463eb",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/OvernightBankFundingRate.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "5bea8d7ab79dce8bcfd45081e45f09b11bc4b467de63f0b2641d536eb8517537",
+            "before_sha256": "5bea8d7ab79dce8bcfd45081e45f09b11bc4b467de63f0b2641d536eb8517537",
+            "path": "opendata/data/providers/federal_reserve/models/overnight_bank_funding_rate.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::OvernightBankFundingRate",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/OvernightBankFundingRate/counterfact.json",
+        "sha256": "399f41b6f71e4fed01a137d0e4bc3bf232f3f0c34b9c4cbbb869524534622738"
+      },
+      "status": "PASS",
+      "upstream_model": "OvernightBankFundingRate"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerFails --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:35:52.023341+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "afb2b1bf3e274c861e51f3a9d16b460f75eccb3ca426a316bd70bbca731b9948",
+            "before_sha256": "afb2b1bf3e274c861e51f3a9d16b460f75eccb3ca426a316bd70bbca731b9948",
+            "path": "opendata/data/providers/federal_reserve/models/primary_dealer_fails.py"
+          },
+          {
+            "after_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "before_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "path": "opendata/data/providers/federal_reserve/models/_primary_dealer.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::PrimaryDealerFails",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/PrimaryDealerFails/implementation.json",
+        "sha256": "020dded3ceb4a412f9664b49afc348256651c1764a5565e6517676f149ae257f"
+      },
+      "status": "PASS",
+      "upstream_model": "PrimaryDealerFails"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerFails --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:35:53.589062+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "e380ff7695152baba43aa3929c92d6336c082b21b1e26bf4b90ce39a25d7257c",
+            "before_sha256": "e380ff7695152baba43aa3929c92d6336c082b21b1e26bf4b90ce39a25d7257c",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/PrimaryDealerFails.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "afb2b1bf3e274c861e51f3a9d16b460f75eccb3ca426a316bd70bbca731b9948",
+            "before_sha256": "afb2b1bf3e274c861e51f3a9d16b460f75eccb3ca426a316bd70bbca731b9948",
+            "path": "opendata/data/providers/federal_reserve/models/primary_dealer_fails.py"
+          },
+          {
+            "after_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "before_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "path": "opendata/data/providers/federal_reserve/models/_primary_dealer.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::PrimaryDealerFails",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/PrimaryDealerFails/direct.json",
+        "sha256": "5e439cb40e740e254f03fd408bbb2e04f6921fd52c3dd7866a1860dbb3a7ced8"
+      },
+      "status": "PASS",
+      "upstream_model": "PrimaryDealerFails"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerFails --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:35:55.121640+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "e380ff7695152baba43aa3929c92d6336c082b21b1e26bf4b90ce39a25d7257c",
+            "before_sha256": "e380ff7695152baba43aa3929c92d6336c082b21b1e26bf4b90ce39a25d7257c",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/PrimaryDealerFails.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "afb2b1bf3e274c861e51f3a9d16b460f75eccb3ca426a316bd70bbca731b9948",
+            "before_sha256": "afb2b1bf3e274c861e51f3a9d16b460f75eccb3ca426a316bd70bbca731b9948",
+            "path": "opendata/data/providers/federal_reserve/models/primary_dealer_fails.py"
+          },
+          {
+            "after_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "before_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "path": "opendata/data/providers/federal_reserve/models/_primary_dealer.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::PrimaryDealerFails",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/PrimaryDealerFails/service.json",
+        "sha256": "8a6a1639a3a78680695bae94bfdff3689894c7cf7d3c2f4ea1f6ad9f03c41344"
+      },
+      "status": "PASS",
+      "upstream_model": "PrimaryDealerFails"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerFails --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:35:56.664557+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "e380ff7695152baba43aa3929c92d6336c082b21b1e26bf4b90ce39a25d7257c",
+            "before_sha256": "e380ff7695152baba43aa3929c92d6336c082b21b1e26bf4b90ce39a25d7257c",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/PrimaryDealerFails.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "afb2b1bf3e274c861e51f3a9d16b460f75eccb3ca426a316bd70bbca731b9948",
+            "before_sha256": "afb2b1bf3e274c861e51f3a9d16b460f75eccb3ca426a316bd70bbca731b9948",
+            "path": "opendata/data/providers/federal_reserve/models/primary_dealer_fails.py"
+          },
+          {
+            "after_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "before_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "path": "opendata/data/providers/federal_reserve/models/_primary_dealer.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::PrimaryDealerFails",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/PrimaryDealerFails/contract.json",
+        "sha256": "7e5c66e9e4eacbf2ec3dd7687fbbd31956c02b092a2ab78f3d24df54a9be0dd8"
+      },
+      "status": "PASS",
+      "upstream_model": "PrimaryDealerFails"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerFails --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:35:58.183940+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "e380ff7695152baba43aa3929c92d6336c082b21b1e26bf4b90ce39a25d7257c",
+            "before_sha256": "e380ff7695152baba43aa3929c92d6336c082b21b1e26bf4b90ce39a25d7257c",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/PrimaryDealerFails.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "afb2b1bf3e274c861e51f3a9d16b460f75eccb3ca426a316bd70bbca731b9948",
+            "before_sha256": "afb2b1bf3e274c861e51f3a9d16b460f75eccb3ca426a316bd70bbca731b9948",
+            "path": "opendata/data/providers/federal_reserve/models/primary_dealer_fails.py"
+          },
+          {
+            "after_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "before_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "path": "opendata/data/providers/federal_reserve/models/_primary_dealer.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::PrimaryDealerFails",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/PrimaryDealerFails/counterfact.json",
+        "sha256": "73b42dbcabf892101a22de7aacfa0866571cc8883249bc8fbce3377d84ace1f7"
+      },
+      "status": "PASS",
+      "upstream_model": "PrimaryDealerFails"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerPositioning --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:35:59.812488+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "925c6cf0e1f96ea79ec56d98dfcfde8dd1bdd766418fa7c5615360e8e4d11582",
+            "before_sha256": "925c6cf0e1f96ea79ec56d98dfcfde8dd1bdd766418fa7c5615360e8e4d11582",
+            "path": "opendata/data/providers/federal_reserve/models/primary_dealer_positioning.py"
+          },
+          {
+            "after_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "before_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "path": "opendata/data/providers/federal_reserve/models/_primary_dealer.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::PrimaryDealerPositioning",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/PrimaryDealerPositioning/implementation.json",
+        "sha256": "1d3087dc5239a90f9acca8a35e32ea6c83ec0c30bebdfe1e1bb3a329126acd9c"
+      },
+      "status": "PASS",
+      "upstream_model": "PrimaryDealerPositioning"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerPositioning --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:36:01.332804+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "ab41ade022e343b7b4123fdbd8d3681b1d4ff739c7eef3886d193055ad3dc1ed",
+            "before_sha256": "ab41ade022e343b7b4123fdbd8d3681b1d4ff739c7eef3886d193055ad3dc1ed",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/PrimaryDealerPositioning.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "925c6cf0e1f96ea79ec56d98dfcfde8dd1bdd766418fa7c5615360e8e4d11582",
+            "before_sha256": "925c6cf0e1f96ea79ec56d98dfcfde8dd1bdd766418fa7c5615360e8e4d11582",
+            "path": "opendata/data/providers/federal_reserve/models/primary_dealer_positioning.py"
+          },
+          {
+            "after_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "before_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "path": "opendata/data/providers/federal_reserve/models/_primary_dealer.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::PrimaryDealerPositioning",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/PrimaryDealerPositioning/direct.json",
+        "sha256": "e1cf43faa1c591e8790f09f9eee0cdb8a9d0a37596e72890d5ec77db68b83ec8"
+      },
+      "status": "PASS",
+      "upstream_model": "PrimaryDealerPositioning"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerPositioning --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:36:02.873468+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "ab41ade022e343b7b4123fdbd8d3681b1d4ff739c7eef3886d193055ad3dc1ed",
+            "before_sha256": "ab41ade022e343b7b4123fdbd8d3681b1d4ff739c7eef3886d193055ad3dc1ed",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/PrimaryDealerPositioning.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "925c6cf0e1f96ea79ec56d98dfcfde8dd1bdd766418fa7c5615360e8e4d11582",
+            "before_sha256": "925c6cf0e1f96ea79ec56d98dfcfde8dd1bdd766418fa7c5615360e8e4d11582",
+            "path": "opendata/data/providers/federal_reserve/models/primary_dealer_positioning.py"
+          },
+          {
+            "after_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "before_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "path": "opendata/data/providers/federal_reserve/models/_primary_dealer.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::PrimaryDealerPositioning",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/PrimaryDealerPositioning/service.json",
+        "sha256": "bacc0921be46b5cf6fa0ad2fc680bafbfb365038cbe65ac5548d020d6d6f12d7"
+      },
+      "status": "PASS",
+      "upstream_model": "PrimaryDealerPositioning"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerPositioning --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:36:04.374336+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "ab41ade022e343b7b4123fdbd8d3681b1d4ff739c7eef3886d193055ad3dc1ed",
+            "before_sha256": "ab41ade022e343b7b4123fdbd8d3681b1d4ff739c7eef3886d193055ad3dc1ed",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/PrimaryDealerPositioning.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "925c6cf0e1f96ea79ec56d98dfcfde8dd1bdd766418fa7c5615360e8e4d11582",
+            "before_sha256": "925c6cf0e1f96ea79ec56d98dfcfde8dd1bdd766418fa7c5615360e8e4d11582",
+            "path": "opendata/data/providers/federal_reserve/models/primary_dealer_positioning.py"
+          },
+          {
+            "after_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "before_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "path": "opendata/data/providers/federal_reserve/models/_primary_dealer.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::PrimaryDealerPositioning",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/PrimaryDealerPositioning/contract.json",
+        "sha256": "90597c7bcbcfa9d75c58e0dafec13f73a7825b08b738538c535288ed84a208e5"
+      },
+      "status": "PASS",
+      "upstream_model": "PrimaryDealerPositioning"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerPositioning --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:36:05.937043+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "ab41ade022e343b7b4123fdbd8d3681b1d4ff739c7eef3886d193055ad3dc1ed",
+            "before_sha256": "ab41ade022e343b7b4123fdbd8d3681b1d4ff739c7eef3886d193055ad3dc1ed",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/PrimaryDealerPositioning.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "925c6cf0e1f96ea79ec56d98dfcfde8dd1bdd766418fa7c5615360e8e4d11582",
+            "before_sha256": "925c6cf0e1f96ea79ec56d98dfcfde8dd1bdd766418fa7c5615360e8e4d11582",
+            "path": "opendata/data/providers/federal_reserve/models/primary_dealer_positioning.py"
+          },
+          {
+            "after_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "before_sha256": "e5dac6a531938847235cf572a19f9e3a691c9e71909aab944cc363245138dcc6",
+            "path": "opendata/data/providers/federal_reserve/models/_primary_dealer.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::PrimaryDealerPositioning",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/PrimaryDealerPositioning/counterfact.json",
+        "sha256": "f716dfcd1b13aadaded9d3b91861fa9f1d7a625eec2eca8a2012caec7dca6e88"
+      },
+      "status": "PASS",
+      "upstream_model": "PrimaryDealerPositioning"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SOFR --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:36:07.494243+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "84ac881fae0ab60f878c947065f719d8d74feb0d572a511ccae477e25c1f79d8",
+            "before_sha256": "84ac881fae0ab60f878c947065f719d8d74feb0d572a511ccae477e25c1f79d8",
+            "path": "opendata/data/providers/federal_reserve/models/sofr.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::SOFR",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/SOFR/implementation.json",
+        "sha256": "19ac85067045a076f20f13f7381e6d845f136b1f11f133417dfcdbdafe82bcba"
+      },
+      "status": "PASS",
+      "upstream_model": "SOFR"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SOFR --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:36:09.002697+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "93504eebcda71977012d25846032b90073b5aee829160a6b2ebe6d03ade2c2dd",
+            "before_sha256": "93504eebcda71977012d25846032b90073b5aee829160a6b2ebe6d03ade2c2dd",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/SOFR.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "84ac881fae0ab60f878c947065f719d8d74feb0d572a511ccae477e25c1f79d8",
+            "before_sha256": "84ac881fae0ab60f878c947065f719d8d74feb0d572a511ccae477e25c1f79d8",
+            "path": "opendata/data/providers/federal_reserve/models/sofr.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::SOFR",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/SOFR/direct.json",
+        "sha256": "89ada0bde85c42f971fee6929f243464ffb1b05c4b5e303f59c4b7b5989d45f8"
+      },
+      "status": "PASS",
+      "upstream_model": "SOFR"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SOFR --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:36:10.510852+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "93504eebcda71977012d25846032b90073b5aee829160a6b2ebe6d03ade2c2dd",
+            "before_sha256": "93504eebcda71977012d25846032b90073b5aee829160a6b2ebe6d03ade2c2dd",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/SOFR.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "84ac881fae0ab60f878c947065f719d8d74feb0d572a511ccae477e25c1f79d8",
+            "before_sha256": "84ac881fae0ab60f878c947065f719d8d74feb0d572a511ccae477e25c1f79d8",
+            "path": "opendata/data/providers/federal_reserve/models/sofr.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::SOFR",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/SOFR/service.json",
+        "sha256": "7a03eea9c88da2571f96b3017986f461892295724d5405911eb6ca297a34d57b"
+      },
+      "status": "PASS",
+      "upstream_model": "SOFR"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SOFR --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:36:12.113725+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "93504eebcda71977012d25846032b90073b5aee829160a6b2ebe6d03ade2c2dd",
+            "before_sha256": "93504eebcda71977012d25846032b90073b5aee829160a6b2ebe6d03ade2c2dd",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/SOFR.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "84ac881fae0ab60f878c947065f719d8d74feb0d572a511ccae477e25c1f79d8",
+            "before_sha256": "84ac881fae0ab60f878c947065f719d8d74feb0d572a511ccae477e25c1f79d8",
+            "path": "opendata/data/providers/federal_reserve/models/sofr.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::SOFR",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/SOFR/contract.json",
+        "sha256": "adbb791ddaaab07db27c80b51a72820d7d9941d52c5311491b3d259f82379e82"
+      },
+      "status": "PASS",
+      "upstream_model": "SOFR"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SOFR --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:36:13.678545+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "before_sha256": "32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+            "path": "opendata/data/models/federal_reserve_clean_nyfed.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:32b066c9519df309cf264323f3f67b2bd7b3a7cf5550a02f47521776dacd8542",
+        "fixture": [
+          {
+            "after_sha256": "93504eebcda71977012d25846032b90073b5aee829160a6b2ebe6d03ade2c2dd",
+            "before_sha256": "93504eebcda71977012d25846032b90073b5aee829160a6b2ebe6d03ade2c2dd",
+            "path": "docs/evidence/C101/federal_reserve/fixtures/federal_reserve/SOFR.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "before_sha256": "73637225ddf569a9144432209e2166cb4caf8005bc96ec8de8a76ebfe4b98c89",
+            "path": "scripts/quality/iter2_witnesses/federal_reserve.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "84ac881fae0ab60f878c947065f719d8d74feb0d572a511ccae477e25c1f79d8",
+            "before_sha256": "84ac881fae0ab60f878c947065f719d8d74feb0d572a511ccae477e25c1f79d8",
+            "path": "opendata/data/providers/federal_reserve/models/sofr.py"
+          },
+          {
+            "after_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "before_sha256": "5e1dd06936c9d770abb8d0880ac70f0cd87895b66744c43398547c227967bb40",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "before_sha256": "68747f909b443dff36caf4f9d70e68efcf798fa47261f752d2734f41d42cc901",
+            "path": "opendata/data/providers/federal_reserve/_source.py"
+          },
+          {
+            "after_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "before_sha256": "628aaf15ab53efcc83a1079321fce6dcdc3b1a6d710e3c177d5929f3f07a808e",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "provider": "federal_reserve",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "federal_reserve::SOFR",
+        "path": "docs/evidence/C101/federal_reserve/receipts/federal_reserve/SOFR/counterfact.json",
+        "sha256": "6f6208d67d0d8a677799d830dab92a4556367c6c157c806028e28a9c80001640"
+      },
+      "status": "PASS",
+      "upstream_model": "SOFR"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SvenssonYieldCurve --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:36:13.681628+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "implementation",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::SvenssonYieldCurve",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "SvenssonYieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SvenssonYieldCurve --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:36:13.681644+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "direct",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::SvenssonYieldCurve",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "SvenssonYieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SvenssonYieldCurve --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:36:13.681650+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "service",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::SvenssonYieldCurve",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "SvenssonYieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SvenssonYieldCurve --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:36:13.681653+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "contract",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::SvenssonYieldCurve",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "SvenssonYieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SvenssonYieldCurve --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:36:13.681656+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::SvenssonYieldCurve",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "SvenssonYieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TotalFactorProductivity --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:36:13.681661+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "implementation",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::TotalFactorProductivity",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "TotalFactorProductivity"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TotalFactorProductivity --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:36:13.681667+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "direct",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::TotalFactorProductivity",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "TotalFactorProductivity"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TotalFactorProductivity --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:36:13.681672+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "service",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::TotalFactorProductivity",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "TotalFactorProductivity"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TotalFactorProductivity --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:36:13.681679+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "contract",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::TotalFactorProductivity",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "TotalFactorProductivity"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TotalFactorProductivity --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:36:13.681683+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::TotalFactorProductivity",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "TotalFactorProductivity"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TreasuryRates --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:36:13.681688+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "implementation",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::TreasuryRates",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "TreasuryRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TreasuryRates --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:36:13.681693+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "direct",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::TreasuryRates",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "TreasuryRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TreasuryRates --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:36:13.681697+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "service",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::TreasuryRates",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "TreasuryRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TreasuryRates --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:36:13.681701+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "contract",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::TreasuryRates",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "TreasuryRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TreasuryRates --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:36:13.681715+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::TreasuryRates",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "TreasuryRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model YieldCurve --phase implementation --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T14:36:13.681731+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "implementation",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::YieldCurve",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "YieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model YieldCurve --phase direct --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T14:36:13.681737+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "direct",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::YieldCurve",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "YieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model YieldCurve --phase service --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T14:36:13.681741+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "service",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::YieldCurve",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "YieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model YieldCurve --phase contract --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T14:36:13.681745+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "contract",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::YieldCurve",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "YieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model YieldCurve --phase counterfact --evidence-root docs/evidence/C101/federal_reserve",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T14:36:13.681749+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "federal_reserve",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "federal_reserve::YieldCurve",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "YieldCurve"
+    }
+  ],
+  "generated_at_utc": "2026-10-14T14:36:15.516963+00:00",
+  "generated_by": "scripts/quality/iter2_claims_producer.py",
+  "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
+  "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",
+  "primary_reviews": [],
+  "schema_version": 1
+}

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSearch --phase counterfact --evidence-root docs/evidence/C101/bls
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "BlsProviderError", "refusal_code": "BLS_CATALOG_MISSING_ID", "rejected": [], "status": 200}, "observed": {"invalid": [], "missing": [], "refusal_class": "BlsProviderError", "refusal_code": "BLS_CATALOG_MISSING_ID", "rejected": [], "status": 200}, "reason": "publishing a catalog record with an empty series_id field strips the identity column the BlsCatalogItem contract requires, so the parser must refuse the file with BLS_CATALOG_MISSING_ID rather than hand back an unaddressable series; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

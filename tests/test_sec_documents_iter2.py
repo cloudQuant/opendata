@@ -62,7 +62,7 @@ def _queue_json(monkeypatch: pytest.MonkeyPatch, *items: object) -> list[str]:
     queue = list(items)
     requested: list[str] = []
 
-    def fetch_json(ctx: FetchContext, url: str) -> object:
+    def fetch_json(ctx: FetchContext, url: str, *, transport: Any = None) -> object:
         assert ctx.timeout == 5.0
         requested.append(url)
         if not queue:
@@ -81,7 +81,11 @@ def _queue_bytes(monkeypatch: pytest.MonkeyPatch, *items: bytes) -> list[str]:
     requested: list[str] = []
 
     def fetch_bytes(
-        ctx: FetchContext, url: str, *, max_bytes: int = docs.MAX_TEXT_RESPONSE_BYTES
+        ctx: FetchContext,
+        url: str,
+        *,
+        max_bytes: int = docs.MAX_TEXT_RESPONSE_BYTES,
+        transport: Any = None,
     ) -> bytes:
         assert ctx.timeout == 5.0
         assert len(queue) > 0, f"unexpected SEC document request: {url}"
@@ -239,7 +243,7 @@ def test_sec_html_file_positive_and_empty_document_fixture(monkeypatch: pytest.M
     assert len(requested) == 1
 
     _queue_bytes(monkeypatch, _fixture("sec-htm-file/negative.html"))
-    with pytest.raises(ValidationError):
+    with pytest.raises(sec_common.SecProviderError, match="SEC_HTML_CONTRACT_INVALID"):
         docs.SecHtmFileFetcher().fetch(
             ctx=_context("SecHtmFile"),
             url="https://www.sec.gov/Archives/edgar/data/320193/000032019326000001/report.htm",
@@ -341,7 +345,7 @@ def test_mda_positive_and_missing_section_fixture(monkeypatch: pytest.MonkeyPatc
     monkeypatch.setattr(
         docs,
         "company_ticker_rows",
-        lambda ctx: (
+        lambda ctx, **_kwargs: (
             {"cik": "0000320193", "ticker": "AAPL", "name": "Apple Inc.", "exchange": "NASDAQ"},
         ),
     )
@@ -539,7 +543,7 @@ def test_query_validation_rejects_bad_uri_and_date_before_io(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[str] = []
-    monkeypatch.setattr(docs, "fetch_json", lambda ctx, url: calls.append(url))
+    monkeypatch.setattr(docs, "fetch_json", lambda ctx, url, **_kwargs: calls.append(url))
     with pytest.raises(ValidationError):
         docs.SecFilingFetcher().fetch(
             ctx=_context("SecFiling"),

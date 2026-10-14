@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 
 from opendata.data.http_client import HttpFetchError, get_shared_http_client
+from opendata.data.providers._engine.http_json import HttpGet, ProviderEngineError
 from opendata.data.request_budget import RequestBudgetError
 
 if TYPE_CHECKING:
@@ -17,13 +18,16 @@ MAX_RESPONSE_BYTES = 16 * 1024 * 1024
 DEFAULT_TIMEOUT_SECONDS = 30.0
 
 
-class CFTCProviderError(RuntimeError):
-    """Sanitized CFTC transport or response failure."""
+class CFTCProviderError(ProviderEngineError):
+    """Sanitized CFTC transport or response failure.
+
+    It is the engine's attributable refusal for this source, so every shape failure reaches the
+    governed caller with the typed ``code``/``status``/``url``/``rejected``/``missing``/``invalid``
+    face, not just a message string.
+    """
 
     def __init__(self, code: str, *, status: int | None = None) -> None:
-        self.code = code
-        self.status = status
-        super().__init__(code if status is None else f"{code} status={status}")
+        super().__init__(code, status=status)
 
 
 def get_json(
@@ -31,6 +35,7 @@ def get_json(
     *,
     params: dict[str, str],
     context: FetchContext,
+    transport: HttpGet | None = None,
 ) -> object:
     """GET one public CFTC page through the governed HTTP client."""
     parts = urlsplit(url)
@@ -45,6 +50,18 @@ def get_json(
     ):
         raise CFTCProviderError("CFTC_URL_REJECTED")
     timeout = min(DEFAULT_TIMEOUT_SECONDS, context.timeout or DEFAULT_TIMEOUT_SECONDS)
+    if transport is not None:
+        # The offline witness seam answers in-process with the parsed Socrata document.
+        seam_response = transport(
+            url,
+            params,
+            timeout=timeout,
+            source="cftc",
+            headers={"Accept": "application/json"},
+        )
+        if not 200 <= seam_response.status < 300:
+            raise CFTCProviderError("CFTC_HTTP_ERROR", status=seam_response.status)
+        return seam_response.document
     try:
         response = get_shared_http_client().get(
             url,

@@ -747,6 +747,13 @@ test('real browser download chain records API, task, auth and storage evidence',
       { script_id: '7', selected_interface_id: 94, response_execution_id: metadataFailure.executionId },
       { script_id: '7', selected_interface_id: 95, response_execution_id: empty.executionId }
     )
+  } else {
+    // The errors-only leg must still carry a verdict: it asserts its own
+    // invariant (the full-chain evidence stays empty) instead of silently
+    // skipping fifteen assertions whenever OPENDATA_AC21_ERRORS_ONLY=1.
+    expect(uiClicks).toEqual([])
+    expect(observedStatus).toEqual({})
+    expect(Object.keys(uiStatusDisplayMs)).toEqual([])
   }
 
   await page.goto('/scripts/7', { waitUntil: 'domcontentloaded' })
@@ -888,5 +895,9 @@ test('real browser download chain records API, task, auth and storage evidence',
     clientNavigation.filter((event) => !event.ui_navigated_to_executions),
     'AC21 natural UI navigation failed after an accepted real download click'
   ).toEqual([])
+  } else {
+    // The errors-only leg carries its own verdict instead of silence: the
+    // five-chain statuses were never observed on this path.
+    expect(observedStatus).toEqual({})
   }
 })

@@ -24,6 +24,7 @@ The faces, in the order they are judged:
 from __future__ import annotations
 
 from dataclasses import replace
+from datetime import time
 from types import SimpleNamespace
 from typing import Any
 
@@ -68,7 +69,7 @@ POSITIVE_CONTROL_4: list[dict[str, Any]] = [
         "Exchange": "NYSE",
         "description": "Broad US equities",
         "currency": "USD",
-        "mkt_data_delay": "15 min",
+        "mkt_data_delay": 15,
         "calc_start_time": "08:30",
         "calc_end_time": "17:00",
         "time_zone": "America/Chicago",
@@ -84,7 +85,7 @@ POSITIVE_CONTROL_4: list[dict[str, Any]] = [
         "Exchange": "NYSE",
         "description": "Banks only",
         "currency": "USD",
-        "mkt_data_delay": "15 min",
+        "mkt_data_delay": 15,
         "calc_start_time": "08:30",
         "calc_end_time": "17:00",
         "time_zone": "America/Chicago",
@@ -95,7 +96,7 @@ POSITIVE_CONTROL_4: list[dict[str, Any]] = [
         "Exchange": "Cboe",
         "description": "Implied volatility",
         "currency": "USD",
-        "mkt_data_delay": "Real time",
+        "mkt_data_delay": 0,
         "calc_start_time": "03:30",
         "calc_end_time": "20:00",
         "time_zone": "America/Chicago",
@@ -106,7 +107,7 @@ POSITIVE_CONTROL_4: list[dict[str, Any]] = [
         "Exchange": "NYSE",
         "description": "The SPX family, gross of dividends",
         "currency": "USD",
-        "mkt_data_delay": "15 min",
+        "mkt_data_delay": 15,
         "calc_start_time": "08:30",
         "calc_end_time": "17:00",
         "time_zone": "America/Chicago",
@@ -140,8 +141,8 @@ ROW_COLUMNS = (
     ColumnSpec("name", "str", source_key="index_name", required=True),
     ColumnSpec("exchange", "str"),
     ColumnSpec("currency", "str"),
-    ColumnSpec("data_delay", "str", source_key="mkt_data_delay"),
-    ColumnSpec("open_time", "str", source_key="calc_start_time"),
+    ColumnSpec("data_delay", "int", source_key="mkt_data_delay", units="minutes"),
+    ColumnSpec("open_time", "time", source_key="calc_start_time"),
 )
 
 
@@ -244,8 +245,12 @@ class TestCboeIndexSearchIsDeclarable:
         assert _symbols(family) == ["SPX", "SPXN", "SPXT"]
         assert [row.name for row in family] == ["S&P 500", "S&P 500 Banks", "S&P 500 Total Return"]
         assert family[0].description == "Broad US equities"
-        assert family[0].data_delay == "15 min"
-        assert family[0].open_time == "08:30"
+        # The declaration and the reviewed contract both publish data_delay as integer minutes
+        # (cboe/specs.py:181, models/cboe_index.py); the fixture publishes the directory's integer
+        # minute counts -- 15, and 0 for the real-time VIX -- and a clock string reaches the row
+        # as the datetime.time the declared ``time`` kind publishes.
+        assert family[0].data_delay == 15
+        assert family[0].open_time == time(8, 30)
         assert family[0].time_zone == "America/Chicago"
         alone, _ = _fetch(
             INDEX_SEARCH, POSITIVE_CONTROL_4, source=SOURCE, query="VIX", is_symbol=True

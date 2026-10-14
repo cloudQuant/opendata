@@ -547,9 +547,19 @@ class TestDeriveDeclarationRefusals:
 class TestEmptyDeriveLeavesRowsByteIdentical:
     """The default arm: a declaration naming no derive behaves exactly as the engine did."""
 
-    def test_the_new_field_defaults_empty_for_every_declaration_on_disk(self) -> None:
-        """No production declaration is reinterpreted by the field landing."""
-        assert MONEY_MEASURES.column_derives == ()
+    def test_the_one_production_derive_on_disk_is_the_money_measure_month_cast(self) -> None:
+        """The census, re-based to the approved H.6 ruling: exactly one cast plan on disk.
+
+        Federal Reserve H.6 ``month`` became a ``date`` produced by a record-source
+        ``cast``/``date_string("%Y-%m")`` plan (ruling 2026-10-14); every other declaration is
+        still copied verbatim. The face reads the disk live, so a plan added, dropped, renamed
+        or re-kinded -- on MONEY_MEASURES or on the two that must carry none -- fails an arm here.
+        """
+        (money_plan,) = MONEY_MEASURES.column_derives
+        assert money_plan.column == "month"
+        assert money_plan.source_kind == "record" and money_plan.source == ""
+        assert [stage.kind for stage in money_plan.stages] == ["cast"]
+        assert money_plan.stages[0].cast == CastSpec.date_string("%Y-%m")
         assert TREASURY_RATES.column_derives == ()
         assert SVENSSON_YIELD_CURVE.column_derives == ()
 

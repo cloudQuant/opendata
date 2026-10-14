@@ -75,7 +75,7 @@ def request_html(
     )
     if content_type not in {"text/html", "application/xhtml+xml"}:
         raise FinvizSourceError("FINVIZ_UNEXPECTED_CONTENT_TYPE")
-    body = response.content
+    body: bytes = response.content
     if len(body) > MAX_RESPONSE_BYTES:
         raise FinvizSourceError("FINVIZ_RESPONSE_TOO_LARGE")
     if not body:

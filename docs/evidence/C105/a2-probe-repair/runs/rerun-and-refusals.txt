@@ -1,0 +1,53 @@
+carrier: rerun-and-refusals.txt
+round: C105 a2-probe-repair
+captured_at_local=2026-10-15 05:18:52
+commit=270e373411951be1752d71206379da98762d5081 branch=dev
+worktree_dirty_files_at_capture=1529
+source_log=/tmp/c105_rerun_refusal.txt
+source_bytes=2795
+source_sha256_16=4349239c0d1367e2
+argv=python /tmp/c105_capture3.py  # bandit/mypy attribution, six probe re-runs, C104 carrier diff vs index then restore, three repair scripts re-run
+interpreter=gitleaks 8.30.1 / python 3.13.5 (envs/py313)
+capture_exit=0
+----------------------------------------------------------------------
+# bandit over the 34 A2 targets, plus where its stderr nosec warnings land
+face: bandit_exit=0 bandit_results_total=0
+face: nosec_warnings_total=86 warnings_parsed_to_file_line=86
+face: unused_nosec_on_nosec_lines=11 files=7
+face: unused_by_file=verify_census_rebase.py=2, stale_fake_repair.py=1, suite_red_taxonomy.py=1, ths_format_audit.py=2, ths_hunk_audit.py=2, pin_rebase.py=1, payload_rescan.py=2
+face: other_warnings_not_on_a_nosec_line=75
+face: mypy_targets=34 targets_with_errors=0 mypy_errors_total=0
+# re-run of the six probes that can run again
+rerun: h15_allowlist.py probe_exit=0 :: verdict: PASS
+rerun: face_builder.py probe_exit=0 :: verdict: PASS
+rerun: payload_rescan.py probe_exit=0 :: verdict: PASS
+rerun: carrier_archiver.py probe_exit=0 :: verdict: PASS
+rerun: document_builder.py probe_exit=0 :: verdict: PASS - every README value is a carrier-extracted token
+rerun: scenario_rebase.py probe_exit=1 :: verdict: REFUSED - the fixture rows already match live, nothing to re-base
+# C104 carriers re-written by the archiver: diff vs the index, then restored
+carrier_diff: finding-triage-identity-only.txt changed_lines=2 fields=['captured_at_local', 'worktree_dirty_files_at_capture'] line_counts=(43,43)
+    restored_to_index=True
+carrier_diff: probe-pass.txt changed_lines=2 fields=['captured_at_local', 'worktree_dirty_files_at_capture'] line_counts=(26,26)
+    restored_to_index=True
+carrier_diff: pytest-allowlist-consumers.txt changed_lines=2 fields=['captured_at_local', 'worktree_dirty_files_at_capture'] line_counts=(27,27)
+    restored_to_index=True
+carrier_diff: secret-check-after-edit.txt changed_lines=2 fields=['captured_at_local', 'worktree_dirty_files_at_capture'] line_counts=(25,25)
+    restored_to_index=True
+carrier_diff: secret-check-before-edit.txt changed_lines=2 fields=['captured_at_local', 'worktree_dirty_files_at_capture'] line_counts=(25,25)
+    restored_to_index=True
+carrier_diff: staged-payload-rescan.txt changed_lines=2 fields=['captured_at_local', 'worktree_dirty_files_at_capture'] line_counts=(22,22)
+    restored_to_index=True
+face: carrier_changed_lines_total=12 carriers_in_scope=6
+# repair scripts re-run after the apply: they must write nothing
+refusal_arm: c105_misc.py MISC_exit=1
+    face: edits_applied=0 files_touched=17 reverted=True
+    verdict: REFUSED - an anchor was not unique or an edit broke a file, nothing written
+refusal_arm: c105_mypy.py MYPY_SWEEP_exit=1
+    face: edits_applied=0 files_in_scope=14 reverted=True
+    verdict: REFUSED - an anchor was not unique or an edit broke a file, nothing written
+refusal_arm: c105_bandit.py BANDIT_SWEEP_exit=0
+    face: bandit_finding_sites=0 codes={}
+face: targets_hashed=34 changed_after_repair_reruns=0 names=[]
+
+captured: c105_rerun_refusal.txt bytes=2735
+CAPTURE_EXIT=0

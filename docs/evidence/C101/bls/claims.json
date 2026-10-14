@@ -1,0 +1,860 @@
+{
+  "claims": [
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSearch --phase implementation --evidence-root docs/evidence/C101/bls",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T13:24:11.766435+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "before_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "path": "opendata/data/models/period_series.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+        "fixture": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "path": "scripts/quality/iter2_witnesses/bls.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "path": "scripts/quality/iter2_witnesses/bls.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "before_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "path": "opendata/data/providers/bls/registration.py"
+          },
+          {
+            "after_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "before_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "path": "opendata/data/providers/bls/provider.py"
+          },
+          {
+            "after_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "before_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "path": "opendata/data/providers/bls/models/_client.py"
+          },
+          {
+            "after_sha256": "bc652e2e0a3b819dd1784e7a6aa771015147556ee55e786339c6170ea9576682",
+            "before_sha256": "bc652e2e0a3b819dd1784e7a6aa771015147556ee55e786339c6170ea9576682",
+            "path": "opendata/data/providers/bls/models/search.py"
+          }
+        ]
+      },
+      "provider": "bls",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "bls::BlsSearch",
+        "path": "docs/evidence/C101/bls/receipts/bls/BlsSearch/implementation.json",
+        "sha256": "378a48837ed67a559871af4a5ce2475bd2be1664aeda832b6e603f755e215ed4"
+      },
+      "status": "PASS",
+      "upstream_model": "BlsSearch"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSearch --phase direct --evidence-root docs/evidence/C101/bls",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T13:24:12.576079+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "before_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "path": "opendata/data/models/period_series.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+        "fixture": [
+          {
+            "after_sha256": "2afe121160cab336b30c41f649378ea662ea61903bf36d56be3f63bc7649845e",
+            "before_sha256": "2afe121160cab336b30c41f649378ea662ea61903bf36d56be3f63bc7649845e",
+            "path": "docs/evidence/C101/bls/fixtures/bls/BlsSearch.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "path": "scripts/quality/iter2_witnesses/bls.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "before_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "path": "opendata/data/providers/bls/registration.py"
+          },
+          {
+            "after_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "before_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "path": "opendata/data/providers/bls/provider.py"
+          },
+          {
+            "after_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "before_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "path": "opendata/data/providers/bls/models/_client.py"
+          },
+          {
+            "after_sha256": "bc652e2e0a3b819dd1784e7a6aa771015147556ee55e786339c6170ea9576682",
+            "before_sha256": "bc652e2e0a3b819dd1784e7a6aa771015147556ee55e786339c6170ea9576682",
+            "path": "opendata/data/providers/bls/models/search.py"
+          }
+        ]
+      },
+      "provider": "bls",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "bls::BlsSearch",
+        "path": "docs/evidence/C101/bls/receipts/bls/BlsSearch/direct.json",
+        "sha256": "a1151c4508b48e409742e8eb7400a47cb8ee5367b5a89931a33fd4cba38cefc8"
+      },
+      "status": "PASS",
+      "upstream_model": "BlsSearch"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSearch --phase service --evidence-root docs/evidence/C101/bls",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T13:24:13.577201+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "before_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "path": "opendata/data/models/period_series.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+        "fixture": [
+          {
+            "after_sha256": "2afe121160cab336b30c41f649378ea662ea61903bf36d56be3f63bc7649845e",
+            "before_sha256": "2afe121160cab336b30c41f649378ea662ea61903bf36d56be3f63bc7649845e",
+            "path": "docs/evidence/C101/bls/fixtures/bls/BlsSearch.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "path": "scripts/quality/iter2_witnesses/bls.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "before_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "path": "opendata/data/providers/bls/registration.py"
+          },
+          {
+            "after_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "before_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "path": "opendata/data/providers/bls/provider.py"
+          },
+          {
+            "after_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "before_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "path": "opendata/data/providers/bls/models/_client.py"
+          },
+          {
+            "after_sha256": "bc652e2e0a3b819dd1784e7a6aa771015147556ee55e786339c6170ea9576682",
+            "before_sha256": "bc652e2e0a3b819dd1784e7a6aa771015147556ee55e786339c6170ea9576682",
+            "path": "opendata/data/providers/bls/models/search.py"
+          }
+        ]
+      },
+      "provider": "bls",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "bls::BlsSearch",
+        "path": "docs/evidence/C101/bls/receipts/bls/BlsSearch/service.json",
+        "sha256": "cc50c9fb5a9cf4ffa8c4f42dd58139e43f09b42216384da57892b44cea7a5d47"
+      },
+      "status": "PASS",
+      "upstream_model": "BlsSearch"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSearch --phase contract --evidence-root docs/evidence/C101/bls",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T13:24:14.396412+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "before_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "path": "opendata/data/models/period_series.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+        "fixture": [
+          {
+            "after_sha256": "2afe121160cab336b30c41f649378ea662ea61903bf36d56be3f63bc7649845e",
+            "before_sha256": "2afe121160cab336b30c41f649378ea662ea61903bf36d56be3f63bc7649845e",
+            "path": "docs/evidence/C101/bls/fixtures/bls/BlsSearch.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "path": "scripts/quality/iter2_witnesses/bls.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "before_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "path": "opendata/data/providers/bls/registration.py"
+          },
+          {
+            "after_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "before_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "path": "opendata/data/providers/bls/provider.py"
+          },
+          {
+            "after_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "before_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "path": "opendata/data/providers/bls/models/_client.py"
+          },
+          {
+            "after_sha256": "bc652e2e0a3b819dd1784e7a6aa771015147556ee55e786339c6170ea9576682",
+            "before_sha256": "bc652e2e0a3b819dd1784e7a6aa771015147556ee55e786339c6170ea9576682",
+            "path": "opendata/data/providers/bls/models/search.py"
+          }
+        ]
+      },
+      "provider": "bls",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "bls::BlsSearch",
+        "path": "docs/evidence/C101/bls/receipts/bls/BlsSearch/contract.json",
+        "sha256": "c8a730e4728b460d994eefb2c9cf508af1c74f54fafcd1fac1c41ad99579d511"
+      },
+      "status": "PASS",
+      "upstream_model": "BlsSearch"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSearch --phase counterfact --evidence-root docs/evidence/C101/bls",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T13:24:15.216653+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "before_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "path": "opendata/data/models/period_series.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+        "fixture": [
+          {
+            "after_sha256": "2afe121160cab336b30c41f649378ea662ea61903bf36d56be3f63bc7649845e",
+            "before_sha256": "2afe121160cab336b30c41f649378ea662ea61903bf36d56be3f63bc7649845e",
+            "path": "docs/evidence/C101/bls/fixtures/bls/BlsSearch.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "path": "scripts/quality/iter2_witnesses/bls.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "before_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "path": "opendata/data/providers/bls/registration.py"
+          },
+          {
+            "after_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "before_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "path": "opendata/data/providers/bls/provider.py"
+          },
+          {
+            "after_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "before_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "path": "opendata/data/providers/bls/models/_client.py"
+          },
+          {
+            "after_sha256": "bc652e2e0a3b819dd1784e7a6aa771015147556ee55e786339c6170ea9576682",
+            "before_sha256": "bc652e2e0a3b819dd1784e7a6aa771015147556ee55e786339c6170ea9576682",
+            "path": "opendata/data/providers/bls/models/search.py"
+          }
+        ]
+      },
+      "provider": "bls",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "bls::BlsSearch",
+        "path": "docs/evidence/C101/bls/receipts/bls/BlsSearch/counterfact.json",
+        "sha256": "9b336679e9fbfbc6075c1623efcfe5f3bb26b8fcbc712c170f3a893f0696637c"
+      },
+      "status": "PASS",
+      "upstream_model": "BlsSearch"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSeries --phase implementation --evidence-root docs/evidence/C101/bls",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-14T13:24:16.067871+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "before_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "path": "opendata/data/models/period_series.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+        "fixture": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "path": "scripts/quality/iter2_witnesses/bls.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "path": "scripts/quality/iter2_witnesses/bls.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "before_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "path": "opendata/data/providers/bls/registration.py"
+          },
+          {
+            "after_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "before_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "path": "opendata/data/providers/bls/provider.py"
+          },
+          {
+            "after_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "before_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "path": "opendata/data/providers/bls/models/_client.py"
+          },
+          {
+            "after_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+            "before_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+            "path": "opendata/data/providers/bls/models/series.py"
+          }
+        ]
+      },
+      "provider": "bls",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "bls::BlsSeries",
+        "path": "docs/evidence/C101/bls/receipts/bls/BlsSeries/implementation.json",
+        "sha256": "3311a3449dcc6c94036b0ec31cc93e572c6da548a1e2d9e26f7d6875c32a1066"
+      },
+      "status": "PASS",
+      "upstream_model": "BlsSeries"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSeries --phase direct --evidence-root docs/evidence/C101/bls",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-14T13:24:16.901937+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "before_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "path": "opendata/data/models/period_series.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+        "fixture": [
+          {
+            "after_sha256": "0b16a914df1a516670d48783d8804e73d25655de3b2da9e1059ca97c5f35f792",
+            "before_sha256": "0b16a914df1a516670d48783d8804e73d25655de3b2da9e1059ca97c5f35f792",
+            "path": "docs/evidence/C101/bls/fixtures/bls/BlsSeries.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "path": "scripts/quality/iter2_witnesses/bls.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "before_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "path": "opendata/data/providers/bls/registration.py"
+          },
+          {
+            "after_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "before_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "path": "opendata/data/providers/bls/provider.py"
+          },
+          {
+            "after_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "before_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "path": "opendata/data/providers/bls/models/_client.py"
+          },
+          {
+            "after_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+            "before_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+            "path": "opendata/data/providers/bls/models/series.py"
+          }
+        ]
+      },
+      "provider": "bls",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "bls::BlsSeries",
+        "path": "docs/evidence/C101/bls/receipts/bls/BlsSeries/direct.json",
+        "sha256": "edfc2f6c2220b48cca8579261bb5b466f1fa2a4d90cb165f7846ec6d3d5df857"
+      },
+      "status": "PASS",
+      "upstream_model": "BlsSeries"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSeries --phase service --evidence-root docs/evidence/C101/bls",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-14T13:24:17.853433+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "before_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "path": "opendata/data/models/period_series.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+        "fixture": [
+          {
+            "after_sha256": "0b16a914df1a516670d48783d8804e73d25655de3b2da9e1059ca97c5f35f792",
+            "before_sha256": "0b16a914df1a516670d48783d8804e73d25655de3b2da9e1059ca97c5f35f792",
+            "path": "docs/evidence/C101/bls/fixtures/bls/BlsSeries.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "path": "scripts/quality/iter2_witnesses/bls.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "before_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "path": "opendata/data/providers/bls/registration.py"
+          },
+          {
+            "after_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "before_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "path": "opendata/data/providers/bls/provider.py"
+          },
+          {
+            "after_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "before_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "path": "opendata/data/providers/bls/models/_client.py"
+          },
+          {
+            "after_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+            "before_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+            "path": "opendata/data/providers/bls/models/series.py"
+          }
+        ]
+      },
+      "provider": "bls",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "bls::BlsSeries",
+        "path": "docs/evidence/C101/bls/receipts/bls/BlsSeries/service.json",
+        "sha256": "606cef42d2d5de85ce73fe36293ffc6fa0f1cd57a6e541f8b39da7f4f70bf67e"
+      },
+      "status": "PASS",
+      "upstream_model": "BlsSeries"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSeries --phase contract --evidence-root docs/evidence/C101/bls",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-14T13:24:18.707175+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "before_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "path": "opendata/data/models/period_series.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+        "fixture": [
+          {
+            "after_sha256": "0b16a914df1a516670d48783d8804e73d25655de3b2da9e1059ca97c5f35f792",
+            "before_sha256": "0b16a914df1a516670d48783d8804e73d25655de3b2da9e1059ca97c5f35f792",
+            "path": "docs/evidence/C101/bls/fixtures/bls/BlsSeries.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "path": "scripts/quality/iter2_witnesses/bls.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "before_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "path": "opendata/data/providers/bls/registration.py"
+          },
+          {
+            "after_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "before_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "path": "opendata/data/providers/bls/provider.py"
+          },
+          {
+            "after_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "before_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "path": "opendata/data/providers/bls/models/_client.py"
+          },
+          {
+            "after_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+            "before_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+            "path": "opendata/data/providers/bls/models/series.py"
+          }
+        ]
+      },
+      "provider": "bls",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "bls::BlsSeries",
+        "path": "docs/evidence/C101/bls/receipts/bls/BlsSeries/contract.json",
+        "sha256": "54e01c7c099fa75c929c2dad64e6214b16dbe680c0130d6c9999f21926d09bbd"
+      },
+      "status": "PASS",
+      "upstream_model": "BlsSeries"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSeries --phase counterfact --evidence-root docs/evidence/C101/bls",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-14T13:24:19.534206+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "before_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+            "path": "opendata/data/models/period_series.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+        "fixture": [
+          {
+            "after_sha256": "0b16a914df1a516670d48783d8804e73d25655de3b2da9e1059ca97c5f35f792",
+            "before_sha256": "0b16a914df1a516670d48783d8804e73d25655de3b2da9e1059ca97c5f35f792",
+            "path": "docs/evidence/C101/bls/fixtures/bls/BlsSeries.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+            "path": "scripts/quality/iter2_witnesses/bls.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "before_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+            "path": "opendata/data/providers/bls/registration.py"
+          },
+          {
+            "after_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "before_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+            "path": "opendata/data/providers/bls/provider.py"
+          },
+          {
+            "after_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "before_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+            "path": "opendata/data/providers/bls/models/_client.py"
+          },
+          {
+            "after_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+            "before_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+            "path": "opendata/data/providers/bls/models/series.py"
+          }
+        ]
+      },
+      "provider": "bls",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "bls::BlsSeries",
+        "path": "docs/evidence/C101/bls/receipts/bls/BlsSeries/counterfact.json",
+        "sha256": "336366a65f3e764472de42dc44e7890e8cfc2870d8af0fe99be2ad6b13a1dc79"
+      },
+      "status": "PASS",
+      "upstream_model": "BlsSeries"
+    }
+  ],
+  "generated_at_utc": "2026-10-14T13:24:20.949922+00:00",
+  "generated_by": "scripts/quality/iter2_claims_producer.py",
+  "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
+  "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",
+  "primary_reviews": [],
+  "schema_version": 1
+}

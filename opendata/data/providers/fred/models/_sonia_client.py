@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, NoReturn
+from typing import TYPE_CHECKING, Any, NoReturn
 
 from opendata.data.http_client import get_shared_http_client
 from opendata.data.providers.fred.models import _client
@@ -13,6 +13,9 @@ from opendata.data.providers.fred.models._fixed_observation_pages import (
     validate_fixed_observation_pages,
 )
 from opendata.data.providers.fred.models._sonia_query import FredSoniaQuery
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 _SOURCE = "fred"
 _CANONICAL_MODEL = "SONIA"
@@ -37,7 +40,9 @@ def _raise_query_limit(limit_kind: str, maximum: int) -> NoReturn:
     raise _SoniaQueryLimitError(limit_kind, maximum) from None
 
 
-def _pager_spec() -> FixedObservationPagerSpec[FredSoniaQuery]:
+def _pager_spec(
+    transport: HttpGet | None = None,
+) -> FixedObservationPagerSpec[FredSoniaQuery]:
     """Build an immutable SONIA-specific spec for this call."""
     return FixedObservationPagerSpec(
         query_type=FredSoniaQuery,
@@ -52,6 +57,7 @@ def _pager_spec() -> FixedObservationPagerSpec[FredSoniaQuery]:
         require_api_key=_client.require_api_key,
         json_loads=json.loads,
         raise_query_limit=_raise_query_limit,
+        transport=transport,
     )
 
 
@@ -67,11 +73,12 @@ def fetch_sonia_pages(
     query: FredSoniaQuery,
     *,
     timeout: float | None = None,
+    transport: HttpGet | None = None,
 ) -> tuple[dict[str, Any], ...]:
     """Fetch the complete bounded set of FRED SONIA page envelopes."""
     return fetch_fixed_observation_pages(
         query,
-        spec=_pager_spec(),
+        spec=_pager_spec(transport),
         timeout=timeout,
         final_validate=validate_sonia_pages,
     )

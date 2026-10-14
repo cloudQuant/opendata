@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from pydantic import ValidationError
 
@@ -16,6 +16,9 @@ from opendata.data.providers.ecb.models._series_sdmx import (
     RawEcbSeriesRecord,
     normalize_balance_of_payments_records,
 )
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 
 def _validated_query(params: object) -> EcbBalanceOfPaymentsQuery:
@@ -36,6 +39,8 @@ class EcbBalanceOfPaymentsFetcher(
 
     async_mode: ClassVar[str] = "bounded_thread"
     canonical_model: ClassVar[str | None] = "BalanceOfPayments"
+    row_model: ClassVar[type[EcbBalanceOfPaymentsObservation]] = EcbBalanceOfPaymentsObservation
+    http_transport: ClassVar[HttpGet | None] = None
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="balance_of_payments",
@@ -56,7 +61,11 @@ class EcbBalanceOfPaymentsFetcher(
     ) -> tuple[RawEcbSeriesRecord, ...]:
         """Call the governed BPS client with the query and caller timeout."""
         query = _validated_query(params)
-        return fetch_balance_of_payments(query, timeout=ctx.timeout)
+        return fetch_balance_of_payments(
+            query,
+            timeout=ctx.timeout,
+            transport=self.http_transport,
+        )
 
     def transform_data(
         self,

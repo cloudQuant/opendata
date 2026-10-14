@@ -1,0 +1,135 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/benzinga/WorldNews/direct-exit0.txt",
+    "sha256": "08feee82671e6fe5ffc75135a3c6edd80cad219057138e44f94f81e85b52db00",
+    "size_bytes": 356,
+    "stdout_excerpt": "direct: fetcher=BenzingaWorldNewsFetcher seam_requests=1 rows=2 row_class=BenzingaWorldNews first_row_sha256=d7980d7cf2bdb493\nVERDICT=PASS\n"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase direct --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-14T12:35:57.041068+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+          "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+          "path": "opendata/data/models/benzinga.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+      "fixture": [
+        {
+          "after_sha256": "e718afe9fe5725602fafe770f99735dc91c46050240707750c26bb299b6200d8",
+          "before_sha256": "e718afe9fe5725602fafe770f99735dc91c46050240707750c26bb299b6200d8",
+          "path": "docs/evidence/C101/fixtures/benzinga/WorldNews.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+          "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+          "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
+          "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
+          "path": "opendata/data/providers/benzinga/registration.py"
+        },
+        {
+          "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
+          "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
+          "path": "opendata/data/providers/benzinga/provider.py"
+        },
+        {
+          "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
+          "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
+          "path": "opendata/data/providers/benzinga/models/iter2.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "benzinga::WorldNews",
+  "phase": "direct",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "path": "opendata/data/models/benzinga.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+    "fixture": [
+      {
+        "after_sha256": "e718afe9fe5725602fafe770f99735dc91c46050240707750c26bb299b6200d8",
+        "before_sha256": "e718afe9fe5725602fafe770f99735dc91c46050240707750c26bb299b6200d8",
+        "path": "docs/evidence/C101/fixtures/benzinga/WorldNews.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+        "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+        "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
+        "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
+        "path": "opendata/data/providers/benzinga/registration.py"
+      },
+      {
+        "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
+        "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
+        "path": "opendata/data/providers/benzinga/provider.py"
+      },
+      {
+        "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
+        "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
+        "path": "opendata/data/providers/benzinga/models/iter2.py"
+      }
+    ]
+  },
+  "provider": "benzinga",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-benzinga-WorldNews",
+  "upstream_model": "WorldNews"
+}

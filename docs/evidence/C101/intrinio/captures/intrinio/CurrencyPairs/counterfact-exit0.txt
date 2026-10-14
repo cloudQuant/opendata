@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model CurrencyPairs --phase counterfact --evidence-root docs/evidence/C101/intrinio
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["symbol"], "refusal_class": "ProviderEngineError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["symbol"], "refusal_class": "ProviderEngineError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "the symbol column is declared required with source_key 'code', so a pair record that never publishes 'code' leaves the required cell unresolvable and the engine must refuse with INTRINIO_SHAPE_INVALID attributing missing=('symbol',) instead of publishing a nameless pair; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

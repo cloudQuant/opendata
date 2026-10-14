@@ -124,6 +124,7 @@ def _install_http(
         url: str,
         params: dict[str, str],
         timeout: float | None,
+        **_kwargs,
     ) -> tuple[int, str]:
         del timeout
         requests.append((url, dict(params)))
@@ -299,7 +300,7 @@ def test_release_table_rejects_invalid_ids_before_io_and_caps_the_flat_tree(
     fetcher = FredReleaseTableFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *_args: pytest.fail("invalid IDs must fail before FRED I/O"),
+        lambda *_args, **_kwargs: pytest.fail("invalid IDs must fail before FRED I/O"),
     )
     with pytest.raises(ValidationError):
         fetcher.transform_query(release_id="53;DROP")
@@ -458,7 +459,7 @@ def test_economic_calendar_rejects_bad_query_malformed_page_and_rate_limit(
     fetcher = EconomicCalendarFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *_args: pytest.fail("invalid calendar query must fail before FRED I/O"),
+        lambda *_args, **_kwargs: pytest.fail("invalid calendar query must fail before FRED I/O"),
     )
     with pytest.raises(ValidationError):
         fetcher.transform_query(start_date="2026-10-02", end_date="2026-10-01")
@@ -607,7 +608,7 @@ def test_fred_regional_rejects_incomplete_group_and_bad_date_before_io(
     fetcher = FredRegionalFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *_args: pytest.fail("invalid GeoFRED query must fail before I/O"),
+        lambda *_args, **_kwargs: pytest.fail("invalid GeoFRED query must fail before I/O"),
     )
     with pytest.raises(ValidationError):
         fetcher.transform_query(symbol="882", is_series_group=True, region_type="state")
@@ -723,7 +724,7 @@ def test_balance_of_payments_pit_nullable_columns_and_parameter_bounds(
     no_io_fetcher = BalanceOfPaymentsFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *_args: pytest.fail("unsupported BOP choices must fail before I/O"),
+        lambda *_args, **_kwargs: pytest.fail("unsupported BOP choices must fail before I/O"),
     )
     with pytest.raises(ValidationError):
         no_io_fetcher.transform_query(frequency="monthly")
@@ -857,7 +858,7 @@ def test_fomc_query_conflicts_and_pagination_limit_fail_closed(
     fetcher = ProjectionsFetcher()
     monkeypatch.setattr(
         "opendata.data.providers.fred.models._client._http_get",
-        lambda *_args: pytest.fail("invalid SEP query must fail before I/O"),
+        lambda *_args, **_kwargs: pytest.fail("invalid SEP query must fail before I/O"),
     )
     with pytest.raises(ValidationError):
         fetcher.transform_query(long_run="true")

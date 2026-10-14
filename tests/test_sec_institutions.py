@@ -381,6 +381,7 @@ def test_default_and_none_cache_options_preserve_fetch_bytes_compatibility(
         url: str,
         *,
         max_bytes: int,
+        **_kwargs: object,
     ) -> bytes:
         del ctx
         calls.append((url, max_bytes))

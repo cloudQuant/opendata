@@ -1352,8 +1352,8 @@ EXPECTED_FINVIZ_DOMAINS = {
         ("query",),
     ),
 }
-BATCH5_SNAPSHOT_SHA256 = "7ce0ca613405e10dc3616e2cd1e6964b957331eb068a20ce49d997927b49c9f8"
-BATCH5_DOMAIN_SOURCE_SHA256 = "59e3888662d4ccc575db2421d38f76e34592ca9362245db6d14ab35f2ec8aee5"
+BATCH5_SNAPSHOT_SHA256 = "786fb181884ea564c80c1883601d6aaaa3f1d56ba6758ce45727a68efbaa8d88"
+BATCH5_DOMAIN_SOURCE_SHA256 = "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca"
 BATCH5_CANDIDATE_SHA256 = "775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e"
 
 
@@ -1411,24 +1411,32 @@ def _batch5_identity_snapshot() -> dict[str, object]:
         "sha256": "adcf3986456fad52e56b85b1764fbdfd5d716ebad886c0f66a107da07136d6c8",
         "status": "STATIC_SOURCE_FREEZE_NO_NEW_RUNTIME",
     }
-    assert snapshot["counts"]["domain_count"] == 337
-    assert snapshot["counts"]["query_semantic_domain_count"] == 317
+    assert snapshot["counts"]["domain_count"] == 338
+    assert snapshot["counts"]["query_semantic_domain_count"] == 318
     assert snapshot["counts"]["legacy_dwd_domain_count"] == 20
-    assert snapshot["counts"]["provider_model_identity_count"] == 350
-    assert snapshot["counts"]["deferred_source_domain_leg_count"] == 317
+    assert snapshot["counts"]["provider_model_identity_count"] == 351
+    assert snapshot["counts"]["deferred_source_domain_leg_count"] == 318
     assert snapshot["counts"]["legacy_source_domain_leg_count"] == 33
-    assert snapshot["candidate_counts"]["fixed_identities"] == 350
-    assert snapshot["candidate_counts"]["domain_specs"] == 337
-    assert snapshot["candidate_counts"]["fixed_bound"] == 317
+    assert snapshot["counts"]["descriptor_eligible_identity_count"] == 329
+    assert snapshot["counts"]["model_key_only_identity_count"] == 22
+    assert snapshot["counts"]["descriptor_eligible_legacy_identity_count"] == 11
+    assert (
+        snapshot["counts"]["descriptor_eligible_identity_count"]
+        + snapshot["counts"]["model_key_only_identity_count"]
+        == snapshot["counts"]["provider_model_identity_count"]
+    )
+    assert snapshot["candidate_counts"]["fixed_identities"] == 351
+    assert snapshot["candidate_counts"]["domain_specs"] == 338
+    assert snapshot["candidate_counts"]["fixed_bound"] == 318
     assert snapshot["candidate_counts"]["fixed_unbound"] == 33
     assert (
         snapshot["candidate_counts"]["fixed_bound"] + snapshot["candidate_counts"]["fixed_unbound"]
         == snapshot["candidate_counts"]["fixed_identities"]
     )
-    assert snapshot["candidate_counts"]["provider_model_legs"] == 350
-    assert snapshot["candidate_counts"]["contract_model_classes_including_base"] == 326
-    assert snapshot["candidate_counts"]["non_base_contract_model_classes"] == 325
-    assert snapshot["candidate_counts"]["all_symbols"] == 330
+    assert snapshot["candidate_counts"]["provider_model_legs"] == 351
+    assert snapshot["candidate_counts"]["contract_model_classes_including_base"] == 325
+    assert snapshot["candidate_counts"]["non_base_contract_model_classes"] == 324
+    assert snapshot["candidate_counts"]["all_symbols"] == 329
     assert snapshot["candidate_counts"]["non_contract_exports"] == [
         {
             "name": "BlsCatalogPage",
@@ -1464,9 +1472,9 @@ def _batch5_identity_snapshot() -> dict[str, object]:
         BATCH5_DOMAIN_SOURCE_SHA256
     )
     assert snapshot["source_hashes_sha256"]["opendata/data/models/__init__.py"] == (
-        "9dac556073190eff37c045b0c3a1880709840453ee12919534032f3428bb2509"
+        "9cd3fb1387fc6676716bc0a9cc2309180bc41015c10821f89457f1195e437cca"
     )
-    assert len(snapshot["provider_model_identities"]) == 350
+    assert len(snapshot["provider_model_identities"]) == 351
     assert snapshot["approved_delta"] == {
         "source": "fred",
         "domain": "senior_loan_officer_survey",
@@ -1506,13 +1514,23 @@ def _batch5_identity_snapshot() -> dict[str, object]:
         if row["domain"] == "senior_loan_officer_survey"
     ) == {
         "binding": "opendata.data.providers.fred.models.sloos:FredSeniorLoanOfficerSurveyFetcher",
+        "canonical_ids_declared": True,
         "contract": "FredSeniorLoanOfficerSurvey",
         "domain": "senior_loan_officer_survey",
         "model": "SeniorLoanOfficerSurvey",
-        "scenario_present": False,
+        "scenario_present": True,
         "source": "fred",
         "verified": False,
     }
+    # batch5 reviewed this identity with no scenario. The iteration-2 消费用途 backfill wrote a
+    # descriptive scenario string onto the binding, which is a census move; the approved use case is
+    # still absent, so the reviewed delta record stays byte-frozen and the conflict is recorded.
+    conflict = snapshot["iter2_census_rebase"]["registry_census_rebase"]["approved_delta_conflict"]
+    assert snapshot["approved_delta"]["scenario_present"] is False
+    assert conflict["batch5_pin_scenario_present"] is False
+    assert conflict["live_scenario_present"] is True
+    assert conflict["c65_use_case_approved"] is False
+    assert snapshot["approved_delta"]["verified"] is False
     assert len(EXPECTED_DOMAINS) == 92
     assert len(EXPECTED_YFINANCE_DOMAINS) == 4
     assert len(EXPECTED_FINVIZ_DOMAINS) == 2
@@ -1696,18 +1714,41 @@ def test_declared_domain_contracts_match_exact_registered_provider_models() -> N
     registered_rows = [
         row for row in expected_rows if (row["source"], row["domain"]) in deferred_legs
     ]
+    # A descriptor exists only for a binding that names canonical model ids; the legacy partition
+    # has model_key-only bindings, so the descriptor census needs its own pin.
+    descriptor_rows = [row for row in expected_rows if row["canonical_ids_declared"]]
+    expected_descriptor_rows = {
+        (row["source"], row["model"], row["domain"]) for row in descriptor_rows
+    }
     descriptors = registry.list_model_descriptors()
     actual_identities = {
         (descriptor.source, descriptor.model, descriptor.domain) for descriptor in descriptors
     }
+    actual_qsem_identities = {
+        identity for identity in actual_identities if (identity[0], identity[2]) in deferred_legs
+    }
+    actual_legacy_identities = actual_identities - actual_qsem_identities
     assert len(expected_rows) == snapshot["counts"]["provider_model_identity_count"]
     assert len(expected_registered_rows) == snapshot["counts"]["deferred_source_domain_leg_count"]
-    assert len(descriptors) == snapshot["counts"]["deferred_source_domain_leg_count"]
+    assert len(descriptor_rows) == snapshot["counts"]["descriptor_eligible_identity_count"]
+    assert len(descriptors) == snapshot["counts"]["descriptor_eligible_identity_count"]
     _assert_exact_set(
         actual_identities,
-        expected_registered_rows,
-        label="registered provider/model/domain identities",
+        expected_descriptor_rows,
+        label="registered provider/model/domain descriptor identities",
     )
+    _assert_exact_set(
+        actual_qsem_identities,
+        expected_registered_rows,
+        label="query-semantic registered model identities",
+    )
+    assert actual_legacy_identities, "no legacy binding names a canonical model: the pin is stale"
+    assert {(source, domain) for source, _model, domain in actual_legacy_identities} <= legacy_legs
+    assert (
+        len(actual_legacy_identities)
+        == snapshot["counts"]["descriptor_eligible_legacy_identity_count"]
+    )
+    assert {source for source, _model, _domain in actual_legacy_identities} == {"ths"}
 
     descriptors_by_pair = {(item.source, item.model): item for item in descriptors}
 
@@ -1843,9 +1884,25 @@ def test_public_exports_match_reviewed_batch5_counts_and_types() -> None:
         )
     )
 
-    assert expected_contract_count == 326
-    assert expected_non_base_contract_count == 325
-    assert expected_symbol_count == 330
+    rebase = snapshot["iter2_census_rebase"]
+    assert snapshot["candidate_counts"]["all_symbols"] == rebase["live_counts"]["all_symbols"]
+    assert (
+        snapshot["candidate_counts"]["contract_model_classes_including_base"]
+        == rebase["live_counts"]["contract_model_classes_including_base"]
+    )
+    assert (
+        snapshot["candidate_counts"]["non_base_contract_model_classes"]
+        == rebase["live_counts"]["non_base_contract_model_classes"]
+    )
+    assert rebase["batch5_adjudication_counts"] == {
+        "all_symbols": 330,
+        "contract_model_classes_including_base": 326,
+        "non_base_contract_model_classes": 325,
+    }
+    assert {
+        key: rebase["live_counts"][key] - snapshot["batch5_count_adjudication"]["counts"][key]
+        for key in rebase["delta_vs_adjudication"]
+    } == rebase["delta_vs_adjudication"]
     assert actual_non_contract_names == [
         "BlsCatalogPage",
         "FredOutputType",

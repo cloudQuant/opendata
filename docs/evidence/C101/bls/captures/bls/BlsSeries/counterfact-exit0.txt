@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSeries --phase counterfact --evidence-root docs/evidence/C101/bls
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "BlsProviderError", "refusal_code": "BLS_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "BlsProviderError", "refusal_code": "BLS_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "publishing 'n/a' in the documented numeric value field makes the observation parser refuse instead of inferring a missing or zero value, so BlsSeries must raise BLS_BAD_OBSERVATION rather than emit a row the strict BlsObservation contract cannot hold; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

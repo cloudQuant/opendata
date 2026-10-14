@@ -31,6 +31,8 @@ from opendata.data.providers.tradingeconomics.specs import (
 )
 
 if TYPE_CHECKING:
+    from pydantic_core import InitErrorDetails
+
     from opendata.data.models.base import ContractModel
     from opendata.data.protocol import BaseQueryParams, FetchContext, Fetcher
     from opendata.data.providers._engine.http_json import HttpGet
@@ -92,14 +94,35 @@ def _query_validation_error(*names: str) -> ValidationError:
 
 
 def _sanitized_query_validation_error(error: ValidationError) -> ValidationError:
-    """Keep useful field locations from generated validation without retaining inputs."""
+    """Keep useful field locations from generated validation without retaining inputs.
+
+    Declared-field failures stay collapsed onto the ``query`` label with caller values
+    dropped; an undeclared parameter is refused as ``extra_forbidden`` and keeps being
+    named by its exact key so the refusal remains attributable.
+    """
     names: set[str] = set()
+    rejected: set[str] = set()
     for detail in error.errors():
         location = detail.get("loc", ())
         if location:
             name = str(location[0])
-            names.add(name if name in _QUERY_FIELDS else "query")
-    return _query_validation_error(*sorted(names))
+            if detail["type"] == "extra_forbidden":
+                rejected.add(name)
+            else:
+                names.add(name if name in _QUERY_FIELDS else "query")
+    errors: list[InitErrorDetails] = [
+        {"type": "extra_forbidden", "loc": (name,), "input": None} for name in sorted(rejected)
+    ]
+    errors += [
+        {
+            "type": "value_error",
+            "loc": (name,),
+            "input": None,
+            "ctx": {"error": ValueError("invalid query")},
+        }
+        for name in sorted(names) or ["query"]
+    ]
+    return ValidationError.from_exception_data("EconomicCalendarQuery", errors)
 
 
 def _request_route(params: object) -> tuple[str, tuple[str, ...]]:

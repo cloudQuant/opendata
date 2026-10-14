@@ -29,7 +29,7 @@ import json
 import keyword
 import math
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, time
 from typing import TYPE_CHECKING, Literal
 from urllib.parse import urlencode
 
@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 
 #: The value domains this kernel validates against -- the same ``ValueKind``
 #: universe :class:`~opendata.data.providers._engine.spec.ParamSpec` declares.
-_VALUE_KINDS = frozenset({"str", "int", "float", "bool", "date", "enum", "str_list"})
+_VALUE_KINDS = frozenset({"str", "int", "float", "bool", "date", "time", "enum", "str_list"})
 
 #: The content types a body declaration can carry. ``form`` is only legal for a
 #: flat body of scalars, because "a=b&c=d" has no nesting and no list grammar.
@@ -151,6 +151,10 @@ def _normalized_value(kind: str, value: object, enum: tuple[str, ...], label: st
         return value
     if kind == "date":
         if not isinstance(value, date):
+            raise RequestBodyError(CODE_TYPE_INVALID, rejected=(label,))
+        return value.isoformat()
+    if kind == "time":
+        if not isinstance(value, time):
             raise RequestBodyError(CODE_TYPE_INVALID, rejected=(label,))
         return value.isoformat()
     if kind == "enum":

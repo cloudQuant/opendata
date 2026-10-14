@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import date
-from typing import Literal
+from typing import TYPE_CHECKING, Literal, cast
 
 from pydantic import StrictStr, field_validator
 
@@ -17,6 +17,11 @@ from opendata.data.providers.federal_reserve.models._iter2_common import (
     FederalReserveDateQuery,
     parse_decimal,
 )
+
+if TYPE_CHECKING:
+    from decimal import Decimal
+
+    from opendata.data.providers._engine.http_json import HttpGet
 
 _NYFED_BASE_URL = "https://markets.newyorkfed.org/api/pd"
 _KEY_ID = re.compile(r"[A-Z0-9-]{1,80}\Z")
@@ -57,18 +62,33 @@ class RawPrimaryDealerRecord:
     description: str
 
 
+def _read_json(url: str, timeout: float | None, transport: HttpGet | None) -> dict[str, object]:
+    """One JSON read through the governed client, or through the offline witness seam.
+
+    The seam is threaded only when a caller supplies one, so the two-argument ``get_json`` call
+    shape every existing route and test patches stays exactly as it was.
+    """
+    if transport is None:
+        return get_json(url, timeout)
+    return get_json(url, timeout, transport=transport)
+
+
 def fetch_primary_dealer_series(
     key_ids: tuple[str, ...],
     *,
     category: Literal["fails", "position"],
     timeout: float | None,
+    transport: HttpGet | None = None,
 ) -> tuple[RawPrimaryDealerRecord, ...]:
     """Validate requested ids against the official definition list and fetch their history.
 
     The New York Fed API returns all series-break history for a requested key id. Date-window
     filtering stays in the fetcher's normalization stage so the requested range remains inclusive.
+
+    ``transport`` is the engine's offline witness seam: when a caller supplies one, both GETs are
+    answered through it and no request reaches the governed client.
     """
-    definitions = get_json(f"{_NYFED_BASE_URL}/list/timeseries.json", timeout)
+    definitions = _read_json(f"{_NYFED_BASE_URL}/list/timeseries.json", timeout, transport)
     definitions_root = definitions.get("pd")
     if not isinstance(definitions_root, dict):
         raise FederalReserveSourceError("FEDERAL_RESERVE_BAD_PD_DEFINITIONS")
@@ -100,7 +120,7 @@ def fetch_primary_dealer_series(
         selected_descriptions[key_id] = description
 
     path_ids = "_".join(key_ids)
-    document = get_json(f"{_NYFED_BASE_URL}/get/{path_ids}.json", timeout)
+    document = _read_json(f"{_NYFED_BASE_URL}/get/{path_ids}.json", timeout, transport)
     data_root = document.get("pd")
     if not isinstance(data_root, dict):
         raise FederalReserveSourceError("FEDERAL_RESERVE_BAD_PD_DATA")
@@ -133,13 +153,31 @@ def fetch_primary_dealer_series(
     return tuple(records)
 
 
+def _land_on_source_number(amount: Decimal, *, integer_only: bool) -> int | float:
+    """Put the exact source decimal on the frozen contract's value field.
+
+    The published cells are decimal text, so an integral reading stays an ``int`` and only a
+    genuinely fractional fails amount becomes a ``float``. The positioning contract declares a
+    whole ``int``, so a fractional position cell refuses rather than truncating.
+    """
+    if amount == amount.to_integral_value():
+        return int(amount)
+    if integer_only:
+        raise FederalReserveSourceError("FEDERAL_RESERVE_BAD_NUMERIC_VALUE")
+    return float(amount)
+
+
 def normalize_primary_dealer_records(
     raw: tuple[RawPrimaryDealerRecord, ...],
     query: PrimaryDealerQuery,
     *,
     category: Literal["fails", "position"],
 ) -> tuple[dict[str, object], ...]:
-    """Validate source dates/amounts, apply inclusive date bounds, and reject duplicate keys."""
+    """Validate source dates/amounts, apply inclusive date bounds, and reject duplicate keys.
+
+    Rows are assembled on the ``symbol``/``title``/``value`` fields the reviewed primary-dealer
+    contracts declare, which is also the field pair ``domains.yaml`` pins as the natural key.
+    """
     requested = set(query.key_ids)
     seen: set[tuple[str, date]] = set()
     rows: list[dict[str, object]] = []
@@ -156,23 +194,25 @@ def normalize_primary_dealer_records(
         if identity in seen:
             raise FederalReserveSourceError("FEDERAL_RESERVE_DUPLICATE_PD_ROW")
         seen.add(identity)
-        amount = parse_decimal(item.value)
+        amount = _land_on_source_number(
+            cast("Decimal", parse_decimal(item.value)), integer_only=category == "position"
+        )
         if query.start_date is not None and observation_date < query.start_date:
             continue
         if query.end_date is not None and observation_date > query.end_date:
             continue
-        value_field = "amount_usd_millions" if category == "fails" else "position_usd_millions"
-        rows.append(
-            {
-                "date": observation_date,
-                "key_id": item.key_id,
-                "description": item.description,
-                value_field: amount,
-            }
-        )
+        row: dict[str, object] = {
+            "date": observation_date,
+            "symbol": item.key_id,
+            "title": item.description,
+            "value": amount,
+        }
+        if category == "position":
+            row["name"] = item.key_id
+        rows.append(row)
         if len(rows) > query.max_records:
             raise FederalReserveSourceError("FEDERAL_RESERVE_TOO_MANY_RECORDS")
-    rows.sort(key=lambda row: (row["date"], row["key_id"]))
+    rows.sort(key=lambda row: (row["date"], row["symbol"]))
     return tuple(rows)
 
 

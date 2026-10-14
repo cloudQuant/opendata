@@ -1,0 +1,19 @@
+carrier: pin-rebase-idempotence-arm.txt
+round: C103
+captured_at_local=2026-10-15T02:49:25+0800
+source_log=/tmp/c103_pinrebase_dry2.txt
+source_bytes=506
+source_sha256_16=6c0a575d191f0160
+argv=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py   (re-run after the apply; must refuse)
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+pin_rebase_dry_exit=1 (re-captured this turn)
+----------------------------------------------------------------------
+argv=python docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py (dry)
+face: repo_root=/Users/yunjinqi/Documents/new_projects/opendata
+face: argv=[]
+face: pin_entries=31
+face: snapshot_payload_sha_before=786fb181884ea564c80c1883601d6aaaa3f1d56ba6758ce45727a68efbaa8d88
+face: candidate_sha256_before=775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e
+face: matched=31 stale=0 missing=0
+verdict: REFUSED - no stale pin to re-base, refusing to re-pin a moving digest
+pin_rebase_dry_exit=1

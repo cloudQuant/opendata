@@ -273,34 +273,6 @@ class FederalReserveYieldCurve(ContractModel):
     rate: float | None = None
 
 
-class FederalReservePrimaryDealerFail(ContractModel):
-    """One New York Fed weekly primary-dealer settlement-fails observation.
-
-    The API's numeric text is retained as an exact decimal in millions of
-    U.S. dollars. ``key_id`` and ``description`` preserve the source series
-    identity; New York Fed notes that releases may be revised.
-    """
-
-    date: date_type
-    key_id: str
-    description: str
-    amount_usd_millions: Decimal
-
-
-class FederalReservePrimaryDealerPosition(ContractModel):
-    """One New York Fed weekly primary-dealer position observation.
-
-    The API's numeric text is retained as an exact decimal in millions of
-    U.S. dollars. ``key_id`` and ``description`` preserve the source series
-    identity; New York Fed notes that releases may be revised.
-    """
-
-    date: date_type
-    key_id: str
-    description: str
-    position_usd_millions: Decimal
-
-
 class FederalReserveCentralBankHolding(ContractModel):
     """One SOMA summary, security detail, or weighted-average-maturity result.
 

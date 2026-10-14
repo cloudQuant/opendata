@@ -1,0 +1,346 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/finra/claims.json",
+    "sha256": "3fa9f62f565fe4997ea24091c450dd34569df1525c6d67ae9688c34ca744d50f"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "receipt": {
+          "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/contract.json",
+          "sha256": "bdc8c3ef931d95528a7aa9b0249a2d0f9dfafd8b41384fa12f8a701c17604b82"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "before_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "path": "opendata/data/providers/finra/models/equity_short_interest.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "receipt": {
+          "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/counterfact.json",
+          "sha256": "b415005da9974d4fd2b708bcf86f054e5276d351b4222de0f3d0c4c0c4d8807c"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "before_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "path": "opendata/data/providers/finra/models/equity_short_interest.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "receipt": {
+          "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/direct.json",
+          "sha256": "0fca53713967fbff343ed01d1a2c0e07e5d3c218ac98d9a7377670d3ce0c9271"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "before_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "path": "opendata/data/providers/finra/models/equity_short_interest.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "receipt": {
+          "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/implementation.json",
+          "sha256": "7713e99a4a7569511eec522d2ca3fe10ff0d1fca060bfef64d713c055a03c1e0"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "before_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "path": "opendata/data/providers/finra/models/equity_short_interest.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "before_sha256": "bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+            "path": "opendata/data/models/finra.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
+        "receipt": {
+          "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/service.json",
+          "sha256": "bdb53685815b2d400a0b58c67b00bf14eea0afb4d8a970221654b12721a7c1cc"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "before_sha256": "73caa3688b6d562b07e964f724feade2e25b0803f9a417d29e07e2922776a936",
+            "path": "opendata/data/providers/finra/registration.py"
+          },
+          {
+            "after_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "before_sha256": "03897f2ae4b52452170f94aeea09963a47670641ad384dc8a0a9b79a44c677cc",
+            "path": "opendata/data/providers/finra/provider.py"
+          },
+          {
+            "after_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "before_sha256": "15d744255232252f499863ab1dbdb41be3e41af676c12f4b2ae0cdad6c81fb8c",
+            "path": "opendata/data/providers/finra/models/_client.py"
+          },
+          {
+            "after_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "before_sha256": "f70a77293d0b97ea32c67f9b2f04acad800d70465c4af125675716d813c48e2c",
+            "path": "opendata/data/providers/finra/models/equity_short_interest.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "EquityShortInterest",
+  "model_identity": "finra::EquityShortInterest",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "finra",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "finra",
+        "--model",
+        "EquityShortInterest",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101/finra"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "finra",
+        "--model",
+        "EquityShortInterest",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101/finra"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "finra",
+        "--model",
+        "EquityShortInterest",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101/finra"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "finra",
+        "--model",
+        "EquityShortInterest",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101/finra"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "finra",
+        "--model",
+        "EquityShortInterest",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101/finra"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-14T13:28:48Z",
+  "reviewer_id": "iter2-acceptance-reviewer-finra",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "EquityShortInterest"
+}

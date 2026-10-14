@@ -1,0 +1,26 @@
+carrier: pytest-selection-after-scenario-rebase.txt
+round: C103
+captured_at_local=2026-10-15T02:49:25+0800
+source_log=/tmp/c103_batch5_after_scenario.txt
+source_bytes=1146
+source_sha256_16=891cb052d2f24761
+argv=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_provider_domains.py tests/test_pipeline_jobs.py tests/test_alert_matrix.py tests/test_alert_matrix_model_domains.py -q --no-cov -p no:cacheprovider --tb=line
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+pytest_selection_after_scenario_exit=not_captured_at_run_time (117 passed; pytest exits 0 when every collected item passes)
+----------------------------------------------------------------------
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 117 items
+
+tests/test_provider_domains.py ......                                    [  5%]
+tests/test_alert_matrix.py .....................................         [ 36%]
+tests/test_alert_matrix_model_domains.py ........                        [ 43%]
+tests/test_pipeline_jobs.py ............................................ [ 81%]
+......................                                                   [100%]
+
+============================= 117 passed in 1.24s ==============================

@@ -5,7 +5,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from opendata.data.http_client import HttpFetchError, get_shared_http_client
-from opendata.data.providers.ecb.models._client import EcbProviderError
+from opendata.data.providers.ecb.models._client import (
+    EcbProviderError,
+    seam_body,
+    seam_get,
+)
 from opendata.data.providers.ecb.models._reference_rates import (
     DEFAULT_MAX_BODY_BYTES,
     DEFAULT_MAX_OBSERVATIONS,
@@ -22,6 +26,7 @@ from opendata.data.request_budget import (
 )
 
 if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
     from opendata.data.providers.ecb.models.reference_rates import (
         EcbCurrencyReferenceRatesQuery,
     )
@@ -51,6 +56,7 @@ def fetch_reference_rates(
     query: EcbCurrencyReferenceRatesQuery,
     *,
     timeout: float | None = None,
+    transport: HttpGet | None = None,
 ) -> tuple[RawReferenceRateRecord, ...]:
     """Fetch and extract raw reference-rate rows under the active exact grant.
 
@@ -87,26 +93,41 @@ def fetch_reference_rates(
     if validated_query.end_date is not None:
         request_params["endPeriod"] = validated_query.end_date.isoformat()
 
-    try:
-        response = get_shared_http_client().get(
+    if transport is not None:
+        response = seam_get(
+            transport,
             url,
-            params=request_params,
-            headers={"Accept": ECB_REFERENCE_ACCEPT},
+            request_params,
             timeout=timeout,
             source=_SOURCE,
+            headers={"Accept": ECB_REFERENCE_ACCEPT},
         )
-    except HttpFetchError as exc:
-        raise EcbProviderError("ECB_HTTP_ERROR", status=exc.status) from None
+        if response.status != 200:
+            raise EcbProviderError("ECB_HTTP_ERROR", status=response.status, url=url)
+        body = seam_body(response)
+    else:
+        try:
+            http_response = get_shared_http_client().get(
+                url,
+                params=request_params,
+                headers={"Accept": ECB_REFERENCE_ACCEPT},
+                timeout=timeout,
+                source=_SOURCE,
+            )
+        except HttpFetchError as exc:
+            raise EcbProviderError("ECB_HTTP_ERROR", status=exc.status) from None
 
-    if response.status_code != 200:
-        raise EcbProviderError("ECB_HTTP_ERROR", status=response.status_code)
+        if http_response.status_code != 200:
+            raise EcbProviderError("ECB_HTTP_ERROR", status=http_response.status_code)
+        body = http_response.content
+
     try:
         return parse_generic_data(
-            response.content,
+            body,
             max_body_bytes=DEFAULT_MAX_BODY_BYTES,
             max_xml_nodes=DEFAULT_MAX_XML_NODES,
             max_observations=min(validated_query.max_records, DEFAULT_MAX_OBSERVATIONS),
             max_output_bytes=DEFAULT_MAX_OUTPUT_BYTES,
         )
     except ReferenceRatesParseError:
-        raise EcbProviderError("ECB_BAD_RESPONSE", status=response.status_code) from None
+        raise EcbProviderError("ECB_BAD_RESPONSE", status=200) from None

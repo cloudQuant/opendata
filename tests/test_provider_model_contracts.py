@@ -230,11 +230,15 @@ def pages_for(spec: ModelSpec, count: int) -> list[HttpResponse]:
     """Cut a result of ``count`` rows into the pages the declaration's own page size implies.
 
     The engine ends a ``page``/``offset`` fetch on the first short page and a cursor fetch on the
-    first page that publishes no cursor, so a count that fills its pages exactly needs one more,
-    empty page; that last page is part of the script, and a fetcher that asks for one page beyond it
-    hits the transport's loud failure rather than a repeated body. A declared total is repeated on
-    every page because repeating it is what upstreams do, and a fixture that published it once would
-    leave the agreement check unjudged.
+    page whose continuation channel says "no further page": the explicit terminal null a strict
+    cursor declaration spells as ``cursor_field: None``. (A page that merely *omits* the field is
+    terminal only on its own published evidence, and an empty page that omits it is the shape
+    refusal -- the arm :meth:`test_empty_record_list_is_zero_rows_not_an_error` judges directly.)
+    So a count that fills its pages exactly needs one more, empty page; that last page is part of
+    the script, and a fetcher that asks for one page beyond it hits the transport's loud failure
+    rather than a repeated body. A declared total is repeated on every page because repeating it is
+    what upstreams do, and a fixture that published it once would leave the agreement check
+    unjudged.
 
     The response *shape* follows the declaration's decoder, because the answer a csv model can
     read is not the answer a json model can read: a delimited declaration is scripted as the raw
@@ -271,8 +275,11 @@ def pages_for(spec: ModelSpec, count: int) -> list[HttpResponse]:
     seen = 0
     for index, chunk in enumerate(chunks):
         envelope: dict[str, object] = {} if total_key is None else {total_key: count}
-        if paging.kind == "cursor" and cursor_field and index + 1 < len(chunks):
-            envelope[cursor_field] = f"cursor-{index + 2}"
+        if paging.kind == "cursor" and cursor_field:
+            # The last scripted page closes the walk with the terminal spelling the declaration
+            # itself names -- an explicit null for a cursor page, since omission is only terminal
+            # on a page that carried records.
+            envelope[cursor_field] = f"cursor-{index + 2}" if index + 1 < len(chunks) else None
         pages.append(scripted(chunk, seen, envelope))
         seen += chunk
     if paging.kind != "cursor" and chunks[-1] == size:
@@ -720,10 +727,13 @@ class TestDeclarationIsTheContract:
         straight through yields zero rows: ``resolve_rows`` deliberately keeps "the path is absent"
         (a shape failure) apart from "the path published nothing" (http_json.py:406-428), and that
         separation is AC2-10's claim about an unpaged body. A document whose rows are rebuilt by an
-        expansion stage is refused with ``ROW_EXPANSION_EMPTY_RESULT``, because the kernels that
-        project rows treat "every published record produced no row" as the silent zero they exist to
-        refuse -- row_expansion.py:651-655 for a repoint, :437-440 for an exploded array, :570-571
-        for a wide table and :485-486 for a series join.
+        expansion stage is refused with ``ROW_EXPANSION_EMPTY_RESULT`` -- for the declarations that
+        own no other channel that spells "understood, nothing". A *paged* expansion declaration does
+        own one: the paging guard is what ends its walk, and for a strict cursor the declared empty
+        answer is the empty record list plus an explicit-null cursor. That page comes back as zero
+        rows, while the same empty page omitting the cursor field stays the shape refusal the guard
+        was opted into -- the guard is not relaxed, it owns the empty answer, and this face pins all
+        three readings off the one declaration.
 
         The refusal is the reading the pinned upstream contract gives, not an engine overreach: the
         IPO calendar's own ``transform_data`` raises ``EmptyDataError("The request was returned
@@ -740,6 +750,17 @@ class TestDeclarationIsTheContract:
                 "a header with no data rows is refused by "
                 "test_a_delimited_header_publishing_no_rows_is_a_refusal"
             )
+        if spec.row_expansion and spec.pagination.kind != "none":
+            _, rows = fetch(source, spec, *pages_for(spec, 0), **valid_query_kwargs(spec))
+            assert rows == (), "the declared empty page was not read as zero rows"
+            _, rows = fetch(source, spec, *pages_for(spec, 1), **valid_query_kwargs(spec))
+            assert len(rows) == 1, "the stages refused a body that published a record"
+            if spec.pagination.strict_nullable_string and spec.pagination.cursor_field:
+                omission = synthetic_page(spec, 0)
+                code, named = refusal(spec, source, omission, **valid_query_kwargs(spec))
+                assert code == f"{spec.error_prefix}_SHAPE_INVALID", named
+                assert named == (spec.pagination.cursor_field,), named
+            return
         if spec.row_expansion:
             code, named = refusal(spec, source, *pages_for(spec, 0), **valid_query_kwargs(spec))
             assert code == str(RowExpansionError(EMPTY_RESULT)), named
@@ -923,9 +944,17 @@ class TestDeclarationIsTheContract:
     def test_paging_drives_from_the_declaration_and_stops_on_a_short_page(
         self, source: str, spec: ModelSpec
     ) -> None:
-        """The paging keys come from the declaration, and the fetch ends where the script ends."""
+        """The paging keys come from the declaration, and the fetch ends where the script ends.
+
+        The row count is read off the declaration too: one row past the declared page size, so a
+        model whose page holds a hundred rows is still scripted as more than one page and the
+        per-page keys are actually judged. A fixed two-row script left every model whose page size
+        exceeds two a one-page walk -- measured on the cursor declarations, which default their
+        limit to the upstream page -- and the short-page termination below would have judged
+        nothing there.
+        """
         paging = spec.pagination
-        count = 1 if paging.kind == "none" else 2
+        count = 1 if paging.kind == "none" else paging_page_size(spec) + 1
         pages = pages_for(spec, count)
         fetcher, transport = build(source, spec, *pages)
         rows = fetcher.fetch(  # type: ignore[attr-defined]
