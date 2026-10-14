@@ -22,15 +22,18 @@ ORDER = (
     "secret-check-after-edit.txt",
 )
 KEEP = re.compile(
-    r"^(face: |arm |verdict: |=+ \d+ passed|collected \d+ items|.*_exit=|.*commits scanned|.*no leaks found|.*scanned ~)"
+    r"^(face: |arm |verdict: |=+ \d+ passed|collected \d+ items|.*_exit=|.*commits "
+    r"scanned|.*no leaks found|.*scanned ~)"
 )
 
 
 def main() -> int:
+    """Build ``face.md`` by quoting the marker lines out of every carrier under ``runs/``."""
     out = [
         "# C104 / h15-series-enumeration -- the faces, quoted out of the carriers",
         "",
-        "Every line below is copied out of the named carrier by `probes/face_builder.py`; no number",
+        "Every line below is copied out of the named carrier by `probes/face_builder.py`; no "
+        "number",
         "in it was typed. The carriers hold the full bodies and their own headers.",
         "",
     ]
@@ -45,7 +48,11 @@ def main() -> int:
             missing.append(name)
             out.append("(carrier absent)")
         else:
-            kept = [ln.strip() for ln in path.read_text(encoding="utf-8").splitlines() if KEEP.match(ln.strip())]
+            kept = [
+                ln.strip()
+                for ln in path.read_text(encoding="utf-8").splitlines()
+                if KEEP.match(ln.strip())
+            ]
             if not kept:
                 empty.append(name)
             out.extend(kept or ["(no face line matched)"])

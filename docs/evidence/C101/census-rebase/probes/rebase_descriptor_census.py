@@ -1,4 +1,5 @@
 """Pin descriptor eligibility: one descriptor exists per identity with canonical_model_ids."""
+
 import importlib
 import json
 from collections import Counter
@@ -15,7 +16,7 @@ snap = json.loads(FIXTURE.read_text(encoding="utf-8"))
 domains = load_domains()
 qsem = {d for d, s in domains.items() if s.semantics_declared}
 
-live_declared = {}
+live_declared: dict[tuple[str, str, str], bool] = {}
 emitted = 0
 collisions = []
 for provider in list_providers():
@@ -29,11 +30,16 @@ for provider in list_providers():
             if identity in live_declared and live_declared[identity] != declared:
                 collisions.append(identity)
             live_declared[identity] = declared
-assert collisions == [], f"same identity both canonical-id-declared and model-key-only: {collisions[:3]}"
+assert collisions == [], (  # nosec B101  # noqa: S101
+    f"same identity both canonical-id-declared and model-key-only: {collisions[:3]}"
+)
 
-missing = [k for k in live_declared if k not in
-           {(r["source"], r["model"], r["domain"]) for r in snap["provider_model_identities"]}]
-assert not missing, f"live binding not pinned: {missing[:3]}"
+missing = [
+    k
+    for k in live_declared
+    if k not in {(r["source"], r["model"], r["domain"]) for r in snap["provider_model_identities"]}
+]
+assert not missing, f"live binding not pinned: {missing[:3]}"  # nosec B101  # noqa: S101
 
 for row in snap["provider_model_identities"]:
     row["canonical_ids_declared"] = live_declared[(row["source"], row["model"], row["domain"])]
@@ -44,18 +50,20 @@ register_providers(registry)
 descriptors = {(d.source, d.model, d.domain) for d in registry.list_model_descriptors()}
 eligible = [r for r in snap["provider_model_identities"] if r["canonical_ids_declared"]]
 eligible_keys = {(r["source"], r["model"], r["domain"]) for r in eligible}
-assert descriptors == eligible_keys, (
+assert descriptors == eligible_keys, (  # nosec B101  # noqa: S101
     f"descriptors {len(descriptors)} != eligible {len(eligible_keys)}; "
-    f"desc-only={sorted(descriptors - eligible_keys)[:3]} elig-only={sorted(eligible_keys - descriptors)[:3]}"
+    f"desc-only={sorted(descriptors - eligible_keys)[:3]} "
+    f"elig-only={sorted(eligible_keys - descriptors)[:3]}"
 )
 
 deferred_legs = {(r["source"], r["domain"]) for r in eligible if r["domain"] in qsem}
 legacy_eligible = [r for r in eligible if r["domain"] not in qsem]
 model_key_only = [r for r in snap["provider_model_identities"] if not r["canonical_ids_declared"]]
-in_deferred_partition = {(s, d) for s, d in
-                        {(r["source"], r["domain"]) for r in eligible if r["domain"] in qsem}}
+in_deferred_partition = {
+    (s, d) for s, d in {(r["source"], r["domain"]) for r in eligible if r["domain"] in qsem}
+}
 legs = alert_matrix.registered_legs()
-assert sorted(legs) == sorted(domains)
+assert sorted(legs) == sorted(domains)  # nosec B101  # noqa: S101
 
 counts = snap["counts"]
 counts["descriptor_eligible_identity_count"] = len(eligible)
@@ -94,12 +102,16 @@ rebase["descriptor_partition"] = {
         "canonical model ids for ths, so the pin must state eligibility per identity"
     ),
     "counterfact": (
-        "dropping canonical_model_ids from ths/models/stock_daily.py removes one descriptor and one "
+        "dropping canonical_model_ids from ths/models/stock_daily.py removes one descriptor "
+        "and one "
         "eligible identity together; the assertion stays green, so this pin is falsified only by a "
         "descriptor set that differs from the eligible set or by an eligible count that is not "
         "live_descriptor_count"
     ),
-    "before": {"canonical_ids_declared": "absent", "descriptors_pinned_against": "deferred partition"},
+    "before": {
+        "canonical_ids_declared": "absent",
+        "descriptors_pinned_against": "deferred partition",
+    },
 }
 
 FIXTURE.write_text(json.dumps(snap, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -109,8 +121,15 @@ print(
     f"legacy_eligible={len(legacy_eligible)} "
     f"qsem_eligible={len(eligible) - len(legacy_eligible)}"
 )
-print("legacy eligible by source:", rebase["descriptor_partition"]["descriptor_eligible_legacy_by_source"])
+print(
+    "legacy eligible by source:",
+    rebase["descriptor_partition"]["descriptor_eligible_legacy_by_source"],
+)
 print("model_key_only by source:", rebase["descriptor_partition"]["model_key_only_by_source"])
 print("model_key_only domains:", sorted(rebase["descriptor_partition"]["model_key_only_by_domain"]))
-print("eligible deferred legs:", len(in_deferred_partition), "registered legs:",
-      sum(len(v) for v in legs.values()))
+print(
+    "eligible deferred legs:",
+    len(in_deferred_partition),
+    "registered legs:",
+    sum(len(v) for v in legs.values()),
+)

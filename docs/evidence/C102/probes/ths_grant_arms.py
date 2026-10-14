@@ -18,23 +18,29 @@ Arms:
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
 import contextlib
 import importlib.util
 import json
-from pathlib import Path
 import sys
+from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 import httpx
 import pytest
 
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from types import ModuleType
+
 REPO = Path(__file__).resolve().parents[4]
 
 
-def _load_test_module():
+def _load_test_module() -> ModuleType:
     spec = importlib.util.spec_from_file_location(
         "ths_provider_tests", REPO / "tests/test_ths_provider.py"
     )
+    assert spec is not None and spec.loader is not None  # nosec B101  # noqa: S101
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
@@ -42,7 +48,7 @@ def _load_test_module():
 
 
 def main() -> int:
-    from opendata.data.protocol import FetchContext
+    """Run the ths grant arms against the shipped provider module and print each verdict."""
     from opendata.data.providers.ths import FuyaoCredentials, FuyaoHttpClient
     from opendata.data.providers.ths.models import instrument as instrument_module
     from opendata.data.providers.ths.models import stock_daily as stock_daily_module
@@ -99,7 +105,8 @@ def main() -> int:
             start_date=date(2024, 1, 2),
             end_date=date(2024, 1, 2),
         )
-        record("control", len(rows) == 1 and rows[0].symbol == "600519.SH", f"rows={len(rows)}")
+        control_hit = len(rows) == 1 and rows[0].symbol == "600519.SH"  # type: ignore[union-attr]
+        record("control", control_hit, f"rows={len(rows)}")
     except Exception as exc:
         record("control", False, f"{type(exc).__name__}: {exc}")
 
@@ -136,11 +143,9 @@ def main() -> int:
 
     # injected-client: the seam the tests used before cannot serve a scoped request.
     @contextlib.contextmanager
-    def injected_client(*, timeout_seconds: float | None = None):
+    def injected_client(*, timeout_seconds: float | None = None) -> Iterator[FuyaoHttpClient]:
         active = FuyaoHttpClient(
-            credentials=FuyaoCredentials(
-                "ths-test-key", base_url=f"https://{tests.MOCK_HOST}"
-            ),
+            credentials=FuyaoCredentials("ths-test-key", base_url=f"https://{tests.MOCK_HOST}"),
             client=httpx.Client(transport=httpx.MockTransport(ok_handler)),
             sleep=lambda seconds: None,
         )
@@ -199,7 +204,9 @@ def main() -> int:
         record("attempt-bound", False, "1-send budget served an unbounded loop")
     except RequestAttemptLimitError as exc:
         pages = [entry for entry in sent if entry.startswith("offset=")]
-        record("attempt-bound", "allowance exhausted" in str(exc), f"{exc!s} pages_seen={len(pages)}")
+        record(
+            "attempt-bound", "allowance exhausted" in str(exc), f"{exc!s} pages_seen={len(pages)}"
+        )
     except Exception as exc:
         record("attempt-bound", False, f"{type(exc).__name__}: {exc}")
     finally:

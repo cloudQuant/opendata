@@ -3,10 +3,12 @@
 Two-sided: a control run with no tamper must pass, each tamper must fail, and every file must
 restore byte-exactly afterwards.
 """
+
 import hashlib
 import shutil
-import subprocess
+import subprocess  # nosec B404
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 ROOT = Path(".")
@@ -17,31 +19,49 @@ TARGETS = [
     Path("tests/test_alert_matrix.py"),
     Path("tests/test_alert_matrix_model_domains.py"),
 ]
-BACKUP = Path("/tmp/census_arm_backup")
+BACKUP = Path("/tmp/census_arm_backup")  # nosec B108  # noqa: S108
 BACKUP.mkdir(exist_ok=True)
 
 TESTS = {
-    "descriptor": "tests/test_provider_domains.py::test_declared_domain_contracts_match_exact_registered_provider_models",
-    "modeldomains": "tests/test_alert_matrix_model_domains.py::test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tables",
-    "sloos": "tests/test_provider_domains.py::test_production_domains_preserve_v1_legacy_entries_and_explicit_semantics",
-    "ods": "tests/test_pipeline_jobs.py::TestPartitionMaintenanceJob::test_the_registered_census_reaches_the_ods_layer",
+    "descriptor": (
+        "tests/test_provider_domains.py::"
+        "test_declared_domain_contracts_match_exact_registered_provider_models"
+    ),
+    "modeldomains": (
+        "tests/test_alert_matrix_model_domains.py::"
+        "test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tables"
+    ),
+    "sloos": (
+        "tests/test_provider_domains.py::"
+        "test_production_domains_preserve_v1_legacy_entries_and_explicit_semantics"
+    ),
+    "ods": (
+        "tests/test_pipeline_jobs.py::TestPartitionMaintenanceJob::"
+        "test_the_registered_census_reaches_the_ods_layer"
+    ),
 }
 
 
-def snapshot_state():
-    return {p: (p.read_bytes(), hashlib.sha256(p.read_bytes()).hexdigest()) for p in [FIXTURE, *TARGETS]}
+def snapshot_state() -> dict[Path, tuple[bytes, str]]:
+    """Bytes and digest of every file the arms may touch, taken before the first write."""
+    return {
+        p: (p.read_bytes(), hashlib.sha256(p.read_bytes()).hexdigest()) for p in [FIXTURE, *TARGETS]
+    }
 
 
-def restore(state):
+def restore(state: dict[Path, tuple[bytes, str]]) -> None:
+    """Put every file back from a snapshot_state() reading, byte for byte."""
     for p, (data, _h) in state.items():
         p.write_bytes(data)
 
 
-def digest_of(path):
+def digest_of(path: Path) -> str:
+    """SHA-256 of a file's current bytes."""
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def re_pin(new_digest):
+def re_pin(new_digest: str) -> None:
+    """Rewrite the pre-tamper digest to ``new_digest`` in all four carrier modules."""
     for p in TARGETS:
         text = p.read_text(encoding="utf-8")
         for old in {digest_before}:
@@ -49,8 +69,9 @@ def re_pin(new_digest):
         p.write_text(text, encoding="utf-8")
 
 
-def run(name):
-    proc = subprocess.run(
+def run(name: str) -> tuple[int, str]:
+    """Run one census-pinning leg; return its exit code and its pytest reading line."""
+    proc = subprocess.run(  # nosec B603  # noqa: S603
         [sys.executable, "-m", "pytest", "-q", "--no-cov", "-p", "no:cacheprovider", TESTS[name]],
         capture_output=True,
         text=True,
@@ -59,7 +80,8 @@ def run(name):
     return proc.returncode, (tail[-1] if tail else proc.stdout[-160:])
 
 
-def tamper_fixture(mutate):
+def tamper_fixture(mutate: Callable[[dict], None]) -> str:
+    """Apply one mutation to the fixture and return the digest the tamper produced."""
     import json
 
     snap = json.loads(FIXTURE.read_text(encoding="utf-8"))
@@ -69,14 +91,15 @@ def tamper_fixture(mutate):
 
 
 state = snapshot_state()
-for p, (_d, h) in state.items():
+for p in state:
     shutil.copyfile(p, BACKUP / p.name)
 digest_before = state[FIXTURE][1]
-results = []
+results: list[tuple[str, str, int, str]] = []
 try:
     # Control arm: untouched files must pass.
-    for name in ("descriptor", "modeldomains", "sloos", "ods"):
-        results.append(("control", name, *run(name)))
+    results.extend(
+        ("control", name, *run(name)) for name in ("descriptor", "modeldomains", "sloos", "ods")
+    )
 
     arms = [
         # A: one qsem identity loses its descriptor eligibility -> descriptor census breaks.
@@ -169,7 +192,9 @@ for label, target, code, reading in results:
     verdict = "FAIL" if code != 0 else "PASS"
     good = (code != 0) if expect_fail else (code == 0)
     ok = ok and good
-    print(f"[{'as expected' if good else 'UNEXPECTED'}] {label} -> {target}: {verdict} :: {reading}")
+    print(
+        f"[{'as expected' if good else 'UNEXPECTED'}] {label} -> {target}: {verdict} :: {reading}"
+    )
 
 after = snapshot_state()
 for p, (_d, h) in after.items():

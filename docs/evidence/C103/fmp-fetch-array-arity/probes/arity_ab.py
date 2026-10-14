@@ -22,7 +22,7 @@ import ast
 import hashlib
 import inspect
 import re
-import subprocess
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 from typing import Any
@@ -33,12 +33,14 @@ FAILED = re.compile(r"^(?P<count>\d+) failed", re.MULTILINE)
 PASSED = re.compile(r"^(?P<count>\d+) passed", re.MULTILINE)
 COLLECTED = re.compile(r"collected (?P<count>\d+) items")
 SUMMARY_TOKEN = re.compile(
-    r"(?P<count>\d+) (?P<kind>failed|passed|skipped|errors|error|xfail|xfails|xpass|xpases|deselected)"
+    r"(?P<count>\d+) "
+    r"(?P<kind>failed|passed|skipped|errors|error|xfail|xfails|xpass|xpases|deselected)"
 )
 KEEP_ARM_A = "--keep-arm-a" in sys.argv
 
 
 def repo_root() -> Path:
+    """Resolve the repository root by walking up to the nearest ``pytest.ini``."""
     current = Path(__file__).resolve()
     for ancestor in current.parents:
         if (ancestor / "pytest.ini").is_file():
@@ -50,7 +52,8 @@ REPO = repo_root()
 
 
 def run_pytest(target: str) -> tuple[int, str]:
-    proc = subprocess.run(
+    """Run one pytest target offline and return its exit code and stdout."""
+    proc = subprocess.run(  # nosec B603  # noqa: S603
         [sys.executable, "-m", "pytest", "-q", "--no-cov", "-p", "no:cacheprovider", target],
         cwd=REPO,
         capture_output=True,
@@ -61,7 +64,7 @@ def run_pytest(target: str) -> tuple[int, str]:
 
 
 def counts(text: str) -> dict[str, int]:
-    """Parse pytest's result counts.
+    r"""Parse pytest's result counts.
 
     The counts live on the closing ``=== N failed, M passed in ... ===`` line, so a ``^\\d+`` anchor
     never matches them; and the parts are summed across every token-bearing line so a run that also
@@ -87,6 +90,7 @@ def counts(text: str) -> dict[str, int]:
 
 
 def fake_params(tree: ast.Module) -> list[int]:
+    """Collect the parameter counts of every ``fake_fetch_array`` definition."""
     return [
         len(node.args.args) + len(node.args.kwonlyargs)
         for node in ast.walk(tree)
@@ -95,6 +99,7 @@ def fake_params(tree: ast.Module) -> list[int]:
 
 
 def failure_lines(text: str) -> list[str]:
+    """Collect the distinct error lines in a pytest tail, excluding harness paths."""
     unique = {
         line.strip()[:180]
         for line in text.splitlines()
@@ -104,8 +109,9 @@ def failure_lines(text: str) -> list[str]:
 
 
 def arms_a_and_b() -> int:
-    head_bytes = subprocess.run(
-        ["git", "show", f"HEAD:{REL}"],
+    """Run the HEAD copy and the worktree copy of the module as the two contrast arms."""
+    head_bytes = subprocess.run(  # nosec B603 B607  # noqa: S603
+        ["git", "show", f"HEAD:{REL}"],  # nosec B404  # noqa: S607
         cwd=REPO,
         capture_output=True,
         text=True,
@@ -157,6 +163,7 @@ def arms_a_and_b() -> int:
 
 
 def arm_c() -> int:
+    """Replay the product call against a 3-parameter fake, then the working one."""
     sys.path.insert(0, str(REPO))
     from opendata.data.providers.fmp.models import iter2_financials
     from opendata.data.providers.fmp.models._client import fetch_array
@@ -170,7 +177,7 @@ def arm_c() -> int:
         endpoint: str,
         params: dict[str, str],
         timeout: float | None,
-        transport: Any = None,
+        transport: Any = None,  # noqa: ANN401
     ) -> list[Any]:
         return []
 
@@ -203,6 +210,7 @@ def arm_c() -> int:
 
 
 def main() -> int:
+    """Run all three arms and report the family verdict."""
     print(f"face: repo_root={REPO}")
     print(f"face: argv={sys.argv[1:]}")
     ab_exit = arms_a_and_b()

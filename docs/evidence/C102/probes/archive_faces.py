@@ -7,8 +7,7 @@ labelled with what they were, including the runs that carried my own wrong numbe
 from __future__ import annotations
 
 import datetime
-import shutil
-import subprocess
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
@@ -19,7 +18,8 @@ PY = sys.executable
 
 
 def run(name: str, argv: list[str], tail_lines: int = 10_000) -> int:
-    proc = subprocess.run(argv, cwd=ROOT, capture_output=True, text=True)
+    """Run one argv as a carrier, writing its tail under the family's ``runs/``."""
+    proc = subprocess.run(argv, cwd=ROOT, capture_output=True, text=True)  # nosec B603  # noqa: S603
     body = proc.stdout + (("\n--- stderr ---\n" + proc.stderr) if proc.stderr else "")
     kept = body.splitlines()[-tail_lines:]
     stamp = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
@@ -38,6 +38,7 @@ def run(name: str, argv: list[str], tail_lines: int = 10_000) -> int:
 
 
 def copy_historical(name: str, source: Path, note: str, tail_lines: int = 10_000) -> int:
+    """Copy an existing receipt into ``runs/`` with the same carrier headers."""
     if not source.exists():
         print(f"MISSING historical carrier {source}")
         return 1
@@ -61,55 +62,67 @@ def copy_historical(name: str, source: Path, note: str, tail_lines: int = 10_000
 
 
 def main() -> int:
+    """Archive this round's faces: the pytest re-take and the historical carrier copies."""
     exits: dict[str, int] = {}
     exits["pytest_after"] = run(
         "pytest-after-ths-file.txt",
-        [PY, "-m", "pytest", "-q", "--no-cov", "-p", "no:cacheprovider",
-         "tests/test_ths_provider.py"],
+        [
+            PY,
+            "-m",
+            "pytest",
+            "-q",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "tests/test_ths_provider.py",
+        ],
     )
     exits["repair_dry_post"] = run(
         "repair-dry-post-apply.txt",
         [PY, str(PROBES / "ths_grant_repair.py")],
     )
-    exits["idempotence"] = run(
-        "idempotence-arm.txt", [PY, str(PROBES / "ths_idempotence_arm.py")]
-    )
+    exits["idempotence"] = run("idempotence-arm.txt", [PY, str(PROBES / "ths_idempotence_arm.py")])
     exits["arms"] = run("arms-final.txt", [PY, str(PROBES / "ths_grant_arms.py")])
     exits["ruff"] = run("ruff-final.txt", ["ruff", "check", "tests/test_ths_provider.py"])
     exits["format_audit"] = run(
         "collateral-audit-armA-armC.txt", [PY, str(PROBES / "ths_format_audit.py")]
     )
-    exits["hunk_audit"] = run(
-        "collateral-audit-armB.txt", [PY, str(PROBES / "ths_hunk_audit.py")]
-    )
+    exits["hunk_audit"] = run("collateral-audit-armB.txt", [PY, str(PROBES / "ths_hunk_audit.py")])
 
-    tmp = Path("/tmp")
+    tmp = Path("/tmp")  # nosec B108  # noqa: S108
     exits["hist_before"] = copy_historical(
-        "pytest-before-ths-file.txt", tmp / "ths_after1.txt",
+        "pytest-before-ths-file.txt",
+        tmp / "ths_after1.txt",
         "pre-repair direct run of the whole file; the 37 failing node ids are in the body",
     )
     exits["hist_dry37"] = copy_historical(
-        "repair-dry-final.txt", tmp / "ths_dry4.txt",
+        "repair-dry-final.txt",
+        tmp / "ths_dry4.txt",
         "the dry face the apply run acted on: failing_nodes=37 insertions=37 unresolved=0",
     )
     exits["hist_dry0"] = copy_historical(
-        "repair-dry-fabricated-zero.txt", tmp / "ths_dry.txt",
+        "repair-dry-fabricated-zero.txt",
+        tmp / "ths_dry.txt",
         "my first rewriter run: it split Class::method ids on '.' and printed insertions=0",
     )
     exits["hist_dry9"] = copy_historical(
-        "repair-dry-borrowed-identity.txt", tmp / "ths_dry2.txt",
+        "repair-dry-borrowed-identity.txt",
+        tmp / "ths_dry2.txt",
         "second run: models_used=9 because the parametrized receiver borrowed a sibling's model",
     )
     exits["hist_refused"] = copy_historical(
-        "repair-apply-refused-unparsable.txt", tmp / "ths_apply.txt",
+        "repair-apply-refused-unparsable.txt",
+        tmp / "ths_apply.txt",
         "third run: byte-vs-char col_offset produced unparsable text; the guard refused to write",
     )
     exits["hist_apply"] = copy_historical(
-        "repair-apply-final.txt", tmp / "ths_apply2.txt",
+        "repair-apply-final.txt",
+        tmp / "ths_apply2.txt",
         "the run that wrote the file: added=1447 bytes over the 72625-byte pre-image",
     )
     exits["hist_arms56"] = copy_historical(
-        "arms-first-5-of-6.txt", tmp / "ths_arms1.txt",
+        "arms-first-5-of-6.txt",
+        tmp / "ths_arms1.txt",
         "first arm pass: attempt-bound failed because my arm omitted the required asset_type field",
     )
 

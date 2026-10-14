@@ -27,8 +27,8 @@ from __future__ import annotations
 
 import argparse
 import ast
-from pathlib import Path
 import sys
+from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[4]
 TEST_FILE = REPO / "tests/test_ths_provider.py"
@@ -48,21 +48,25 @@ def _class_models() -> dict[str, str]:
             if not isinstance(node, ast.ClassDef):
                 continue
             for statement in node.body:
-                target = None
-                value = None
+                target: ast.expr | None = None
+                value: ast.expr | None = None
                 if isinstance(statement, ast.AnnAssign):
                     target, value = statement.target, statement.value
                 elif isinstance(statement, ast.Assign):
                     target, value = statement.targets[0], statement.value
-                if isinstance(target, ast.Name) and target.id == "canonical_model":
-                    if isinstance(value, ast.Constant) and isinstance(value.value, str):
-                        models[node.name] = value.value
+                if (
+                    isinstance(target, ast.Name)
+                    and target.id == "canonical_model"
+                    and isinstance(value, ast.Constant)
+                    and isinstance(value.value, str)
+                ):
+                    models[node.name] = value.value
     return models
 
 
 def _receiver_model(
     receiver: ast.expr,
-    function: ast.FunctionDef,
+    function: ast.FunctionDef | ast.AsyncFunctionDef,
     class_node: ast.ClassDef,
     models: dict[str, str],
     *,
@@ -81,7 +85,9 @@ def _receiver_model(
         func = receiver.func
         if isinstance(func, ast.Name) and func.id in models:
             return models[func.id]
-        if isinstance(func, ast.Attribute) and func.attr.lstrip("_").startswith(("patch", "fetcher")):
+        if isinstance(func, ast.Attribute) and func.attr.lstrip("_").startswith(
+            ("patch", "fetcher")
+        ):
             # A test helper: its return annotation names the fetcher class.
             for node in class_node.body:
                 if isinstance(node, ast.FunctionDef) and node.name == func.attr:
@@ -100,7 +106,10 @@ def _receiver_model(
         raise LookupError(f"unsupported call receiver {ast.unparse(receiver)[:60]!r}")
 
     if isinstance(receiver, ast.Name):
-        parameters = [arg.arg for arg in (*function.args.posonlyargs, *function.args.args, *function.args.kwonlyargs)]
+        parameters = [
+            arg.arg
+            for arg in (*function.args.posonlyargs, *function.args.args, *function.args.kwonlyargs)
+        ]
         if receiver.id in parameters:
             # Parametrized fetcher: one literal cannot serve every arm, so the
             # call passes the live object and the grant tracks it per arm.
@@ -110,11 +119,12 @@ def _receiver_model(
                 continue
             for target in statement.targets:
                 if isinstance(target, ast.Name) and target.id == receiver.id:
-                    return _receiver_model(statement.value, function, class_node, models, depth=depth + 1)
+                    return _receiver_model(
+                        statement.value, function, class_node, models, depth=depth + 1
+                    )
         raise LookupError(f"name {receiver.id!r} has no resolvable binding in this test")
 
     raise LookupError(f"unsupported receiver {ast.unparse(receiver)[:60]!r}")
-
 
 
 def _line_offsets(source: str) -> list[int]:
@@ -148,7 +158,9 @@ def _node_parts(node_id: str) -> tuple[str, str]:
     return "::".join(classes), method.split("[", 1)[0]
 
 
-def _planned(source: str, nodes: list[str], models: dict[str, str]) -> tuple[list[tuple[int, str, str]], list[str], list[str], int]:
+def _planned(
+    source: str, nodes: list[str], models: dict[str, str]
+) -> tuple[list[tuple[int, str, str]], list[str], list[str], int]:
     """Return (insertions, unresolved messages, uncovered node ids, already-granted sites)."""
     wanted: dict[str, set[str]] = {}
     for node_id in nodes:
@@ -194,16 +206,16 @@ def _planned(source: str, nodes: list[str], models: dict[str, str]) -> tuple[lis
                 except LookupError as exc:
                     unresolved.append(f"{class_node.name}::{function.name}: {exc}")
                     continue
-                opening = _open_paren(source, offsets, (call.func.end_lineno, call.func.end_col_offset))
+                opening = _open_paren(
+                    source,
+                    offsets,
+                    (call.func.end_lineno, call.func.end_col_offset),  # type: ignore[arg-type]
+                )
                 separator = ", " if (call.args or call.keywords) else ""
                 identity = (
-                    ast.unparse(call.func.value)
-                    if model == RUNTIME_IDENTITY
-                    else repr(model)
+                    ast.unparse(call.func.value) if model == RUNTIME_IDENTITY else repr(model)
                 )
-                insertions.append(
-                    (opening, f"ctx=_offline_context({identity}){separator}", model)
-                )
+                insertions.append((opening, f"ctx=_offline_context({identity}){separator}", model))
             if hits:
                 covered.add((class_node.name, function.name))
 
@@ -212,12 +224,15 @@ def _planned(source: str, nodes: list[str], models: dict[str, str]) -> tuple[lis
 
 
 def main(argv: list[str]) -> int:
+    """Stage the node-id grants into the ths test module, or write them with ``--apply``."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apply", action="store_true", help="write the staged file")
     args = parser.parse_args(argv)
 
     source = TEST_FILE.read_text(encoding="utf-8")
-    nodes = [line.strip() for line in NODE_FILE.read_text(encoding="utf-8").splitlines() if line.strip()]
+    nodes = [
+        line.strip() for line in NODE_FILE.read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
     models = _class_models()
     insertions, unresolved, missing, already_granted = _planned(source, nodes, models)
 
@@ -225,8 +240,9 @@ def main(argv: list[str]) -> int:
     print(
         "face: failing_nodes="
         f"{len(nodes)} fetcher_classes={len(models)} insertions={len(insertions)} "
-        f"unique_insertions={len(set((offset, text) for offset, text, _ in insertions))} "
-        f"unresolved={len(unresolved)} uncovered_nodes={len(missing)} already_granted={already_granted}"
+        f"unique_insertions={len({(offset, text) for offset, text, _ in insertions})} "
+        f"unresolved={len(unresolved)} uncovered_nodes={len(missing)} "
+        f"already_granted={already_granted}"
     )
     print(f"models_used={len(used)}:{','.join(used)}")
     for offset, _, model in sorted(insertions):
@@ -257,7 +273,10 @@ def main(argv: list[str]) -> int:
         print("verdict: nothing to insert (every node is granted, unresolved or uncovered)")
         return 1
     TEST_FILE.write_text(staged, encoding="utf-8")
-    print(f"verdict: applied bytes_before={len(source)} bytes_after={len(staged)} added={len(staged) - len(source)}")
+    print(
+        f"verdict: applied bytes_before={len(source)} bytes_after={len(staged)} "
+        f"added={len(staged) - len(source)}"
+    )
     return 0
 
 

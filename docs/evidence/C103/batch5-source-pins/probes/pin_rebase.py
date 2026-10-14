@@ -28,6 +28,7 @@ HEX = re.compile(r"^[0-9a-f]{64}$")
 
 
 def repo_root() -> Path:
+    """Resolve the repository root by walking up to the nearest ``pytest.ini``."""
     current = Path(__file__).resolve()
     for ancestor in current.parents:
         if (ancestor / "pytest.ini").is_file():
@@ -40,10 +41,12 @@ APPLY = "--apply" in sys.argv
 
 
 def sha(path: Path) -> str:
+    """Hash a file's bytes with sha256 and return the hex digest."""
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def census(pins: dict[str, str]) -> tuple[list[tuple[str, str, str]], int, int]:
+    """Split the pinned source hashes into stale, matched and missing against disk."""
     stale, matched, missing = [], 0, 0
     for rel, expected in pins.items():
         if not HEX.fullmatch(expected):
@@ -62,6 +65,7 @@ def census(pins: dict[str, str]) -> tuple[list[tuple[str, str, str]], int, int]:
 
 
 def main() -> int:
+    """Rewrite only the stale pin entries, printing each before/live pair's numstat."""
     snapshot_path = REPO / SNAPSHOT_REL
     original_bytes = snapshot_path.read_bytes()
     old_payload_sha = hashlib.sha256(original_bytes).hexdigest()
@@ -90,10 +94,12 @@ def main() -> int:
         return 1
 
     staged = original_bytes.decode()
-    for rel, expected, live in stale:
+    for _rel, expected, live in stale:
         occurrences = staged.count(expected)
         if occurrences != 1:
-            print(f"verdict: REFUSED - {expected[:12]} appears {occurrences}x in the snapshot, not 1x")
+            print(
+                f"verdict: REFUSED - {expected[:12]} appears {occurrences}x in the snapshot, not 1x"
+            )
             return 1
         staged = staged.replace(expected, live, 1)
     staged_bytes = staged.encode()
@@ -102,7 +108,9 @@ def main() -> int:
     reloaded = json.loads(staged_bytes)
     print(f"face: snapshot_payload_sha_after={new_payload_sha}")
     print(f"face: candidate_sha256_after={reloaded['candidate_sha256']}")
-    print(f"face: candidate_unchanged={reloaded['candidate_sha256'] == snapshot['candidate_sha256']}")
+    print(
+        f"face: candidate_unchanged={reloaded['candidate_sha256'] == snapshot['candidate_sha256']}"
+    )
     print(f"face: snapshot_id_unchanged={reloaded['snapshot_id'] == snapshot['snapshot_id']}")
     print(
         "face: snapshot_status_unchanged="
@@ -131,7 +139,9 @@ def main() -> int:
     for rel, occurrences in literal_plan:
         print(f"face: literal[{rel}] occurrences_of_old_payload_sha={occurrences}")
     if any(occurrences != 1 for _, occurrences in literal_plan):
-        print("verdict: REFUSED - the payload digest literal is not found exactly once per test file")
+        print(
+            "verdict: REFUSED - the payload digest literal is not found exactly once per test file"
+        )
         return 1
 
     if not APPLY:
@@ -145,15 +155,23 @@ def main() -> int:
     print(f"face: applied snapshot={sha(snapshot_path) == new_payload_sha}")
     for rel in TEST_LITERALS:
         text = (REPO / rel).read_text()
-        print(f"face: applied[{rel}] new_literal_present={new_payload_sha in text} stale_literal={old_payload_sha in text}")
-    print("verdict: APPLIED - 2 source pins re-based from live bytes and 2 payload literals re-pinned")
+        print(
+            f"face: applied[{rel}] new_literal_present={new_payload_sha in text} "
+            f"stale_literal={old_payload_sha in text}"
+        )
+    print(
+        "verdict: APPLIED - 2 source pins re-based from live bytes and 2 payload literals re-pinned"
+    )
     return 0
 
 
 def subprocess_text(argv: list[str]) -> str:
-    import subprocess
+    """Run one argv in the repository and return its stripped stdout."""
+    import subprocess  # nosec B404
 
-    return subprocess.run(argv, cwd=REPO, capture_output=True, text=True, check=False).stdout.strip()
+    return subprocess.run(  # nosec B603  # noqa: S603
+        argv, cwd=REPO, capture_output=True, text=True, check=False
+    ).stdout.strip()
 
 
 if __name__ == "__main__":

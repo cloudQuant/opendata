@@ -21,6 +21,7 @@ from pathlib import Path
 
 
 def repo_root() -> Path:
+    """Resolve the repository root by walking up to the nearest ``pytest.ini``."""
     current = Path(__file__).resolve()
     for ancestor in current.parents:
         if (ancestor / "pytest.ini").is_file():
@@ -35,6 +36,7 @@ SNAPSHOT = REPO / "tests/fixtures/registry_batch5_snapshot.json"
 
 
 def main() -> int:
+    """Measure the live scenario census against the pinned fixture and print every move."""
     from opendata.data.providers import list_providers, register_providers
 
     register_providers()
@@ -52,7 +54,9 @@ def main() -> int:
     identity_sets_equal = set(static_bindings) == {(r["source"], r["model"]) for r in rows}
     print(f"face: identity_sets_equal={identity_sets_equal}")
 
-    missing = [(r["source"], r["model"]) for r in rows if (r["source"], r["model"]) not in static_bindings]
+    missing = [
+        (r["source"], r["model"]) for r in rows if (r["source"], r["model"]) not in static_bindings
+    ]
     print(f"face: rows_without_live_binding={len(missing)}")
 
     moves: list[tuple[str, str, bool, bool]] = []
@@ -63,18 +67,27 @@ def main() -> int:
             continue
         live_scenario = binding.scenario is not None
         if live_scenario is not bool(row["scenario_present"]):
-            moves.append((row["source"], row["model"], bool(row["scenario_present"]), live_scenario))
+            moves.append(
+                (row["source"], row["model"], bool(row["scenario_present"]), live_scenario)
+            )
 
     # ``contract`` and ``verified`` are not fields of FetcherBinding, so a scenario re-base cannot
     # move them; printing a getattr fallback here would have asserted a zero without measuring one.
     import dataclasses
 
-    print(f"face: binding_fields={sorted(f.name for f in dataclasses.fields(type(binding)))}")
+    fields_of = dataclasses.fields(type(binding)) if binding is not None else ()
+    print(f"face: binding_fields={sorted(f.name for f in fields_of)}")
 
     by_source = Counter(source for source, _m, _b, _l in moves)
     print(f"face: scenario_move_rows={len(moves)}")
     print(f"face: scenario_moves_by_source={dict(sorted(by_source.items()))}")
-    print(f"face: live_scenario_present_total={sum(1 for r in rows if (r['source'], r['model']) in static_bindings and static_bindings[(r['source'], r['model'])].scenario is not None)}")
+    live_with_scenario = sum(
+        1
+        for r in rows
+        if (r["source"], r["model"]) in static_bindings
+        and static_bindings[(r["source"], r["model"])].scenario is not None
+    )
+    print(f"face: live_scenario_present_total={live_with_scenario}")
     print(f"face: pin_scenario_present_total={sum(1 for r in rows if r['scenario_present'])}")
 
     rebase = snapshot.get("iter2_census_rebase", {})
@@ -86,7 +99,10 @@ def main() -> int:
     print(f"face: documented_field_move_counts={field_moves}")
     documented_matches_live = dict(sorted(by_source.items())) == dict(sorted(documented.items()))
     print(f"face: documented_matches_live={documented_matches_live}")
-    print(f"face: move_directions={dict(Counter('on' if live and not pin else 'off' for _s, _m, pin, live in moves))}")
+    move_directions = dict(
+        Counter("on" if live and not pin else "off" for _s, _m, pin, live in moves)
+    )
+    print(f"face: move_directions={move_directions}")
     for source, model, pin, live in moves[:6]:
         print(f"face: example {source}/{model} pin={pin} live={live}")
 

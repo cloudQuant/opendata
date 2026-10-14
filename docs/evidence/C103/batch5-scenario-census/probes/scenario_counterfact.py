@@ -22,7 +22,7 @@ import json
 import os
 import re
 import shutil
-import subprocess
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
@@ -34,6 +34,7 @@ TAMPER_TARGET = ("oecd", "GdpReal")
 
 
 def repo_root() -> Path:
+    """Resolve the repository root by walking up to the nearest ``pytest.ini``."""
     current = Path(__file__).resolve()
     for ancestor in current.parents:
         if (ancestor / "pytest.ini").is_file():
@@ -42,10 +43,11 @@ def repo_root() -> Path:
 
 
 REPO = repo_root()
-SHADOW = Path("/tmp/c103_scenario_counterfact")
+SHADOW = Path("/tmp/c103_scenario_counterfact")  # nosec B108  # noqa: S108
 
 
 def build_shadow() -> None:
+    """Build the shadow root the tampered guard runs inside, symlinking read-only trees."""
     if SHADOW.exists():
         shutil.rmtree(SHADOW)
     (SHADOW / "tests" / "fixtures").mkdir(parents=True)
@@ -56,8 +58,9 @@ def build_shadow() -> None:
 
 
 def run_guard(module_path: Path) -> tuple[int, str, dict[str, object]]:
+    """Run the batch5 guard in the shadow root and return its exit, tail and counts."""
     env = dict(os.environ, PYTHONPATH=str(REPO))
-    proc = subprocess.run(
+    proc = subprocess.run(  # nosec B603  # noqa: S603
         [
             sys.executable,
             "-m",
@@ -83,23 +86,28 @@ def run_guard(module_path: Path) -> tuple[int, str, dict[str, object]]:
         None,
     )
     counts: dict[str, object] = {"summary_line": summary_line}
+    run_totals: dict[str, int] = {}
     for token in ("failed", "passed", "error"):
         match = re.search(rf"(\d+) {token}", report)
-        counts[token] = int(match.group(1)) if match else 0
+        run_totals[token] = int(match.group(1)) if match else 0
+        counts[token] = run_totals[token]
     collected = re.search(r"collected (\d+) item", report)
     # The shadow rootdir has no pytest.ini, so -q drops the "collected N items" header. The
     # denominator is taken from the summary line instead, and both arms run through this same
     # parser, so the A/B delta is attributable to the one tampered field.
     counts["collected_header"] = int(collected.group(1)) if collected else None
-    counts["accounted"] = counts["failed"] + counts["passed"] + counts["error"]
+    counts["accounted"] = sum(run_totals[token] for token in ("failed", "passed", "error"))
     counts["scenarios_assert_line_in_report"] = bool(
-        re.search(r"assert \(binding\.scenario is not None\) is row\[\"scenario_present\"\]", report)
+        re.search(
+            r"assert \(binding\.scenario is not None\) is row\[\"scenario_present\"\]", report
+        )
     )
     counts["oecd_gdp_real_named_in_report"] = bool(re.search(r"GdpReal", report))
     return proc.returncode, report, counts
 
 
 def write_arm(snapshot_bytes: bytes, digest: str) -> Path:
+    """Write one shadow copy of the guard with its payload literal re-pinned."""
     module = (REPO / TEST_REL).read_text()
     rewritten, substitutions = LITERAL.subn(rf"\g<1>{digest}\g<3>", module)
     if substitutions != 1:
@@ -111,11 +119,13 @@ def write_arm(snapshot_bytes: bytes, digest: str) -> Path:
 
 
 def main() -> int:
+    """Run both arms: the tampered guard must fail on the scenario line, the clean pass."""
     live_bytes = (REPO / SNAPSHOT_REL).read_bytes()
     live_digest = hashlib.sha256(live_bytes).hexdigest()
     live_literal = LITERAL.search((REPO / TEST_REL).read_text())
     print(f"face: live_fixture_digest={live_digest}")
-    print(f"face: test_literal_matches_live={live_literal is not None and live_literal.group(2) == live_digest}")
+    literal_matches = live_literal is not None and live_literal.group(2) == live_digest
+    print(f"face: test_literal_matches_live={literal_matches}")
     if live_literal is None or live_literal.group(2) != live_digest:
         print("verdict: REFUSED - the committed test literal is not the live payload digest")
         return 1
@@ -142,7 +152,7 @@ def main() -> int:
         tampered_digest = hashlib.sha256(tampered_bytes).hexdigest()
         differing_rows = [
             (before, after)
-            for before, after in zip(rows, tampered["provider_model_identities"])
+            for before, after in zip(rows, tampered["provider_model_identities"], strict=True)
             if before != after
         ]
         changed_fields = sorted(
@@ -194,15 +204,16 @@ def main() -> int:
         )
         print(f"face: armA_failing_line={failing_line!r}")
         print(f"face: armA_names_the_gdp_real_row={counts_a['oecd_gdp_real_named_in_report']}")
-        print(f"verdict: {'PASS' if ok else 'FAIL'} - "
-              f"arm A fails the guard at (binding.scenario is not None) is row['scenario_present'] "
-              f"with exit {exit_a}; arm B passes the same shadow harness with exit {exit_b}")
+        print(
+            f"verdict: {'PASS' if ok else 'FAIL'} - "
+            f"arm A fails the guard at (binding.scenario is not None) is row['scenario_present'] "
+            f"with exit {exit_a}; arm B passes the same shadow harness with exit {exit_b}"
+        )
         return 0 if ok else 1
     finally:
         shutil.rmtree(SHADOW, ignore_errors=True)
         tracked_after = {
-            rel: hashlib.sha256((REPO / rel).read_bytes()).hexdigest()
-            for rel in tracked_before
+            rel: hashlib.sha256((REPO / rel).read_bytes()).hexdigest() for rel in tracked_before
         }
         print(
             f"face: shadow_removed={not SHADOW.exists()} "

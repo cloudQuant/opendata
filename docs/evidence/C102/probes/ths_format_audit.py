@@ -8,30 +8,40 @@ added. Prints both arms and exits non-zero when either arm disagrees.
 from __future__ import annotations
 
 import shutil
-import subprocess
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
-WORK = Path("/tmp/c102_audit")
+WORK = Path("/tmp/c102_audit")  # nosec B108  # noqa: S108
 
 
 def main() -> int:
+    """Audit the HEAD copy of the ths test module against the current ruff format rules."""
     WORK.mkdir(parents=True, exist_ok=True)
-    head = subprocess.run(
-        ["git", "show", "HEAD:tests/test_ths_provider.py"],
-        cwd=ROOT, capture_output=True, text=True, check=True
+    head = subprocess.run(  # nosec B603 B607
+        ["git", "show", "HEAD:tests/test_ths_provider.py"],  # nosec B404  # noqa: S607
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout
     original = WORK / "ths_head.py"
     copy = WORK / "ths_head_fmt.py"
     original.write_text(head, encoding="utf-8")
     shutil.copy(original, copy)
 
-    format_proc = subprocess.run(["ruff", "format", str(copy)], capture_output=True, text=True)
-    reflow = subprocess.run(["diff", "-u", str(original), str(copy)], capture_output=True, text=True)
-    pending = subprocess.run(
-        ["ruff", "format", "--diff", "tests/test_ths_provider.py"],
-        cwd=ROOT, capture_output=True, text=True
+    format_proc = subprocess.run(["ruff", "format", str(copy)], capture_output=True, text=True)  # nosec B603 B607 # nosec B404  # noqa: S603, S607
+    reflow = subprocess.run(  # nosec B603 B607  # noqa: S603
+        ["diff", "-u", str(original), str(copy)],  # noqa: S607
+        capture_output=True,
+        text=True,  # nosec B404
+    )
+    pending = subprocess.run(  # nosec B603 B607
+        ["ruff", "format", "--diff", "tests/test_ths_provider.py"],  # nosec B404  # noqa: S607
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
     )
 
     print(f"armA_head_format_exit={format_proc.returncode}")

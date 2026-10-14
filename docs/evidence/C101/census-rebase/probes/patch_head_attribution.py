@@ -1,14 +1,15 @@
-"""Re-anchor the registry census attribution on the committed batch5 pin (HEAD), not an interim copy."""
+"""Re-anchor the census attribution on the committed batch5 pin (HEAD), not interim bytes."""
+
 import json
 from collections import Counter
 from pathlib import Path
 
-HEAD_PIN = Path("/tmp/batch5_pin_head.json")
+HEAD_PIN = Path("/tmp/batch5_pin_head.json")  # nosec B108  # noqa: S108
 FIXTURE = Path("tests/fixtures/registry_batch5_snapshot.json")
 HEAD_SHA = "7ce0ca613405e10dc3616e2cd1e6964b957331eb068a20ce49d997927b49c9f8"
-import hashlib
+import hashlib  # noqa: E402
 
-assert hashlib.sha256(HEAD_PIN.read_bytes()).hexdigest() == HEAD_SHA
+assert hashlib.sha256(HEAD_PIN.read_bytes()).hexdigest() == HEAD_SHA  # nosec B101  # noqa: S101
 
 head = json.loads(HEAD_PIN.read_text(encoding="utf-8"))
 snap = json.loads(FIXTURE.read_text(encoding="utf-8"))
@@ -36,19 +37,16 @@ rebase["pin_chain"] = {
     },
     "live_pin": {
         "provider_model_identity_count": len(ka),
-        "sha256_note": "this file's own digest is pinned by BATCH5_SNAPSHOT_SHA256 after this patch",
+        "sha256_note": "this file's own digest is pinned by BATCH5_SNAPSHOT_SHA256 "
+        "after this patch",
     },
 }
 rebase["identities_added"] = [list(k) for k in added]
 rebase["identities_removed"] = [list(k) for k in removed]
 rebase["identity_fields_moved"] = len(moves)
 rebase["field_shapes_moved"] = sorted({f for c in moves.values() for f in c})
-rebase["field_move_counts"] = {
-    f: sum(1 for c in moves.values() if f in c) for f in fields
-}
-rebase["binding_moves_by_source"] = dict(
-    Counter(k[0] for k, c in moves.items() if "binding" in c)
-)
+rebase["field_move_counts"] = {f: sum(1 for c in moves.values() if f in c) for f in fields}
+rebase["binding_moves_by_source"] = dict(Counter(k[0] for k, c in moves.items() if "binding" in c))
 rebase["scenario_moves_by_source"] = dict(
     Counter(k[0] for k, c in moves.items() if "scenario_present" in c)
 )
@@ -74,20 +72,24 @@ rebase["scenario_present_total"] = {
     "batch5_pin": sum(1 for r in head["provider_model_identities"] if r["scenario_present"]),
     "live": sum(1 for r in snap["provider_model_identities"] if r["scenario_present"]),
     "moved_on_existing_identity": rebase["field_move_counts"]["scenario_present"],
-    "carried_by_added_identity": sum(
-        1 for k in added if ka[k]["scenario_present"]
-    ),
+    "carried_by_added_identity": sum(1 for k in added if ka[k]["scenario_present"]),
 }
 rebase["semantic_field_moves"] = {
     "contract": rebase["field_move_counts"]["contract"],
     "verified": rebase["field_move_counts"]["verified"],
-    "rule": "both must stay 0; a nonzero value means iteration 2 changed a reviewed output contract",
+    "rule": "both must stay 0; a nonzero value means iteration 2 changed a reviewed "
+    "output contract",
 }
 rebase["approved_delta_conflict"] = {
     "identity": ["fred", "SeniorLoanOfficerSurvey", "senior_loan_officer_survey"],
-    "batch5_pin_scenario_present": kb[("fred", "SeniorLoanOfficerSurvey", "senior_loan_officer_survey")]["scenario_present"],
-    "live_scenario_present": ka[("fred", "SeniorLoanOfficerSurvey", "senior_loan_officer_survey")]["scenario_present"],
-    "frozen_record": "approved_delta.scenario_present and approved_delta.scenario_policy stay byte-frozen",
+    "batch5_pin_scenario_present": kb[
+        ("fred", "SeniorLoanOfficerSurvey", "senior_loan_officer_survey")
+    ]["scenario_present"],
+    "live_scenario_present": ka[("fred", "SeniorLoanOfficerSurvey", "senior_loan_officer_survey")][
+        "scenario_present"
+    ],
+    "frozen_record": "approved_delta.scenario_present and "
+    "approved_delta.scenario_policy stay byte-frozen",
     "resolution": (
         "recorded, not flipped: the iteration-2 消费用途 backfill wrote a descriptive scenario "
         "string for this binding, while the C65-approved use case is still absent, so verified "
@@ -104,8 +106,7 @@ rebase["counterfact"] = {
         "and trips semantic_field_moves, which is pinned at zero"
     ),
     "arms": {
-        "identity_delta_equals_added_minus_removed": len(ka) - len(kb)
-        == len(added) - len(removed),
+        "identity_delta_equals_added_minus_removed": len(ka) - len(kb) == len(added) - len(removed),
         "scenario_total_explained": rebase["scenario_present_total"]["batch5_pin"]
         + rebase["scenario_present_total"]["moved_on_existing_identity"]
         + rebase["scenario_present_total"]["carried_by_added_identity"]
@@ -114,9 +115,9 @@ rebase["counterfact"] = {
         and rebase["semantic_field_moves"]["verified"] == 0,
     },
 }
-assert rebase["counterfact"]["arms"]["identity_delta_equals_added_minus_removed"]
-assert rebase["counterfact"]["arms"]["scenario_total_explained"], rebase["scenario_present_total"]
-assert rebase["counterfact"]["arms"]["semantic_moves_zero"]
+assert rebase["counterfact"]["arms"]["identity_delta_equals_added_minus_removed"]  # nosec B101  # noqa: S101
+assert rebase["counterfact"]["arms"]["scenario_total_explained"], rebase["scenario_present_total"]  # nosec B101  # noqa: S101
+assert rebase["counterfact"]["arms"]["semantic_moves_zero"]  # nosec B101  # noqa: S101
 
 FIXTURE.write_text(json.dumps(snap, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 print(json.dumps(rebase, indent=2, ensure_ascii=False, sort_keys=True))

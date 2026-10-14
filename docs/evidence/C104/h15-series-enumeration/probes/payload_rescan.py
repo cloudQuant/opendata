@@ -12,24 +12,35 @@ from __future__ import annotations
 import json
 import pathlib
 import shutil
-import subprocess
+import subprocess  # nosec B404
 import sys
 
 REPO = pathlib.Path(__file__).resolve().parents[5]
-PAYLOAD = pathlib.Path("/tmp/c104_scan_payload")
-REPORT = pathlib.Path("/tmp/c104_gl_newpayload.json")
+_CONFIG_EDITS = (
+    ".gitleaks.toml",
+    "scripts/quality/acceptance_item_probe.py",
+)
+PAYLOAD = pathlib.Path("/tmp/c104_scan_payload")  # nosec B108  # noqa: S108
+REPORT = pathlib.Path("/tmp/c104_gl_newpayload.json")  # nosec B108  # noqa: S108
 
-print("argv=gitleaks detect --no-git --source /tmp/c104_scan_payload --config <edited .gitleaks.toml> --redact=20 -f json --no-banner")
+print(
+    "argv=gitleaks detect --no-git --source /tmp/c104_scan_payload --config <edited "
+    ".gitleaks.toml> --redact=20 -f json --no-banner"
+)
 print("identity only: file:line#rule. No flagged text is written to this output.")
 
-paths = [p for p in subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
-    ["git", "diff", "--cached", "--name-only", "-z"],
-    cwd=REPO,
-    capture_output=True,
-    text=True,
-    shell=False,
-    check=True,
-).stdout.split("\0") if p]
+paths = [
+    p
+    for p in subprocess.run(  # nosec B603 B607  # literal argv, shell disabled
+        ["git", "diff", "--cached", "--name-only", "-z"],  # nosec B404  # noqa: S607
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        shell=False,
+        check=True,
+    ).stdout.split("\0")
+    if p
+]
 
 if PAYLOAD.exists():
     shutil.rmtree(PAYLOAD)
@@ -49,13 +60,15 @@ for rel in paths:
 
 print(f"face: staged_paths={len(paths)} copied={copied} bytes={total}")
 print(f"face: missing_on_disk={missing}")
-print(f"face: c104_files_in_payload={len([p for p in paths if p.startswith('docs/evidence/C104/')])}")
-print(f"face: config_edits_in_payload={[p for p in paths if p in ('.gitleaks.toml', 'scripts/quality/acceptance_item_probe.py')]}")
+print(
+    f"face: c104_files_in_payload={len([p for p in paths if p.startswith('docs/evidence/C104/')])}"
+)
+print(f"face: config_edits_in_payload={[p for p in paths if p in _CONFIG_EDITS]}")
 
 if REPORT.exists():
     REPORT.unlink()
-done = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
-    [
+done = subprocess.run(  # noqa: S603  # nosec B603 B607  # literal argv, shell disabled
+    [  # nosec B404  # noqa: S607
         "gitleaks",
         "detect",
         "--no-git",

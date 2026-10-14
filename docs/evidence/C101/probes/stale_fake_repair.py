@@ -30,11 +30,11 @@ import sys
 import tempfile
 import tokenize
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import stale_fake_census as census  # noqa: E402  (judge shared with the census)
+import stale_fake_census as census
 
 REPO = census.REPO
 PARAM = "**_kwargs"
@@ -65,7 +65,7 @@ def _token_at(tokens: list[tokenize.TokenInfo], row: int, col: int) -> int:
 def _closing_offset(tokens: list[tokenize.TokenInfo], source: str, node: ast.AST) -> int:
     """Return the offset of the parameter list's terminator for one callable node."""
     starts = _line_starts(source)
-    index = _token_at(tokens, node.lineno, node.col_offset)
+    index = _token_at(tokens, node.lineno, node.col_offset)  # type: ignore[attr-defined]
     is_def = isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef)
     depth = 0
     for token in tokens[index:]:
@@ -111,13 +111,27 @@ def plan(site: dict[str, Any]) -> tuple[Path, int, str]:
     return path, offset, text
 
 
-def _stage(sites: list[dict[str, Any]]) -> tuple[dict[Path, dict[str, int]], list[str]]:
+class _Staged(TypedDict):
+    """One staged file: the three counters the growth face prints, plus the edited text."""
+
+    insertions: int
+    before_bytes: int
+    after_bytes: int
+    text: str
+
+
+def _counters(stats: _Staged) -> dict[str, int]:
+    """Drop the staged text and keep only the three integer counters the face prints."""
+    return {key: value for key, value in stats.items() if key != "text" and isinstance(value, int)}
+
+
+def _stage(sites: list[dict[str, Any]]) -> tuple[dict[Path, _Staged], list[str]]:
     """Compute every edit and re-parse each result; return (edits, rejected labels)."""
     unique: dict[tuple[str, int, int], dict[str, Any]] = {}
     for site in sites:
         node = site["widen"]
         unique[(str(site["path"]), node.lineno, node.col_offset)] = site
-    staged: dict[Path, dict[str, int]] = {}
+    staged: dict[Path, _Staged] = {}
     rejected: list[str] = []
     by_file: dict[Path, list[tuple[int, str]]] = {}
     for site in unique.values():
@@ -149,10 +163,7 @@ def repair_files(
 ) -> tuple[dict[str, dict[str, int]], list[str]]:
     """Widen every stale site; write only if all staged files re-parse."""
     staged, rejected = _stage(sites)
-    growth = {
-        _label(path): {key: value for key, value in stats.items() if key != "text"}
-        for path, stats in staged.items()
-    }
+    growth = {_label(path): _counters(stats) for path, stats in staged.items()}
     if apply:
         for path, stats in staged.items():
             path.write_text(stats["text"], encoding="utf-8")
@@ -162,12 +173,14 @@ def repair_files(
 def _measure(tests_dir: Path) -> dict[str, Any]:
     modules = census._module_index(REPO / "opendata")
     seams, visible, module_visible = census.product_seams(REPO / "opendata", modules)
-    return census.scan_tests(tests_dir, seams, visible, module_visible)
+    return census.scan_tests(tests_dir, seams, visible, module_visible)  # type: ignore[no-any-return]
 
 
 def _exploded_source(stale: bool) -> str:
-    params = "    url,\n    params,\n    timeout,\n" if stale else (
-        "    url,\n    params,\n    timeout,\n    **kwargs,\n"
+    params = (
+        "    url,\n    params,\n    timeout,\n"
+        if stale
+        else ("    url,\n    params,\n    timeout,\n    **kwargs,\n")
     )
     return (
         f"def fake(\n{params}):\n    return 200, 'ok'\n\n\n"
@@ -197,7 +210,7 @@ class _Recorder:
 def _installed(shape: str, source: str) -> object:
     """Return the callable the seed's patch site installs, not a name looked up."""
     namespace: dict[str, Any] = {}
-    exec(compile(source, f"<seed-{shape}>", "exec"), namespace)  # noqa: S102 (arm harness)
+    exec(compile(source, f"<seed-{shape}>", "exec"), namespace)  # noqa: S102 (arm harness)  # nosec B102
     recorder = _Recorder()
     namespace["test_case"](recorder)
     if not recorder.installed:
@@ -209,8 +222,10 @@ def _call_seed(shape: str, source: str) -> str:
     """Call the installed fake the way the product calls a seam."""
     target = _installed(shape, source)
     if shape == "reexport":
-        return repr(target("query", timeout=None, transport=None))
-    return repr(target("https://example.test", {"a": "b"}, 1.0, transport=None))
+        return repr(target("query", timeout=None, transport=None))  # type: ignore[operator]
+    return repr(
+        target("https://example.test", {"a": "b"}, 1.0, transport=None)  # type: ignore[operator]
+    )
 
 
 def _typeerror(source: str, shape: str) -> bool:
@@ -256,10 +271,7 @@ def _arm() -> int:
         and re_parsed
         and exploded_widened
     )
-    print(
-        f"arm: seeds={len(REPAIR_SHAPES)} flagged={len(before['stale'])} "
-        f"pre_typeerrors={pre}"
-    )
+    print(f"arm: seeds={len(REPAIR_SHAPES)} flagged={len(before['stale'])} pre_typeerrors={pre}")
     print(
         f"arm: post_stale={len(after['stale'])} post_typeerrors={post} "
         f"files={len(growth)} rejected={len(rejected)}"
@@ -269,6 +281,7 @@ def _arm() -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Plan, apply or falsify the stale-fake insertions, chosen from the parsed flags."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arm", action="store_true", help="run the falsification arm only")
     parser.add_argument("--apply", action="store_true", help="write the planned insertions")

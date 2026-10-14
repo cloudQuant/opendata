@@ -20,7 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-from scripts.quality import public_api  # noqa: E402
+from scripts.quality import public_api
 
 FORGED_SOURCE = """
 def documented() -> int:
@@ -38,9 +38,11 @@ def missing_symbols() -> list[public_api.Symbol]:
     found: list[public_api.Symbol] = []
     for path in public_api.iter_files():
         rel = path.relative_to(public_api.REPO_ROOT).as_posix()
-        for symbol in public_api.collect_symbols(path.read_text(encoding="utf-8"), rel):
-            if not symbol.has_docstring:
-                found.append(symbol)
+        found.extend(
+            symbol
+            for symbol in public_api.collect_symbols(path.read_text(encoding="utf-8"), rel)
+            if not symbol.has_docstring
+        )
     return found
 
 
@@ -50,7 +52,10 @@ def run_arm() -> int:
     flagged = [symbol.qualname for symbol in forged if not symbol.has_docstring]
     expected = ["undocumented"]
     ok = flagged == expected
-    print(f"arm: forged_symbols={len(forged)} flagged={flagged} expected={expected} -> {'PASS' if ok else 'FAIL'}")
+    print(
+        f"arm: forged_symbols={len(forged)} flagged={flagged} expected={expected} -> "
+        f"{'PASS' if ok else 'FAIL'}"
+    )
     return 0 if ok else 1
 
 
@@ -64,7 +69,10 @@ def main(argv: list[str] | None = None) -> int:
 
     missing = missing_symbols()
     by_file = Counter(symbol.file for symbol in missing)
-    print(f"population: files_in_scope={len(public_api.iter_files())} undocumented_symbols={len(missing)}")
+    print(
+        f"population: files_in_scope={len(public_api.iter_files())} "
+        f"undocumented_symbols={len(missing)}"
+    )
     for file, count in by_file.most_common():
         print(f"  {file}: {count}")
     for symbol in missing:

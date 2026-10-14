@@ -26,8 +26,18 @@ REPO = Path(__file__).resolve().parents[4]
 #: ``(file, 1-based line of the cast, expected substring, guard pattern)`` -- the seven
 #: guard-backed casts of the C101 type round, anchored on the line numbers the round committed.
 CAST_SITES: list[tuple[str, int, str, str]] = [
-    ("opendata/data/providers/sec/models/_common.py", 206, 'cast("int"', r"isinstance\(status, bool\)"),
-    ("opendata/data/providers/sec/models/_common.py", 209, 'cast("bytes"', r"not isinstance\(body, bytes\)"),
+    (
+        "opendata/data/providers/sec/models/_common.py",
+        206,
+        'cast("int"',
+        r"isinstance\(status, bool\)",
+    ),
+    (
+        "opendata/data/providers/sec/models/_common.py",
+        209,
+        'cast("bytes"',
+        r"not isinstance\(body, bytes\)",
+    ),
     (
         "opendata/data/providers/congress_gov/models/_client.py",
         158,
@@ -73,7 +83,10 @@ def guarded(
     """Return whether the guard pattern follows the cast line within the next ten lines."""
     lines = (REPO / rel).read_text(encoding="utf-8").replace(drop, "", 1).splitlines()
     if line > len(lines) or expect not in lines[line - 1]:
-        return False, [f"line {line} of {rel} no longer reads: {lines[line - 1] if line <= len(lines) else 'EOF'}"]
+        return False, [
+            f"line {line} of {rel} no longer reads: "
+            f"{lines[line - 1] if line <= len(lines) else 'EOF'}"
+        ]
     tail = [text for text in lines[line : line + 10] if text.strip()]
     return any(re.search(pattern, text) for text in tail), [text.strip() for text in tail][:3]
 
@@ -81,7 +94,9 @@ def guarded(
 def main(argv: list[str] | None = None) -> int:
     """Grade each guard-backed cast, or run the falsification arm."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--arm", action="store_true", help="delete one guard and require a red reading")
+    parser.add_argument(
+        "--arm", action="store_true", help="delete one guard and require a red reading"
+    )
     args = parser.parse_args(argv)
 
     if args.arm:

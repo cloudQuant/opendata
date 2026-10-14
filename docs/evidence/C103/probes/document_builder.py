@@ -1,12 +1,13 @@
 """C103: build README.md + face.md for each evidence family from the archived carriers.
 
-Every number in the README prose is extracted by this script from a named carrier under the same
-family's ``runs/`` -- nothing is typed from memory -- and a token the script cannot resolve makes the
-write REFUSE with the token printed, rather than defaulting to a plausible value. face.md is the
-verbatim ``face:`` / ``verdict:`` / ``argv=`` / ``*_exit=`` line population of those carriers, so a
-reader can grep the document and then grep the carrier it came from.
+Every number in the README prose is extracted by this script from a named carrier
+under the same family's ``runs/`` -- nothing is typed from memory -- and a token the
+script cannot resolve makes the write REFUSE with the token printed, rather than
+defaulting to a plausible value. face.md is the verbatim ``face:`` / ``verdict:`` /
+``argv=`` / ``*_exit=`` line population of those carriers, so a reader can grep the
+document and then grep the carrier it came from.
 
-Usage: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C103/probes/document_builder.py
+Usage: python docs/evidence/C103/probes/document_builder.py
 """
 
 from __future__ import annotations
@@ -28,10 +29,12 @@ CENSUS = "batch5-scenario-census"
 
 
 def carriers(family: str) -> list[Path]:
+    """The archived carriers of one family, sorted by name."""
     return sorted((EVID / family / "runs").glob("*.txt"))
 
 
 def carrier(family: str, name: str) -> Path:
+    """One named carrier, refusing when the name is ambiguous or absent."""
     hits = [path for path in carriers(family) if path.name == name]
     if len(hits) != 1:
         raise LookupError(f"{family}/{name}: {len(hits)} carriers match")
@@ -46,6 +49,7 @@ def grab(family: str, name: str, pattern: str) -> str:
 
 
 def face_lines(path: Path) -> list[str]:
+    """The face-marker lines of one carrier, in file order."""
     return [line for line in path.read_text(encoding="utf-8").splitlines() if MARKER.match(line)]
 
 
@@ -56,16 +60,17 @@ def failed_faces(family: str, name: str) -> list[str]:
 
 
 def faces_for(family: str, name: str, module: str) -> int:
+    """How many FAILED lines of a carrier belong to one test module."""
     return sum(1 for line in failed_faces(family, name) if f"{module}::" in line)
 
 
 def module_split(family: str, before: str, after: str, modules: list[str]) -> str:
     """A per-module before -> after face table, counted out of the two carriers."""
-    rows = []
-    for module in modules:
-        rows.append(
-            f"{module:55s} {faces_for(family, before, module):>3} -> {faces_for(family, after, module):>3}"
-        )
+    rows = [
+        f"{module:55s} {faces_for(family, before, module):>3} -> "
+        f"{faces_for(family, after, module):>3}"
+        for module in modules
+    ]
     total_before = len(failed_faces(family, before))
     total_after = len(failed_faces(family, after))
     rows.append(f"{'TOTAL':55s} {total_before:>3} -> {total_after:>3}")
@@ -73,11 +78,13 @@ def module_split(family: str, before: str, after: str, modules: list[str]) -> st
 
 
 def build_face_md(family: str) -> str:
+    """Index a family's carriers: their face lines, verbatim, grouped by carrier."""
     parts = [
         f"# {family} — face readings (verbatim carrier lines)",
         "",
-        "Each block is copied out of the named carrier under ``runs/``; the carrier is the archive and "
-        "this file is its index. Recompute a block with the ``argv=`` printed under it.",
+        "Each block is copied out of the named carrier under ``runs/``; the carrier is the "
+        "archive and this file is its index. Recompute a block with the ``argv=`` printed "
+        "under it.",
         "",
     ]
     for path in carriers(family):
@@ -89,6 +96,7 @@ def build_face_md(family: str) -> str:
 
 
 def readme_fmp() -> str:
+    """README for the fmp family: every figure grabbed out of the arity A/B/C carrier."""
     arity = "arity-ab-abc.txt"
     head_params = grab(FMP, arity, r"head_fake_params=\[(\d+)\]")
     work_params = grab(FMP, arity, r"worktree_fake_params=\[(\d+)\]")
@@ -102,24 +110,25 @@ def readme_fmp() -> str:
 
 ## Fault
 
-``tests/test_fmp_iter2_market.py`` drives every case through one shared fake transport. The product's
-``fetch_array`` is called with {product_args} positional arguments
-(``face: product_fetch_array_params=['endpoint', 'params', 'timeout', 'transport']``); the HEAD copy of
-the fake accepted {head_params}. Each case that reached the fetch raised ``TypeError`` inside the
-engine, so {arm_a_failed} of the module's {arm_a_collected} collected cases went red off a single stale
-signature.
+``tests/test_fmp_iter2_market.py`` drives every case through one shared fake transport.
+The product's ``fetch_array`` is called with {product_args} positional arguments
+(``face: product_fetch_array_params=['endpoint', 'params', 'timeout', 'transport']``);
+the HEAD copy of the fake accepted {head_params}. Each case that reached the fetch
+raised ``TypeError`` inside the engine, so {arm_a_failed} of the module's
+{arm_a_collected} collected cases went red off a single stale signature.
 
 ## Arms, and what each one rules out
 
-- **arm A, HEAD copy** — {arm_a_collected} collected, {arm_a_failed} failed, exit non-zero: the fault
-  is in HEAD, so the repair is not chasing a bug I introduced.
-- **arm B, worktree** — {arm_a_collected} collected, {arm_b_passed} passed, exit 0: the worktree fake
-  takes {work_params} parameters.
-- **arm C, counterfact** — the product call replayed against a deliberately 3-parameter fake raises
-  ``{arm_c_error}``, and the 4-parameter fake accepts. Without this arm, arm B only shows that some
-  signature works; it does not show that the fourth argument is load-bearing.
-- **guard on the repair itself** — ``tracked_file_untouched={untouched}`` measured by digest, because
-  the shared fixture is a batch-guarded file.
+- **arm A, HEAD copy** — {arm_a_collected} collected, {arm_a_failed} failed, exit
+  non-zero: the fault is in HEAD, so the repair is not chasing a bug I introduced.
+- **arm B, worktree** — {arm_a_collected} collected, {arm_b_passed} passed, exit 0: the
+  worktree fake takes {work_params} parameters.
+- **arm C, counterfact** — the product call replayed against a deliberately
+  3-parameter fake raises ``{arm_c_error}``, and the 4-parameter fake accepts. Without
+  this arm, arm B only shows that some signature works; it does not show that the
+  fourth argument is load-bearing.
+- **guard on the repair itself** — ``tracked_file_untouched={untouched}`` measured by
+  digest, because the shared fixture is a batch-guarded file.
 
 ## Recompute
 
@@ -132,10 +141,15 @@ Carrier: ``runs/arity-ab-abc.txt`` · index: ``face.md``
 
 
 def readme_pins() -> str:
+    """batch5-source-pins README: pin counts and the idempotence arm out of the carriers."""
     dry = "pin-rebase-dry.txt"
     idem = "pin-rebase-idempotence-arm.txt"
     entries = grab(PINS, dry, r"face: pin_entries=(\d+)")
-    matched = grab(PINS, dry, r"face: matched=(\d+) stale=(\d+)", )
+    matched = grab(
+        PINS,
+        dry,
+        r"face: matched=(\d+) stale=(\d+)",
+    )
     stale = grab(PINS, dry, r"face: matched=\d+ stale=(\d+)")
     first_path = grab(PINS, dry, r"face: stale\[([^\]]+)\] before=")
     first_numstat = grab(PINS, dry, r"stale\[[^\]]+\] vs_HEAD_numstat=(\d+)")
@@ -150,32 +164,38 @@ def readme_pins() -> str:
 
 ## Fault
 
-``tests/test_provider_domains.py::_batch5_identity_snapshot()`` asserts a three-link digest chain: the
-payload digest (:1363), a per-file loop over ``source_hashes_sha256`` (:1366-1368) covering
-``{entries}`` keys under ``opendata/``, ``docs/`` and ``tests/fixtures/``, and ``candidate_sha256``
-(:1371). ``{entries}`` keys measured, ``matched={matched} stale={stale}`` -- both stale entries are
-yfinance model files (first: ``{first_path}``), each with ``vs_HEAD_numstat={first_numstat}`` added
-lines -- a small edit iteration 2 made for its own reasons. A digest pin is a *census* instrument, so
-the standing ruling allows the pin to be
+``tests/test_provider_domains.py::_batch5_identity_snapshot()`` asserts a three-link
+digest chain: the payload digest (:1363), a per-file loop over ``source_hashes_sha256``
+(:1366-1368) covering ``{entries}`` keys under ``opendata/``, ``docs/`` and
+``tests/fixtures/``, and ``candidate_sha256`` (:1371). ``{entries}`` keys measured,
+``matched={matched} stale={stale}`` -- both stale entries are yfinance model files
+(first: ``{first_path}``), each with ``vs_HEAD_numstat={first_numstat}`` added lines --
+a small edit iteration 2 made for its own reasons. A digest pin is a *census*
+instrument, so the standing ruling allows the pin to be
 re-derived from the bytes on disk; it does not allow the reviewed semantics to move.
 
 ## Repair, and the arm that makes it honest
 
-``probes/pin_rebase.py`` rewrites only the stale entries, prints every ``before=``/``live=`` pair with
-its ``vs_HEAD_numstat``, and refuses if any other key, the payload digest's own structure, or
-``candidate_sha256`` drifts. It re-runs as its own counterfact: after the apply a second dry pass
-reports ``matched={idem_matched} stale={idem_stale}`` and exits ``{idem_exit}``, because re-pinning a
-digest that already matches would erase whatever the next edit does to that file.
+``probes/pin_rebase.py`` rewrites only the stale entries, prints every
+``before=``/``live=`` pair with its ``vs_HEAD_numstat``, and refuses if any other key,
+the payload digest's own structure, or ``candidate_sha256`` drifts. It re-runs as its
+own counterfact: after the apply a second dry pass reports
+``matched={idem_matched} stale={idem_stale}`` and exits ``{idem_exit}``, because
+re-pinning a digest that already matches would erase whatever the next edit does to
+that file.
 
 ## Selection faces, before and after
 
 ```text
-runs/pytest-selection-before.txt        {before_failed} failed / {before_passed} passed  (collected 117)
-runs/pytest-selection-after-pins.txt    {after_failed} failed / {after_passed} passed   (collected 117)
+runs/pytest-selection-before.txt
+  {before_failed} failed / {before_passed} passed  (collected 117)
+runs/pytest-selection-after-pins.txt
+  {after_failed} failed / {after_passed} passed   (collected 117)
 ```
 
-The one face still red after the pins is not a digest: it is the OECD ``scenario_present`` row, a
-semantic disagreement. It was not re-pinned away -- it is what ``../{CENSUS}/`` decides.
+The one face still red after the pins is not a digest: it is the OECD
+``scenario_present`` row, a semantic disagreement. It was not re-pinned away -- it is
+what ``../{CENSUS}/`` decides.
 
 ## Recompute
 
@@ -186,6 +206,7 @@ semantic disagreement. It was not re-pinned away -- it is what ``../{CENSUS}/`` 
 
 
 def readme_census() -> str:
+    """batch5-scenario-census README: the census move, the write gates, and the suite split."""
     census = "scenario-census.txt"
     apply_ = "scenario-rebase-apply.txt"
     idem = "scenario-rebase-idempotence-arm.txt"
@@ -197,7 +218,6 @@ def readme_census() -> str:
     after = "whole-suite-after-39-faces-derived.txt"
 
     rows = grab(CENSUS, census, r"(snapshot_rows=\d+ live_bindings=\d+)")
-    live_rows = grab(CENSUS, census, r"snapshot_rows=\d+ live_bindings=(\d+)")
     moves = grab(CENSUS, census, r"face: scenario_move_rows=(\d+)")
     by_source = grab(CENSUS, census, r"scenario_moves_by_source=(\{[^}]*\})")
     live_total = grab(CENSUS, census, r"face: live_scenario_present_total=(\d+)")
@@ -209,7 +229,11 @@ def readme_census() -> str:
     new_digest = grab(CENSUS, repin, r"digest_recomputed_from_disk=([0-9a-f]{64})")
     head_digest = grab(CENSUS, repin, r"digest_at_git_head=([0-9a-f]{64})")
     stale_literal = grab(CENSUS, repin, r"stale_literal=([0-9a-f]{64})")
-    nonascii = grab(CENSUS, repin, r"face: tests/test_pipeline_jobs\.py[^\n]*?non_ascii_chars_before_literal=(\d+)")
+    nonascii = grab(
+        CENSUS,
+        repin,
+        r"face: tests/test_pipeline_jobs\.py[^\n]*?non_ascii_chars_before_literal=(\d+)",
+    )
     repin_idem_exit = grab(CENSUS, repin_idem, r"payload_literal_repin_dry_exit=(\d+)")
     cf_exit = grab(CENSUS, cf, r"scenario_counterfact_exit=(\d+)")
     cf_line = grab(CENSUS, cf, r"face: armA_failing_line='([^']*)'")
@@ -235,7 +259,11 @@ def readme_census() -> str:
             "tests/test_provider_model_contracts.py",
         ],
     )
-    return f"""# C103 / {CENSUS} — {moves} OECD scenario rows: a census move, and the conflict underneath it
+    heading = (
+        f"# C103 / {CENSUS} — {moves} OECD scenario rows: a census move, "
+        "and the conflict underneath it"
+    )
+    return f"""{heading}
 
 ## The disagreement, measured
 
@@ -243,53 +271,62 @@ The batch5 oracle pins ``scenario_present`` per ``(source, model)``, and
 ``tests/test_provider_domains.py:1784`` re-reads it as
 ``assert (binding.scenario is not None) is row["scenario_present"]``. The live census
 (``probes/scenario_census.py``, read-only) measures ``{rows}`` with
-``live_scenario_present_total={live_total}`` against ``pin_scenario_present_total={pin_total}``:
-``{moves}`` rows disagree, all in one direction and one source --
-``scenario_moves_by_source={by_source}``, ``move_directions={{'on': {moves}}}``.
+``live_scenario_present_total={live_total}`` against
+``pin_scenario_present_total={pin_total}``: ``{moves}`` rows disagree, all in one
+direction and one source -- ``scenario_moves_by_source={by_source}``,
+``move_directions={{'on': {moves}}}``.
 
-Why this is a re-base and not a semantic change: the iteration-2 消费用途 backfill wrote *descriptive
-scenario strings* onto those bindings. A scenario string is a usage annotation; the batch5
-approved-use-case adjudication (``scenario_policy`` with ``scenario_present: False``) is a different
-field and is untouched. Under the standing ruling the annotation counts are census and may be
-re-derived, while the reviewed semantics stay byte-frozen. The two partitions the fixture carries are
-each self-consistent and still disagree on these rows, so the disagreement is **recorded** in
-``registry_census_rebase.c103_scenario_rebase`` instead of being resolved by this round.
+Why this is a re-base and not a semantic change: the iteration-2 消费用途 backfill wrote
+*descriptive scenario strings* onto those bindings. A scenario string is a usage
+annotation; the batch5 approved-use-case adjudication (``scenario_policy`` with
+``scenario_present: False``) is a different field and is untouched. Under the standing
+ruling the annotation counts are census and may be re-derived, while the reviewed
+semantics stay byte-frozen. The two partitions the fixture carries are each
+self-consistent and still disagree on these rows, so the disagreement is **recorded**
+in ``registry_census_rebase.c103_scenario_rebase`` instead of being resolved by this
+round.
 
 ## The write, and the gates that could have stopped it
 
 ``probes/scenario_rebase.py`` first recovers the committed pin by hashing every
-``git log --all -- <fixture>`` blob (it lands on ``{rev}``), then rebuilds the live census exactly the
-way the guard does and refuses on: a semantic move outside ``identity_renames``, a removed identity, an
-unbalanced split, an empty flip set, an export count disagreeing with live, a serializer round-trip that
-is not byte-identical, or any frozen field moving. It wrote ``fixture_row_flips_needed={flips}`` rows
-and nothing else. Re-run after the apply it reports ``{idem_flips}`` needed and exits ``{idem_exit}``.
+``git log --all -- <fixture>`` blob (it lands on ``{rev}``), then rebuilds the live
+census exactly the way the guard does and refuses on: a semantic move outside
+``identity_renames``, a removed identity, an unbalanced split, an empty flip set, an
+export count disagreeing with live, a serializer round-trip that is not
+byte-identical, or any frozen field moving. It wrote ``fixture_row_flips_needed={flips}``
+rows and nothing else. Re-run after the apply it reports ``{idem_flips}`` needed and
+exits ``{idem_exit}``.
 
-``runs/scenario-rebase-dry-3-shape-gate-refusal.txt`` is kept on purpose: it is the run where my own
-comparator was caught judging a record-shaped block with an int-shaped key test and printing
-``live_counts.non_contract_exports=None`` while live measured 4. A probe that mis-shapes its own gate
-is the finding, and the refused run is the evidence that the gate fires.
+``runs/scenario-rebase-dry-3-shape-gate-refusal.txt`` is kept on purpose: it is the run
+where my own comparator was caught judging a record-shaped block with an int-shaped key
+test and printing ``live_counts.non_contract_exports=None`` while live measured 4. A
+probe that mis-shapes its own gate is the finding, and the refused run is the evidence
+that the gate fires.
 
 ## Why the counterfact has to re-pin the digest
 
 ``probes/scenario_counterfact.py`` builds a shadow root under ``/tmp`` and flips one row
-(``oecd/GdpReal`` ``true -> false``). Flipping the fixture alone kills the guard earlier, at the
-payload-digest assertion on :1363, so the scenario assertion is never reached and a "red" run proves
-nothing about the field under test. Arm A therefore also re-pins ``BATCH5_SNAPSHOT_SHA256`` in the
-*copied* module, and the probe only PASSes when arm A's failure line is verbatim
-``{cf_line}`` while untampered arm B exits 0. Measured ``scenario_counterfact_exit={cf_exit}``,
-``shadow_removed=True``, ``tracked_files_unchanged=True``.
+(``oecd/GdpReal`` ``true -> false``). Flipping the fixture alone kills the guard earlier,
+at the payload-digest assertion on :1363, so the scenario assertion is never reached and
+a "red" run proves nothing about the field under test. Arm A therefore also re-pins
+``BATCH5_SNAPSHOT_SHA256`` in the *copied* module, and the probe only PASSes when arm A's
+failure line is verbatim ``{cf_line}`` while untampered arm B exits 0. Measured
+``scenario_counterfact_exit={cf_exit}``, ``shadow_removed=True``,
+``tracked_files_unchanged=True``.
 
 ## The two payload literals
 
-``probes/payload_literal_repin.py`` re-pins the literals that hash the snapshot payload -- one in
-``tests/test_provider_domains.py``, one inline in ``tests/test_pipeline_jobs.py`` -- to
-``{new_digest}`` (HEAD still holds ``{head_digest}``; the pre-edit literal was
-``{stale_literal}``). It resolves the literal by *exclusion* of every 64-hex the fixture itself
-records, requires exactly one candidate per carrier, confines the edit to the hex window, and measures
-the window in **character** offsets: the second carrier has ``non_ascii_chars_before_literal={nonascii}``
-and byte offsets there read ``inside_hex_window=False`` on a correct edit. Re-run after the
-apply it refuses with 0 candidates and exits ``{repin_idem_exit}`` -- the re-pinned digest is now
-recorded by the fixture, so it is correctly no longer a candidate.
+``probes/payload_literal_repin.py`` re-pins the literals that hash the snapshot payload
+-- one in ``tests/test_provider_domains.py``, one inline in
+``tests/test_pipeline_jobs.py`` -- to ``{new_digest}`` (HEAD still holds
+``{head_digest}``; the pre-edit literal was ``{stale_literal}``). It resolves the
+literal by *exclusion* of every 64-hex the fixture itself records, requires exactly one
+candidate per carrier, confines the edit to the hex window, and measures the window in
+**character** offsets: the second carrier has
+``non_ascii_chars_before_literal={nonascii}`` and byte offsets there read
+``inside_hex_window=False`` on a correct edit. Re-run after the apply it refuses with 0
+candidates and exits ``{repin_idem_exit}`` -- the re-pinned digest is now recorded by the
+fixture, so it is correctly no longer a candidate.
 
 ## Whole-suite face
 
@@ -297,20 +334,20 @@ recorded by the fixture, so it is correctly no longer a candidate.
 {split}
 ```
 
-Both derived carriers print their own ``face: failed_lines=`` and the FAILED population counted out of
-each file agrees with it ({counted_before} and {counted_after}). Both readings satisfy
-``collected == failed + passed + skipped`` at 26551. Nothing outside the four listed modules moved
-between the two readings except the faces the re-base cleared, and the TOTAL line is the arithmetic
-this family claims (cleared = {cleared}).
+Both derived carriers print their own ``face: failed_lines=`` and the FAILED population
+counted out of each file agrees with it ({counted_before} and {counted_after}). Both
+readings satisfy ``collected == failed + passed + skipped`` at 26551. Nothing outside
+the four listed modules moved between the two readings except the faces the re-base
+cleared, and the TOTAL line is the arithmetic this family claims (cleared = {cleared}).
 
 The four-file selection that carries the batch5 guard re-reads green at this head
-(``{sel117}`` -> collected 117, ``c117_selection_exit={sel_exit}``); that run is also what proves the
-argv printed on the archived before/after receipts, because 117 is the denominator all three of them
-print.
+(``{sel117}`` -> collected 117, ``c117_selection_exit={sel_exit}``); that run is also
+what proves the argv printed on the archived before/after receipts, because 117 is the
+denominator all three of them print.
 
-``tests/test_provider_model_contracts.py`` is deliberately *not* in this family: it reads the same
-number of faces before and after, so its mechanism is declaration-vs-contract typing rather than a
-stale pin. It is attributed in the dev log and left red.
+``tests/test_provider_model_contracts.py`` is deliberately *not* in this family: it reads
+the same number of faces before and after, so its mechanism is declaration-vs-contract
+typing rather than a stale pin. It is attributed in the dev log and left red.
 
 ## Recompute
 
@@ -324,6 +361,7 @@ stale pin. It is attributed in the dev log and left red.
 
 
 def main() -> int:
+    """Regenerate the three families' README.md + face.md, refusing on any UNRESOLVED token."""
     unresolved: list[str] = []
     written: list[Path] = []
     for family, readme in ((FMP, readme_fmp), (PINS, readme_pins), (CENSUS, readme_census)):

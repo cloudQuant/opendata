@@ -1,4 +1,4 @@
-"""C103: re-pin the two test literals that hash the batch5 snapshot payload, after the scenario re-base.
+"""C103: re-pin the two test literals that hash the batch5 snapshot payload after the re-base.
 
 ``tests/test_provider_domains.py`` (``BATCH5_SNAPSHOT_SHA256``) and ``tests/test_pipeline_jobs.py``
 (inline in ``test_the_registered_census_reaches_the_ods_layer``) each assert that the sha256 of
@@ -8,7 +8,8 @@ computed from the file on disk -- with the per-source pin block and ``candidate_
 because the fixture write under test does not touch either.
 
 Refusal arms: a payload literal that is absent or ambiguous (each carrier must hold exactly one
-64-hex the fixture does not itself record), an edit whose scope escapes that hex window, and carriers
+64-hex the fixture does not itself record), an edit whose scope escapes that hex window,
+and carriers
 that disagree on which digest is pinned. A second run refuses with 0 candidates, because the new
 digest is excluded from the search.
 
@@ -19,7 +20,7 @@ from __future__ import annotations
 
 import hashlib
 import re
-import subprocess
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
@@ -29,6 +30,7 @@ HEX = re.compile(r"\b[0-9a-f]{64}\b")
 
 
 def repo_root() -> Path:
+    """Resolve the repository root by walking up to the nearest ``pytest.ini``."""
     current = Path(__file__).resolve()
     for ancestor in current.parents:
         if (ancestor / "pytest.ini").is_file():
@@ -41,8 +43,12 @@ APPLY = "--apply" in sys.argv
 
 
 def git_head_bytes(rel: str) -> bytes:
-    proc = subprocess.run(
-        ["git", "show", f"HEAD:{rel}"], cwd=REPO, capture_output=True, check=False
+    """Return the committed bytes of ``rel`` at HEAD, refusing the run when HEAD lacks it."""
+    proc = subprocess.run(  # nosec B603 B607  # noqa: S603
+        ["git", "show", f"HEAD:{rel}"],  # noqa: S607
+        cwd=REPO,
+        capture_output=True,
+        check=False,  # nosec B404
     )
     if proc.returncode:
         raise SystemExit(f"git show HEAD:{rel} failed: {proc.stderr.decode()[:200]}")
@@ -50,6 +56,7 @@ def git_head_bytes(rel: str) -> bytes:
 
 
 def main() -> int:
+    """Re-pin the payload-digest literals in the two test carriers, refusing on ties."""
     snapshot_bytes = (REPO / SNAPSHOT_REL).read_bytes()
     new_sha = hashlib.sha256(snapshot_bytes).hexdigest()
     print(f"face: snapshot_bytes={len(snapshot_bytes)}")
@@ -90,7 +97,9 @@ def main() -> int:
         # offsets from the decoded text: byte offsets drift past non-ASCII characters, and that
         # misreporting (71 non-ASCII chars ahead of the literal in test_pipeline_jobs.py, 0 in
         # test_provider_domains.py) is what first refused this edit as out-of-scope.
-        differing_positions = [i for i, (a, b) in enumerate(zip(text, rewritten)) if a != b]
+        differing_positions = [
+            i for i, (a, b) in enumerate(zip(text, rewritten, strict=True)) if a != b
+        ]
         in_window = all(start <= i < end for i in differing_positions)
         non_ascii_before_literal = sum(1 for ch in text[:start] if ord(ch) > 127)
         print(
@@ -104,7 +113,10 @@ def main() -> int:
             print(f"verdict: REFUSED - {rel} edit scope is not confined to the hex literal")
             return 1
         staged[rel] = (original, re_written_bytes, [stale])
-        print(f"face: {rel} stale_literal={stale} head_matches_original={git_head_bytes(rel) == original}")
+        print(
+            f"face: {rel} stale_literal={stale} "
+            f"head_matches_original={git_head_bytes(rel) == original}"
+        )
     stale_literals = sorted({stale for _o, _r, (stale,) in staged.values()})
     print(f"face: carriers={len(staged)} stale_literals_across_carriers={stale_literals}")
     if len(stale_literals) != 1:
@@ -113,10 +125,12 @@ def main() -> int:
     if not APPLY:
         print("verdict: DRY RUN - nothing written (pass --apply to write)")
         return 0
-    for rel, (original, rewritten, _stale) in staged.items():
-        (REPO / rel).write_bytes(rewritten)
+    for rel, (_original, staged_bytes, _stale) in staged.items():
+        (REPO / rel).write_bytes(staged_bytes)
         readback = (REPO / rel).read_bytes()
-        print(f"face: applied {rel} readback_matches={readback == rewritten} bytes={len(readback)}")
+        print(
+            f"face: applied {rel} readback_matches={readback == staged_bytes} bytes={len(readback)}"
+        )
     print(f"verdict: APPLIED - {len(CARRIERS)} payload literals re-pinned to {new_sha}")
     return 0
 

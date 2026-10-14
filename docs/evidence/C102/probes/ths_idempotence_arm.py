@@ -22,18 +22,17 @@ PROBE = ROOT / "docs/evidence/C102/probes/ths_grant_repair.py"
 
 def fetch_sites(tree: ast.AST) -> list[ast.Call]:
     """Every ``<expr>.fetch(...)`` / ``.fetch_async(...)`` call in the module."""
-    found: list[ast.Call] = []
-    for node in ast.walk(tree):
-        if (
-            isinstance(node, ast.Call)
-            and isinstance(node.func, ast.Attribute)
-            and node.func.attr in {"fetch", "fetch_async"}
-        ):
-            found.append(node)
-    return found
+    return [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr in {"fetch", "fetch_async"}
+    ]
 
 
 def main() -> int:
+    """Show that re-running the repair would be a no-op, and refuse if it would not be."""
     source = TARGET.read_text(encoding="utf-8")
     tree = ast.parse(source)
     sites = fetch_sites(tree)
@@ -56,7 +55,10 @@ def main() -> int:
     # compiles instead of merely parsing, and why this arm says so out loud.
     try:
         ast.parse("fetch(ctx=1, ctx=2)")
-        print("arm_repeated_keyword: ast.parse ACCEPTS it (a parse-only guard would not stop corruption)")
+        print(
+            "arm_repeated_keyword: ast.parse ACCEPTS it (a parse-only guard would not stop "
+            "corruption)"
+        )
     except SyntaxError as exc:
         print(f"arm_repeated_keyword: ast.parse refused ({exc.msg})")
     try:
@@ -68,7 +70,9 @@ def main() -> int:
     guard_text = PROBE.read_text(encoding="utf-8")
     compiles_staged = 'compile(staged, str(TEST_FILE), "exec")' in guard_text
     skips_granted = 'keyword.arg == "ctx" for keyword in call.keywords' in guard_text
-    print(f"arm_probe_guard: compiles_staged={compiles_staged} skips_already_granted={skips_granted}")
+    print(
+        f"arm_probe_guard: compiles_staged={compiles_staged} skips_already_granted={skips_granted}"
+    )
 
     healthy = (
         len(with_ctx) == 37
@@ -79,8 +83,14 @@ def main() -> int:
         and compiles_staged
         and skips_granted
     )
-    print("verdict: " + ("PASS - 37 offline sites granted, the 7 e2e sites carry no fixture grant"
-                         if healthy else "DISAGREED"))
+    print(
+        "verdict: "
+        + (
+            "PASS - 37 offline sites granted, the 7 e2e sites carry no fixture grant"
+            if healthy
+            else "DISAGREED"
+        )
+    )
     return 0 if healthy else 1
 
 
@@ -96,7 +106,6 @@ def enclosing_class(tree: ast.AST, lineno: int) -> str:
     if not candidates:
         return "?"
     return max(candidates, key=lambda node: node.lineno).name
-
 
 
 if __name__ == "__main__":

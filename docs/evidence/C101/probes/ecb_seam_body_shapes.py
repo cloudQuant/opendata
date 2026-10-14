@@ -47,11 +47,14 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.arm:
         payload_bytes = CASES[0][1].payload
-        assert isinstance(payload_bytes, bytes)
+        assert isinstance(payload_bytes, bytes)  # nosec B101  # noqa: S101
         try:
-            payload_bytes.encode("utf-8")
+            payload_bytes.encode("utf-8")  # type: ignore[attr-defined]
         except AttributeError as exc:
-            print(f"arm: old line `raw.encode('utf-8')` on bytes payload -> AttributeError({exc}) PASS")
+            print(
+                f"arm: old line `raw.encode('utf-8')` on bytes payload -> "
+                f"AttributeError({exc}) PASS"
+            )
             return 0
         print("arm: old line did not fail -- the recorded gap does not exist -> FAIL")
         return 1
@@ -70,7 +73,7 @@ def main(argv: list[str] | None = None) -> int:
     for label, response, expected in CASES:
         try:
             actual = seam_body(response)
-        except Exception as exc:  # noqa: BLE001 - the face is the exception itself
+        except Exception as exc:
             failures += 1
             print(f"RAISED {label}: {type(exc).__name__}({exc})")
             continue

@@ -13,7 +13,7 @@ from __future__ import annotations
 import hashlib
 import pathlib
 import re
-import subprocess
+import subprocess  # nosec B404
 import sys
 from datetime import datetime
 
@@ -23,19 +23,43 @@ RUNS = FAMILY / "runs"
 
 # carrier name -> (source log under /tmp, argv, verdict-bearing exit token)
 RECEIPTS = (
-    ("probe-pass.txt", "c104_probe_pass.txt", "PROBE_EXIT",
-     "python docs/evidence/C104/h15-series-enumeration/probes/h15_allowlist.py"),
-    ("finding-triage-identity-only.txt", "c104_triage.txt", "triage_exit",
-     "python - (identity-only triage of /tmp/c103_gl_shipped.json + /tmp/c103_gl_free.json)"),
-    ("pytest-allowlist-consumers.txt", "c104_pytest45.txt", "PYTEST_EXIT",
-     "python -m pytest -q --no-cov -p no:cacheprovider --tb=line "
-     "tests/test_acceptance_item_probe.py tests/test_env_example_security.py"),
-    ("staged-payload-rescan.txt", "c104_rescan.txt", "RESCAN_EXIT",
-     "python docs/evidence/C104/h15-series-enumeration/probes/payload_rescan.py"),
-    ("secret-check-before-edit.txt", "c104_secretcheck_before.txt", "SECRET_CHECK_EXIT",
-     "make secret-check  # command: scripts/quality/secret_scan_check.py, pinned argv"),
-    ("secret-check-after-edit.txt", "c104_secretcheck_after.txt", "SECRET_CHECK_EXIT",
-     "make secret-check  # command: scripts/quality/secret_scan_check.py, pinned argv"),
+    (
+        "probe-pass.txt",
+        "c104_probe_pass.txt",
+        "PROBE_EXIT",
+        "python docs/evidence/C104/h15-series-enumeration/probes/h15_allowlist.py",
+    ),
+    (
+        "finding-triage-identity-only.txt",
+        "c104_triage.txt",
+        "triage_exit",
+        "python - (identity-only triage of /tmp/c103_gl_shipped.json + /tmp/c103_gl_free.json)",
+    ),
+    (
+        "pytest-allowlist-consumers.txt",
+        "c104_pytest45.txt",
+        "PYTEST_EXIT",
+        "python -m pytest -q --no-cov -p no:cacheprovider --tb=line "
+        "tests/test_acceptance_item_probe.py tests/test_env_example_security.py",
+    ),
+    (
+        "staged-payload-rescan.txt",
+        "c104_rescan.txt",
+        "RESCAN_EXIT",
+        "python docs/evidence/C104/h15-series-enumeration/probes/payload_rescan.py",
+    ),
+    (
+        "secret-check-before-edit.txt",
+        "c104_secretcheck_before.txt",
+        "SECRET_CHECK_EXIT",
+        "make secret-check  # command: scripts/quality/secret_scan_check.py, pinned argv",
+    ),
+    (
+        "secret-check-after-edit.txt",
+        "c104_secretcheck_after.txt",
+        "SECRET_CHECK_EXIT",
+        "make secret-check  # command: scripts/quality/secret_scan_check.py, pinned argv",
+    ),
 )
 
 repeated: list[str] = []
@@ -44,13 +68,20 @@ missing: list[str] = []
 
 
 def git(*args: str) -> str:
-    done = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
-        ["git", *args], cwd=REPO, capture_output=True, text=True, shell=False, check=False
+    """Run git with literal arguments in the repository and return its stdout."""
+    done = subprocess.run(  # noqa: S603  # nosec B603 B607  # literal argv, shell disabled
+        ["git", *args],  # noqa: S607
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        shell=False,
+        check=False,  # nosec B404
     )
     return done.stdout.strip() if done.returncode == 0 else ""
 
 
 def main() -> int:
+    """Archive this round's probe receipts under ``runs/`` and print each carrier digest."""
     RUNS.mkdir(parents=True, exist_ok=True)
     commit = git("rev-parse", "HEAD")
     branch = git("rev-parse", "--abbrev-ref", "HEAD")
@@ -60,7 +91,7 @@ def main() -> int:
     total_bytes = 0
 
     for name, src, exit_token, argv in RECEIPTS:
-        source = pathlib.Path("/tmp") / src
+        source = pathlib.Path("/tmp") / src  # nosec B108  # noqa: S108
         if not source.is_file():
             missing.append(name)
             continue
@@ -93,8 +124,9 @@ def main() -> int:
         if len(text.encode()) > source.stat().st_size + 2048:
             oversized.append(name)
 
-    print(f"face: receipts_declared={len(RECEIPTS)} sources_missing={len(missing)} "
-          f"missing={missing}")
+    print(
+        f"face: receipts_declared={len(RECEIPTS)} sources_missing={len(missing)} missing={missing}"
+    )
     print(f"face: carriers_written={written} bytes_written={total_bytes}")
     print(f"face: zero_byte_carriers={[n for n in RUNS.glob('*.txt') if n.stat().st_size == 0]}")
     print(f"face: header_repetitions={repeated}")

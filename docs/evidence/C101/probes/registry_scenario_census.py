@@ -30,7 +30,7 @@ def offenders() -> list[tuple[str, str]]:
     for descriptor in get_registry().list_model_descriptors():
         try:
             provider = catalog.get_provider(descriptor.source)
-        except Exception:  # noqa: BLE001 - counted separately below
+        except Exception:
             bad.append((descriptor.source, descriptor.model))
             continue
         binding = provider.fetcher_dict.get(descriptor.model)
@@ -66,7 +66,10 @@ def run_arm() -> int:
         and restored.scenario == binding.scenario
     )
     print(f"arm: oecd/{model} scenario=None -> {outcome}: {detail[:78]}")
-    print(f"arm: restored_scenario_chars={len(restored.scenario or '')} -> {'PASS' if bites else 'FAIL'}")
+    print(
+        f"arm: restored_scenario_chars={len(restored.scenario or '')} -> "
+        f"{'PASS' if bites else 'FAIL'}"
+    )
     return 0 if bites else 1
 
 
@@ -90,9 +93,11 @@ def main(argv: list[str] | None = None) -> int:
         f"population: descriptors={descriptors} capabilities={capabilities}"
         f" map_entries={len(entries)}"
     )
-    print(f"face: no_scenario={len(bad)} covered_pairs={len(covered & registered)}"
-          f" registry_pairs={len(registered)} uncovered={len(registered - covered)}"
-          f" overcovered={len(covered - registered)}")
+    print(
+        f"face: no_scenario={len(bad)} covered_pairs={len(covered & registered)}"
+        f" registry_pairs={len(registered)} uncovered={len(registered - covered)}"
+        f" overcovered={len(covered - registered)}"
+    )
     for source, model in sorted(bad):
         print(f"  OFFENDER {source}/{model}")
     if bad:

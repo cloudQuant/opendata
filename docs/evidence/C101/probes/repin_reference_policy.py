@@ -60,8 +60,8 @@ def _read(rel: str) -> str:
 
 
 def _git_show(rev: str, rel: str) -> str | None:
-    proc = subprocess.run(  # nosec B603  # fixed argv, repo-relative path
-        ["git", "show", f"{rev}:{rel}"],
+    proc = subprocess.run(  # nosec B603 B607  # fixed argv, repo-relative path  # nosec B603  # noqa: S603
+        ["git", "show", f"{rev}:{rel}"],  # nosec B404  # noqa: S607
         cwd=REPO,
         capture_output=True,
         text=True,
@@ -87,6 +87,7 @@ def _stale_paths(raw: dict) -> list[str]:
 
 
 def judge_path(rel: str, pin: str) -> dict:
+    """Compare one registered path's live bytes with HEAD: digest, findings, delta."""
     live_text = _read(rel)
     head_text = _git_show("HEAD", rel)
     head_digest = _digest(head_text) if head_text is not None else ""
@@ -108,10 +109,14 @@ def judge_path(rel: str, pin: str) -> dict:
         "findings_added": dict(sorted(added.items())),
         "findings_removed": dict(sorted(removed.items())),
         "dependency_added": dep_added,
-        "brand_lines": (_lines_matching(head_text, BRAND_NAME) if head_text else -1,
-                        _lines_matching(live_text, BRAND_NAME)),
-        "load_shape_lines": (_lines_matching(head_text, LOAD_SHAPE) if head_text else -1,
-                             _lines_matching(live_text, LOAD_SHAPE)),
+        "brand_lines": (
+            _lines_matching(head_text, BRAND_NAME) if head_text else -1,
+            _lines_matching(live_text, BRAND_NAME),
+        ),
+        "load_shape_lines": (
+            _lines_matching(head_text, LOAD_SHAPE) if head_text else -1,
+            _lines_matching(live_text, LOAD_SHAPE),
+        ),
         "verdict": "REJECT" if dep_added else "REPIN_OK",
     }
 
@@ -136,6 +141,7 @@ def arm_corrupted_pins(raw: dict) -> int:
 
 
 def main() -> int:
+    """Re-pin the reference-policy digests, printing stale paths and refusing on unknowns."""
     apply = "--apply" in sys.argv
     raw = json.loads(_read(POLICY))
     pins = {entry["path"]: entry["sha256"] for entry in raw["entries"]}
@@ -159,38 +165,51 @@ def main() -> int:
         )
     repin_ok = sum(1 for row in rows if row["verdict"] == "REPIN_OK")
     dep_edges = sum(len(row["dependency_added"]) for row in rows)
-    print(f"\nface: stale={len(rows)} repin_ok={repin_ok} rejected={len(rows) - repin_ok} "
-          f"dependency_edges_added={dep_edges}")
+    print(
+        f"\nface: stale={len(rows)} repin_ok={repin_ok} rejected={len(rows) - repin_ok} "
+        f"dependency_edges_added={dep_edges}"
+    )
 
     if stale:
         arm = arm_injected_dependency(stale[0])
-        print(f"arm import-injection on {stale[0]}: {arm} (expected REJECT) "
-              f"-> {'PASS' if arm.startswith('REJECT') else 'FAIL'}")
+        print(
+            f"arm import-injection on {stale[0]}: {arm} (expected REJECT) "
+            f"-> {'PASS' if arm.startswith('REJECT') else 'FAIL'}"
+        )
     corrupted = arm_corrupted_pins(raw)
-    print(f"arm pin-corruption: stale_sha256_readings={corrupted} of {len(raw['entries'])} "
-          f"(expected =={len(raw['entries'])}) -> {'PASS' if corrupted == len(raw['entries']) else 'FAIL'}")
+    print(
+        f"arm pin-corruption: stale_sha256_readings={corrupted} of {len(raw['entries'])} "
+        f"(expected =={len(raw['entries'])}) -> "
+        f"{'PASS' if corrupted == len(raw['entries']) else 'FAIL'}"
+    )
 
     if not apply:
         print("\nread-only: policy untouched. Re-run with --apply once every verdict is REPIN_OK.")
         return 0
     if not rows or repin_ok != len(rows):
-        print("FAIL: refusing to apply -- at least one path is not REPIN_OK (or nothing was stale).")
+        print(
+            "FAIL: refusing to apply -- at least one path is not REPIN_OK (or nothing was stale)."
+        )
         return 1
 
     text = _read(POLICY)
     for row in rows:
         needle = f'"sha256": "{row["pin"]}"'
         if text.count(needle) != 1:
-            print(f"FAIL: pin field for {row['path']} is not uniquely replaceable "
-                  f"(count={text.count(needle)})")
+            print(
+                f"FAIL: pin field for {row['path']} is not uniquely replaceable "
+                f"(count={text.count(needle)})"
+            )
             return 1
         text = text.replace(needle, f'"sha256": "{row["live_digest"]}"')
     (REPO / POLICY).write_text(text, encoding="utf-8")
     reparsed = json.loads(_read(POLICY))
     remaining = _stale_paths(reparsed)
     print(f"\napplied re-pin for {len(rows)} path(s)")
-    print(f"post: stale_sha256_remaining={len(remaining)} -> "
-          f"{'PASS' if not remaining else 'FAIL ' + str(remaining)}")
+    print(
+        f"post: stale_sha256_remaining={len(remaining)} -> "
+        f"{'PASS' if not remaining else 'FAIL ' + str(remaining)}"
+    )
     print(f"post: registered_entries={len(reparsed['entries'])} (was {len(raw['entries'])})")
     return 0 if not remaining else 1
 

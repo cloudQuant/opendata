@@ -120,7 +120,9 @@ def _bind_tree(
     return visible, module_visible
 
 
-def product_seams(product_dir: Path, modules: dict[str, str]) -> tuple[
+def product_seams(
+    product_dir: Path, modules: dict[str, str]
+) -> tuple[
     dict[SEAM_KEY, dict[str, Any]],
     dict[str, dict[str, tuple[str, str]]],
     dict[str, dict[str, str]],
@@ -190,7 +192,7 @@ def product_seams(product_dir: Path, modules: dict[str, str]) -> tuple[
 
 def _import_maps(
     tree: ast.Module, modules: dict[str, str]
-) -> tuple[dict[str, str], dict[str, str]]:
+) -> tuple[dict[str, str], dict[str, tuple[str, str]]]:
     """Return (name -> module file, name -> (file, attr)) for a test module."""
     module_visible: dict[str, str] = {}
     visible: dict[str, tuple[str, str]] = {}
@@ -227,16 +229,14 @@ def _resolve_target(
         hop = visible.get(target.id)
         return hop[0] if hop else None
     if isinstance(target, ast.Attribute):
-        base = _resolve_target(
-            target.value, module_visible, visible, modules, product_modules
-        )
+        base = _resolve_target(target.value, module_visible, visible, modules, product_modules)
         if base is None:
             return None
         chained = f"{_dotted_for(base)}.{target.attr}"
         if chained in modules:
             return modules[chained]
-        hop = product_modules.get(base, {}).get(target.attr)
-        return hop
+        attr_hop = product_modules.get(base, {}).get(target.attr)
+        return attr_hop
     return None
 
 
@@ -248,7 +248,9 @@ def _attr_name(node: ast.expr | None) -> str | None:
     return None
 
 
-def _inner_returned(factory: ast.FunctionDef) -> ast.FunctionDef | None:
+def _inner_returned(
+    factory: ast.FunctionDef,
+) -> ast.FunctionDef | ast.AsyncFunctionDef | None:
     """Return the callable a factory hands back (by returned name, or its only inner def)."""
     inner = [
         node
@@ -324,7 +326,7 @@ def _lookup(
 
 def _resolve_fake(
     fake: ast.expr, local_defs: dict[str, ast.AST]
-) -> tuple[str, list[str], bool, bool, ast.expr | None]:
+) -> tuple[str, list[str], bool, bool, ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda | None]:
     """Return (label, declared params, takes **kwargs, resolvable, node to widen)."""
     if isinstance(fake, ast.Lambda):
         declared, var_kw = _declared_params(fake.args)
@@ -508,8 +510,7 @@ def _arm_source(shape: str, stale: bool) -> str:
     chunks = [_SEED_IMPORTS[shape]]
     if shape == "factory":
         chunks.append(
-            f"\n\ndef make_fake():\n    def inner({params}):\n        {statement}\n"
-            "    return inner"
+            f"\n\ndef make_fake():\n    def inner({params}):\n        {statement}\n    return inner"
         )
     else:
         chunks.append(f"\n\ndef fake({params}):\n    {statement}")
@@ -548,6 +549,7 @@ def _arm() -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Dispatch either the stale-fake census or its falsification arm."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arm", action="store_true", help="run the falsification arm only")
     parser.add_argument("--tests-dir", default=str(REPO / "tests"))

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""C104: the twelfth H.15 series id is a public identifier, and the enumeration said so eleven times.
+"""C104: the twelfth H.15 series id is a public identifier.
+
+The enumeration said so eleven times.
 
 ``opendata/data/providers/federal_reserve/specs.py:342`` declares ``week_4`` with
 ``source_key="RIFSGFSW04_N.B"``, the Fed H.15 4-week bill series. ``generic-api-key`` reads the
@@ -10,8 +12,9 @@ credential written under the same kwarg. This probe re-measures that boundary fo
 
 Arms, all off-tree (nothing here writes a tracked file):
 
-  current    repo config exactly as it stands         -> 0 findings, exit 0 (pre-edit: the :342 finding
-                                                          and a clean refusal, no traceback)
+  current    repo config exactly as it stands         -> 0 findings, exit 0
+                                                          (pre-edit: the :342 finding and a
+                                                          clean refusal, no traceback)
   dropped    same config minus the one enumerated id  -> the :342 finding must come back
   sibling    unenumerated sibling id, planted         -> still reported under the shipped config
   credential credential-shaped value under source_key= -> still reported under the shipped config
@@ -26,9 +29,10 @@ import json
 import pathlib
 import re
 import shutil
-import subprocess
+import subprocess  # nosec B404
 import sys
 import tempfile
+
 import tomllib
 
 REPO = pathlib.Path(__file__).resolve().parents[5]
@@ -36,7 +40,9 @@ CONFIG = REPO / ".gitleaks.toml"
 PROBE_CONST = REPO / "scripts/quality/acceptance_item_probe.py"
 SPEC_REL = "opendata/data/providers/federal_reserve/specs.py"
 SPEC = REPO / SPEC_REL
-PAYLOAD_SRC = pathlib.Path("/tmp/c103_scan_payload")  # the exact staged bytes, copied before any edit
+PAYLOAD_SRC = pathlib.Path(
+    "/tmp/c103_scan_payload"  # nosec B108  # noqa: S108
+)  # the exact staged bytes, copied before any edit
 NEW_ENTRY = r"^RIFSGFSW04_N\.B$"
 SIBLING = "RIFSGFSW08_N.B"
 
@@ -45,11 +51,13 @@ faces: list[str] = []
 
 
 def face(line: str) -> None:
+    """Print and remember one face line."""
     faces.append(line)
     print(line, flush=True)
 
 
 def refuse(reason: str) -> None:
+    """Print and remember one refusal reason."""
     fails.append(reason)
     print(f"  REFUSE: {reason}", flush=True)
 
@@ -62,8 +70,8 @@ def scan(source: pathlib.Path, config_text: str, workdir: pathlib.Path) -> tuple
     report = workdir / "report.json"
     if report.exists():
         report.unlink()
-    done = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
-        [
+    done = subprocess.run(  # noqa: S603  # nosec B603 B607  # literal argv, shell disabled
+        [  # nosec B404  # noqa: S607
             "gitleaks",
             "detect",
             "--no-git",
@@ -140,6 +148,7 @@ def const_regexes(probe_text: str) -> list[str]:
 
 
 def main() -> int:
+    """Run the four scan arms and refuse unless each lands on its expected count."""
     for path, what in ((CONFIG, "config"), (PROBE_CONST, "probe_const"), (SPEC, "spec")):
         if not path.is_file():
             print(f"face: {what}_not_found_at={path}", flush=True)
@@ -154,16 +163,20 @@ def main() -> int:
     face(f"face: probe_const_allowed_regexes={len(consts)} config_regexes={len(regexes)}")
     face(f"face: probe_const_equals_config_regexes={consts == regexes}")
     if consts != regexes:
-        refuse("acceptance_item_probe.GENERIC_API_KEY_ALLOWED_REGEXES and the shipped config's "
-               "generic-api-key allowlist disagree -- tests/test_acceptance_item_probe.py:715 "
-               "asserts exactly this equality")
+        refuse(
+            "acceptance_item_probe.GENERIC_API_KEY_ALLOWED_REGEXES and the shipped config's "
+            "generic-api-key allowlist disagree -- tests/test_acceptance_item_probe.py:715 "
+            "asserts exactly this equality"
+        )
     entry_present = NEW_ENTRY in regexes
     face(f"face: twelfth_id_enumerated={entry_present}")
     ids = sorted(set(re.findall(r'source_key="([^"]+)"', spec_text)))
     dotted = [i for i in ids if re.fullmatch(r"[A-Z0-9_]+(?:\.[A-Z0-9_]+)+", i)]
     face(f"face: spec_distinct_source_key={len(ids)} series_id_shaped={len(dotted)}")
-    face(f"face: series_ids_enumerated_in_config="
-         f"{sum(1 for i in dotted if any(re.fullmatch(rx, i) for rx in regexes))} of {len(dotted)}")
+    face(
+        f"face: series_ids_enumerated_in_config="
+        f"{sum(1 for i in dotted if any(re.fullmatch(rx, i) for rx in regexes))} of {len(dotted)}"
+    )
     if not PAYLOAD_SRC.is_dir():
         refuse(f"{PAYLOAD_SRC} is gone, so the arms would not be scanning the staged bytes")
         return 1
@@ -175,8 +188,10 @@ def main() -> int:
     ids_found = identity(findings, PAYLOAD_SRC)
     face(f"arm current: exit={code} findings={len(findings)} identities={ids_found}")
     if not entry_present:
-        refuse("the repo config does not carry the enumerated twelfth id -- this is the pre-edit "
-               "state; the arms below only judge a config that has it")
+        refuse(
+            "the repo config does not carry the enumerated twelfth id -- this is the pre-edit "
+            "state; the arms below only judge a config that has it"
+        )
         if ids_found != [f"{SPEC_REL}:342#generic-api-key"]:
             refuse(f"the live finding is not the 4-week bill line: {ids_found}")
         shutil.rmtree(work, ignore_errors=True)
@@ -188,13 +203,17 @@ def main() -> int:
 
     # --- arm dropped: one line less, the finding must come back -------------------------------
     pre_cfg = drop_entry(shipped)
-    face(f"face: dropped_cfg_is_config_minus_one_line="
-         f"{len(pre_cfg.splitlines()) == len(shipped.splitlines()) - 1}")
+    face(
+        f"face: dropped_cfg_is_config_minus_one_line="
+        f"{len(pre_cfg.splitlines()) == len(shipped.splitlines()) - 1}"
+    )
     dcode, dfind = scan(PAYLOAD_SRC, pre_cfg, work / "dropped")
     dids = identity(dfind, PAYLOAD_SRC)
     face(f"arm dropped: exit={dcode} findings={len(dfind)} identities={dids}")
     if dcode != 1:
-        refuse(f"arm dropped exit {dcode}, wanted 1 -- removing the entry did not re-open the finding")
+        refuse(
+            f"arm dropped exit {dcode}, wanted 1 -- removing the entry did not re-open the finding"
+        )
     if dids != [f"{SPEC_REL}:342#generic-api-key"]:
         refuse(f"arm dropped flagged something other than the 4-week bill line: {dids}")
 
