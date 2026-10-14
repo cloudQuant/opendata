@@ -1,0 +1,406 @@
+{
+  "schema_version": 1,
+  "title": "Product fix backlog: Congress, BLS, FRED, and YFinance",
+  "created_at_utc": "2026-10-13T10:22:22Z",
+  "purpose": "Read-only evidence triage for root planning. This is not a product acceptance run and does not update the fixed-350 ledger or any prior receipt.",
+  "scope": {
+    "product_snapshot": {
+      "path": "docs/evidence/C100/model-current-retakes/product-release-20261012T2305Z/product-sources.json",
+      "sha256": "a8eda002082e3bad76e3df9bc6bac58a3a9288befa79b24a2a4b40c9c25ee08d",
+      "snapshot_id": "product-release-20261012T2305Z",
+      "source_file_count": 905,
+      "relevant_current_pins_recomputed": true
+    },
+    "actions_not_performed": [
+      "No product source, test, prior receipt, patch, or fixed-350 ledger was modified.",
+      "No product import, pytest, provider execution, live provider request, database access, OpenBB implementation read, or Intrinio algorithm-comment read was performed.",
+      "Candidate patches were applied only to temporary copies under /tmp to derive proposed after-hashes; they remain unapplied in the repository."
+    ],
+    "classification_policy": "Separate confirmed public-contract/product-output mismatch from synthetic-fixture limitation, stale source binding, oracle/harness failure, and unresolved source semantics. Historical PASS is not upgraded to current-source PASS."
+  },
+  "recommendation": {
+    "first_bounded_code_fix": "CongressAmendments.number integer output",
+    "why_first": "The pinned public contract requires an integer and the authorized offline direct and central observations both emitted a string for the same expected amendment number. The source conversion itself always stringifies that field.",
+    "defer_or_non_code": [
+      "BLS calendar-year alias proposal is documentation/schema-description clarification, not an established runtime bug; exact date filtering remains unresolved.",
+      "Do not patch EconomicCalendar, FredReleaseTable, ManufacturingOutlookNY/Texas, or YFinance from the evidence summarized here; their current-source status is either unknown or historical-pass-only due source-hash drift."
+    ]
+  },
+  "findings": [
+    {
+      "id": "CONGRESS_AMENDMENTS_NUMBER_TYPE",
+      "identity": "CongressAmendments",
+      "classification": "CONFIRMED_PRODUCT_OUTPUT_TYPE_BUG",
+      "priority": "P1_BOUNDED_FIX_CANDIDATE",
+      "current_source": [
+        {
+          "path": "opendata/data/models/congress_cboe_iter2.py",
+          "sha256": "50a89ed72de77db1a66be0e936dff11dd497d23b9578fbd4b6651bd42727a98e"
+        },
+        {
+          "path": "opendata/data/providers/congress_gov/models/iter2.py",
+          "sha256": "d25992ef5a911a87f154a4169e86a96682313b560a3682d0ab84c780108bffb0"
+        }
+      ],
+      "contract_basis": {
+        "path": "docs/evidence/C100/model-evidence-reconciliation/model-current-retakes/congress-eight-spec/spec.json",
+        "sha256": "7bd39be04287e6d1575ee046ab6b05fbce5b8f47fafb88aafb5395e125ab5fd0",
+        "second_contract_path": "docs/evidence/C100/acceptance-congress-cftc-eia/contracts.json",
+        "second_contract_sha256": "97df59a9d628350e94e3c0a567b2c3efa3aea0dddbca257ab06d566f19bb4f78",
+        "required_output": "number is required and integer; expected example is 10",
+        "official_documentation": "https://github.com/LibraryOfCongress/api.congress.gov/blob/main/Documentation/AmendmentEndpoint.md",
+        "official_wire_capture": "NOT_AVAILABLE; the offline input fixture is explicitly hand-authored and is not a captured upstream response"
+      },
+      "observed_failure": {
+        "receipt_path": "docs/evidence/C100/model-current-retakes/congress-lists/runs/primary-authorized-diagnostic-r1-20261013t015247z/receipt.json",
+        "receipt_sha256": "aaf50c2ddb1fcc3c57bad7242cf9b0e2962ac39f4ae4972c35afc678028d9473",
+        "cases_path": "docs/evidence/C100/model-current-retakes/congress-lists/runs/primary-authorized-diagnostic-r1-20261013t015247z/cases.json",
+        "cases_sha256": "89fbad1429c2f1ff6f365e10615cf7afb29d921ec452f1f33d9d0f195c5d8215",
+        "fixture_sha256": "fc4cbf149ecf87220f339aa569c969fa770a729f2f48af225b06472805edde61",
+        "fixture_classification": "HAND_AUTHORED_OFFLINE_FIXTURE_NOT_CAPTURED_UPSTREAM_BYTES",
+        "run_id": "primary-authorized-diagnostic-r1-20261013t015247z",
+        "started_at_utc": "2026-10-13T01:53:31.685588+00:00",
+        "finished_at_utc": "2026-10-13T01:53:34.214541+00:00",
+        "exit_code": 1,
+        "overall_status": "PRODUCT_GAP",
+        "model_result": "CongressAmendments: 15 cases; 12 pass, 2 output-type failures, 1 product gap",
+        "observed_value": "number='10' (str)",
+        "expected_value": "number=10 (int)",
+        "lanes": ["direct", "central"],
+        "missing_number_case": "number mapped to empty string and recorded PRODUCT_GAP"
+      },
+      "patch_candidate": {
+        "directory": "docs/evidence/C100/quality-source-repairs/congress-amendment-number-type-proposal-r1-20261013T0203Z",
+        "status": "UNAPPLIED_PROPOSAL",
+        "readme_sha256": "3cbf4a30778c1362becbe52c9f0b3584eeca71840d6d4880e86c7c0815654dd2",
+        "source_pins_sha256": "18d2c9b0b0feab2da8cfef6ab53b97b6995da9a661ec99b7e508c1dd50997731",
+        "static_candidate_result_sha256": "b7afc3e55bf7add354067749f544b1d6b51202fd7a865557435dcf6342281209",
+        "candidate_source_text_sha256": "8f8ebcaca9a5073634dfc32fc8e0c75779460a8e05cdf710f75b6b95e769bdc4",
+        "patch_path": "docs/evidence/C100/quality-source-repairs/congress-amendment-number-type-proposal-r1-20261013T0203Z/congress-amendment-number.patch",
+        "patch_sha256": "e77b36d5673c825c58d623ce6d61fabe7891843c684bbe7c97d7cf17af903a50",
+        "proposed_changes": [
+          "Make public model field number StrictInt.",
+          "Parse amendmentNumber/number with the existing integer helper; reject absent/null instead of emitting an empty string."
+        ],
+        "hypothetical_after_hashes_from_temp_copy": [
+          {
+            "path": "opendata/data/models/congress_cboe_iter2.py",
+            "sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829"
+          },
+          {
+            "path": "opendata/data/providers/congress_gov/models/iter2.py",
+            "sha256": "c6c6d352f1ae1e1894ae830f60bfb3fcfea694b7a4180379632b553448fb8c55"
+          }
+        ],
+        "patch_boundary": "Only after root releases the source write boundary. Existing receipt and fixture remain immutable."
+      },
+      "reproducible_post_fix_acceptance_cases": [
+        {
+          "case": "central_and_direct_public_row",
+          "input_number": 10,
+          "expected_typed_and_json_type": "integer"
+        },
+        {
+          "case": "decimal_digit_compatibility_if_retained",
+          "input_number": "10",
+          "expected_typed_and_json_value": 10
+        },
+        {
+          "case": "leading_zero_decimal_compatibility_if_retained",
+          "input_number": "0010",
+          "expected_typed_and_json_value": 10
+        },
+        {
+          "case": "missing_or_null_required_number",
+          "expected": "CONGRESS_GOV_BAD_AMENDMENT_ROW; no empty-string row"
+        },
+        {
+          "case": "invalid_number_types_and_strings",
+          "values": [true, 10.0, "10.0", "-10"],
+          "expected": "typed source error; never silently coerce bool/float/non-decimal input"
+        },
+        {
+          "case": "serialized_service_response",
+          "expected": "JSON number, not quoted JSON string"
+        }
+      ],
+      "next_action": "After authorization, apply the pinned patch, add focused tests for the cases above, run only the owned Congress model/provider/service tests under Anaconda base, refresh the product-source snapshot, and obtain a new independent source-bound receipt.",
+      "invalidates_on_apply": [
+        "The current 905 snapshot remains historical; create a successor snapshot rather than rewriting it.",
+        "Congress model/provider source bindings and any run receipt pinned to the old two source hashes.",
+        "Congress typed schema/output comparison and tests covering number's type."
+      ],
+      "separate_unresolved_issue": "Amendment type casing is a different observed fixture mismatch and is not included in this narrow patch."
+    },
+    {
+      "id": "BLS_CALENDAR_YEAR_DATE_ALIAS",
+      "identity": "BlsSeries",
+      "classification": "NO_RUNTIME_BUG_ESTABLISHED_DOCUMENTATION_AND_SCHEMA_DESCRIPTION_PROPOSAL",
+      "priority": "P3_CONTRACT_CLARIFICATION_ONLY",
+      "current_source": [
+        {
+          "path": "opendata/data/providers/bls/models/series.py",
+          "sha256": "2683fbf0043a89cab1b64df50bd4b768d26aaba5b96032a48a0f8823472e21b9"
+        },
+        {
+          "path": "opendata/data/models/period_series.py",
+          "sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a"
+        }
+      ],
+      "chosen_contract": "Root-selected compatibility rule: date aliases select the inclusive calendar years containing the two bounds; month/day do not clip returned rows. Exact-day equivalence is not established by BLS docs.",
+      "public_basis": {
+        "official_docs": [
+          "https://www.bls.gov/developers/api_signature.htm",
+          "https://www.bls.gov/developers/api_signature_v2.htm",
+          "https://www.bls.gov/developers/api_python.htm",
+          "https://www.bls.gov/tus/time_period.htm"
+        ],
+        "documented_limit": "API uses startyear/endyear. The cited API docs do not promise row filtering by month/day. The time-period page is American Time Use-specific and cannot establish a general BLS date-anchor rule.",
+        "existing_test": "tests/test_bls_provider_models.py::test_series_date_query_uses_calendar_year_window maps 2022-03-02 through 2022-04-01 to startyear=endyear=2022; it tests request expansion, not result clipping.",
+        "period_labels": "BLS M13 and A01 are annual period labels; no exact date anchor is evidenced."
+      },
+      "historical_receipt": {
+        "path": "docs/evidence/C100/model-current-retakes/bls-ecb-five/runs/primary-authorized-20261013t021736z/receipt.json",
+        "sha256": "3beeeb7c277675588856a630c4a1f9c7e2c01bd0e6456a7e2ed50b14cd00907c",
+        "run_id": "primary-authorized-20261013t021736z",
+        "status": "PASS_OFFLINE_FIXTURE_ONLY",
+        "model": "BlsSeries",
+        "observation": "December-only 2013 query sent as startyear=endyear=2013; returned synthetic 2013/M11 November row.",
+        "fixture_provenance": "hand-authored synthetic fixture; not a captured BLS response",
+        "interpretation": "Evidence of calendar-year selection/widening only, not proof of exact day/month filtering."
+      },
+      "proposal": {
+        "directory": "docs/evidence/C100/acceptance-quality-preservation/bls-series-date-window-proposal/year-selection-alias-proposal-20261013",
+        "status": "UNAPPLIED_PROPOSAL",
+        "readme_sha256": "e5a39fe1e7e1d97d71b60d8a0bf4bc1033ba2a874a537cc4c015a781b6e05d63",
+        "parent_readme_sha256": "ae7c8cadeae84493e8b5f93e3afcca062b63a26f1564cb44385ca4081f7ac6dd",
+        "input_pin_file_sha256": "2beacbfb39e495df2af6e676ecb6cf4470cf3fbfc7bf493f40cc36c813b6fd5b",
+        "patch_file": "docs/evidence/C100/acceptance-quality-preservation/bls-series-date-window-proposal/year-selection-alias-proposal-20261013/clarify-bls-year-alias.patch",
+        "patch_sha256": "245dc7bb4e1a0a406cc1ad78215e73e4a960e31709ad17fa0ddc190a4dc32a14",
+        "patch_sha256_sidecar_file_sha256": "7a53ea321d7058d4dfb6996440ad21f93140d2f522d3bb5a2c15f3621823b3e7",
+        "hypothetical_after_hashes_from_temp_copy": [
+          {
+            "path": "opendata/data/providers/bls/models/series.py",
+            "sha256": "7f9e70fd1710f75b309f1cd504bf5f76134bf4c0c083893faac15a2a037e3cbf"
+          },
+          {
+            "path": "opendata/data/models/period_series.py",
+            "sha256": "4b10d4afe651d8da864a782a36669c609a0525607786c766c4dcdc16a66a9bf4"
+          },
+          {
+            "path": "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/开发验收记录.md",
+            "sha256": "ced93bbd7dd05865c527249b71838a85042ce61c489308fd77ad27a790cafbce"
+          }
+        ],
+        "proposed_behavior": "No runtime selection change. The model query gets explicit descriptions; observation docs clarify M13/A01; progress entry distinguishes year selection from exact-window acceptance.",
+        "schema_effect": "The added Pydantic field descriptions can change generated schema metadata; verify that as a planned metadata delta even though validation/wire behavior should remain unchanged.",
+        "acceptance_needed_if_applied": [
+          "Compare public query schema before/after and allow only the intended descriptions.",
+          "Rerun the existing year-window test under Anaconda base.",
+          "Retain a distinct UNRESOLVED marker for exact day/month clipping and do not use the November synthetic response as a failure oracle."
+        ]
+      },
+      "current_pins_note": "Proposal input pins match current BLS protocol/model/provider/test files at triage time; this is not a current provider acceptance.",
+      "invalidates_on_apply": [
+        "BlsSeries and BlsObservation source pins.",
+        "Generated query-schema metadata for the two date alias descriptions.",
+        "The progress-document pin; no historical receipt or fixed-350 status changes automatically."
+      ]
+    },
+    {
+      "id": "FRED_ECONOMIC_CALENDAR_AND_RELEASE_TABLE",
+      "identities": ["EconomicCalendar", "FredReleaseTable"],
+      "classification": "UNKNOWN_NO_CURRENT_PRODUCT_FIX_SUPPORTED",
+      "priority": "NO_CODE_CHANGE; OPTIONAL_CURRENT_SOURCE_REBIND",
+      "public_contract_basis": {
+        "review_path": "docs/evidence/C100/acceptance-fmp-fred/fred-iter2-remaining/field-contract-review.md",
+        "review_sha256": "cb22c20e98959b99dae1822146092d9a7bd8b8af6cd91275f231d56e14a798c6",
+        "public_v4_docs": [
+          "https://docs.openbb.co/odp/v4/python/data_models/FredReleaseTable",
+          "https://docs.openbb.co/odp/v4/python/data_models/EconomicCalendar"
+        ],
+        "semantic_notes": [
+          "EconomicCalendar dates represent release/publication dates; fields absent from FRED releases/dates remain nullable source gaps rather than fabricated values.",
+          "FredReleaseTable release_id is a string; nullable tree/value/date fields are populated only where the nested FRED source supports them; do not fabricate observation dates for non-series tree nodes."
+        ]
+      },
+      "historical_source_and_direct": {
+        "run_state_path": "docs/evidence/C100/acceptance-fmp-fred/fred-iter2-remaining/results/run-state.json",
+        "run_state_sha256": "3f41411a859d1b3649b13c54c7741394cbf3f7c1586c4b3336543d59eac4c816",
+        "timestamp_utc": "2026-10-12T08:24:29.509584+00:00",
+        "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base python docs/evidence/C100/acceptance-fmp-fred/fred-iter2-remaining/probe.py",
+        "exit_code": 2,
+        "overall_status": "INCOMPLETE_CENTRAL_NOT_READY",
+        "live": "NOT_RUN",
+        "source_hash_at_run": "opendata/data/providers/fred/models/iter2_auxiliary.py = 0dbc2d088331a9a08138631e3076a456ee0f5b73b06d5143c676bcc39662ab4b",
+        "direct_receipts": [
+          {
+            "model": "EconomicCalendar",
+            "path": "docs/evidence/C100/acceptance-fmp-fred/fred-iter2-remaining/receipts/EconomicCalendar.json",
+            "sha256": "874ed5c396f2c214ce340d3d3ff562c4be629ca5bce9f884f211d3414d5eb318",
+            "model_direct_status": "PASS_OFFLINE_SYNTHETIC"
+          },
+          {
+            "model": "FredReleaseTable",
+            "path": "docs/evidence/C100/acceptance-fmp-fred/fred-iter2-remaining/receipts/FredReleaseTable.json",
+            "sha256": "27dbaf0f684315aed9db4fd34549a9acd1acfed941f38e30f7d191e59f208e53",
+            "model_direct_status": "PASS_OFFLINE_SYNTHETIC"
+          }
+        ]
+      },
+      "historical_central": {
+        "run_state_path": "docs/evidence/C100/acceptance-fmp-fred/fred-iter2-remaining/central/run-state.json",
+        "run_state_sha256": "d9b543594a40ef12fe48780fdb4d52755ec688bb35848ea4b51ec8aceef3d5b4",
+        "timestamp_utc": "2026-10-12T12:02:49.529686+00:00",
+        "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /Users/yunjinqi/opt/anaconda3/bin/conda run -n base python docs/evidence/C100/acceptance-fmp-fred/fred-iter2-remaining/central_probe.py",
+        "exit_code": 2,
+        "overall_status": "PARTIAL_OTHER_MODEL_GAP",
+        "live": "NOT_RUN",
+        "source_hash_at_run": "0dbc2d088331a9a08138631e3076a456ee0f5b73b06d5143c676bcc39662ab4b",
+        "model_status": "Both identities PASS all seven central cases: binding, positive, counterfact, invalid_query, missing_grant, principal_denied, domain_semantics.",
+        "fixture_provenance": "Synthetic offline fixtures; no upstream capture. Overall partial status was another unsupported model, not these two identities.",
+        "receipts": [
+          {
+            "model": "EconomicCalendar",
+            "path": "docs/evidence/C100/acceptance-fmp-fred/fred-iter2-remaining/central/receipts/EconomicCalendar.json",
+            "sha256": "eb93d536757fb3516077bbabdc9cf58004caf71bf6354eb00666c349ad32e975"
+          },
+          {
+            "model": "FredReleaseTable",
+            "path": "docs/evidence/C100/acceptance-fmp-fred/fred-iter2-remaining/central/receipts/FredReleaseTable.json",
+            "sha256": "acb51dabc3660b54c5f228a272a2d218870b76e58801164e419d752235ba1c10"
+          }
+        ]
+      },
+      "conflicting_later_attempt": {
+        "failure_index_path": "docs/evidence/C100/acceptance-fred36-wire-oracle-v4-independent/failure-inventory-final-retake02-20261013T0915Z/full-failure-index.json",
+        "failure_index_sha256": "864e32bb9e2b83715b24b27abbc230322b057b4e5de46d275b1c87108925934e",
+        "actual_run_id": "20261013T082143.338575Z",
+        "outer_exit_code": 1,
+        "identity_results": [
+          {
+            "identity": "fred::EconomicCalendar",
+            "nested_failure": "calendar latest-vintage selector differs from fixture date",
+            "nested_receipt_sha256": "faaee78c8482eaa5a0333e553bd03a716140edc9f62854115984f2d7011ec33c"
+          },
+          {
+            "identity": "fred::FredReleaseTable",
+            "nested_failure": "central invalid query was accepted",
+            "nested_receipt_sha256": "8851536d51dd9fb3199e1b0ae84e04dc1aa3700cc69833460f480dabe25bb550"
+          }
+        ],
+        "evidence_limit": "FRED36 nested receipts store only assertion class/message, not the failing query inputs or detailed observed/expected values; the outer wrappers are IsolationViolation and source_verified=false. Therefore the error cannot be joined to the prior release_id='53x' case or treated as a current source regression.",
+        "known_prior_invalid_query_counterfact": {
+          "case": "fred-iter2-remaining/central/cases/FredReleaseTable/invalid_query.json",
+          "query_release_id": "53x",
+          "expected_error": "ProviderModelQueryValidationError",
+          "observed_transport_calls": [],
+          "zero_send": true
+        }
+      },
+      "current_source": [
+        {
+          "path": "opendata/data/providers/fred/models/iter2_auxiliary.py",
+          "sha256": "1850d4c83f1dc18c2ddc86dd49db43d48cd65ba2082927133e97d30bd222deb4"
+        }
+      ],
+      "next_action": "No product patch from these records. If closure is required, do a bounded current-hash retake that persists the exact query, assertion inputs, and transport count; preserve both historical evidence sets and use official raw captures for any source-value dispute."
+    },
+    {
+      "id": "FRED_MANUFACTURING_OUTLOOK_NY_TEXAS",
+      "identities": ["ManufacturingOutlookNY", "ManufacturingOutlookTexas"],
+      "classification": "HISTORICAL_OFFLINE_PASS_CURRENT_SOURCE_NOT_REBOUND_NO_FIX_EVIDENCE",
+      "priority": "NO_CODE_CHANGE; OPTIONAL_CURRENT_SOURCE_REBIND",
+      "public_basis": {
+        "source": "FRED API topic selection uses topic lists; the focused probe exercises the documented comma-separated topic route and trims/deduplicates topics.",
+        "fixture_provenance": "Hand-authored synthetic FRED fixtures."
+      },
+      "historical_run": {
+        "readme_path": "docs/evidence/C100/acceptance-fmp-fred/fred-macro/focused-multitopic/README.md",
+        "readme_sha256": "c4dd0c2b6e5a7efa4b354aa2d2cddd9246d605aea1ea3f19dc254a31e29e01b1",
+        "run_state_path": "docs/evidence/C100/acceptance-fmp-fred/fred-macro/focused-multitopic/results/run-state.json",
+        "run_state_sha256": "7d45a27beda48905d9eb497ae209d3fbc743e0595c363c9c5ccdaf0d3061bb58",
+        "timestamp_utc": "2026-10-12T12:08:23.727336+00:00",
+        "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /Users/yunjinqi/opt/anaconda3/bin/conda run -n base python docs/evidence/C100/acceptance-fmp-fred/fred-macro/focused-multitopic/probe.py",
+        "exit_code": 0,
+        "run_status": "PASS_OFFLINE_SYNTHETIC",
+        "case_count": 14,
+        "models": [
+          {
+            "model": "ManufacturingOutlookNY",
+            "receipt_sha256": "e3f9001f4b07881bee544009bb61f12a69154f295de6dce87ca1b1ddf2f284f6",
+            "direct_public_example_case_sha256": "661466e990826549df4e71ac6d4e7660c22c81eec3a9c8af9007357d95a17e8a",
+            "case_statuses": "14/14 PASS"
+          },
+          {
+            "model": "ManufacturingOutlookTexas",
+            "receipt_sha256": "6a50b8b6abbf18a72ab42b208a6af9ca22d5bd1b989a0a2f5f01536ee4d837b8",
+            "direct_public_example_case_sha256": "4dd13434bea0efe25b1c875199458d0ea50ebb7bad5f9495e1c0b970a0b51f0c",
+            "case_statuses": "14/14 PASS"
+          }
+        ],
+        "source_hash_at_run": "opendata/data/providers/fred/models/iter2_macro.py = e2751a4f621154f31679854b2ba776507e3e01a333f711f0e347b6b45719cfa5",
+        "typed_model_hash_at_run": "746b500ad736c564237f061de673114d6160d77e6696ae6b51f64a3271dc4e98"
+      },
+      "current_source": {
+        "path": "opendata/data/providers/fred/models/iter2_macro.py",
+        "sha256": "6619326930a71a4652b0f6eb2c9ab4cc92d690754a8e8f6c910d5dd102b70dba",
+        "binding": "Matches the current 905 snapshot, but differs from the historical focused run hash."
+      },
+      "historical_failure_context": "An earlier broad macro attempt was partial and rejected a multi-topic form; the later focused 14-case/model run passes at e2751a4. Do not infer an open bug or current-source PASS from these different revisions.",
+      "next_action": "No patch candidate. Rebind a small two-model current-source probe only if current-source verification is needed; keep source fixtures explicitly synthetic and separate from live FRED."
+    },
+    {
+      "id": "YFINANCE_ZERO_QUOTA_SDK_BOUNDARY",
+      "identities": [
+        "BalanceSheet",
+        "CashFlowStatement",
+        "HistoricalDividends",
+        "IncomeStatement",
+        "KeyExecutives",
+        "OptionsChains"
+      ],
+      "classification": "HISTORICAL_OFFLINE_PASS_CURRENT_SOURCE_NOT_REBOUND_NO_FIX_EVIDENCE",
+      "priority": "NO_CODE_CHANGE; OPTIONAL_CURRENT_SOURCE_REBIND",
+      "historical_run": {
+        "run_id": "20261012T103058Z",
+        "report_path": "docs/evidence/C100/acceptance-yfinance-clean/postchange/20261012T103058Z/acceptance-report.md",
+        "report_sha256": "1c478d4fb1f7d1c6a727ac141d86875b9f6e2dd61180cb753fe3c1b2ee4bc166",
+        "run_manifest_path": "docs/evidence/C100/acceptance-yfinance-clean/postchange/20261012T103058Z/run-manifest.json",
+        "run_manifest_sha256": "691d7b12c2166c3aa49231253845915a24ea03bc3b277a7299e3cab0e467d8ec",
+        "summary_path": "docs/evidence/C100/acceptance-yfinance-clean/postchange/20261012T103058Z/summary.json",
+        "summary_sha256": "6a2ca5da0fa70c04b49d12118d0cb2f775c9218d92b511dbefc19e633a1eabe0",
+        "runner": "docs/evidence/C100/acceptance-yfinance-clean/postchange_probe.py",
+        "runner_sha256": "8b1604257a16cee557e085350116aff5e44ce8fbdaa58414a31e281937340f9c",
+        "started_utc": "20261012T103058Z",
+        "ended_utc": "2026-10-12T10:30:59.694867Z",
+        "scope_status": "OFFLINE_ACCEPTANCE_PASS_WITH_2_GAPS_LIVE_NOT_RUN; denominator 29",
+        "zero_quota_cases": "All six listed identities PASS: ProviderModelQueryBudgetError, zero SDK boundary method calls, zero budget attempts, zero source attempts.",
+        "live_provider_queries": "NOT_RUN_BY_INSTRUCTION",
+        "database_or_credentials": "NOT_USED",
+        "transport_boundary_limit": "This proves the logical SDK method-call boundary only; yfinance SDK internal HTTP retries/hosts remain NOT_VERIFIED."
+      },
+      "source_hashes_at_run": {
+        "opendata/data/models/yfinance_iter2.py": "c3573f7fd4ad3a0e394426f02388de4788ee4c8d6fb4e82ca59dff3b41ac5c58",
+        "opendata/data/providers/yfinance/models/_budget.py": "99dd10884037a910335c964df7431f5c50adad11c115547221a1bf0621a76856",
+        "opendata/data/providers/yfinance/models/_sdk.py": "e5a2ef3e4a576ba6468d8cb86bc21f8501bfc2934605d7c36e49d7413aa7cfdfd",
+        "opendata/data/providers/yfinance/models/iter2.py": "e21e18ff07432b53a8da993579af4f8f6d56c316a4658c719e760deb0b3b3f46"
+      },
+      "current_905_source_hashes": {
+        "opendata/data/models/yfinance_iter2.py": "7f7091ebbe366457446a31d8c12068d8b0a2f5dc96d48be1abce60554e68009c",
+        "opendata/data/providers/yfinance/models/_budget.py": "d1e2a3132a99c2e92aa418baa41632273c851506695856af2bd07b186734b62a",
+        "opendata/data/providers/yfinance/models/_sdk.py": "08b915e3a06712b77e02f99743685383fd54ecfe3ab4ac0df2a4c2b5abba3fb7",
+        "opendata/data/providers/yfinance/models/iter2.py": "c7341d4a1169381cc48846182a1c51b485587bfd031eb4ece22eab2316d68f88"
+      },
+      "next_action": "No code fix indicated. If the zero-quota claim must bind to current source, rerun only these six guarded offline zero-quota cases at current hashes; retain NOT_VERIFIED for SDK-internal HTTP attempts and hosts unless separately instrumented."
+    }
+  ],
+  "reproducibility": {
+    "hash_rechecks": "Key paths and artifact hashes were read/recomputed with shasum -a 256 against the current checkout and the frozen 905 manifest.",
+    "patch_overlay_commands": [
+      "patch -d <temporary-copy> -p1 < docs/evidence/C100/quality-source-repairs/congress-amendment-number-type-proposal-r1-20261013T0203Z/congress-amendment-number.patch",
+      "patch -d <temporary-copy> -p1 < docs/evidence/C100/acceptance-quality-preservation/bls-series-date-window-proposal/year-selection-alias-proposal-20261013/clarify-bls-year-alias.patch"
+    ],
+    "patch_overlay_results": "Both proposed patches applied only to temporary copies. Hypothetical after-hashes are recorded under each finding. No in-repository product file was written."
+  }
+}
