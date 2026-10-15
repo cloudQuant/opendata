@@ -1,0 +1,257 @@
+provenance: captured_at_local=2026-10-15T11:02:34+0800
+provenance: captured_at_utc=2026-10-15T03:02:34Z
+provenance: branch=dev
+provenance: head=a81c533cd766057ac65358687135f9d58d3ea107
+provenance: python=Python 3.13.5
+provenance: node=v25.1.0
+provenance: OPENDATA_ALLOW_LIVE_E2E=<unset>
+provenance: probe_worktree_sha256=a8cc05ef529ac37dba1d6414e72deaff77b7034873a51cc66bc36e8193a3cca5
+provenance: probe_head_sha256=a8cc05ef529ac37dba1d6414e72deaff77b7034873a51cc66bc36e8193a3cca5
+provenance: policy_worktree_sha256=50c012b376b128a5c2ac1c942133b6ae6cb45757fcb7a882c1862c5d9b4eed53
+precondition: unstaged_tracked_diff_lines=1 (0 means index == worktree)
+precondition: root_coverage_files=1
+
+===== gate: zero-dep-check =====
+member_clock_start_local=2026-10-15T11:02:34+0800
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (13 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+OK: 907 file(s) walked (opendata=580, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.13, scanner 4; no new upstream references (frozen baseline: 0).
+MEMBER_EXIT: zero-dep-check=0
+member_clock_end_local=2026-10-15T11:02:38+0800
+
+===== gate: acceptance-probe-check =====
+member_clock_start_local=2026-10-15T11:02:38+0800
+python scripts/quality/acceptance_item_probe.py --gate-check
+
+### gate-check  (130 个探针，一遍 measure)
+  - 本遍墙钟 = 1962.9 s，读到事实的探针 130/130，测不出来的：无
+  - 工作树：81918 entry(ies), first:  M docs/quality/akshare-reference-allowlist.json —— worktree/index/history 面只在干净时判，否则记为 deferred 并点名
+VERDICT AC-10|01: gap — AC-10|01 要求已启用 provider 逐个注册齐全且对照通过；未满足：328 条 leg 没有跨源对照（已启用集合里 29 个 provider 未转正：akshare,alpha_vantage,benzinga,bls,cboe,cftc,congress_gov,deribit,ecb,econdb,eia,famafrench,federal_reserve,finra,finviz,fmp,fred,government_us,imf,intrinio,multpl,nasdaq,oecd,sec,tiingo,tmx,tradier,tradingeconomics,yfinance）；未对照的 leg 里 328 条连 §4.3 的保留标注都没有
+VERDICT AC-10|02: proven
+VERDICT AC-10|03: gap — AC-10|03 需要审阅档案覆盖当前注册 provider 的普查面（包名、逐包文件数、文件集、四份文件计数互相对齐），并与固定的 OpenBB 基线包面与提交绑定，保留零导入、候选清零与已完成的正向审阅结论；本轮 providers_missing_from_review 没有产出读数（不替它编一个原因），档案外文件=0，注册外文件=0，基线包面对齐=yes，问题摘要=source-review-stale, similarity-stale, review-package-set-mismatch, review-package-file-count-mismatch, review-akshare-file-set-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch。
+VERDICT AC-10|04: proven
+VERDICT AC-10|05: proven
+VERDICT AC-11|01: proven
+VERDICT AC-11|02: gap — 留档那次 run 有 10 行 ERROR —— 官方端点没答上来等于没对照；真机对照未过：FAIL 0 行 / PASS 0 行（容差 2e-3 不放宽，见档案里的 over_tolerance 与 ratio 平台分布） —— 合成与对照的判定口径不变（逐日 shape dev 对 2e-3），要改的是证据不是判据
+VERDICT AC-11|03: proven
+VERDICT AC-11|04: gap — 窗口本身是实测绿的（不带区间也给边界、行数有上限、生成的 SELECT 以分区键为谓词），判据点名的验证方式是 EXPLAIN —— 缺的是：留档正文的 query_module_sha 和当下的查询层代码对不上（拼 SQL 的代码改过，那份计划已经不是现在这一条）
+VERDICT AC-11|05: proven
+VERDICT AC-11|06: proven
+VERDICT AC-11|07: proven
+VERDICT AC-11|08: proven
+VERDICT AC-11|09: proven
+VERDICT AC-11|10: proven
+VERDICT AC-11|11: proven
+VERDICT AC-11|12: proven
+VERDICT AC-12|01: proven
+VERDICT AC-12|02: proven
+VERDICT AC-12|03: proven
+VERDICT AC-13|01: proven
+VERDICT AC-13|02: proven
+VERDICT AC-13|03: proven
+VERDICT AC-13|04: proven
+VERDICT AC-13|05: proven
+VERDICT AC-13|06: proven
+VERDICT AC-13|07: proven
+VERDICT AC-13|08: gap — 未满足：交易日内多时点复测齐备、注册窗口内实测拿到当日K
+VERDICT AC-14|01: proven
+VERDICT AC-14|02: proven
+VERDICT AC-14|03: proven
+VERDICT AC-15|01: gap — 未满足：旧库访问只读
+VERDICT AC-15|02: gap — 未满足：每张旧表都有迁移价值结论、每张旧表都建立业务映射、迁移价值结论无一为 FAIL、迁移逐行落库无缺口、全量迁移经行数与抽样双重留档验证、必填字段无 NULL 冲突、评估完成后每张表都有处置、DROP 经逐表授权
+VERDICT AC-16|01: gap — 「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记上游事实来源），但 24 个自研 provider 里提交说明带「无 OpenBB 源码参照」的只有 0 个（缺：akshare, benzinga, bls, cboe, cftc, congress_gov, ecb, econdb, federal_reserve, finra, finviz, fmp, fred, government_us, imf, multpl, nasdaq, oecd, sec, ths, tiingo, tradier, tradingeconomics, yfinance），docs/evidence/clean-room/ 下通过同行声明与字段核对的逐包档案只有 0 个（被拒 24 个；拒因：akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | benzinga: 没有逐包档案（docs/evidence/clean-room/benzinga.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | cftc: 没有逐包档案（docs/evidence/clean-room/cftc.md 未跟踪） | congress_gov: 没有逐包档案（docs/evidence/clean-room/congress_gov.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | econdb: 没有逐包档案（docs/evidence/clean-room/econdb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | finra: 没有逐包档案（docs/evidence/clean-room/finra.md 未跟踪） | finviz: 没有逐包档案（docs/evidence/clean-room/finviz.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | government_us: 没有逐包档案（docs/evidence/clean-room/government_us.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | multpl: 没有逐包档案（docs/evidence/clean-room/multpl.md 未跟踪） | nasdaq: 没有逐包档案（docs/evidence/clean-room/nasdaq.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | tiingo: 没有逐包档案（docs/evidence/clean-room/tiingo.md 未跟踪） | tradier: 没有逐包档案（docs/evidence/clean-room/tradier.md 未跟踪） | tradingeconomics: 没有逐包档案（docs/evidence/clean-room/tradingeconomics.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪））。旧口径读到的 12 个包 / 16 行是探针自己的读数转储与缺口复述在冒充记录，C77 已把它请出判定；模块 docstring 里的自声明（5 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含任何 OpenBB 源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工审查按包留档，本轮不代拟
+VERDICT AC-16|02: gap — 「全库无 OpenBB 源码或其近似复制」的否定面成立（AST 走查 0 个 openbb import 根，扫描器禁止清单含 openbb 且自带会响的违规样本），但判据括号里点名的两项核查都没做过：提交声明核查 0/24，人工抽查留档 0/24（被拒 24 个：akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | benzinga: 没有逐包档案（docs/evidence/clean-room/benzinga.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | cftc: 没有逐包档案（docs/evidence/clean-room/cftc.md 未跟踪） | congress_gov: 没有逐包档案（docs/evidence/clean-room/congress_gov.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | econdb: 没有逐包档案（docs/evidence/clean-room/econdb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | finra: 没有逐包档案（docs/evidence/clean-room/finra.md 未跟踪） | finviz: 没有逐包档案（docs/evidence/clean-room/finviz.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | government_us: 没有逐包档案（docs/evidence/clean-room/government_us.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | multpl: 没有逐包档案（docs/evidence/clean-room/multpl.md 未跟踪） | nasdaq: 没有逐包档案（docs/evidence/clean-room/nasdaq.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | tiingo: 没有逐包档案（docs/evidence/clean-room/tiingo.md 未跟踪） | tradier: 没有逐包档案（docs/evidence/clean-room/tradier.md 未跟踪） | tradingeconomics: 没有逐包档案（docs/evidence/clean-room/tradingeconomics.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪））。「近似复制」只能靠逐包人工比对判定，本轮不以「import 为零」冒充它已被抽查过
+VERDICT AC-16|03: proven
+VERDICT AC-16|04: proven
+VERDICT AC-16|05: proven
+VERDICT AC-16|06: proven
+VERDICT AC-16|07: gap — 「P0 域集成测试」要么没有可指的名字（marker 没注册/没人用/某条 P0 域没被这组用例点到），要么这一遍没全绿、或者跳过了（skip 不等于通过），要么这一遍跑的解释器并没有把顶层上游包拒掉（钩子没生效、跑的过程中又被尝试、或 sys.modules 里留下了上游模块 —— 那样这份绿分不清用的是搬运层还是真包），要么干净环境的留档不再覆盖现在这组标记模块（刻意的棘轮：给 P0 集成面加一个模块，就得重跑一次那个只装声明依赖的 venv 并重留档），要么那份留档只是从上一轮拷来的（正文声明的轮次标号对不上所在目录）
+VERDICT AC-16|08: gap — 「LICENSE 为 BSL 1.1 + 数据免责声明存在」四要素与两处声明都要读到：标题写 BSL 1.1、四个条款齐备、README 与数据权利登记各有一段真免责正文（只留标题不算声明）
+VERDICT AC-16|09: proven
+VERDICT AC-17|01: proven
+VERDICT AC-17|02: gap — A2 四面缺一个 / bandit 未绑配置或未强制 JSON / 反向臂不报违例 / 普查仍有剩余违例或命令本身跑挂 / 例外仍是全局 skips / 例外没有行级规则号或没有理由 / 有 nosec 什么都没压住 / 普查文件切分失败
+VERDICT AC-17|03: gap — 「只降不升」要求被量的范围本身也只降不升：抬高过一次上限、让一个被测根从快照里消失、或把一个触碰过的自研文件按名字排除在 A2 零容忍之外，都会让「债务不高于快照」成立而代码一行没改；平面可见性同理——exclude 吞掉的根不产生任何读数，也就不会产生红灯
+VERDICT AC-17|04: proven
+VERDICT AC-17|05: gap — 搬运层要同时满足三件事：只按 E/F 计量、与上游还能逐行 diff、以及这两件事都写在纸上。重放一致说明没有被偷偷重排或手改；pre-commit 的 exclude 说明下一次 hook 运行不会把它重排掉；三处登记一致说明读者看到的和工具认的是同一批改动
+VERDICT AC-17|06: gap — 源内有 A2 文件没进报告 / 被测源码树与 HEAD 不同树 / 现盘与归档漂移超 ±0.5 个百分点
+VERDICT AC-17|07: gap — the item says 新增: a callable the gate cannot see because its scope list is fixed still has to meet 100%/100%, and a 100% over an empty or unreachable population is not a measurement at all
+VERDICT AC-17|08: gap — 反空壳抽审判的是形态：定义抄写、恒真断言、自指、源码形式检查四类都必须为零，且 T1 档要拿真实录制信封与预计算黄金向量来答，三问的地板（≥3/含成功/≥3）缺一不可
+VERDICT AC-17|09: proven
+VERDICT AC-17|10: gap — 可追溯 means each archive answers 命令 / 输出摘要 / 日期 with no reader present: one gap on any face, an archive deleted after it was added, or a census too small to be the whole history turns the claim back into a summary
+VERDICT AC-18|01: proven
+VERDICT AC-18|02: proven
+VERDICT AC-18|03: proven
+VERDICT AC-19|01: gap — 每日触发源码和隔离双库恢复已验证，隔离 ROW binlog 取值=yes；正式部署中每日任务运行、备份新鲜度及 binlog 实际生效证据=no，生产 RPO ≤24h 尚未验收
+VERDICT AC-19|02: proven
+VERDICT AC-19|03: proven
+VERDICT AC-19|04: gap — 判据要类别、可触发信号、分级落点、通知通道与观察状态测试共同成立；当前读到 4/4 类，operator expiry support=yes，分级落点=2、通知通道=1，observation tests=3/3。观察 TTL 过期不能替代 key 恢复，quota 余量未知时也不能填入数值；还缺供应商到期/余量和实际通知送达的独立现场证据
+VERDICT AC-19|05: proven
+VERDICT AC-1|01: proven
+VERDICT AC-1|02: gap — the enforced list must equal the item's, the scanner must exit 0, the grep must come back empty on its own
+VERDICT AC-1|03: gap — 1 unregistered hit path(s) remain; path register is invalid (unregistered hit path: scripts/quality/runtime_package_probe.py)
+VERDICT AC-1|04: proven
+VERDICT AC-1|05: gap — 这条判据有两半：四处库名一致是静态可量的那一半，后端启动/前端登录/health 是当前运行读数的那一半（它有时效门槛，离线档案到期就不算数）。本轮红在：运行面读到 runtime=failed、valid=no，证据问题 470 条分 9 类，最多的三类是 build-source-file-missing=340, build-source-file-hash-mismatch=123, build-log-stale=1 —— 红在哪一半就用哪一半的修法，不拿配置面全绿去替运行面签收
+VERDICT AC-1|06: proven
+VERDICT AC-1|07: proven
+VERDICT AC-1|08: proven
+VERDICT AC-1|09: proven
+VERDICT AC-1|10: gap — residue, files git has never seen, uncommitted edits, or a first commit that left part of the project out -- 'first complete commit' has to mean the whole move landed
+VERDICT AC-2|01: proven
+VERDICT AC-2|02: proven
+VERDICT AC-2|03: proven
+VERDICT AC-2|04: proven
+VERDICT AC-2|05: proven
+VERDICT AC-3|01: proven
+VERDICT AC-3|02: proven
+VERDICT AC-3|03: proven
+VERDICT AC-3|04: proven
+VERDICT AC-3|05: proven
+VERDICT AC-4|01: proven
+VERDICT AC-4|02: proven
+VERDICT AC-4|03: proven
+VERDICT AC-5|01: proven
+VERDICT AC-5|02: proven
+VERDICT AC-5|03: proven
+VERDICT AC-5|04: proven
+VERDICT AC-5|05: proven
+VERDICT AC-5|06: proven
+VERDICT AC-5|07: gap — 当前验收要求本轮扫描、源树、逐 finding triage 和保留风险结论能够相互核对：security evidence valid=no（issues=2 scan-stale, triage-stale），source tree=yes，coverage=yes，untriaged=0 / HIGH=0，rule review=yes，deserialization review=yes，RCE retained=yes，security_fixed=no，unresolved risks=yes
+VERDICT AC-6|01: proven
+VERDICT AC-6|02: gap — AC-6|02 需要以真实离线对照 PASS 覆盖至少20%的已核验B1.1模块组，且任何 FAIL、虚假来源路径/批次或容忍度改动都不能通过；PENDING不计分子。
+VERDICT AC-6|03: proven
+VERDICT AC-7|01: proven
+VERDICT AC-7|02: proven
+VERDICT AC-7|03: proven
+VERDICT AC-7|04: proven
+VERDICT AC-7|05: proven
+VERDICT AC-7|06: proven
+VERDICT AC-8|01: proven
+VERDICT AC-8|02: proven
+VERDICT AC-8|03: proven
+VERDICT AC-8|04: proven
+VERDICT AC-8|05: gap — 分区面两头都要有：接线（yaml 行 + kind 可执行 + 派发到真的 ``ensure``）与仓库现状（分区列点名、上界不再落后、apply 后复跑留档）。C57/C58 是历史档案，不是本轮新做的生产读数；``REORGANIZE`` 是生产仓库的 DDL，仍缺经确认的 apply 与新读数
+VERDICT AC-8|06: gap — 跨年写入这条判据要有「跑过」的证据而不是「有用例」：用例是 e2e 面（门禁不跑），且需要 fresh scoped production evidence。C57 是较早子集、C58 是较晚完整档案；两份都不是本轮 fresh production read，也没有本轮获准的用例运行留档
+VERDICT AC-8|07: proven
+VERDICT AC-8|08: gap — 未满足：仓表盘点完整、两源行数一致、两源窗口同跨十年、四件套双源全部落库、akshare 侧来自本轮取数、双源键全量对齐、DWD 无空表
+VERDICT AC-9|01: proven
+VERDICT AC-9|02: proven
+VERDICT AC-9|03: proven
+VERDICT AC-9|04: proven
+VERDICT AC-9|05: proven
+VERDICT AC-9|06: proven
+VERDICT AC-9|07: proven
+VERDICT AC-9|08: gap — 「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：整窗 raise 已换成逐键拒绝（docs/evidence/C49/census-post-fix.txt 里 reader 55073 行、直通 merge 55071 行），代码面已经通了；挡着的是 dwd_stock_action 实测 0 行，需要一次经确认的 warehouse 写入（重算落库），不是再改判定口径
+VERDICT AC-9|09: proven
+VERDICT §4|01: proven
+VERDICT §4|02: gap — 未满足：无腿的业务键结论为冲突、每条腿经人工逐条确认、每条腿有原始响应抽样、单位换算经样本验证、key 规范化无业务键值冲突、确认者是人工而非 AI、整体映射批准
+VERDICT §4|03: proven
+VERDICT §4|04: gap — 未满足：搬运对照逐腿 PASS、官方 Parquet 对照逐文件 PASS、官方样本无重复业务键、模型键唯一、D10 复权链逐腿判读、归档判定为 PASSFAIL: acceptance-probe gate:
+  台账把 AC-11|04 记成 proven，探针现在读出 gap（被读的面：文件内容，与这一刻无关）—— 台账翻上去之后没有任何东西再量它，这一遍就是那个东西
+  台账把 AC-16|07 记成 proven，探针现在读出 gap（被读的面：文件内容，与这一刻无关）—— 台账翻上去之后没有任何东西再量它，这一遍就是那个东西
+  台账把 AC-16|08 记成 proven，探针现在读出 gap（被读的面：文件内容，与这一刻无关）—— 台账翻上去之后没有任何东西再量它，这一遍就是那个东西
+  台账把 AC-17|02 记成 proven，探针现在读出 gap（被读的面：文件内容，与这一刻无关）—— 台账翻上去之后没有任何东西再量它，这一遍就是那个东西
+  台账把 AC-5|07 记成 proven，探针现在读出 gap（被读的面：文件内容，与这一刻无关）—— 台账翻上去之后没有任何东西再量它，这一遍就是那个东西
+  台账把 AC-6|02 记成 proven，探针现在读出 gap（被读的面：文件内容，与这一刻无关）—— 台账翻上去之后没有任何东西再量它，这一遍就是那个东西
+
+VERDICT §4|05: proven
+VERDICT §5|01: proven
+VERDICT §5|02: gap — 未满足：本轮取数来自供应商、当前全市场范围自证
+VERDICT §5|03: proven
+VERDICT §5|04: proven
+VERDICT §5|05: proven
+VERDICT §6|01: proven
+VERDICT §6|02: proven
+VERDICT §6|03: proven
+VERDICT §6|04: proven
+  - 反事实面：130/130 个探针走到了判定，941 条 break 各被施加一次、每条都要求把干净读数打回 gap
+  - 台账↔读数：agrees=115, unflipped=0, open=0, deferred=9, stale-proof=6（共 130 格有读数） —— 只有 stale-proof 是红灯：台账记 proven 而探针现在读出 gap，且读的那一面与这一刻无关；红格子 AC-11|04、AC-16|07、AC-16|08、AC-17|02、AC-5|07、AC-6|02
+  - deferred（时刻面，等工作树干净再判）：AC-17|03、AC-17|05、AC-17|06、AC-17|07、AC-17|08、AC-17|10、AC-1|02、AC-1|03、AC-1|10
+  - 面基线：130 个探针里 25 个在读 moment 面；proven 而无探针 0 个，基线 0 个（只降不升）
+  - 成员自证：`acceptance-probe-check` 在 `gate:` 配方里 = yes
+make: *** [acceptance-probe-check] Error 1
+MEMBER_EXIT: acceptance-probe-check=2
+member_clock_end_local=2026-10-15T11:35:54+0800
+
+===== gate: frontend-e2e =====
+member_clock_start_local=2026-10-15T11:35:54+0800
+python scripts/quality/frontend_e2e_plane.py
+  ASSERTS         e2e/auth.spec.ts:5       Authentication E2E › login page loads
+  ASSERTS         e2e/auth.spec.ts:12      Authentication E2E › register page loads
+  ASSERTS         e2e/auth.spec.ts:17      Authentication E2E › unauthenticated user redirected to login
+  ASSERTS         e2e/auth.spec.ts:29      Authentication E2E › login with invalid credentials submits and leaves no session
+  ASSERTS         e2e/auth.spec.ts:66      Authentication E2E › unknown routes send an anonymous user to login with the target kept
+  ASSERTS         e2e/auth.spec.ts:77      Authentication E2E › 404 page renders for a signed-in user
+  ASSERTS         e2e/script-download-backend.spec.ts:597 real browser download chain records API, task, auth and storage evidence
+  ASSERTS         e2e/script-download.spec.ts:149 script detail download with stubbed API › posts only selected interface 91 and follows the accepted task to executions
+  ASSERTS         e2e/script-download.spec.ts:170 script detail download with stubbed API › keeps the user on script details and shows no success after a 422
+  ASSERTS         e2e/scripts.spec.ts:23   Scripts & Data Tables E2E › scripts page requires authentication
+  ASSERTS         e2e/scripts.spec.ts:28   Scripts & Data Tables E2E › tables page requires authentication
+  ASSERTS         e2e/scripts.spec.ts:33   Scripts & Data Tables E2E › executions page requires authentication
+  ASSERTS         e2e/scripts.spec.ts:39   Scripts & Data Tables E2E › Authenticated › legacy script list shows real DataScript identities
+  ASSERTS         e2e/scripts.spec.ts:52   Scripts & Data Tables E2E › Authenticated › merged catalog is the default at both catalog URLs and filters by market and dataset
+  ASSERTS         e2e/scripts.spec.ts:118  Scripts & Data Tables E2E › Authenticated › catalog function drilldown reaches legacy list and an actual script detail route
+  ASSERTS         e2e/scripts.spec.ts:142  Scripts & Data Tables E2E › Authenticated › catalog renders an API error and an empty payload visibly
+  ASSERTS         e2e/scripts.spec.ts:172  Scripts & Data Tables E2E › Authenticated › tables list shows data and the warehouse layers
+  ASSERTS         e2e/scripts.spec.ts:187  Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview
+  ASSERTS         e2e/scripts.spec.ts:210  Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel
+  ASSERTS         e2e/scripts.spec.ts:236  Scripts & Data Tables E2E › Authenticated › retry posts and reloads the failed-shard list
+  ASSERTS         e2e/scripts.spec.ts:268  Scripts & Data Tables E2E › Authenticated › failed-shard export downloads the visible JSON response
+  ASSERTS         e2e/scripts.spec.ts:292  Scripts & Data Tables E2E › Authenticated › empty failed-shard list is visible and exports an empty JSON array
+  ASSERTS         e2e/scripts.spec.ts:314  Scripts & Data Tables E2E › Authenticated › failed-shard export errors are visible to the operator
+  ASSERTS         e2e/scripts.spec.ts:333  Scripts & Data Tables E2E › Authenticated › failed-shard load errors are visible and disable export
+  ASSERTS         e2e/scripts.spec.ts:348  Scripts & Data Tables E2E › Authenticated › catalog page shows a domain with its five readings
+  ASSERTS         e2e/tasks.spec.ts:17     Tasks Management E2E › tasks page requires authentication
+  ASSERTS         e2e/tasks.spec.ts:24     Tasks Management E2E › Authenticated › tasks list page loads
+  ASSERTS         e2e/tasks.spec.ts:40     Tasks Management E2E › Authenticated › pipeline task opens a read-only detail while script editing stays available
+  ASSERTS         e2e/tasks.spec.ts:65     Tasks Management E2E › Authenticated › can create a new task
+  ASSERTS         e2e/tasks.spec.ts:102    Tasks Management E2E › Authenticated › the 执行记录 action opens that task’s executions
+
+== classified tally ==
+  ASSERTS         30
+  LEAVES          30
+RUNNER-UNREADABLE: playwright would not list its plane -> exit 2, not a pass
+make: *** [frontend-e2e] Error 2
+MEMBER_EXIT: frontend-e2e=2
+member_clock_end_local=2026-10-15T11:35:55+0800
+
+===== member 17 mechanism face: the --list call the judge swallows =====
+argv reproduced from scripts/quality/frontend_e2e_plane.py runner_totals(); cwd=frontend
+/tmp/c107_run2_chain.sh: command substitution: line 51: syntax error near unexpected token `newline'
+/tmp/c107_run2_chain.sh: command substitution: line 51: `command -v npx || echo <none>'
+which_npx=
+playwright_bin_entries=2
+resolved_npx=/opt/homebrew/bin/npx
+cwd=/Users/yunjinqi/Documents/new_projects/opendata/frontend exists=True
+list_returncode=1
+stdout_tail=['Listing tests:', 'Total: 0 tests in 0 files']
+stderr_lines=10
+  STDERR| Error: OPENDATA_AC21_EVIDENCE_DIR is required
+  STDERR|    at script-download-backend.spec.ts:40
+  STDERR|   38 | const lazyModuleRequests = new Map<Request, (typeof lazyModuleEvents)[number]>()
+  STDERR|   39 | const evidenceDir = process.env.OPENDATA_AC21_EVIDENCE_DIR
+  STDERR| > 40 | if (!evidenceDir) throw new Error('OPENDATA_AC21_EVIDENCE_DIR is required')
+  STDERR|      |                         ^
+  STDERR|   41 |
+  STDERR|   42 | function pathOnly(url: string): string {
+  STDERR|   43 |   const parsed = new URL(url)
+  STDERR|     at /Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e/script-download-backend.spec.ts:40:25
+member17_mechanism_exit=0
+
+===== the two test modules that read the re-pinned allowlist =====
+argv: pytest -o addopts= -p no:cacheprovider -q tests/test_acceptance_item_probe.py tests/test_nested_vendor_quality_scope.py
+.....................................................                    [100%]
+53 passed in 10.80s
+MEMBER_EXIT: allowlist_test_modules=0
+
+---- exit readings (derived from the MEMBER_EXIT lines above) ----
+run2_step1_zero_dep_check_exit=0
+run2_step2_acceptance_probe_check_exit=2
+run2_step3_frontend_e2e_exit=2
+run2_step4_allowlist_test_modules_exit=0
+member_exit_lines=4 steps_total=4
+steps_green=2 steps_red=2
+derived_tally_identity: green(2) + red(2) = 4 vs measured_exit_lines(4) -> HOLDS
+derived_coverage_identity: measured_exit_lines(4) vs steps_total(4) -> ALL_STEPS_REACHED
+run2_chain_exit=1
+chain_end_local=2026-10-15T11:36:09+0800
