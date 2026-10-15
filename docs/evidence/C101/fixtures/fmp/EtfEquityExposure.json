@@ -1,0 +1,38 @@
+{
+  "responses": [
+    {
+      "body": [
+        {
+          "name": "Invesco QQQ Trust, Series 1",
+          "symbol": "QQQ"
+        },
+        {
+          "name": "SPDR S&P 500 ETF Trust",
+          "symbol": "SPY"
+        }
+      ],
+      "status": 200,
+      "url_contains": "/stable/etf-list"
+    },
+    {
+      "body": [
+        {
+          "asset": "AAPL",
+          "marketValue": 48312000000,
+          "sharesNumber": 191456700,
+          "symbol": "QQQ",
+          "weightPercentage": 8.42
+        },
+        {
+          "asset": "AAPL",
+          "marketValue": 40118000000,
+          "sharesNumber": 152340000,
+          "symbol": "SPY",
+          "weightPercentage": 7.01
+        }
+      ],
+      "status": 200,
+      "url_contains": "/stable/etf/asset-exposure"
+    }
+  ]
+}

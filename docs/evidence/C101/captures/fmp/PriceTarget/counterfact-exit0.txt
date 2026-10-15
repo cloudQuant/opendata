@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model PriceTarget --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "priceTarget is a stated target price in the contract's finite-number cells, and the shared numeric guard refuses a boolean outright rather than letting True become 1; a flag where an amount belongs must raise FMP_BAD_SHAPE; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

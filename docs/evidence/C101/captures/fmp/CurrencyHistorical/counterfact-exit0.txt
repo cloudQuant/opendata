@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model CurrencyHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_UNREQUESTED_SYMBOL", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_UNREQUESTED_SYMBOL", "rejected": [], "status": null}, "reason": "CurrencyHistoricalQuery accepts a hyphenated pair but FMP's historical route only answers compact six-letter symbols, so request_specs normalizes EUR-USD to EURUSD and _history_record refuses any row naming another pair rather than relabeling a USD/JPY bar as the requested EUR/USD one; the code is FMP_UNREQUESTED_SYMBOL; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

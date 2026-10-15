@@ -1,0 +1,35 @@
+{
+  "responses": [
+    {
+      "body": [
+        {
+          "name": "Invesco QQQ Trust, Series 1",
+          "symbol": "QQQ"
+        }
+      ],
+      "status": 200,
+      "url_contains": "/stable/etf-list"
+    },
+    {
+      "body": [
+        {
+          "sector": "Technology",
+          "symbol": "QQQ",
+          "weightPercentage": 61.34
+        },
+        {
+          "sector": "Consumer Cyclical",
+          "symbol": "QQQ",
+          "weightPercentage": 15.02
+        },
+        {
+          "sector": "Communication Services",
+          "symbol": "QQQ",
+          "weightPercentage": 22.41
+        }
+      ],
+      "status": 200,
+      "url_contains": "/stable/etf/sector-weightings"
+    }
+  ]
+}

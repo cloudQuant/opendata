@@ -1,0 +1,52 @@
+{
+  "responses": [
+    {
+      "body": [
+        {
+          "name": "Invesco QQQ Trust, Series 1",
+          "symbol": "QQQ"
+        },
+        {
+          "name": "iShares Core S&P 500 ETF",
+          "symbol": "IVV"
+        }
+      ],
+      "status": 200,
+      "url_contains": "/stable/etf-list"
+    },
+    {
+      "body": [
+        {
+          "change": 6.7629,
+          "changePercentage": 1.32,
+          "dayHigh": 517.9757,
+          "dayLow": 506.1919,
+          "exchange": "NASDAQ",
+          "name": "QQQ exchange-traded fund",
+          "open": 509.266,
+          "previousClose": 505.6652,
+          "price": 512.34,
+          "symbol": "QQQ",
+          "timestamp": 1768736400,
+          "volume": 41285000
+        },
+        {
+          "change": -2.532,
+          "changePercentage": -0.41,
+          "dayHigh": 624.343,
+          "dayLow": 610.1394,
+          "exchange": "NASDAQ",
+          "name": "IVV exchange-traded fund",
+          "open": 613.8447,
+          "previousClose": 620.0924,
+          "price": 617.55,
+          "symbol": "IVV",
+          "timestamp": 1768736400,
+          "volume": 41285000
+        }
+      ],
+      "status": 200,
+      "url_contains": "/stable/batch-etf-quotes"
+    }
+  ]
+}

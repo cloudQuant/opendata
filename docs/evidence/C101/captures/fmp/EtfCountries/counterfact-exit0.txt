@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EtfCountries --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "a country allocation is the pair (country, weightPercentage) and the contract declares weight as a required finite JSON number; the source key is the cell the row's weight is read from, so a weighting row that carries no weight must raise FMP_BAD_SHAPE rather than enter a 0% exposure the route never stated; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

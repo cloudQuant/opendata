@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EquityScreener --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_AMBIGUOUS_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_AMBIGUOUS_FIELD", "rejected": [], "status": null}, "reason": "company-screener names an issuer with companyName while other market routes use name, and _maybe_alias_text reads them as aliases of one cell: it may agree or be absent, never disagree. A row stating both spellings lets the adapter pick a name silently, so it refuses with the bare FMP_AMBIGUOUS_FIELD; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

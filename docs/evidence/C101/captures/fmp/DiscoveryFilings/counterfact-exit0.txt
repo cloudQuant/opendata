@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model DiscoveryFilings --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "sec-filings-financials pages the market-wide window by filing date and FmpDiscoveryFiling keeps filing_date as a required datetime; _DisclosureFetcher.transform_data funnels the resulting pydantic error into the bare FMP_BAD_SHAPE, because a discovery row without the date it was filed cannot be placed in the window the query bounded; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

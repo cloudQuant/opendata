@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model CalendarSplits --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": ["numerator"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": ["numerator"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "a split ratio is stated as an integral share count, and SplitsCalendarEvent declares numerator as a plain int; a fractional 10.5 is a ratio the contract cannot publish, pydantic will not truncate it, so the row must refuse with FMP_BAD_SHAPE attributing invalid=('numerator',); untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

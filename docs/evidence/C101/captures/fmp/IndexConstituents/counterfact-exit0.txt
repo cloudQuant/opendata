@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model IndexConstituents --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "reason": "the membership route states a founding period as text and _flexible_source_date keeps an unparseable label verbatim so the contract can publish what the source said; a bare JSON integer is neither an ISO date nor a label, so the guard refuses with FMP_BAD_FIELD instead of inventing April 1, 1976; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

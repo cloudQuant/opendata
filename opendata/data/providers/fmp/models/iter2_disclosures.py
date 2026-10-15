@@ -486,6 +486,7 @@ class DiscoveryFilingsFetcher(_DisclosureFetcher[DiscoveryFilingsQuery, FmpDisco
     canonical_model: ClassVar[str | None] = "DiscoveryFilings"
     query_model = DiscoveryFilingsQuery
     record_model = FmpDiscoveryFiling
+    row_model: ClassVar[type[ContractModel]] = FmpDiscoveryFiling
     check_symbol = False
     capability: ClassVar[Capability] = Capability(
         asset_class="market",
@@ -637,6 +638,7 @@ class EarningsCallTranscriptFetcher(
     canonical_model: ClassVar[str | None] = "EarningsCallTranscript"
     query_model = EarningsCallTranscriptQuery
     record_model = FmpEarningsCallTranscript
+    row_model: ClassVar[type[ContractModel]] = FmpEarningsCallTranscript
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_earnings_call_transcript",

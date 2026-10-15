@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model HistoricalEmployees --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the whole point of the headcount route is employeeCount, declared as a required strict int; a filing record without it cannot state a period headcount, so validation must refuse the row with FMP_BAD_SHAPE instead of publishing a blank count; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model HistoricalDividends --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "dividend is a per-share amount the contract reads as a finite JSON number; a quoted decimal string is a different cell, and accepting it would let a formatted amount stand in for the declared one, so the row must be refused with FMP_BAD_SHAPE; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

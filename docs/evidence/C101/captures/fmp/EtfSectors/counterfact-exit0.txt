@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EtfSectors --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the sector-weightings route publishes the sector name as trimmed text and the contract rejects leading or trailing whitespace rather than trimming it into a different string; the padded cell would split one sector across two keys, so the guard must raise FMP_BAD_SHAPE; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

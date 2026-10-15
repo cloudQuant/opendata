@@ -318,6 +318,11 @@ class FmpKeyExecutive(_FmpDisclosureModel):
         raw = parsed[key]
         if type(raw) is int and raw >= 0:
             return parsed
+        # The contract re-validates its own parsed rows, so an already-decoded date must round-trip.
+        if isinstance(raw, datetime):
+            raise ValueError("titleSince must be an ISO date or Unix timestamp")
+        if isinstance(raw, date_type):
+            return parsed
         if isinstance(raw, str):
             try:
                 as_date = date_type.fromisoformat(raw)

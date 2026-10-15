@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model CryptoSearch --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "reason": "cryptocurrency-list names every directory entry by symbol and CryptoSearch requires that text; _required_text treats whitespace-only as absent, so an adapter must refuse with FMP_BAD_FIELD instead of shipping an addressable-looking row that no later request can resolve; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EquityOwnership --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the beneficial-ownership route publishes percentOfClass as source text with its own formatting, and the contract declares it as required str; a bare JSON number is a different cell than the text the filing states, so validation must refuse the row with FMP_BAD_SHAPE rather than re-format it; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model CalendarEvents --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_OUT_OF_WINDOW_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_OUT_OF_WINDOW_ROW", "rejected": [], "status": null}, "reason": "the aggregate route reads four official calendars under one window, and every source row is checked by _ensure_date_in_window before it is projected; a splits event dated the day before the requested start would otherwise publish an event the caller never asked for, so the fetcher refuses with FMP_OUT_OF_WINDOW_ROW and keeps the bare code because no contract column was refused; untampered control produced 4 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

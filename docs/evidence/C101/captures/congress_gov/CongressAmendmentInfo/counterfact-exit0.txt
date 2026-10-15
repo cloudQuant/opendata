@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendmentInfo --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CongressGovProviderError", "refusal_code": "CONGRESS_GOV_BAD_AMENDMENT_INFO", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CongressGovProviderError", "refusal_code": "CONGRESS_GOV_BAD_AMENDMENT_INFO", "rejected": [], "status": null}, "reason": "publishing an amendment detail whose number is absent under both keys the mapper reads must refuse with CONGRESS_GOV_BAD_AMENDMENT_INFO rather than let ``amendment_number``, a required cell of the retained ``CongressAmendmentInfoRawData``, fall back to the number the caller asked for; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

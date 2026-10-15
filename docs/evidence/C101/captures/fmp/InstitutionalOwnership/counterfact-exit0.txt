@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model InstitutionalOwnership --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "investorsHolding counts the 13F filers that held the ticker, declared as a required strict int; a fractional count is not a headcount of investors, so the integer guard must refuse the summary with FMP_BAD_SHAPE rather than truncate it; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

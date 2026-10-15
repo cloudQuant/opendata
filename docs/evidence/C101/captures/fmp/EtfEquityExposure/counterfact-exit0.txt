@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EtfEquityExposure --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_WRONG_EQUITY_SYMBOL", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_WRONG_EQUITY_SYMBOL", "rejected": [], "status": null}, "reason": "etf/asset-exposure is asked for one equity, so every returned row must name that ticker in its asset cell; a row that answers MSFT when AAPL was requested would silently widen the exposure board to another security, so the fetcher must refuse with FMP_WRONG_EQUITY_SYMBOL; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

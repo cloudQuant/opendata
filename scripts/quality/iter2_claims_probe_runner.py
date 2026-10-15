@@ -141,7 +141,7 @@ def _seam_body_bytes(body: Any) -> tuple[bytes, str]:  # noqa: ANN401  # fixture
         return body, "application/octet-stream"
     if isinstance(body, str):
         return body.encode("utf-8"), "text/plain"
-    if isinstance(body, list) and all(isinstance(line, str) for line in body):
+    if isinstance(body, list) and body and all(isinstance(line, str) for line in body):
         return "\n".join(body).encode("utf-8"), "text/html"
     return json.dumps(body).encode("utf-8"), "application/json"
 

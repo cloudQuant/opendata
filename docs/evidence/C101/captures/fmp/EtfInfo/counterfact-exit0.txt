@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EtfInfo --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_WRONG_SYMBOL", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_WRONG_SYMBOL", "rejected": [], "status": null}, "reason": "etf/info answers for the fund that was asked for, and the fetcher refuses a row that cannot be attributed to the requested ticker rather than inventing the identity; the contract declares symbol as required trimmed text, so a row without it must raise FMP_WRONG_SYMBOL instead of publishing an ownerless fund profile; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

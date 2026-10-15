@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model PriceTargetConsensus --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the consensus route publishes the four target statistics as JSON numbers and the contract declares target_median among its finite-number cells; a quoted numeral is a different cell type, so the row must be refused with FMP_BAD_SHAPE; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

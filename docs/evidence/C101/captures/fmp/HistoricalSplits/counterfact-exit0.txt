@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model HistoricalSplits --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "a split ratio is a pair of integer cells and the contract declares numerator as a strict int (type(value) is int); 4.0 is a float, so the shared integer guard must refuse the ratio with FMP_BAD_SHAPE rather than round it into a split; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

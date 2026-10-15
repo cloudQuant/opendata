@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBills --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CongressGovProviderError", "refusal_code": "CONGRESS_GOV_BAD_BILL_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CongressGovProviderError", "refusal_code": "CONGRESS_GOV_BAD_BILL_ROW", "rejected": [], "status": null}, "reason": "publishing the human-facing www.congress.gov page in the row's ``url`` where the API documents an ``api.congress.gov/v3`` resource reference must make the mapper refuse the row with CONGRESS_GOV_BAD_BILL_ROW, because ``bill_url`` is a required cell of ``CongressBill`` and ``_safe_api_url`` returns None for any host or path outside the API's own document namespace; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

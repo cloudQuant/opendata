@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EtfSearch --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_DUPLICATE_ETF_SYMBOL", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_DUPLICATE_ETF_SYMBOL", "rejected": [], "status": null}, "reason": "the directory is the identity list for ETF-only search, so one ticker may appear once; the tamper makes the second row repeat QQQ, which the dedupe guard must refuse with FMP_DUPLICATE_ETF_SYMBOL instead of letting two rows claim one fund symbol; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EtfHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_OUT_OF_WINDOW_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_OUT_OF_WINDOW_ROW", "rejected": [], "status": null}, "reason": "the legacy history page is asked for 2026-01-05..2026-01-07, and a row dated outside the requested window is not evidence for it; the fetcher must refuse with FMP_OUT_OF_WINDOW_ROW rather than pad the series with a session the caller never bounded; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

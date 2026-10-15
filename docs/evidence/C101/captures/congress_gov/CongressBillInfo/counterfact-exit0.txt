@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBillInfo --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CongressGovProviderError", "refusal_code": "CONGRESS_GOV_BAD_BILL_INFO", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CongressGovProviderError", "refusal_code": "CONGRESS_GOV_BAD_BILL_INFO", "rejected": [], "status": null}, "reason": "publishing a bill detail with no ``title`` must make the detail mapper refuse with CONGRESS_GOV_BAD_BILL_INFO: ``title`` is a required cell of the ``CongressBillInfoRawData`` document that rides under ``raw_data``, so an untitled detail cannot be turned into a contract row by filling the cell from the query; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

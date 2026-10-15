@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressCommitteeDocuments --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CongressGovProviderError", "refusal_code": "CONGRESS_GOV_BAD_PAGINATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CongressGovProviderError", "refusal_code": "CONGRESS_GOV_BAD_PAGINATION", "rejected": [], "status": null}, "reason": "publishing a ``pagination`` object whose ``count`` is negative is an internally impossible page: the bounded-collection guard must refuse it with CONGRESS_GOV_BAD_PAGINATION before any page of the collection is sliced, rather than quietly return rows whose stated total contradicts the page; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

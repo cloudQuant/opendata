@@ -6,19 +6,35 @@ Every entry here is a hand-written FMP adapter row: extraction goes through
 translated through the row model's own alias map. So each counterfact below names the
 published column, never the wire key it was read from.
 
-Twenty-one of fmp's 69 inventory rows are witnessed. Two populations are deliberately left
-out, and neither is a shortcut:
+The 21 rows in this module are the financial-statement, macro and ``fmp_iter2`` family. Five
+shards under ``_parts/fmp/`` carry the rest: ``rows_a`` the 8 market rows, ``rows_b`` the 8 ETF
+rows, ``rows_c`` the 16 disclosure rows, ``rows_d`` the 4 calendars plus quote/screener/index, and
+``rows_e`` the 7 rows whose frozen class was published only as ``record_model``. Measured against
+the pinned inventory, fmp has 69 identities and 68 of them are witnessed
+(``WITKEYS_NOT_FMP_IDENTITY=[]``, ``WITNESS_KEYS_WITHOUT_FROZEN_ROW=[]``).
 
-* ``CalendarDividend``, ``CalendarEarnings``, ``CalendarSplits`` and ``CalendarEvents`` page
-  until FMP answers with an empty array. The frozen probe serves one fixed body through
-  ``FixedResponseTransport``, so the tail page never arrives and the fetcher correctly reports
-  ``FMP_INCOMPLETE_PAGE_BUDGET`` instead of claiming a window it cannot prove. A sequenced
-  transport (``SequencedResponseTransport`` already exists) is what these four need from the
-  probe, not a weaker fetcher.
-* The market, ETF, disclosure and legacy quote/history rows still publish no frozen contract
-  row: their fetchers build dicts or ``pandas`` frames, so ``row_model`` would be a label
-  rather than the class the governed service serializes. They stay unwitnessed until that
-  product change lands.
+Two claims this module used to make are now withdrawn, both because they were measured rather than
+assumed:
+
+* The four company calendars do not need a weaker fetcher or a page budget.
+  ``_fetch_calendar_pages`` stops on an *empty* page, so the client seam's
+  ``sequence=[rows, []]`` proves a bounded window in two requests. ``rows_d`` witnesses all four.
+* The market, ETF and disclosure adapters are not row-less. They publish ``row_model`` already;
+  seven further fetchers published the same class under the sibling name ``record_model`` and
+  ``rows_e`` declares ``row_model`` alongside it, so every witnessed row class is the class the
+  governed service serializes, not a label.
+
+``EquityHistorical`` is the single inventory identity left unwitnessed, and it is a product gap
+rather than a witness gap: ``EquityHistoricalFetcher``
+(``opendata/data/providers/fmp/models/equity_historical.py:45``) is typed
+``Fetcher[EquityHistoricalQuery, list[dict[str, Any]]]`` and declares neither ``row_model`` nor
+``record_model``, so the witness instrument's own frozen-row requirement has nothing to read.
+
+One further product observation is recorded without a witness: ``CryptoSearchFetcher`` and
+``CurrencyPairsFetcher`` each override ``transform_data`` outright
+(``iter2_market.py:894`` and ``:948``) and never consult ``key_fields``, so the
+``FMP_DUPLICATE_ROW`` guard at ``iter2_market.py:685`` is unreachable on those two directory routes
+even though ``CurrencyPairsFetcher`` re-declares the key at ``:938``.
 """
 
 from __future__ import annotations

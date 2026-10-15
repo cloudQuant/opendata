@@ -1,0 +1,35 @@
+{
+  "responses": [
+    {
+      "body": [
+        {
+          "name": "Invesco QQQ Trust, Series 1",
+          "symbol": "QQQ"
+        }
+      ],
+      "status": 200,
+      "url_contains": "/stable/etf-list"
+    },
+    {
+      "body": [
+        {
+          "country": "United States",
+          "symbol": "QQQ",
+          "weightPercentage": 97.41
+        },
+        {
+          "country": "Netherlands",
+          "symbol": "QQQ",
+          "weightPercentage": 1.87
+        },
+        {
+          "country": "Ireland",
+          "symbol": "QQQ",
+          "weightPercentage": 0.72
+        }
+      ],
+      "status": 200,
+      "url_contains": "/stable/etf/country-weightings"
+    }
+  ]
+}

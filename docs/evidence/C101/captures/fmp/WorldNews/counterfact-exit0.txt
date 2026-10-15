@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model WorldNews --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "title is a required headline cell and the shared text validator rejects whitespace-only source text rather than trimming it into an empty string; a blank headline is not a story the feed can name, so the row must be refused with FMP_BAD_SHAPE; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

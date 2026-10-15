@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EquityQuote --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the stable quote route stamps its row with a JSON integer epoch and EquityQuote keeps provider_timestamp as StrictInt because the adapter refuses to guess its unit; the text '1768736400' is not that integer, so transform_data funnels the validation error into the bare FMP_BAD_SHAPE without echoing the value; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

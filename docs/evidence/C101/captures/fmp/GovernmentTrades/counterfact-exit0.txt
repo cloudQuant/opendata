@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model GovernmentTrades --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "each chamber route dates its disclosure with an ISO calendar day and the contract requires disclosure_date as such; a slash-formatted cell is not an ISO date, so the row must be refused with FMP_BAD_SHAPE instead of guessing the field order; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

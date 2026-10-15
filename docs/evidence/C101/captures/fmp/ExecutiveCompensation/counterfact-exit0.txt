@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model ExecutiveCompensation --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the compensation summary is organized by a required strict-int fiscal year, and the shared integer guard checks type(value) is int; the text '2025' is not that integer, so the row must be refused with FMP_BAD_SHAPE rather than coerced into a period; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

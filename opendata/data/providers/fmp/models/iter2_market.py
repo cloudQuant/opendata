@@ -787,6 +787,7 @@ class CryptoHistoricalFetcher(_HistoricalFetcher[SingleSeriesHistoricalQuery, Cr
     canonical_model = "CryptoHistorical"
     query_model = SingleSeriesHistoricalQuery
     record_model = CryptoHistorical
+    row_model: ClassVar[type[ContractModel]] = CryptoHistorical
     normalizer = staticmethod(_normalize_crypto_historical)
     key_fields = ("date",)
     capability = Capability(
@@ -805,6 +806,7 @@ class CurrencyHistoricalFetcher(_HistoricalFetcher[CurrencyHistoricalQuery, Curr
     canonical_model = "CurrencyHistorical"
     query_model = CurrencyHistoricalQuery
     record_model = CurrencyHistorical
+    row_model: ClassVar[type[ContractModel]] = CurrencyHistorical
     endpoint = "historical-price-eod/full"
     key_fields = ("date",)
     capability = Capability(
@@ -877,6 +879,7 @@ class CryptoSearchFetcher(_MarketFetcher[ListQuery, CryptoSearch]):
     canonical_model = "CryptoSearch"
     query_model = ListQuery
     record_model = CryptoSearch
+    row_model: ClassVar[type[ContractModel]] = CryptoSearch
     endpoint = "cryptocurrency-list"
     normalizer = staticmethod(_normalize_crypto_search)
     capability = Capability(
@@ -929,6 +932,7 @@ class CurrencyPairsFetcher(_MarketFetcher[CurrencyPairsQuery, CurrencyPair]):
     canonical_model = "CurrencyPairs"
     query_model = CurrencyPairsQuery
     record_model = CurrencyPair
+    row_model: ClassVar[type[ContractModel]] = CurrencyPair
     endpoint = "forex-list"
     normalizer = staticmethod(_normalize_currency_pair)
     key_fields = ("symbol",)
@@ -1045,6 +1049,7 @@ class CurrencySnapshotsFetcher(_MarketFetcher[CurrencySnapshotsQuery, CurrencySn
     canonical_model = "CurrencySnapshots"
     query_model = CurrencySnapshotsQuery
     record_model = CurrencySnapshot
+    row_model: ClassVar[type[ContractModel]] = CurrencySnapshot
     endpoint = "quote"
     normalizer = staticmethod(_normalize_currency_snapshot)
     key_fields = ("base_currency", "counter_currency")

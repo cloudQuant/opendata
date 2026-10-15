@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model CalendarDividend --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": ["yield_percent"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": ["yield_percent"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "dividends-calendar states the yield as a JSON percentage-point number under the wire key 'yield', which the contract publishes as yield_percent; the percent-formatted string is not that number, so _validate_record must refuse with FMP_BAD_SHAPE and contract_shape_error must name the published column, not the wire key; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

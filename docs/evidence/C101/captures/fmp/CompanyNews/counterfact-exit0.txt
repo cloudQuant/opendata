@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model CompanyNews --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the stock-news route stamps every story with a publication instant and the contract declares published_date as a datetime; a bare date carries no time, so the shared timestamp parser must refuse the story with FMP_BAD_SHAPE rather than invent a midnight publish time; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

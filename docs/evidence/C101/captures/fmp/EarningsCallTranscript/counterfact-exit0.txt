@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EarningsCallTranscript --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_WRONG_PERIOD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_WRONG_PERIOD", "rejected": [], "status": null}, "reason": "earning-call-transcript is asked for one quarter by year and quarter, and EarningsCallTranscriptFetcher.transform_data compares the parsed row against both after the base validation; a transcript stamped Q3 for a Q1 request is a different document, so the adapter refuses with FMP_WRONG_PERIOD instead of mislabeling the text it returns; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,205 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/fmp/CryptoHistorical/service-exit0.txt",
+    "sha256": "6341832fcc32c7fdf2a1c676a57498418132c18c8756c233d587604351916be9",
+    "size_bytes": 362,
+    "stdout_excerpt": "service: query_provider_model executed for real (registry + reviewed domain semantics), rows=2 first_row_sha256=2a9c7c2a87ea97c9\nVERDICT=PASS\n"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model CryptoHistorical --phase service --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-15T12:18:03.049475+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "3f7833d62f60e3a6f4b01d3cbfdd45ca2787c864bb3db0fb06fc93e9c81e2519",
+          "before_sha256": "3f7833d62f60e3a6f4b01d3cbfdd45ca2787c864bb3db0fb06fc93e9c81e2519",
+          "path": "opendata/data/models/fmp_market.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:3f7833d62f60e3a6f4b01d3cbfdd45ca2787c864bb3db0fb06fc93e9c81e2519",
+      "fixture": [
+        {
+          "after_sha256": "9ab671c0d8af7cf6b4211ddcf885b7d3881982610762616ad5c5274fabbe08cd",
+          "before_sha256": "9ab671c0d8af7cf6b4211ddcf885b7d3881982610762616ad5c5274fabbe08cd",
+          "path": "docs/evidence/C101/fixtures/fmp/CryptoHistorical.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+          "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "6a74dde7d6badf7df991f99450f284177f955941fe904333c32974fc8eb22a01",
+          "before_sha256": "6a74dde7d6badf7df991f99450f284177f955941fe904333c32974fc8eb22a01",
+          "path": "scripts/quality/iter2_witnesses/fmp.py"
+        },
+        {
+          "after_sha256": "f716840efc522d512499a8691b666d198fed926d054a541a3ee1e10f55c270d0",
+          "before_sha256": "f716840efc522d512499a8691b666d198fed926d054a541a3ee1e10f55c270d0",
+          "path": "scripts/quality/iter2_witnesses/_parts/fmp/rows_a.py"
+        },
+        {
+          "after_sha256": "333893178bed24e5f94817b86bba6830dce20c13ebc59f4ca475ba60fbe5c46e",
+          "before_sha256": "333893178bed24e5f94817b86bba6830dce20c13ebc59f4ca475ba60fbe5c46e",
+          "path": "scripts/quality/iter2_witnesses/_parts/fmp/rows_b.py"
+        },
+        {
+          "after_sha256": "58cb344b48e6940e9d277f1264ae4352e1a14e8d59c62ec7ff291076bd762ac7",
+          "before_sha256": "58cb344b48e6940e9d277f1264ae4352e1a14e8d59c62ec7ff291076bd762ac7",
+          "path": "scripts/quality/iter2_witnesses/_parts/fmp/rows_c.py"
+        },
+        {
+          "after_sha256": "bdb4f94eedc42d92391306e0de3a15fddb41d91ef69d8377966b8d6f6c97905c",
+          "before_sha256": "bdb4f94eedc42d92391306e0de3a15fddb41d91ef69d8377966b8d6f6c97905c",
+          "path": "scripts/quality/iter2_witnesses/_parts/fmp/rows_d.py"
+        },
+        {
+          "after_sha256": "700c339747e4072cfd520b1da7708016b0e4f252ec5d5d34214ae3860afc19c1",
+          "before_sha256": "700c339747e4072cfd520b1da7708016b0e4f252ec5d5d34214ae3860afc19c1",
+          "path": "scripts/quality/iter2_witnesses/_parts/fmp/rows_e.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+          "before_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+          "path": "opendata/data/providers/fmp/registration.py"
+        },
+        {
+          "after_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+          "before_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+          "path": "opendata/data/providers/fmp/provider.py"
+        },
+        {
+          "after_sha256": "adcae2c63be948f9cb79a6dd3cf18b94f8b2ad94906b7049384ea68835d265ca",
+          "before_sha256": "adcae2c63be948f9cb79a6dd3cf18b94f8b2ad94906b7049384ea68835d265ca",
+          "path": "opendata/data/providers/fmp/models/iter2_market.py"
+        },
+        {
+          "after_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+          "before_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+          "path": "opendata/data/providers/fmp/models/_client.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "fmp::CryptoHistorical",
+  "phase": "service",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "3f7833d62f60e3a6f4b01d3cbfdd45ca2787c864bb3db0fb06fc93e9c81e2519",
+        "before_sha256": "3f7833d62f60e3a6f4b01d3cbfdd45ca2787c864bb3db0fb06fc93e9c81e2519",
+        "path": "opendata/data/models/fmp_market.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:3f7833d62f60e3a6f4b01d3cbfdd45ca2787c864bb3db0fb06fc93e9c81e2519",
+    "fixture": [
+      {
+        "after_sha256": "9ab671c0d8af7cf6b4211ddcf885b7d3881982610762616ad5c5274fabbe08cd",
+        "before_sha256": "9ab671c0d8af7cf6b4211ddcf885b7d3881982610762616ad5c5274fabbe08cd",
+        "path": "docs/evidence/C101/fixtures/fmp/CryptoHistorical.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+        "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "6a74dde7d6badf7df991f99450f284177f955941fe904333c32974fc8eb22a01",
+        "before_sha256": "6a74dde7d6badf7df991f99450f284177f955941fe904333c32974fc8eb22a01",
+        "path": "scripts/quality/iter2_witnesses/fmp.py"
+      },
+      {
+        "after_sha256": "f716840efc522d512499a8691b666d198fed926d054a541a3ee1e10f55c270d0",
+        "before_sha256": "f716840efc522d512499a8691b666d198fed926d054a541a3ee1e10f55c270d0",
+        "path": "scripts/quality/iter2_witnesses/_parts/fmp/rows_a.py"
+      },
+      {
+        "after_sha256": "333893178bed24e5f94817b86bba6830dce20c13ebc59f4ca475ba60fbe5c46e",
+        "before_sha256": "333893178bed24e5f94817b86bba6830dce20c13ebc59f4ca475ba60fbe5c46e",
+        "path": "scripts/quality/iter2_witnesses/_parts/fmp/rows_b.py"
+      },
+      {
+        "after_sha256": "58cb344b48e6940e9d277f1264ae4352e1a14e8d59c62ec7ff291076bd762ac7",
+        "before_sha256": "58cb344b48e6940e9d277f1264ae4352e1a14e8d59c62ec7ff291076bd762ac7",
+        "path": "scripts/quality/iter2_witnesses/_parts/fmp/rows_c.py"
+      },
+      {
+        "after_sha256": "bdb4f94eedc42d92391306e0de3a15fddb41d91ef69d8377966b8d6f6c97905c",
+        "before_sha256": "bdb4f94eedc42d92391306e0de3a15fddb41d91ef69d8377966b8d6f6c97905c",
+        "path": "scripts/quality/iter2_witnesses/_parts/fmp/rows_d.py"
+      },
+      {
+        "after_sha256": "700c339747e4072cfd520b1da7708016b0e4f252ec5d5d34214ae3860afc19c1",
+        "before_sha256": "700c339747e4072cfd520b1da7708016b0e4f252ec5d5d34214ae3860afc19c1",
+        "path": "scripts/quality/iter2_witnesses/_parts/fmp/rows_e.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+        "before_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+        "path": "opendata/data/providers/fmp/registration.py"
+      },
+      {
+        "after_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+        "before_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+        "path": "opendata/data/providers/fmp/provider.py"
+      },
+      {
+        "after_sha256": "adcae2c63be948f9cb79a6dd3cf18b94f8b2ad94906b7049384ea68835d265ca",
+        "before_sha256": "adcae2c63be948f9cb79a6dd3cf18b94f8b2ad94906b7049384ea68835d265ca",
+        "path": "opendata/data/providers/fmp/models/iter2_market.py"
+      },
+      {
+        "after_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+        "before_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+        "path": "opendata/data/providers/fmp/models/_client.py"
+      }
+    ]
+  },
+  "provider": "fmp",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-fmp-CryptoHistorical",
+  "upstream_model": "CryptoHistorical"
+}
