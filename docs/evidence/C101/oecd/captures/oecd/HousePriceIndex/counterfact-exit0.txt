@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model HousePriceIndex --phase counterfact --evidence-root docs/evidence/C101/oecd
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_RESPONSE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_RESPONSE", "rejected": [], "status": null}, "reason": "the contracted house-price series is the 2015-base seasonal-adjusted index, so a row published with BASE_PER=2020 is a different base period than the one requested and transform_data's expected_dimensions check must refuse it as OECD_BAD_RESPONSE; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

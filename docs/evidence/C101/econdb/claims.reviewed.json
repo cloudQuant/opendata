@@ -1,249 +1,9 @@
 {
   "claims": [
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase implementation --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-14T13:26:05.949131+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 3,
-      "phase": "implementation",
-      "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
-      },
-      "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
-      "receipt": {
-        "model_identity": "econdb::AvailableIndicators",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
-      },
-      "status": "BLOCKED",
-      "upstream_model": "AvailableIndicators"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase direct --evidence-root docs/evidence/C101/econdb",
-      "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-14T13:26:05.949313+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 3,
-      "phase": "direct",
-      "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
-      },
-      "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
-      "receipt": {
-        "model_identity": "econdb::AvailableIndicators",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
-      },
-      "status": "BLOCKED",
-      "upstream_model": "AvailableIndicators"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase service --evidence-root docs/evidence/C101/econdb",
-      "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-14T13:26:05.949318+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 3,
-      "phase": "service",
-      "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
-      },
-      "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
-      "receipt": {
-        "model_identity": "econdb::AvailableIndicators",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
-      },
-      "status": "BLOCKED",
-      "upstream_model": "AvailableIndicators"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase contract --evidence-root docs/evidence/C101/econdb",
-      "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-14T13:26:05.949321+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 3,
-      "phase": "contract",
-      "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
-      },
-      "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
-      "receipt": {
-        "model_identity": "econdb::AvailableIndicators",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
-      },
-      "status": "BLOCKED",
-      "upstream_model": "AvailableIndicators"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase counterfact --evidence-root docs/evidence/C101/econdb",
-      "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-14T13:26:05.949323+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 3,
-      "phase": "counterfact",
-      "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
-      },
-      "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
-      "receipt": {
-        "model_identity": "econdb::AvailableIndicators",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
-      },
-      "status": "BLOCKED",
-      "upstream_model": "AvailableIndicators"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase implementation --evidence-root docs/evidence/C101/econdb",
-      "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-14T13:26:05.949327+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 3,
-      "phase": "implementation",
-      "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
-      },
-      "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
-      "receipt": {
-        "model_identity": "econdb::CountryProfile",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
-      },
-      "status": "BLOCKED",
-      "upstream_model": "CountryProfile"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase direct --evidence-root docs/evidence/C101/econdb",
-      "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-14T13:26:05.949329+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 3,
-      "phase": "direct",
-      "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
-      },
-      "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
-      "receipt": {
-        "model_identity": "econdb::CountryProfile",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
-      },
-      "status": "BLOCKED",
-      "upstream_model": "CountryProfile"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase service --evidence-root docs/evidence/C101/econdb",
-      "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-14T13:26:05.949331+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 3,
-      "phase": "service",
-      "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
-      },
-      "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
-      "receipt": {
-        "model_identity": "econdb::CountryProfile",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
-      },
-      "status": "BLOCKED",
-      "upstream_model": "CountryProfile"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase contract --evidence-root docs/evidence/C101/econdb",
-      "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-14T13:26:05.949333+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 3,
-      "phase": "contract",
-      "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
-      },
-      "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
-      "receipt": {
-        "model_identity": "econdb::CountryProfile",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
-      },
-      "status": "BLOCKED",
-      "upstream_model": "CountryProfile"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase counterfact --evidence-root docs/evidence/C101/econdb",
-      "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-14T13:26:05.949335+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 3,
-      "phase": "counterfact",
-      "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
-      },
-      "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
-      "receipt": {
-        "model_identity": "econdb::CountryProfile",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
-      },
-      "status": "BLOCKED",
-      "upstream_model": "CountryProfile"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase implementation --evidence-root docs/evidence/C101/econdb",
-      "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-14T13:26:06.848712+00:00",
+      "executed_at_utc": "2026-10-15T08:44:08.715340+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -263,36 +23,621 @@
         "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
         "fixture": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "bfaf2018db661bfa68aab48489cf55961489794f9b41760b18fbd00dce460a5e",
+            "before_sha256": "bfaf2018db661bfa68aab48489cf55961489794f9b41760b18fbd00dce460a5e",
+            "path": "opendata/data/providers/econdb/models/available_indicators.py"
+          },
+          {
+            "after_sha256": "1295ca7ad55bb7faa56d0caaf3bf7a7af530a13f15af464cf2c07a654d745539",
+            "before_sha256": "1295ca7ad55bb7faa56d0caaf3bf7a7af530a13f15af464cf2c07a654d745539",
+            "path": "opendata/data/providers/econdb/specs.py"
+          }
+        ]
+      },
+      "provider": "econdb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "econdb::AvailableIndicators",
+        "path": "docs/evidence/C101/receipts/econdb/AvailableIndicators/implementation.json",
+        "sha256": "2c2305636d6b01a3074c9aa275a5764f178c8b3576693256a9671542250bd098"
+      },
+      "status": "PASS",
+      "upstream_model": "AvailableIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:44:09.741713+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "5621efe8742ee4b040a6164178881fa58f9d716e4d4f965b16290ce82857bb81",
+            "before_sha256": "5621efe8742ee4b040a6164178881fa58f9d716e4d4f965b16290ce82857bb81",
+            "path": "docs/evidence/C101/fixtures/econdb/AvailableIndicators.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "bfaf2018db661bfa68aab48489cf55961489794f9b41760b18fbd00dce460a5e",
+            "before_sha256": "bfaf2018db661bfa68aab48489cf55961489794f9b41760b18fbd00dce460a5e",
+            "path": "opendata/data/providers/econdb/models/available_indicators.py"
+          },
+          {
+            "after_sha256": "1295ca7ad55bb7faa56d0caaf3bf7a7af530a13f15af464cf2c07a654d745539",
+            "before_sha256": "1295ca7ad55bb7faa56d0caaf3bf7a7af530a13f15af464cf2c07a654d745539",
+            "path": "opendata/data/providers/econdb/specs.py"
+          }
+        ]
+      },
+      "provider": "econdb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "econdb::AvailableIndicators",
+        "path": "docs/evidence/C101/receipts/econdb/AvailableIndicators/direct.json",
+        "sha256": "e9c7285b8f7ae50a23b4ded2a5feab9118e98a510a11fe959bdd71892a3b6f9d"
+      },
+      "status": "PASS",
+      "upstream_model": "AvailableIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:44:10.753170+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "5621efe8742ee4b040a6164178881fa58f9d716e4d4f965b16290ce82857bb81",
+            "before_sha256": "5621efe8742ee4b040a6164178881fa58f9d716e4d4f965b16290ce82857bb81",
+            "path": "docs/evidence/C101/fixtures/econdb/AvailableIndicators.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "bfaf2018db661bfa68aab48489cf55961489794f9b41760b18fbd00dce460a5e",
+            "before_sha256": "bfaf2018db661bfa68aab48489cf55961489794f9b41760b18fbd00dce460a5e",
+            "path": "opendata/data/providers/econdb/models/available_indicators.py"
+          },
+          {
+            "after_sha256": "1295ca7ad55bb7faa56d0caaf3bf7a7af530a13f15af464cf2c07a654d745539",
+            "before_sha256": "1295ca7ad55bb7faa56d0caaf3bf7a7af530a13f15af464cf2c07a654d745539",
+            "path": "opendata/data/providers/econdb/specs.py"
+          }
+        ]
+      },
+      "provider": "econdb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "econdb::AvailableIndicators",
+        "path": "docs/evidence/C101/receipts/econdb/AvailableIndicators/service.json",
+        "sha256": "190cd82c4a2e1320d8e7a2d76752868e77af3724a2cb2ca90ff2f46725d5fad9"
+      },
+      "status": "PASS",
+      "upstream_model": "AvailableIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:44:11.760934+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "5621efe8742ee4b040a6164178881fa58f9d716e4d4f965b16290ce82857bb81",
+            "before_sha256": "5621efe8742ee4b040a6164178881fa58f9d716e4d4f965b16290ce82857bb81",
+            "path": "docs/evidence/C101/fixtures/econdb/AvailableIndicators.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "bfaf2018db661bfa68aab48489cf55961489794f9b41760b18fbd00dce460a5e",
+            "before_sha256": "bfaf2018db661bfa68aab48489cf55961489794f9b41760b18fbd00dce460a5e",
+            "path": "opendata/data/providers/econdb/models/available_indicators.py"
+          },
+          {
+            "after_sha256": "1295ca7ad55bb7faa56d0caaf3bf7a7af530a13f15af464cf2c07a654d745539",
+            "before_sha256": "1295ca7ad55bb7faa56d0caaf3bf7a7af530a13f15af464cf2c07a654d745539",
+            "path": "opendata/data/providers/econdb/specs.py"
+          }
+        ]
+      },
+      "provider": "econdb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "econdb::AvailableIndicators",
+        "path": "docs/evidence/C101/receipts/econdb/AvailableIndicators/contract.json",
+        "sha256": "ecf7b4f91ecd162fdef712982f8f3957c520fc1a6242cf79b0f930142b3a3ff3"
+      },
+      "status": "PASS",
+      "upstream_model": "AvailableIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:44:12.791242+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "5621efe8742ee4b040a6164178881fa58f9d716e4d4f965b16290ce82857bb81",
+            "before_sha256": "5621efe8742ee4b040a6164178881fa58f9d716e4d4f965b16290ce82857bb81",
+            "path": "docs/evidence/C101/fixtures/econdb/AvailableIndicators.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "bfaf2018db661bfa68aab48489cf55961489794f9b41760b18fbd00dce460a5e",
+            "before_sha256": "bfaf2018db661bfa68aab48489cf55961489794f9b41760b18fbd00dce460a5e",
+            "path": "opendata/data/providers/econdb/models/available_indicators.py"
+          },
+          {
+            "after_sha256": "1295ca7ad55bb7faa56d0caaf3bf7a7af530a13f15af464cf2c07a654d745539",
+            "before_sha256": "1295ca7ad55bb7faa56d0caaf3bf7a7af530a13f15af464cf2c07a654d745539",
+            "path": "opendata/data/providers/econdb/specs.py"
+          }
+        ]
+      },
+      "provider": "econdb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "econdb::AvailableIndicators",
+        "path": "docs/evidence/C101/receipts/econdb/AvailableIndicators/counterfact.json",
+        "sha256": "bb404f7743df60892a50f342aff3ff23ae5dddca82703c1c396bb3d2d07f1bb8"
+      },
+      "status": "PASS",
+      "upstream_model": "AvailableIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:44:12.792861+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "implementation",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "econdb",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "econdb::CountryProfile",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "CountryProfile"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:44:12.792868+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "direct",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "econdb",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "econdb::CountryProfile",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "CountryProfile"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:44:12.792871+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "service",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "econdb",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "econdb::CountryProfile",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "CountryProfile"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:44:12.792874+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "contract",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "econdb",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "econdb::CountryProfile",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "CountryProfile"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:44:12.792876+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 3,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [],
+        "contract_version": "sha256:unpinned",
+        "fixture": [],
+        "probe": [],
+        "source": []
+      },
+      "provider": "econdb",
+      "reason": "no offline witness configured for this model row",
+      "receipt": {
+        "model_identity": "econdb::CountryProfile",
+        "path": "",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "status": "BLOCKED",
+      "upstream_model": "CountryProfile"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:44:13.729181+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -322,16 +667,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::EconomicIndicators",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/EconomicIndicators/implementation.json",
-        "sha256": "d30b097f13407fd3f3ef0a804127e59fca161a75a2d22a65e71ce7fe90604011"
+        "path": "docs/evidence/C101/receipts/econdb/EconomicIndicators/implementation.json",
+        "sha256": "c2ab81467df06f8d0b4b1817d0432c3f00c103360716d69ff6d8b01de1536dda"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase direct --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-14T13:26:07.773572+00:00",
+      "executed_at_utc": "2026-10-15T08:44:14.675907+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -353,24 +698,29 @@
           {
             "after_sha256": "532cfff8771cab374b8d7f04bf498ab76efdb5f0bde15633279f18a25f41ea6d",
             "before_sha256": "532cfff8771cab374b8d7f04bf498ab76efdb5f0bde15633279f18a25f41ea6d",
-            "path": "docs/evidence/C101/econdb/fixtures/econdb/EconomicIndicators.json"
+            "path": "docs/evidence/C101/fixtures/econdb/EconomicIndicators.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -400,16 +750,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::EconomicIndicators",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/EconomicIndicators/direct.json",
-        "sha256": "4312ada756bb106e96b070b2e9ea8602da36ddc856370eac99fa5a89ddfbb4db"
+        "path": "docs/evidence/C101/receipts/econdb/EconomicIndicators/direct.json",
+        "sha256": "c4a5cbb10959262c3a3be3f34ac024160b3acf289869b03a773cee78d0e877c3"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase service --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-14T13:26:08.709188+00:00",
+      "executed_at_utc": "2026-10-15T08:44:15.624084+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -431,24 +781,29 @@
           {
             "after_sha256": "532cfff8771cab374b8d7f04bf498ab76efdb5f0bde15633279f18a25f41ea6d",
             "before_sha256": "532cfff8771cab374b8d7f04bf498ab76efdb5f0bde15633279f18a25f41ea6d",
-            "path": "docs/evidence/C101/econdb/fixtures/econdb/EconomicIndicators.json"
+            "path": "docs/evidence/C101/fixtures/econdb/EconomicIndicators.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -478,16 +833,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::EconomicIndicators",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/EconomicIndicators/service.json",
-        "sha256": "2618daa5edeab808eb41c3cd1fed0738f2fa87266e90022bdf2d87b0e123a575"
+        "path": "docs/evidence/C101/receipts/econdb/EconomicIndicators/service.json",
+        "sha256": "2ff4c71b69b3d5b2d50869615fda52186257f092be7adb96aeaf0eec6d5c9764"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase contract --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-14T13:26:09.616214+00:00",
+      "executed_at_utc": "2026-10-15T08:44:16.562783+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -509,24 +864,29 @@
           {
             "after_sha256": "532cfff8771cab374b8d7f04bf498ab76efdb5f0bde15633279f18a25f41ea6d",
             "before_sha256": "532cfff8771cab374b8d7f04bf498ab76efdb5f0bde15633279f18a25f41ea6d",
-            "path": "docs/evidence/C101/econdb/fixtures/econdb/EconomicIndicators.json"
+            "path": "docs/evidence/C101/fixtures/econdb/EconomicIndicators.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -556,16 +916,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::EconomicIndicators",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/EconomicIndicators/contract.json",
-        "sha256": "47f8bb7768ce4c6430f22929e21102c7a640d17f3b9a50981879ccdf0492fb3c"
+        "path": "docs/evidence/C101/receipts/econdb/EconomicIndicators/contract.json",
+        "sha256": "dc25a8c981dd8990f2b2b015e91f429b25bb51df0e7dff8d1b8f6bdc2ad8eb4e"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase counterfact --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-14T13:26:10.550704+00:00",
+      "executed_at_utc": "2026-10-15T08:44:17.507719+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -587,24 +947,29 @@
           {
             "after_sha256": "532cfff8771cab374b8d7f04bf498ab76efdb5f0bde15633279f18a25f41ea6d",
             "before_sha256": "532cfff8771cab374b8d7f04bf498ab76efdb5f0bde15633279f18a25f41ea6d",
-            "path": "docs/evidence/C101/econdb/fixtures/econdb/EconomicIndicators.json"
+            "path": "docs/evidence/C101/fixtures/econdb/EconomicIndicators.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -634,16 +999,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::EconomicIndicators",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/EconomicIndicators/counterfact.json",
-        "sha256": "6f34ed92bf84dbec9a1e0ab1297676e9bcb45bcb7a642fb47b1c87f4cfc913e8"
+        "path": "docs/evidence/C101/receipts/econdb/EconomicIndicators/counterfact.json",
+        "sha256": "caf9d8be042be02988f3f3b29aa44569903e9bb8c8747383b5b91823b9668e10"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase implementation --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-14T13:26:10.551768+00:00",
+      "executed_at_utc": "2026-10-15T08:44:17.509345+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "implementation",
@@ -665,9 +1030,9 @@
       "upstream_model": "ExportDestinations"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase direct --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-14T13:26:10.551775+00:00",
+      "executed_at_utc": "2026-10-15T08:44:17.509351+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "direct",
@@ -689,9 +1054,9 @@
       "upstream_model": "ExportDestinations"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase service --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-14T13:26:10.551777+00:00",
+      "executed_at_utc": "2026-10-15T08:44:17.509353+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "service",
@@ -713,9 +1078,9 @@
       "upstream_model": "ExportDestinations"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase contract --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-14T13:26:10.551779+00:00",
+      "executed_at_utc": "2026-10-15T08:44:17.509357+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "contract",
@@ -737,9 +1102,9 @@
       "upstream_model": "ExportDestinations"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase counterfact --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-14T13:26:10.551782+00:00",
+      "executed_at_utc": "2026-10-15T08:44:17.509359+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "counterfact",
@@ -761,9 +1126,9 @@
       "upstream_model": "ExportDestinations"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase implementation --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-14T13:26:11.451640+00:00",
+      "executed_at_utc": "2026-10-15T08:44:18.452556+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -783,36 +1148,46 @@
         "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
         "fixture": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -842,16 +1217,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::GdpNominal",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/GdpNominal/implementation.json",
-        "sha256": "f56394daef57f20ed3d960deddee02fafed4bb6e724c90ca0651d22da4478c26"
+        "path": "docs/evidence/C101/receipts/econdb/GdpNominal/implementation.json",
+        "sha256": "14c3441d76b9224f2bec014eae86b558e413425250011d300e50cca5bdfb4650"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase direct --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-14T13:26:12.391014+00:00",
+      "executed_at_utc": "2026-10-15T08:44:19.405362+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -873,24 +1248,29 @@
           {
             "after_sha256": "7259afd734e47aea58c22f97ae7cea258f93668183a02de4c77a111b32a157be",
             "before_sha256": "7259afd734e47aea58c22f97ae7cea258f93668183a02de4c77a111b32a157be",
-            "path": "docs/evidence/C101/econdb/fixtures/econdb/GdpNominal.json"
+            "path": "docs/evidence/C101/fixtures/econdb/GdpNominal.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -920,16 +1300,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::GdpNominal",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/GdpNominal/direct.json",
-        "sha256": "2388ac68a82200e97e88ed89af97b33673a5dfc1c59b476acdccc0886130bf44"
+        "path": "docs/evidence/C101/receipts/econdb/GdpNominal/direct.json",
+        "sha256": "383e98d4e0511866243a258259b73b83df31552bb8e2709eddd547198d28b462"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase service --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-14T13:26:13.318950+00:00",
+      "executed_at_utc": "2026-10-15T08:44:20.347611+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -951,24 +1331,29 @@
           {
             "after_sha256": "7259afd734e47aea58c22f97ae7cea258f93668183a02de4c77a111b32a157be",
             "before_sha256": "7259afd734e47aea58c22f97ae7cea258f93668183a02de4c77a111b32a157be",
-            "path": "docs/evidence/C101/econdb/fixtures/econdb/GdpNominal.json"
+            "path": "docs/evidence/C101/fixtures/econdb/GdpNominal.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -998,16 +1383,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::GdpNominal",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/GdpNominal/service.json",
-        "sha256": "7c0a9e4c5408f01a86c9da3dec0371c5f29ba2e9929bdb50fb7e41752187f720"
+        "path": "docs/evidence/C101/receipts/econdb/GdpNominal/service.json",
+        "sha256": "28d6877099d1143ca929a7cf09f5413a870aa5f1a7a89d578c0ac3b72f9b7517"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase contract --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-14T13:26:14.238176+00:00",
+      "executed_at_utc": "2026-10-15T08:44:21.292418+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1029,24 +1414,29 @@
           {
             "after_sha256": "7259afd734e47aea58c22f97ae7cea258f93668183a02de4c77a111b32a157be",
             "before_sha256": "7259afd734e47aea58c22f97ae7cea258f93668183a02de4c77a111b32a157be",
-            "path": "docs/evidence/C101/econdb/fixtures/econdb/GdpNominal.json"
+            "path": "docs/evidence/C101/fixtures/econdb/GdpNominal.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -1076,16 +1466,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::GdpNominal",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/GdpNominal/contract.json",
-        "sha256": "823ba96bf0b0d05293fff244f34f5377228b085c821f2525ca37295c7870da12"
+        "path": "docs/evidence/C101/receipts/econdb/GdpNominal/contract.json",
+        "sha256": "869efa1b69b82ae109c98ab338be2b6bfb1c4e2a67dbfa1a9e2add689e872972"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase counterfact --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-14T13:26:15.137620+00:00",
+      "executed_at_utc": "2026-10-15T08:44:22.227290+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1107,24 +1497,29 @@
           {
             "after_sha256": "7259afd734e47aea58c22f97ae7cea258f93668183a02de4c77a111b32a157be",
             "before_sha256": "7259afd734e47aea58c22f97ae7cea258f93668183a02de4c77a111b32a157be",
-            "path": "docs/evidence/C101/econdb/fixtures/econdb/GdpNominal.json"
+            "path": "docs/evidence/C101/fixtures/econdb/GdpNominal.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -1154,16 +1549,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::GdpNominal",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/GdpNominal/counterfact.json",
-        "sha256": "b484f3c7180988e74890bb9f7c0b934f52ca5bb426f7d99662d10e2c4e107e16"
+        "path": "docs/evidence/C101/receipts/econdb/GdpNominal/counterfact.json",
+        "sha256": "a34775b95ece1a60114eed464a994f80bafb06a77fbc75dd5e61dd4000bf6a6f"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase implementation --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-14T13:26:16.044229+00:00",
+      "executed_at_utc": "2026-10-15T08:44:23.171739+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1183,36 +1578,46 @@
         "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
         "fixture": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -1242,16 +1647,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::GdpReal",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/GdpReal/implementation.json",
-        "sha256": "34a617557aabd5c4cf93bd28ccfb54598ac2500c8c0741448411fcc32d2a251c"
+        "path": "docs/evidence/C101/receipts/econdb/GdpReal/implementation.json",
+        "sha256": "dfe9a87c5a7c707b351700788fa1bb624504cd14ac0d65f79509fcf6a26912bb"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase direct --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-14T13:26:16.967805+00:00",
+      "executed_at_utc": "2026-10-15T08:44:24.118621+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1273,24 +1678,29 @@
           {
             "after_sha256": "d4ba78f403c6f5c5bfcfa0cd395b4c8ce1da5acc77285c3fa91acabad86873fa",
             "before_sha256": "d4ba78f403c6f5c5bfcfa0cd395b4c8ce1da5acc77285c3fa91acabad86873fa",
-            "path": "docs/evidence/C101/econdb/fixtures/econdb/GdpReal.json"
+            "path": "docs/evidence/C101/fixtures/econdb/GdpReal.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -1320,16 +1730,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::GdpReal",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/GdpReal/direct.json",
-        "sha256": "3c94fe855ce8e43f7977fcc26d178506f5b3f7fabb85ba1acd9fb071c4c3e3f4"
+        "path": "docs/evidence/C101/receipts/econdb/GdpReal/direct.json",
+        "sha256": "0fde97173fecbfb883060475af594cafece35e5ac3e237902fff049bb7c2b0d9"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase service --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-14T13:26:17.871892+00:00",
+      "executed_at_utc": "2026-10-15T08:44:25.065317+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1351,24 +1761,29 @@
           {
             "after_sha256": "d4ba78f403c6f5c5bfcfa0cd395b4c8ce1da5acc77285c3fa91acabad86873fa",
             "before_sha256": "d4ba78f403c6f5c5bfcfa0cd395b4c8ce1da5acc77285c3fa91acabad86873fa",
-            "path": "docs/evidence/C101/econdb/fixtures/econdb/GdpReal.json"
+            "path": "docs/evidence/C101/fixtures/econdb/GdpReal.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -1398,16 +1813,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::GdpReal",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/GdpReal/service.json",
-        "sha256": "fd50f61ee9dab22c6c7aafb93d55b6f0d2825ac2a465b8407e999256ecabc881"
+        "path": "docs/evidence/C101/receipts/econdb/GdpReal/service.json",
+        "sha256": "b915978e30d73175ac7e6d3dbf805c4e4795e3759003896fc3903713b558f463"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase contract --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-14T13:26:18.788228+00:00",
+      "executed_at_utc": "2026-10-15T08:44:26.015198+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1429,24 +1844,29 @@
           {
             "after_sha256": "d4ba78f403c6f5c5bfcfa0cd395b4c8ce1da5acc77285c3fa91acabad86873fa",
             "before_sha256": "d4ba78f403c6f5c5bfcfa0cd395b4c8ce1da5acc77285c3fa91acabad86873fa",
-            "path": "docs/evidence/C101/econdb/fixtures/econdb/GdpReal.json"
+            "path": "docs/evidence/C101/fixtures/econdb/GdpReal.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -1476,16 +1896,16 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::GdpReal",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/GdpReal/contract.json",
-        "sha256": "3bb2c46466314692c8032d9debb14dd0c9a6ac6103f68903e638a9145c047d4e"
+        "path": "docs/evidence/C101/receipts/econdb/GdpReal/contract.json",
+        "sha256": "9cece7d61475316379bc9ecf1c3b9c9e78d3df0ef49151cdbcedcd0cfe44768f"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase counterfact --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-14T13:26:19.689469+00:00",
+      "executed_at_utc": "2026-10-15T08:44:26.949242+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1507,24 +1927,29 @@
           {
             "after_sha256": "d4ba78f403c6f5c5bfcfa0cd395b4c8ce1da5acc77285c3fa91acabad86873fa",
             "before_sha256": "d4ba78f403c6f5c5bfcfa0cd395b4c8ce1da5acc77285c3fa91acabad86873fa",
-            "path": "docs/evidence/C101/econdb/fixtures/econdb/GdpReal.json"
+            "path": "docs/evidence/C101/fixtures/econdb/GdpReal.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
-            "before_sha256": "d20b6ce434e2408f2ea022b432e6d4c51e8c429e35ff3cef40dabe45e4227e6f",
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
-            "before_sha256": "6e77038f25eaa00354d993e10b657281ef92d090da933af3ada0f8550a72f072",
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
             "path": "scripts/quality/iter2_claims_fixtures.py"
           },
           {
             "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
             "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
           }
         ],
         "source": [
@@ -1554,250 +1979,870 @@
       "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::GdpReal",
-        "path": "docs/evidence/C101/econdb/receipts/econdb/GdpReal/counterfact.json",
-        "sha256": "b609e2b3adb0ef457b63655402c298ac6885b3282cd46811d4788f711d6590bc"
+        "path": "docs/evidence/C101/receipts/econdb/GdpReal/counterfact.json",
+        "sha256": "4249ad8482a27fe35c5e17daff909c1ea674adb5463c0064ce9678f0f7398356"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase implementation --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-14T13:26:19.690947+00:00",
+      "executed_at_utc": "2026-10-15T08:44:27.904901+00:00",
       "execution_mode": "offline_fixture",
-      "exit_code": 3,
+      "exit_code": 0,
       "phase": "implementation",
       "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "before_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "path": "opendata/data/providers/econdb/models/iter2.py"
+          }
+        ]
       },
       "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
+      "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::PortVolume",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        "path": "docs/evidence/C101/receipts/econdb/PortVolume/implementation.json",
+        "sha256": "1d895c991fa6ed5c4bce99badd77e8e3e257786471e031609bfcfa79b3e5f24f"
       },
-      "status": "BLOCKED",
+      "status": "PASS",
       "upstream_model": "PortVolume"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase direct --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-14T13:26:19.690954+00:00",
+      "executed_at_utc": "2026-10-15T08:44:28.922829+00:00",
       "execution_mode": "offline_fixture",
-      "exit_code": 3,
+      "exit_code": 0,
       "phase": "direct",
       "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "5e4c833b376944211648d1ff7f035f95565a7897ca979809083324a6605dbc8a",
+            "before_sha256": "5e4c833b376944211648d1ff7f035f95565a7897ca979809083324a6605dbc8a",
+            "path": "docs/evidence/C101/fixtures/econdb/PortVolume.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "before_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "path": "opendata/data/providers/econdb/models/iter2.py"
+          }
+        ]
       },
       "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
+      "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::PortVolume",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        "path": "docs/evidence/C101/receipts/econdb/PortVolume/direct.json",
+        "sha256": "cd27335c474899700af4741b5a3b1aec710614a78d474b8e6fce2ba4df2e86cb"
       },
-      "status": "BLOCKED",
+      "status": "PASS",
       "upstream_model": "PortVolume"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase service --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-14T13:26:19.690957+00:00",
+      "executed_at_utc": "2026-10-15T08:44:29.930349+00:00",
       "execution_mode": "offline_fixture",
-      "exit_code": 3,
+      "exit_code": 0,
       "phase": "service",
       "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "5e4c833b376944211648d1ff7f035f95565a7897ca979809083324a6605dbc8a",
+            "before_sha256": "5e4c833b376944211648d1ff7f035f95565a7897ca979809083324a6605dbc8a",
+            "path": "docs/evidence/C101/fixtures/econdb/PortVolume.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "before_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "path": "opendata/data/providers/econdb/models/iter2.py"
+          }
+        ]
       },
       "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
+      "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::PortVolume",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        "path": "docs/evidence/C101/receipts/econdb/PortVolume/service.json",
+        "sha256": "a068e1663c47dc47fb7eb63ca13517c5becd9150c26ccbaa9197c788375f0121"
       },
-      "status": "BLOCKED",
+      "status": "PASS",
       "upstream_model": "PortVolume"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase contract --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-14T13:26:19.690959+00:00",
+      "executed_at_utc": "2026-10-15T08:44:30.949744+00:00",
       "execution_mode": "offline_fixture",
-      "exit_code": 3,
+      "exit_code": 0,
       "phase": "contract",
       "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "5e4c833b376944211648d1ff7f035f95565a7897ca979809083324a6605dbc8a",
+            "before_sha256": "5e4c833b376944211648d1ff7f035f95565a7897ca979809083324a6605dbc8a",
+            "path": "docs/evidence/C101/fixtures/econdb/PortVolume.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "before_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "path": "opendata/data/providers/econdb/models/iter2.py"
+          }
+        ]
       },
       "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
+      "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::PortVolume",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        "path": "docs/evidence/C101/receipts/econdb/PortVolume/contract.json",
+        "sha256": "d5ee2662c30ab4ee111e51b43ade417a81a12ba3eb8d853f45d864aa9712db25"
       },
-      "status": "BLOCKED",
+      "status": "PASS",
       "upstream_model": "PortVolume"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase counterfact --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-14T13:26:19.690960+00:00",
+      "executed_at_utc": "2026-10-15T08:44:31.955303+00:00",
       "execution_mode": "offline_fixture",
-      "exit_code": 3,
+      "exit_code": 0,
       "phase": "counterfact",
       "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "5e4c833b376944211648d1ff7f035f95565a7897ca979809083324a6605dbc8a",
+            "before_sha256": "5e4c833b376944211648d1ff7f035f95565a7897ca979809083324a6605dbc8a",
+            "path": "docs/evidence/C101/fixtures/econdb/PortVolume.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "before_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "path": "opendata/data/providers/econdb/models/iter2.py"
+          }
+        ]
       },
       "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
+      "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::PortVolume",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        "path": "docs/evidence/C101/receipts/econdb/PortVolume/counterfact.json",
+        "sha256": "640d95bf68c71aec770a7caef2c15726c255b16fc6f06ba55e69a09437b36cad"
       },
-      "status": "BLOCKED",
+      "status": "PASS",
       "upstream_model": "PortVolume"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase implementation --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-14T13:26:19.690963+00:00",
+      "executed_at_utc": "2026-10-15T08:44:32.903294+00:00",
       "execution_mode": "offline_fixture",
-      "exit_code": 3,
+      "exit_code": 0,
       "phase": "implementation",
       "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "before_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "path": "opendata/data/providers/econdb/models/iter2.py"
+          }
+        ]
       },
       "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
+      "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::YieldCurve",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        "path": "docs/evidence/C101/receipts/econdb/YieldCurve/implementation.json",
+        "sha256": "6cb390a806b8d327c8749c453cfb36f5adb5a9657b624dfb259525a980f435b8"
       },
-      "status": "BLOCKED",
+      "status": "PASS",
       "upstream_model": "YieldCurve"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase direct --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-14T13:26:19.690964+00:00",
+      "executed_at_utc": "2026-10-15T08:44:33.915117+00:00",
       "execution_mode": "offline_fixture",
-      "exit_code": 3,
+      "exit_code": 0,
       "phase": "direct",
       "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "cef9b2e1587f1c084e8afb2b80fb192d7f919d21166767a3ed4d3ae42e182423",
+            "before_sha256": "cef9b2e1587f1c084e8afb2b80fb192d7f919d21166767a3ed4d3ae42e182423",
+            "path": "docs/evidence/C101/fixtures/econdb/YieldCurve.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "before_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "path": "opendata/data/providers/econdb/models/iter2.py"
+          }
+        ]
       },
       "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
+      "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::YieldCurve",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        "path": "docs/evidence/C101/receipts/econdb/YieldCurve/direct.json",
+        "sha256": "f41dcef3be6e5de669e61069b7dc3ca4fe944b75903b6edae3e906ee599a2aab"
       },
-      "status": "BLOCKED",
+      "status": "PASS",
       "upstream_model": "YieldCurve"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase service --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-14T13:26:19.690969+00:00",
+      "executed_at_utc": "2026-10-15T08:44:34.924617+00:00",
       "execution_mode": "offline_fixture",
-      "exit_code": 3,
+      "exit_code": 0,
       "phase": "service",
       "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "cef9b2e1587f1c084e8afb2b80fb192d7f919d21166767a3ed4d3ae42e182423",
+            "before_sha256": "cef9b2e1587f1c084e8afb2b80fb192d7f919d21166767a3ed4d3ae42e182423",
+            "path": "docs/evidence/C101/fixtures/econdb/YieldCurve.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "before_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "path": "opendata/data/providers/econdb/models/iter2.py"
+          }
+        ]
       },
       "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
+      "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::YieldCurve",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        "path": "docs/evidence/C101/receipts/econdb/YieldCurve/service.json",
+        "sha256": "97f9843a72bb443105cb8e5b3703f1ebb606e80058aa9639ac9375935ceca709"
       },
-      "status": "BLOCKED",
+      "status": "PASS",
       "upstream_model": "YieldCurve"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase contract --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-14T13:26:19.690971+00:00",
+      "executed_at_utc": "2026-10-15T08:44:35.930180+00:00",
       "execution_mode": "offline_fixture",
-      "exit_code": 3,
+      "exit_code": 0,
       "phase": "contract",
       "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "cef9b2e1587f1c084e8afb2b80fb192d7f919d21166767a3ed4d3ae42e182423",
+            "before_sha256": "cef9b2e1587f1c084e8afb2b80fb192d7f919d21166767a3ed4d3ae42e182423",
+            "path": "docs/evidence/C101/fixtures/econdb/YieldCurve.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "before_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "path": "opendata/data/providers/econdb/models/iter2.py"
+          }
+        ]
       },
       "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
+      "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::YieldCurve",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        "path": "docs/evidence/C101/receipts/econdb/YieldCurve/contract.json",
+        "sha256": "421753859a55cbc394d9bd53488b001714f867e58ac390b8218dce9195a4947f"
       },
-      "status": "BLOCKED",
+      "status": "PASS",
       "upstream_model": "YieldCurve"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase counterfact --evidence-root docs/evidence/C101/econdb",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-14T13:26:19.690973+00:00",
+      "executed_at_utc": "2026-10-15T08:44:36.952649+00:00",
       "execution_mode": "offline_fixture",
-      "exit_code": 3,
+      "exit_code": 0,
       "phase": "counterfact",
       "pins": {
-        "contract": [],
-        "contract_version": "sha256:unpinned",
-        "fixture": [],
-        "probe": [],
-        "source": []
+        "contract": [
+          {
+            "after_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "before_sha256": "e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+            "path": "opendata/data/models/econdb.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
+        "fixture": [
+          {
+            "after_sha256": "cef9b2e1587f1c084e8afb2b80fb192d7f919d21166767a3ed4d3ae42e182423",
+            "before_sha256": "cef9b2e1587f1c084e8afb2b80fb192d7f919d21166767a3ed4d3ae42e182423",
+            "path": "docs/evidence/C101/fixtures/econdb/YieldCurve.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "before_sha256": "a81ccf278087aa76df5496ab2df5e57341a4fdda02bc2bf6c7bb9a468ece3b75",
+            "path": "scripts/quality/iter2_witnesses/econdb.py"
+          },
+          {
+            "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+            "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+            "path": "opendata/data/providers/econdb/registration.py"
+          },
+          {
+            "after_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "before_sha256": "5abf4dafc0b1371656d520f805909e7a2195c00ac17f68e96b18f5d8602a060b",
+            "path": "opendata/data/providers/econdb/provider.py"
+          },
+          {
+            "after_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "before_sha256": "99ea56170ad204034414eb4b1f0b86bc71178dce0ab16f33c45c53080288fd15",
+            "path": "opendata/data/providers/econdb/models/iter2.py"
+          }
+        ]
       },
       "provider": "econdb",
-      "reason": "no offline witness configured for this model row",
+      "reason": "witness reported a clean verdict",
       "receipt": {
         "model_identity": "econdb::YieldCurve",
-        "path": "",
-        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        "path": "docs/evidence/C101/receipts/econdb/YieldCurve/counterfact.json",
+        "sha256": "485da58c60e7f0497659cd8856bc72960569d0d29ca155f85e3a59f0b852a69a"
       },
-      "status": "BLOCKED",
+      "status": "PASS",
       "upstream_model": "YieldCurve"
     }
   ],
@@ -1807,12 +2852,27 @@
       "decision": "ACCEPT",
       "provider": "econdb",
       "receipt": {
+        "model_identity": "econdb::AvailableIndicators",
+        "path": "docs/evidence/C101/econdb/primary-reviews/econdb__AvailableIndicators.review.json",
+        "sha256": "0e8c963b07e551b8bb62a69af8345cba68d7bf2db7892b246f202d24105caf47"
+      },
+      "reviewed_at_utc": "2026-10-15T08:57:14Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "AvailableIndicators"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "econdb",
+      "receipt": {
         "model_identity": "econdb::EconomicIndicators",
         "path": "docs/evidence/C101/econdb/primary-reviews/econdb__EconomicIndicators.review.json",
-        "sha256": "e91f8261e1f4c7c00316dcde8b6e35d9d48130d9a509ed31ca9522732ae91e84"
+        "sha256": "f2164f4c503955d57c644d46f7f540af18a935dba2caf8b02efdc5a907cc3b03"
       },
-      "reviewed_at_utc": "2026-10-14T13:26:35Z",
-      "reviewer_id": "iter2-acceptance-reviewer-econdb",
+      "reviewed_at_utc": "2026-10-15T08:57:18Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
       "reviewer_type": "primary_model",
@@ -1824,10 +2884,10 @@
       "receipt": {
         "model_identity": "econdb::GdpNominal",
         "path": "docs/evidence/C101/econdb/primary-reviews/econdb__GdpNominal.review.json",
-        "sha256": "05df3e32b09c9e4d7a4b668fab34846c370fe05daa9da2a3f204f234b7452742"
+        "sha256": "be3a3553f3b826031a0c77310b9430dd130b1504e7ecb39822f046c380ffd292"
       },
-      "reviewed_at_utc": "2026-10-14T13:26:40Z",
-      "reviewer_id": "iter2-acceptance-reviewer-econdb",
+      "reviewed_at_utc": "2026-10-15T08:57:23Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
       "reviewer_type": "primary_model",
@@ -1839,14 +2899,44 @@
       "receipt": {
         "model_identity": "econdb::GdpReal",
         "path": "docs/evidence/C101/econdb/primary-reviews/econdb__GdpReal.review.json",
-        "sha256": "45a6420b90142a69aed17b0e2a5f58c104c45e1ae73d5232908317c2fe31df5e"
+        "sha256": "6f4aaeb3a2448a82bca6c627f4214c143c8f1ed18246680d3a2eb3622e942939"
       },
-      "reviewed_at_utc": "2026-10-14T13:26:45Z",
-      "reviewer_id": "iter2-acceptance-reviewer-econdb",
+      "reviewed_at_utc": "2026-10-15T08:57:28Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
       "reviewer_type": "primary_model",
       "upstream_model": "GdpReal"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "econdb",
+      "receipt": {
+        "model_identity": "econdb::PortVolume",
+        "path": "docs/evidence/C101/econdb/primary-reviews/econdb__PortVolume.review.json",
+        "sha256": "4d138ccd5abf12c1c097571b13bd7e09ae08d568121ea507286b6b23a9f9664a"
+      },
+      "reviewed_at_utc": "2026-10-15T08:57:32Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "PortVolume"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "econdb",
+      "receipt": {
+        "model_identity": "econdb::YieldCurve",
+        "path": "docs/evidence/C101/econdb/primary-reviews/econdb__YieldCurve.review.json",
+        "sha256": "bf252d934c7a5a3ccefc2550a05ea453303c962b2d3765089fdb078ca1a00777"
+      },
+      "reviewed_at_utc": "2026-10-15T08:57:37Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "YieldCurve"
     }
   ],
   "schema_version": 1

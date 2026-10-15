@@ -137,11 +137,28 @@ def _block_real_sockets() -> None:
 
 def _seam_body_bytes(body: Any) -> tuple[bytes, str]:  # noqa: ANN401  # fixture JSON body
     """Encode one fixture response body the way the source itself would publish it."""
+    if isinstance(body, bytes):
+        return body, "application/octet-stream"
     if isinstance(body, str):
         return body.encode("utf-8"), "text/plain"
     if isinstance(body, list) and all(isinstance(line, str) for line in body):
         return "\n".join(body).encode("utf-8"), "text/html"
     return json.dumps(body).encode("utf-8"), "application/json"
+
+
+def _spec_body(spec: dict[str, Any]) -> tuple[bytes, str]:
+    """Resolve one fixture entry's payload, including base64 carriers for non-text documents."""
+    encoded = spec.get("body_b64")
+    if encoded is not None:
+        import base64
+
+        if not isinstance(encoded, str):
+            raise WitnessFailure("body_b64 must be a base64 string")
+        try:
+            return base64.b64decode(encoded, validate=True), "application/octet-stream"
+        except Exception:
+            raise WitnessFailure("body_b64 is not valid base64") from None
+    return _seam_body_bytes(spec.get("body"))
 
 
 class _FakeSharedClient:
@@ -150,6 +167,7 @@ class _FakeSharedClient:
     def __init__(self, responses: list[dict[str, Any]]) -> None:
         self.responses = responses
         self.calls: list[str] = []
+        self._cursors: dict[int, int] = {}
 
     def get(
         self,
@@ -163,19 +181,32 @@ class _FakeSharedClient:
     ) -> Any:  # noqa: ANN401  # returns a requests.Response
         """Return the first fixture response whose ``url_contains`` matches, or fail loudly."""
         self.calls.append(url)
-        for spec in self.responses:
+        for index, spec in enumerate(self.responses):
             needle = spec.get("url_contains")
-            if isinstance(needle, str) and needle in url:
-                import requests
+            if not (isinstance(needle, str) and needle in url):
+                continue
+            sequence = spec.get("sequence")
+            if isinstance(sequence, list) and sequence:
+                cursor = self._cursors.get(index, 0)
+                if cursor >= len(sequence):
+                    raise WitnessFailure(
+                        f"seam sequence for url_contains={needle!r} exhausted after "
+                        f"{len(sequence)} page(s); the source asked for more than the fixture "
+                        "declares"
+                    )
+                self._cursors[index] = cursor + 1
+                body, default_type = _seam_body_bytes(sequence[cursor])
+            else:
+                body, default_type = _spec_body(spec)
+            import requests
 
-                body, default_type = _seam_body_bytes(spec.get("body"))
-                response = requests.Response()
-                response.status_code = int(spec.get("status", 200))
-                response._content = body  # the documented requests fill-in point
-                response.url = url
-                response.reason = "OK"
-                response.headers.update({"Content-Type": spec.get("content_type", default_type)})
-                return response
+            response = requests.Response()
+            response.status_code = int(spec.get("status", 200))
+            response._content = body  # the documented requests fill-in point
+            response.url = url
+            response.reason = "OK"
+            response.headers.update({"Content-Type": spec.get("content_type", default_type)})
+            return response
         raise WitnessFailure(f"client seam fixture covers no response for url={url!r}")
 
 

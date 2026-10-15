@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": ["multiplier"], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": ["multiplier"], "status": null}, "reason": "the declaration types 'multiplier' as an int column (specs.py:111) and the reviewed EconDBAvailableIndicators field is 'int | None', so a roster line that spells the multiplier as the text 'hundred' is not a castable published value: the engine must attribute the failure to the multiplier cell rather than null it away or widen it to a made-up power of ten; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

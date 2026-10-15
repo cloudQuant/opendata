@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COTSearch --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CFTCProviderError", "refusal_code": "CFTC_BAD_DIRECTORY_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CFTCProviderError", "refusal_code": "CFTC_BAD_DIRECTORY_ROW", "rejected": [], "status": null}, "reason": "dropping 'commodity_name' from a directory record leaves the required 'name' column unnameable, so the search must refuse with CFTC_BAD_DIRECTORY_ROW rather than publish an unidentifiable contract market; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

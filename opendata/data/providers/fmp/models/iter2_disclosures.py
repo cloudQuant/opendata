@@ -407,6 +407,7 @@ class CompanyNewsFetcher(_DisclosureFetcher[CompanyNewsQuery, FmpCompanyNews]):
     canonical_model: ClassVar[str | None] = "CompanyNews"
     query_model = CompanyNewsQuery
     record_model = FmpCompanyNews
+    row_model: ClassVar[type[FmpCompanyNews]] = FmpCompanyNews
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_company_news",
@@ -429,6 +430,7 @@ class WorldNewsFetcher(_DisclosureFetcher[WorldNewsQuery, FmpWorldNews]):
     canonical_model: ClassVar[str | None] = "WorldNews"
     query_model = WorldNewsQuery
     record_model = FmpWorldNews
+    row_model: ClassVar[type[ContractModel]] = FmpWorldNews
     check_symbol = False
     capability: ClassVar[Capability] = Capability(
         asset_class="market",
@@ -452,6 +454,7 @@ class CompanyFilingsFetcher(_DisclosureFetcher[CompanyFilingsQuery, FmpCompanyFi
     canonical_model: ClassVar[str | None] = "CompanyFilings"
     query_model = CompanyFilingsQuery
     record_model = FmpCompanyFiling
+    row_model: ClassVar[type[FmpCompanyFiling]] = FmpCompanyFiling
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_company_filings",
@@ -511,6 +514,7 @@ class HistoricalDividendsFetcher(
     canonical_model: ClassVar[str | None] = "HistoricalDividends"
     query_model = HistoricalDividendsQuery
     record_model = FmpHistoricalDividend
+    row_model: ClassVar[type[ContractModel]] = FmpHistoricalDividend
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_historical_dividends",
@@ -533,6 +537,7 @@ class HistoricalSplitsFetcher(_DisclosureFetcher[HistoricalSplitsQuery, FmpHisto
     canonical_model: ClassVar[str | None] = "HistoricalSplits"
     query_model = HistoricalSplitsQuery
     record_model = FmpHistoricalSplit
+    row_model: ClassVar[type[ContractModel]] = FmpHistoricalSplit
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_historical_splits",
@@ -555,6 +560,7 @@ class HistoricalEpsFetcher(_DisclosureFetcher[HistoricalEpsQuery, FmpHistoricalE
     canonical_model: ClassVar[str | None] = "HistoricalEps"
     query_model = HistoricalEpsQuery
     record_model = FmpHistoricalEps
+    row_model: ClassVar[type[ContractModel]] = FmpHistoricalEps
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_historical_eps",
@@ -577,6 +583,7 @@ class HistoricalEmployeesFetcher(
     canonical_model: ClassVar[str | None] = "HistoricalEmployees"
     query_model = HistoricalEmployeesQuery
     record_model = FmpHistoricalEmployee
+    row_model: ClassVar[type[ContractModel]] = FmpHistoricalEmployee
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_historical_employees",
@@ -601,6 +608,7 @@ class HistoricalMarketCapFetcher(
     canonical_model: ClassVar[str | None] = "HistoricalMarketCap"
     query_model = HistoricalMarketCapQuery
     record_model = FmpHistoricalMarketCap
+    row_model: ClassVar[type[ContractModel]] = FmpHistoricalMarketCap
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_historical_market_cap",
@@ -675,6 +683,7 @@ class PriceTargetFetcher(_DisclosureFetcher[PriceTargetQuery, FmpPriceTarget]):
     canonical_model: ClassVar[str | None] = "PriceTarget"
     query_model = PriceTargetQuery
     record_model = FmpPriceTarget
+    row_model: ClassVar[type[ContractModel]] = FmpPriceTarget
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_price_target",
@@ -703,6 +712,7 @@ class PriceTargetConsensusFetcher(
     canonical_model: ClassVar[str | None] = "PriceTargetConsensus"
     query_model = PriceTargetConsensusQuery
     record_model = FmpPriceTargetConsensus
+    row_model: ClassVar[type[ContractModel]] = FmpPriceTargetConsensus
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_price_target_consensus",
@@ -728,6 +738,7 @@ class KeyExecutivesFetcher(_DisclosureFetcher[KeyExecutivesQuery, FmpKeyExecutiv
     canonical_model: ClassVar[str | None] = "KeyExecutives"
     query_model = KeyExecutivesQuery
     record_model = FmpKeyExecutive
+    row_model: ClassVar[type[ContractModel]] = FmpKeyExecutive
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_key_executives",
@@ -767,6 +778,7 @@ class ExecutiveCompensationFetcher(
     canonical_model: ClassVar[str | None] = "ExecutiveCompensation"
     query_model = ExecutiveCompensationQuery
     record_model = FmpExecutiveCompensation
+    row_model: ClassVar[type[ContractModel]] = FmpExecutiveCompensation
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_executive_compensation",
@@ -791,6 +803,7 @@ class GovernmentTradesFetcher(_DisclosureFetcher[GovernmentTradesQuery, FmpGover
     canonical_model: ClassVar[str | None] = "GovernmentTrades"
     query_model = GovernmentTradesQuery
     record_model = FmpGovernmentTrade
+    row_model: ClassVar[type[ContractModel]] = FmpGovernmentTrade
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_government_trades",
@@ -826,6 +839,7 @@ class InsiderTradingFetcher(_DisclosureFetcher[InsiderTradingQuery, FmpInsiderTr
     canonical_model: ClassVar[str | None] = "InsiderTrading"
     query_model = InsiderTradingQuery
     record_model = FmpInsiderTrade
+    row_model: ClassVar[type[ContractModel]] = FmpInsiderTrade
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_insider_trading",
@@ -859,6 +873,7 @@ class InstitutionalOwnershipFetcher(
     canonical_model: ClassVar[str | None] = "InstitutionalOwnership"
     query_model = InstitutionalOwnershipQuery
     record_model = FmpInstitutionalOwnership
+    row_model: ClassVar[type[ContractModel]] = FmpInstitutionalOwnership
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_institutional_ownership",
@@ -888,6 +903,7 @@ class EquityOwnershipFetcher(_DisclosureFetcher[EquityOwnershipQuery, FmpEquityO
     canonical_model: ClassVar[str | None] = "EquityOwnership"
     query_model = EquityOwnershipQuery
     record_model = FmpEquityOwnership
+    row_model: ClassVar[type[ContractModel]] = FmpEquityOwnership
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="fmp_equity_ownership",

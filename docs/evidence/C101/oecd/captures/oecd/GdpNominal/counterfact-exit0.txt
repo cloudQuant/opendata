@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpNominal --phase counterfact --evidence-root docs/evidence/C101/oecd
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_RESPONSE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_RESPONSE", "rejected": [], "status": null}, "reason": "GDP level is contracted to the whole-economy SECTOR=S1 position, so an observation row published with SECTOR=S15 is a different national-accounts series and transform_data's expected_dimensions check must refuse it as OECD_BAD_RESPONSE; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

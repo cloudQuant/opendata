@@ -1,0 +1,1260 @@
+{
+  "claims": [
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:42:27.775146+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "before_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "path": "opendata/data/providers/alpha_vantage/models/_historical.py"
+          },
+          {
+            "after_sha256": "d2670d567bf4d652ca3fbf9785eca8a4d94037b069a5bf88a6ce60d228be8178",
+            "before_sha256": "d2670d567bf4d652ca3fbf9785eca8a4d94037b069a5bf88a6ce60d228be8178",
+            "path": "opendata/data/providers/alpha_vantage/models/equity_historical.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::EquityHistorical",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/EquityHistorical/implementation.json",
+        "sha256": "7a503b3ecf0defbdc6a783dcc03bec854b24d4b7e62b6db852a92760bb2860c0"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:42:28.599412+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "b3357608a2ebf3602f5d77c782887b34cd23ca9d45e2246602b0b4f43e75f315",
+            "before_sha256": "b3357608a2ebf3602f5d77c782887b34cd23ca9d45e2246602b0b4f43e75f315",
+            "path": "docs/evidence/C101/fixtures/alpha_vantage/EquityHistorical.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "before_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "path": "opendata/data/providers/alpha_vantage/models/_historical.py"
+          },
+          {
+            "after_sha256": "d2670d567bf4d652ca3fbf9785eca8a4d94037b069a5bf88a6ce60d228be8178",
+            "before_sha256": "d2670d567bf4d652ca3fbf9785eca8a4d94037b069a5bf88a6ce60d228be8178",
+            "path": "opendata/data/providers/alpha_vantage/models/equity_historical.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::EquityHistorical",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/EquityHistorical/direct.json",
+        "sha256": "65ed26250cccdd7974877e327ae062475b4e14963be045a45f4f567c85b7879e"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:42:29.627260+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "b3357608a2ebf3602f5d77c782887b34cd23ca9d45e2246602b0b4f43e75f315",
+            "before_sha256": "b3357608a2ebf3602f5d77c782887b34cd23ca9d45e2246602b0b4f43e75f315",
+            "path": "docs/evidence/C101/fixtures/alpha_vantage/EquityHistorical.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "before_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "path": "opendata/data/providers/alpha_vantage/models/_historical.py"
+          },
+          {
+            "after_sha256": "d2670d567bf4d652ca3fbf9785eca8a4d94037b069a5bf88a6ce60d228be8178",
+            "before_sha256": "d2670d567bf4d652ca3fbf9785eca8a4d94037b069a5bf88a6ce60d228be8178",
+            "path": "opendata/data/providers/alpha_vantage/models/equity_historical.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::EquityHistorical",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/EquityHistorical/service.json",
+        "sha256": "8dd02c9f7f1b5e3409c04d9ffe66d5e7e21def7737beb8f83eda9db9276d62c0"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:42:30.462812+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "b3357608a2ebf3602f5d77c782887b34cd23ca9d45e2246602b0b4f43e75f315",
+            "before_sha256": "b3357608a2ebf3602f5d77c782887b34cd23ca9d45e2246602b0b4f43e75f315",
+            "path": "docs/evidence/C101/fixtures/alpha_vantage/EquityHistorical.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "before_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "path": "opendata/data/providers/alpha_vantage/models/_historical.py"
+          },
+          {
+            "after_sha256": "d2670d567bf4d652ca3fbf9785eca8a4d94037b069a5bf88a6ce60d228be8178",
+            "before_sha256": "d2670d567bf4d652ca3fbf9785eca8a4d94037b069a5bf88a6ce60d228be8178",
+            "path": "opendata/data/providers/alpha_vantage/models/equity_historical.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::EquityHistorical",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/EquityHistorical/contract.json",
+        "sha256": "ea6a6fc59471bbea48412ac2ce654d1ba0b0f46ea60c03766166d855c74b6742"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:42:31.288430+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "b3357608a2ebf3602f5d77c782887b34cd23ca9d45e2246602b0b4f43e75f315",
+            "before_sha256": "b3357608a2ebf3602f5d77c782887b34cd23ca9d45e2246602b0b4f43e75f315",
+            "path": "docs/evidence/C101/fixtures/alpha_vantage/EquityHistorical.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "before_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "path": "opendata/data/providers/alpha_vantage/models/_historical.py"
+          },
+          {
+            "after_sha256": "d2670d567bf4d652ca3fbf9785eca8a4d94037b069a5bf88a6ce60d228be8178",
+            "before_sha256": "d2670d567bf4d652ca3fbf9785eca8a4d94037b069a5bf88a6ce60d228be8178",
+            "path": "opendata/data/providers/alpha_vantage/models/equity_historical.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::EquityHistorical",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/EquityHistorical/counterfact.json",
+        "sha256": "7300e4a6bd6155c6ab8d4c7c5e258eb85b31296aea52933ff32160edd4efa0a8"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:42:32.137433+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "a54eee39ba5aaee84dd71b033c54e341b75e0112213a4cc0f2ad28b9ece73217",
+            "before_sha256": "a54eee39ba5aaee84dd71b033c54e341b75e0112213a4cc0f2ad28b9ece73217",
+            "path": "opendata/data/providers/alpha_vantage/models/historical_eps.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::HistoricalEps",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/HistoricalEps/implementation.json",
+        "sha256": "7550dd6fb7f83562e10241f5d384090df09df71b736aae5c860b4aacb4852f5d"
+      },
+      "status": "PASS",
+      "upstream_model": "HistoricalEps"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:42:32.973199+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "187177fc27a5b26408d925ab81c04f5f5217a0b310c938bb820a10a681f66434",
+            "before_sha256": "187177fc27a5b26408d925ab81c04f5f5217a0b310c938bb820a10a681f66434",
+            "path": "docs/evidence/C101/fixtures/alpha_vantage/HistoricalEps.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "a54eee39ba5aaee84dd71b033c54e341b75e0112213a4cc0f2ad28b9ece73217",
+            "before_sha256": "a54eee39ba5aaee84dd71b033c54e341b75e0112213a4cc0f2ad28b9ece73217",
+            "path": "opendata/data/providers/alpha_vantage/models/historical_eps.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::HistoricalEps",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/HistoricalEps/direct.json",
+        "sha256": "d06b252ccba037eb59ee197d6efd3a43c76f5eab7a5c46e73ca914b8732c1b84"
+      },
+      "status": "PASS",
+      "upstream_model": "HistoricalEps"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:42:33.953366+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "187177fc27a5b26408d925ab81c04f5f5217a0b310c938bb820a10a681f66434",
+            "before_sha256": "187177fc27a5b26408d925ab81c04f5f5217a0b310c938bb820a10a681f66434",
+            "path": "docs/evidence/C101/fixtures/alpha_vantage/HistoricalEps.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "a54eee39ba5aaee84dd71b033c54e341b75e0112213a4cc0f2ad28b9ece73217",
+            "before_sha256": "a54eee39ba5aaee84dd71b033c54e341b75e0112213a4cc0f2ad28b9ece73217",
+            "path": "opendata/data/providers/alpha_vantage/models/historical_eps.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::HistoricalEps",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/HistoricalEps/service.json",
+        "sha256": "cc5464b477fd375eb1de577754e4e344fe97d4c3db470b4c680906218a19ddc7"
+      },
+      "status": "PASS",
+      "upstream_model": "HistoricalEps"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:42:34.800412+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "187177fc27a5b26408d925ab81c04f5f5217a0b310c938bb820a10a681f66434",
+            "before_sha256": "187177fc27a5b26408d925ab81c04f5f5217a0b310c938bb820a10a681f66434",
+            "path": "docs/evidence/C101/fixtures/alpha_vantage/HistoricalEps.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "a54eee39ba5aaee84dd71b033c54e341b75e0112213a4cc0f2ad28b9ece73217",
+            "before_sha256": "a54eee39ba5aaee84dd71b033c54e341b75e0112213a4cc0f2ad28b9ece73217",
+            "path": "opendata/data/providers/alpha_vantage/models/historical_eps.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::HistoricalEps",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/HistoricalEps/contract.json",
+        "sha256": "52af69004dd5d53dea6d100cae8874db049f16ec116402e8b698f6b401bae2ad"
+      },
+      "status": "PASS",
+      "upstream_model": "HistoricalEps"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:42:35.630729+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "187177fc27a5b26408d925ab81c04f5f5217a0b310c938bb820a10a681f66434",
+            "before_sha256": "187177fc27a5b26408d925ab81c04f5f5217a0b310c938bb820a10a681f66434",
+            "path": "docs/evidence/C101/fixtures/alpha_vantage/HistoricalEps.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "a54eee39ba5aaee84dd71b033c54e341b75e0112213a4cc0f2ad28b9ece73217",
+            "before_sha256": "a54eee39ba5aaee84dd71b033c54e341b75e0112213a4cc0f2ad28b9ece73217",
+            "path": "opendata/data/providers/alpha_vantage/models/historical_eps.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::HistoricalEps",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/HistoricalEps/counterfact.json",
+        "sha256": "9ba7f8d55adbd8bbf8a3ca6bc088555f8173b802b01e2768e7dcd6dfbfd3c94e"
+      },
+      "status": "PASS",
+      "upstream_model": "HistoricalEps"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:42:36.494366+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "before_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "path": "opendata/data/providers/alpha_vantage/models/_historical.py"
+          },
+          {
+            "after_sha256": "276ea6ac618e8bbc57eded5dd8233deecfc7ed121ec1673f1573a5e62598877a",
+            "before_sha256": "276ea6ac618e8bbc57eded5dd8233deecfc7ed121ec1673f1573a5e62598877a",
+            "path": "opendata/data/providers/alpha_vantage/models/etf_historical.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::EtfHistorical",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/EtfHistorical/implementation.json",
+        "sha256": "85886854b076f58af50f2a6c807428611a79f94790353f2c7663d954655b784f"
+      },
+      "status": "PASS",
+      "upstream_model": "EtfHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:42:37.327472+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "7f96cc0a4be096d596cdc9285cc5fce406a25a718691f52ca82314db62302018",
+            "before_sha256": "7f96cc0a4be096d596cdc9285cc5fce406a25a718691f52ca82314db62302018",
+            "path": "docs/evidence/C101/fixtures/alpha_vantage/EtfHistorical.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "before_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "path": "opendata/data/providers/alpha_vantage/models/_historical.py"
+          },
+          {
+            "after_sha256": "276ea6ac618e8bbc57eded5dd8233deecfc7ed121ec1673f1573a5e62598877a",
+            "before_sha256": "276ea6ac618e8bbc57eded5dd8233deecfc7ed121ec1673f1573a5e62598877a",
+            "path": "opendata/data/providers/alpha_vantage/models/etf_historical.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::EtfHistorical",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/EtfHistorical/direct.json",
+        "sha256": "bf1168a7dcea0c3c52cee57b2a3f106b250a8c1fc4c51cbca136700d9a4eb212"
+      },
+      "status": "PASS",
+      "upstream_model": "EtfHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:42:38.305202+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "7f96cc0a4be096d596cdc9285cc5fce406a25a718691f52ca82314db62302018",
+            "before_sha256": "7f96cc0a4be096d596cdc9285cc5fce406a25a718691f52ca82314db62302018",
+            "path": "docs/evidence/C101/fixtures/alpha_vantage/EtfHistorical.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "before_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "path": "opendata/data/providers/alpha_vantage/models/_historical.py"
+          },
+          {
+            "after_sha256": "276ea6ac618e8bbc57eded5dd8233deecfc7ed121ec1673f1573a5e62598877a",
+            "before_sha256": "276ea6ac618e8bbc57eded5dd8233deecfc7ed121ec1673f1573a5e62598877a",
+            "path": "opendata/data/providers/alpha_vantage/models/etf_historical.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::EtfHistorical",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/EtfHistorical/service.json",
+        "sha256": "6af7fd83caf1d9fd88d24733f79bd4f72301e87c50fa92695de3679ec13df791"
+      },
+      "status": "PASS",
+      "upstream_model": "EtfHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:42:39.161695+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "7f96cc0a4be096d596cdc9285cc5fce406a25a718691f52ca82314db62302018",
+            "before_sha256": "7f96cc0a4be096d596cdc9285cc5fce406a25a718691f52ca82314db62302018",
+            "path": "docs/evidence/C101/fixtures/alpha_vantage/EtfHistorical.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "before_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "path": "opendata/data/providers/alpha_vantage/models/_historical.py"
+          },
+          {
+            "after_sha256": "276ea6ac618e8bbc57eded5dd8233deecfc7ed121ec1673f1573a5e62598877a",
+            "before_sha256": "276ea6ac618e8bbc57eded5dd8233deecfc7ed121ec1673f1573a5e62598877a",
+            "path": "opendata/data/providers/alpha_vantage/models/etf_historical.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::EtfHistorical",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/EtfHistorical/contract.json",
+        "sha256": "acef36b14131ffe64ba24ceff7e681b7cd09507db74fdf51ca672ca4fa27d174"
+      },
+      "status": "PASS",
+      "upstream_model": "EtfHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:42:39.988938+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "before_sha256": "a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+            "path": "opendata/data/models/alpha_vantage.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a991e6038fb35728d236bb5f06dddeb3927b702f4cee5f0eb10209822a578228",
+        "fixture": [
+          {
+            "after_sha256": "7f96cc0a4be096d596cdc9285cc5fce406a25a718691f52ca82314db62302018",
+            "before_sha256": "7f96cc0a4be096d596cdc9285cc5fce406a25a718691f52ca82314db62302018",
+            "path": "docs/evidence/C101/fixtures/alpha_vantage/EtfHistorical.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "before_sha256": "e13e71be55517c53b1288790441c49bfef9b3972582ea8d29fb3819ef81713b5",
+            "path": "scripts/quality/iter2_witnesses/alpha_vantage.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "before_sha256": "948ea1792f6d44fa49fe4c4a0fcf764dc58f7f2f2670590c1d32af7a2aa851da",
+            "path": "opendata/data/providers/alpha_vantage/provider.py"
+          },
+          {
+            "after_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "before_sha256": "c3d5cf27a1223686525a4ce17637441122580201a593e89d822f37575ee0373e",
+            "path": "opendata/data/providers/alpha_vantage/client.py"
+          },
+          {
+            "after_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "before_sha256": "bbc23f7f3d4d395a708272503580ec1829ad374ca25ca0ccc1ea9454f1985b0f",
+            "path": "opendata/data/providers/alpha_vantage/models/_historical.py"
+          },
+          {
+            "after_sha256": "276ea6ac618e8bbc57eded5dd8233deecfc7ed121ec1673f1573a5e62598877a",
+            "before_sha256": "276ea6ac618e8bbc57eded5dd8233deecfc7ed121ec1673f1573a5e62598877a",
+            "path": "opendata/data/providers/alpha_vantage/models/etf_historical.py"
+          }
+        ]
+      },
+      "provider": "alpha_vantage",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "alpha_vantage::EtfHistorical",
+        "path": "docs/evidence/C101/receipts/alpha_vantage/EtfHistorical/counterfact.json",
+        "sha256": "263284eab1c496657d001b0573b776d74aae4280dd73a03141c5032a6a104e87"
+      },
+      "status": "PASS",
+      "upstream_model": "EtfHistorical"
+    }
+  ],
+  "generated_at_utc": "2026-10-15T08:42:41.567287+00:00",
+  "generated_by": "scripts/quality/iter2_claims_producer.py",
+  "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
+  "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",
+  "primary_reviews": [],
+  "schema_version": 1
+}

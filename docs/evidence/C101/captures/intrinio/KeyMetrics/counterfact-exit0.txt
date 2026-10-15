@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model KeyMetrics --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_AMBIGUOUS_TAG_MAPPING", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_AMBIGUOUS_TAG_MAPPING", "rejected": [], "status": null}, "reason": "both facts carry the tag 'marketcap', which IntrinioKeyMetricsFetcher maps onto the single column market_cap, and the mapper only tolerates a repeat that agrees with what it already wrote, so two different values for one mapped tag is the contradiction INTRINIO_FINANCIALS_AMBIGUOUS_TAG_MAPPING refuses instead of guessing which capitalization the key metric means; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

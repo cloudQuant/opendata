@@ -1,0 +1,50 @@
+{
+  "responses": [
+    {
+      "body": {
+        "next_page": null,
+        "stock_prices": [
+          {
+            "ask_price": 191.25,
+            "ask_size": 300,
+            "ask_time": "2026-02-17T15:29:59Z",
+            "bid_price": 191.2,
+            "bid_size": 200,
+            "bid_time": "2026-02-17T15:29:59Z",
+            "eod_close_price": 190.1,
+            "exchange_volume": 44109770,
+            "high_price": 192.0,
+            "last_price": 191.23,
+            "last_size": 100,
+            "last_time": "2026-02-17T15:30:00Z",
+            "low_price": 189.8,
+            "market_volume": 52301440,
+            "open_price": 190.55,
+            "security": {
+              "id": "SEC16091",
+              "ticker": "AAPL"
+            },
+            "source": "delayed_sip",
+            "updated_on": "2026-02-17T15:30:01Z"
+          }
+        ]
+      },
+      "url_contains": "USCOMP/prices/realtime"
+    },
+    {
+      "body": {
+        "next_page": null,
+        "securities": [
+          {
+            "exchange_mic": "XNAS",
+            "id": "SEC16091",
+            "name": "Apple Inc Common Stock",
+            "primary_listing": true,
+            "ticker": "AAPL"
+          }
+        ]
+      },
+      "url_contains": "XNAS/securities"
+    }
+  ]
+}

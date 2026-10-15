@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model MoneyMeasures --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "FEDERAL_RESERVE_SHAPE_INVALID", "rejected": ["m2"], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "FEDERAL_RESERVE_SHAPE_INVALID", "rejected": ["m2"], "status": null}, "reason": "FederalReserveMoneyMeasure.m2 is a required non-nullable float and the H.6 declaration therefore carries NO null sentinel on m1/m2 (a sentinel there would rewrite a total the contract refuses to leave null), so a corrupt M2_N.M cell must refuse as FEDERAL_RESERVE_SHAPE_INVALID rejected=('m2',) rather than publish a money stock month with an invented M2; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

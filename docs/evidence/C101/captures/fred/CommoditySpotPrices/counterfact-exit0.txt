@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model CommoditySpotPrices --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "prose in the DHOILNYH leg's 'value' token breaks the required float 'price' column of FredCommoditySpotPrices, whose documented source rule is ASCII numeric text with '.' meaning no price observation, so the twelve-commodity fan-out must refuse with FRED_BAD_OBSERVATION instead of coercing the cell; untampered control produced 24 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

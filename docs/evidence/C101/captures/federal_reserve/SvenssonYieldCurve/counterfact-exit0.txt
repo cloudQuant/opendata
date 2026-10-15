@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SvenssonYieldCurve --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "FEDERAL_RESERVE_SHAPE_INVALID", "rejected": ["sveny10"], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "FEDERAL_RESERVE_SHAPE_INVALID", "rejected": ["sveny10"], "status": null}, "reason": "every one of the 99 series fields of FederalReserveSvenssonYieldCurve is a float | None and the declaration's sentinel list spells exactly the four published tokens '', 'NA', 'ND' and 'N/A', so a cell of 'N/A-ish' is a token the release does not publish: the pivot carries it through and the row model refuses it as FEDERAL_RESERVE_SHAPE_INVALID rejected=('sveny10',) naming the ten-year zero-coupon yield that was never fitted; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

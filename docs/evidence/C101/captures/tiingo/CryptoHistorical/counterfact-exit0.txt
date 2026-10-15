@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CryptoHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "TIINGO_SHAPE_INVALID", "rejected": ["volume"], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "TIINGO_SHAPE_INVALID", "rejected": ["volume"], "status": null}, "reason": "publishing a boolean where CRYPTO_HISTORICAL declares a float 'volume' column is the engine's own numeric guard, so the refusal must be TIINGO_SHAPE_INVALID attributing rejected=('volume',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

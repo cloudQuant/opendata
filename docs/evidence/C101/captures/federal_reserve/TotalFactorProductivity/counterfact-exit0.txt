@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TotalFactorProductivity --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FederalReserveSourceError", "refusal_code": "FEDERAL_RESERVE_BAD_NUMERIC_VALUE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FederalReserveSourceError", "refusal_code": "FEDERAL_RESERVE_BAD_NUMERIC_VALUE", "rejected": [], "status": null}, "reason": "the quarterly tab publishes every factor column as an annualized percent number and the reader coerces each cell with parse_float before FederalReserveTotalFactorProductivity.model_validate, whose dtfp field is a float; a cell spelled 'estimated' is prose where the release prints a number, so the guard must refuse it as FEDERAL_RESERVE_BAD_NUMERIC_VALUE rather than publish a 2019 Q1 TFP growth reading that the source never measured; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

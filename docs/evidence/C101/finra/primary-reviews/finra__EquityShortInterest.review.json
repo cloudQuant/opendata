@@ -1,7 +1,7 @@
 {
   "claims_document": {
     "path": "docs/evidence/C101/finra/claims.json",
-    "sha256": "3fa9f62f565fe4997ea24091c450dd34569df1525c6d67ae9688c34ca744d50f"
+    "sha256": "6b1fc3e425caf1923461c210409a2902187f3cf43378c0e22a0cbb71614a78f5"
   },
   "decision": "ACCEPT",
   "evidence_snapshot": {
@@ -21,8 +21,8 @@
         ],
         "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
         "receipt": {
-          "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/contract.json",
-          "sha256": "bdc8c3ef931d95528a7aa9b0249a2d0f9dfafd8b41384fa12f8a701c17604b82"
+          "path": "docs/evidence/C101/receipts/finra/EquityShortInterest/contract.json",
+          "sha256": "b17736b6125446c52bdb0fd131bdc8287185bcfe299ad4b16935c31e68eb8796"
         },
         "source_pins": [
           {
@@ -67,8 +67,8 @@
         ],
         "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
         "receipt": {
-          "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/counterfact.json",
-          "sha256": "b415005da9974d4fd2b708bcf86f054e5276d351b4222de0f3d0c4c0c4d8807c"
+          "path": "docs/evidence/C101/receipts/finra/EquityShortInterest/counterfact.json",
+          "sha256": "8c63f98eefcc1c2b7573eeeb4a748293a8ef297872df1eb4f26dc53272b90aa9"
         },
         "source_pins": [
           {
@@ -113,8 +113,8 @@
         ],
         "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
         "receipt": {
-          "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/direct.json",
-          "sha256": "0fca53713967fbff343ed01d1a2c0e07e5d3c218ac98d9a7377670d3ce0c9271"
+          "path": "docs/evidence/C101/receipts/finra/EquityShortInterest/direct.json",
+          "sha256": "c1e9fccb7fc1caf0e78ad7c9fc5a2f469dfbfc3237d103dff09ab07d3b89d8b0"
         },
         "source_pins": [
           {
@@ -159,8 +159,8 @@
         ],
         "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
         "receipt": {
-          "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/implementation.json",
-          "sha256": "7713e99a4a7569511eec522d2ca3fe10ff0d1fca060bfef64d713c055a03c1e0"
+          "path": "docs/evidence/C101/receipts/finra/EquityShortInterest/implementation.json",
+          "sha256": "097aef2130e29ca1e64f6bd80613b740953df58989b4e8f451bdba08b4116334"
         },
         "source_pins": [
           {
@@ -205,8 +205,8 @@
         ],
         "contract_version": "sha256:bbd309fe1bfac4373b2a2a4e9d090c797ce551a479ff937e19beda39096ac823",
         "receipt": {
-          "path": "docs/evidence/C101/finra/receipts/finra/EquityShortInterest/service.json",
-          "sha256": "bdb53685815b2d400a0b58c67b00bf14eea0afb4d8a970221654b12721a7c1cc"
+          "path": "docs/evidence/C101/receipts/finra/EquityShortInterest/service.json",
+          "sha256": "684c87c9754026f2788cf5871a1cb4ca4e36809e512a589764e068d99bfa3a5f"
         },
         "source_pins": [
           {
@@ -262,7 +262,7 @@
         "--phase",
         "contract",
         "--evidence-root",
-        "docs/evidence/C101/finra"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -279,7 +279,7 @@
         "--phase",
         "counterfact",
         "--evidence-root",
-        "docs/evidence/C101/finra"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -296,7 +296,7 @@
         "--phase",
         "direct",
         "--evidence-root",
-        "docs/evidence/C101/finra"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -313,7 +313,7 @@
         "--phase",
         "implementation",
         "--evidence-root",
-        "docs/evidence/C101/finra"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -330,15 +330,15 @@
         "--phase",
         "service",
         "--evidence-root",
-        "docs/evidence/C101/finra"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
       "status": "matched"
     }
   },
-  "reviewed_at_utc": "2026-10-14T13:28:48Z",
-  "reviewer_id": "iter2-acceptance-reviewer-finra",
+  "reviewed_at_utc": "2026-10-15T08:58:42Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
   "reviewer_model": "qoder-cli-agent",
   "reviewer_role": "acceptance_reviewer",
   "reviewer_type": "primary_model",

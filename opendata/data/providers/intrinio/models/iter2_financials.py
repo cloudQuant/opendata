@@ -847,6 +847,9 @@ class _StandardizedFinancialFetcher(Fetcher[_FinancialQuery, list[_FinancialPeri
     canonical_model: ClassVar[str]
     statement_code: ClassVar[str]
     output_model: ClassVar[type[IntrinioFinancialPeriod]]
+    #: The contract row the serving path publishes. Declared per statement subclass because the
+    #: domain contract a row belongs to is that subclass's own ``output_model``.
+    row_model: ClassVar[type[ContractModel]]
     tag_mapping: ClassVar[dict[str, str]] = {}
     tag_units: ClassVar[dict[str, str]] = {}
     query_model: ClassVar[type[_FinancialQuery]] = _FinancialQuery
@@ -884,6 +887,9 @@ class IntrinioBalanceSheetFetcher(_StandardizedFinancialFetcher):
     canonical_model = "BalanceSheet"
     statement_code = "balance_sheet_statement"
     output_model = IntrinioBalanceSheet
+    # contract_model('intrinio_balance_sheet') resolves to this class, in
+    # opendata.data.models.intrinio_financials (verified on the gate interpreter).
+    row_model = IntrinioBalanceSheet
     query_model = _BalanceQuery
     tag_mapping = {
         "cashandequivalents": "cash_and_cash_equivalents",
@@ -945,6 +951,9 @@ class IntrinioCashFlowStatementFetcher(_StandardizedFinancialFetcher):
     canonical_model = "CashFlowStatement"
     statement_code = "cash_flow_statement"
     output_model = IntrinioCashFlowStatement
+    # contract_model('intrinio_cash_flow_statement') resolves to this class, in
+    # opendata.data.models.intrinio_financials (verified on the gate interpreter).
+    row_model = IntrinioCashFlowStatement
     tag_mapping = {
         "netincome": "net_income",
         "increasedecreaseinoperatingcapital": "change_in_working_capital",
@@ -980,6 +989,9 @@ class IntrinioIncomeStatementFetcher(_StandardizedFinancialFetcher):
     canonical_model = "IncomeStatement"
     statement_code = "income_statement"
     output_model = IntrinioIncomeStatement
+    # contract_model('intrinio_income_statement') resolves to this class, in
+    # opendata.data.models.intrinio_financials (verified on the gate interpreter).
+    row_model = IntrinioIncomeStatement
     tag_mapping = {
         "operatingrevenue": "operating_revenue",
         "totalrevenue": "revenue",
@@ -1035,6 +1047,9 @@ class IntrinioFinancialRatiosFetcher(_StandardizedFinancialFetcher):
     canonical_model = "FinancialRatios"
     statement_code = "calculations"
     output_model = IntrinioFinancialRatios
+    # contract_model('intrinio_financial_ratios') resolves to this class, in
+    # opendata.data.models.intrinio_financials (verified on the gate interpreter).
+    row_model = IntrinioFinancialRatios
     tag_mapping = {
         "arturnover": "receivables_turnover",
         "apturnover": "payables_turnover",
@@ -1079,6 +1094,9 @@ class IntrinioKeyMetricsFetcher(_StandardizedFinancialFetcher):
     canonical_model = "KeyMetrics"
     statement_code = "calculations"
     output_model = IntrinioKeyMetrics
+    # contract_model('intrinio_key_metrics') resolves to this class, in
+    # opendata.data.models.intrinio_financials (verified on the gate interpreter).
+    row_model = IntrinioKeyMetrics
     tag_mapping = {
         "marketcap": "market_cap",
         "enterprisevalue": "enterprise_value",
@@ -1131,6 +1149,9 @@ class IntrinioReportedFinancialsFetcher(Fetcher[_ReportedQuery, list[_FinancialP
 
     async_mode = "bounded_thread"
     canonical_model = "ReportedFinancials"
+    # contract_model('intrinio_reported_financials') resolves to this class, in
+    # opendata.data.models.intrinio_financials (verified on the gate interpreter).
+    row_model: ClassVar[type[ContractModel]] = IntrinioReportedFinancials
     capability = Capability(
         asset_class="equity",
         domain="intrinio_reported_financials",
@@ -1315,7 +1336,11 @@ class IntrinioForwardEpsEstimatesFetcher(_PagedEstimateFetcher):
     endpoint = "/zacks/eps_estimates"
     response_key = "estimates"
     output_model = IntrinioForwardEpsEstimate
-    row_model = _EpsEstimateRow
+    # The row the serving path publishes is the domain contract, not the wire-parse class
+    # ``page_model`` decodes (``_EpsEstimateRow`` stays reachable through ``_EpsEstimatePage``).
+    # contract_model('intrinio_forward_eps_estimates') resolves to this class, in
+    # opendata.data.models.intrinio_financials (verified on the gate interpreter).
+    row_model = IntrinioForwardEpsEstimate
     page_model = _EpsEstimatePage
     capability = Capability(
         asset_class="equity",
@@ -1602,6 +1627,9 @@ class IntrinioForwardPeEstimatesFetcher(Fetcher[_ForwardPeQuery, _ForwardPeRow])
 
     async_mode = "bounded_thread"
     canonical_model = "ForwardPeEstimates"
+    # contract_model('intrinio_forward_pe_estimates') resolves to this class, in
+    # opendata.data.models.intrinio_financials (verified on the gate interpreter).
+    row_model: ClassVar[type[ContractModel]] = IntrinioForwardPeEstimate
     capability = Capability(
         asset_class="equity",
         domain="intrinio_forward_pe_estimates",

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EtfHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CboeAllAccessError", "refusal_code": "CBOE_LIVEVOL_BAD_REQUIRED_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CboeAllAccessError", "refusal_code": "CBOE_LIVEVOL_BAD_REQUIRED_FIELD", "rejected": [], "status": null}, "reason": "CboeEtfHistorical declares 'close' as a required daily-bar cell and the route publishes underlying_close for every trading day; a quote page whose record omits it is not a bar, so _required_number must refuse the second listed day with CBOE_LIVEVOL_BAD_REQUIRED_FIELD rather than invent a closing print; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

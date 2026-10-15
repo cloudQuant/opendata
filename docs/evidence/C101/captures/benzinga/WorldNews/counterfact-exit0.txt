@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "BENZINGA_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "BENZINGA_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "dropping the 'stocks' array makes the tag-array mapper refuse the record before any row is built; the adapter must surface BENZINGA_SHAPE_INVALID as a ProviderEngineError with the typed refusal shape; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

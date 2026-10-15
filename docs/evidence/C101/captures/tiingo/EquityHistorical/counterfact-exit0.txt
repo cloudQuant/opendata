@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "TIINGO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "TIINGO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "publishing a bar without its documented 'close' cell makes the strict TiingoEquityHistorical build raise, and the adapter must surface it as TIINGO_SHAPE_INVALID rather than shipping a bar with no close; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

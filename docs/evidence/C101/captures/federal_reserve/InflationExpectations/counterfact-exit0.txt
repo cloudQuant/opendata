@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model InflationExpectations --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FederalReserveSourceError", "refusal_code": "FEDERAL_RESERVE_BAD_NUMERIC_VALUE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FederalReserveSourceError", "refusal_code": "FEDERAL_RESERVE_BAD_NUMERIC_VALUE", "rejected": [], "status": null}, "reason": "the SPF workbook keeps its own missing-value spelling '#N/A' and publishes a number everywhere else, and _forecast_value runs the other cells through parse_float(nullable=False) into FederalReserveInflationExpectations.infpgdp1yr; text that is neither the documented token nor a decimal has to refuse as FEDERAL_RESERVE_BAD_NUMERIC_VALUE instead of being dropped into the 2024 Q1 GDP-inflation forecast; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EquityLosers --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "reason": "each loser row is published under the venue that quotes it and the contract declares exchange as required text; without it the same ticker on two venues collapses into one unaddressable row, so the adapter must refuse with FMP_BAD_FIELD; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

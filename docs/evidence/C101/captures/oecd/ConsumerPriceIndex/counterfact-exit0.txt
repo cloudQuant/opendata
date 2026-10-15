@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model ConsumerPriceIndex --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "OBS_VALUE is the contract's numeric CPI reading, so an observation cell that is not a parseable finite number must be refused by _record_rows as OECD_BAD_OBSERVATION instead of being coerced or dropped; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

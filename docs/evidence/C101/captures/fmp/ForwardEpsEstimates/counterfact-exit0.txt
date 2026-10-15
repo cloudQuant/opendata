@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model ForwardEpsEstimates --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["num_analysts_eps"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["num_analysts_eps"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the forward EPS row carries the analyst count behind the consensus, which is what makes the band interpretable; a projection without it cannot report coverage, so the adapter must refuse with FMP_BAD_SHAPE attributing missing=('num_analysts_eps',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

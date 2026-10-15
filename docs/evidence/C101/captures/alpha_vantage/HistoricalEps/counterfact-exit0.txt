@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "AlphaVantageResponseError", "refusal_code": "ALPHA_VANTAGE_BAD_RESPONSE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "AlphaVantageResponseError", "refusal_code": "ALPHA_VANTAGE_BAD_RESPONSE", "rejected": [], "status": null}, "reason": "EARNINGS records are contracted to ISO fiscal dates, so a quarterly entry whose fiscalDateEnding is the impossible date '2024-13-99' must be refused by _parse_earnings_record as AlphaVantageResponseError instead of being emitted with an invented reporting period; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model CalendarIpo --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": ["share_count"], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": ["share_count"], "status": null}, "reason": "share_count is declared int, and pydantic silently widens True to 1 share, so the numeric guard that refuses a published boolean must attribute the offending column: INTRINIO_SHAPE_INVALID with rejected=('share_count',); untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

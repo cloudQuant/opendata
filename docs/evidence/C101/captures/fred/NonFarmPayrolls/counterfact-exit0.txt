@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model NonFarmPayrolls --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "prose in a release-table series node's 'value' breaks the required float 'value' column of FredNonFarmPayroll, which is read only through _parse_value's numeric text or '.' rule, so the release-table walk must refuse with FRED_BAD_OBSERVATION instead of publishing an invented payroll level; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

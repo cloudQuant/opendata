@@ -6,7 +6,7 @@ import math
 import re
 from collections.abc import Mapping
 from datetime import date as _date
-from typing import TYPE_CHECKING, Literal, TypedDict, overload
+from typing import TYPE_CHECKING, ClassVar, Literal, TypedDict, overload
 
 from pydantic import StrictInt, StrictStr, field_validator, model_validator
 
@@ -96,6 +96,7 @@ class AlphaVantageHistoricalEpsFetcher(
     )
     async_mode = "bounded_thread"
     canonical_model = "HistoricalEps"
+    row_model: ClassVar[type[AlphaVantageHistoricalEps]] = AlphaVantageHistoricalEps
 
     def __init__(self, *, client: AlphaVantageClient | None = None) -> None:
         """Use the supplied Alpha Vantage client or configure the shared client."""

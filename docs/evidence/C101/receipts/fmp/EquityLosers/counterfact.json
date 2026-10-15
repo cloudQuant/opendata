@@ -1,0 +1,184 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/fmp/EquityLosers/counterfact-exit0.txt",
+    "sha256": "3e26f86381f36e802a85260eab76f7dd720e123e885c2f2bd658248478449c03",
+    "size_bytes": 853,
+    "stdout_excerpt": "COUNTERFACT_JSON={\"expected\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"FMPProviderError\", \"refusal_code\": \"FMP_BAD_FIELD\", \"rejected\": [], \"status\": null}, \"observed\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"FMPProviderError\", \"refusal_code\": \"FMP_BAD_FIELD\", \"rejected\": [], \"status\": null}, \"reason\": \"each loser row is published under the venue that quotes it and the contract declares exchange as required text; without it the same ticker on two venues collapses into one unaddressable row, so the adapter must refuse with FMP_BAD_FIELD; untampered control produced 3 row(s) through the same seam\"}\nVERDICT=PASS\n"
+  },
+  "counterfact": {
+    "expected": {
+      "invalid": [],
+      "missing": [],
+      "refusal_class": "FMPProviderError",
+      "refusal_code": "FMP_BAD_FIELD",
+      "rejected": [],
+      "status": null
+    },
+    "observed": {
+      "invalid": [],
+      "missing": [],
+      "refusal_class": "FMPProviderError",
+      "refusal_code": "FMP_BAD_FIELD",
+      "rejected": [],
+      "status": null
+    },
+    "reason": "each loser row is published under the venue that quotes it and the contract declares exchange as required text; without it the same ticker on two venues collapses into one unaddressable row, so the adapter must refuse with FMP_BAD_FIELD; untampered control produced 3 row(s) through the same seam"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EquityLosers --phase counterfact --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-15T08:46:52.837564+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "3f7833d62f60e3a6f4b01d3cbfdd45ca2787c864bb3db0fb06fc93e9c81e2519",
+          "before_sha256": "3f7833d62f60e3a6f4b01d3cbfdd45ca2787c864bb3db0fb06fc93e9c81e2519",
+          "path": "opendata/data/models/fmp_market.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:3f7833d62f60e3a6f4b01d3cbfdd45ca2787c864bb3db0fb06fc93e9c81e2519",
+      "fixture": [
+        {
+          "after_sha256": "652ba54b9ea3b2e550864a0cd47b8d3db8b61aa1bbbb7865a19b1fb5de5b255a",
+          "before_sha256": "652ba54b9ea3b2e550864a0cd47b8d3db8b61aa1bbbb7865a19b1fb5de5b255a",
+          "path": "docs/evidence/C101/fixtures/fmp/EquityLosers.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+          "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "8562168999b3b218070586290b5adb39dcb230d12137402a3fb4ea45643e0b35",
+          "before_sha256": "8562168999b3b218070586290b5adb39dcb230d12137402a3fb4ea45643e0b35",
+          "path": "scripts/quality/iter2_witnesses/fmp.py"
+        },
+        {
+          "after_sha256": "f716840efc522d512499a8691b666d198fed926d054a541a3ee1e10f55c270d0",
+          "before_sha256": "f716840efc522d512499a8691b666d198fed926d054a541a3ee1e10f55c270d0",
+          "path": "scripts/quality/iter2_witnesses/_parts/fmp/rows_a.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+          "before_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+          "path": "opendata/data/providers/fmp/registration.py"
+        },
+        {
+          "after_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+          "before_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+          "path": "opendata/data/providers/fmp/provider.py"
+        },
+        {
+          "after_sha256": "e720f1b1db55a707f661db592ef26a97ab03e4104bd9972607146f95b6f67d22",
+          "before_sha256": "e720f1b1db55a707f661db592ef26a97ab03e4104bd9972607146f95b6f67d22",
+          "path": "opendata/data/providers/fmp/models/iter2_market.py"
+        },
+        {
+          "after_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+          "before_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+          "path": "opendata/data/providers/fmp/models/_client.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "fmp::EquityLosers",
+  "phase": "counterfact",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "3f7833d62f60e3a6f4b01d3cbfdd45ca2787c864bb3db0fb06fc93e9c81e2519",
+        "before_sha256": "3f7833d62f60e3a6f4b01d3cbfdd45ca2787c864bb3db0fb06fc93e9c81e2519",
+        "path": "opendata/data/models/fmp_market.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:3f7833d62f60e3a6f4b01d3cbfdd45ca2787c864bb3db0fb06fc93e9c81e2519",
+    "fixture": [
+      {
+        "after_sha256": "652ba54b9ea3b2e550864a0cd47b8d3db8b61aa1bbbb7865a19b1fb5de5b255a",
+        "before_sha256": "652ba54b9ea3b2e550864a0cd47b8d3db8b61aa1bbbb7865a19b1fb5de5b255a",
+        "path": "docs/evidence/C101/fixtures/fmp/EquityLosers.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+        "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "8562168999b3b218070586290b5adb39dcb230d12137402a3fb4ea45643e0b35",
+        "before_sha256": "8562168999b3b218070586290b5adb39dcb230d12137402a3fb4ea45643e0b35",
+        "path": "scripts/quality/iter2_witnesses/fmp.py"
+      },
+      {
+        "after_sha256": "f716840efc522d512499a8691b666d198fed926d054a541a3ee1e10f55c270d0",
+        "before_sha256": "f716840efc522d512499a8691b666d198fed926d054a541a3ee1e10f55c270d0",
+        "path": "scripts/quality/iter2_witnesses/_parts/fmp/rows_a.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+        "before_sha256": "8669f10c515272cfe6d020f7365695afcd5a8d7ba3596d5a0437da53d42b657e",
+        "path": "opendata/data/providers/fmp/registration.py"
+      },
+      {
+        "after_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+        "before_sha256": "a5de88540f76eec9d8e782a1b12b723af3d9e94ccc43a5c6a5e1c4941187012e",
+        "path": "opendata/data/providers/fmp/provider.py"
+      },
+      {
+        "after_sha256": "e720f1b1db55a707f661db592ef26a97ab03e4104bd9972607146f95b6f67d22",
+        "before_sha256": "e720f1b1db55a707f661db592ef26a97ab03e4104bd9972607146f95b6f67d22",
+        "path": "opendata/data/providers/fmp/models/iter2_market.py"
+      },
+      {
+        "after_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+        "before_sha256": "988904dc77e2c9cb882ffce46489d18fbb9f67173f534b2fa9126be5ad71a823",
+        "path": "opendata/data/providers/fmp/models/_client.py"
+      }
+    ]
+  },
+  "provider": "fmp",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-fmp-EquityLosers",
+  "upstream_model": "EquityLosers"
+}

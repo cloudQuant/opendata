@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerPositioning --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FederalReserveSourceError", "refusal_code": "FEDERAL_RESERVE_BAD_DATE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FederalReserveSourceError", "refusal_code": "FEDERAL_RESERVE_BAD_DATE", "rejected": [], "status": null}, "reason": "the contract's date field is a datetime.date and the reader requires the canonical YYYY-MM-DD spelling the endpoint publishes, so a day-month-ordered cell must refuse as FEDERAL_RESERVE_BAD_DATE instead of being reinterpreted into the wrong week's position; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

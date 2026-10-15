@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquityQuote --phase counterfact --evidence-root docs/evidence/C101/tradier
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "TradierProviderError", "refusal_code": "TRADIER_WRONG_SECURITY_TYPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "TradierProviderError", "refusal_code": "TRADIER_WRONG_SECURITY_TYPE", "rejected": [], "status": null}, "reason": "EquityQuote is contracted to the stock security type, so a quote payload that answers 'AAPL' with type='etf' must be refused by transform_data as TRADIER_WRONG_SECURITY_TYPE instead of being emitted as a stock quote; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

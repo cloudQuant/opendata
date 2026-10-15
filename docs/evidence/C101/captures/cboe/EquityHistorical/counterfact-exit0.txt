@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CboeAllAccessError", "refusal_code": "CBOE_LIVEVOL_BAD_NUMERIC_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CboeAllAccessError", "refusal_code": "CBOE_LIVEVOL_BAD_NUMERIC_FIELD", "rejected": [], "status": null}, "reason": "the route documents underlying_open as a quote number and the CboeEquityHistorical 'open' cell is read through _required_number; publishing a boolean where the first trading day's bar should be is the adapter's numeric guard (pydantic would widen True to 1.0), so the adapter must refuse the page with CBOE_LIVEVOL_BAD_NUMERIC_FIELD rather than emit a bar whose open is a flag; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

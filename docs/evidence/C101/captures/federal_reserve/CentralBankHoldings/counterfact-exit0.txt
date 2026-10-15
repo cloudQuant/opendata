@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model CentralBankHoldings --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FederalReserveSourceError", "refusal_code": "FEDERAL_RESERVE_BAD_NUMERIC_VALUE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FederalReserveSourceError", "refusal_code": "FEDERAL_RESERVE_BAD_NUMERIC_VALUE", "rejected": [], "status": null}, "reason": "the SOMA summary publishes total as a dollar amount and the reader converts it with parse_decimal into the contract's Decimal | None FederalReserveCentralBankHolding.total; a JSON boolean is the one spelling that guard refuses outright (FEDERAL_RESERVE_BAD_NUMERIC_VALUE) rather than letting True become one thousand dollars of holdings, and the guard attributes no column so both faces stay empty; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

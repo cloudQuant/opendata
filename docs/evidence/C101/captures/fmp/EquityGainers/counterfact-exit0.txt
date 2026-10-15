@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EquityGainers --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "reason": "the movers routes rank rows by changePercentage, a JSON number in percentage points; a sign-and-unit formatted string is not that number, so the adapter must refuse with FMP_BAD_FIELD instead of ordering the board on a guessed value; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model InsiderTrading --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": ["report_line_number"], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": ["report_line_number"], "status": null}, "reason": "report_line_number is declared int on the exploded transaction row, so a filing that publishes a flag in the line-number cell is the boolean-in-numeric-column refusal attributed to that column: INTRINIO_SHAPE_INVALID with rejected=('report_line_number',); untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

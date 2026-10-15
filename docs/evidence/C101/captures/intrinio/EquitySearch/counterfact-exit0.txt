@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model EquitySearch --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["intrinio_id"], "refusal_class": "ProviderEngineError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["intrinio_id"], "refusal_class": "ProviderEngineError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "intrinio_id is declared required with source_key 'id', so a search hit without the upstream id cannot be addressed in the catalog and the engine must refuse with INTRINIO_SHAPE_INVALID attributing missing=('intrinio_id',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

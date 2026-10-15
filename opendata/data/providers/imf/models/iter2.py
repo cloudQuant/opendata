@@ -285,6 +285,7 @@ class ImfConsumerPriceIndexFetcher(Fetcher[ImfCpiQuery, _CpiRaw]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "ConsumerPriceIndex"
+    row_model: ClassVar[type[ImfConsumerPriceIndex]] = ImfConsumerPriceIndex
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_imf_cpi",
@@ -457,6 +458,7 @@ class ImfDirectionOfTradeFetcher(Fetcher[ImfDotQuery, _DotRaw]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "DirectionOfTrade"
+    row_model: ClassVar[type[ImfDirectionOfTrade]] = ImfDirectionOfTrade
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_imf_direction_of_trade",
@@ -720,6 +722,7 @@ class ImfEconomicIndicatorFetcher(Fetcher[ImfEconomicIndicatorQuery, _EconomicRa
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "EconomicIndicators"
+    row_model: ClassVar[type[ImfEconomicIndicator]] = ImfEconomicIndicator
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_imf_indicators",
@@ -976,6 +979,7 @@ class ImfAvailableIndicatorsFetcher(Fetcher[ImfAvailableIndicatorQuery, list[dic
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "AvailableIndicators"
+    row_model: ClassVar[type[ImfAvailableIndicator]] = ImfAvailableIndicator
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_imf_available_indicators",

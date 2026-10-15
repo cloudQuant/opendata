@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model FredSeries --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioShapeError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioShapeError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "the index history endpoint documents its observations under the historical_data pointer, so a document without that list is INTRINIO_SHAPE_INVALID rather than an empty series that would read as a legitimate zero; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

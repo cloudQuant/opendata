@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SecFiling --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_FILING_INDEX_BAD_NAME", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_FILING_INDEX_BAD_NAME", "rejected": [], "status": null}, "reason": "documents is a declared contract column of filing document names, and the index.json listing publishes a name for every member, so an item with no name cannot address a document and must be refused; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

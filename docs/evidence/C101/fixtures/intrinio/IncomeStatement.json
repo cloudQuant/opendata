@@ -1,0 +1,89 @@
+{
+  "responses": [
+    {
+      "body": {
+        "company": {
+          "cik": "0000320193",
+          "id": "com_aapl",
+          "lei": "X0ZZ0WYF7QIF98IC0L06",
+          "name": "Apple Inc.",
+          "ticker": "AAPL"
+        },
+        "fundamental": {
+          "company": {
+            "cik": "0000320193",
+            "id": "com_aapl",
+            "lei": "X0ZZ0WYF7QIF98IC0L06",
+            "name": "Apple Inc.",
+            "ticker": "AAPL"
+          },
+          "end_date": "2024-12-31",
+          "filing_date": "2025-02-03T13:00:00Z",
+          "fiscal_period": "FY",
+          "fiscal_year": 2024,
+          "id": "fund_AAPL_2024_FY",
+          "is_latest": true,
+          "start_date": "2024-01-01",
+          "statement_code": "income_statement",
+          "type": "reported"
+        },
+        "next_page": null,
+        "standardized_financials": [
+          {
+            "data_tag": {
+              "balance": "credit",
+              "factor": "+",
+              "id": "tag_totalrevenue",
+              "name": "Totalrevenue",
+              "parent": "Revenues",
+              "sequence": 1,
+              "tag": "totalrevenue",
+              "unit": "USD"
+            },
+            "value": 383285000000
+          },
+          {
+            "data_tag": {
+              "balance": "credit",
+              "factor": "+",
+              "id": "tag_basiceps",
+              "name": "Basiceps",
+              "parent": "Revenues",
+              "sequence": 2,
+              "tag": "basiceps",
+              "unit": "USD Per Share"
+            },
+            "value": 6.08
+          }
+        ]
+      },
+      "url_contains": "standardized_financials"
+    },
+    {
+      "body": {
+        "company": {
+          "cik": "0000320193",
+          "id": "com_aapl",
+          "lei": "X0ZZ0WYF7QIF98IC0L06",
+          "name": "Apple Inc.",
+          "ticker": "AAPL"
+        },
+        "fundamentals": [
+          {
+            "end_date": "2024-12-31",
+            "filing_date": "2025-02-03T13:00:00Z",
+            "fiscal_period": "FY",
+            "fiscal_year": 2024,
+            "id": "fund_AAPL_2024_FY",
+            "is_latest": true,
+            "start_date": "2024-01-01",
+            "statement_code": "income_statement",
+            "type": "reported"
+          }
+        ],
+        "next_page": null
+      },
+      "url_contains": "companies"
+    }
+  ]
+}

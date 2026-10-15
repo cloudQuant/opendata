@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model MarketSnapshots --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "reason": "batch-exchange-quote publishes volume as a JSON integer share count, and the contract keeps it integral; a magnitude-suffixed string is not that integer, so the adapter must refuse with FMP_BAD_FIELD rather than store a rounded guess; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,7 +1,7 @@
 {
   "claims_document": {
     "path": "docs/evidence/C101/multpl/claims.json",
-    "sha256": "1be7c96bde66bdfc93e10ed5db3b760a52acc257d9d95c7da6278bf6c3bbb7bb"
+    "sha256": "12de05699e2fcc80482b286649b859eba27b184e4c63a38acc3deb8bbe58a781"
   },
   "decision": "ACCEPT",
   "evidence_snapshot": {
@@ -21,8 +21,8 @@
         ],
         "contract_version": "sha256:e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
         "receipt": {
-          "path": "docs/evidence/C101/multpl/receipts/multpl/SP500Multiples/contract.json",
-          "sha256": "a762014d1faf52c0a96d422620d3192b8ceca88a2b7e0046b5ee79cf35bd214f"
+          "path": "docs/evidence/C101/receipts/multpl/SP500Multiples/contract.json",
+          "sha256": "72b026d8b3745b862d3daefbc79e691ae1943b5829fd3b669d6914b7095a8c54"
         },
         "source_pins": [
           {
@@ -67,8 +67,8 @@
         ],
         "contract_version": "sha256:e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
         "receipt": {
-          "path": "docs/evidence/C101/multpl/receipts/multpl/SP500Multiples/counterfact.json",
-          "sha256": "fc7a272bd3d10eb446d6a42b5bc95ea47613601b54256887776a9bac80193734"
+          "path": "docs/evidence/C101/receipts/multpl/SP500Multiples/counterfact.json",
+          "sha256": "56cff16585230d26516669ceda274d5dbd8202c94a13615259e968fb99219e41"
         },
         "source_pins": [
           {
@@ -113,8 +113,8 @@
         ],
         "contract_version": "sha256:e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
         "receipt": {
-          "path": "docs/evidence/C101/multpl/receipts/multpl/SP500Multiples/direct.json",
-          "sha256": "2b8a3f93a7b8dc114d62ba8abd22444bc0b68a0ecc90ed9b71303d498bb209cb"
+          "path": "docs/evidence/C101/receipts/multpl/SP500Multiples/direct.json",
+          "sha256": "1945a907ca3f10c2f2a200c0107656eb58e3ca2c7966a25251f3ee137ef5d4fb"
         },
         "source_pins": [
           {
@@ -159,8 +159,8 @@
         ],
         "contract_version": "sha256:e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
         "receipt": {
-          "path": "docs/evidence/C101/multpl/receipts/multpl/SP500Multiples/implementation.json",
-          "sha256": "7330e2468b755815b28b8e627a70c22157a2f8cb19f4bec6f354b5aff743076b"
+          "path": "docs/evidence/C101/receipts/multpl/SP500Multiples/implementation.json",
+          "sha256": "b69fb6a21c4e4458baeb7ef267e12ac2f5b034fa52907a300f1ed27111092ec7"
         },
         "source_pins": [
           {
@@ -205,8 +205,8 @@
         ],
         "contract_version": "sha256:e1d65adbf8090a5135b85dcbace26f1d6ec6354ccae63619e00d58251255137e",
         "receipt": {
-          "path": "docs/evidence/C101/multpl/receipts/multpl/SP500Multiples/service.json",
-          "sha256": "3bd4340d4ca2cea0edc062913ceaea48646754da988a0517e4bb31030aa55ec9"
+          "path": "docs/evidence/C101/receipts/multpl/SP500Multiples/service.json",
+          "sha256": "d49a91c02bf71aa0655d330f0b44771e7500842a9d791aa42e77836f8420864f"
         },
         "source_pins": [
           {
@@ -262,7 +262,7 @@
         "--phase",
         "contract",
         "--evidence-root",
-        "docs/evidence/C101/multpl"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -279,7 +279,7 @@
         "--phase",
         "counterfact",
         "--evidence-root",
-        "docs/evidence/C101/multpl"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -296,7 +296,7 @@
         "--phase",
         "direct",
         "--evidence-root",
-        "docs/evidence/C101/multpl"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -313,7 +313,7 @@
         "--phase",
         "implementation",
         "--evidence-root",
-        "docs/evidence/C101/multpl"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -330,15 +330,15 @@
         "--phase",
         "service",
         "--evidence-root",
-        "docs/evidence/C101/multpl"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
       "status": "matched"
     }
   },
-  "reviewed_at_utc": "2026-10-14T13:19:50Z",
-  "reviewer_id": "iter2-acceptance-reviewer-multpl",
+  "reviewed_at_utc": "2026-10-15T09:05:43Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
   "reviewer_model": "qoder-cli-agent",
   "reviewer_role": "acceptance_reviewer",
   "reviewer_type": "primary_model",

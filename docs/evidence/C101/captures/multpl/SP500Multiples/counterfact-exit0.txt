@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "MultplProviderError", "refusal_code": "MULTPL_BAD_VALUE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "MultplProviderError", "refusal_code": "MULTPL_BAD_VALUE", "rejected": [], "status": null}, "reason": "publishing a Value cell of 'NaN' where the contract declares a finite decimal ratio must make the table parser refuse the page with MULTPL_BAD_VALUE rather than emit an observation the strict SP500Multiples row (allow_inf_nan=False) could never hold; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

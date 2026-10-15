@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpReal --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "OecdGdpReal.value is a required non-null float, so an observation cell carrying OECD's missing marker '..' must be refused by _record_rows as OECD_BAD_OBSERVATION instead of producing a null real-GDP row; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

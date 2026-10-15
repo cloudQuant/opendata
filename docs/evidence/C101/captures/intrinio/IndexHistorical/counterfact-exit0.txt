@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model IndexHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "_get_pages keeps every cursor it has already followed and raises the moment a page hands one out again, because a repeating cursor is the upstream telling it to walk the same window over; the second page re-offering 'cursor-2' must therefore be refused instead of looped until the 20-page ceiling truncates the level series; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

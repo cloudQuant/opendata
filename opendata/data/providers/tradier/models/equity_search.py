@@ -57,6 +57,7 @@ class TradierEquitySearchFetcher(Fetcher[TradierEquitySearchQuery, list[dict[str
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "EquitySearch"
+    row_model: ClassVar[type[TradierEquitySearch]] = TradierEquitySearch
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="tradier_equity_search",

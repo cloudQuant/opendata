@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model TreasuryRates --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["year30"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["year30"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "one Treasury observation carries every documented maturity, the 30-year column included, even when the rate is unreported for a session; a wide row that omits the key does not state the long end, so the adapter must refuse with FMP_BAD_SHAPE attributing missing=('year30',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

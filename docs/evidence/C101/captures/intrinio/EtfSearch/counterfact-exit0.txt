@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model EtfSearch --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "the cursor contract is 'a nonempty string or null', and _get_pages raises on a whitespace-only string rather than treating it as terminal, because an empty cursor is what a broken upstream page looks like: the search must refuse instead of ending the directory walk early; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,29 @@
+python scripts/quality/check_brand.py
+FAIL: 4 brand/rename problem(s) found.
+== brand tokens ==
+FAIL: 4 occurrence(s) of 'akshare_web':
+  LICENSE-REVIEW.md:115: 5. 自研 provider 存在 AI 来源审查，但当前 12 包缺少按仓库要求签署/留档的逐包来源记录；`akshare_web` 遗产和前端也未据本次只读检查获得完整的权属链证明。
+  LICENSE-REVIEW.md:130: | `README.md:11`、`CODE_QUALITY.md:5,25-34` | README 自述由 `akshare_web` 完整拷贝重构，质量规范也记录其遗产；“自研质量层”标签不足以证明所有旧代码可重许可。 |
+  LICENSE-REVIEW.md:184: | `akshare_web` 遗产、现有 `opendata/` 和前端 | 来源版本、原许可、作者及授权链；不能只凭 cloudQuant 提交名 | 阻塞整仓替换。 |
+  LICENSE-SCOPE-DRAFT.md:41: | 既有 `opendata/`、`scripts/`、`alembic/`、`alembic_data/`、`frontend/`、SDK、文档 | 仅登记为核对候选，不直接改许可 | `akshare_web` 遗产来源、上游许可、其他贡献者和素材权利；不能凭目录/提交名判断 |
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:150
+  .env.example:151
+  .env.example:152
+  .env.example:153
+  .pre-commit-config.yaml:5
+make: *** [brand-check] Error 1

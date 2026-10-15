@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CompareCompanyFacts --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_XBRL_BAD_FACT", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_XBRL_BAD_FACT", "rejected": [], "status": null}, "reason": "form is a declared contract column naming the filing that reported the fact, so an observation published with an empty form must be refused rather than attributed to an unknown report type; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

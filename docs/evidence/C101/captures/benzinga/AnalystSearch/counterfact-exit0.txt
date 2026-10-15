@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "BENZINGA_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "BENZINGA_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "removing 'ratings_accuracy' from the analyst record makes the nested accuracy mapper raise, and the adapter must surface BENZINGA_SHAPE_INVALID as a ProviderEngineError with the typed refusal shape; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

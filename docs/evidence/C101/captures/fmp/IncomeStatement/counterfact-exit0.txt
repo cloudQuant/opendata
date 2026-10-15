@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model IncomeStatement --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": ["revenue"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": ["revenue"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the income statement publishes revenue in reported-currency units as a JSON integer; prose where a statement amount belongs is not an amount, so the adapter must refuse with FMP_BAD_SHAPE attributing invalid=('revenue',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,371 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/intrinio/claims.json",
+    "sha256": "f755c2285423625c72528acf6a90a0001c79ced32935a471be3b9841cbefe078"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+            "before_sha256": "6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+            "path": "opendata/data/models/intrinio_snapshots_clean.py"
+          },
+          {
+            "after_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "before_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "path": "opendata/data/models/intrinio_market_clean.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/MarketSnapshots/contract.json",
+          "sha256": "287b9709398d1c42bdf24717a7a00db4d478451bdbecf71d370e50703daf129f"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "c4093a4063bb9c9f3de620ad23bafd41a64919d23121b9830fbc96a1b408d7a2",
+            "before_sha256": "c4093a4063bb9c9f3de620ad23bafd41a64919d23121b9830fbc96a1b408d7a2",
+            "path": "opendata/data/providers/intrinio/models/iter2_snapshots_clean.py"
+          },
+          {
+            "after_sha256": "d89e616a2f487005b9d8c2d3222a5e93d3c6c15bbaf0af9b8bc94aa50a82e79b",
+            "before_sha256": "d89e616a2f487005b9d8c2d3222a5e93d3c6c15bbaf0af9b8bc94aa50a82e79b",
+            "path": "opendata/data/providers/intrinio/models/iter2_market_clean.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+            "before_sha256": "6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+            "path": "opendata/data/models/intrinio_snapshots_clean.py"
+          },
+          {
+            "after_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "before_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "path": "opendata/data/models/intrinio_market_clean.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/MarketSnapshots/counterfact.json",
+          "sha256": "d0c15c2910f2efa768e3cce4b93ac0e8c899ae32f323ca1b9a46992018f4347d"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "c4093a4063bb9c9f3de620ad23bafd41a64919d23121b9830fbc96a1b408d7a2",
+            "before_sha256": "c4093a4063bb9c9f3de620ad23bafd41a64919d23121b9830fbc96a1b408d7a2",
+            "path": "opendata/data/providers/intrinio/models/iter2_snapshots_clean.py"
+          },
+          {
+            "after_sha256": "d89e616a2f487005b9d8c2d3222a5e93d3c6c15bbaf0af9b8bc94aa50a82e79b",
+            "before_sha256": "d89e616a2f487005b9d8c2d3222a5e93d3c6c15bbaf0af9b8bc94aa50a82e79b",
+            "path": "opendata/data/providers/intrinio/models/iter2_market_clean.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+            "before_sha256": "6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+            "path": "opendata/data/models/intrinio_snapshots_clean.py"
+          },
+          {
+            "after_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "before_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "path": "opendata/data/models/intrinio_market_clean.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/MarketSnapshots/direct.json",
+          "sha256": "96e2aa690b4a9e4a6b556f82aba2b7dddaba80375dec3c314089701e425f9025"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "c4093a4063bb9c9f3de620ad23bafd41a64919d23121b9830fbc96a1b408d7a2",
+            "before_sha256": "c4093a4063bb9c9f3de620ad23bafd41a64919d23121b9830fbc96a1b408d7a2",
+            "path": "opendata/data/providers/intrinio/models/iter2_snapshots_clean.py"
+          },
+          {
+            "after_sha256": "d89e616a2f487005b9d8c2d3222a5e93d3c6c15bbaf0af9b8bc94aa50a82e79b",
+            "before_sha256": "d89e616a2f487005b9d8c2d3222a5e93d3c6c15bbaf0af9b8bc94aa50a82e79b",
+            "path": "opendata/data/providers/intrinio/models/iter2_market_clean.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+            "before_sha256": "6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+            "path": "opendata/data/models/intrinio_snapshots_clean.py"
+          },
+          {
+            "after_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "before_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "path": "opendata/data/models/intrinio_market_clean.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/MarketSnapshots/implementation.json",
+          "sha256": "20c07c7ca7aa25a0eee568ca1d94b468cfc89bac9c3effd18744442fe62aa9b8"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "c4093a4063bb9c9f3de620ad23bafd41a64919d23121b9830fbc96a1b408d7a2",
+            "before_sha256": "c4093a4063bb9c9f3de620ad23bafd41a64919d23121b9830fbc96a1b408d7a2",
+            "path": "opendata/data/providers/intrinio/models/iter2_snapshots_clean.py"
+          },
+          {
+            "after_sha256": "d89e616a2f487005b9d8c2d3222a5e93d3c6c15bbaf0af9b8bc94aa50a82e79b",
+            "before_sha256": "d89e616a2f487005b9d8c2d3222a5e93d3c6c15bbaf0af9b8bc94aa50a82e79b",
+            "path": "opendata/data/providers/intrinio/models/iter2_market_clean.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+            "before_sha256": "6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+            "path": "opendata/data/models/intrinio_snapshots_clean.py"
+          },
+          {
+            "after_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "before_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "path": "opendata/data/models/intrinio_market_clean.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:6ae80c03341962f778c74d0ef5f0521155673c5dde2c29b6243762ff0aaf8ac2",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/MarketSnapshots/service.json",
+          "sha256": "fe43b63d2158106f9c8b1da9b4a639d8080ccd48cd2bc4a74814fc9aaa4dcbbf"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "c4093a4063bb9c9f3de620ad23bafd41a64919d23121b9830fbc96a1b408d7a2",
+            "before_sha256": "c4093a4063bb9c9f3de620ad23bafd41a64919d23121b9830fbc96a1b408d7a2",
+            "path": "opendata/data/providers/intrinio/models/iter2_snapshots_clean.py"
+          },
+          {
+            "after_sha256": "d89e616a2f487005b9d8c2d3222a5e93d3c6c15bbaf0af9b8bc94aa50a82e79b",
+            "before_sha256": "d89e616a2f487005b9d8c2d3222a5e93d3c6c15bbaf0af9b8bc94aa50a82e79b",
+            "path": "opendata/data/providers/intrinio/models/iter2_market_clean.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "MarketSnapshots",
+  "model_identity": "intrinio::MarketSnapshots",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "intrinio",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "MarketSnapshots",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "MarketSnapshots",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "MarketSnapshots",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "MarketSnapshots",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "MarketSnapshots",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-15T09:05:14Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "MarketSnapshots"
+}

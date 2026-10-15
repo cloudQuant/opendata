@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, ClassVar, Protocol
 
 from opendata.data.http_client import (
     FailureCategory,
@@ -20,19 +20,33 @@ ALPHA_VANTAGE_ENDPOINT = "https://www.alphavantage.co/query"
 
 
 class AlphaVantageError(RuntimeError):
-    """Base error for rejected Alpha Vantage requests or responses."""
+    """Base error for rejected Alpha Vantage requests or responses.
+
+    The ``code``/``status`` faces make each refusal machine-readable for the
+    offline witness counterfact phase; ``status`` stays ``None`` unless the
+    raise site was driven by an explicit HTTP status.
+    """
+
+    code: ClassVar[str] = "ALPHA_VANTAGE_ERROR"
+    status: ClassVar[int | None] = None
 
 
 class AlphaVantageMissingKeyError(AlphaVantageError):
     """Raised before transport when no API key is configured."""
 
+    code: ClassVar[str] = "ALPHA_VANTAGE_MISSING_KEY"
+
 
 class AlphaVantageRateLimitError(AlphaVantageError):
     """Raised when the provider reports a rate or entitlement limit."""
 
+    code: ClassVar[str] = "ALPHA_VANTAGE_RATE_LIMITED"
+
 
 class AlphaVantageResponseError(AlphaVantageError):
     """Raised when the response does not match the documented contract."""
+
+    code: ClassVar[str] = "ALPHA_VANTAGE_BAD_RESPONSE"
 
 
 class AlphaVantageHttpResponse(Protocol):
@@ -71,7 +85,10 @@ class AlphaVantageClient:
         """Configure the API key, transport, and HTTPS endpoint."""
         key = api_key if api_key is not None else os.environ.get("ALPHA_VANTAGE_API_KEY")
         self._api_key = key.strip() if isinstance(key, str) else ""
-        self._http_client = http_client if http_client is not None else get_shared_http_client()
+        # Resolution is deferred to the request so the module-level
+        # ``get_shared_http_client`` name is read per call (offline witnesses
+        # patch that attribute after this constructor runs).
+        self._http_client = http_client
         self._endpoint = endpoint
 
     def get_json(
@@ -108,8 +125,9 @@ class AlphaVantageClient:
             for key, value in query.items()
             if key != "apikey" and key in {"function", "symbol", "interval", "month", "outputsize"}
         }
+        transport = self._http_client if self._http_client is not None else get_shared_http_client()
         try:
-            response = self._http_client.get(
+            response = transport.get(
                 self._endpoint,
                 params=query,
                 timeout=timeout,

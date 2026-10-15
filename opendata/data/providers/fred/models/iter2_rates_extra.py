@@ -898,6 +898,9 @@ class CommercialPaperFetcher(_RateExtraFetcher[FredCommercialPaperQuery]):
     """Long commercial-paper observations assembled from official FRED IDs."""
 
     canonical_model: ClassVar[str | None] = "CommercialPaper"
+    # contract_model('commercial_paper') resolves to
+    # opendata.data.models.fred_rates_extra.FredCommercialPaper (verified 2026-10-15).
+    row_model: ClassVar[type[ContractModel]] = FredCommercialPaper
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="commercial_paper",
@@ -1493,6 +1496,9 @@ class BondIndicesFetcher(_RateExtraFetcher[FredBondIndicesQuery]):
     """Long public bond-index rows for the source-verified selector subset."""
 
     canonical_model: ClassVar[str | None] = "BondIndices"
+    # contract_model('bond_indices') resolves to
+    # opendata.data.models.fred_rates_extra.FredBondIndices (verified 2026-10-15).
+    row_model: ClassVar[type[ContractModel]] = FredBondIndices
     capability: ClassVar[Capability] = Capability(
         asset_class="fixed_income",
         domain="bond_indices",
@@ -1544,6 +1550,9 @@ class CommoditySpotPricesFetcher(_RateExtraFetcher[FredCommoditySpotPricesQuery]
     """EIA-distributed commodity spot prices with explicit FRED source IDs."""
 
     canonical_model: ClassVar[str | None] = "CommoditySpotPrices"
+    # contract_model('commodity_spot_prices') resolves to
+    # opendata.data.models.fred_rates_extra.FredCommoditySpotPrices (verified 2026-10-15).
+    row_model: ClassVar[type[ContractModel]] = FredCommoditySpotPrices
     capability: ClassVar[Capability] = Capability(
         asset_class="commodities",
         domain="commodity_spot_prices",
@@ -1600,6 +1609,9 @@ class YieldCurveFetcher(_RateExtraFetcher[FredYieldCurveQuery]):
     """FRED curves at the latest complete observation date no later than each target."""
 
     canonical_model: ClassVar[str | None] = "YieldCurve"
+    # contract_model('fred_yield_curve') resolves to
+    # opendata.data.models.fred_rates_extra.FredYieldCurve (verified 2026-10-15).
+    row_model: ClassVar[type[ContractModel]] = FredYieldCurve
     capability: ClassVar[Capability] = Capability(
         asset_class="fixed_income",
         domain="fred_yield_curve",

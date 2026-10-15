@@ -18,6 +18,7 @@ from pydantic import StrictBool, StrictStr, field_validator, model_validator
 
 from opendata.data.capability import Capability
 from opendata.data.http_client import HttpFetchError, get_shared_http_client
+from opendata.data.models.base import ContractModel
 from opendata.data.models.cboe_index_historical import CboeIndexHistorical
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, MultiSymbolQueryParams
 from opendata.data.providers.cboe._source import SOURCE
@@ -255,6 +256,10 @@ class CboeIndexHistoricalFetcher(Fetcher[CboeIndexHistoricalQuery, list[dict[str
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "IndexHistorical"
+    # Verified against contract_model('cboe_index_historical') ->
+    # opendata.data.models.cboe_index_historical.CboeIndexHistorical (the frozen row this
+    # fetcher's transform_data already builds), as the offline witness requires.
+    row_model: ClassVar[type[ContractModel]] = CboeIndexHistorical
     capability: ClassVar[Capability] = Capability(
         asset_class="index",
         domain="cboe_index_historical",

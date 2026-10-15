@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model ReportedFinancials --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_BAD_SHAPE", "rejected": [], "status": null}, "reason": "an as-reported fact keeps its dimensional context as an axis/member pair, and both _ReportedDimension.member and IntrinioReportedDimension.member are required StrictStr, so a fact published with an axis and no member is a half-said dimension: INTRINIO_FINANCIALS_BAD_SHAPE, because a row that dropped the member would silently relabel which segment of the filing the XBRL value belongs to; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

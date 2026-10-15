@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date as date_type
 from datetime import datetime
 from decimal import Decimal
-from typing import ClassVar, Literal
+from typing import TYPE_CHECKING, ClassVar, Literal
 from urllib.parse import quote
 
 from pydantic import Field, StrictBool, StrictInt, StrictStr, ValidationInfo, field_validator
@@ -21,6 +21,9 @@ from opendata.data.providers.federal_reserve.models._iter2_common import (
     parse_decimal,
     parse_float,
 )
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
 
 _SOMA_BASE = "https://markets.newyorkfed.org/api/soma"
 _SOMA_SUMMARY_URL = f"{_SOMA_BASE}/summary.json"
@@ -170,6 +173,12 @@ class FederalReserveCentralBankHoldingsFetcher(Fetcher[CentralBankHoldingsQuery,
         source="federal_reserve",
         verified=False,
     )
+    #: The contract ``domains.yaml`` declares for this domain -- verified by
+    #: ``contract_model('federal_reserve_central_bank_holdings') ->
+    #: opendata.data.models.federal_reserve_macro.FederalReserveCentralBankHolding``, the class
+    #: every reader path here already builds; the governed query service revalidates rows against
+    #: that contract rather than against this fetcher's own import.
+    row_model: ClassVar[type[ContractModel]] = FederalReserveCentralBankHolding
 
     def transform_query(self, **kwargs: object) -> CentralBankHoldingsQuery:
         """Validate official date, holding-type, summary, CUSIP, WAM, and monthly selectors."""

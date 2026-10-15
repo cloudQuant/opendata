@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model CommercialPaper --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "prose in the eleventh commercial-paper leg's 'value' token breaks the required float 'rate' column of FredCommercialPaper, whose only source is FRED's ASCII numeric text with '.' as the missing marker, so the 24-series fan-out must refuse with FRED_BAD_OBSERVATION instead of coercing the cell; untampered control produced 48 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

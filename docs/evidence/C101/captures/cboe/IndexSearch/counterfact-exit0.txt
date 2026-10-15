@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexSearch --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["name"], "refusal_class": "ProviderEngineError", "refusal_code": "CBOE_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["name"], "refusal_class": "ProviderEngineError", "refusal_code": "CBOE_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "dropping 'index_name' from the only record the symbol filter keeps makes the required 'name' column unresolvable, so the engine must refuse with CBOE_SHAPE_INVALID attributing missing=('name',) rather than publishing a nameless search hit; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

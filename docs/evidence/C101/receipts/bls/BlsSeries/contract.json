@@ -1,0 +1,155 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/bls/BlsSeries/contract-exit0.txt",
+    "sha256": "1107e046e5aca5521798307ef062f9aad2fef4a31a4304c7849743bcf296bf1c",
+    "size_bytes": 332,
+    "stdout_excerpt": "contract: BlsObservation validated 2 produced row(s); strict round-trip and extra-forbid boundaries hold\nVERDICT=PASS\n"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSeries --phase contract --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-15T08:43:07.773584+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+          "before_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+          "path": "opendata/data/models/period_series.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+      "fixture": [
+        {
+          "after_sha256": "0b16a914df1a516670d48783d8804e73d25655de3b2da9e1059ca97c5f35f792",
+          "before_sha256": "0b16a914df1a516670d48783d8804e73d25655de3b2da9e1059ca97c5f35f792",
+          "path": "docs/evidence/C101/fixtures/bls/BlsSeries.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+          "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+          "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+          "path": "scripts/quality/iter2_witnesses/bls.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+          "before_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+          "path": "opendata/data/providers/bls/registration.py"
+        },
+        {
+          "after_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+          "before_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+          "path": "opendata/data/providers/bls/provider.py"
+        },
+        {
+          "after_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+          "before_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+          "path": "opendata/data/providers/bls/models/_client.py"
+        },
+        {
+          "after_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+          "before_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+          "path": "opendata/data/providers/bls/models/series.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "bls::BlsSeries",
+  "phase": "contract",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+        "before_sha256": "f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+        "path": "opendata/data/models/period_series.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
+    "fixture": [
+      {
+        "after_sha256": "0b16a914df1a516670d48783d8804e73d25655de3b2da9e1059ca97c5f35f792",
+        "before_sha256": "0b16a914df1a516670d48783d8804e73d25655de3b2da9e1059ca97c5f35f792",
+        "path": "docs/evidence/C101/fixtures/bls/BlsSeries.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+        "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+        "before_sha256": "88be25d374cdacc09845438393fb4d6a8a783ca629e0da6d1445a1ea7a47253d",
+        "path": "scripts/quality/iter2_witnesses/bls.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+        "before_sha256": "5591533c5d4e5834aa0adb9448f134ceba27b941ed6e6bbd77d82297a4d3d9b8",
+        "path": "opendata/data/providers/bls/registration.py"
+      },
+      {
+        "after_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+        "before_sha256": "fb576dde744e05a3e6f8347dd6e7d28266c3a479874ffa6e03b06af959346248",
+        "path": "opendata/data/providers/bls/provider.py"
+      },
+      {
+        "after_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+        "before_sha256": "887b87f7e3d6822371b5fd1e8c84485b650ff56b26574f25eb0e5388309ee91c",
+        "path": "opendata/data/providers/bls/models/_client.py"
+      },
+      {
+        "after_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+        "before_sha256": "184881f4129b2da6f4e883e3a700ab1b41fe7f3dbd04a0dc8bdf4f8c32d5ba88",
+        "path": "opendata/data/providers/bls/models/series.py"
+      }
+    ]
+  },
+  "provider": "bls",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-bls-BlsSeries",
+  "upstream_model": "BlsSeries"
+}

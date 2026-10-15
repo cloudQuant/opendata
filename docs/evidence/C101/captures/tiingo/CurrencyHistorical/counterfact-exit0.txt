@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CurrencyHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "TIINGO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "TIINGO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "dropping the required 'date' cell leaves an FX observation with no moment, so the adapter must surface TIINGO_SHAPE_INVALID rather than build a row whose non-nullable datetime is empty; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

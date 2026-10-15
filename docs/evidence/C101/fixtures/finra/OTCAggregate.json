@@ -1,0 +1,56 @@
+{
+  "/data/group/otcmarket/name/weeklysummary": {
+    "body": [
+      {
+        "issueSymbolIdentifier": "FIXEX",
+        "lastUpdateDate": "2026-01-09",
+        "totalWeeklyShareQuantity": 125000.0,
+        "totalWeeklyTradeCount": 340.0
+      },
+      {
+        "issueSymbolIdentifier": "FIXEY",
+        "lastUpdateDate": "2026-01-09",
+        "totalWeeklyShareQuantity": 9800.0,
+        "totalWeeklyTradeCount": 52.0
+      }
+    ],
+    "headers": {
+      "Record-Total": "2"
+    }
+  },
+  "/fip/rest/ews/oauth2/access_token": {
+    "body": {
+      "access_token": "fixture-token-never-sent",
+      "expires_in": 1800,
+      "token_type": "Bearer"
+    }
+  },
+  "/partitions/group/otcmarket/name/weeklysummary": {
+    "body": {
+      "availablePartitions": [
+        {
+          "partitions": [
+            "2025-12-29",
+            "T1"
+          ]
+        },
+        {
+          "partitions": [
+            "2026-01-05",
+            "T1"
+          ]
+        },
+        {
+          "partitions": [
+            "2026-01-05",
+            "OTCE"
+          ]
+        }
+      ],
+      "partitionFields": [
+        "weekStartDate",
+        "tierIdentifier"
+      ]
+    }
+  }
+}

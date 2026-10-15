@@ -1,0 +1,165 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/tiingo/CryptoHistorical/contract-exit0.txt",
+    "sha256": "d8bdffe0cfb5bcae2ade7143d14be88056538171cb029c19336b6e3b630f4ec1",
+    "size_bytes": 350,
+    "stdout_excerpt": "contract: TiingoCryptoHistorical validated 2 produced row(s); strict round-trip and extra-forbid boundaries hold\nVERDICT=PASS\n"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CryptoHistorical --phase contract --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-15T08:55:19.076032+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "bc38f6fa0ff57ead443a28f950e4a1428154bc5384e78f8b4166bcb3727c0bc5",
+          "before_sha256": "bc38f6fa0ff57ead443a28f950e4a1428154bc5384e78f8b4166bcb3727c0bc5",
+          "path": "opendata/data/models/tiingo.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:bc38f6fa0ff57ead443a28f950e4a1428154bc5384e78f8b4166bcb3727c0bc5",
+      "fixture": [
+        {
+          "after_sha256": "eaa4ad0c1d4185e8fc4515bd19beecf8d8ed3477ea4e187d720d180fac11f357",
+          "before_sha256": "eaa4ad0c1d4185e8fc4515bd19beecf8d8ed3477ea4e187d720d180fac11f357",
+          "path": "docs/evidence/C101/fixtures/tiingo/CryptoHistorical.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+          "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "c4aa6d90d35e09bcf41e0f3106f7308a2278dd2c3d31f8ec31e07fcb211c91d0",
+          "before_sha256": "c4aa6d90d35e09bcf41e0f3106f7308a2278dd2c3d31f8ec31e07fcb211c91d0",
+          "path": "scripts/quality/iter2_witnesses/tiingo.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "b4ad0ad5f1b4608dc9306504daf1fdea975d410c50ac449319138c80a8a414a5",
+          "before_sha256": "b4ad0ad5f1b4608dc9306504daf1fdea975d410c50ac449319138c80a8a414a5",
+          "path": "opendata/data/providers/tiingo/registration.py"
+        },
+        {
+          "after_sha256": "3f5d9bf45bd5d41e3d08972d9bde9439325d7247710777b1770c749b012657cf",
+          "before_sha256": "3f5d9bf45bd5d41e3d08972d9bde9439325d7247710777b1770c749b012657cf",
+          "path": "opendata/data/providers/tiingo/provider.py"
+        },
+        {
+          "after_sha256": "889fa2d15c8bebae4181e27bb8a4c56f5e9994e5b550fd7a6a459e393d6cd6a5",
+          "before_sha256": "889fa2d15c8bebae4181e27bb8a4c56f5e9994e5b550fd7a6a459e393d6cd6a5",
+          "path": "opendata/data/providers/tiingo/models/crypto_historical.py"
+        },
+        {
+          "after_sha256": "8aa436f3b542dac13860b45d001446f5c972fc30b08f7f18e831fd49e5be1715",
+          "before_sha256": "8aa436f3b542dac13860b45d001446f5c972fc30b08f7f18e831fd49e5be1715",
+          "path": "opendata/data/providers/tiingo/specs.py"
+        },
+        {
+          "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+          "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+          "path": "opendata/data/providers/_engine/http_json.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "tiingo::CryptoHistorical",
+  "phase": "contract",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "bc38f6fa0ff57ead443a28f950e4a1428154bc5384e78f8b4166bcb3727c0bc5",
+        "before_sha256": "bc38f6fa0ff57ead443a28f950e4a1428154bc5384e78f8b4166bcb3727c0bc5",
+        "path": "opendata/data/models/tiingo.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:bc38f6fa0ff57ead443a28f950e4a1428154bc5384e78f8b4166bcb3727c0bc5",
+    "fixture": [
+      {
+        "after_sha256": "eaa4ad0c1d4185e8fc4515bd19beecf8d8ed3477ea4e187d720d180fac11f357",
+        "before_sha256": "eaa4ad0c1d4185e8fc4515bd19beecf8d8ed3477ea4e187d720d180fac11f357",
+        "path": "docs/evidence/C101/fixtures/tiingo/CryptoHistorical.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+        "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "c4aa6d90d35e09bcf41e0f3106f7308a2278dd2c3d31f8ec31e07fcb211c91d0",
+        "before_sha256": "c4aa6d90d35e09bcf41e0f3106f7308a2278dd2c3d31f8ec31e07fcb211c91d0",
+        "path": "scripts/quality/iter2_witnesses/tiingo.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "b4ad0ad5f1b4608dc9306504daf1fdea975d410c50ac449319138c80a8a414a5",
+        "before_sha256": "b4ad0ad5f1b4608dc9306504daf1fdea975d410c50ac449319138c80a8a414a5",
+        "path": "opendata/data/providers/tiingo/registration.py"
+      },
+      {
+        "after_sha256": "3f5d9bf45bd5d41e3d08972d9bde9439325d7247710777b1770c749b012657cf",
+        "before_sha256": "3f5d9bf45bd5d41e3d08972d9bde9439325d7247710777b1770c749b012657cf",
+        "path": "opendata/data/providers/tiingo/provider.py"
+      },
+      {
+        "after_sha256": "889fa2d15c8bebae4181e27bb8a4c56f5e9994e5b550fd7a6a459e393d6cd6a5",
+        "before_sha256": "889fa2d15c8bebae4181e27bb8a4c56f5e9994e5b550fd7a6a459e393d6cd6a5",
+        "path": "opendata/data/providers/tiingo/models/crypto_historical.py"
+      },
+      {
+        "after_sha256": "8aa436f3b542dac13860b45d001446f5c972fc30b08f7f18e831fd49e5be1715",
+        "before_sha256": "8aa436f3b542dac13860b45d001446f5c972fc30b08f7f18e831fd49e5be1715",
+        "path": "opendata/data/providers/tiingo/specs.py"
+      },
+      {
+        "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+        "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+        "path": "opendata/data/providers/_engine/http_json.py"
+      }
+    ]
+  },
+  "provider": "tiingo",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-tiingo-CryptoHistorical",
+  "upstream_model": "CryptoHistorical"
+}

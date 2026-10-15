@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model CompanyFilings --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioShapeError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioShapeError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "report_url is the filing's required document address, read through _required_text, so a filing record without it is refused as INTRINIO_SHAPE_INVALID instead of a row that points at no filing; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

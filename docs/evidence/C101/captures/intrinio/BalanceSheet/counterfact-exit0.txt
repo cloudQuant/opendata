@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model BalanceSheet --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_TAG_UNIT_MISMATCH", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_TAG_UNIT_MISMATCH", "rejected": [], "status": null}, "reason": "IntrinioBalanceSheetFetcher.tag_units declares every mapped balance-sheet tag, 'totalassets' among them, to be a USD amount, and IntrinioBalanceSheet types the wide column as an integer FinancialAmount, so a fact whose data_tag unit says Shares cannot be written into total_assets without silently restating a share count as money: the mapper refuses it as INTRINIO_FINANCIALS_TAG_UNIT_MISMATCH; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

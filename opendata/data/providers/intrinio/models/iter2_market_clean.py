@@ -18,6 +18,7 @@ from pydantic import ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_
 
 from opendata.data.capability import Capability
 from opendata.data.http_client import get_shared_http_client
+from opendata.data.models.base import ContractModel  # noqa: TC001 - get_type_hints reads row_model
 from opendata.data.models.intrinio_market_clean import (
     IntrinioEquityHistorical,
     IntrinioEquityInfo,
@@ -39,7 +40,6 @@ from opendata.data.providers.intrinio._source import SOURCE
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from opendata.data.models.base import ContractModel
     from opendata.data.protocol import FetchResult
 
 INTRINIO_API_BASE = "https://api-v2.intrinio.com"
@@ -61,19 +61,35 @@ _RawT = TypeVar("_RawT")
 
 
 class IntrinioMarketError(RuntimeError):
-    """Base class for sanitized Intrinio contract failures."""
+    """Base class for sanitized Intrinio contract failures.
+
+    Every refusal this slice raises owns a stable ``code`` face and a ``status``
+    face, the same two attributes the financial slice's :class:`IntrinioFinancialError`
+    publishes through ``ProviderEngineError``.  ``status`` stays ``None`` because each
+    of these refusals is raised *after* the governed client returned HTTP 200, so there
+    is no upstream status to report; the code is what identifies the broken contract.
+    """
+
+    code: ClassVar[str] = "INTRINIO_MARKET_CONTRACT_INVALID"
+    status: ClassVar[int | None] = None
 
 
 class IntrinioMissingApiKeyError(IntrinioMarketError):
     """Raised before transport when the required Web API credential is absent."""
 
+    code: ClassVar[str] = "INTRINIO_MARKET_API_KEY_MISSING"
+
 
 class IntrinioResponseShapeError(IntrinioMarketError):
     """Raised when a response differs from the documented JSON shape."""
 
+    code: ClassVar[str] = "INTRINIO_MARKET_SHAPE_INVALID"
+
 
 class IntrinioPaginationLimitError(IntrinioMarketError):
     """Raised instead of publishing a silently truncated paged response."""
+
+    code: ClassVar[str] = "INTRINIO_MARKET_PAGINATION_LIMIT"
 
 
 class _MarketQuery(QueryParams):
@@ -193,6 +209,11 @@ class _IntrinioMarketFetcher(Fetcher[_QueryT, _RawT], Generic[_QueryT, _RawT]):
     capability: ClassVar[Capability]
     canonical_model: ClassVar[str]
     query_model: ClassVar[type[_QueryT]]
+    #: The witnessed subclasses below each name the class their own ``intrinio_*`` domain
+    #: resolves to, so the governed service can revalidate rows against the frozen contract
+    #: (``tests/test_federal_reserve_iter2_models.py:382`` pins that equality for every
+    #: fetcher that declares a ``row_model``).
+    row_model: ClassVar[type[ContractModel]]
 
     def transform_query(self, **kwargs: object) -> _QueryT:
         params = self.query_model.model_validate(kwargs)
@@ -395,6 +416,9 @@ class IntrinioEquityHistoricalFetcher(_PricesFetcher):
 
     canonical_model = "EquityHistorical"
     model_type = IntrinioEquityHistorical
+    #: ``contract_model("intrinio_equity_historical")`` prints
+    #: ``opendata.data.models.intrinio_market_clean.IntrinioEquityHistorical``.
+    row_model = IntrinioEquityHistorical
     capability = _capability("equity", "equity_historical", "series")
 
 
@@ -403,6 +427,9 @@ class IntrinioEtfHistoricalFetcher(_PricesFetcher):
 
     canonical_model = "EtfHistorical"
     model_type = IntrinioEtfHistorical
+    #: ``contract_model("intrinio_etf_historical")`` prints
+    #: ``opendata.data.models.intrinio_market_clean.IntrinioEtfHistorical``.
+    row_model = IntrinioEtfHistorical
     capability = _capability("etf", "etf_historical", "series")
 
 
@@ -411,6 +438,9 @@ class IntrinioEtfInfoFetcher(_IntrinioMarketFetcher[_EtfInfoQuery, JsonObject]):
 
     canonical_model = "EtfInfo"
     query_model = _EtfInfoQuery
+    #: ``contract_model("intrinio_etf_info")`` prints
+    #: ``opendata.data.models.intrinio_market_clean.IntrinioEtfInfo``.
+    row_model = IntrinioEtfInfo
     capability = _capability("etf", "etf_info", "snapshot")
 
     def extract_data(self, params: _EtfInfoQuery, ctx: FetchContext) -> JsonObject:
@@ -488,6 +518,9 @@ class IntrinioIndexHistoricalFetcher(_IntrinioMarketFetcher[_IndexHistoricalQuer
 
     canonical_model = "IndexHistorical"
     query_model = _IndexHistoricalQuery
+    #: ``contract_model("intrinio_index_historical")`` prints
+    #: ``opendata.data.models.intrinio_market_clean.IntrinioIndexHistorical``.
+    row_model = IntrinioIndexHistorical
     capability = _capability("index", "index_historical", "series", market="all")
 
     def extract_data(self, params: _IndexHistoricalQuery, ctx: FetchContext) -> JsonRows:
@@ -529,6 +562,9 @@ class IntrinioEquityQuoteFetcher(_IntrinioMarketFetcher[_EquityQuoteQuery, JsonO
 
     canonical_model = "EquityQuote"
     query_model = _EquityQuoteQuery
+    #: ``contract_model("intrinio_equity_quote")`` prints
+    #: ``opendata.data.models.intrinio_market_clean.IntrinioEquityQuote``.
+    row_model = IntrinioEquityQuote
     capability = _capability("equity", "equity_quote", "snapshot")
 
     def extract_data(self, params: _EquityQuoteQuery, ctx: FetchContext) -> JsonObject:
@@ -647,6 +683,9 @@ class IntrinioEtfSearchFetcher(_IntrinioMarketFetcher[_EtfSearchQuery, JsonRows]
 
     canonical_model = "EtfSearch"
     query_model = _EtfSearchQuery
+    #: ``contract_model("intrinio_etf_search")`` prints
+    #: ``opendata.data.models.intrinio_market_clean.IntrinioEtfSearch``.
+    row_model = IntrinioEtfSearch
     capability = _capability("etf", "etf_search", "snapshot")
 
     def transform_query(self, **kwargs: object) -> _EtfSearchQuery:
@@ -932,6 +971,9 @@ class IntrinioShareStatisticsFetcher(_IntrinioMarketFetcher[_ShareStatisticsQuer
 
     canonical_model = "ShareStatistics"
     query_model = _ShareStatisticsQuery
+    #: ``contract_model("intrinio_share_statistics")`` prints
+    #: ``opendata.data.models.intrinio_market_clean.IntrinioShareStatistics``.
+    row_model = IntrinioShareStatistics
     capability = _capability("equity", "share_statistics", "series")
 
     def extract_data(self, params: _ShareStatisticsQuery, ctx: FetchContext) -> JsonRows:

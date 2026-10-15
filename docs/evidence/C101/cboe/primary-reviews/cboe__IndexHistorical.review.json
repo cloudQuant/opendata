@@ -1,0 +1,321 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/cboe/claims.json",
+    "sha256": "f6004101bf1a250f7d8efd7329912f581ece1af602f36af4f3654b743e10969e"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+            "before_sha256": "25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+            "path": "opendata/data/models/cboe_index_historical.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/IndexHistorical/contract.json",
+          "sha256": "2e3f7663b59ffa1abbf4a9527fd68dcb644f941c057da1d35cccc717b0101afe"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "before_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "d8e43184b51aaff53c9f7cb7f0d185c8b2b75f01e3410e23c53f0899a876a195",
+            "before_sha256": "d8e43184b51aaff53c9f7cb7f0d185c8b2b75f01e3410e23c53f0899a876a195",
+            "path": "opendata/data/providers/cboe/models/index_historical_public.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+            "before_sha256": "25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+            "path": "opendata/data/models/cboe_index_historical.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/IndexHistorical/counterfact.json",
+          "sha256": "e831db2eebb325a0e72f95a2690f0d14bab4e2a19042076c05baade6409ba60a"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "before_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "d8e43184b51aaff53c9f7cb7f0d185c8b2b75f01e3410e23c53f0899a876a195",
+            "before_sha256": "d8e43184b51aaff53c9f7cb7f0d185c8b2b75f01e3410e23c53f0899a876a195",
+            "path": "opendata/data/providers/cboe/models/index_historical_public.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+            "before_sha256": "25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+            "path": "opendata/data/models/cboe_index_historical.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/IndexHistorical/direct.json",
+          "sha256": "9db816e4e1f909363bcaff6f7e0ac17c9cd3fbf2d8f32e1821e3e4def73b7376"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "before_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "d8e43184b51aaff53c9f7cb7f0d185c8b2b75f01e3410e23c53f0899a876a195",
+            "before_sha256": "d8e43184b51aaff53c9f7cb7f0d185c8b2b75f01e3410e23c53f0899a876a195",
+            "path": "opendata/data/providers/cboe/models/index_historical_public.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+            "before_sha256": "25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+            "path": "opendata/data/models/cboe_index_historical.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/IndexHistorical/implementation.json",
+          "sha256": "c37cb6dc1a13d72b16bbb3144cbf83cb224c3fb7740a0e16a86af16bf8cc5dd1"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "before_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "d8e43184b51aaff53c9f7cb7f0d185c8b2b75f01e3410e23c53f0899a876a195",
+            "before_sha256": "d8e43184b51aaff53c9f7cb7f0d185c8b2b75f01e3410e23c53f0899a876a195",
+            "path": "opendata/data/providers/cboe/models/index_historical_public.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+            "before_sha256": "25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+            "path": "opendata/data/models/cboe_index_historical.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/IndexHistorical/service.json",
+          "sha256": "c60991e7bcb92451a1c876860585a4fd56cc99f93c5227d5347d2ae96c4b14af"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "before_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "d8e43184b51aaff53c9f7cb7f0d185c8b2b75f01e3410e23c53f0899a876a195",
+            "before_sha256": "d8e43184b51aaff53c9f7cb7f0d185c8b2b75f01e3410e23c53f0899a876a195",
+            "path": "opendata/data/providers/cboe/models/index_historical_public.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "IndexHistorical",
+  "model_identity": "cboe::IndexHistorical",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "cboe",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "cboe",
+        "--model",
+        "IndexHistorical",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "cboe",
+        "--model",
+        "IndexHistorical",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "cboe",
+        "--model",
+        "IndexHistorical",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "cboe",
+        "--model",
+        "IndexHistorical",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "cboe",
+        "--model",
+        "IndexHistorical",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-15T08:56:50Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "IndexHistorical"
+}

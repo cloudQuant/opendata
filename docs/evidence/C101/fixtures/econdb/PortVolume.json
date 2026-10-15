@@ -1,0 +1,102 @@
+{
+  "responses": [
+    {
+      "body": {
+        "data": [
+          {
+            "Date": "2025-01-01",
+            "Exports": 1200.0,
+            "Imports": 3400.0,
+            "Transshipment": 500.5
+          },
+          {
+            "Date": "2025-01-02",
+            "Exports": 1500.0,
+            "Imports": 2600.0,
+            "Transshipment": 0.0
+          }
+        ],
+        "series": [
+          {
+            "axis": 1,
+            "code": "Imports",
+            "name": "Imports"
+          },
+          {
+            "axis": 1,
+            "code": "Exports",
+            "name": "Exports"
+          },
+          {
+            "axis": 1,
+            "code": "Transshipment",
+            "name": "Transshipment"
+          }
+        ],
+        "title": "Container volume (TEU)",
+        "type": "timeseries"
+      },
+      "url_contains": "container-traffic"
+    },
+    {
+      "body": {
+        "data": [
+          {
+            "Date": "2025-01-01",
+            "Exports": 3.5,
+            "Imports": 4.25,
+            "Rail imports": 1.5,
+            "Transshipments": 2.0
+          },
+          {
+            "Date": "2025-01-02",
+            "Exports": 3.0,
+            "Imports": 4.0,
+            "Rail imports": 1.0,
+            "Transshipments": 2.5
+          }
+        ],
+        "series": [
+          {
+            "axis": 1,
+            "code": "Imports",
+            "name": "Imports"
+          },
+          {
+            "axis": 1,
+            "code": "Exports",
+            "name": "Exports"
+          },
+          {
+            "axis": 1,
+            "code": "Transshipments",
+            "name": "Transshipments"
+          },
+          {
+            "axis": 2,
+            "code": "Rail imports",
+            "name": "Rail imports"
+          }
+        ],
+        "title": "Average dwell time (day)",
+        "type": "timeseries"
+      },
+      "url_contains": "dwell-times"
+    },
+    {
+      "body": [
+        {
+          "iso2": "US",
+          "locode": "US LAX",
+          "name": "Los Angeles"
+        },
+        {
+          "iso2": "US",
+          "locode": "US NYC",
+          "name": "New York"
+        }
+      ],
+      "url_contains": "v1/ports/"
+    }
+  ]
+}

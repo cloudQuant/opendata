@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model SharePriceIndex --phase counterfact --evidence-root docs/evidence/C101/oecd
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_RESPONSE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_RESPONSE", "rejected": [], "status": null}, "reason": "the query requested the United States share-price index, so an observation row published with REF_AREA=GBR belongs to an area the caller never asked for and _record_rows must refuse the payload as OECD_BAD_RESPONSE instead of emitting a UK row under a USA query; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

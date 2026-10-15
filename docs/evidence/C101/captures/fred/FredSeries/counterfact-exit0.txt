@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model FredSeries --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "publishing an empty value token breaks the documented FRED wire rule that only the '.' sentinel means missing, so the generic observations adapter must refuse with FRED_BAD_OBSERVATION surfaced as a ProviderEngineError-shaped FredProviderError instead of inventing a zero; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

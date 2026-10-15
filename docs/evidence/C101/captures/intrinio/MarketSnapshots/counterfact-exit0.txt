@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model MarketSnapshots --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "the snapshot leg asks the realtime endpoint for source=delayed_sip and _snapshot_row verifies each row answers with that same source before publishing it, because the row's change and prev_close are only comparable inside one feed; a row labelled 'iex' in a delayed_sip join is refused rather than merged into the XNAS snapshot; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

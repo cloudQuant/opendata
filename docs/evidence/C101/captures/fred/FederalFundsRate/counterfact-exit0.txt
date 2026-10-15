@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model FederalFundsRate --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "prose in the EFFR page's 'value' token breaks the required float 'rate' column of FredFederalFundsRate - the one joined field the contract forbids null for, since _parse_value accepts only ASCII numeric text or the '.' missing sentinel - so the eleven-series join must refuse with FRED_BAD_OBSERVATION instead of publishing a funds row without its rate; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

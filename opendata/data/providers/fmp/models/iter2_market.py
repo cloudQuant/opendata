@@ -7,7 +7,7 @@ import re
 from collections.abc import Callable, Mapping, Sequence
 from datetime import date as date_type
 from datetime import datetime
-from typing import Any, ClassVar, Generic, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, TypeVar
 
 from pydantic import Field, field_validator, model_validator
 
@@ -45,6 +45,9 @@ from opendata.data.providers.fmp.models._client import (
     FMPQueryLimitError,
     fetch_array,
 )
+
+if TYPE_CHECKING:
+    from opendata.data.providers._engine.http_json import HttpGet
 
 _MAX_SYMBOL_REQUESTS = 8
 _MAX_REQUESTS = 20
@@ -632,6 +635,8 @@ class _MarketFetcher(Fetcher[QueryT, list[dict[str, Any]]], Generic[QueryT, Reco
     endpoint: ClassVar[str]
     normalizer: ClassVar[staticmethod[[dict[str, Any], QueryT], RecordT]]
     key_fields: ClassVar[tuple[str, ...]] = ("symbol",)
+    #: The offline witness seam; ``None`` keeps the governed shared HTTP client.
+    http_transport: ClassVar[HttpGet | None] = None
 
     def transform_query(self, **kwargs: object) -> QueryT:
         return self.query_model.model_validate(kwargs)
@@ -655,7 +660,7 @@ class _MarketFetcher(Fetcher[QueryT, list[dict[str, Any]]], Generic[QueryT, Reco
             )
         raw: list[dict[str, Any]] = []
         for endpoint, request_params in specs:
-            rows = fetch_array(endpoint, request_params, ctx.timeout)
+            rows = fetch_array(endpoint, request_params, ctx.timeout, self.http_transport)
             raw.extend(rows)
             if len(raw) > params.max_records:
                 raise FMPQueryLimitError(
@@ -839,6 +844,7 @@ class IndexHistoricalFetcher(_HistoricalFetcher[HistoricalQuery, IndexHistorical
 
     canonical_model = "IndexHistorical"
     record_model = IndexHistorical
+    row_model: ClassVar[type[ContractModel]] = IndexHistorical
     query_model = HistoricalQuery
     endpoint = "historical-price-eod/full"
     key_fields = ("symbol", "date")
@@ -1106,6 +1112,8 @@ class EquityActiveFetcher(_MarketFetcher[MarketMoversQuery, EquityActive]):
     canonical_model = "EquityActive"
     query_model = MarketMoversQuery
     record_model = EquityActive
+    # contract_model('fmp_equity_active') -> opendata.data.models.fmp_market.EquityActive
+    row_model: ClassVar[type[ContractModel]] = EquityActive
     endpoint = "most-actives"
     normalizer = staticmethod(_mover)
     capability = Capability(
@@ -1176,6 +1184,8 @@ class EquityGainersFetcher(_MarketFetcher[MarketMoversQuery, EquityGainers]):
     canonical_model = "EquityGainers"
     query_model = MarketMoversQuery
     record_model = EquityGainers
+    # contract_model('fmp_equity_gainers') -> opendata.data.models.fmp_market.EquityGainers
+    row_model: ClassVar[type[ContractModel]] = EquityGainers
     endpoint = "biggest-gainers"
     normalizer = staticmethod(_gainer)
     capability = Capability(
@@ -1198,6 +1208,7 @@ class EquityLosersFetcher(_MarketFetcher[MarketMoversQuery, EquityLosers]):
     canonical_model = "EquityLosers"
     query_model = MarketMoversQuery
     record_model = EquityLosers
+    row_model: ClassVar[type[ContractModel]] = EquityLosers
     endpoint = "biggest-losers"
     normalizer = staticmethod(_loser)
     capability = Capability(
@@ -1234,6 +1245,7 @@ class EquityPeersFetcher(_MarketFetcher[BoundedSymbolQuery, EquityPeers]):
     canonical_model = "EquityPeers"
     query_model = BoundedSymbolQuery
     record_model = EquityPeers
+    row_model: ClassVar[type[ContractModel]] = EquityPeers
     endpoint = "stock-peers"
     normalizer = staticmethod(_normalize_peers)
     capability = Capability(
@@ -1299,6 +1311,7 @@ class EquityInfoFetcher(_MarketFetcher[MultiSymbolQuery, EquityInfo]):
     canonical_model = "EquityInfo"
     query_model = MultiSymbolQuery
     record_model = EquityInfo
+    row_model: ClassVar[type[ContractModel]] = EquityInfo
     endpoint = "profile"
     normalizer = staticmethod(_normalize_equity_info)
     capability = Capability(
@@ -1359,6 +1372,7 @@ class EquityScreenerFetcher(_MarketFetcher[EquityScreenerQuery, EquityScreener])
     canonical_model = "EquityScreener"
     query_model = EquityScreenerQuery
     record_model = EquityScreener
+    row_model: ClassVar[type[ContractModel]] = EquityScreener
     endpoint = "company-screener"
     normalizer = staticmethod(_normalize_equity_screener)
     capability = Capability(
@@ -1410,7 +1424,7 @@ class EquityScreenerFetcher(_MarketFetcher[EquityScreenerQuery, EquityScreener])
         raw: list[dict[str, Any]] = []
         specs = self.request_specs(params)
         for index, (endpoint, request_params) in enumerate(specs):
-            rows = fetch_array(endpoint, request_params, ctx.timeout)
+            rows = fetch_array(endpoint, request_params, ctx.timeout, self.http_transport)
             raw.extend(rows)
             if len(raw) > params.max_records:
                 raise FMPQueryLimitError(
@@ -1464,6 +1478,7 @@ class MarketSnapshotsFetcher(_MarketFetcher[MarketSnapshotsQuery, MarketSnapshot
     canonical_model = "MarketSnapshots"
     query_model = MarketSnapshotsQuery
     record_model = MarketSnapshot
+    row_model: ClassVar[type[ContractModel]] = MarketSnapshot
     endpoint = "batch-quote"
     normalizer = staticmethod(_normalize_market_snapshot)
     capability = Capability(
@@ -1516,6 +1531,7 @@ class PricePerformanceFetcher(_MarketFetcher[MultiSymbolQuery, PricePerformance]
     canonical_model = "PricePerformance"
     query_model = MultiSymbolQuery
     record_model = PricePerformance
+    row_model: ClassVar[type[ContractModel]] = PricePerformance
     endpoint = "stock-price-change"
     normalizer = staticmethod(_normalize_price_performance)
     capability = Capability(
@@ -1551,6 +1567,7 @@ class ShareStatisticsFetcher(_MarketFetcher[MultiSymbolQuery, ShareStatistics]):
     canonical_model = "ShareStatistics"
     query_model = MultiSymbolQuery
     record_model = ShareStatistics
+    row_model: ClassVar[type[ContractModel]] = ShareStatistics
     endpoint = "shares-float"
     normalizer = staticmethod(_normalize_share_statistics)
     capability = Capability(
@@ -1610,6 +1627,7 @@ class IndexConstituentsFetcher(_MarketFetcher[IndexConstituentsQuery, FmpIndexCo
     canonical_model = "IndexConstituents"
     query_model = IndexConstituentsQuery
     record_model = FmpIndexConstituent
+    row_model: ClassVar[type[ContractModel]] = FmpIndexConstituent
     endpoint = "sp500-constituent"
     normalizer = staticmethod(_normalize_index_constituent)
     key_fields = ("symbol", "date")

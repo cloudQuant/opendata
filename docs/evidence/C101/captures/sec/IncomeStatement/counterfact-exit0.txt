@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model IncomeStatement --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_XBRL_BAD_FACT", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_XBRL_BAD_FACT", "rejected": [], "status": null}, "reason": "period_ending is a declared contract column read from the observation's end, and the companyfacts API publishes it as an ISO date, so a non-date value must refuse the observation rather than emit an unanchored statement period; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

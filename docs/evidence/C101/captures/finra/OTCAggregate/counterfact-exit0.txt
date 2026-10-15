@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FinraProviderError", "refusal_code": "FINRA_OTC_AGGREGATE_BAD_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FinraProviderError", "refusal_code": "FINRA_OTC_AGGREGATE_BAD_ROW", "rejected": [], "status": null}, "reason": "publishing text where the weekly summary documents a share quantity makes the strict OTCAggregate row refuse the record, so the adapter must surface FINRA_OTC_AGGREGATE_BAD_ROW rather than store an unparsable quantity; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

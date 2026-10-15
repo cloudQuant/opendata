@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model EtfInfo --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "_get_json passes the decoded document through _json_object with 'Intrinio response must be a JSON object', because /etfs/<ticker> documents exactly one profile object, so an answer that arrives as an array is refused instead of being read as a profile whose every field is simply missing; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

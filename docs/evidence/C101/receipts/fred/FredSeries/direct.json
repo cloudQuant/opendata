@@ -1,0 +1,175 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/fred/FredSeries/direct-exit0.txt",
+    "sha256": "3f0578f7e77069811d95005ec4427f5d3498413be830d09b63c80c6c7061a376",
+    "size_bytes": 346,
+    "stdout_excerpt": "direct: fetcher=FredSeriesFetcher seam_requests=1 rows=1 row_class=SeriesObservation first_row_sha256=40e1551e9109c4d8\nVERDICT=PASS\n"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model FredSeries --phase direct --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-15T08:49:33.786658+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "61245d537379ea79ef96ee36dac6f0e6976d729988f8065f774ed5e6b0787b01",
+          "before_sha256": "61245d537379ea79ef96ee36dac6f0e6976d729988f8065f774ed5e6b0787b01",
+          "path": "opendata/data/models/economic_series.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:61245d537379ea79ef96ee36dac6f0e6976d729988f8065f774ed5e6b0787b01",
+      "fixture": [
+        {
+          "after_sha256": "78c97e6a3c774e352f2aa400621aee5e420104aeca41ed9fd4cff5899679fadb",
+          "before_sha256": "78c97e6a3c774e352f2aa400621aee5e420104aeca41ed9fd4cff5899679fadb",
+          "path": "docs/evidence/C101/fixtures/fred/FredSeries.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+          "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "edc33226ab029e5e9b108ed4ed17ed810323d1701e292339173fec383ba1e436",
+          "before_sha256": "edc33226ab029e5e9b108ed4ed17ed810323d1701e292339173fec383ba1e436",
+          "path": "scripts/quality/iter2_witnesses/fred.py"
+        },
+        {
+          "after_sha256": "c0fc87fd8982d7241b3a90ca374598749fba752188562b3609c53db4461357b9",
+          "before_sha256": "c0fc87fd8982d7241b3a90ca374598749fba752188562b3609c53db4461357b9",
+          "path": "scripts/quality/iter2_witnesses/_parts/fred/series_a.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+          "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+          "path": "opendata/data/providers/fred/registration.py"
+        },
+        {
+          "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+          "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+          "path": "opendata/data/providers/fred/provider.py"
+        },
+        {
+          "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+          "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+          "path": "opendata/data/providers/fred/models/_client.py"
+        },
+        {
+          "after_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+          "before_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+          "path": "opendata/data/providers/fred/models/series.py"
+        },
+        {
+          "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+          "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+          "path": "opendata/data/providers/fred/models/_paged.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "fred::FredSeries",
+  "phase": "direct",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "61245d537379ea79ef96ee36dac6f0e6976d729988f8065f774ed5e6b0787b01",
+        "before_sha256": "61245d537379ea79ef96ee36dac6f0e6976d729988f8065f774ed5e6b0787b01",
+        "path": "opendata/data/models/economic_series.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:61245d537379ea79ef96ee36dac6f0e6976d729988f8065f774ed5e6b0787b01",
+    "fixture": [
+      {
+        "after_sha256": "78c97e6a3c774e352f2aa400621aee5e420104aeca41ed9fd4cff5899679fadb",
+        "before_sha256": "78c97e6a3c774e352f2aa400621aee5e420104aeca41ed9fd4cff5899679fadb",
+        "path": "docs/evidence/C101/fixtures/fred/FredSeries.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+        "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "edc33226ab029e5e9b108ed4ed17ed810323d1701e292339173fec383ba1e436",
+        "before_sha256": "edc33226ab029e5e9b108ed4ed17ed810323d1701e292339173fec383ba1e436",
+        "path": "scripts/quality/iter2_witnesses/fred.py"
+      },
+      {
+        "after_sha256": "c0fc87fd8982d7241b3a90ca374598749fba752188562b3609c53db4461357b9",
+        "before_sha256": "c0fc87fd8982d7241b3a90ca374598749fba752188562b3609c53db4461357b9",
+        "path": "scripts/quality/iter2_witnesses/_parts/fred/series_a.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+        "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+        "path": "opendata/data/providers/fred/registration.py"
+      },
+      {
+        "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+        "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+        "path": "opendata/data/providers/fred/provider.py"
+      },
+      {
+        "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+        "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+        "path": "opendata/data/providers/fred/models/_client.py"
+      },
+      {
+        "after_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+        "before_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+        "path": "opendata/data/providers/fred/models/series.py"
+      },
+      {
+        "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+        "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+        "path": "opendata/data/providers/fred/models/_paged.py"
+      }
+    ]
+  },
+  "provider": "fred",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-fred-FredSeries",
+  "upstream_model": "FredSeries"
+}

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model CashFlowStatement --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_FREQUENCY_MISMATCH", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_FREQUENCY_MISMATCH", "rejected": [], "status": null}, "reason": "the query asked period 'annual', which _period_type sends as type=FY, and _matches_frequency only lets fiscal_period 'FY' through for it, so a fundamentals list item labelled 'Q1' is not the annual cash-flow period the row was asked for: INTRINIO_FINANCIALS_FREQUENCY_MISMATCH, because accepting it would publish a quarter of cash flows under an annual contract row; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

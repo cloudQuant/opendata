@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model AvailableIndices --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["exchange"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["exchange"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the index directory publishes the market an index is calculated for, and (symbol, exchange) is the reviewed natural key; a listing without 'exchange' is not addressable, so the adapter must refuse with FMP_BAD_SHAPE attributing missing=('exchange',); untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

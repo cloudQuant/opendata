@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model OvernightBankFundingRate --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "FEDERAL_RESERVE_SHAPE_INVALID", "rejected": ["revision_indicator"], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "FEDERAL_RESERVE_SHAPE_INVALID", "rejected": ["revision_indicator"], "status": null}, "reason": "this row declares no sentinel and no stage for revisionIndicator, so the cell reaches the reviewed contract's str | None field verbatim; publishing a JSON number there is outside the documented shape and must surface as FEDERAL_RESERVE_SHAPE_INVALID rejected=('revision_indicator',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

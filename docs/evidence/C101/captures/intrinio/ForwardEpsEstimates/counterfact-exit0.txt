@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model ForwardEpsEstimates --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_BAD_SHAPE", "rejected": [], "status": null}, "reason": "_EpsEstimateRow documents that a consensus period names its fiscal period either through 'fiscal_period' or through the deprecated alias 'fiscal_quarter', and its model validator refuses the row when neither is present, so a period that says nothing about which fiscal span it forecasts is INTRINIO_FINANCIALS_BAD_SHAPE instead of an estimate with a null fiscal period; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

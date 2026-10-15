@@ -1,0 +1,185 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/fred/IORB/service-exit0.txt",
+    "sha256": "7336ece3da4de2e31c1379d04fcde21f0fa7f0e717a17c33a989fe15f2c9f0ec",
+    "size_bytes": 351,
+    "stdout_excerpt": "service: query_provider_model executed for real (registry + reviewed domain semantics), rows=2 first_row_sha256=ffcffc4b69286f69\nVERDICT=PASS\n"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model IORB --phase service --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-15T08:48:53.767684+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "24a8ead4976d54a8ec05f1009ba2b200a9be78667d0e61b6a4744f7a2ccdbae8",
+          "before_sha256": "24a8ead4976d54a8ec05f1009ba2b200a9be78667d0e61b6a4744f7a2ccdbae8",
+          "path": "opendata/data/models/fred_iorb.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:24a8ead4976d54a8ec05f1009ba2b200a9be78667d0e61b6a4744f7a2ccdbae8",
+      "fixture": [
+        {
+          "after_sha256": "6d5466b23b50d011ec3398fda3c52fbad96620076edc80bea59a97bf89c48cbc",
+          "before_sha256": "6d5466b23b50d011ec3398fda3c52fbad96620076edc80bea59a97bf89c48cbc",
+          "path": "docs/evidence/C101/fixtures/fred/IORB.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+          "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "edc33226ab029e5e9b108ed4ed17ed810323d1701e292339173fec383ba1e436",
+          "before_sha256": "edc33226ab029e5e9b108ed4ed17ed810323d1701e292339173fec383ba1e436",
+          "path": "scripts/quality/iter2_witnesses/fred.py"
+        },
+        {
+          "after_sha256": "c0fc87fd8982d7241b3a90ca374598749fba752188562b3609c53db4461357b9",
+          "before_sha256": "c0fc87fd8982d7241b3a90ca374598749fba752188562b3609c53db4461357b9",
+          "path": "scripts/quality/iter2_witnesses/_parts/fred/series_a.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+          "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+          "path": "opendata/data/providers/fred/registration.py"
+        },
+        {
+          "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+          "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+          "path": "opendata/data/providers/fred/provider.py"
+        },
+        {
+          "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+          "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+          "path": "opendata/data/providers/fred/models/_client.py"
+        },
+        {
+          "after_sha256": "0a9fd061dd26e2321767cd30a2cb43e1173c3f5150aab06818ad9cded0040e1e",
+          "before_sha256": "0a9fd061dd26e2321767cd30a2cb43e1173c3f5150aab06818ad9cded0040e1e",
+          "path": "opendata/data/providers/fred/models/iorb.py"
+        },
+        {
+          "after_sha256": "6173d13e3327f2cf767bafa17a799db784a3301c963adfcbb42a94f1ebe66544",
+          "before_sha256": "6173d13e3327f2cf767bafa17a799db784a3301c963adfcbb42a94f1ebe66544",
+          "path": "opendata/data/providers/fred/models/_iorb_client.py"
+        },
+        {
+          "after_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+          "before_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+          "path": "opendata/data/providers/fred/models/_fixed_observation_pages.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "fred::IORB",
+  "phase": "service",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "24a8ead4976d54a8ec05f1009ba2b200a9be78667d0e61b6a4744f7a2ccdbae8",
+        "before_sha256": "24a8ead4976d54a8ec05f1009ba2b200a9be78667d0e61b6a4744f7a2ccdbae8",
+        "path": "opendata/data/models/fred_iorb.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:24a8ead4976d54a8ec05f1009ba2b200a9be78667d0e61b6a4744f7a2ccdbae8",
+    "fixture": [
+      {
+        "after_sha256": "6d5466b23b50d011ec3398fda3c52fbad96620076edc80bea59a97bf89c48cbc",
+        "before_sha256": "6d5466b23b50d011ec3398fda3c52fbad96620076edc80bea59a97bf89c48cbc",
+        "path": "docs/evidence/C101/fixtures/fred/IORB.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+        "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "edc33226ab029e5e9b108ed4ed17ed810323d1701e292339173fec383ba1e436",
+        "before_sha256": "edc33226ab029e5e9b108ed4ed17ed810323d1701e292339173fec383ba1e436",
+        "path": "scripts/quality/iter2_witnesses/fred.py"
+      },
+      {
+        "after_sha256": "c0fc87fd8982d7241b3a90ca374598749fba752188562b3609c53db4461357b9",
+        "before_sha256": "c0fc87fd8982d7241b3a90ca374598749fba752188562b3609c53db4461357b9",
+        "path": "scripts/quality/iter2_witnesses/_parts/fred/series_a.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+        "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+        "path": "opendata/data/providers/fred/registration.py"
+      },
+      {
+        "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+        "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+        "path": "opendata/data/providers/fred/provider.py"
+      },
+      {
+        "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+        "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+        "path": "opendata/data/providers/fred/models/_client.py"
+      },
+      {
+        "after_sha256": "0a9fd061dd26e2321767cd30a2cb43e1173c3f5150aab06818ad9cded0040e1e",
+        "before_sha256": "0a9fd061dd26e2321767cd30a2cb43e1173c3f5150aab06818ad9cded0040e1e",
+        "path": "opendata/data/providers/fred/models/iorb.py"
+      },
+      {
+        "after_sha256": "6173d13e3327f2cf767bafa17a799db784a3301c963adfcbb42a94f1ebe66544",
+        "before_sha256": "6173d13e3327f2cf767bafa17a799db784a3301c963adfcbb42a94f1ebe66544",
+        "path": "opendata/data/providers/fred/models/_iorb_client.py"
+      },
+      {
+        "after_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+        "before_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+        "path": "opendata/data/providers/fred/models/_fixed_observation_pages.py"
+      }
+    ]
+  },
+  "provider": "fred",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-fred-IORB",
+  "upstream_model": "IORB"
+}

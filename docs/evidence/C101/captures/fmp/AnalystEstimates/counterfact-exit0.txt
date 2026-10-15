@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model AnalystEstimates --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["eps_average"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["eps_average"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "an analyst-estimates row is the consensus band, and epsAvg is its central estimate; a record without it is a range without a consensus, so the adapter must refuse with FMP_BAD_SHAPE attributing missing=('eps_average',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

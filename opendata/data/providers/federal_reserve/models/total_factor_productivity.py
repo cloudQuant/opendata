@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 from io import BytesIO
-from typing import ClassVar, Literal
+from typing import TYPE_CHECKING, ClassVar, Literal
 
 from openpyxl import load_workbook
 from pydantic import StrictInt, StrictStr, field_validator, model_validator
@@ -18,6 +18,9 @@ from opendata.data.providers.federal_reserve._iter2_client import (
     get_bytes,
 )
 from opendata.data.providers.federal_reserve.models._iter2_common import parse_float
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
 
 _WORKBOOK_URL = "https://www.frbsf.org/wp-content/uploads/quarterly_tfp.xlsx?2026-10-09="
 _HEADER = (
@@ -157,6 +160,12 @@ class FederalReserveTotalFactorProductivityFetcher(Fetcher[TotalFactorProductivi
         source="federal_reserve",
         verified=False,
     )
+    #: The contract ``domains.yaml`` declares for this domain -- verified by
+    #: ``contract_model('federal_reserve_total_factor_productivity') ->
+    #: opendata.data.models.federal_reserve_macro.FederalReserveTotalFactorProductivity``, the
+    #: class :meth:`transform_data` builds; the governed query service revalidates rows against
+    #: that contract rather than against this fetcher's own import.
+    row_model: ClassVar[type[ContractModel]] = FederalReserveTotalFactorProductivity
 
     def transform_query(self, **kwargs: object) -> TotalFactorProductivityQuery:
         """Validate exact quarterly-period bounds."""

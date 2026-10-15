@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model CashFlowStatement --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["period_ending"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["period_ending"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the cash-flow route names the period an statement closes with 'date'; without it the row has no period end the natural key can identify, so the adapter must refuse with FMP_BAD_SHAPE attributing missing=('period_ending',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

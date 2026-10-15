@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model IncomeStatement --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_CONTRACT_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_CONTRACT_INVALID", "rejected": [], "status": null}, "reason": "the tag 'totalrevenue' is mapped onto IntrinioIncomeStatement.revenue, which is a FinancialAmount whose guard accepts a JSON integer or null and refuses any other number, so publishing a half-dollar in that cell is a contract violation the row must refuse as INTRINIO_FINANCIALS_CONTRACT_INVALID rather than a revenue figure rounded to the nearest dollar; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

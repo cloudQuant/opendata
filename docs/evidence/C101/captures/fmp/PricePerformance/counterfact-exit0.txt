@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model PricePerformance --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "reason": "stock-price-change publishes every horizon as a percentage-point JSON number and the row's one_month is exactly that cell; a formatted string is a different unit than the contract declares, so the adapter must refuse with FMP_BAD_FIELD; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

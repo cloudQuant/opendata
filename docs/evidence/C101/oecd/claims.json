@@ -1,0 +1,3835 @@
+{
+  "claims": [
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CompositeLeadingIndicator --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:52:45.290654+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::CompositeLeadingIndicator",
+        "path": "docs/evidence/C101/receipts/oecd/CompositeLeadingIndicator/implementation.json",
+        "sha256": "13092c935afacedb693be9b62f6e6133f8c6e1809bc779ea6fd5b73b74a6f5d3"
+      },
+      "status": "PASS",
+      "upstream_model": "CompositeLeadingIndicator"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CompositeLeadingIndicator --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:52:46.359826+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "88e228e37cc3c788518375aa1366a84b9db47d7037bfa2a3f6b0bccf3adeb2da",
+            "before_sha256": "88e228e37cc3c788518375aa1366a84b9db47d7037bfa2a3f6b0bccf3adeb2da",
+            "path": "docs/evidence/C101/fixtures/oecd/CompositeLeadingIndicator.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::CompositeLeadingIndicator",
+        "path": "docs/evidence/C101/receipts/oecd/CompositeLeadingIndicator/direct.json",
+        "sha256": "4d7e51cf83b7895112f165422b0a47565552004fbcc17fdc3b63d9d7bccede93"
+      },
+      "status": "PASS",
+      "upstream_model": "CompositeLeadingIndicator"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CompositeLeadingIndicator --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:52:47.540437+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "88e228e37cc3c788518375aa1366a84b9db47d7037bfa2a3f6b0bccf3adeb2da",
+            "before_sha256": "88e228e37cc3c788518375aa1366a84b9db47d7037bfa2a3f6b0bccf3adeb2da",
+            "path": "docs/evidence/C101/fixtures/oecd/CompositeLeadingIndicator.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::CompositeLeadingIndicator",
+        "path": "docs/evidence/C101/receipts/oecd/CompositeLeadingIndicator/service.json",
+        "sha256": "7ecc55452fc1b96173751898a4d892c4ddf9a3f59e5a4ec5a959b6aa24682661"
+      },
+      "status": "PASS",
+      "upstream_model": "CompositeLeadingIndicator"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CompositeLeadingIndicator --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:52:48.626763+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "88e228e37cc3c788518375aa1366a84b9db47d7037bfa2a3f6b0bccf3adeb2da",
+            "before_sha256": "88e228e37cc3c788518375aa1366a84b9db47d7037bfa2a3f6b0bccf3adeb2da",
+            "path": "docs/evidence/C101/fixtures/oecd/CompositeLeadingIndicator.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::CompositeLeadingIndicator",
+        "path": "docs/evidence/C101/receipts/oecd/CompositeLeadingIndicator/contract.json",
+        "sha256": "d1babbb75226362940d32b0b21a3582cf543875dce52a84bcc2faf1a34555389"
+      },
+      "status": "PASS",
+      "upstream_model": "CompositeLeadingIndicator"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CompositeLeadingIndicator --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:52:49.716316+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "88e228e37cc3c788518375aa1366a84b9db47d7037bfa2a3f6b0bccf3adeb2da",
+            "before_sha256": "88e228e37cc3c788518375aa1366a84b9db47d7037bfa2a3f6b0bccf3adeb2da",
+            "path": "docs/evidence/C101/fixtures/oecd/CompositeLeadingIndicator.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::CompositeLeadingIndicator",
+        "path": "docs/evidence/C101/receipts/oecd/CompositeLeadingIndicator/counterfact.json",
+        "sha256": "70f4b23d6fa3b9aa2f85ad9f4aa4c049efa655bbbba35b162b8178a86ee3f84d"
+      },
+      "status": "PASS",
+      "upstream_model": "CompositeLeadingIndicator"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model ConsumerPriceIndex --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:52:50.569533+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::ConsumerPriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/ConsumerPriceIndex/implementation.json",
+        "sha256": "9454b13c6abfdbff87fe68f7117fc31446bd7c0d40af41ebfe661d04914693d3"
+      },
+      "status": "PASS",
+      "upstream_model": "ConsumerPriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model ConsumerPriceIndex --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:52:51.634070+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "7ff217dc85b36b3bddc5d128b1bcd6d5ccc2851e5a9a25e5c9e2c0620b11db46",
+            "before_sha256": "7ff217dc85b36b3bddc5d128b1bcd6d5ccc2851e5a9a25e5c9e2c0620b11db46",
+            "path": "docs/evidence/C101/fixtures/oecd/ConsumerPriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::ConsumerPriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/ConsumerPriceIndex/direct.json",
+        "sha256": "bc94a5b855262993b0d0d5d7cb6019c20058ced0dcd313207ffcd8c4e366f0fd"
+      },
+      "status": "PASS",
+      "upstream_model": "ConsumerPriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model ConsumerPriceIndex --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:52:52.819696+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "7ff217dc85b36b3bddc5d128b1bcd6d5ccc2851e5a9a25e5c9e2c0620b11db46",
+            "before_sha256": "7ff217dc85b36b3bddc5d128b1bcd6d5ccc2851e5a9a25e5c9e2c0620b11db46",
+            "path": "docs/evidence/C101/fixtures/oecd/ConsumerPriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::ConsumerPriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/ConsumerPriceIndex/service.json",
+        "sha256": "68480dc49a5eeb9ac6094577910496bd5f7909e8808777dae251785c25a51a91"
+      },
+      "status": "PASS",
+      "upstream_model": "ConsumerPriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model ConsumerPriceIndex --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:52:53.894273+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "7ff217dc85b36b3bddc5d128b1bcd6d5ccc2851e5a9a25e5c9e2c0620b11db46",
+            "before_sha256": "7ff217dc85b36b3bddc5d128b1bcd6d5ccc2851e5a9a25e5c9e2c0620b11db46",
+            "path": "docs/evidence/C101/fixtures/oecd/ConsumerPriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::ConsumerPriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/ConsumerPriceIndex/contract.json",
+        "sha256": "d35e5b34d7a156ef64d31de8ff4c6e942f6689daf410824f4333eb455d8a6426"
+      },
+      "status": "PASS",
+      "upstream_model": "ConsumerPriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model ConsumerPriceIndex --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:52:54.979341+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "7ff217dc85b36b3bddc5d128b1bcd6d5ccc2851e5a9a25e5c9e2c0620b11db46",
+            "before_sha256": "7ff217dc85b36b3bddc5d128b1bcd6d5ccc2851e5a9a25e5c9e2c0620b11db46",
+            "path": "docs/evidence/C101/fixtures/oecd/ConsumerPriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::ConsumerPriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/ConsumerPriceIndex/counterfact.json",
+        "sha256": "ba6ab12967704d60e68988ad67738ff5e45adb3c3e421f770d29cace863dfc70"
+      },
+      "status": "PASS",
+      "upstream_model": "ConsumerPriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CountryInterestRates --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:52:55.834304+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::CountryInterestRates",
+        "path": "docs/evidence/C101/receipts/oecd/CountryInterestRates/implementation.json",
+        "sha256": "f8fff317670a49ec963dd5cc797391a672ddb22080e1b9931d89113aef7fba07"
+      },
+      "status": "PASS",
+      "upstream_model": "CountryInterestRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CountryInterestRates --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:52:56.904977+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "2957de70826e9f5c4c6b9bbf96be547cba7bce16b1ae7fe4b5073f7abafe0124",
+            "before_sha256": "2957de70826e9f5c4c6b9bbf96be547cba7bce16b1ae7fe4b5073f7abafe0124",
+            "path": "docs/evidence/C101/fixtures/oecd/CountryInterestRates.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::CountryInterestRates",
+        "path": "docs/evidence/C101/receipts/oecd/CountryInterestRates/direct.json",
+        "sha256": "f8cb0fbcef359082be59b5df5924b3c8e0763fd8ad0d818922f06ee3362acecc"
+      },
+      "status": "PASS",
+      "upstream_model": "CountryInterestRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CountryInterestRates --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:52:58.102024+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "2957de70826e9f5c4c6b9bbf96be547cba7bce16b1ae7fe4b5073f7abafe0124",
+            "before_sha256": "2957de70826e9f5c4c6b9bbf96be547cba7bce16b1ae7fe4b5073f7abafe0124",
+            "path": "docs/evidence/C101/fixtures/oecd/CountryInterestRates.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::CountryInterestRates",
+        "path": "docs/evidence/C101/receipts/oecd/CountryInterestRates/service.json",
+        "sha256": "6e7edde1ed7312a3fa5c6b6b9f8930c0fd03c701fe5b3cdfff35ca39fa15d40c"
+      },
+      "status": "PASS",
+      "upstream_model": "CountryInterestRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CountryInterestRates --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:52:59.182824+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "2957de70826e9f5c4c6b9bbf96be547cba7bce16b1ae7fe4b5073f7abafe0124",
+            "before_sha256": "2957de70826e9f5c4c6b9bbf96be547cba7bce16b1ae7fe4b5073f7abafe0124",
+            "path": "docs/evidence/C101/fixtures/oecd/CountryInterestRates.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::CountryInterestRates",
+        "path": "docs/evidence/C101/receipts/oecd/CountryInterestRates/contract.json",
+        "sha256": "cde6af327a1b3f9b1196cd65012beaa0ac2f6a0bc28f9d6789083dbdccd06583"
+      },
+      "status": "PASS",
+      "upstream_model": "CountryInterestRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CountryInterestRates --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:53:00.270069+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "2957de70826e9f5c4c6b9bbf96be547cba7bce16b1ae7fe4b5073f7abafe0124",
+            "before_sha256": "2957de70826e9f5c4c6b9bbf96be547cba7bce16b1ae7fe4b5073f7abafe0124",
+            "path": "docs/evidence/C101/fixtures/oecd/CountryInterestRates.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::CountryInterestRates",
+        "path": "docs/evidence/C101/receipts/oecd/CountryInterestRates/counterfact.json",
+        "sha256": "1df570af100b89b327c578acb2006e93b87919804bf0a4389498bee359a86e61"
+      },
+      "status": "PASS",
+      "upstream_model": "CountryInterestRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpNominal --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:53:01.126827+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpNominal",
+        "path": "docs/evidence/C101/receipts/oecd/GdpNominal/implementation.json",
+        "sha256": "e9833ddbd5a4500150c2bc7e7c25ca588d54dc4a14b5ff3417eab4cda9eb26ad"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpNominal"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpNominal --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:53:02.193588+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "b7c1b56c44cc948c45735925bf428559c6f0d98a73a3150eda32f379f6f70eb7",
+            "before_sha256": "b7c1b56c44cc948c45735925bf428559c6f0d98a73a3150eda32f379f6f70eb7",
+            "path": "docs/evidence/C101/fixtures/oecd/GdpNominal.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpNominal",
+        "path": "docs/evidence/C101/receipts/oecd/GdpNominal/direct.json",
+        "sha256": "f53ea604ecb4cf736c1406009b129480d653c3918cf5c9970586734bc1188bd6"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpNominal"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpNominal --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:53:03.389741+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "b7c1b56c44cc948c45735925bf428559c6f0d98a73a3150eda32f379f6f70eb7",
+            "before_sha256": "b7c1b56c44cc948c45735925bf428559c6f0d98a73a3150eda32f379f6f70eb7",
+            "path": "docs/evidence/C101/fixtures/oecd/GdpNominal.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpNominal",
+        "path": "docs/evidence/C101/receipts/oecd/GdpNominal/service.json",
+        "sha256": "b6af48c82ccfc2d35ae4fb572c29a77ba30664913e814e6c82ebbf15c4e10bfe"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpNominal"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpNominal --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:53:04.471006+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "b7c1b56c44cc948c45735925bf428559c6f0d98a73a3150eda32f379f6f70eb7",
+            "before_sha256": "b7c1b56c44cc948c45735925bf428559c6f0d98a73a3150eda32f379f6f70eb7",
+            "path": "docs/evidence/C101/fixtures/oecd/GdpNominal.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpNominal",
+        "path": "docs/evidence/C101/receipts/oecd/GdpNominal/contract.json",
+        "sha256": "3021820c5e3c8807efb89dc5151ce26a45425bb43a04e41042b2d7e526323d1e"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpNominal"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpNominal --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:53:05.551578+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "b7c1b56c44cc948c45735925bf428559c6f0d98a73a3150eda32f379f6f70eb7",
+            "before_sha256": "b7c1b56c44cc948c45735925bf428559c6f0d98a73a3150eda32f379f6f70eb7",
+            "path": "docs/evidence/C101/fixtures/oecd/GdpNominal.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpNominal",
+        "path": "docs/evidence/C101/receipts/oecd/GdpNominal/counterfact.json",
+        "sha256": "e1c2145d752cb16563147f40b88fd6c79752364bb2131bf356927389341bc57e"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpNominal"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpReal --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:53:06.409529+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpReal",
+        "path": "docs/evidence/C101/receipts/oecd/GdpReal/implementation.json",
+        "sha256": "bdfd42213c6c423d7865739abfe4d5284bcf081b7d4e83f6169f1894b5ac2dbf"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpReal"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpReal --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:53:07.483591+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "4e5562d4b1517e9e143b3f5d893a2187a08a2dcd94dcd1d4610fa41fedd0b057",
+            "before_sha256": "4e5562d4b1517e9e143b3f5d893a2187a08a2dcd94dcd1d4610fa41fedd0b057",
+            "path": "docs/evidence/C101/fixtures/oecd/GdpReal.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpReal",
+        "path": "docs/evidence/C101/receipts/oecd/GdpReal/direct.json",
+        "sha256": "977833a09a8c457492558247ecc3df8b961fe59adb6f8edef4ea3f784c7847de"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpReal"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpReal --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:53:08.684097+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "4e5562d4b1517e9e143b3f5d893a2187a08a2dcd94dcd1d4610fa41fedd0b057",
+            "before_sha256": "4e5562d4b1517e9e143b3f5d893a2187a08a2dcd94dcd1d4610fa41fedd0b057",
+            "path": "docs/evidence/C101/fixtures/oecd/GdpReal.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpReal",
+        "path": "docs/evidence/C101/receipts/oecd/GdpReal/service.json",
+        "sha256": "661af6ffbc3aff92d082269aa426c5bfb2c82860351459e281e277d6e44fb20e"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpReal"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpReal --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:53:09.762910+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "4e5562d4b1517e9e143b3f5d893a2187a08a2dcd94dcd1d4610fa41fedd0b057",
+            "before_sha256": "4e5562d4b1517e9e143b3f5d893a2187a08a2dcd94dcd1d4610fa41fedd0b057",
+            "path": "docs/evidence/C101/fixtures/oecd/GdpReal.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpReal",
+        "path": "docs/evidence/C101/receipts/oecd/GdpReal/contract.json",
+        "sha256": "8faba15a8a5cfc700d38e540817a253a1aa6e881209c5d0b9eacf4ce5d116f8b"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpReal"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpReal --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:53:10.841899+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "4e5562d4b1517e9e143b3f5d893a2187a08a2dcd94dcd1d4610fa41fedd0b057",
+            "before_sha256": "4e5562d4b1517e9e143b3f5d893a2187a08a2dcd94dcd1d4610fa41fedd0b057",
+            "path": "docs/evidence/C101/fixtures/oecd/GdpReal.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpReal",
+        "path": "docs/evidence/C101/receipts/oecd/GdpReal/counterfact.json",
+        "sha256": "7d27560458dda94fbb5741707482c4a8095436f3bf54213bf644735ff6e3516b"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpReal"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpForecast --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:53:11.710546+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpForecast",
+        "path": "docs/evidence/C101/receipts/oecd/GdpForecast/implementation.json",
+        "sha256": "5574323430af3a6ac3bc106d091cb94b80dd21e5e7e60fe173bb65ed7ce3c6ab"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpForecast"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpForecast --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:53:12.792060+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "1d775e482eb0aa11ef6b863409b258fb12173ccf29e62dbdb59f1f7fb7efd2a1",
+            "before_sha256": "1d775e482eb0aa11ef6b863409b258fb12173ccf29e62dbdb59f1f7fb7efd2a1",
+            "path": "docs/evidence/C101/fixtures/oecd/GdpForecast.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpForecast",
+        "path": "docs/evidence/C101/receipts/oecd/GdpForecast/direct.json",
+        "sha256": "847807b0b02a446d164d8dee67ab88c5d56727367691ac70e3846dc4ad38ec3b"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpForecast"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpForecast --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:53:13.994457+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "1d775e482eb0aa11ef6b863409b258fb12173ccf29e62dbdb59f1f7fb7efd2a1",
+            "before_sha256": "1d775e482eb0aa11ef6b863409b258fb12173ccf29e62dbdb59f1f7fb7efd2a1",
+            "path": "docs/evidence/C101/fixtures/oecd/GdpForecast.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpForecast",
+        "path": "docs/evidence/C101/receipts/oecd/GdpForecast/service.json",
+        "sha256": "d8fb681876326686b269b44b65aa16721f970d8c89e502afe6596dac396205e8"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpForecast"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpForecast --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:53:15.076321+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "1d775e482eb0aa11ef6b863409b258fb12173ccf29e62dbdb59f1f7fb7efd2a1",
+            "before_sha256": "1d775e482eb0aa11ef6b863409b258fb12173ccf29e62dbdb59f1f7fb7efd2a1",
+            "path": "docs/evidence/C101/fixtures/oecd/GdpForecast.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpForecast",
+        "path": "docs/evidence/C101/receipts/oecd/GdpForecast/contract.json",
+        "sha256": "70eb13a278896a8639b4ff89f532c7babd31ed57fb48baf345c02c28aef89500"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpForecast"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpForecast --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:53:16.163503+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "1d775e482eb0aa11ef6b863409b258fb12173ccf29e62dbdb59f1f7fb7efd2a1",
+            "before_sha256": "1d775e482eb0aa11ef6b863409b258fb12173ccf29e62dbdb59f1f7fb7efd2a1",
+            "path": "docs/evidence/C101/fixtures/oecd/GdpForecast.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::GdpForecast",
+        "path": "docs/evidence/C101/receipts/oecd/GdpForecast/counterfact.json",
+        "sha256": "84002ffece4d80f2fdff38c15d307fcb3c8493cf66f97521fd105366086bdce7"
+      },
+      "status": "PASS",
+      "upstream_model": "GdpForecast"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model HousePriceIndex --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:53:17.016506+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::HousePriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/HousePriceIndex/implementation.json",
+        "sha256": "11a199e17814c7a1134540ce98c4ba759523ffccb66222d8a2c2969927190797"
+      },
+      "status": "PASS",
+      "upstream_model": "HousePriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model HousePriceIndex --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:53:18.085231+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "8058a113d04150afe05a13d4f201784ede24cd19eef2746c8afe03ed3896cfb5",
+            "before_sha256": "8058a113d04150afe05a13d4f201784ede24cd19eef2746c8afe03ed3896cfb5",
+            "path": "docs/evidence/C101/fixtures/oecd/HousePriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::HousePriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/HousePriceIndex/direct.json",
+        "sha256": "46689f03db6e42a4ce30226a517078bdd0919eaf60398140f0d4e8d234834eb9"
+      },
+      "status": "PASS",
+      "upstream_model": "HousePriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model HousePriceIndex --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:53:19.299706+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "8058a113d04150afe05a13d4f201784ede24cd19eef2746c8afe03ed3896cfb5",
+            "before_sha256": "8058a113d04150afe05a13d4f201784ede24cd19eef2746c8afe03ed3896cfb5",
+            "path": "docs/evidence/C101/fixtures/oecd/HousePriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::HousePriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/HousePriceIndex/service.json",
+        "sha256": "cfd3a52734ac2ad7f81f6a662161b67683444c3afe787be77d9a919ccea70684"
+      },
+      "status": "PASS",
+      "upstream_model": "HousePriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model HousePriceIndex --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:53:20.385076+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "8058a113d04150afe05a13d4f201784ede24cd19eef2746c8afe03ed3896cfb5",
+            "before_sha256": "8058a113d04150afe05a13d4f201784ede24cd19eef2746c8afe03ed3896cfb5",
+            "path": "docs/evidence/C101/fixtures/oecd/HousePriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::HousePriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/HousePriceIndex/contract.json",
+        "sha256": "74da2f20acd0a73a273a91ff3ab5ca1d13da711b3ad68eaa2007fd0f879b41e7"
+      },
+      "status": "PASS",
+      "upstream_model": "HousePriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model HousePriceIndex --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:53:21.472277+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "8058a113d04150afe05a13d4f201784ede24cd19eef2746c8afe03ed3896cfb5",
+            "before_sha256": "8058a113d04150afe05a13d4f201784ede24cd19eef2746c8afe03ed3896cfb5",
+            "path": "docs/evidence/C101/fixtures/oecd/HousePriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::HousePriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/HousePriceIndex/counterfact.json",
+        "sha256": "c431a96dfbd97be50a3e4d0843017250fed224d01c0e94bb8cb97215647ce392"
+      },
+      "status": "PASS",
+      "upstream_model": "HousePriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model SharePriceIndex --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:53:22.339712+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::SharePriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/SharePriceIndex/implementation.json",
+        "sha256": "cf2904d514215fc44973b38db544c1620c4dbe77bc3555e57548e6634961b0eb"
+      },
+      "status": "PASS",
+      "upstream_model": "SharePriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model SharePriceIndex --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:53:23.413454+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "981e3da0ef21eec93718f7e03d108c080dcbe5fd605045601bdee38f332907d5",
+            "before_sha256": "981e3da0ef21eec93718f7e03d108c080dcbe5fd605045601bdee38f332907d5",
+            "path": "docs/evidence/C101/fixtures/oecd/SharePriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::SharePriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/SharePriceIndex/direct.json",
+        "sha256": "78d61f4ece62697f9d0305a0f1d3fa41a885a0fcc9d1d987d76206fb80843636"
+      },
+      "status": "PASS",
+      "upstream_model": "SharePriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model SharePriceIndex --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:53:24.604583+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "981e3da0ef21eec93718f7e03d108c080dcbe5fd605045601bdee38f332907d5",
+            "before_sha256": "981e3da0ef21eec93718f7e03d108c080dcbe5fd605045601bdee38f332907d5",
+            "path": "docs/evidence/C101/fixtures/oecd/SharePriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::SharePriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/SharePriceIndex/service.json",
+        "sha256": "e9a9125171ec955115e74c39da6a0308af1229214cdaa88306e7d28f75525d13"
+      },
+      "status": "PASS",
+      "upstream_model": "SharePriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model SharePriceIndex --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:53:25.701043+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "981e3da0ef21eec93718f7e03d108c080dcbe5fd605045601bdee38f332907d5",
+            "before_sha256": "981e3da0ef21eec93718f7e03d108c080dcbe5fd605045601bdee38f332907d5",
+            "path": "docs/evidence/C101/fixtures/oecd/SharePriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::SharePriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/SharePriceIndex/contract.json",
+        "sha256": "636f0f452729ef3fe3b9a059cf39bad2f59d102423035dfd76caf611e9bc5157"
+      },
+      "status": "PASS",
+      "upstream_model": "SharePriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model SharePriceIndex --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:53:26.793287+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "981e3da0ef21eec93718f7e03d108c080dcbe5fd605045601bdee38f332907d5",
+            "before_sha256": "981e3da0ef21eec93718f7e03d108c080dcbe5fd605045601bdee38f332907d5",
+            "path": "docs/evidence/C101/fixtures/oecd/SharePriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::SharePriceIndex",
+        "path": "docs/evidence/C101/receipts/oecd/SharePriceIndex/counterfact.json",
+        "sha256": "6475d2ab8d28281f0fe9a98d36746f7f9c92b9b25c8a4065878bcb97dbc2fada"
+      },
+      "status": "PASS",
+      "upstream_model": "SharePriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model Unemployment --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T08:53:27.657398+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::Unemployment",
+        "path": "docs/evidence/C101/receipts/oecd/Unemployment/implementation.json",
+        "sha256": "3077d4db5113a89a0156d4705d96098cc491e1be59aaa9e6e15b60d6ef8155a0"
+      },
+      "status": "PASS",
+      "upstream_model": "Unemployment"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model Unemployment --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T08:53:28.726922+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "89d190b8747fb450b899cb69dca689dba2c9bb4abaa2f8238bf0f71034e2c8be",
+            "before_sha256": "89d190b8747fb450b899cb69dca689dba2c9bb4abaa2f8238bf0f71034e2c8be",
+            "path": "docs/evidence/C101/fixtures/oecd/Unemployment.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::Unemployment",
+        "path": "docs/evidence/C101/receipts/oecd/Unemployment/direct.json",
+        "sha256": "4dd0c9a6b940ac874636d7970db1808fdce9783ce296c70d65200fa7005fad64"
+      },
+      "status": "PASS",
+      "upstream_model": "Unemployment"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model Unemployment --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T08:53:29.919532+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "89d190b8747fb450b899cb69dca689dba2c9bb4abaa2f8238bf0f71034e2c8be",
+            "before_sha256": "89d190b8747fb450b899cb69dca689dba2c9bb4abaa2f8238bf0f71034e2c8be",
+            "path": "docs/evidence/C101/fixtures/oecd/Unemployment.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::Unemployment",
+        "path": "docs/evidence/C101/receipts/oecd/Unemployment/service.json",
+        "sha256": "fe82b85177b4536af9cfc8c37cb3e813e233d05795a82a32e636ed3dc8355b5b"
+      },
+      "status": "PASS",
+      "upstream_model": "Unemployment"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model Unemployment --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T08:53:31.011354+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "89d190b8747fb450b899cb69dca689dba2c9bb4abaa2f8238bf0f71034e2c8be",
+            "before_sha256": "89d190b8747fb450b899cb69dca689dba2c9bb4abaa2f8238bf0f71034e2c8be",
+            "path": "docs/evidence/C101/fixtures/oecd/Unemployment.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::Unemployment",
+        "path": "docs/evidence/C101/receipts/oecd/Unemployment/contract.json",
+        "sha256": "f7e20ee680ae959d85a056ca07fa2d6b65ae8e962b49e7c624837a8b69ee1b13"
+      },
+      "status": "PASS",
+      "upstream_model": "Unemployment"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model Unemployment --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T08:53:32.094406+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "89d190b8747fb450b899cb69dca689dba2c9bb4abaa2f8238bf0f71034e2c8be",
+            "before_sha256": "89d190b8747fb450b899cb69dca689dba2c9bb4abaa2f8238bf0f71034e2c8be",
+            "path": "docs/evidence/C101/fixtures/oecd/Unemployment.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+            "path": "scripts/quality/iter2_witnesses/oecd.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+            "path": "opendata/data/providers/oecd/registration.py"
+          },
+          {
+            "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+            "path": "opendata/data/providers/oecd/provider.py"
+          },
+          {
+            "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+            "path": "opendata/data/providers/oecd/models/_client.py"
+          },
+          {
+            "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+            "path": "opendata/data/providers/oecd/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "oecd",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "oecd::Unemployment",
+        "path": "docs/evidence/C101/receipts/oecd/Unemployment/counterfact.json",
+        "sha256": "999c2a9a8ea62a0c0742346c45c7bf56b8fef17a4aa6278212debd12812dd5aa"
+      },
+      "status": "PASS",
+      "upstream_model": "Unemployment"
+    }
+  ],
+  "generated_at_utc": "2026-10-15T08:53:33.514818+00:00",
+  "generated_by": "scripts/quality/iter2_claims_producer.py",
+  "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
+  "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",
+  "primary_reviews": [],
+  "schema_version": 1
+}

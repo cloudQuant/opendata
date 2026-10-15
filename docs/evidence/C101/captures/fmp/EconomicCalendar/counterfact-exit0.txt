@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EconomicCalendar --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": ["change_percentage"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": ["change_percentage"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the economic calendar publishes changePercentage as the numeric period-over-period change; a percent-formatted string is not that number, and the contract keeps the cell rather than inventing a value, so the adapter must refuse with FMP_BAD_SHAPE attributing invalid=('change_percentage',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

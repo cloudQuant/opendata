@@ -471,6 +471,7 @@ class ImfChokePointInfoFetcher(Fetcher[ImfChokePointInfoQuery, tuple[_ArcGisFeat
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "MaritimeChokePointInfo"
+    row_model: ClassVar[type[ImfMaritimeChokePointInfo]] = ImfMaritimeChokePointInfo
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="imf_maritime_chokepoint_info",
@@ -548,6 +549,7 @@ class ImfChokePointVolumeFetcher(Fetcher[ImfChokePointVolumeQuery, tuple[_ArcGis
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "MaritimeChokePointVolume"
+    row_model: ClassVar[type[ImfMaritimeChokePointVolume]] = ImfMaritimeChokePointVolume
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="imf_maritime_chokepoint_volume",
@@ -680,6 +682,7 @@ class ImfPortInfoFetcher(Fetcher[ImfPortInfoQuery, tuple[_ArcGisFeature, ...]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "PortInfo"
+    row_model: ClassVar[type[ImfPortInfo]] = ImfPortInfo
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="imf_port_info",
@@ -774,6 +777,7 @@ class ImfPortVolumeFetcher(Fetcher[ImfPortVolumeQuery, tuple[_ArcGisFeature, ...
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "PortVolume"
+    row_model: ClassVar[type[ImfPortVolume]] = ImfPortVolume
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="imf_port_volume",

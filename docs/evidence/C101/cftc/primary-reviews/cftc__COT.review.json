@@ -1,7 +1,7 @@
 {
   "claims_document": {
     "path": "docs/evidence/C101/cftc/claims.json",
-    "sha256": "7ef9c5351462a8a12043acdd8013d1d56991538eba8cbd2f527e175bf8b90837"
+    "sha256": "fe4e1b42f5b123631c317bcf9d1aa22dbd4cd50e457e1ad57c4249e3e8ad6c27"
   },
   "decision": "ACCEPT",
   "evidence_snapshot": {
@@ -21,8 +21,8 @@
         ],
         "contract_version": "sha256:c29e6f8461aca3bb96c58980a3fb25ae43e04137534ab3f1aedde1412e0d6b93",
         "receipt": {
-          "path": "docs/evidence/C101/cftc/receipts/cftc/COT/contract.json",
-          "sha256": "23d4be3ad983f3c0c0c4f289c372db20ea925986c74b1e942851136317fa5260"
+          "path": "docs/evidence/C101/receipts/cftc/COT/contract.json",
+          "sha256": "b75f12470de6aa8e39b2938849743896e0ca33a0f0e1c2bda5058c56b0a3f8e4"
         },
         "source_pins": [
           {
@@ -67,8 +67,8 @@
         ],
         "contract_version": "sha256:c29e6f8461aca3bb96c58980a3fb25ae43e04137534ab3f1aedde1412e0d6b93",
         "receipt": {
-          "path": "docs/evidence/C101/cftc/receipts/cftc/COT/counterfact.json",
-          "sha256": "2676108042f956962c678197b28c181ae6d27924e146e9514d47648d450cdf3f"
+          "path": "docs/evidence/C101/receipts/cftc/COT/counterfact.json",
+          "sha256": "75f7c3dffe13088dfbb0e31c17c2e2ad2010e6de8e6d8586e8be2b4f3fa23294"
         },
         "source_pins": [
           {
@@ -113,8 +113,8 @@
         ],
         "contract_version": "sha256:c29e6f8461aca3bb96c58980a3fb25ae43e04137534ab3f1aedde1412e0d6b93",
         "receipt": {
-          "path": "docs/evidence/C101/cftc/receipts/cftc/COT/direct.json",
-          "sha256": "498fc24b47417802efc1c60e8e748e5a9bc8f7166b6357038a80c290a1c9b3f8"
+          "path": "docs/evidence/C101/receipts/cftc/COT/direct.json",
+          "sha256": "1686a07761f8934e0bc891bef12c46f6826187dafe433c1b41ae04fcf627288a"
         },
         "source_pins": [
           {
@@ -159,8 +159,8 @@
         ],
         "contract_version": "sha256:c29e6f8461aca3bb96c58980a3fb25ae43e04137534ab3f1aedde1412e0d6b93",
         "receipt": {
-          "path": "docs/evidence/C101/cftc/receipts/cftc/COT/implementation.json",
-          "sha256": "733d5e31994d96b086f7e72256f063a93945450b93a945eda2bb1f0a2999b1c1"
+          "path": "docs/evidence/C101/receipts/cftc/COT/implementation.json",
+          "sha256": "4aaa6dd64cc6ac68b2687576b50622eb385665742bd050513e21fb4f52599f59"
         },
         "source_pins": [
           {
@@ -205,8 +205,8 @@
         ],
         "contract_version": "sha256:c29e6f8461aca3bb96c58980a3fb25ae43e04137534ab3f1aedde1412e0d6b93",
         "receipt": {
-          "path": "docs/evidence/C101/cftc/receipts/cftc/COT/service.json",
-          "sha256": "135a52971c23cbab2cd192be06f589d7932d79f131e33a41a57e2cce77058084"
+          "path": "docs/evidence/C101/receipts/cftc/COT/service.json",
+          "sha256": "a3b30305f218a3f190e06a443b4939284c4b35094a22e669b54e5496782a4e41"
         },
         "source_pins": [
           {
@@ -262,7 +262,7 @@
         "--phase",
         "contract",
         "--evidence-root",
-        "docs/evidence/C101/cftc"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -279,7 +279,7 @@
         "--phase",
         "counterfact",
         "--evidence-root",
-        "docs/evidence/C101/cftc"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -296,7 +296,7 @@
         "--phase",
         "direct",
         "--evidence-root",
-        "docs/evidence/C101/cftc"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -313,7 +313,7 @@
         "--phase",
         "implementation",
         "--evidence-root",
-        "docs/evidence/C101/cftc"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -330,15 +330,15 @@
         "--phase",
         "service",
         "--evidence-root",
-        "docs/evidence/C101/cftc"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
       "status": "matched"
     }
   },
-  "reviewed_at_utc": "2026-10-14T13:34:57Z",
-  "reviewer_id": "iter2-acceptance-reviewer-cftc",
+  "reviewed_at_utc": "2026-10-15T08:57:05Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
   "reviewer_model": "qoder-cli-agent",
   "reviewer_role": "acceptance_reviewer",
   "reviewer_type": "primary_model",

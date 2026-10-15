@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 from io import BytesIO
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from openpyxl import load_workbook
 
@@ -19,6 +19,9 @@ from opendata.data.providers.federal_reserve.models._iter2_common import (
     FederalReserveDateQuery,
     parse_float,
 )
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
 
 _WORKBOOK_URL = (
     "https://www.philadelphiafed.org/-/media/FRBP/Assets/Surveys-And-Data/"
@@ -69,6 +72,12 @@ class FederalReserveInflationExpectationsFetcher(Fetcher[InflationExpectationsQu
         source="federal_reserve",
         verified=False,
     )
+    #: The contract ``domains.yaml`` declares for this domain -- verified by
+    #: ``contract_model('federal_reserve_inflation_expectations') ->
+    #: opendata.data.models.federal_reserve_macro.FederalReserveInflationExpectations``, which is
+    #: the class :meth:`transform_data` already builds, and the governed query service revalidates
+    #: every row against it rather than against this fetcher's own import.
+    row_model: ClassVar[type[ContractModel]] = FederalReserveInflationExpectations
 
     def transform_query(self, **kwargs: object) -> InflationExpectationsQuery:
         """Validate the optional inclusive date window."""

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexConstituents --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "CBOE_SHAPE_INVALID", "rejected": ["volume"], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "CBOE_SHAPE_INVALID", "rejected": ["volume"], "status": null}, "reason": "publishing a boolean where the declaration says an int kind is the numeric guard's own refusal: pydantic would silently widen True to 1 share, so the engine must refuse with CBOE_SHAPE_INVALID attributing rejected=('volume',); untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

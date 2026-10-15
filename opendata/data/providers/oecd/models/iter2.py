@@ -461,6 +461,7 @@ class OecdCompositeLeadingIndicatorFetcher(Fetcher[OecdCliQuery, list[dict[str, 
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CompositeLeadingIndicator"
+    row_model: ClassVar[type[ContractModel]] = OecdCompositeLeadingIndicator
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_oecd_cli",
@@ -535,6 +536,7 @@ class OecdConsumerPriceIndexFetcher(Fetcher[OecdCpiQuery, list[dict[str, object]
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "ConsumerPriceIndex"
+    row_model: ClassVar[type[ContractModel]] = OecdConsumerPriceIndex
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_oecd_cpi",
@@ -610,6 +612,7 @@ class OecdCountryInterestRateFetcher(Fetcher[OecdRateQuery, list[dict[str, objec
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CountryInterestRates"
+    row_model: ClassVar[type[ContractModel]] = OecdCountryInterestRate
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_oecd_interest_rates",
@@ -654,6 +657,7 @@ class OecdSharePriceIndexFetcher(Fetcher[OecdSharePriceQuery, list[dict[str, obj
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "SharePriceIndex"
+    row_model: ClassVar[type[ContractModel]] = OecdSharePriceIndex
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_oecd_share_price_index",
@@ -699,6 +703,7 @@ class OecdHousePriceIndexFetcher(Fetcher[OecdHousePriceQuery, list[dict[str, obj
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "HousePriceIndex"
+    row_model: ClassVar[type[ContractModel]] = OecdHousePriceIndex
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_oecd_house_price_index",
@@ -774,6 +779,7 @@ class OecdGdpNominalFetcher(Fetcher[OecdGdpQuery, list[dict[str, object]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "GdpNominal"
+    row_model: ClassVar[type[ContractModel]] = OecdGdpNominal
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_oecd_gdp_nominal",
@@ -873,6 +879,7 @@ class OecdGdpRealFetcher(Fetcher[OecdGdpRealQuery, list[dict[str, object]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "GdpReal"
+    row_model: ClassVar[type[ContractModel]] = OecdGdpReal
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_oecd_gdp_real",
@@ -934,6 +941,7 @@ class OecdGdpForecastFetcher(Fetcher[OecdGdpForecastQuery, list[dict[str, object
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "GdpForecast"
+    row_model: ClassVar[type[ContractModel]] = OecdGdpForecast
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_oecd_gdp_forecast",
@@ -1000,6 +1008,7 @@ class OecdUnemploymentFetcher(Fetcher[OecdUnemploymentQuery, list[dict[str, obje
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "Unemployment"
+    row_model: ClassVar[type[ContractModel]] = OecdUnemployment
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_oecd_unemployment",

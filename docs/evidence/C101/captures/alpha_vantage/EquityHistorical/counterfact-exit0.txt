@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "AlphaVantageResponseError", "refusal_code": "ALPHA_VANTAGE_BAD_RESPONSE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "AlphaVantageResponseError", "refusal_code": "ALPHA_VANTAGE_BAD_RESPONSE", "rejected": [], "status": null}, "reason": "Alpha Vantage publishes OHLCV cells as numeric strings, so a daily bar whose '4. close' cell is the literal text 'not-a-number' must be refused by _parse_price_record as AlphaVantageResponseError instead of being coerced into an equity history row; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

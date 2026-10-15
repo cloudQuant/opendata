@@ -1,0 +1,71 @@
+population: registered_entries=87 stale_paths=8
+  stale: opendata/data/http_client.py
+  stale: opendata/data/providers/akshare/provider.py
+  stale: opendata/data/providers/catalog.py
+  stale: opendata/data/providers/ths/models/fund_etf_daily.py
+  stale: opendata/data/providers/ths/models/index_daily.py
+  stale: opendata/data/providers/ths/models/trading_calendar.py
+  stale: opendata/services/data_acquisition.py
+  stale: scripts/quality/a2_check.py
+
+== opendata/data/http_client.py
+   pin=f02de03fbed8 head=b7d3677e6531 live=b7d3677e6531 pin==head=False pin==live=False
+   findings head/live=0/0 added={} removed={}
+   dependency_edges_added={}
+   brand_lines head/live=1/1 load_shape head/live=20/20
+   verdict: REPIN_OK
+
+== opendata/data/providers/akshare/provider.py
+   pin=5c145bd2a964 head=bbe848dc44ff live=bbe848dc44ff pin==head=False pin==live=False
+   findings head/live=1/1 added={} removed={}
+   dependency_edges_added={}
+   brand_lines head/live=25/25 load_shape head/live=1/1
+   verdict: REPIN_OK
+
+== opendata/data/providers/catalog.py
+   pin=fe9364af0eb8 head=7e0b6ec404b0 live=7e0b6ec404b0 pin==head=False pin==live=False
+   findings head/live=0/0 added={} removed={}
+   dependency_edges_added={}
+   brand_lines head/live=10/10 load_shape head/live=40/40
+   verdict: REPIN_OK
+
+== opendata/data/providers/ths/models/fund_etf_daily.py
+   pin=3c606621f6fb head=67b09b4c8787 live=67b09b4c8787 pin==head=False pin==live=False
+   findings head/live=0/0 added={} removed={}
+   dependency_edges_added={}
+   brand_lines head/live=3/3 load_shape head/live=9/9
+   verdict: REPIN_OK
+
+== opendata/data/providers/ths/models/index_daily.py
+   pin=c8f382b997d1 head=76814521861b live=76814521861b pin==head=False pin==live=False
+   findings head/live=0/0 added={} removed={}
+   dependency_edges_added={}
+   brand_lines head/live=1/1 load_shape head/live=8/8
+   verdict: REPIN_OK
+
+== opendata/data/providers/ths/models/trading_calendar.py
+   pin=b3990ef76ff2 head=018de24e9f39 live=018de24e9f39 pin==head=False pin==live=False
+   findings head/live=0/0 added={} removed={}
+   dependency_edges_added={}
+   brand_lines head/live=1/1 load_shape head/live=10/10
+   verdict: REPIN_OK
+
+== opendata/services/data_acquisition.py
+   pin=8ee7aa471aea head=f704f84443df live=f704f84443df pin==head=False pin==live=False
+   findings head/live=0/0 added={} removed={}
+   dependency_edges_added={}
+   brand_lines head/live=11/11 load_shape head/live=24/24
+   verdict: REPIN_OK
+
+== scripts/quality/a2_check.py
+   pin=28f2b585ae2b head=bbeefba1c7f8 live=bbeefba1c7f8 pin==head=False pin==live=False
+   findings head/live=1/1 added={} removed={}
+   dependency_edges_added={}
+   brand_lines head/live=2/2 load_shape head/live=13/13
+   verdict: REPIN_OK
+
+face: stale=8 repin_ok=8 rejected=0 dependency_edges_added=0
+arm import-injection on opendata/data/http_client.py: REJECT(dep={('opendata/data/http_client.py', 'akshare', 'import'): 1}) (expected REJECT) -> PASS
+arm pin-corruption: stale_sha256_readings=87 of 87 (expected ==87) -> PASS
+
+read-only: policy untouched. Re-run with --apply once every verdict is REPIN_OK.

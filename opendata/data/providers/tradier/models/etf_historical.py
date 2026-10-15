@@ -24,6 +24,7 @@ class TradierEtfHistoricalFetcher(Fetcher[TradierHistoricalQuery, list[dict[str,
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "EtfHistorical"
+    row_model: ClassVar[type[TradierEtfHistorical]] = TradierEtfHistorical
     capability: ClassVar[Capability] = Capability(
         asset_class="etf",
         domain="tradier_etf_historical",

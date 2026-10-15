@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model WorldNews --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "TIINGO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "TIINGO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "the contract declares 'tickers' a list of strings and the documented body publishes a JSON array; collapsing it to one comma-joined string is not that shape, so the adapter must surface TIINGO_SHAPE_INVALID; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

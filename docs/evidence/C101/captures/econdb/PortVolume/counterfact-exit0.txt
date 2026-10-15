@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "the container-traffic route publishes import volume as a TEU number and EconDBPortVolume.import_teu is a StrictInt, so a boolean on the observation date is the adapter's own numeric guard refusing (iter2.py:_number rejects a bool-as-quantity before any row is built) rather than a zero-or-one container count; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

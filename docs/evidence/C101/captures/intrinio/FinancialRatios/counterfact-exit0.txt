@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model FinancialRatios --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_BAD_SHAPE", "rejected": [], "status": null}, "reason": "a fact value is a FinancialValue, whose guard refuses a bool before pydantic can widen it, and IntrinioFinancialRatios.current_ratio is a FinancialFloat with the same refusal, so a flag in the current-ratio cell is the shape failure INTRINIO_FINANCIALS_BAD_SHAPE rather than a solvency ratio of 1.0; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

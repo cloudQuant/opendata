@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model DiscountWindowPrimaryCreditRate --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "dropping 'realtime_end' removes the closing half of the revision interval the discount-window contract reads for every observation (it bounds the vintage the row keeps privately), so the adapter must refuse with FRED_BAD_OBSERVATION surfaced as a ProviderEngineError-shaped FredProviderError rather than publishing an open-ended observation; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model RiskPremium --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["total_equity_risk_premium"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["total_equity_risk_premium"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the country route publishes the total equity risk premium next to the country component, and the contract requires both; a row without the total states only the sovereign add-on, so the adapter must refuse with FMP_BAD_SHAPE attributing missing=('total_equity_risk_premium',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

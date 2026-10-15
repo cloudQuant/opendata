@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model HistoricalAttributes --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioShapeError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioShapeError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "an observation's value is a number and _optional_number refuses a boolean in a numeric field, because pydantic would widen True to 1.0 USD; the shape refusal INTRINIO_SHAPE_INVALID is the only honest answer; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

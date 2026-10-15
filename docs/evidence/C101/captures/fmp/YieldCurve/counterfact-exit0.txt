@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model YieldCurve --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": ["year10"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": ["year10"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the curve is expanded from the wide Treasury row, whose 10-year column is a JSON number in percentage points; prose in that cell cannot become a maturity observation, so the adapter must refuse with FMP_BAD_SHAPE attributing invalid=('year10',); untampered control produced 24 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

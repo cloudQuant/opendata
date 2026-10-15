@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "_get_pages tests 'next_page' not in payload before it reads the cursor, because a page that omits the pointer is indistinguishable from a page that ended the series, so a first page without next_page must be refused rather than quietly publishing two of the window's OHLCV days as if they were all of them; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

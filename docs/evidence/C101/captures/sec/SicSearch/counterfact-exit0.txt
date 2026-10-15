@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SicSearch --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_SIC_BAD_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_SIC_BAD_ROW", "rejected": [], "status": null}, "reason": "the contract's sic column is a SEC Standard Industrial Classification code, which is one to four digits, so a published five-digit code is a corrupt row and not a searchable classification; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

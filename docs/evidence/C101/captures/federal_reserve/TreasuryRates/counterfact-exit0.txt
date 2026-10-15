@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TreasuryRates --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "FEDERAL_RESERVE_SHAPE_INVALID", "rejected": ["year_10"], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "FEDERAL_RESERVE_SHAPE_INVALID", "rejected": ["year_10"], "status": null}, "reason": "the frozen H.15 row model FederalReserveTreasuryRate makes year_10 a float | None and the declaration spells only the published token ND (plus a blank) as its null_sentinel, so a tenor cell of 'ten point two' is not a rate the contract can carry; the engine builds the row model and surfaces pydantic's field name as FEDERAL_RESERVE_SHAPE_INVALID rejected=('year_10',) instead of letting one business day's 10-year yield disappear into an invented number; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

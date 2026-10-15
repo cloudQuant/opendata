@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model EquitySearch --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_TICKER_DIRECTORY_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_TICKER_DIRECTORY_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the exchange-ticker file documents exchange as a text column, and the row carries a number in that cell, so the directory parser must reject the whole file rather than publish an exchange the SecEquitySearchRecord contract cannot hold; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

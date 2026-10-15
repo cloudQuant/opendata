@@ -1,0 +1,174 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/oecd/CountryInterestRates/counterfact-exit0.txt",
+    "sha256": "3b5952beb93581646b0e950d412e3fa6c1316dd65b054ba1364a3b6e5b22efbd",
+    "size_bytes": 879,
+    "stdout_excerpt": "COUNTERFACT_JSON={\"expected\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"OecdProviderError\", \"refusal_code\": \"OECD_BAD_RESPONSE\", \"rejected\": [], \"status\": null}, \"observed\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"OecdProviderError\", \"refusal_code\": \"OECD_BAD_RESPONSE\", \"rejected\": [], \"status\": null}, \"reason\": \"the short-rate query is contracted to MEASURE=IR3TIB, so a payload row published under MEASURE=IRLT (the long rate) is a different series than the one requested and transform_data's expected_dimensions check must refuse it as OECD_BAD_RESPONSE; untampered control produced 3 row(s) through the same seam\"}\nVERDICT=PASS\n"
+  },
+  "counterfact": {
+    "expected": {
+      "invalid": [],
+      "missing": [],
+      "refusal_class": "OecdProviderError",
+      "refusal_code": "OECD_BAD_RESPONSE",
+      "rejected": [],
+      "status": null
+    },
+    "observed": {
+      "invalid": [],
+      "missing": [],
+      "refusal_class": "OecdProviderError",
+      "refusal_code": "OECD_BAD_RESPONSE",
+      "rejected": [],
+      "status": null
+    },
+    "reason": "the short-rate query is contracted to MEASURE=IR3TIB, so a payload row published under MEASURE=IRLT (the long rate) is a different series than the one requested and transform_data's expected_dimensions check must refuse it as OECD_BAD_RESPONSE; untampered control produced 3 row(s) through the same seam"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CountryInterestRates --phase counterfact --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-15T08:53:00.270069+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+          "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+          "path": "opendata/data/models/macro_iter2.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+      "fixture": [
+        {
+          "after_sha256": "2957de70826e9f5c4c6b9bbf96be547cba7bce16b1ae7fe4b5073f7abafe0124",
+          "before_sha256": "2957de70826e9f5c4c6b9bbf96be547cba7bce16b1ae7fe4b5073f7abafe0124",
+          "path": "docs/evidence/C101/fixtures/oecd/CountryInterestRates.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+          "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+          "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+          "path": "scripts/quality/iter2_witnesses/oecd.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+          "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+          "path": "opendata/data/providers/oecd/registration.py"
+        },
+        {
+          "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+          "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+          "path": "opendata/data/providers/oecd/provider.py"
+        },
+        {
+          "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+          "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+          "path": "opendata/data/providers/oecd/models/_client.py"
+        },
+        {
+          "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+          "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+          "path": "opendata/data/providers/oecd/models/iter2.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "oecd::CountryInterestRates",
+  "phase": "counterfact",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "path": "opendata/data/models/macro_iter2.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+    "fixture": [
+      {
+        "after_sha256": "2957de70826e9f5c4c6b9bbf96be547cba7bce16b1ae7fe4b5073f7abafe0124",
+        "before_sha256": "2957de70826e9f5c4c6b9bbf96be547cba7bce16b1ae7fe4b5073f7abafe0124",
+        "path": "docs/evidence/C101/fixtures/oecd/CountryInterestRates.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+        "before_sha256": "e81313e870af253d415ed6a6f17df7c2cfd01b121a08249da2da11e47a0a12f3",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+        "before_sha256": "64b367bd540456c564e467127e05a4169397fb82acbbe6a1d5148a10b2e1be40",
+        "path": "scripts/quality/iter2_witnesses/oecd.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+        "before_sha256": "a3ef4247a4f4dbd381cfd594c9403ca01bbdbd96f779e45631d3bf5410e167f9",
+        "path": "opendata/data/providers/oecd/registration.py"
+      },
+      {
+        "after_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+        "before_sha256": "f192d03c4daa836e5b5e450fd73603815db3becdfd2b6079afcbacaa80bdf19f",
+        "path": "opendata/data/providers/oecd/provider.py"
+      },
+      {
+        "after_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+        "before_sha256": "cfc78a8e099674a62973c34395c2379e065cacff79d86159edd288d149751363",
+        "path": "opendata/data/providers/oecd/models/_client.py"
+      },
+      {
+        "after_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+        "before_sha256": "9faeb17e33a200e8be42c334bbfd18df4429ef6b032a66abccf8d8432f2ed412",
+        "path": "opendata/data/providers/oecd/models/iter2.py"
+      }
+    ]
+  },
+  "provider": "oecd",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-oecd-CountryInterestRates",
+  "upstream_model": "CountryInterestRates"
+}

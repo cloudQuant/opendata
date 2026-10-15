@@ -1,5 +1,7 @@
 """Alpha Vantage stock history fetcher."""
 
+from typing import ClassVar
+
 from opendata.data.capability import Capability
 from opendata.data.models.alpha_vantage import AlphaVantageEquityHistorical
 from opendata.data.providers.alpha_vantage.models._historical import (
@@ -22,6 +24,7 @@ class AlphaVantageEquityHistoricalFetcher(
         notes="Offline fixtures only; provider identity and live semantics are unverified.",
     )
     canonical_model = "EquityHistorical"
+    row_model: ClassVar[type[AlphaVantageEquityHistorical]] = AlphaVantageEquityHistorical
     row_type = AlphaVantageEquityHistorical
     domain = "alpha_vantage_equity_historical"
     asset_class = "equity"

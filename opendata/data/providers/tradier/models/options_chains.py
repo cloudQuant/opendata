@@ -24,6 +24,7 @@ class TradierOptionsChainsFetcher(Fetcher[TradierOptionsChainQuery, list[dict[st
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "OptionsChains"
+    row_model: ClassVar[type[TradierOptionChain]] = TradierOptionChain
     capability: ClassVar[Capability] = Capability(
         asset_class="option",
         domain="tradier_options_chains",

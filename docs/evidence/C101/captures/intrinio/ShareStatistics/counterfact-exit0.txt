@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model ShareStatistics --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "transform_data reads row['trading_symbol'] before it can decide whether the cover page belongs to the requested symbol and raises when it is not a nonempty string, because a share-count record with no trading symbol cannot be matched to a ticker at all: INTRINIO_MARKET_SHAPE_INVALID, not a silently skipped page; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

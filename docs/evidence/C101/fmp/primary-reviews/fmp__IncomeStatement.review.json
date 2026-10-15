@@ -1,7 +1,7 @@
 {
   "claims_document": {
     "path": "docs/evidence/C101/fmp/claims.json",
-    "sha256": "d32e754a5919c1665174e8d3f1965a7cdba8c65cf67b5ffe84b24184dcd985f1"
+    "sha256": "8b1d9691ce8ec04fa5aa03e4034a0f31fda775e8b2fc40e791d4acfa8ff86cca"
   },
   "decision": "ACCEPT",
   "evidence_snapshot": {
@@ -21,8 +21,8 @@
         ],
         "contract_version": "sha256:e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
         "receipt": {
-          "path": "docs/evidence/C101/fmp/receipts/fmp/IncomeStatement/contract.json",
-          "sha256": "41ed891e0bc160c0f02b0e12dca885d0ff328ec74a17d75f86839326d559ae70"
+          "path": "docs/evidence/C101/receipts/fmp/IncomeStatement/contract.json",
+          "sha256": "646674d176d822c3ea175ec1af7aee06458c0a82493c6accc274a2e2c2693331"
         },
         "source_pins": [
           {
@@ -67,8 +67,8 @@
         ],
         "contract_version": "sha256:e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
         "receipt": {
-          "path": "docs/evidence/C101/fmp/receipts/fmp/IncomeStatement/counterfact.json",
-          "sha256": "733bcabbb9b8aa2b939e950f8daebb98ccc8421f3972558b68841e97ae9b7adb"
+          "path": "docs/evidence/C101/receipts/fmp/IncomeStatement/counterfact.json",
+          "sha256": "343110fb5441d812744590eba12f8bb7edd9dbac914c2bb2629d77bf43879441"
         },
         "source_pins": [
           {
@@ -113,8 +113,8 @@
         ],
         "contract_version": "sha256:e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
         "receipt": {
-          "path": "docs/evidence/C101/fmp/receipts/fmp/IncomeStatement/direct.json",
-          "sha256": "e7df64ffb75e5e21815275c7ba9b85c5b73a89e0b53d83dc268f52b886936db4"
+          "path": "docs/evidence/C101/receipts/fmp/IncomeStatement/direct.json",
+          "sha256": "8154c401a3a25930706a92282dd8e862cdc030fed3b382488ee26f23ea8ce749"
         },
         "source_pins": [
           {
@@ -159,8 +159,8 @@
         ],
         "contract_version": "sha256:e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
         "receipt": {
-          "path": "docs/evidence/C101/fmp/receipts/fmp/IncomeStatement/implementation.json",
-          "sha256": "60f0ba4a7029597534cd06f653b73155d0c5cc14abb70929026e8a366e7fd286"
+          "path": "docs/evidence/C101/receipts/fmp/IncomeStatement/implementation.json",
+          "sha256": "fff5a44601520b3fd1c49c3aef27d515bd9c06790c7d208095751e49cfde2e8e"
         },
         "source_pins": [
           {
@@ -205,8 +205,8 @@
         ],
         "contract_version": "sha256:e5a4338f0a98d5af40f89a25ef05ee5affe189a028fc6f222b8056349b6d81f6",
         "receipt": {
-          "path": "docs/evidence/C101/fmp/receipts/fmp/IncomeStatement/service.json",
-          "sha256": "5f0767215a05aee45201620f95d1702df75a078b0ae42a9e02893a9951caa3c4"
+          "path": "docs/evidence/C101/receipts/fmp/IncomeStatement/service.json",
+          "sha256": "8d5a52c2cf10d9cdc07ba50c1c38017934e1644e5eeaddfcb44db47e8476e9ff"
         },
         "source_pins": [
           {
@@ -262,7 +262,7 @@
         "--phase",
         "contract",
         "--evidence-root",
-        "docs/evidence/C101/fmp"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -279,7 +279,7 @@
         "--phase",
         "counterfact",
         "--evidence-root",
-        "docs/evidence/C101/fmp"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -296,7 +296,7 @@
         "--phase",
         "direct",
         "--evidence-root",
-        "docs/evidence/C101/fmp"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -313,7 +313,7 @@
         "--phase",
         "implementation",
         "--evidence-root",
-        "docs/evidence/C101/fmp"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -330,15 +330,15 @@
         "--phase",
         "service",
         "--evidence-root",
-        "docs/evidence/C101/fmp"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
       "status": "matched"
     }
   },
-  "reviewed_at_utc": "2026-10-14T13:43:12Z",
-  "reviewer_id": "iter2-acceptance-reviewer-fmp",
+  "reviewed_at_utc": "2026-10-15T09:00:10Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
   "reviewer_model": "qoder-cli-agent",
   "reviewer_role": "acceptance_reviewer",
   "reviewer_type": "primary_model",

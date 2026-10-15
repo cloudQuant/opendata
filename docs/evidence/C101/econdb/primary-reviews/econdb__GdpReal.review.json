@@ -1,7 +1,7 @@
 {
   "claims_document": {
     "path": "docs/evidence/C101/econdb/claims.json",
-    "sha256": "3db2892483b0ae3e7e8bf84567a58b22b5adf4522be08b1b02042b2a5140f3de"
+    "sha256": "73893d0b51464d6de15fd0d98b28ac2d307dc48052b4404551c0506e2bb08a4c"
   },
   "decision": "ACCEPT",
   "evidence_snapshot": {
@@ -21,8 +21,8 @@
         ],
         "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
         "receipt": {
-          "path": "docs/evidence/C101/econdb/receipts/econdb/GdpReal/contract.json",
-          "sha256": "3bb2c46466314692c8032d9debb14dd0c9a6ac6103f68903e638a9145c047d4e"
+          "path": "docs/evidence/C101/receipts/econdb/GdpReal/contract.json",
+          "sha256": "9cece7d61475316379bc9ecf1c3b9c9e78d3df0ef49151cdbcedcd0cfe44768f"
         },
         "source_pins": [
           {
@@ -62,8 +62,8 @@
         ],
         "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
         "receipt": {
-          "path": "docs/evidence/C101/econdb/receipts/econdb/GdpReal/counterfact.json",
-          "sha256": "b609e2b3adb0ef457b63655402c298ac6885b3282cd46811d4788f711d6590bc"
+          "path": "docs/evidence/C101/receipts/econdb/GdpReal/counterfact.json",
+          "sha256": "4249ad8482a27fe35c5e17daff909c1ea674adb5463c0064ce9678f0f7398356"
         },
         "source_pins": [
           {
@@ -103,8 +103,8 @@
         ],
         "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
         "receipt": {
-          "path": "docs/evidence/C101/econdb/receipts/econdb/GdpReal/direct.json",
-          "sha256": "3c94fe855ce8e43f7977fcc26d178506f5b3f7fabb85ba1acd9fb071c4c3e3f4"
+          "path": "docs/evidence/C101/receipts/econdb/GdpReal/direct.json",
+          "sha256": "0fde97173fecbfb883060475af594cafece35e5ac3e237902fff049bb7c2b0d9"
         },
         "source_pins": [
           {
@@ -144,8 +144,8 @@
         ],
         "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
         "receipt": {
-          "path": "docs/evidence/C101/econdb/receipts/econdb/GdpReal/implementation.json",
-          "sha256": "34a617557aabd5c4cf93bd28ccfb54598ac2500c8c0741448411fcc32d2a251c"
+          "path": "docs/evidence/C101/receipts/econdb/GdpReal/implementation.json",
+          "sha256": "dfe9a87c5a7c707b351700788fa1bb624504cd14ac0d65f79509fcf6a26912bb"
         },
         "source_pins": [
           {
@@ -185,8 +185,8 @@
         ],
         "contract_version": "sha256:e6c2e0ad4d015b74fb54863e9c2ec212960f579f8778408b8045df840791abf2",
         "receipt": {
-          "path": "docs/evidence/C101/econdb/receipts/econdb/GdpReal/service.json",
-          "sha256": "fd50f61ee9dab22c6c7aafb93d55b6f0d2825ac2a465b8407e999256ecabc881"
+          "path": "docs/evidence/C101/receipts/econdb/GdpReal/service.json",
+          "sha256": "b915978e30d73175ac7e6d3dbf805c4e4795e3759003896fc3903713b558f463"
         },
         "source_pins": [
           {
@@ -237,7 +237,7 @@
         "--phase",
         "contract",
         "--evidence-root",
-        "docs/evidence/C101/econdb"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -254,7 +254,7 @@
         "--phase",
         "counterfact",
         "--evidence-root",
-        "docs/evidence/C101/econdb"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -271,7 +271,7 @@
         "--phase",
         "direct",
         "--evidence-root",
-        "docs/evidence/C101/econdb"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -288,7 +288,7 @@
         "--phase",
         "implementation",
         "--evidence-root",
-        "docs/evidence/C101/econdb"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -305,15 +305,15 @@
         "--phase",
         "service",
         "--evidence-root",
-        "docs/evidence/C101/econdb"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
       "status": "matched"
     }
   },
-  "reviewed_at_utc": "2026-10-14T13:26:45Z",
-  "reviewer_id": "iter2-acceptance-reviewer-econdb",
+  "reviewed_at_utc": "2026-10-15T08:57:28Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
   "reviewer_model": "qoder-cli-agent",
   "reviewer_role": "acceptance_reviewer",
   "reviewer_type": "primary_model",

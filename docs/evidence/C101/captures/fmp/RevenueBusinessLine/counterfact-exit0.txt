@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model RevenueBusinessLine --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": ["period_ending"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": ["period_ending"], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "the flat segmentation record carries its period identity alongside the named value map, and 'date' is documented as an exact ISO date; a locale-formatted string is a different cell than the one the contract declares, so the adapter must refuse with FMP_BAD_SHAPE attributing invalid=('period_ending',); untampered control produced 10 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

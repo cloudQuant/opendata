@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "EconDBYieldCurve.value is a StrictFloat rate and the mapped 10-year series publishes a JSON number per observation, so publishing a boolean on the curve's latest shared date is the series validator's numeric refusal (iter2.py:_number) -- a curve point cannot be a flag, and the adapter must refuse the whole snapshot; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

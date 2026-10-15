@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CboeIndexHistoricalError", "refusal_code": "CBOE_INDEX_HISTORICAL_BAD_CSV", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CboeIndexHistoricalError", "refusal_code": "CBOE_INDEX_HISTORICAL_BAD_CSV", "rejected": [], "status": null}, "reason": "the VIX history file publishes an OHLC number per cell and _source_number only accepts finite decimal text; a HIGH cell spelled 'not-a-number' is a corrupt body, so the CSV guard must refuse with CBOE_INDEX_HISTORICAL_BAD_CSV rather than publish a volatility-index bar with an invented high; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model SelectedTreasuryBill --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "dropping the 'value' cell removes the only source of the selected-bill contract's 'rate' column, so the adapter must refuse with FRED_BAD_OBSERVATION surfaced as a ProviderEngineError-shaped FredProviderError rather than publishing a bill row whose rate was invented; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

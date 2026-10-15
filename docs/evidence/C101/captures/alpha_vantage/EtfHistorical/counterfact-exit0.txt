@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "AlphaVantageResponseError", "refusal_code": "ALPHA_VANTAGE_BAD_RESPONSE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "AlphaVantageResponseError", "refusal_code": "ALPHA_VANTAGE_BAD_RESPONSE", "rejected": [], "status": null}, "reason": "Alpha Vantage volumes are documented as non-negative integers, so a daily bar whose '5. volume' cell is the fractional string '35210.40' must be refused by _integer as AlphaVantageResponseError instead of truncating share counts into an ETF history row; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

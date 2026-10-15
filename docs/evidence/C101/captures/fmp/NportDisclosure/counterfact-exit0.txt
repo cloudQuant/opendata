@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model NportDisclosure --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["portfolio_percent"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["portfolio_percent"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "an N-PORT holding is published with its share of the portfolio, which is the only reason a balance and a dollar value are meaningful together; a holding without pctVal is not a disclosure row, so the adapter must refuse with FMP_BAD_SHAPE attributing missing=('portfolio_percent',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

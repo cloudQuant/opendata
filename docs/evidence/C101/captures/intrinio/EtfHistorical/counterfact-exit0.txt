@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model EtfHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "the securities price endpoint documents its OHLCV array under the stock_prices pointer and _get_pages refuses any payload whose rows pointer is not a list, so an answer without that key is a shape failure, not an empty ETF history that a caller would read as 'SPY never traded'; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

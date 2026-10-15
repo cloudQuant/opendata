@@ -1,7 +1,7 @@
 {
   "claims_document": {
     "path": "docs/evidence/C101/cboe/claims.json",
-    "sha256": "f970a2f5322c2c4efa07effa253e80d66e8ea9e4c1ab0283d3a7c6c8d6e185d0"
+    "sha256": "f6004101bf1a250f7d8efd7329912f581ece1af602f36af4f3654b743e10969e"
   },
   "decision": "ACCEPT",
   "evidence_snapshot": {
@@ -21,8 +21,8 @@
         ],
         "contract_version": "sha256:ab5bdbdcb7afcce73ae9b50430f6ec9c005d18ac9e75ecd0d4326d9b257a0918",
         "receipt": {
-          "path": "docs/evidence/C101/cboe/receipts/cboe/EquitySearch/contract.json",
-          "sha256": "02b59324ff7dfaf4035d3b5e9d8ba9a1afe2b829fa4c64e4e8bee4e67a3a2686"
+          "path": "docs/evidence/C101/receipts/cboe/EquitySearch/contract.json",
+          "sha256": "b1b884085cfaaf5d86d568cf8064b32dd30e60d239bdf379a20a7ee695bf8ec4"
         },
         "source_pins": [
           {
@@ -67,8 +67,8 @@
         ],
         "contract_version": "sha256:ab5bdbdcb7afcce73ae9b50430f6ec9c005d18ac9e75ecd0d4326d9b257a0918",
         "receipt": {
-          "path": "docs/evidence/C101/cboe/receipts/cboe/EquitySearch/counterfact.json",
-          "sha256": "63ccd078b2aa48fa0ecf2187eb458daaa5e5bc0858acf6d59b38f9de3b731113"
+          "path": "docs/evidence/C101/receipts/cboe/EquitySearch/counterfact.json",
+          "sha256": "070d84bca874fac1f217b1ec3dfe4de552f06f2e634d4ff02821db0c57d2bde6"
         },
         "source_pins": [
           {
@@ -113,8 +113,8 @@
         ],
         "contract_version": "sha256:ab5bdbdcb7afcce73ae9b50430f6ec9c005d18ac9e75ecd0d4326d9b257a0918",
         "receipt": {
-          "path": "docs/evidence/C101/cboe/receipts/cboe/EquitySearch/direct.json",
-          "sha256": "736dd225a8fc3014a2ff186027202cfad76d6d175c7430583bdb680b9089b933"
+          "path": "docs/evidence/C101/receipts/cboe/EquitySearch/direct.json",
+          "sha256": "1cf7cebfcfa26a8a64ff28bed0a1d846e9bb4e8f64b840d5a2b6f08785d8121c"
         },
         "source_pins": [
           {
@@ -159,8 +159,8 @@
         ],
         "contract_version": "sha256:ab5bdbdcb7afcce73ae9b50430f6ec9c005d18ac9e75ecd0d4326d9b257a0918",
         "receipt": {
-          "path": "docs/evidence/C101/cboe/receipts/cboe/EquitySearch/implementation.json",
-          "sha256": "7674b0fde4a365bbcd09cc7f1f033a99271215ef4a827e3167cf61158d3cdcc1"
+          "path": "docs/evidence/C101/receipts/cboe/EquitySearch/implementation.json",
+          "sha256": "adb56e298f1cec8e8d47142f8c4e3f49da202175dbbcda94c28486661cc2d496"
         },
         "source_pins": [
           {
@@ -205,8 +205,8 @@
         ],
         "contract_version": "sha256:ab5bdbdcb7afcce73ae9b50430f6ec9c005d18ac9e75ecd0d4326d9b257a0918",
         "receipt": {
-          "path": "docs/evidence/C101/cboe/receipts/cboe/EquitySearch/service.json",
-          "sha256": "b992609c201bf9865aae965dd029fd37043f80e5811170b6bee71ca28bc2289d"
+          "path": "docs/evidence/C101/receipts/cboe/EquitySearch/service.json",
+          "sha256": "cf65bf94a244cb2280fb8f92bd9cac1adbaef06f9c918d1fcc8d863a3e9e4d0b"
         },
         "source_pins": [
           {
@@ -262,7 +262,7 @@
         "--phase",
         "contract",
         "--evidence-root",
-        "docs/evidence/C101/cboe"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -279,7 +279,7 @@
         "--phase",
         "counterfact",
         "--evidence-root",
-        "docs/evidence/C101/cboe"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -296,7 +296,7 @@
         "--phase",
         "direct",
         "--evidence-root",
-        "docs/evidence/C101/cboe"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -313,7 +313,7 @@
         "--phase",
         "implementation",
         "--evidence-root",
-        "docs/evidence/C101/cboe"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -330,15 +330,15 @@
         "--phase",
         "service",
         "--evidence-root",
-        "docs/evidence/C101/cboe"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
       "status": "matched"
     }
   },
-  "reviewed_at_utc": "2026-10-14T13:30:30Z",
-  "reviewer_id": "iter2-acceptance-reviewer-cboe",
+  "reviewed_at_utc": "2026-10-15T08:56:36Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
   "reviewer_model": "qoder-cli-agent",
   "reviewer_role": "acceptance_reviewer",
   "reviewer_type": "primary_model",

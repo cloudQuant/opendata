@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CompositeLeadingIndicator --phase counterfact --evidence-root docs/evidence/C101/oecd
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_RESPONSE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_RESPONSE", "rejected": [], "status": null}, "reason": "the amplitude-adjusted CLI series is keyed and contracted with ADJUSTMENT=AA, so an observation row published with ADJUSTMENT=N contradicts the requested series identity and transform_data's expected_dimensions check must refuse the payload as OECD_BAD_RESPONSE instead of mixing an unadjusted reading in; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

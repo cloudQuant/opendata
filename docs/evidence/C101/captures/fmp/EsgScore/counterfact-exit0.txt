@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EsgScore --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["esg_score"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["esg_score"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "each ESG disclosure publishes the total score next to its three components, and the contract requires it; a filing without ESGScore cannot be ordered against another, so the adapter must refuse with FMP_BAD_SHAPE attributing missing=('esg_score',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

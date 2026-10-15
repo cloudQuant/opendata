@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model MortgageIndices --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "prose in a replayed 'value' token breaks the required float 'rate' column of FredMortgageIndex, which _parse_number reads only from FRED's numeric text (the '.' sentinel meaning missing, never a guessable rate), so every OBMMI leg of the primary fan-out must refuse with FRED_BAD_OBSERVATION; untampered control produced 14 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

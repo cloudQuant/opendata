@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model KeyMetrics --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["symbol"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["symbol"], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "every key-metrics row is published under the issuer's symbol; without it a capital-structure ratio has no owner, so the adapter must refuse with FMP_BAD_SHAPE attributing missing=('symbol',); untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -412,6 +412,7 @@ class EtfInfoFetcher(_SymbolEtfFetcher):
     canonical_model = "EtfInfo"
     endpoint = "etf/info"
     record_model = FmpEtfInfo
+    row_model: ClassVar[type[ContractModel]] = FmpEtfInfo
     capability = Capability(
         asset_class="etf",
         domain="fmp_etf_info",
@@ -436,6 +437,7 @@ class EtfCountriesFetcher(_SymbolEtfFetcher):
     canonical_model = "EtfCountries"
     endpoint = "etf/country-weightings"
     record_model = FmpEtfCountry
+    row_model: ClassVar[type[ContractModel]] = FmpEtfCountry
     capability = Capability(
         asset_class="etf",
         domain="fmp_etf_countries",
@@ -486,6 +488,7 @@ class EtfSectorsFetcher(_SymbolEtfFetcher):
     canonical_model = "EtfSectors"
     endpoint = "etf/sector-weightings"
     record_model = FmpEtfSector
+    row_model: ClassVar[type[ContractModel]] = FmpEtfSector
     capability = Capability(
         asset_class="etf",
         domain="fmp_etf_sectors",
@@ -536,6 +539,7 @@ class EtfHoldingsFetcher(_SymbolEtfFetcher):
     canonical_model = "EtfHoldings"
     endpoint = "etf/holdings"
     record_model = FmpEtfHolding
+    row_model: ClassVar[type[ContractModel]] = FmpEtfHolding
     capability = Capability(
         asset_class="etf",
         domain="fmp_etf_holdings",
@@ -560,6 +564,7 @@ class EtfEquityExposureFetcher(Fetcher[EtfEquityExposureQuery, list[dict[str, An
     async_mode = "bounded_thread"
     canonical_model = "EtfEquityExposure"
     record_model = FmpEtfEquityExposure
+    row_model: ClassVar[type[ContractModel]] = FmpEtfEquityExposure
     capability = Capability(
         asset_class="etf",
         domain="fmp_etf_equity_exposure",
@@ -647,6 +652,7 @@ class EtfPricePerformanceFetcher(Fetcher[EtfPricePerformanceQuery, list[dict[str
     async_mode = "bounded_thread"
     canonical_model = "EtfPricePerformance"
     record_model = FmpEtfPricePerformance
+    row_model: ClassVar[type[ContractModel]] = FmpEtfPricePerformance
     capability = Capability(
         asset_class="etf",
         domain="fmp_etf_price_performance",
@@ -720,6 +726,7 @@ class EtfSearchFetcher(Fetcher[EtfSearchQuery, list[dict[str, Any]]]):
     async_mode = "bounded_thread"
     canonical_model = "EtfSearch"
     record_model = FmpEtfSearch
+    row_model: ClassVar[type[ContractModel]] = FmpEtfSearch
     capability = Capability(
         asset_class="etf",
         domain="fmp_etf_search",
@@ -768,6 +775,7 @@ class EtfHistoricalFetcher(Fetcher[EtfHistoricalQuery, list[dict[str, Any]]]):
     async_mode = "bounded_thread"
     canonical_model = "EtfHistorical"
     record_model = FmpEtfHistorical
+    row_model: ClassVar[type[ContractModel]] = FmpEtfHistorical
     capability = Capability(
         asset_class="etf",
         domain="fmp_etf_historical",

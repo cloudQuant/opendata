@@ -1,0 +1,371 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/federal_reserve/claims.json",
+    "sha256": "cb0c681216ab069cf5c9d963e98c942d697f17500439fa92b7585dd33d9fc75c"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "before_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "path": "opendata/data/models/federal_reserve_macro.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/TotalFactorProductivity/contract.json",
+          "sha256": "e7aa4816f35aa022a33faa21d7315e09f890083340d4b2a7a594a5034950fb54"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "297b8df9a7bf82fcd76c63b0b44e54ad5d9b24d6b72d3a0bb6c0e55a019adc6a",
+            "before_sha256": "297b8df9a7bf82fcd76c63b0b44e54ad5d9b24d6b72d3a0bb6c0e55a019adc6a",
+            "path": "opendata/data/providers/federal_reserve/models/total_factor_productivity.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          },
+          {
+            "after_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "before_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "path": "opendata/data/providers/federal_reserve/models/_iter2_common.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "before_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "path": "opendata/data/models/federal_reserve_macro.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/TotalFactorProductivity/counterfact.json",
+          "sha256": "aebc1fbc2ea4a6ea82c606099a6cf86edf7324ebdadcc5da1ff177e4917b58e5"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "297b8df9a7bf82fcd76c63b0b44e54ad5d9b24d6b72d3a0bb6c0e55a019adc6a",
+            "before_sha256": "297b8df9a7bf82fcd76c63b0b44e54ad5d9b24d6b72d3a0bb6c0e55a019adc6a",
+            "path": "opendata/data/providers/federal_reserve/models/total_factor_productivity.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          },
+          {
+            "after_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "before_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "path": "opendata/data/providers/federal_reserve/models/_iter2_common.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "before_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "path": "opendata/data/models/federal_reserve_macro.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/TotalFactorProductivity/direct.json",
+          "sha256": "0755392d21382a60b8a0e033f21f350a838b51cc43321d7b6914f08280555974"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "297b8df9a7bf82fcd76c63b0b44e54ad5d9b24d6b72d3a0bb6c0e55a019adc6a",
+            "before_sha256": "297b8df9a7bf82fcd76c63b0b44e54ad5d9b24d6b72d3a0bb6c0e55a019adc6a",
+            "path": "opendata/data/providers/federal_reserve/models/total_factor_productivity.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          },
+          {
+            "after_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "before_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "path": "opendata/data/providers/federal_reserve/models/_iter2_common.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "before_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "path": "opendata/data/models/federal_reserve_macro.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/TotalFactorProductivity/implementation.json",
+          "sha256": "6936e35714c8274c2e360364a706ff9fccb5d5a428c92a7ea957876cea9529a6"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "297b8df9a7bf82fcd76c63b0b44e54ad5d9b24d6b72d3a0bb6c0e55a019adc6a",
+            "before_sha256": "297b8df9a7bf82fcd76c63b0b44e54ad5d9b24d6b72d3a0bb6c0e55a019adc6a",
+            "path": "opendata/data/providers/federal_reserve/models/total_factor_productivity.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          },
+          {
+            "after_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "before_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "path": "opendata/data/providers/federal_reserve/models/_iter2_common.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "before_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "path": "opendata/data/models/federal_reserve_macro.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/TotalFactorProductivity/service.json",
+          "sha256": "6a152fdc006e87f28a2bb641145180b02c5f15b39afe5d7827964e25afaf0c90"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "297b8df9a7bf82fcd76c63b0b44e54ad5d9b24d6b72d3a0bb6c0e55a019adc6a",
+            "before_sha256": "297b8df9a7bf82fcd76c63b0b44e54ad5d9b24d6b72d3a0bb6c0e55a019adc6a",
+            "path": "opendata/data/providers/federal_reserve/models/total_factor_productivity.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          },
+          {
+            "after_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "before_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "path": "opendata/data/providers/federal_reserve/models/_iter2_common.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "TotalFactorProductivity",
+  "model_identity": "federal_reserve::TotalFactorProductivity",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "federal_reserve",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "federal_reserve",
+        "--model",
+        "TotalFactorProductivity",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "federal_reserve",
+        "--model",
+        "TotalFactorProductivity",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "federal_reserve",
+        "--model",
+        "TotalFactorProductivity",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "federal_reserve",
+        "--model",
+        "TotalFactorProductivity",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "federal_reserve",
+        "--model",
+        "TotalFactorProductivity",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-15T08:58:31Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "TotalFactorProductivity"
+}

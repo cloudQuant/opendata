@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model LatestAttributes --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioShapeError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioShapeError", "refusal_code": "INTRINIO_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "the data-point endpoint's whole answer is its value cell, so a document that publishes no 'value' key is the shape this adapter refuses with INTRINIO_SHAPE_INVALID instead of inventing a null latest attribute row; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

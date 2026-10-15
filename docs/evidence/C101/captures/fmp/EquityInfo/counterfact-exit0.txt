@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EquityInfo --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "reason": "the profile route states isEtf as a JSON boolean and the contract requires a strict bool; the text 'false' is truthy, so an adapter that accepted it would label an equity an ETF, and it must refuse with FMP_BAD_FIELD; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

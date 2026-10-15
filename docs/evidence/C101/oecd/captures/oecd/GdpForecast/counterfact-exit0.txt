@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpForecast --phase counterfact --evidence-root docs/evidence/C101/oecd
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "OecdProviderError", "refusal_code": "OECD_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "forecast values are rescaled by UNIT_MULT before entering the contract, so a UNIT_MULT exponent outside the supported -12..12 range must be refused by _record_rows as OECD_BAD_OBSERVATION instead of silently mis-scaling GDP; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

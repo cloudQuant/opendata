@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model BondIndices --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "prose in the BAMLC4A0C710YEY page's 'value' token breaks the required float 'value' column of FredBondIndices (_number accepts ASCII numeric text or the '.' sentinel only), so the bond-index normalizer must refuse the whole six-leg fan-out with FRED_BAD_OBSERVATION instead of coercing the cell; untampered control produced 12 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EquityActive --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "reason": "the active-stock route answers with a live quote summary, and the contract declares price as a required float; a row that carries no price is not a quote, so the adapter must refuse with FMP_BAD_FIELD rather than publish a blank last trade; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

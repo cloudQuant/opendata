@@ -438,6 +438,9 @@ class IntrinioMarketSnapshotsFetcher(_IntrinioMarketFetcher):
 
     canonical_model = "MarketSnapshots"
     query_model = _MarketSnapshotsQuery
+    #: ``contract_model("intrinio_market_snapshots")`` prints
+    #: ``opendata.data.models.intrinio_snapshots_clean.IntrinioMarketSnapshot``.
+    row_model = IntrinioMarketSnapshot
     capability = _capability("market_snapshots", "nasdaq")
 
     def transform_query(self, **kwargs: object) -> _MarketSnapshotsQuery:

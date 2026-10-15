@@ -637,9 +637,9 @@ class CongressBillInfoFetcher(Fetcher[CongressBillInfoQuery, dict[str, Any]]):
         bill = _required_object(base_doc, "bill")
         result: dict[str, Any] = {"bill": bill, "components": {}}
         for component in params.include_components:
-            suffix, collection_key = _COMPONENT_KEYS[component]
+            collection_key, item_key = _COMPONENT_KEYS[component]
             component_doc = _client.get_json(
-                f"{path}/{suffix}",
+                f"{path}/{collection_key}",
                 params={"limit": str(params.component_limit), "offset": "0"},
                 context=ctx,
                 transport=self.http_transport,
@@ -651,7 +651,7 @@ class CongressBillInfoFetcher(Fetcher[CongressBillInfoQuery, dict[str, Any]]):
             if component == "subjects":
                 result["components"][component] = _subject_rows(component_doc)
             else:
-                rows = _collection_rows(component_doc, collection_key[0], collection_key[1])
+                rows = _collection_rows(component_doc, collection_key, item_key)
                 _enforce_component_count(component_doc, len(rows), params.component_limit)
                 result["components"][component] = rows
         result["identity"] = (params.congress, params.bill_type, params.bill_number)

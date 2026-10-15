@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EquityPeers --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_FIELD", "rejected": [], "status": null}, "reason": "stock-peers publishes mktCap as a JSON integer in reported currency; a scientific-notation string is a different cell than the integer the contract declares, and coercing it would let the adapter invent a market cap, so it must refuse with FMP_BAD_FIELD; untampered control produced 4 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -27,6 +27,7 @@ class EquityQuoteFetcher(Fetcher[EquityQuoteQuery, list[dict[str, Any]]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "EquityQuote"
+    row_model: ClassVar[type[EquityQuote]] = EquityQuote
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="equity_quote",

@@ -1,0 +1,321 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/intrinio/claims.json",
+    "sha256": "f755c2285423625c72528acf6a90a0001c79ced32935a471be3b9841cbefe078"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "before_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "path": "opendata/data/models/intrinio_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/IncomeStatement/contract.json",
+          "sha256": "44b00e2f8909df2ae9c98e6998e270d291bd3212895d216f449555a7a0c90b20"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "before_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "path": "opendata/data/providers/intrinio/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "before_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "path": "opendata/data/models/intrinio_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/IncomeStatement/counterfact.json",
+          "sha256": "22fac2cc92e525a5029e6070304f4e3f4c2966f050336fba41685bf81dd60b29"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "before_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "path": "opendata/data/providers/intrinio/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "before_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "path": "opendata/data/models/intrinio_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/IncomeStatement/direct.json",
+          "sha256": "f74afff6314548eec9e540db5774faf9bd7e79ce883710f752488b6d40f82326"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "before_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "path": "opendata/data/providers/intrinio/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "before_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "path": "opendata/data/models/intrinio_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/IncomeStatement/implementation.json",
+          "sha256": "4f8d2bf8b628e1f8d5ccebf4f14df17dbf05cfcfe13c2e416f5964b5585f0213"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "before_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "path": "opendata/data/providers/intrinio/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "before_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "path": "opendata/data/models/intrinio_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/IncomeStatement/service.json",
+          "sha256": "aaee7ab1f7f88ba797de6fa6092e947d79edaffa474a0c423ee8ca2a15c55d85"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "before_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "path": "opendata/data/providers/intrinio/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "IncomeStatement",
+  "model_identity": "intrinio::IncomeStatement",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "intrinio",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "IncomeStatement",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "IncomeStatement",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "IncomeStatement",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "IncomeStatement",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "intrinio",
+        "--model",
+        "IncomeStatement",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-15T09:04:48Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "IncomeStatement"
+}

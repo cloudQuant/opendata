@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model ForwardPeEstimates --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_SYMBOL_MISMATCH", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_SYMBOL_MISMATCH", "rejected": [], "status": null}, "reason": "the forward-PE snapshot is addressed by identifier in the URL (/zacks/forward_pe/AAPL) and its ticker cell is the row's symbol, so transform_data verifies the two agree: an 'MSFT' answer to an AAPL request is INTRINIO_FINANCIALS_SYMBOL_MISMATCH rather than a valuation multiple filed under the wrong company; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

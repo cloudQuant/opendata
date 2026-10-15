@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import re
 from datetime import date as date_type
-from typing import Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from pydantic import Field, StrictBool, ValidationError
 
@@ -18,6 +18,9 @@ from opendata.data.protocol import FetchContext, Fetcher, FetchResult
 from opendata.data.providers.fred.models._client import FredProviderError
 from opendata.data.providers.fred.models.series import FredSeriesFetcher, FredSeriesQuery
 from opendata.data.providers.fred.models.treasury_rates import _FixedRateQuery
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
 
 _DATE_TOKEN = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}\Z")
 FederalFundsFrequency = Literal[
@@ -86,6 +89,9 @@ class FederalFundsRateFetcher(Fetcher[FederalFundsRateQuery, list[dict[str, Any]
     )
     query_model = FederalFundsRateQuery
     output_model = FredFederalFundsRate
+    #: contract_model('fred_federal_funds_rate') resolves to
+    #: opendata.data.models.fred_iter2.FredFederalFundsRate (verified 2026-10-15).
+    row_model: ClassVar[type[ContractModel]] = FredFederalFundsRate
 
     def transform_query(self, **kwargs: object) -> FederalFundsRateQuery:
         """Validate dates, revisions and fan-out bounds before source I/O."""

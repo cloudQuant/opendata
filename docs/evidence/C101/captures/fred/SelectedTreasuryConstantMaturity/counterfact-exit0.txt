@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model SelectedTreasuryConstantMaturity --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_PAGINATION_ERROR", "rejected": [], "status": 200}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_PAGINATION_ERROR", "rejected": [], "status": 200}, "reason": "echoing 'offset' 7 for the page requested at offset 0 breaks the documented page-header contract every Treasury yield row depends on for gap-free paging, so the shared pager must refuse with FRED_PAGINATION_ERROR surfaced as a ProviderEngineError-shaped FredProviderError instead of stitching a hole into the curve; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

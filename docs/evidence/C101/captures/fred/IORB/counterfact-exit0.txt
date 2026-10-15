@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model IORB --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_RESPONSE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_RESPONSE", "rejected": [], "status": null}, "reason": "dropping 'realtime_end' removes the closing half of the documented revision interval every observation row must carry, so the shared FRED pager must refuse the page with FRED_BAD_RESPONSE surfaced as a ProviderEngineError-shaped FredProviderError rather than publishing an open-ended observation; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

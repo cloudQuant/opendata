@@ -1,7 +1,7 @@
 {
   "claims_document": {
     "path": "docs/evidence/C101/bls/claims.json",
-    "sha256": "3a529dee47f4d42983aef4cab1e1ede9cd05e2ae4a706c6b88d5116d63098bc8"
+    "sha256": "a9d15d1df021aaa4ce1d45d1fd63679ccd4d069657c8c43821c3610ae4db50de"
   },
   "decision": "ACCEPT",
   "evidence_snapshot": {
@@ -21,8 +21,8 @@
         ],
         "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
         "receipt": {
-          "path": "docs/evidence/C101/bls/receipts/bls/BlsSeries/contract.json",
-          "sha256": "54e01c7c099fa75c929c2dad64e6214b16dbe680c0130d6c9999f21926d09bbd"
+          "path": "docs/evidence/C101/receipts/bls/BlsSeries/contract.json",
+          "sha256": "070c4075926b94449f9ead6c13366915ea8ab30c8ba274c956388a90e861d6e0"
         },
         "source_pins": [
           {
@@ -67,8 +67,8 @@
         ],
         "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
         "receipt": {
-          "path": "docs/evidence/C101/bls/receipts/bls/BlsSeries/counterfact.json",
-          "sha256": "336366a65f3e764472de42dc44e7890e8cfc2870d8af0fe99be2ad6b13a1dc79"
+          "path": "docs/evidence/C101/receipts/bls/BlsSeries/counterfact.json",
+          "sha256": "ed2f983ef39b1aec99540df55a790d6c3ebc389736ad2724c73e3835f455f3d9"
         },
         "source_pins": [
           {
@@ -113,8 +113,8 @@
         ],
         "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
         "receipt": {
-          "path": "docs/evidence/C101/bls/receipts/bls/BlsSeries/direct.json",
-          "sha256": "edfc2f6c2220b48cca8579261bb5b466f1fa2a4d90cb165f7846ec6d3d5df857"
+          "path": "docs/evidence/C101/receipts/bls/BlsSeries/direct.json",
+          "sha256": "b8e65871e77a00e3142541a8e76db0198a04764109cb0482797a07aa44b69a65"
         },
         "source_pins": [
           {
@@ -159,8 +159,8 @@
         ],
         "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
         "receipt": {
-          "path": "docs/evidence/C101/bls/receipts/bls/BlsSeries/implementation.json",
-          "sha256": "3311a3449dcc6c94036b0ec31cc93e572c6da548a1e2d9e26f7d6875c32a1066"
+          "path": "docs/evidence/C101/receipts/bls/BlsSeries/implementation.json",
+          "sha256": "642a19141d8fe352390b4124df1c1b955de279f454ff3a39037fcfb6a367ae24"
         },
         "source_pins": [
           {
@@ -205,8 +205,8 @@
         ],
         "contract_version": "sha256:f87f7ddaa4bcc684e753d11fe91f43ed464847e349ecc41e264c23bfaefb159a",
         "receipt": {
-          "path": "docs/evidence/C101/bls/receipts/bls/BlsSeries/service.json",
-          "sha256": "606cef42d2d5de85ce73fe36293ffc6fa0f1cd57a6e541f8b39da7f4f70bf67e"
+          "path": "docs/evidence/C101/receipts/bls/BlsSeries/service.json",
+          "sha256": "00bb199c0d5874cd38dbd8d5c6ea874e4f516f5821074c0dfba48f9aa1c1f7f7"
         },
         "source_pins": [
           {
@@ -262,7 +262,7 @@
         "--phase",
         "contract",
         "--evidence-root",
-        "docs/evidence/C101/bls"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -279,7 +279,7 @@
         "--phase",
         "counterfact",
         "--evidence-root",
-        "docs/evidence/C101/bls"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -296,7 +296,7 @@
         "--phase",
         "direct",
         "--evidence-root",
-        "docs/evidence/C101/bls"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -313,7 +313,7 @@
         "--phase",
         "implementation",
         "--evidence-root",
-        "docs/evidence/C101/bls"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
@@ -330,15 +330,15 @@
         "--phase",
         "service",
         "--evidence-root",
-        "docs/evidence/C101/bls"
+        "docs/evidence/C101"
       ],
       "recorded_exit_code": 0,
       "reviewer_exit_code": 0,
       "status": "matched"
     }
   },
-  "reviewed_at_utc": "2026-10-14T13:24:33Z",
-  "reviewer_id": "iter2-acceptance-reviewer-bls",
+  "reviewed_at_utc": "2026-10-15T08:56:17Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
   "reviewer_model": "qoder-cli-agent",
   "reviewer_role": "acceptance_reviewer",
   "reviewer_type": "primary_model",
