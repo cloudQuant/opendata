@@ -1,0 +1,59 @@
+{
+  "responses": [
+    {
+      "body": {
+        "data": {
+          "codelists": [
+            {
+              "codes": [
+                {
+                  "id": "USA",
+                  "names": {
+                    "en": "United States"
+                  }
+                },
+                {
+                  "id": "JPN",
+                  "names": {
+                    "en": "Japan"
+                  }
+                }
+              ],
+              "id": "CL_IMTS_COUNTRY"
+            },
+            {
+              "codes": [
+                {
+                  "id": "TBG_USD",
+                  "names": {
+                    "en": "Trade in Goods, Balance: Total (USD)"
+                  }
+                },
+                {
+                  "id": "XG_FOB_USD",
+                  "names": {
+                    "en": "Trade in Goods, Exports: FOB (USD)"
+                  }
+                }
+              ],
+              "id": "CL_IMTS_INDICATOR"
+            }
+          ]
+        }
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "/structure/dataflow/IMF.STA/IMTS/1.0.0"
+    },
+    {
+      "body": [
+        "COUNTRY,COUNTERPART_COUNTRY,INDICATOR,FREQUENCY,SCALE,TIME_PERIOD,OBS_VALUE",
+        "USA,JPN,TBG_USD,A,1,2022,-62085.0",
+        "USA,JPN,TBG_USD,A,1,2023,-47711.0"
+      ],
+      "content_type": "text/plain",
+      "status": 200,
+      "url_contains": "/data/dataflow/IMF.STA/IMTS/1.0.0/USA.TBG_USD.JPN.A"
+    }
+  ]
+}

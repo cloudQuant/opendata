@@ -1,0 +1,109 @@
+{
+  "responses": [
+    {
+      "body": {
+        "data": {
+          "dataflows": [
+            {
+              "agencyID": "IMF.STA",
+              "id": "CPI",
+              "name": "Consumer Price Index",
+              "version": "5.0.0"
+            }
+          ]
+        }
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "/structure/dataflow/all/all"
+    },
+    {
+      "body": {
+        "data": {
+          "codelists": [
+            {
+              "codes": [
+                {
+                  "id": "USA",
+                  "names": {
+                    "en": "United States"
+                  }
+                }
+              ],
+              "id": "CL_COUNTRY"
+            },
+            {
+              "codes": [
+                {
+                  "id": "A",
+                  "names": {
+                    "en": "Annual"
+                  }
+                },
+                {
+                  "id": "M",
+                  "names": {
+                    "en": "Monthly"
+                  }
+                }
+              ],
+              "id": "CL_FREQ"
+            },
+            {
+              "codes": [
+                {
+                  "descriptions": {
+                    "en": "Consumer price index, percent change, end of period"
+                  },
+                  "id": "PCPIPCH",
+                  "names": {
+                    "en": "Inflation, end of period"
+                  }
+                },
+                {
+                  "descriptions": {
+                    "en": "Consumer price index, percent change, average period"
+                  },
+                  "id": "PCPIPCHPA",
+                  "names": {
+                    "en": "Inflation, average consumer prices"
+                  }
+                }
+              ],
+              "id": "CL_INDICATOR"
+            }
+          ],
+          "dataStructures": [
+            {
+              "dataStructureComponents": {
+                "dimensionList": {
+                  "dimensions": [
+                    {
+                      "conceptIdentity": "urn:sdmx:org.sdmx.infomodel.codelist.Codelist=IMF:CL_MASTER(1.0).COUNTRY",
+                      "id": "COUNTRY",
+                      "position": 1
+                    },
+                    {
+                      "conceptIdentity": "urn:sdmx:org.sdmx.infomodel.codelist.Codelist=IMF:CL_MASTER(1.0).FREQ",
+                      "id": "FREQ",
+                      "position": 2
+                    },
+                    {
+                      "conceptIdentity": "urn:sdmx:org.sdmx.infomodel.codelist.Codelist=IMF:CL_MASTER(1.0).INDICATOR",
+                      "id": "INDICATOR",
+                      "position": 3
+                    }
+                  ]
+                }
+              },
+              "id": "DSD_CPI"
+            }
+          ]
+        }
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "/structure/dataflow/IMF.STA/CPI/5.0.0"
+    }
+  ]
+}

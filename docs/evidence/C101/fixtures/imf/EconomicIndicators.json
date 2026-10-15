@@ -1,0 +1,114 @@
+{
+  "responses": [
+    {
+      "body": {
+        "data": {
+          "dataflows": [
+            {
+              "agencyID": "IMF.STA",
+              "id": "PCPI",
+              "name": "Price Index - Consumer Price Indexes",
+              "version": "1.0.0"
+            }
+          ]
+        }
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "/structure/dataflow/all/all"
+    },
+    {
+      "body": {
+        "data": {
+          "codelists": [
+            {
+              "codes": [
+                {
+                  "id": "USA",
+                  "names": {
+                    "en": "United States"
+                  }
+                }
+              ],
+              "id": "CL_COUNTRY"
+            },
+            {
+              "codes": [
+                {
+                  "id": "PCPIPCH",
+                  "names": {
+                    "en": "Inflation, Consumer Prices (annual %)"
+                  }
+                },
+                {
+                  "id": "PCPI",
+                  "names": {
+                    "en": "Consumer Price Index, Period, Index"
+                  }
+                }
+              ],
+              "id": "CL_INDICATOR"
+            },
+            {
+              "codes": [
+                {
+                  "id": "A",
+                  "names": {
+                    "en": "Annual"
+                  }
+                },
+                {
+                  "id": "M",
+                  "names": {
+                    "en": "Monthly"
+                  }
+                }
+              ],
+              "id": "CL_FREQ"
+            }
+          ],
+          "dataStructures": [
+            {
+              "dataStructureComponents": {
+                "dimensionList": {
+                  "dimensions": [
+                    {
+                      "conceptIdentity": "urn:sdmx:org.sdmx.infomodel.codelist.Codelist=IMF:CL_MASTER(1.0).COUNTRY",
+                      "id": "COUNTRY",
+                      "position": 1
+                    },
+                    {
+                      "conceptIdentity": "urn:sdmx:org.sdmx.infomodel.codelist.Codelist=IMF:CL_MASTER(1.0).INDICATOR",
+                      "id": "INDICATOR",
+                      "position": 2
+                    },
+                    {
+                      "conceptIdentity": "urn:sdmx:org.sdmx.infomodel.codelist.Codelist=IMF:CL_MASTER(1.0).FREQ",
+                      "id": "FREQ",
+                      "position": 3
+                    }
+                  ]
+                }
+              },
+              "id": "DSD_PCPI"
+            }
+          ]
+        }
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "/structure/dataflow/IMF.STA/PCPI/1.0.0"
+    },
+    {
+      "body": [
+        "COUNTRY,INDICATOR,FREQ,UNIT,TIME_PERIOD,OBS_VALUE",
+        "USA,PCPIPCH,A,IX,2022,8.0",
+        "USA,PCPIPCH,A,IX,2023,4.1",
+        "USA,PCPIPCH,A,IX,2024,2.9"
+      ],
+      "content_type": "text/plain",
+      "status": 200,
+      "url_contains": "/data/dataflow/IMF.STA/PCPI/1.0.0/USA.PCPIPCH.A"
+    }
+  ]
+}

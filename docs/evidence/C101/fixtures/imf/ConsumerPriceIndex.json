@@ -1,0 +1,94 @@
+{
+  "responses": [
+    {
+      "body": {
+        "data": {
+          "codelists": [
+            {
+              "codes": [
+                {
+                  "id": "USA",
+                  "names": {
+                    "en": "United States"
+                  }
+                },
+                {
+                  "id": "JPN",
+                  "names": {
+                    "en": "Japan"
+                  }
+                }
+              ],
+              "id": "CL_COUNTRY"
+            },
+            {
+              "codes": [
+                {
+                  "id": "CPI",
+                  "names": {
+                    "en": "Consumer Price Index"
+                  }
+                },
+                {
+                  "id": "HICP",
+                  "names": {
+                    "en": "Harmonised Index of Consumer Prices"
+                  }
+                }
+              ],
+              "id": "CL_INDEX_TYPE"
+            },
+            {
+              "codes": [
+                {
+                  "id": "_T",
+                  "names": {
+                    "en": "All Items"
+                  }
+                },
+                {
+                  "id": "CP01",
+                  "names": {
+                    "en": "Food and non-alcoholic beverages"
+                  }
+                }
+              ],
+              "id": "CL_COICOP_1999"
+            },
+            {
+              "codes": [
+                {
+                  "id": "IX",
+                  "names": {
+                    "en": "Index"
+                  }
+                },
+                {
+                  "id": "YOY_PCH_PA_PT",
+                  "names": {
+                    "en": "Y-on-Y, percentage change"
+                  }
+                }
+              ],
+              "id": "CL_CPI_TYPE_OF_TRANSFORMATION"
+            }
+          ]
+        }
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "/structure/dataflow/IMF.STA/CPI/5.0.0"
+    },
+    {
+      "body": [
+        "COUNTRY,INDEX_TYPE,COICOP_1999,TYPE_OF_TRANSFORMATION,FREQUENCY,TIME_PERIOD,OBS_VALUE",
+        "USA,CPI,_T,IX,A,2022,124.3",
+        "USA,CPI,_T,IX,A,2023,131.5",
+        "USA,CPI,_T,IX,A,2024,136.2"
+      ],
+      "content_type": "text/plain",
+      "status": 200,
+      "url_contains": "/data/dataflow/IMF.STA/CPI/5.0.0/USA.CPI._T.IX.A"
+    }
+  ]
+}

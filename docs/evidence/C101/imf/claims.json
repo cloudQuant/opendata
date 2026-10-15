@@ -1,0 +1,3310 @@
+{
+  "claims": [
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model AvailableIndicators --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T15:32:06.162804+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::AvailableIndicators",
+        "path": "docs/evidence/C101/receipts/imf/AvailableIndicators/implementation.json",
+        "sha256": "acf9ad05da497e19ca8fc4f4083d1250c757b10b0acb3b8c26c3eb0d4c6f7d2d"
+      },
+      "status": "PASS",
+      "upstream_model": "AvailableIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model AvailableIndicators --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T15:32:07.062786+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "3e87a42b5456a1a7b5d2806096fb28942685a649ae530a0e98c52c5306279c82",
+            "before_sha256": "3e87a42b5456a1a7b5d2806096fb28942685a649ae530a0e98c52c5306279c82",
+            "path": "docs/evidence/C101/fixtures/imf/AvailableIndicators.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::AvailableIndicators",
+        "path": "docs/evidence/C101/receipts/imf/AvailableIndicators/direct.json",
+        "sha256": "34ce2abc73efcfa6db799eaa349a94db55f5ed6cd4e119304f4defc1231f49b4"
+      },
+      "status": "PASS",
+      "upstream_model": "AvailableIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model AvailableIndicators --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T15:32:08.099766+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "3e87a42b5456a1a7b5d2806096fb28942685a649ae530a0e98c52c5306279c82",
+            "before_sha256": "3e87a42b5456a1a7b5d2806096fb28942685a649ae530a0e98c52c5306279c82",
+            "path": "docs/evidence/C101/fixtures/imf/AvailableIndicators.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::AvailableIndicators",
+        "path": "docs/evidence/C101/receipts/imf/AvailableIndicators/service.json",
+        "sha256": "2f57d9aff2764920a1cebf72500e39a94dab2bb273141b157cc5998e376e1479"
+      },
+      "status": "PASS",
+      "upstream_model": "AvailableIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model AvailableIndicators --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T15:32:08.986920+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "3e87a42b5456a1a7b5d2806096fb28942685a649ae530a0e98c52c5306279c82",
+            "before_sha256": "3e87a42b5456a1a7b5d2806096fb28942685a649ae530a0e98c52c5306279c82",
+            "path": "docs/evidence/C101/fixtures/imf/AvailableIndicators.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::AvailableIndicators",
+        "path": "docs/evidence/C101/receipts/imf/AvailableIndicators/contract.json",
+        "sha256": "7563cf54b8b07bcc53e31c650358a39dc9fc4dcef0677003181e453c1d89fd07"
+      },
+      "status": "PASS",
+      "upstream_model": "AvailableIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model AvailableIndicators --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T15:32:09.858074+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "3e87a42b5456a1a7b5d2806096fb28942685a649ae530a0e98c52c5306279c82",
+            "before_sha256": "3e87a42b5456a1a7b5d2806096fb28942685a649ae530a0e98c52c5306279c82",
+            "path": "docs/evidence/C101/fixtures/imf/AvailableIndicators.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::AvailableIndicators",
+        "path": "docs/evidence/C101/receipts/imf/AvailableIndicators/counterfact.json",
+        "sha256": "58af0b3c65b7fe664dd911ce541b2773128cae64fcec145501a8ac3ae9a41a1d"
+      },
+      "status": "PASS",
+      "upstream_model": "AvailableIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model ConsumerPriceIndex --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T15:32:10.785724+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::ConsumerPriceIndex",
+        "path": "docs/evidence/C101/receipts/imf/ConsumerPriceIndex/implementation.json",
+        "sha256": "ce93823b79c4c3a84e330501fef20ea861adbd159ed69344e535e356be8b6be4"
+      },
+      "status": "PASS",
+      "upstream_model": "ConsumerPriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model ConsumerPriceIndex --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T15:32:11.646538+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "d7bd8724057d158479fd86f6ff715308a0215a1d3f6defbe086b1c03fceeecb9",
+            "before_sha256": "d7bd8724057d158479fd86f6ff715308a0215a1d3f6defbe086b1c03fceeecb9",
+            "path": "docs/evidence/C101/fixtures/imf/ConsumerPriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::ConsumerPriceIndex",
+        "path": "docs/evidence/C101/receipts/imf/ConsumerPriceIndex/direct.json",
+        "sha256": "60feab07cb8da3e212029c68dcc17a756d0d2d327d7526cc1b94e66ffd37da37"
+      },
+      "status": "PASS",
+      "upstream_model": "ConsumerPriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model ConsumerPriceIndex --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T15:32:12.740423+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "d7bd8724057d158479fd86f6ff715308a0215a1d3f6defbe086b1c03fceeecb9",
+            "before_sha256": "d7bd8724057d158479fd86f6ff715308a0215a1d3f6defbe086b1c03fceeecb9",
+            "path": "docs/evidence/C101/fixtures/imf/ConsumerPriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::ConsumerPriceIndex",
+        "path": "docs/evidence/C101/receipts/imf/ConsumerPriceIndex/service.json",
+        "sha256": "7a3c09715d24c1acc09a1d4eecd41c95782aaa4618e572defb66b9a3c3717e00"
+      },
+      "status": "PASS",
+      "upstream_model": "ConsumerPriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model ConsumerPriceIndex --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T15:32:13.718198+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "d7bd8724057d158479fd86f6ff715308a0215a1d3f6defbe086b1c03fceeecb9",
+            "before_sha256": "d7bd8724057d158479fd86f6ff715308a0215a1d3f6defbe086b1c03fceeecb9",
+            "path": "docs/evidence/C101/fixtures/imf/ConsumerPriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::ConsumerPriceIndex",
+        "path": "docs/evidence/C101/receipts/imf/ConsumerPriceIndex/contract.json",
+        "sha256": "ff636484ab07085d8b1e2e088f8299a086ee79f61caad6aabdf04a8601084782"
+      },
+      "status": "PASS",
+      "upstream_model": "ConsumerPriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model ConsumerPriceIndex --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T15:32:14.696240+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "d7bd8724057d158479fd86f6ff715308a0215a1d3f6defbe086b1c03fceeecb9",
+            "before_sha256": "d7bd8724057d158479fd86f6ff715308a0215a1d3f6defbe086b1c03fceeecb9",
+            "path": "docs/evidence/C101/fixtures/imf/ConsumerPriceIndex.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::ConsumerPriceIndex",
+        "path": "docs/evidence/C101/receipts/imf/ConsumerPriceIndex/counterfact.json",
+        "sha256": "8dac009c1f18f63474e4dd6763b487df8523c98703647a7ddce3e72f4590ebb9"
+      },
+      "status": "PASS",
+      "upstream_model": "ConsumerPriceIndex"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model DirectionOfTrade --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T15:32:15.608417+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::DirectionOfTrade",
+        "path": "docs/evidence/C101/receipts/imf/DirectionOfTrade/implementation.json",
+        "sha256": "7540b63163aa34aeebd6d63e41d998ea6d53e65c433780518023d4f399fc8602"
+      },
+      "status": "PASS",
+      "upstream_model": "DirectionOfTrade"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model DirectionOfTrade --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T15:32:16.520287+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "cc4411770709919894420cb68a65e2408d981e8d67388695b9d83c3f3efb53d4",
+            "before_sha256": "cc4411770709919894420cb68a65e2408d981e8d67388695b9d83c3f3efb53d4",
+            "path": "docs/evidence/C101/fixtures/imf/DirectionOfTrade.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::DirectionOfTrade",
+        "path": "docs/evidence/C101/receipts/imf/DirectionOfTrade/direct.json",
+        "sha256": "0003e98805dc282da6fa9f4c927bbf0dfcb178e75826e3e65a7ca737a109b56c"
+      },
+      "status": "PASS",
+      "upstream_model": "DirectionOfTrade"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model DirectionOfTrade --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T15:32:17.532074+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "cc4411770709919894420cb68a65e2408d981e8d67388695b9d83c3f3efb53d4",
+            "before_sha256": "cc4411770709919894420cb68a65e2408d981e8d67388695b9d83c3f3efb53d4",
+            "path": "docs/evidence/C101/fixtures/imf/DirectionOfTrade.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::DirectionOfTrade",
+        "path": "docs/evidence/C101/receipts/imf/DirectionOfTrade/service.json",
+        "sha256": "906911d2ab165c4a3ab6ce4bb08774805ccff6c51419f929c15e14b464636f49"
+      },
+      "status": "PASS",
+      "upstream_model": "DirectionOfTrade"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model DirectionOfTrade --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T15:32:18.441742+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "cc4411770709919894420cb68a65e2408d981e8d67388695b9d83c3f3efb53d4",
+            "before_sha256": "cc4411770709919894420cb68a65e2408d981e8d67388695b9d83c3f3efb53d4",
+            "path": "docs/evidence/C101/fixtures/imf/DirectionOfTrade.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::DirectionOfTrade",
+        "path": "docs/evidence/C101/receipts/imf/DirectionOfTrade/contract.json",
+        "sha256": "f0964ce944f3a28c86e172292bb41cbfc722c3d58a8109fb882aa76ddcb58509"
+      },
+      "status": "PASS",
+      "upstream_model": "DirectionOfTrade"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model DirectionOfTrade --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T15:32:19.341362+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "cc4411770709919894420cb68a65e2408d981e8d67388695b9d83c3f3efb53d4",
+            "before_sha256": "cc4411770709919894420cb68a65e2408d981e8d67388695b9d83c3f3efb53d4",
+            "path": "docs/evidence/C101/fixtures/imf/DirectionOfTrade.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::DirectionOfTrade",
+        "path": "docs/evidence/C101/receipts/imf/DirectionOfTrade/counterfact.json",
+        "sha256": "bece4627c6eebfca134f808d3916cb7669c54632eae5e233b0101b3c4a3a98ef"
+      },
+      "status": "PASS",
+      "upstream_model": "DirectionOfTrade"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model EconomicIndicators --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T15:32:20.204807+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::EconomicIndicators",
+        "path": "docs/evidence/C101/receipts/imf/EconomicIndicators/implementation.json",
+        "sha256": "4a8672a33cf6a7eeab2a29acce140ee11e708e1db00e99ed5281a97f4ccb72ca"
+      },
+      "status": "PASS",
+      "upstream_model": "EconomicIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model EconomicIndicators --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T15:32:21.052272+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "5c1d707dfe44eb410ab0966b539b3a11a74d1e13d39dcb02eda8e83b41e2843c",
+            "before_sha256": "5c1d707dfe44eb410ab0966b539b3a11a74d1e13d39dcb02eda8e83b41e2843c",
+            "path": "docs/evidence/C101/fixtures/imf/EconomicIndicators.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::EconomicIndicators",
+        "path": "docs/evidence/C101/receipts/imf/EconomicIndicators/direct.json",
+        "sha256": "9d873c7db70c98d13dbbf3bf25f9ac2abbddbc2e7334bb78fef770d0581b31c7"
+      },
+      "status": "PASS",
+      "upstream_model": "EconomicIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model EconomicIndicators --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T15:32:22.105500+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "5c1d707dfe44eb410ab0966b539b3a11a74d1e13d39dcb02eda8e83b41e2843c",
+            "before_sha256": "5c1d707dfe44eb410ab0966b539b3a11a74d1e13d39dcb02eda8e83b41e2843c",
+            "path": "docs/evidence/C101/fixtures/imf/EconomicIndicators.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::EconomicIndicators",
+        "path": "docs/evidence/C101/receipts/imf/EconomicIndicators/service.json",
+        "sha256": "c10e4f16395df6be4daea838e65bd85f6acc2b7863bcf30521fd89f7a1b3b443"
+      },
+      "status": "PASS",
+      "upstream_model": "EconomicIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model EconomicIndicators --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T15:32:22.988745+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "5c1d707dfe44eb410ab0966b539b3a11a74d1e13d39dcb02eda8e83b41e2843c",
+            "before_sha256": "5c1d707dfe44eb410ab0966b539b3a11a74d1e13d39dcb02eda8e83b41e2843c",
+            "path": "docs/evidence/C101/fixtures/imf/EconomicIndicators.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::EconomicIndicators",
+        "path": "docs/evidence/C101/receipts/imf/EconomicIndicators/contract.json",
+        "sha256": "4819e9e4cb75d9f860c100dd5fad21e8673e6519aff5a61da960873132d41f0f"
+      },
+      "status": "PASS",
+      "upstream_model": "EconomicIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model EconomicIndicators --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T15:32:23.867669+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "5c1d707dfe44eb410ab0966b539b3a11a74d1e13d39dcb02eda8e83b41e2843c",
+            "before_sha256": "5c1d707dfe44eb410ab0966b539b3a11a74d1e13d39dcb02eda8e83b41e2843c",
+            "path": "docs/evidence/C101/fixtures/imf/EconomicIndicators.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "before_sha256": "21e01aff749d401789114b34e3d1990c533ed2312dcfd704578d5d939f684b4a",
+            "path": "opendata/data/providers/imf/models/_sdmx.py"
+          },
+          {
+            "after_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "before_sha256": "f1695ddb4259735d8d7ea1b0bad9fac61925638c8050e61094fb33e341e5d3fe",
+            "path": "opendata/data/providers/imf/models/iter2.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::EconomicIndicators",
+        "path": "docs/evidence/C101/receipts/imf/EconomicIndicators/counterfact.json",
+        "sha256": "47cfac0f70c4dfcb5d6e46b529312859ef9a29cf068985fba70dc6923f629767"
+      },
+      "status": "PASS",
+      "upstream_model": "EconomicIndicators"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointInfo --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T15:32:24.773283+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::MaritimeChokePointInfo",
+        "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointInfo/implementation.json",
+        "sha256": "9b4c9acae5f0fcd930426d7d63df3c0eb4a13da91fb120a48c858ef539ea3872"
+      },
+      "status": "PASS",
+      "upstream_model": "MaritimeChokePointInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointInfo --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T15:32:25.650535+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "7eb82f46ad464bf6a936c8ed9925344044e3c0a80a06587b29ba072d34d14882",
+            "before_sha256": "7eb82f46ad464bf6a936c8ed9925344044e3c0a80a06587b29ba072d34d14882",
+            "path": "docs/evidence/C101/fixtures/imf/MaritimeChokePointInfo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::MaritimeChokePointInfo",
+        "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointInfo/direct.json",
+        "sha256": "558dd9f5688b686b46cb08a3b854d42d8dad6df56d6c31f5bf0844349450678f"
+      },
+      "status": "PASS",
+      "upstream_model": "MaritimeChokePointInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointInfo --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T15:32:26.665896+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "7eb82f46ad464bf6a936c8ed9925344044e3c0a80a06587b29ba072d34d14882",
+            "before_sha256": "7eb82f46ad464bf6a936c8ed9925344044e3c0a80a06587b29ba072d34d14882",
+            "path": "docs/evidence/C101/fixtures/imf/MaritimeChokePointInfo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::MaritimeChokePointInfo",
+        "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointInfo/service.json",
+        "sha256": "bf750b8277d8af466dc9b33237a47a1b39a01e4e5b3db669c96598c9e8e2ceec"
+      },
+      "status": "PASS",
+      "upstream_model": "MaritimeChokePointInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointInfo --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T15:32:27.574739+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "7eb82f46ad464bf6a936c8ed9925344044e3c0a80a06587b29ba072d34d14882",
+            "before_sha256": "7eb82f46ad464bf6a936c8ed9925344044e3c0a80a06587b29ba072d34d14882",
+            "path": "docs/evidence/C101/fixtures/imf/MaritimeChokePointInfo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::MaritimeChokePointInfo",
+        "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointInfo/contract.json",
+        "sha256": "08bd9a189aedcbf0fedb9f2d92550719a7c8dbdc58e89db5b1baa202cb7f7fbc"
+      },
+      "status": "PASS",
+      "upstream_model": "MaritimeChokePointInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointInfo --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T15:32:28.478583+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "7eb82f46ad464bf6a936c8ed9925344044e3c0a80a06587b29ba072d34d14882",
+            "before_sha256": "7eb82f46ad464bf6a936c8ed9925344044e3c0a80a06587b29ba072d34d14882",
+            "path": "docs/evidence/C101/fixtures/imf/MaritimeChokePointInfo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::MaritimeChokePointInfo",
+        "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointInfo/counterfact.json",
+        "sha256": "99fd3d4c34b9098d15865eed4760e191a1f94450355b0269e94d119d8db4ccbd"
+      },
+      "status": "PASS",
+      "upstream_model": "MaritimeChokePointInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointVolume --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T15:32:29.332263+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::MaritimeChokePointVolume",
+        "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointVolume/implementation.json",
+        "sha256": "2e76832d985890ae0b65594f12553e0432d111bbd4708fb925c86492035e5e46"
+      },
+      "status": "PASS",
+      "upstream_model": "MaritimeChokePointVolume"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointVolume --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T15:32:30.197588+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "3ebf0655b259df1896766fbc3f763edc5f9295cb8de5b59a647094dc3c7b2ec6",
+            "before_sha256": "3ebf0655b259df1896766fbc3f763edc5f9295cb8de5b59a647094dc3c7b2ec6",
+            "path": "docs/evidence/C101/fixtures/imf/MaritimeChokePointVolume.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::MaritimeChokePointVolume",
+        "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointVolume/direct.json",
+        "sha256": "0b4f80c6ee7c9a2c3525f7226e72f8402bd2ccc0ab550bc6f89abddc197abada"
+      },
+      "status": "PASS",
+      "upstream_model": "MaritimeChokePointVolume"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointVolume --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T15:32:31.260235+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "3ebf0655b259df1896766fbc3f763edc5f9295cb8de5b59a647094dc3c7b2ec6",
+            "before_sha256": "3ebf0655b259df1896766fbc3f763edc5f9295cb8de5b59a647094dc3c7b2ec6",
+            "path": "docs/evidence/C101/fixtures/imf/MaritimeChokePointVolume.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::MaritimeChokePointVolume",
+        "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointVolume/service.json",
+        "sha256": "4ee41711dee402b88b5e165111d97eb8909d8cbd8eeead7019664d6cd9efb985"
+      },
+      "status": "PASS",
+      "upstream_model": "MaritimeChokePointVolume"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointVolume --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T15:32:32.131960+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "3ebf0655b259df1896766fbc3f763edc5f9295cb8de5b59a647094dc3c7b2ec6",
+            "before_sha256": "3ebf0655b259df1896766fbc3f763edc5f9295cb8de5b59a647094dc3c7b2ec6",
+            "path": "docs/evidence/C101/fixtures/imf/MaritimeChokePointVolume.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::MaritimeChokePointVolume",
+        "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointVolume/contract.json",
+        "sha256": "cbf2052d1e59b4794271f1b591a41a95b21ac26a4e1d3ed4f4171bf74ccab27c"
+      },
+      "status": "PASS",
+      "upstream_model": "MaritimeChokePointVolume"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointVolume --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T15:32:32.984962+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "3ebf0655b259df1896766fbc3f763edc5f9295cb8de5b59a647094dc3c7b2ec6",
+            "before_sha256": "3ebf0655b259df1896766fbc3f763edc5f9295cb8de5b59a647094dc3c7b2ec6",
+            "path": "docs/evidence/C101/fixtures/imf/MaritimeChokePointVolume.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::MaritimeChokePointVolume",
+        "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointVolume/counterfact.json",
+        "sha256": "7aabf17742207b66e34be6c5b38ad7c85d60feb0e4a4e17905a7d6cd72b1bc15"
+      },
+      "status": "PASS",
+      "upstream_model": "MaritimeChokePointVolume"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortInfo --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T15:32:33.865000+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::PortInfo",
+        "path": "docs/evidence/C101/receipts/imf/PortInfo/implementation.json",
+        "sha256": "c5e5ad87eaf70f4aadebd3f4c3b81003ea5f9961ee8a5e393cd21ccb2f8236d2"
+      },
+      "status": "PASS",
+      "upstream_model": "PortInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortInfo --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T15:32:34.763794+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "a7c51ed559147e0c8d5f7189568cc674a7d15a9e5f6cf490cba206d54329c2a8",
+            "before_sha256": "a7c51ed559147e0c8d5f7189568cc674a7d15a9e5f6cf490cba206d54329c2a8",
+            "path": "docs/evidence/C101/fixtures/imf/PortInfo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::PortInfo",
+        "path": "docs/evidence/C101/receipts/imf/PortInfo/direct.json",
+        "sha256": "5ca0c189648ea83277849a5f4993ade1685548e516f8b3bdcc3b7e7d59df7204"
+      },
+      "status": "PASS",
+      "upstream_model": "PortInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortInfo --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T15:32:35.911374+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "a7c51ed559147e0c8d5f7189568cc674a7d15a9e5f6cf490cba206d54329c2a8",
+            "before_sha256": "a7c51ed559147e0c8d5f7189568cc674a7d15a9e5f6cf490cba206d54329c2a8",
+            "path": "docs/evidence/C101/fixtures/imf/PortInfo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::PortInfo",
+        "path": "docs/evidence/C101/receipts/imf/PortInfo/service.json",
+        "sha256": "2aefdf9dffceb8424805b9c8e6a53863be0c60dcda4e3bda3529510a77550e92"
+      },
+      "status": "PASS",
+      "upstream_model": "PortInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortInfo --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T15:32:36.862812+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "a7c51ed559147e0c8d5f7189568cc674a7d15a9e5f6cf490cba206d54329c2a8",
+            "before_sha256": "a7c51ed559147e0c8d5f7189568cc674a7d15a9e5f6cf490cba206d54329c2a8",
+            "path": "docs/evidence/C101/fixtures/imf/PortInfo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::PortInfo",
+        "path": "docs/evidence/C101/receipts/imf/PortInfo/contract.json",
+        "sha256": "f00e83789f4c544ba557b00b8665c158890de1fa29bf4246852e84bd5019a974"
+      },
+      "status": "PASS",
+      "upstream_model": "PortInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortInfo --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T15:32:37.852228+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "a7c51ed559147e0c8d5f7189568cc674a7d15a9e5f6cf490cba206d54329c2a8",
+            "before_sha256": "a7c51ed559147e0c8d5f7189568cc674a7d15a9e5f6cf490cba206d54329c2a8",
+            "path": "docs/evidence/C101/fixtures/imf/PortInfo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::PortInfo",
+        "path": "docs/evidence/C101/receipts/imf/PortInfo/counterfact.json",
+        "sha256": "60c21fb589cbffb4619f501b34ed29f75a6d8f95cd0e9458539ab9ab47fcc30c"
+      },
+      "status": "PASS",
+      "upstream_model": "PortInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortVolume --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-15T15:32:38.754780+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::PortVolume",
+        "path": "docs/evidence/C101/receipts/imf/PortVolume/implementation.json",
+        "sha256": "03b52356f0bd6349c986184bd34c6d1ad4759d007a09906a9d3ccce5f0c5c907"
+      },
+      "status": "PASS",
+      "upstream_model": "PortVolume"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortVolume --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-15T15:32:39.709379+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "c87b42a8a11489f021b7e9bba099e4e75b806bbe73616500366990fcc0567c39",
+            "before_sha256": "c87b42a8a11489f021b7e9bba099e4e75b806bbe73616500366990fcc0567c39",
+            "path": "docs/evidence/C101/fixtures/imf/PortVolume.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::PortVolume",
+        "path": "docs/evidence/C101/receipts/imf/PortVolume/direct.json",
+        "sha256": "f522b51eaa3e347d8d8268a54a4fef55040690a4374ae0d2d29c152608b77144"
+      },
+      "status": "PASS",
+      "upstream_model": "PortVolume"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortVolume --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-15T15:32:40.784873+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "c87b42a8a11489f021b7e9bba099e4e75b806bbe73616500366990fcc0567c39",
+            "before_sha256": "c87b42a8a11489f021b7e9bba099e4e75b806bbe73616500366990fcc0567c39",
+            "path": "docs/evidence/C101/fixtures/imf/PortVolume.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::PortVolume",
+        "path": "docs/evidence/C101/receipts/imf/PortVolume/service.json",
+        "sha256": "e36f61d474aa300bae45cb6b3103d566b7cc886653ade71241c926294929fe91"
+      },
+      "status": "PASS",
+      "upstream_model": "PortVolume"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortVolume --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-15T15:32:41.860268+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "c87b42a8a11489f021b7e9bba099e4e75b806bbe73616500366990fcc0567c39",
+            "before_sha256": "c87b42a8a11489f021b7e9bba099e4e75b806bbe73616500366990fcc0567c39",
+            "path": "docs/evidence/C101/fixtures/imf/PortVolume.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::PortVolume",
+        "path": "docs/evidence/C101/receipts/imf/PortVolume/contract.json",
+        "sha256": "5da3363c746809119cce737ac08b4f246d7028832e4ef60d272078fd72de48f3"
+      },
+      "status": "PASS",
+      "upstream_model": "PortVolume"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortVolume --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-15T15:32:42.821285+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "before_sha256": "636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+            "path": "opendata/data/models/macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:636dedfe358a17811dfa7ac6b8729d1fca989dfe3fac57322cfee5e144871920",
+        "fixture": [
+          {
+            "after_sha256": "c87b42a8a11489f021b7e9bba099e4e75b806bbe73616500366990fcc0567c39",
+            "before_sha256": "c87b42a8a11489f021b7e9bba099e4e75b806bbe73616500366990fcc0567c39",
+            "path": "docs/evidence/C101/fixtures/imf/PortVolume.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "before_sha256": "cd484084d094cf44b4f2f9f310e35a7cb659fb146b139d7a814db2e01c2bbff7",
+            "path": "scripts/quality/iter2_witnesses/imf.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "before_sha256": "4b4222d4c0df9ec33e1438df4651164f133960586d6a73394547f61b4fb67669",
+            "path": "opendata/data/providers/imf/registration.py"
+          },
+          {
+            "after_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "before_sha256": "61f0145d9a6a41b446005186ffac6e2f46832fdffd87434cb9beab975f6382a1",
+            "path": "opendata/data/providers/imf/provider.py"
+          },
+          {
+            "after_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "before_sha256": "03a6cef62a6efbdcde00aeeb00ad4c0f4fd6573e0b6a17490b5a5117c912fb27",
+            "path": "opendata/data/providers/imf/models/portwatch.py"
+          }
+        ]
+      },
+      "provider": "imf",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "imf::PortVolume",
+        "path": "docs/evidence/C101/receipts/imf/PortVolume/counterfact.json",
+        "sha256": "fa0598d81084f9988c08bb9977225148a8e61cb03d0559a547d2d45b322d16ba"
+      },
+      "status": "PASS",
+      "upstream_model": "PortVolume"
+    }
+  ],
+  "generated_at_utc": "2026-10-15T15:32:44.372666+00:00",
+  "generated_by": "scripts/quality/iter2_claims_producer.py",
+  "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
+  "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",
+  "primary_reviews": [],
+  "schema_version": 1
+}

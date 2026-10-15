@@ -1,0 +1,58 @@
+{
+  "responses": [
+    {
+      "content_type": "application/json",
+      "sequence": [
+        {
+          "count": 2
+        },
+        {
+          "exceededTransferLimit": false,
+          "features": [
+            {
+              "attributes": {
+                "ObjectId": 11,
+                "industry_top1": "Container",
+                "industry_top2": "Dry bulk",
+                "industry_top3": "Tanker",
+                "lat": 29.986,
+                "lon": 32.55,
+                "portid": "SUEZ",
+                "portname": "Suez Canal",
+                "vessel_count_RoRo": 10,
+                "vessel_count_container": 100,
+                "vessel_count_dry_bulk": 200,
+                "vessel_count_general_cargo": 50,
+                "vessel_count_tanker": 300,
+                "vessel_count_total": 660
+              }
+            },
+            {
+              "attributes": {
+                "ObjectId": 12,
+                "industry_top1": "Tanker",
+                "industry_top2": null,
+                "industry_top3": null,
+                "lat": 9.2,
+                "lon": -79.5,
+                "portid": "PANAM",
+                "portname": "Panama Canal",
+                "vessel_count_RoRo": 5,
+                "vessel_count_container": 90,
+                "vessel_count_dry_bulk": 150,
+                "vessel_count_general_cargo": 40,
+                "vessel_count_tanker": 210,
+                "vessel_count_total": 495
+              }
+            }
+          ]
+        },
+        {
+          "count": 2
+        }
+      ],
+      "status": 200,
+      "url_contains": "PortWatch_chokepoints_database/FeatureServer/0/query"
+    }
+  ]
+}
