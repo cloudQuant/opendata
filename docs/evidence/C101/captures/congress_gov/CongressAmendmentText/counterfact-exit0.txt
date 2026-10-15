@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendmentText --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CongressGovProviderError", "refusal_code": "CONGRESS_GOV_DOCUMENT_URL_REJECTED", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CongressGovProviderError", "refusal_code": "CONGRESS_GOV_DOCUMENT_URL_REJECTED", "rejected": [], "status": null}, "reason": "publishing an amendment text version whose only format link is a look-alike host must refuse with CONGRESS_GOV_DOCUMENT_URL_REJECTED on the same guard the bill leg uses, because the amendment fetcher selects formats through the shared ``_select_text_documents``/``_format_url`` pair and ``CongressAmendmentText`` carries the rejected link verbatim as its required ``source_url`` when the guard is absent; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

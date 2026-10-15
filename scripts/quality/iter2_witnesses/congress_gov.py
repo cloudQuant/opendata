@@ -12,12 +12,18 @@ attributable refusal type for this source) and they are deliberately code-only: 
 pagination count that is negative is refused before the mapper can address a contract column, so
 no cell exists for the refusal to attribute.
 
-What these six witnesses cover, and what they do not: the repository's offline transport seam
+What these eight witnesses cover, and what they do not: the repository's offline transport seam
 answers every call of one fetch with the same body, so each detail witness is run with
-``include_components=()`` and exercises the base detail leg only. The component joins (cosponsors,
-subjects, summaries, committees, actions, related bills, titles) and the two text-download legs,
-which make a second ``get_document`` call per version, are not witnessed by this shard and stay
-claimed as uncovered.
+``include_components=()`` and exercises the base detail leg only (the committee leg makes one call
+by construction). The component joins (cosponsors, subjects, summaries, committees, actions,
+related bills, titles) are not witnessed by this shard and stay claimed as uncovered. The two text
+witnesses do reach the second ``get_document`` call, and because that call is answered from the
+same index body they prove the document-leg guards rather than a payload: version-code and format
+selection, the ``_format_type`` allowlist, the official-host check that gates ``source_url``, the
+size/empty-body bounds and the base64 transport of the bytes. They do not prove decoding of a real
+Congress.gov ``.txt``/``.pdf`` file, and ``media_type`` is the seam's default
+``application/octet-stream`` rather than a served ``Content-Type``, since the seam response carries
+no headers.
 """
 
 from __future__ import annotations
@@ -296,6 +302,69 @@ def _committee_detail() -> dict[str, Any]:
     return {"committee": dict(_COMMITTEE_DETAIL["committee"])}
 
 
+def _bill_text_index() -> dict[str, Any]:
+    """``/bill/119/hr/1/text``: one version, one ``txt`` format, one published link."""
+    return {
+        "textVersions": {"item": [dict(row) for row in _BILL_TEXT_INDEX["textVersions"]["item"]]},
+        "pagination": dict(_BILL_TEXT_INDEX["pagination"]),
+    }
+
+
+def _amendment_text_index() -> dict[str, Any]:
+    """``/amendment/118/hamdt/1/text``: one version, one ``txt`` format."""
+    return {
+        "textVersions": {
+            "item": [dict(row) for row in _AMENDMENT_TEXT_INDEX["textVersions"]["item"]]
+        },
+        "pagination": dict(_AMENDMENT_TEXT_INDEX["pagination"]),
+    }
+
+
+#: One bill text index; the download leg is answered from this same body by the offline seam.
+_BILL_TEXT_INDEX: Final[dict[str, Any]] = {
+    "textVersions": {
+        "item": [
+            {
+                "type": "Text",
+                "date": "2025-01-03",
+                "formats": {
+                    "item": [
+                        {
+                            "type": "txt",
+                            "url": "https://www.congress.gov/119/bills/hr1/text-1.txt?format=txt",
+                        }
+                    ]
+                },
+            }
+        ]
+    },
+    "pagination": {"count": 1},
+}
+
+_AMENDMENT_TEXT_INDEX: Final[dict[str, Any]] = {
+    "textVersions": {
+        "item": [
+            {
+                "type": "Text",
+                "date": "2023-01-10",
+                "formats": {
+                    "item": [
+                        {
+                            "type": "txt",
+                            "url": (
+                                "https://www.congress.gov/118/amendments/h1/hamdt-1/"
+                                "text-1.txt?format=txt"
+                            ),
+                        }
+                    ]
+                },
+            }
+        ]
+    },
+    "pagination": {"count": 1},
+}
+
+
 _CONFIG_FILES: Final[list[str]] = [
     "opendata/data/providers/congress_gov/models/_client.py",
 ]
@@ -427,6 +496,66 @@ CONFIG: Final[dict[str, Any]] = {
                 "CONGRESS_GOV_BAD_COMMITTEE_INFO, because ``name`` is a required cell of "
                 "``CongressCommitteeInfoRawData`` and the mapper has no other published title to "
                 "derive it from"
+            ),
+            "source_files": _SOURCE_FILES,
+            "contract_files": _CONTRACT_FILES + _CONFIG_FILES,
+        },
+        "CongressBillText": {
+            "fixture_document": _bill_text_index,
+            "query": {
+                "congress": 119,
+                "bill_type": "hr",
+                "bill_number": 1,
+                "version_code": "Text",
+                "document_format": "txt",
+                "max_documents": 1,
+            },
+            "tamper": {
+                "op": "set",
+                "path": ["textVersions", "item", 0, "formats", "item", 0, "url"],
+                "value": "https://text-downloads.invalid/119/bills/hr1/text-1.txt?format=txt",
+            },
+            "refusal_class": "CongressGovProviderError",
+            "refusal_code": "CONGRESS_GOV_DOCUMENT_URL_REJECTED",
+            "tamper_reason": (
+                "publishing a text version whose ``txt`` format link points at a host outside "
+                "Congress.gov's own document hosts must refuse with "
+                "CONGRESS_GOV_DOCUMENT_URL_REJECTED before any byte is fetched: ``_format_url`` "
+                "asks ``_safe_document_url``, which delegates to the client's "
+                "``_validate_document_url`` and allows only an https URL on "
+                "``www.congress.gov``/``congress.gov`` whose only query key is ``format``, so a "
+                "look-alike download host cannot become ``source_url``, a required cell of "
+                "``CongressTextDocument``"
+            ),
+            "source_files": _SOURCE_FILES,
+            "contract_files": _CONTRACT_FILES + _CONFIG_FILES,
+        },
+        "CongressAmendmentText": {
+            "fixture_document": _amendment_text_index,
+            "query": {
+                "congress": 118,
+                "amendment_type": "hamdt",
+                "amendment_number": 1,
+                "version_code": "Text",
+                "document_format": "txt",
+                "max_documents": 1,
+            },
+            "tamper": {
+                "op": "set",
+                "path": ["textVersions", "item", 0, "formats", "item", 0, "url"],
+                "value": (
+                    "https://text-downloads.invalid/118/amendments/h1/hamdt-1/text-1.txt?format=txt"
+                ),
+            },
+            "refusal_class": "CongressGovProviderError",
+            "refusal_code": "CONGRESS_GOV_DOCUMENT_URL_REJECTED",
+            "tamper_reason": (
+                "publishing an amendment text version whose only format link is a look-alike host "
+                "must refuse with CONGRESS_GOV_DOCUMENT_URL_REJECTED on the same guard the bill "
+                "leg uses, because the amendment fetcher selects formats through the shared "
+                "``_select_text_documents``/``_format_url`` pair and ``CongressAmendmentText`` "
+                "carries the rejected link verbatim as its required ``source_url`` when the guard "
+                "is absent"
             ),
             "source_files": _SOURCE_FILES,
             "contract_files": _CONTRACT_FILES + _CONFIG_FILES,
