@@ -24,7 +24,7 @@ import importlib.util
 import pkgutil
 from collections.abc import Callable, Iterator, Mapping
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Any, Final, cast
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -43,6 +43,32 @@ _REQUIRED_ENTRY_KEYS: Final = (
     "source_files",
     "contract_files",
 )
+
+#: Providers whose fetchers call ``get_shared_http_client()`` directly instead of going through the
+#: engine's ``http_transport`` seam declare ``client_seam`` and are witnessed by patching that named
+#: module attribute in the probe process. The declaration is the claim: a witness that named no
+#: module could silently run the real governed client.
+_CLIENT_SEAM_KINDS: Final = ("shared_http_client",)
+_CLIENT_SEAM_KEYS: Final = ("kind", "modules", "attr")
+
+
+def _validate_client_seam(source: str, model: str, seam: object) -> None:
+    """Check the declared offline client seam names real modules and one supported kind."""
+    if not isinstance(seam, dict):
+        raise KeyError(f"{source}::{model}: client_seam is not a mapping")
+    missing = [key for key in _CLIENT_SEAM_KEYS if key not in seam]
+    if missing:
+        raise KeyError(f"{source}::{model}: client_seam lacks {missing}")
+    if seam["kind"] not in _CLIENT_SEAM_KINDS:
+        raise KeyError(f"{source}::{model}: client_seam kind {seam['kind']!r} is not supported")
+    modules = seam["modules"]
+    if not isinstance(modules, list) or not modules:
+        raise KeyError(f"{source}::{model}: client_seam modules must be a non-empty list")
+    for name in modules:
+        if not isinstance(name, str) or not name:
+            raise KeyError(f"{source}::{model}: client_seam names a non-module entry {name!r}")
+    if not isinstance(seam["attr"], str) or not seam["attr"]:
+        raise KeyError(f"{source}::{model}: client_seam attr must be a non-empty name")
 
 
 def providers_with_witness() -> list[str]:
@@ -81,6 +107,8 @@ def _load(source: str) -> dict[str, Any]:
         missing = [key for key in _REQUIRED_ENTRY_KEYS if key not in entry]
         if missing:
             raise KeyError(f"{source}::{model}: witness entry lacks {missing}")
+        if "client_seam" in entry:
+            _validate_client_seam(source, model, entry["client_seam"])
     return config
 
 
@@ -96,7 +124,8 @@ def provider_config(source: str) -> dict[str, Any]:
 
 def model_entry(source: str, model: str) -> dict[str, Any]:
     """Return one model's witness entry inside the provider configuration."""
-    return provider_config(source)["models"][model]
+    models: dict[str, Any] = provider_config(source)["models"]
+    return cast("dict[str, Any]", models[model])
 
 
 def fixture_builders() -> dict[str, Callable[[], Any]]:

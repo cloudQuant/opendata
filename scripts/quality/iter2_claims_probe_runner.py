@@ -3,9 +3,12 @@
 This is the subprocess the claims producer actually executes per phase; the
 exit code it returns is the exit code recorded in the claim, and nothing here
 consults a network, a database, or an ``OPENDATA_ALLOW_LIVE_E2E`` leg. All
-fetch legs run through the repository's own offline witness seam (the engine's
-``transport`` parameter / the fetchers' ``http_transport``) served by
-``FixedResponseTransport`` from ``opendata.data.providers._engine.testing``.
+fetch legs run through an offline witness seam and none of them can open a socket:
+engine-driven fetchers go through ``http_transport`` / ``FixedResponseTransport``
+from ``opendata.data.providers._engine.testing``, while fetchers that call the
+governed client directly go through the entry's declared ``client_seam`` -- and
+``_block_real_sockets()`` refuses any socket use in this process, so a mis-declared
+seam fails loudly instead of silently fetching.
 
 Verdict protocol on stdout (parsed by the producer):
     VERDICT=PASS | VERDICT=FAIL reason=<text> | VERDICT=BLOCKED reason=<text>
@@ -23,13 +26,19 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextlib
 import copy
+import importlib
 import json
 import os
+import socket
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -92,7 +101,7 @@ def _grant_context(provider: str, model: str, hosts: list[str], *, sends: int = 
     return FetchContext(timeout=10.0, request_budget=budget, operation=RequestOperation.QUERY)
 
 
-def _resolve_fetcher_type(provider: str, model: str) -> type:
+def _resolve_fetcher_type(provider: str, model: str) -> Any:  # noqa: ANN401  # heterogeneous fetcher classes
     for fetcher in fetchers_for(provider):
         if getattr(fetcher, "canonical_model", None) == model:
             return type(fetcher)
@@ -104,6 +113,108 @@ def _fixture_document(evidence_root: Path, provider: str, model: str) -> Any:  #
     if not path.is_file():
         raise WitnessBlocked(f"fixture file {path} was not materialized by the producer")
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+class RealSocketAttempt(RuntimeError):  # noqa: N818  # verdict vocabulary, not a retry error
+    """A leg tried to reach a socket inside a witness that declared an offline-only seam."""
+
+
+def _block_real_sockets() -> None:
+    """Make any real outbound socket attempt in this process raise, for every phase.
+
+    The engine seam already cannot reach a socket, so this is not a workaround for it; it is the
+    enforceable half of the claim for providers witnessed through ``client_seam``. Without it a
+    mis-declared seam would be indistinguishable from a silent real fetch.
+    """
+
+    def refuse(*_args: object, **_kwargs: object) -> None:
+        raise RealSocketAttempt("offline witness: real socket use is refused by the runner")
+
+    socket.socket.connect = refuse  # type: ignore[method-assign]
+    socket.create_connection = refuse  # type: ignore[assignment]
+    socket.getaddrinfo = refuse  # type: ignore[assignment]
+
+
+def _seam_body_bytes(body: Any) -> tuple[bytes, str]:  # noqa: ANN401  # fixture JSON body
+    """Encode one fixture response body the way the source itself would publish it."""
+    if isinstance(body, str):
+        return body.encode("utf-8"), "text/plain"
+    if isinstance(body, list) and all(isinstance(line, str) for line in body):
+        return "\n".join(body).encode("utf-8"), "text/html"
+    return json.dumps(body).encode("utf-8"), "application/json"
+
+
+class _FakeSharedClient:
+    """Serves the fixture envelope through the governed client's own ``get`` surface."""
+
+    def __init__(self, responses: list[dict[str, Any]]) -> None:
+        self.responses = responses
+        self.calls: list[str] = []
+
+    def get(
+        self,
+        url: str,
+        *,
+        params: Any = None,  # noqa: ANN401  # governed client passes a mapping through
+        headers: Any = None,  # noqa: ANN401
+        timeout: Any = None,  # noqa: ANN401
+        source: str = "unspecified",
+        **_extra: Any,  # noqa: ANN401  # cache_context / use_cache stay unread offline
+    ) -> Any:  # noqa: ANN401  # returns a requests.Response
+        """Return the first fixture response whose ``url_contains`` matches, or fail loudly."""
+        self.calls.append(url)
+        for spec in self.responses:
+            needle = spec.get("url_contains")
+            if isinstance(needle, str) and needle in url:
+                import requests
+
+                body, default_type = _seam_body_bytes(spec.get("body"))
+                response = requests.Response()
+                response.status_code = int(spec.get("status", 200))
+                response._content = body  # the documented requests fill-in point
+                response.url = url
+                response.reason = "OK"
+                response.headers.update({"Content-Type": spec.get("content_type", default_type)})
+                return response
+        raise WitnessFailure(f"client seam fixture covers no response for url={url!r}")
+
+
+@contextlib.contextmanager
+def _client_seam(entry: dict, document: Any) -> Iterator[_FakeSharedClient]:  # noqa: ANN401
+    """Patch the named provider modules to the fake client, then restore them.
+
+    The declaration is what makes this auditable: a witness module must name the modules whose
+    ``get_shared_http_client`` it replaces, so a provider that never reads the patched attribute
+    cannot report a clean run.
+    """
+    seam = entry["client_seam"]
+    responses = document.get("responses") if isinstance(document, dict) else None
+    if not isinstance(responses, list) or not responses:
+        raise WitnessBlocked(
+            "client seam fixture must be an envelope {'responses': [...]} with at least one entry"
+        )
+    client = _FakeSharedClient([spec for spec in responses if isinstance(spec, dict)])
+    attr = seam["attr"]
+    restored: list[tuple[Any, str, Any]] = []  # module objects
+    for name in seam["modules"]:
+        module = importlib.import_module(name)
+        if not hasattr(module, attr):
+            raise WitnessBlocked(f"client seam module {name!r} publishes no {attr!r} to patch")
+        restored.append((module, attr, getattr(module, attr)))
+        setattr(module, attr, lambda _c=client: _c)
+    try:
+        yield client
+    finally:
+        for module, attr_name, original in restored:
+            setattr(module, attr_name, original)
+
+
+def _seam_guard(client: _FakeSharedClient) -> None:
+    """A fetch that never asked the fake anything is not an offline witness."""
+    if not client.calls:
+        raise WitnessFailure(
+            "the fetch completed without ever calling the declared offline client seam"
+        )
 
 
 def _run_direct(
@@ -131,6 +242,36 @@ def _run_direct(
     return rows, transport, fetcher_type
 
 
+def _run_direct_with_seam(
+    provider: str,
+    model: str,
+    entry: dict,
+    document: Any,  # noqa: ANN401  # fixture JSON
+) -> tuple[list, Any, Any]:  # rows and transport are dynamic by nature
+    """Run :func:`_run_direct`, or the declared client seam instead of the engine one.
+
+    Providers whose fetchers call ``get_shared_http_client()`` directly have no ``http_transport``
+    to honour; ``transport.calls`` would then be empty and the engine path would fail -- which is
+    exactly the refusal that kept those rows unwitnessed. The seam substitutes the governed client
+    for the modules the witness names, so the parsing, normalization and refusal code that ships
+    is still the code under test.
+    """
+    if "client_seam" not in entry:
+        return _run_direct(provider, model, entry, document)
+    fetcher_type = _resolve_fetcher_type(provider, model)
+    instance = fetcher_type()
+    ctx = _grant_context(provider, model, entry["hosts"])
+    with _client_seam(entry, document) as client:
+        rows = list(instance.fetch(ctx=ctx, **entry["query"]))
+        _seam_guard(client)
+    if not rows:
+        raise WitnessFailure("the offline fetch produced zero rows")
+    for row in rows:
+        if type(row) is not fetcher_type.row_model:
+            raise WitnessFailure(f"row {type(row).__name__} is not the declared contract row class")
+    return rows, client, fetcher_type
+
+
 def _apply_tamper(
     document: Any,  # noqa: ANN401  # deep-copies arbitrary fixture JSON
     tamper: dict,
@@ -154,20 +295,61 @@ def _apply_tamper(
     return tampered
 
 
-def _refusal_shape(exc: ProviderEngineError) -> dict[str, Any]:
+def _typed_provider_refusal(exc: BaseException, provider: str) -> str | None:
+    """Return the refusal code when ``exc`` is this provider's own typed, code-bearing error.
+
+    The engine path refuses with ``ProviderEngineError`` and carries a full field attribution.
+    A provider that owns its transport refuses with its own error class, which has to earn the
+    same standing: declared by the provider package (a shared ``HttpFetchError`` or a bare
+    ``ValueError`` is not a provider's refusal contract), carrying a non-empty string ``code``
+    and a ``status`` face. Anything else is not a refusal shape the witness may declare.
+    """
+    refusal_type = type(exc)
+    if not refusal_type.__module__.startswith(f"opendata.data.providers.{provider}."):
+        return None
+    code = getattr(exc, "code", None)
+    if not isinstance(code, str) or not code:
+        return None
+    if not hasattr(exc, "status"):
+        return None
+    return code
+
+
+def _refusal_shape(
+    exc: BaseException,
+    provider: str = "",
+    expected_code: str = "",
+) -> dict[str, Any]:
     """Assert the typed refusal shape and return its machine-readable face."""
-    if not isinstance(exc, ProviderEngineError):
-        raise WitnessFailure(f"refusal {type(exc).__name__} is not a ProviderEngineError")
-    for attribute in ("code", "status", "url", "rejected", "missing", "invalid"):
-        if not hasattr(exc, attribute):
-            raise WitnessFailure(f"refusal lost the typed attribute {attribute!r}")
+    if isinstance(exc, ProviderEngineError):
+        for attribute in ("code", "status", "url", "rejected", "missing", "invalid"):
+            if not hasattr(exc, attribute):
+                raise WitnessFailure(f"refusal lost the typed attribute {attribute!r}")
+        return {
+            "refusal_class": type(exc).__name__,
+            "refusal_code": exc.code,
+            "status": exc.status,
+            "rejected": list(exc.rejected),
+            "missing": list(exc.missing),
+            "invalid": list(exc.invalid),
+        }
+    code = _typed_provider_refusal(exc, provider) if provider else None
+    if code is None:
+        raise WitnessFailure(
+            f"refusal {type(exc).__name__} is not a ProviderEngineError nor a typed, "
+            "code-bearing error declared by this provider package"
+        )
+    if expected_code and code != expected_code:
+        raise WitnessFailure(
+            f"the shipped refusal raises code {code!r}, not the declared {expected_code!r}"
+        )
     return {
         "refusal_class": type(exc).__name__,
-        "refusal_code": exc.code,
-        "status": exc.status,
-        "rejected": list(exc.rejected),
-        "missing": list(exc.missing),
-        "invalid": list(exc.invalid),
+        "refusal_code": code,
+        "status": getattr(exc, "status", None),
+        "rejected": [],
+        "missing": [],
+        "invalid": [],
     }
 
 
@@ -204,7 +386,7 @@ def _find_descriptor(registry: ProviderRegistry, provider: str, model: str) -> A
 
 def witness_direct(provider: str, model: str, entry: dict) -> None:
     """Fetch through the offline seam and require the declared contract rows came back."""
-    rows, transport, fetcher_type = _run_direct(provider, model, entry, entry["document"])
+    rows, transport, fetcher_type = _run_direct_with_seam(provider, model, entry, entry["document"])
     print(
         "direct: fetcher="
         f"{fetcher_type.__name__} seam_requests={len(transport.calls)} "
@@ -225,8 +407,6 @@ def witness_service(provider: str, model: str, entry: dict) -> None:
     registry = ProviderRegistry()
     register_provider(provider, registry)
     fetcher = registry.resolve_model(provider, model)
-    transport = FixedResponseTransport(HttpResponse(200, copy.deepcopy(entry["document"])))
-    fetcher.http_transport = transport  # in-memory seam only; no file is touched
     ctx = _grant_context(provider, model, entry["hosts"])
 
     domain = fetcher.capability.domain
@@ -235,16 +415,28 @@ def witness_service(provider: str, model: str, entry: dict) -> None:
         def allows_domain(self, candidate: str) -> bool:
             return candidate == domain
 
-    response = asyncio.run(
-        provider_model_query.query_provider_model(
-            registry=registry,
-            source=provider,
-            model=model,
-            query=dict(entry["query"]),
-            principal=Principal(),
-            ctx=ctx,
+    def run_query() -> Any:  # noqa: ANN401  # the service returns a serialized row mapping
+        return asyncio.run(
+            provider_model_query.query_provider_model(
+                registry=registry,
+                source=provider,
+                model=model,
+                query=dict(entry["query"]),
+                principal=Principal(),
+                ctx=ctx,
+            )
         )
-    )
+
+    if "client_seam" in entry:
+        with _client_seam(entry, entry["document"]) as seam:
+            response = run_query()
+            seam_requests = len(seam.calls)
+    else:
+        transport = FixedResponseTransport(HttpResponse(200, copy.deepcopy(entry["document"])))
+        # in-memory seam only; no file is touched
+        fetcher.http_transport = transport  # type: ignore[attr-defined]
+        response = run_query()
+        seam_requests = len(transport.calls)
     results = response.get("results")
     if response.get("source") != provider or response.get("model") != model:
         raise WitnessFailure("service response echoes a different provider/model identity")
@@ -252,12 +444,15 @@ def witness_service(provider: str, model: str, entry: dict) -> None:
         raise WitnessFailure("service response reports a different domain than the capability")
     if not isinstance(results, list) or not results:
         raise WitnessFailure("service response carries no serialized contract rows")
-    field_names = set(fetcher.row_model.model_fields)
+    row_model = getattr(fetcher, "row_model", None)
+    if row_model is None:
+        raise WitnessFailure("the resolved fetcher publishes no contract row model")
+    field_names = set(row_model.model_fields)
     for row in results:
         if not isinstance(row, dict) or not set(row) <= field_names:
             raise WitnessFailure("service returned a row outside the frozen contract fields")
-    if not transport.calls:
-        raise WitnessFailure("the service leg completed without using the offline transport seam")
+    if not seam_requests:
+        raise WitnessFailure("the service leg completed without using the offline seam")
     print(
         "service: query_provider_model executed for real (registry + reviewed domain "
         f"semantics), rows={len(results)} first_row_sha256={_json_digest(results[0])}"
@@ -273,7 +468,7 @@ def _json_digest(value: Any) -> str:  # noqa: ANN401  # any JSON-serializable ro
 
 def witness_contract(provider: str, model: str, entry: dict) -> None:
     """Revalidate each produced row against the frozen contract, strict and extra-forbid."""
-    rows, _, fetcher_type = _run_direct(provider, model, entry, entry["document"])
+    rows, _, fetcher_type = _run_direct_with_seam(provider, model, entry, entry["document"])
     row_model = fetcher_type.row_model
     if not row_model.__module__.startswith("opendata.data.models."):
         raise WitnessFailure(
@@ -328,7 +523,7 @@ def _guard_against_copied_refusal(entry: dict, expected: dict) -> None:
 
 def witness_counterfact(provider: str, model: str, entry: dict) -> None:
     """Tamper the fixture and require the declared typed refusal, with an untampered control."""
-    rows, _, _ = _run_direct(provider, model, entry, entry["document"])
+    rows, _, _ = _run_direct_with_seam(provider, model, entry, entry["document"])
     control_note = f"untampered control produced {len(rows)} row(s) through the same seam"
     tampered = _apply_tamper(entry["document"], entry["tamper"])
     expected = {
@@ -341,9 +536,11 @@ def witness_counterfact(provider: str, model: str, entry: dict) -> None:
     }
     _guard_against_copied_refusal(entry, expected)
     try:
-        _run_direct(provider, model, entry, tampered)
-    except ProviderEngineError as exc:
-        observed = _refusal_shape(exc)
+        _run_direct_with_seam(provider, model, entry, tampered)
+    except (WitnessFailure, WitnessBlocked):
+        raise
+    except Exception as exc:  # the refusal under test is whatever the provider ships
+        observed = _refusal_shape(exc, provider, entry["refusal_code"])
     else:
         raise WitnessFailure(
             "counterfact did not bite: the tampered fixture still produced rows"
@@ -371,6 +568,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--phase", required=True, choices=PHASES)
     parser.add_argument("--evidence-root", required=True)
     args = parser.parse_args(argv)
+    _block_real_sockets()  # every phase is offline by construction, not by convention
 
     try:
         config = witnesses.provider_config(args.provider)
