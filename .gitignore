@@ -238,3 +238,14 @@ backups/
 /data/
 uploads/
 ssl/
+
+# C100 的 350 模型对账轮把 81268 个机器产物（5.8 GB）写进了证据根。git 的未跟踪面同时是
+# `a2-check`（a2_check.py 的 ls-files --others --exclude-standard，其中 7863 个 .py）和
+# AC-1|10「git 从未见过的文件」两条腿的普查总体，所以这批 dump 一直在给两个面记分母。
+# 叙述档（*.md）保持可提交：round 目录至少一份 .md 是可追溯判据自身的要求。
+# 这不是可追溯性的修法 —— evidence_traceability.py 用 rglob×TEXT_SUFFIXES 读磁盘、用
+# git ls-files 读 index，两条腿都不看 .gitignore：C100 的 68953 条 #untracked 照旧计入，
+# 且默认面上再也无法靠提交闭合，只能 git add -f 或搬家。
+/docs/evidence/C100/**
+!/docs/evidence/C100/**/
+!/docs/evidence/C100/**/*.md
