@@ -1,0 +1,245 @@
+provenance: captured_at_local=2026-10-15T10:38:15+0800 (instruments) / face assembled 2026-10-15T10:44 local
+provenance: branch=dev
+provenance: head_at_measurement=4fda2d8 (dev, ahead 4 of origin/dev; 85f95a4 is an ANCESTOR of it, not HEAD --
+  the session-start `git status` snapshot listed 85f95a4 first and this face first copied that down wrong)
+provenance: probe_worktree_sha256=a8cc05ef529ac37dba1d6414e72deaff77b7034873a51cc66bc36e8193a3cca5
+provenance: probe_head_sha256=c5db910fc3c651f89758b477e624d9d3d6e05b18e37e45f4b2f179d970d7c5d4
+provenance: probe_index_sha256=c5db910fc3c651f89758b477e624d9d3d6e05b18e37e45f4b2f179d970d7c5d4
+provenance: policy_worktree_sha256=198395ec6d8dba7e5c9a305c04b57e6c71b977111c95be4f4e3d849c36b35080
+provenance: policy_head_sha256=198395ec6d8dba7e5c9a305c04b57e6c71b977111c95be4f4e3d849c36b35080
+provenance: interpreter=Python 3.13.5 (envs/py313, the gate interpreter)
+face_scope: this file is the repair-and-re-pin face for gate member 11 (acceptance-probe-check) and member 2
+  (zero-dep-check) on the DELIVERED bytes of scripts/quality/acceptance_item_probe.py. The alignment face for
+  the rest of C106 lives in face.md / align-probe-current.txt; the run1 gate chain lives in
+  runs/gate-members-chain.txt.
+
+== 0. Why this face exists at all ==
+
+runs/gate-members-chain.txt recorded member 11 as member11_verdict_status=NOT_A_JUDGMENT: symbol_census raised
+SyntaxError on one unparseable file under docs/evidence/ and the whole --gate-check pass printed 0 item
+readings. The repair (47 insert / 7 delete in scripts/quality/acceptance_item_probe.py) turns that raise into a
+counted disclosure face and adds two counterfact arms. This file carries the post-repair readings, so the
+claim "the crash is repaired" is read off an instrument, not off prose.
+
+== 1. The repaired item face (AC-17|07, the格子 that crashed) ==
+
+instrument: python scripts/quality/acceptance_item_probe.py --item 'AC-17|07'
+carrier: /tmp/c107_ac17_07_item.txt (raw), verbatim key lines below.
+
+  - scripts/quality/public_api.py exit 1: 2332 callable(s) over 5 of its fixed scope director(ies) exist;
+    docstring 97.6%, annotation 100.0%; empty-scope branch taken = no
+  - 新增面 outside that fixed list (A2 files that are not tests or evidence) = 119 file(s) / 501 callable(s),
+    below standard = 56
+  - A1 存量 outside the fixed list, gated by 触碰即达标 rather than by this item = 32 file(s) / 63
+    callable(s), below standard = 2 (opendata/api/metrics.py:166, opendata/api/metrics.py:171)
+  - excluded test/evidence trees, disclosed rather than dropped = 48971 callable(s), below standard = 21185
+  - files the walker could not parse (each one is a file this census silently skipped, not a file that
+    passed): widened 0, 存量 0, excluded trees 1
+    (docs/evidence/C100/acceptance-sec-current-905/typed-v4-independent-review-20261013T060522Z/build_execution_ledger.py:101)
+VERDICT AC-17|07: gap
+census: gap=1
+item_exit=0
+
+crash_vs_count_identity (the point of the repair, stated as an identity rather than a narrative):
+  pre-fix  -> the walker RAISES, --gate-check prints 0 item readings for all 130 probes.
+  post-fix -> 130/130 probes reach a verdict (section 2 below) AND the same file the walker cannot parse is
+              printed as a count (excluded trees 1) instead of killing the pass.
+  the 1 unparseable file is NOT counted as passing: it contributes to neither `callables` nor `failing`, and
+  that is exactly why it now gets its own face.
+reading: the judge still says gap for AC-17|07. That is a product-side GAP (56 below-standard callables in the
+  widened面), not the crash; the crash was the absence of any reading.
+
+== 2. The repaired judge's own counterfact面, on the delivered bytes ==
+
+instrument: python scripts/quality/acceptance_item_probe.py --self-test
+carrier: /tmp/c107_selftest.txt, verdict lines verbatim:
+
+  - 反事实面：130/130 个探针走到了判定，941 条 break 各被施加一次、每条都要求把干净读数打回 gap
+OK: 130 probe(s) measured; every judge is reachable from its declared repair, and all 941 counterfact(s)
+    flip a clean reading back to a gap.
+self_test_exit=0
+
+arm-population delta, derived from the two byte states rather than typed:
+  counterfact arms registered at HEAD (probe bytes c5db910fc3c6) = 939
+  counterfact arms registered on delivered bytes                 = 941
+  delta = 2 = the two Break arms this repair adds under AC-17|07
+    (加宽面里有一个自研文件解析不了 -> GAP; 存量面里有一个文件解析不了 -> GAP).
+  authoritative denominator = sum(len(p.breaks) for p in PROBES). An AST literal count of Break( inside the
+  PROBES list reads 662 and is a FLOOR by 279, because most probes build their arms from helper functions;
+  do not use the literal count as the population.
+  this face supersedes the pre-reorder run: that one executed on bytes 519b25167a1a (which has no surviving
+  copy) and is therefore non-reproducible; the E501 reflow that produced a8cc05ef529a touched disclosure text
+  only, and the numbers above are re-taken on the delivered bytes so the face is reproducible now.
+
+== 3. Owner split for the 56 below-standard callables in the widened面 ==
+
+instrument: /tmp/c107_widened_owner.py (read-only census, same derivation the probe uses: scope=pub.A2_SCOPE,
+a2.resolve_files(None), outside/widened/non_api/legacy)
+carrier: /tmp/c107_widened_owner_face.txt
+
+a2_files=9081 outside_scope=8528 widened=119
+widened_callables=501 widened_failing=56
+failing_by_top_level_dir=quality-source-repairs=56
+failing_by_second_level=quality-source-repairs/fed-wam-two-bucket-stage-20261013=56
+all_failing_under_quality_source_repairs=True
+widened_owner_exit=0
+
+reading: 56/56 offenders are in ONE untracked scratch tree (quality-source-repairs/, a prior wave's
+  test-candidate output). Zero of them are in opendata/, scripts/, alembic/, alembic_data/ or examples/.
+  So member 11's AC-17|07 gap is NOT a product-code docstring gap; it is the widened census correctly
+  reading a scratch tree that the repo has not decided how to scope. Decision left OPEN on purpose:
+  exempting that tree would be relaxing a judge, and deleting it is not this slice's call.
+denominator note (why 119 files / 501 callables is not suspicious): the same instrument prints the fixed-scope
+  population 2332 callables separately, so widened 501 and fixed 2332 are two different populations, not one
+  that was re-cut.
+
+== 4. Reference-policy re-pin preparation (member 2), on the delivered bytes ==
+
+instrument: /tmp/c107_repin_prep.py (imports the repo's own scanner from scripts/codemod/verify_no_akshare.py;
+the HEAD copy of the probe was exec'd with __file__ pointed at the real repo path so its sibling-tool imports
+resolve -- no .py was written into the repo during the in-flight measurement).
+carrier: /tmp/c107_repin_prep_delivered.txt
+
+pin_on_disk  = a33e906a8acb24914d89f65cd184e7969b2a7f6ed34a64693c4731a7d09c05ed (bytes owning rev bddbb06)
+live_bytes   = a8cc05ef529ac37dba1d6414e72deaff77b7034873a51cc66bc36e8193a3cca5
+worktree_equals_head=False
+worktree_equals_index=False
+revisions_touching_path_after_owner=1 (b15717b)   # drift was introduced by an ALREADY-COMMITTED revision
+counter[akshare_lines_ci] pinned=144 live=144 moved=False
+counter[akshare_occ_ci]   pinned=172 live=172 moved=False
+counter[akshare_lines_cs] pinned=138 live=138 moved=False
+counter[akshare_occ_cs]   pinned=163 live=163 moved=False
+counter[openbb_lines_ci]  pinned=95  live=95  moved=False
+counter[openbb_occ_ci]    pinned=117 live=117 moved=False
+counter[load_shape_wide]  pinned=61  live=61  moved=False
+counter[load_shape_narrow] pinned=3  live=3  moved=False
+scanner (module, kind) multiset: pinned=13 live=13, policy-filtered pinned=13 live=13, identical=True
+diff faces: added_raw=53 deleted_raw=7 / added_dedup=42 deleted_dedup=7 / dedup_explained=11 (residual 0)
+added_is_nosec_echo_of_deleted=0/42
+brand_touched_added=0 brand_touched_deleted=0
+narrow_load_shape_carriers_live_count=3
+counterfact arm (in-memory injection of one `import akshare as aks` line into the live bytes):
+  tamper[akshare_lines_ci] 144 -> 145
+  tamper[akshare_occ_ci]   172 -> 173
+  tamper[akshare_lines_cs] 138 -> 139
+  tamper[load_shape_wide]   61 -> 62
+  tamper[load_shape_narrow] 3 -> 4
+  tamper_scanner_total 13 -> 14, new member = (akshare, import)
+  tamper_pin_matches_live_after_injection=False
+reading: every "did not move" above is produced by a counter that demonstrably moves when brand loading is
+  injected, so the unchanged census is a measurement and not a dead comparator.
+
+correction to 开发验收记录 §4.1 (my own earlier number, kept visible rather than deleted):
+  §4.1 wrote the narrow loading-form face as `pinned=1 live=1` and described `3` as a different way of applying
+  the wide regex. Neither reading has a carrier. The instrument's own field `load_shape_narrow` is defined at
+  `/tmp/c106_repin_prep.py:51-55` as (wide regex AND the line contains a brand name) and on the delivered bytes
+  prints `load_shape_narrow 3 -> 3` (carrier `/tmp/c107_repin_prep_delivered.txt:17`). The run1 stdout for that
+  face no longer exists in `/tmp` -- only the delivered-bytes carrier survives -- so `1 -> 1` now has NO
+  readable instrument provenance, and the nearest visible source is the C89 clause's `brand_load_lines=1` cell:
+  a different predicate on a different byte state, borrowed as if it were this round's reading. `3` is not a
+  third 口径, it is that field's own value. The same carrier names its three carriers at `:36`
+  (`narrow_load_shape_carriers_live_count=3`):
+    1. `builtins.__import__ = block_akshare`  -- a literal argv string handed to a subprocess
+    2. `'spec_present': importlib.util.find_spec('akshare') is not None}))`  -- same, in a probe recipe
+    3. `from scripts.quality.openbb_inventory_plane import (`  -- a REPO module whose name merely contains
+       `openbb_`, not an external brand package
+  None of the three loads an external brand package, which is the claim the pin actually makes, so what is
+  corrected here is the COUNT and its PROVENANCE, not the conclusion. The refuted `1 -> 1` is retained on
+  purpose: silently rewriting a prior reading would leave this face unauditable. C75/C78/C85's
+  「加载形态行 4」 is still neither 口径 and still not cited.
+
+== 4b. The repaired judge's own four static planes, with an untouched-file control ==
+
+instrument: `python scripts/quality/a2_check.py --files <target>`, run twice (slice target + a tracked file
+  this slice never touched) from one harness so both read the same tree minutes apart.
+carrier: /tmp/c107_static_planes.txt, harness /tmp/c107_static_planes.sh
+
+target=scripts/quality/acceptance_item_probe.py (the repaired judge, bytes a8cc05ef529a)
+  A2_FILES_EXIT=1
+  planes: ruff check=ok  ruff format --check=ok  mypy=ok  bandit=ok
+  mypy per-target line: `scripts/quality/acceptance_item_probe.py: exit=0 stdout_chars=164 stderr_chars=0`
+  snapshot_paths_flagged=25
+  `Static-tool execution partition: 1 file(s), 0 verified immutable snapshot(s) excluded.`
+  `Historical Ruff findings: 149323`
+target=opendata/data/providers/catalog.py (control: untouched, tracked)
+  A2_FILES_EXIT=1
+  planes: ruff check=ok  ruff format --check=ok  mypy=ok  bandit=ok
+  snapshot_paths_flagged=25
+  CONTROL_SET_COMPARISON vs the slice run: identical=True, only_here=0, only_there=0
+a2_planes_exit=1
+
+reading: on the repaired bytes every plane a2 can complete is ok, and the ONLY red is the pinned
+  immutable-evidence secret scan, which the untouched control hits with the SAME 25 paths. Member 8's red is
+  therefore still not this slice's bytes -- the attribution runs/gate-members-chain.txt made for `align_probe.py`
+  now reproduces for the repaired judge itself. `A2_FILES_EXIT=1` is a2's wrapper exit, not a per-plane verdict;
+  the `ok` lines are the reading. mypy here is `1 unique target`, which is precisely why the whole-tree member-8
+  mypy plane (3658 targets, one process each) remains out of reach as a per-slice instrument.
+
+== 5. Two-sided re-arm for the planned re-pin (the pin is a worktree claim) ==
+
+instrument: /tmp/c107_repin_rearm.py -- calls the repo judge verify_no_akshare.reference_policy_problems on an
+in-memory deepcopy; the policy file is NOT written by this instrument.
+carrier: /tmp/c107_repin_rearm_face.txt
+
+arm_A_disk_pin_is_old: target_problems=1
+  VERBATIM| stale sha256: scripts/quality/acceptance_item_probe.py
+arm_B_pin_rebased_to_live_bytes: target_problems=0
+arm_C_bogus_digest_64_zero: target_problems=1     # guards arm B against being vacuous
+all_problems_disk=1 all_problems_after_repin=0 delta=-1
+REARM_BITES=True
+repin_rearm_exit=0
+
+why the re-arm is needed at all (consumed positive control): until this round the ONLY thing proving the
+  allowlist pin bites was the live defect itself -- the digest was correct because the file was unchanged. Once
+  the file changes, that witness is consumed, so "0 problems" would be indistinguishable from a dead check.
+  Arm C is what makes arm B's 0 a measurement.
+target digest for the re-pin = a8cc05ef529ac37dba1d6414e72deaff77b7034873a51cc66bc36e8193a3cca5 (the delivered
+  bytes), NOT the run1-era c5db910fc3c6. §4.1's approval-content counters were measured against the newer bytes
+  too, so the pin and the counters describe the same state.
+
+== 6. Commit-ordering witness (a defect found on the index, not on the product) ==
+
+instrument: `git rev-parse HEAD`, `shasum` on the worktree file, `git show :path | shasum` on the index copy,
+`git show HEAD:path | shasum` on the committed copy -- taken BEFORE staging the repair.
+  probe worktree bytes = a8cc05ef529a… (the repaired file)
+  probe INDEX   bytes  = c5db910fc3c6… (the pre-repair file, staged earlier in the session)
+  probe HEAD    bytes  = c5db910fc3c6…
+identity: index_equals_worktree=False  ->  a commit made at this moment would record the CRASH, not the fix,
+  while every green plane above lives only in the worktree.
+disposition: every path the worktree still differs on must be re-staged, and `git diff --name-only`
+  (worktree vs index) must read EMPTY before the commit; the face then re-prints the three digests so the
+  committed state is identifiable from inside the archive. The re-pin itself lands AFTER that commit, because
+  reference_policy_problems hashes worktree bytes and the pin has to name the committed state.
+commit_order_exit=0
+
+== 6b. Pre-commit credential pre-scan of this exact payload ==
+
+instrument: gitleaks 8.30.1 (/opt/homebrew/bin/gitleaks) `detect --source <dir holding only this file>
+  --config .gitleaks.toml --no-git --redact --report-format json`
+  scanned_bytes=16881 findings=0 report_lines=0
+gitleaks_prescan_exit=0
+why: this file carries 64-hex digests and brand-name strings. The repo's own secret-check is a full-history
+  scan, so a new archive is the cheapest place for a new finding to appear; scanning the payload before it is
+  committed is what makes "the archive is not the next finding" a measurement instead of a hope.
+instrument defect caught while taking it: the first reading of this face grepped `grep -cE "leaks found"` and
+  got 1, which was about to be recorded as a leak. The line gitleaks actually printed is
+  `INF no leaks found` -- the pattern matches its own negation, so that count was 1 for a CLEAN scan. The
+  authoritative face is the JSON report (0 entries) plus `gitleaks_prescan_exit=0`; a leak-count pattern has
+  to anchor on `WRN leaks found` or count the report, never the bare phrase.
+scanned artifact digest note: scanned_bytes names the artifact as committed, and the count line is the last
+  edit that changes this file's size; the value was iterated until the size gitleaks reported equalled the size
+  printed here, so if the two ever disagree the disagreement itself is the finding.
+
+== 7. What this face does NOT claim ==
+
+- It does not claim member 11 goes green. AC-17|07 still reads gap (56 below-standard callables in the widened
+ 面, all in one untracked scratch tree). The repair removed a CRASH, i.e. it made a verdict readable.
+- It does not claim the 56 belong to this slice: owner split says quality-source-repairs/ only, and
+  intersecting the 56 with the five edited code paths reads 0.
+- It does not claim the re-pin has happened. Section 5 is an in-memory rehearsal; the file edit and the
+  member-2 re-gate are C107 work.
+- It does not claim the whole-tree A2 sweep is fast enough to be a per-slice instrument: the run1 mypy
+  projection 1.20 s/target stays REFUTED by member 11's own clock (<= 0.44 s/target), and cache warmth remains
+  untested.
+- It does not claim the two-sided re-arm was re-run on the committed bytes: after the C106 commit the worktree
+  bytes are unchanged, so the face above still names them, but the pin edit itself gets its own reading in C107.

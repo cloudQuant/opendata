@@ -1,0 +1,118 @@
+command: TRADINGECONOMICS_API_KEY=<fixture value, present in env> python docs/evidence/C106/declaration-contract-alignment/probes/align_probe.py --census-only
+checkout: detached git worktree of commit 4fda2d86516aa29dfe4aff3da63fbd7838d86606 at /private/tmp/c106_head_r2 (pre-repair bytes: the five files this round edits were still at their committed versions there). The probe was copied into that worktree at its same relative path, so REPO_ROOT resolves inside it and the census reads HEAD's declarations and HEAD's row classes -- this is the same judge, run against the second checkout.
+interpreter: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python 3.13.5
+captured: 2026-10-15 (re-take with the rewritten probe bytes, to prove the before-face does not depend on the pre-rewrite instrument)
+recapture_delta: against the archived HEAD body (lines 8-117) the re-run is byte-identical -- body lines=110, differing lines=0, remainder lines=108; only the face: cwd line and this header differ.
+head_census_exit=1
+---- raw stdout/stderr follows ----
+face: python=3.13.5 cwd=/private/tmp/c106_head_r2
+identity: models=17 columns_checked=313 mismatched_columns=108 temporal_exception_covered=3
+  remainder: federal_reserve::SvenssonYieldCurve.beta0 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.beta1 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.beta2 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.beta3 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.tau1 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.tau2 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sven1f01 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sven1f04 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sven1f09 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf01 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf02 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf03 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf04 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf05 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf06 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf07 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf08 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf09 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf10 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf11 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf12 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf13 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf14 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf15 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf16 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf17 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf18 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf19 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf20 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf21 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf22 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf23 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf24 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf25 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf26 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf27 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf28 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf29 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenf30 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy01 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy02 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy03 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy04 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy05 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy06 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy07 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy08 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy09 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy10 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy11 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy12 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy13 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy14 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy15 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy16 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy17 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy18 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy19 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy20 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy21 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy22 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy23 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy24 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy25 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy26 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy27 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy28 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy29 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.svenpy30 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny01 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny02 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny03 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny04 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny05 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny06 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny07 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny08 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny09 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny10 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny11 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny12 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny13 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny14 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny15 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny16 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny17 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny18 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny19 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny20 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny21 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny22 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny23 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny24 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny25 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny26 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny27 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny28 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny29 kind=str field={<class 'float'>}
+  remainder: federal_reserve::SvenssonYieldCurve.sveny30 kind=str field={<class 'float'>}
+  remainder: cboe::AvailableIndices.symbol declared req=True nul=True / field req=True none=False
+  remainder: cboe::IndexConstituents.symbol declared req=True nul=True / field req=True none=False
+  remainder: cboe::IndexSearch.symbol declared req=True nul=True / field req=True none=False
+  remainder: cboe::IndexSearch.name declared req=True nul=True / field req=True none=False
+  remainder: federal_reserve::FederalFundsRate.rate declared req=False nul=True / field req=True none=False
+  remainder: federal_reserve::OvernightBankFundingRate.rate declared req=False nul=True / field req=True none=False
+  remainder: federal_reserve::SOFR.rate declared req=False nul=True / field req=True none=False
+  remainder: intrinio::HistoricalDividends.ex_dividend_date declared req=True nul=True / field req=True none=False
+  remainder: intrinio::HistoricalDividends.amount declared req=True nul=True / field req=True none=False
+census_only_exit=1

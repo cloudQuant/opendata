@@ -17,7 +17,7 @@ import zipfile
 from dataclasses import replace
 from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
-from typing import TYPE_CHECKING, Union, get_args, get_origin
+from typing import TYPE_CHECKING, Literal, Union, get_args, get_origin
 from urllib.parse import urlsplit
 
 from opendata.data.protocol import FetchContext
@@ -741,6 +741,72 @@ def _row_temporal_type(spec: ModelSpec, column: ColumnSpec) -> type | None:
     return resolved
 
 
+#: Row-class Literal domains, read once per declaration and held the same way as the temporal
+#: reading above -- by the spec that produced them, so a cached id cannot be reused by a freed one.
+_ROW_LITERAL_MEMBERS: dict[int, tuple[ModelSpec, dict[int, tuple[object, ...] | None]]] = {}
+
+
+def _row_literal_members(spec: ModelSpec, column: ColumnSpec) -> tuple[object, ...] | None:
+    """The exact values ``column``'s own row field names, or ``None`` when it names none.
+
+    The same reading :func:`_row_temporal_type` takes, for the narrower case: a reviewed row class
+    can spell a field as an enumerated domain the declared kind does not carry. TradingEconomics'
+    ``EconomicCalendar.date_span`` is the one that does today -- the source schema publishes an
+    integer and the reviewed field is ``Literal[0, 1]`` (known or estimated timing), and this
+    module's own ``int`` samples are ``1, 2, 3``. A body built from the kind alone therefore
+    scripts its second record with a timing code the documented schema refuses, and
+    :meth:`expected_row_value` -- which reads the kind too -- would agree with the body while the
+    row class answered ``TRADINGECONOMICS_SHAPE_INVALID``. Both producers here have to answer to
+    the row they are judging, so the cell comes from the field's domain when it names one and from
+    the kind's sample table when it does not; a domain the kind cannot produce a member of stays a
+    refusal, because that is a declaration disagreeing with its contract rather than a fixture
+    choice.
+
+    Returns:
+        The Literal's members in declared order, or ``None`` for a field that is not a Literal
+        (including a union over one that also admits ``None``) and for a declaration whose row
+        class cannot be built at all.
+    """
+    holder = _ROW_LITERAL_MEMBERS.get(id(spec))
+    if holder is None or holder[0] is not spec:
+        holder = (spec, {})
+        _ROW_LITERAL_MEMBERS[id(spec)] = holder
+    cache = holder[1]
+    if id(column) in cache:
+        return cache[id(column)]
+    resolved: tuple[object, ...] | None = None
+    try:
+        annotation = http_json.build_row_model(spec).model_fields[column.name].annotation
+    except (ValueError, KeyError):
+        annotation = None
+    stack = [annotation]
+    while stack:
+        argument = stack.pop()
+        if argument is None:
+            continue
+        if get_origin(argument) is Literal:
+            resolved = tuple(get_args(argument))
+            break
+        if get_origin(argument) in (Union, types.UnionType):
+            stack.extend(item for item in get_args(argument) if item is not type(None))
+    cache[id(column)] = resolved
+    return resolved
+
+
+def sampled_cell(spec: ModelSpec, column: ColumnSpec, index: int) -> object:
+    """The raw cell this module publishes for ``column`` at record ``index``.
+
+    One function on purpose: :func:`synthetic_record` writes the cell and :func:`expected_row_value`
+    predicts the row it becomes, and the two disagreeing about which face a cell is read from is a
+    fixture fault, not a judgement. The declared kind is the default reading; a reviewed row field
+    that names a domain narrows it.
+    """
+    members = _row_literal_members(spec, column)
+    if members:
+        return members[index % len(members)]
+    return sample_value(column.kind, index)
+
+
 def expected_row_value(
     spec: ModelSpec, column: ColumnSpec, index: int = 0, query: Mapping[str, object] | None = None
 ) -> object:
@@ -805,7 +871,7 @@ def expected_row_value(
             )
         return float(produced)
     expansion = wide_table_expansion(spec)
-    published: object = sample_value(column.kind, index)
+    published: object = sampled_cell(spec, column, index)
     if expansion is not None and raw_key(spec, column) == expansion[0].timestamp_key:
         published = pivot_timestamp(index)
     else:
@@ -964,7 +1030,7 @@ def synthetic_record(spec: ModelSpec, index: int = 0) -> dict[str, object]:
             # run on the cell the body carries.
             value = staged_sample(column, index, staged)
         else:
-            value = sample_value(column.kind, index) if ordered is None else ordered
+            value = ordered if ordered is not None else sampled_cell(spec, column, index)
         if explode is not None and key.startswith(prefix):
             children[key[len(prefix) :]] = value
             continue

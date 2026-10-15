@@ -2453,14 +2453,19 @@ def positive(value: str) -> bool:
     return number(value) > 0
 
 
-def symbol_census(pub: ModuleType, paths: Sequence[str]) -> tuple[int, int, str]:
+def symbol_census(pub: ModuleType, paths: Sequence[str]) -> tuple[int, int, str, int, str]:
     """Walk public callables over the named files with the gate tool's own walker.
 
     Returns:
-        ``(callables, failing, sample)`` -- the sample names up to six offending ``file:line``.
+        ``(callables, failing, sample, unparseable, unparseable_sample)`` -- the sample names up to
+        six offending ``file:line``, and the files the walker could not even parse, up to six of
+        them. A file that does not parse contributes to neither ``callables`` nor ``failing``, so
+        without the last two faces a walk that skips files is indistinguishable from one that
+        found nothing.
     """
     total = 0
     failing: list[str] = []
+    unparseable: list[str] = []
     for rel in paths:
         path = REPO_ROOT / rel
         if not path.is_file():
@@ -2469,11 +2474,16 @@ def symbol_census(pub: ModuleType, paths: Sequence[str]) -> tuple[int, int, str]
             source = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             continue
-        for symbol in pub.collect_symbols(source, rel):
+        try:
+            symbols = list(pub.collect_symbols(source, rel))
+        except SyntaxError as exc:
+            unparseable.append(f"{rel}:{exc.lineno or 0}")
+            continue
+        for symbol in symbols:
             total += 1
             if symbol.problems():
                 failing.append(f"{rel}:{symbol.line}")
-    return total, len(failing), ", ".join(failing[:6])
+    return total, len(failing), ", ".join(failing[:6]), len(unparseable), ", ".join(unparseable[:6])
 
 
 def evidence_deletions() -> tuple[str, str]:
@@ -3471,9 +3481,13 @@ def measure_ac17_07(ctx: Context) -> Facts:
         and not under_any(name, NON_API_TREES)
         and not under_any(name, ported)
     ]
-    wide_total, wide_fail, wide_sample = symbol_census(pub, widened)
-    legacy_total, legacy_fail, legacy_sample = symbol_census(pub, legacy)
-    non_total, non_fail, _ = symbol_census(pub, non_api)
+    wide_total, wide_fail, wide_sample, wide_unparsed, wide_unparsed_sample = symbol_census(
+        pub, widened
+    )
+    legacy_total, legacy_fail, legacy_sample, legacy_unparsed, legacy_unparsed_sample = (
+        symbol_census(pub, legacy)
+    )
+    non_total, non_fail, _, non_unparsed, non_unparsed_sample = symbol_census(pub, non_api)
     return {
         "tool_exit": count(code),
         "in_scope": first_capture(out, r"A2 public callables\s*:\s*(\d+)"),
@@ -3485,12 +3499,20 @@ def measure_ac17_07(ctx: Context) -> Facts:
         "widened_callables": count(wide_total),
         "widened_failing": count(wide_fail),
         "widened_sample": wide_sample,
+        "widened_unparseable": count(wide_unparsed),
         "legacy_files": count(len(legacy)),
         "legacy_callables": count(legacy_total),
         "legacy_failing": count(legacy_fail),
         "legacy_sample": legacy_sample,
+        "legacy_unparseable": count(legacy_unparsed),
         "non_api_callables": count(non_total),
         "non_api_failing": count(non_fail),
+        "non_api_unparseable": count(non_unparsed),
+        "unparseable_sample": ", ".join(
+            part
+            for part in (wide_unparsed_sample, legacy_unparsed_sample, non_unparsed_sample)
+            if part
+        ),
     }
 
 
@@ -3504,6 +3526,8 @@ def judge_ac17_07(facts: Facts) -> Verdict:
         and positive(facts["in_scope"])
         and positive(facts["widened_callables"])
         and facts["widened_failing"] == "0"
+        and facts["widened_unparseable"] == "0"
+        and facts["legacy_unparseable"] == "0"
     )
     readings = (
         f"{PUBLIC_API_TOOL} exit {facts['tool_exit']}: {facts['in_scope']} callable(s) over "
@@ -3520,6 +3544,10 @@ def judge_ac17_07(facts: Facts) -> Verdict:
         + (f" ({facts['legacy_sample']})" if facts["legacy_sample"] else ""),
         f"excluded test/evidence trees, disclosed rather than dropped = "
         f"{facts['non_api_callables']} callable(s), below standard = {facts['non_api_failing']}",
+        f"files the walker could not parse (each one is a file this census silently skipped, not a "
+        f"file that passed): widened {facts['widened_unparseable']}, 存量 "
+        f"{facts['legacy_unparseable']}, excluded trees {facts['non_api_unparseable']}"
+        + (f" ({facts['unparseable_sample']})" if facts["unparseable_sample"] else ""),
     )
     reason = (
         ""
@@ -16772,6 +16800,16 @@ PROBES: Final[tuple[Probe, ...]] = (
                 (("widened_files", "0"), ("widened_callables", "0")),
                 GAP,
             ),
+            Break(
+                "加宽面里有一个自研文件解析不了，普查在静默跳文件却照样打印 100%",
+                (("widened_unparseable", "1"), ("widened_sample", "opendata/services/broken.py:7")),
+                GAP,
+            ),
+            Break(
+                "存量面里有一个文件解析不了（这条面不受本项约束，但被跳过的文件必须看得见）",
+                (("legacy_unparseable", "1"),),
+                GAP,
+            ),
         ),
         repair={
             "tool_exit": "0",
@@ -16783,6 +16821,8 @@ PROBES: Final[tuple[Probe, ...]] = (
             "widened_callables": "*widened_callables",
             "widened_failing": "0",
             "widened_sample": "",
+            "widened_unparseable": "0",
+            "legacy_unparseable": "0",
         },
     ),
     Probe(

@@ -227,9 +227,16 @@ class TestSentinelAbsenceFacet:
         """Counterfact: the wrongly copied sentinel rewrites "" to None before the stage, and
         the pinned required rate: float field (models/federal_reserve_clean_rates.py, C100
         digest 452b43673cf4) refuses exactly that null -- a refusal of a different kind than
-        the clean arm's stage error, which is what this arm measures."""
+        the clean arm's stage error, which is what this arm measures.
+
+        C106 aligned this column's declaration with that contract (required/non-nullable), so the
+        sentinel alone can no longer be declared on it (see the next arm). The maim therefore also
+        restores the pre-alignment ``nullable=True``: the pair is the declaration this row used to
+        carry, and the row model the engine builds comes from the contract either way, so what the
+        arm still measures is the contract refusing a null its declaration promised.
+        """
         columns = tuple(
-            replace(c, null_sentinel=SOFR_NULL_SENTINEL) if c.name == "rate" else c
+            replace(c, null_sentinel=SOFR_NULL_SENTINEL, nullable=True) if c.name == "rate" else c
             for c in OVERNIGHT_BANK_FUNDING_RATE.columns
         )
         maimed = replace(OVERNIGHT_BANK_FUNDING_RATE, columns=columns)
@@ -238,3 +245,15 @@ class TestSentinelAbsenceFacet:
         with pytest.raises(ProviderEngineError) as raised:
             rows_of(fetcher, maimed)
         assert list(raised.value.rejected) == ["rate"]
+
+    def test_break_by_declaring_the_sofr_sentinel_alone_refuses_at_declaration_time(self) -> None:
+        """Counterfact one layer earlier: on the aligned column the copy is not declarable at all.
+
+        The engine's own words are the claim -- "the rewrite produces exactly the null the row model
+        refuses" -- so the mistake this family kept making is now caught before any request is built.
+        """
+        with pytest.raises(ValueError, match="non-nullable"):
+            replace(
+                next(c for c in OVERNIGHT_BANK_FUNDING_RATE.columns if c.name == "rate"),
+                null_sentinel=SOFR_NULL_SENTINEL,
+            )

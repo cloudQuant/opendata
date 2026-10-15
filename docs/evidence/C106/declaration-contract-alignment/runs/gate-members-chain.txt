@@ -1,0 +1,264 @@
+provenance: captured_at_local=2026-10-15T07:51:20+0800
+provenance: captured_at_utc=2026-10-14T23:51:20Z
+provenance: branch=dev
+provenance: head=4fda2d86516aa29dfe4aff3da63fbd7838d86606
+provenance: python=Python 3.13.5
+provenance: node=v25.1.0
+provenance: OPENDATA_ALLOW_LIVE_E2E=<unset>
+provenance: unstaged_tracked_diff_lines=0
+provenance: staged_files=12
+provenance: untracked_files=81853
+provenance: root_coverage_files=0
+provenance: one_root_coverage_moved_aside=root_coverage_before_gate_chain (mtime 2026-10-15T07:45 local, no owning process alive at move time; /tmp/c106_coverage_aside, nothing deleted)
+face: per-member chain over the Makefile gate order (17 members), each step 'make --no-print-directory <member>'
+face_note: rc 2 = make wrapped a non-zero recipe; rc 1 = the tool's own exit. Reading is the body, not the wrapper.
+raw_log=/tmp/c106_gate_chain.txt raw_log_lines=850425
+member_blocks_found=17 of 17 missing=[]
+
+===== brand-check :: exit=2 member_clock_start_local=2026-10-15T07:51:21+0800 -> member_clock_end_local=2026-10-15T07:52:59+0800
+  FAIL: 4 brand/rename problem(s) found.
+  FAIL: 4 occurrence(s) of 'akshare_web':
+  == context: upstream 'akshare' occurrences (not a failure) ==
+
+===== zero-dep-check :: exit=2 member_clock_start_local=2026-10-15T07:52:59+0800 -> member_clock_end_local=2026-10-15T07:52:59+0800
+  OK: scanner self-test passed (13 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+  FAIL: reference policy is unusable: stale sha256: scripts/quality/acceptance_item_probe.py
+
+===== secret-check :: exit=0 member_clock_start_local=2026-10-15T07:52:59+0800 -> member_clock_end_local=2026-10-15T07:54:38+0800
+  python scripts/quality/secret_scan_check.py
+  ░    gitleaks
+  [90m7:54AM[0m [32mINF[0m [1m380 commits scanned.[0m
+  [90m7:54AM[0m [32mINF[0m [1mscanned ~208664542 bytes (208.66 MB) in 1m39.2s[0m
+  [90m7:54AM[0m [32mINF[0m [1mno leaks found[0m
+  device: gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact
+
+===== ledger-check :: exit=0 member_clock_start_local=2026-10-15T07:54:38+0800 -> member_clock_end_local=2026-10-15T07:54:39+0800
+  census: items=130 proven=112 gap=18 unreviewed=0 ticked=112
+  OK: items=130 proven=112 gap=18 unreviewed=0 ticked=112 across 22 group(s) and 19 §10 row(s) reconcile.
+
+===== evidence-traceability :: exit=2 member_clock_start_local=2026-10-15T07:54:39+0800 -> member_clock_end_local=2026-10-15T07:55:03+0800
+  new_violation_lines=68953 (counted from the raw log, not quoted)
+  by_face={'untracked': 68953}
+  by_owner={'docs/evidence/C100/': 68923, 'docs/evidence/C101/': 30}
+  files census  = 71625 (gate logs: 140)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 68953
+  untracked: docs/evidence/C100/acceptance-quality-preservation/package-probe-typing/runs/20261012T173746.535080Z/validator-allowlist-gaps.json
+  untracked: docs/evidence/C100/acceptance-quality-preservation/package-probe-typing/runs/20261012T173856.764838Z/validator-allowlist-gaps.json
+  untracked: docs/evidence/C100/acceptance-quality-preservation/package-probe-typing/runs/20261012T175342.322713Z/validator-allowlist-gaps.json
+  untracked: docs/evidence/C100/acceptance-quality-preservation/package-probe-typing/runs/20261012T175515.997883Z/validator-allowlist-gaps.json
+  untracked: docs/evidence/C100/model-current-retakes/fred36/gaps.json
+  untracked: docs/evidence/C100/model-current-retakes/fred36/revisions/revision-20261013-v12/gaps.json
+  untracked: docs/evidence/C100/model-current-retakes/fred36/revisions/revision-20261013T0630Z-independent-review-v3-fixes/gaps.json
+  (quoted head 14 of 44 matching body lines; cap=14)
+
+===== js-points-check :: exit=0 member_clock_start_local=2026-10-15T07:55:03+0800 -> member_clock_end_local=2026-10-15T07:55:03+0800
+  OK: JS execution points unchanged (engine 76, eval 35, exec 0)
+
+===== loguru-check :: exit=0 member_clock_start_local=2026-10-15T07:55:03+0800 -> member_clock_end_local=2026-10-15T07:55:12+0800
+  loguru-render-check: calls-with-args=37 findings=0 unjudged=4
+  OK: every logger call passes arguments its renderer can substitute.
+
+===== a2-check :: exit=2 member_clock_start_local=2026-10-15T07:55:12+0800 -> member_clock_end_local=2026-10-15T08:07:47+0800
+  derived_candidate_files=9081 tracked=1209 untracked=7872
+  derived_untracked_under_docs_evidence=7863
+  derived_excluded_snapshots=5055 excluded_tracked=0
+  derived_tool_partition=4026 tool_untracked=2817
+  derived_mypy_targets_non_test=3658 (a2_check.py run(): one mypy process per target, workers=1 default)
+  derived_kill_lines=1 (wrapper/kill markers found inside the body, e.g. the one line that carries both the last tool reading and make's 'Terminated: 15')
+  derived_format_identity: would_reformat=1196 + already_formatted=2829 + parse_errors=1 = 4026 (partition=4026)
+  plane_reported[pinned Gitleaks file scan]=True
+  plane_reported[ruff check]=True
+  plane_reported[ruff format --check]=True
+  plane_reported[mypy]=False plane_reported[bandit]=False final_gate_line=False
+  member8_mypy_plane=aborted_not_a_verdict member8_bandit_plane=never_ran (process killed inside _run_mypy_targets;
+    run() order is gitleaks -> ruff check -> ruff format -> mypy -> bandit -> final gate line, and rc=2 is make's wrapper code)
+  cost_sample_REJECTED: /tmp/c106_repin_prep.py timed mean_seconds_per_target=1.2,
+    which projects 73.2 min for 3658 targets; member 11 ran the
+    same whole-tree sweep inside a shorter wall clock, so that mean is not representative (see the
+    acceptance-probe-check face below for the measured bound). Kept here as a refuted number, not a cost claim.
+  A2 files (complete resolver): 9081
+  Static-tool execution partition: 4026 file(s), 5055 verified immutable snapshot(s) excluded.
+  Historical Ruff findings: 149323 (NOT GREEN; historical evidence only).
+  FAIL pinned Gitleaks file scan
+  FAIL ruff check
+  FAIL ruff format --check
+  1196 files would be reformatted, 2829 files already formatted
+  error: Failed to parse docs/evidence/C100/acceptance-sec-current-905/typed-v4-independent-review-20261013T060522Z/build_execution_ledger.py:101:82: Expected `:`, found `,`make: *** [a2-check] Terminated: 15
+
+===== quality-ratchet :: exit=0 member_clock_start_local=2026-10-15T08:07:47+0800 -> member_clock_end_local=2026-10-15T08:08:08+0800
+  FILE COUNTS (current vs expected migration):
+  alembic_data: current=10 expected_migration=8 delta=+2
+  opendata: current=580 expected_migration=215 delta=+365
+  scripts: current=96 expected_migration=57 delta=+39
+  tests: current=429 expected_migration=215 delta=+214
+  OK: quality debt did not increase.
+  ruff_selfdev: 143 (snapshot 148) (improved)
+  mypy_selfdev: 0 (snapshot 0)
+  bandit_selfdev: 0 (snapshot 1) (improved)
+  ruff_ported: 1867 (snapshot 2188) (improved)
+  direct_http_ported: 1071 (snapshot 1071)
+  NOTE: run --update to freeze the new low.
+
+===== public-api-quality :: exit=2 member_clock_start_local=2026-10-15T08:08:08+0800 -> member_clock_end_local=2026-10-15T08:08:09+0800
+  derived_offender_lines=57 by_issue={'missing docstring': 57}
+  FAIL: public API standard is 100% / 100%:
+  opendata/data/providers/alpha_vantage/models/_historical.py:140 AlphaVantageHistoricalFetcher.transform_query — missing docstring
+  opendata/data/providers/alpha_vantage/models/_historical.py:143 AlphaVantageHistoricalFetcher.extract_data — missing docstring
+  opendata/data/providers/alpha_vantage/models/_historical.py:191 AlphaVantageHistoricalFetcher.transform_data — missing docstring
+  opendata/data/providers/benzinga/models/iter2.py:181 BenzingaAPIModelFetcher.transform_query — missing docstring
+  opendata/data/providers/benzinga/models/iter2.py:255 BenzingaAPIModelFetcher.transform_data — missing docstring
+  opendata/data/providers/benzinga/models/iter2.py:270 BenzingaAPIModelFetcher.map_record — missing docstring
+  opendata/data/providers/econdb/models/iter2.py:295 EconDBAPIModelFetcher.transform_query — missing docstring
+  opendata/data/providers/fmp/models/iter2_market.py:326 HistoricalQuery — missing docstring
+  opendata/data/providers/fmp/models/iter2_market.py:383 SymbolQuery — missing docstring
+  opendata/data/providers/fmp/models/iter2_market.py:394 BoundedSymbolQuery — missing docstring
+  opendata/data/providers/fmp/models/iter2_market.py:424 ListQuery — missing docstring
+  opendata/data/providers/fmp/models/iter2_market.py:508 MarketMoversQuery — missing docstring
+  opendata/data/providers/imf/models/_sdmx.py:110 flow_records — missing docstring
+  (quoted head 14 of 61 matching body lines; cap=14)
+
+===== acceptance-probe-check :: exit=2 member_clock_start_local=2026-10-15T08:08:09+0800 -> member_clock_end_local=2026-10-15T08:35:14+0800
+  body_lines=33 nested_a2_output_lines=0 (probe:3104 runs run_argv([sys.executable, A2_CHECK_TOOL])
+    and discards its stdout into _a2_out, so a nested whole-tree sweep leaves NO lines in this member's body)
+  crashed=yes exception_lines=1 frames_visited=['main', 'gate_check', 'measured_readings', 'measure_ac17_07', 'symbol_census', 'collect_symbols', 'parse']
+  verbatim: File "docs/evidence/C100/acceptance-sec-current-905/typed-v4-independent-review-20261013T060522Z/build_execution_ledger.py", line 101
+  verbatim: SyntaxError: ':' expected after dictionary key
+  derived_wall_seconds=1625 (from this member's own two clock lines)
+  derived_cost_bound: if the nested sweep ran all 3658 mypy targets inside this member's
+    1625s wall, the mean is <= 0.44 s/target. That FALSIFIES the 1.20 s/target
+    sample in the a2-check face above, which projected 73.2 min and would alone
+    exceed this member's whole wall clock. Candidate mechanism (not measured here): a warm
+    .mypy_cache left by the earlier member-8 run. The 1.20 sample is kept as a refuted number.
+  member11_verdict_status=NOT_A_JUDGMENT: the probe died inside measured_readings, so the whole gate-check
+    produced ZERO item readings. rc=2 is make wrapping python's own exit 1 (see 'Error 1' above), not a GAP verdict.
+    Root cause face: symbol_census (probe:2455) guards OSError/UnicodeDecodeError but NOT SyntaxError, and
+    NON_API_TREES=('tests/','docs/') (probe:2390) puts the untracked docs/evidence copies in the census
+    population, so one unparseable evidence copy stops every other item from being measured.
+  Traceback (most recent call last):
+  File "/Users/yunjinqi/Documents/new_projects/opendata/scripts/quality/acceptance_item_probe.py", line 20037, in <module>
+  File "/Users/yunjinqi/Documents/new_projects/opendata/scripts/quality/acceptance_item_probe.py", line 20004, in main
+  File "/Users/yunjinqi/Documents/new_projects/opendata/scripts/quality/acceptance_item_probe.py", line 19892, in gate_check
+  File "/Users/yunjinqi/Documents/new_projects/opendata/scripts/quality/acceptance_item_probe.py", line 19516, in measured_readings
+  File "/Users/yunjinqi/Documents/new_projects/opendata/scripts/quality/acceptance_item_probe.py", line 3476, in measure_ac17_07
+  File "/Users/yunjinqi/Documents/new_projects/opendata/scripts/quality/acceptance_item_probe.py", line 2472, in symbol_census
+  File "/Users/yunjinqi/Documents/new_projects/opendata/scripts/quality/public_api.py", line 116, in collect_symbols
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/ast.py", line 50, in parse
+  File "docs/evidence/C100/acceptance-sec-current-905/typed-v4-independent-review-20261013T060522Z/build_execution_ledger.py", line 101
+  SyntaxError: ':' expected after dictionary key
+
+===== test-cov :: exit=2 member_clock_start_local=2026-10-15T08:35:14+0800 -> member_clock_end_local=2026-10-15T09:16:38+0800
+  internalerror_lines=0
+  tests/test_api_data_full.py::TestDownloadResult::test_result_failed
+  [gw0] [ 98%] PASSED tests/test_api_data_full.py::TestDownloadResult::test_result_failed
+  tests/test_api_data_full.py::TestLogTaskException::test_failed_task_is_attributed_by_type_and_reason
+  [gw0] [ 98%] PASSED tests/test_api_data_full.py::TestLogTaskException::test_failed_task_is_attributed_by_type_and_reason
+  tests/test_api_executions_full.py::TestGetFailedExecutions::test_get_failed
+  [gw0] [ 98%] PASSED tests/test_api_executions_full.py::TestGetFailedExecutions::test_get_failed
+  tests/test_api_executions_full.py::TestGetFailedExecutions::test_get_failed_with_limit
+  [gw0] [ 98%] PASSED tests/test_api_executions_full.py::TestGetFailedExecutions::test_get_failed_with_limit
+  tests/test_api_key_rate_limit.py::test_api_key_limit_is_shared_across_current_principal_endpoints_and_not_testing_bypassed
+  [gw0] [ 98%] PASSED tests/test_api_key_rate_limit.py::test_api_key_limit_is_shared_across_current_principal_endpoints_and_not_testing_bypassed
+  tests/test_backup_mysql.py::TestBackupMySQL::test_failed_warehouse_dump_publishes_no_partial_backup_pair
+  [gw0] [ 99%] PASSED tests/test_backup_mysql.py::TestBackupMySQL::test_failed_warehouse_dump_publishes_no_partial_backup_pair
+  tests/test_benzinga_price_target_spec.py::TestRatingsRefusals::test_invalid_symbols_have_stable_error_classification_before_transport[bad symbol]
+  [gw0] [ 99%] PASSED tests/test_benzinga_price_target_spec.py::TestRatingsRefusals::test_invalid_symbols_have_stable_error_classification_before_transport[bad symbol]
+  tests/test_benzinga_price_target_spec.py::TestRatingsRefusals::test_invalid_symbols_have_stable_error_classification_before_transport[MNDY, bad symbol]
+  [gw0] [ 99%] PASSED tests/test_benzinga_price_target_spec.py::TestRatingsRefusals::test_invalid_symbols_have_stable_error_classification_before_transport[MNDY, bad symbol]
+  tests/test_benzinga_price_target_spec.py::TestRatingsRefusals::test_invalid_symbols_have_stable_error_classification_before_transport[MNDY,]
+  [gw0] [ 99%] PASSED tests/test_benzinga_price_target_spec.py::TestRatingsRefusals::test_invalid_symbols_have_stable_error_classification_before_transport[MNDY,]
+  tests/test_benzinga_price_target_spec.py::TestRatingsRefusals::test_invalid_symbols_have_stable_error_classification_before_transport[TICKER0,TICKER1,TICKER2,TICKER3,TICKER4,TICKER5,TICKER6,TICKER7,TICKER8,TICKER9,TICKER10,TICKER11,TICKER12,TICKER13,TICKER14,TICKER15,TICKER16,TICKER17,TICKER18,TICKER19,TICKER20,TICKER21,TICKER22,TICKER23,TICKER24,TICKER25,TICKER26,TICKER27,TICKER28,TICKER29,TICKER30,TICKER31,TICKER32,TICKER33,TICKER34,TICKER35,TICKER36,TICKER37,TICKER38,TICKER39,TICKER40,TICKER41,TICKER42,TICKER43,TICKER44,TICKER45,TICKER46,TICKER47,TICKER48,TICKER49,TICKER50]
+  [gw0] [ 99%] PASSED tests/test_benzinga_price_target_spec.py::TestRatingsRefusals::test_invalid_symbols_have_stable_error_classification_before_transport[TICKER0,TICKER1,TICKER2,TICKER3,TICKER4,TICKER5,TICKER6,TICKER7,TICKER8,TICKER9,TICKER10,TICKER11,TICKER12,TICKER13,TICKER14,TICKER15,TICKER16,TICKER17,TICKER18,TICKER19,TICKER20,TICKER21,TICKER22,TICKER23,TICKER24,TICKER25,TICKER26,TICKER27,TICKER28,TICKER29,TICKER30,TICKER31,TICKER32,TICKER33,TICKER34,TICKER35,TICKER36,TICKER37,TICKER38,TICKER39,TICKER40,TICKER41,TICKER42,TICKER43,TICKER44,TICKER45,TICKER46,TICKER47,TICKER48,TICKER49,TICKER50]
+  E   pydantic_core._pydantic_core.ValidationError: 1 validation error for CongressAmendment
+  E       For further information visit https://errors.pydantic.dev/2.12/v/int_type
+  E    +    where ('docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/__init__.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/__init__.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_buy_back_em.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_cb_sina.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_cb_ths.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_cbond.py', ...) = EvidenceValidation(errors=(), blocked_paths=(), blocked_details=(), excluded_paths=('docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/__init__.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/__init__.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_buy_back_em.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_cb_sina.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_cb_ths.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_cbond.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_china.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_china_money.py', 'docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/i...mental/stock_profit_forecast_hk_etnet.py', 'opendata/data/providers/akshare/_vendor/stock_fundamental/stock_profit_forecast_ths.py', 'opendata/data/providers/akshare/_vendor/stock_fundamental/stock_recommend.py', 'opendata/data/providers/akshare/_vendor/stock_fundamental/stock_register_em.py', 'opendata/data/providers/akshare/_vendor/stock_fundamental/stock_restricted_em.py', 'opendata/data/providers/akshare/_vendor/stock_fundamental/stock_zygc.py', 'opendata/data/providers/akshare/_vendor/stock_fundamental/stock_zyjs_ths.py', 'opendata/data/providers/akshare/_vendor/utils/__init__.py', 'opendata/data/providers/akshare/_vendor/utils/cons.py', 'opendata/data/providers/akshare/_vendor/utils/context.py', 'opendata/data/providers/akshare/_vendor/utils/demjson.py', 'opendata/data/providers/akshare/_vendor/utils/func.py', 'opendata/data/providers/akshare/_vendor/utils/multi_decrypt.py', 'opendata/data/providers/akshare/_vendor/utils/request.py', 'opendata/data/providers/akshare/_vendor/utils/token_process.py', 'opendata/data/providers/akshare/_vendor/utils/tqdm.py', 'opendata_client/opendata_client/__init__.py', 'opendata_client/opendata_client/client.py'), historical_ruff_count=149323).snapshot_paths
+  opendata/data/providers/ths/transport/errors.py                                                                                                                 68      3      8      3  92.11%   168, 173, 192
+  TOTAL                                                                                                                                                        65958   8035  20792   4409  84.31%
+  Required test coverage of 84% reached. Total coverage: 84.31%
+  (quoted tail 26 of 694 matching body lines; cap=26)
+
+===== frontend-lint :: exit=0 member_clock_start_local=2026-10-15T09:16:38+0800 -> member_clock_end_local=2026-10-15T09:16:58+0800
+  111:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  305:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  443:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:5  warning  Unexpected `await` of a non-Promise (non-"Thenable") value  @typescript-eslint/await-thenable
+  6:3  warning  Prop 'icon' requires default value to be set  vue/require-default-prop
+  8:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  6:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:12  warning  Prop 'type' requires default value to be set    vue/require-default-prop
+  7:26  warning  Prop 'size' requires default value to be set    vue/require-default-prop
+  7:40  warning  Prop 'effect' requires default value to be set  vue/require-default-prop
+  225:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  (quoted head 14 of 37 matching body lines; cap=14)
+
+===== frontend-typecheck :: exit=2 member_clock_start_local=2026-10-15T09:16:58+0800 -> member_clock_end_local=2026-10-15T09:17:04+0800
+  cd frontend && npx vue-tsc -b --force
+  e2e/script-download-backend.spec.ts(311,14): error TS2345: Argument of type '{ method: string; path: string; status: number; response_body: any; }' is not assignable to parameter of type 'TraceEvent'.
+  e2e/script-download-backend.spec.ts(502,14): error TS2345: Argument of type '{ method: string; path: string; status: number; request_body: unknown; response_body: unknown; }' is not assignable to parameter of type 'TraceEvent'.
+
+===== frontend-collection :: exit=0 member_clock_start_local=2026-10-15T09:17:04+0800 -> member_clock_end_local=2026-10-15T09:17:15+0800
+  on disk (src): 30 files
+  collected    : 30 files
+  PASS: every test file on disk is collected by the frontend run.
+
+===== frontend-test :: exit=0 member_clock_start_local=2026-10-15T09:17:15+0800 -> member_clock_end_local=2026-10-15T09:17:31+0800
+  [33m[2m✓[22m[39m reloads failures after a successful retry and reports a failed retry without false success [33m 367[2mms[22m[39m
+  [2m Test Files [22m [1m[32m30 passed[39m[22m[90m (30)[39m
+  [2m      Tests [22m [1m[32m225 passed[39m[22m[90m (225)[39m
+
+===== frontend-e2e :: exit=2 member_clock_start_local=2026-10-15T09:17:31+0800 -> member_clock_end_local=2026-10-15T09:17:32+0800
+  ASSERTS         e2e/scripts.spec.ts:210  Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel
+  ASSERTS         e2e/scripts.spec.ts:236  Scripts & Data Tables E2E › Authenticated › retry posts and reloads the failed-shard list
+  ASSERTS         e2e/scripts.spec.ts:268  Scripts & Data Tables E2E › Authenticated › failed-shard export downloads the visible JSON response
+  ASSERTS         e2e/scripts.spec.ts:292  Scripts & Data Tables E2E › Authenticated › empty failed-shard list is visible and exports an empty JSON array
+  ASSERTS         e2e/scripts.spec.ts:314  Scripts & Data Tables E2E › Authenticated › failed-shard export errors are visible to the operator
+  ASSERTS         e2e/scripts.spec.ts:333  Scripts & Data Tables E2E › Authenticated › failed-shard load errors are visible and disable export
+
+---- per-member exit readings (derived from the MEMBER_EXIT lines above) ----
+member1_brand_check_exit=2
+member2_zero_dep_check_exit=2
+member3_secret_check_exit=0
+member4_ledger_check_exit=0
+member5_evidence_traceability_exit=2
+member6_js_points_check_exit=0
+member7_loguru_check_exit=0
+member8_a2_check_exit=2
+member9_quality_ratchet_exit=0
+member10_public_api_quality_exit=2
+member11_acceptance_probe_check_exit=2
+member12_test_cov_exit=2
+member13_frontend_lint_exit=0
+member14_frontend_typecheck_exit=2
+member15_frontend_collection_exit=0
+member16_frontend_test_exit=0
+member17_frontend_e2e_exit=2
+member_exit_lines=17
+members_green=8
+members_red=9 red_members=['brand-check', 'zero-dep-check', 'evidence-traceability', 'a2-check', 'public-api-quality', 'acceptance-probe-check', 'test-cov', 'frontend-typecheck', 'frontend-e2e']
+members_not_measured=0 pending_members=[]
+wrapper_note: every member ran as 'make --no-print-directory <member>', so rc=2 is make wrapping a non-zero recipe
+  and is not the tool's own exit; the bodies above carry the tool-level readings.
+  an absent MEMBER_EXIT line is NOT a red: it means the chain had not reached that member.
+---- reconciliation against the chain harness's OWN tally lines ----
+  verbatim: member_exit_lines=17
+  verbatim: members_total=17
+  verbatim: members_green=8
+  verbatim: members_red=7
+  verbatim: gate_chain_exit=1
+  derived_from_exit_lines: green=8 red=9 measured=17 pending=0
+  derived_identity: green(8) + red(9) == measured(17) -> True
+  tally_agreement=False
+  HARNESS TALLY DEFECT: the harness printed green=8 red=7 (sum 15),
+    while its own MEMBER_EXIT lines give a different split. Cause: its counters used [a-z-]*, which cannot
+    match digit-bearing member names, so those members are invisible to the tally.
+    harness-invisible members here: ['a2-check', 'frontend-e2e']
+    The per-member MEMBER_EXIT lines are the authority; the harness summary lines are quoted verbatim above and
+    left unrepaired in this log so the defect stays auditable. /tmp/c106_gate_chain.sh is fixed for run2.
+curated_from_raw_exit=1

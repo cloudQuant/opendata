@@ -1,0 +1,53 @@
+command: python scripts/quality/a2_check.py --files docs/evidence/C106/declaration-contract-alignment/probes/align_probe.py
+control-command: python scripts/quality/a2_check.py --files opendata/data/providers/catalog.py
+interpreter: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python 3.13.5
+captured: 2026-10-15 06:54 (both runs, back to back, worktree == index)
+purpose: the judge of this slice is itself an A2 target (docs/evidence/**.py is in the a2 candidate
+  set), so its four static planes are measured here rather than assumed. The control run on an
+  untouched tracked file is what attributes the one red that remains.
+
+---- target = the C106 judge ----
+A2 files (complete resolver): 1
+  docs/evidence/C106/declaration-contract-alignment/probes/align_probe.py
+ok   ruff check
+ok   ruff format --check
+ok  mypy (1 unique target(s))
+ok   bandit
+FAIL pinned Gitleaks file scan
+FAIL: A2 gate failed on: immutable evidence secret scan
+PROBE_A2_EXIT=1
+pre-repair reading of the same file (before the types/layout rewrite described in
+runs/align-probe-current.txt): ruff_check=3 errors (2x TC001, 1x E501), ruff_format=would reformat,
+mypy=8 errors, bandit=clean. The rewrite changed no printed value.
+
+---- control target = opendata/data/providers/catalog.py (bytes untouched this round) ----
+A2 files (complete resolver): 1
+  opendata/data/providers/catalog.py
+ok   ruff check
+ok   ruff format --check
+ok  mypy (1 unique target(s))
+ok   bandit
+FAIL pinned Gitleaks file scan
+FAIL: A2 gate failed on: immutable evidence secret scan
+NEUTRAL_A2_EXIT=1
+
+---- attribution of the one red ----
+The failing plane is a2's pinned-snapshot byte scan (scan_snapshot_bytes over the immutable-evidence
+manifest). It runs over the whole pinned set regardless of which --files target is asked for, so it
+is not a reading of this slice's bytes: the two runs above report the same 25 snapshot paths, compared
+as sorted path sets (diff exit 0, SAME_SNAPSHOT_SET=yes).
+failing_snapshot_paths=25 distinct_paths=25
+  5 pristine vendored akshare modules x 5 run snapshots, all under docs/evidence/C100/:
+    bond/bond_china_money.py  bond/bond_convert.py  futures/futures_hf_em.py
+    option/option_em.py       stock/cons.py
+  hosts: ac04-current-codemod-replay/runs/{20261012T231356Z-ac04-c65-c74,
+    20261012T231655Z-ac04-c65-c74-r2, 20261012T231947Z-ac04-c65-c74-r3,
+    20261012T232427Z-ac04-c65-c74-r4} (20 paths) and
+    independent-ac04-current-codemod-replay/runs/20261012T233021Z (5 paths).
+Only file paths and counts are written here; no flagged text is quoted, so this carrier cannot become
+the next finding.
+Disposition: recorded, not flipped. These snapshots are pinned immutable evidence with their own
+digests, and the standing ruling freezes digest/pin surfaces against an inferred repair; widening the
+gitleaks allowlist or re-pinning the snapshots would both change a frozen face. The red therefore
+travels into gate member 8 (a2-check) of the chain face in runs/gate-members-chain.txt, where it is
+attributed the same way.

@@ -207,8 +207,8 @@ HISTORICAL_DIVIDENDS = ModelSpec(
     ),
     columns=(
         ColumnSpec("symbol", "str", required=True),
-        ColumnSpec("ex_dividend_date", "date", source_key="date", required=True),
-        ColumnSpec("amount", "float", source_key="dividend", required=True),
+        ColumnSpec("ex_dividend_date", "date", source_key="date", required=True, nullable=False),
+        ColumnSpec("amount", "float", source_key="dividend", required=True, nullable=False),
         ColumnSpec("currency", "str", source_key="dividend_currency"),
         ColumnSpec("factor", "float"),
         ColumnSpec("split_ratio", "float"),

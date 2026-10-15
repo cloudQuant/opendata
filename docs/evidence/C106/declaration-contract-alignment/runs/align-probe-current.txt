@@ -1,0 +1,31 @@
+command: TRADINGECONOMICS_API_KEY=<fixture value, present in env> python docs/evidence/C106/declaration-contract-alignment/probes/align_probe.py
+interpreter: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python 3.13.5
+commit_under_test: 4fda2d86516aa29dfe4aff3da63fbd7838d86606 (local dev HEAD) plus the five files this round edits, all still uncommitted at capture time: opendata/data/providers/_engine/testing.py, opendata/data/providers/federal_reserve/specs.py, opendata/data/providers/cboe/specs.py, opendata/data/providers/intrinio/specs.py, tests/test_federal_reserve_obfr_spec.py
+captured: 2026-10-15 (re-take; the 06:01 capture described the pre-rewrite probe bytes)
+recapture_delta: the probe was rewritten for the static planes only (a2-check covers docs/evidence probe files, and this file read ruff=3 errors / ruff format=would reformat / mypy=8 errors / bandit=clean before the rewrite). The rewrite is types, imports and layout -- real ModelSpec/ColumnSpec/HttpResponse annotations, a TYPE_CHECKING import, one signature-matched stand-in for the in-memory monkeypatch, and a ruff format reflow that joined two statements. Judged against the archived body: printed lines=23 changed_lines=1, and the single change is an arm label, not a judgment reading (arm: date_span=1 -> ok:1 became arm: date_span=1 -> ok:date_span=1). Every identity, control, arm expectation, causality and verdict line is byte-identical.
+static_planes_after_rewrite: ruff check=ok, ruff format --check=ok, mypy=ok (1 unique target), bandit=ok -- face in runs/align-probe-static-planes.txt
+align_probe_exit=0
+---- raw stdout/stderr follows ----
+face: python=3.13.5 cwd=/Users/yunjinqi/Documents/new_projects/opendata
+identity: models=17 columns_checked=313 mismatched_columns=0 temporal_exception_covered=3
+control-exception-off: mismatched_columns=3 (live 0 + covered 3) rows=3
+control-kind-tamper: mismatched_columns=1 row=["federal_reserve::SOFR.date kind=int field={<class 'datetime.date'>}"]
+control-nullability-tamper: mismatched_columns=1 row=['federal_reserve::SOFR.rate declared req=True nul=True / field req=True none=False']
+  arm: date_span=1 -> ok:date_span=1 expected_refusal_read=yes
+  arm: date_span=2 -> refused:ProviderEngineError expected_refusal_read=yes
+  arm: date_span=3 -> refused:ProviderEngineError expected_refusal_read=yes
+  arm: date_span='x' -> refused:ProviderEngineError expected_refusal_read=yes
+  arm: SOFR percentRate dropped -> refused:ProviderEngineError expected_refusal_read=yes
+  arm: SOFR percentRate null -> refused:ValueTransformError expected_refusal_read=yes
+  arm: SOFR percentRate text '4.33' -> ok:rate=0.0433 expected_refusal_read=yes
+  arm: SOFR percentRate number 4.33 -> refused:ValueTransformError expected_refusal_read=yes
+  arm: Svensson BETA0='alpha' -> refused:ProviderEngineError expected_refusal_read=yes
+  arm: Svensson BETA0='ND' -> ok:beta0=None expected_refusal_read=yes
+  arm: Svensson BETA0='1.5' -> ok:beta0=1.5 expected_refusal_read=yes
+  arm: Svensson BETA0=None -> ok:beta0=None expected_refusal_read=yes
+  arm: Svensson BETA0='n.a.' -> refused:ProviderEngineError expected_refusal_read=yes
+arms: total=13 read_as_expected=13
+identity: arms_population=13
+causality: live_cell=1 disabled_branch_cell=2 body_under_disabled_branch -> refused:ProviderEngineError
+identity: literal_members_under_test=(0, 1)
+verdict: PASS

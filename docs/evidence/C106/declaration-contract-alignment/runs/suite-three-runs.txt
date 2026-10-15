@@ -1,0 +1,183 @@
+face: three whole-suite runs over the declaration-contract alignment slice, one instrument each, same interpreter and -n 8 config
+interpreter: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python 3.13.5 / numpy 2.3.1 (pytest 8.4.1, configfile pytest.ini, testpaths tests)
+commit_under_test: 4fda2d86516aa29dfe4aff3da63fbd7838d86606 plus the files this slice repaired in the worktree
+captured: 2026-10-15 06:19
+OPENDATA_ALLOW_LIVE_E2E was NOT set for any of the three runs; the live plane stayed skipped throughout.
+
+run=1 before          log=/tmp/c106_suite.txt          collected=26467 | 39 failed, 26238 passed, 190 skipped in 285.21s (0:04:45) | suite_exit=1 | failure_names=39
+run=2 after alignment log=/tmp/c106_suite_after.txt    collected=26551 | 32 failed, 26248 passed, 271 skipped in 369.28s (0:06:09) | suite_exit=3 | failure_names=32
+run=3 after arm repair log=/tmp/c106_suite_after2.txt  collected=26552 | 31 failed, 26250 passed, 271 skipped in 363.61s (0:06:03) | suite_exit=3 | failure_names=31
+each run is internally consistent: failed+passed+skipped equals its collected count, so every verdict below is read from a complete run.
+
+failure-set diff (identity based, so it does not depend on the collected denominator):
+  cleared by the alignment        : 8
+  opened by the alignment         : 1  (repaired inside this same slice, see run=3)
+  new after the arm repair        : 0
+
+  names cleared by the alignment (8):
+    tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_declared_static_headers_are_sent_on_every_page[federal_reserve::SvenssonYieldCurve]
+    tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_declared_static_query_is_sent_on_every_page[federal_reserve::SvenssonYieldCurve]
+    tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_optional_column_absent_reads_as_null[federal_reserve::FederalFundsRate]
+    tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_optional_column_absent_reads_as_null[federal_reserve::OvernightBankFundingRate]
+    tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_optional_column_absent_reads_as_null[federal_reserve::SOFR]
+    tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_paging_drives_from_the_declaration_and_stops_on_a_short_page[federal_reserve::SvenssonYieldCurve]
+    tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_typical_request_normalizes_the_declared_columns[federal_reserve::SvenssonYieldCurve]
+    tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_typical_request_normalizes_the_declared_columns[tradingeconomics::EconomicCalendar]
+  the one name the alignment opened, and how it was closed without relaxing its judge:
+    tests/test_federal_reserve_obfr_spec.py::TestSentinelAbsenceFacet::test_break_by_declaring_the_sofr_sentinel_and_the_pinned_contract_refuses_the_null
+    the maim copied SOFR_NULL_SENTINEL onto rate, a column this slice aligned to required=True/nullable=False.
+    opendata/data/providers/_engine/spec.py:451 now refuses that declaration outright -- "column 'rate' declares null
+    sentinels ... but is non-nullable: the rewrite produces exactly the null the row model refuses" -- so the arm could
+    no longer be forged, and pytest reported DID NOT RAISE ProviderEngineError. The witness assertion (rejected==['rate'])
+    was left byte-identical; only the maim gained the nullable=True leg that the pre-alignment declaration already carried,
+    and a second arm was added that measures the new, earlier refusal. 11 items -> 12 items in that file, 12 passed.
+
+  still red at the end of the slice (31), every one in a family already recorded as a gap:
+    tests/test_ac2_case_probe.py::test_self_test_closes_and_every_break_flips
+    tests/test_acceptance_probe_gate.py::TestC51ZeroDepCells::test_the_judge_and_the_guard_module_count_the_same_surface
+    tests/test_authority_reconciliation.py::TestLiveTableMatchesLiveRegistry::test_domains_without_a_row_are_exactly_the_single_source_ones
+    tests/test_c65_evidence_probes.py::test_ac6_02_reads_proven_on_the_repaired_tree_with_every_break_firing
+    tests/test_congress_cboe_iter2.py::test_provider_model_service_injects_identity_and_serializes_typed_rows[CongressAmendments]
+    tests/test_congress_gov_engine_provider.py::TestCongressGovIsARealProvider::test_a_provider_with_no_bindings_stays_unimplemented
+    tests/test_congress_gov_engine_provider.py::TestNothingHereIsLiveVerified::test_models_ships_no_fetcher_module
+    tests/test_congress_gov_engine_provider.py::TestNothingHereIsLiveVerified::test_registration_verifies_nothing
+    tests/test_congress_gov_engine_provider.py::TestNothingHereIsLiveVerified::test_the_package_constructs_no_declaration
+    tests/test_congress_gov_engine_provider.py::TestTheEightRowAccounting::test_provider_bindings_and_declarations_stay_in_step
+    tests/test_data_catalog.py::TestFiveReadings::test_ready_provider_domains_publish_exact_query_service_metadata
+    tests/test_e2e_opt_in_guard.py::test_no_test_outside_the_live_plane_builds_a_database_engine
+    tests/test_ecb_reference_registration.py::test_real_ecb_bindings_register_three_canonical_models_without_auto_promotion
+    tests/test_federal_reserve_domains.py::TestTheDomainsAreRegistered::test_the_retracted_yield_curve_domain_was_not_registered
+    tests/test_finviz_provider.py::test_provider_descriptor_binds_four_models_and_leaves_three_gaps_unbound
+    tests/test_first_model_bindings.py::test_registration_preserves_legacy_order_and_binds_eleven_models_exactly
+    tests/test_immutable_evidence.py::test_repository_manifest_sums_all_exact172_classification_findings
+    tests/test_intrinio_insider_trading_spec.py::TestCensusRowIsDeclared::test_routable_bindings_include_the_engine_declarations
+    tests/test_intrinio_not_declarable.py::TestTheThirtyEightRowAccounting::test_declared_models_are_the_runtime_bindings
+    tests/test_oecd_engine_provider.py::TestProviderDescriptor::test_oecd_binds_only_its_two_hand_written_fetchers
+    tests/test_oecd_engine_provider.py::TestProviderDescriptor::test_the_retracted_model_identities_resolve_to_nothing
+    tests/test_oecd_engine_provider.py::TestProviderDescriptor::test_the_two_shipped_legs_stay_registered_and_verified
+    tests/test_openbb_inventory_guard.py::test_every_declared_rights_row_is_load_bearing
+    tests/test_openbb_inventory_guard.py::test_new_provider_specific_rights_rows_must_exist_in_registration_table
+    tests/test_openbb_inventory_guard.py::test_report_exit_code_differs_between_the_two_records
+    tests/test_openbb_inventory_guard.py::test_shipped_record_agrees_with_the_tree
+    tests/test_p0_integration_surface.py::test_the_marked_set_is_the_reviewed_set
+    tests/test_port_fidelity.py::test_ported_output_matches_upstream[bond_daily_sina]
+    tests/test_provider_catalog.py::test_catalog_contains_34_sources_and_only_66_fetcher_bindings
+    tests/test_provider_catalog.py::test_registration_and_legacy_fetchers_project_the_same_capabilities
+    tests/test_scheduled_patrol.py::TestScheduledPatrolExecution::test_production_domain_priority_is_the_requirement_defined_eight
+
+instrument artifact, recorded not hidden: runs 2 and 3 printed an INTERNALERROR from pytest-cov after the summary line,
+coverage.exceptions.DataError: "Can't combine statement coverage data with branch data". Cause: 896 stale gitignored
+.coverage* files (191 MB) left in the repo root by earlier runs of this session, mixing branch and statement data.
+They were moved whole to /tmp/c106_coverage_aside (reversible; nothing deleted) before the gate member chain ran.
+suite_three_runs_face_exit_readings: run1_suite_exit=1 run2_suite_exit=3 run3_suite_exit=3 verdict=from_summary_lines
+
+mover_84_attribution (appended after the run1 gate chain; resolves the "open mover" this face first left unattributed):
+instruments compared: run3 /tmp/c106_suite_after2.txt (my three-run suite face) vs gate member 12 body in
+/tmp/c106_gate_chain.txt. Same tree, different command: Makefile:96 is `pytest tests -n 8 -m "not e2e" --cov-branch
+--cov-report=... --cov-fail-under=84`; my instrument carried no `-m` filter.
+  skipped_names run3=271 member12=187  (grep -oE "SKIPPED [^ ]+" | sort -u on each log)
+  mover = names skipped in run3 and ABSENT in member12 = 84; reverse direction = 0.
+  failed_names: 31 in both, `diff` of the sorted name sets reads EMPTY -> member 12's red is the same known 31,
+    and `Required test coverage of 84% reached. Total coverage: 84.31%` rules out the coverage floor as its cause.
+  arithmetic, zero residual: 26468(member12 total) + 84 = 26552(run3 collected); 187 + 84 = 271;
+    26551(run2 collected) - 84 = 26467(run1 collected); run1 -> run3 under one filter = +1 = the arm this slice added.
+  population of the mover: 84 test ids across 22 files; every one of the 22 files carries `@pytest.mark.e2e`
+    (`xargs grep -c "mark\.e2e"` -> files with zero marks = 0), and the classes are the live/DB plane
+    (tests/test_api_keys.py:526 `@pytest.mark.e2e class TestApiKeyRoundTripOnMysql`,
+     tests/test_data_query_api.py:109 `@pytest.mark.e2e class TestAgainstTheWarehouse`).
+  overlap with this slice's edited code paths = 0: none of these 22 files is
+    opendata/data/providers/_engine/testing.py, opendata/data/providers/{cboe,federal_reserve,intrinio}/specs.py,
+    or tests/test_federal_reserve_obfr_spec.py.
+verdict: the +84 collected / +81 skipped move between run1 and run2 is an INVOCATION difference (the `-m "not e2e"`
+  selector), not a product change. The hypothesis this face used to carry -- "the alignment widened a parametrize"
+  -- is REFUTED: the mover names sit entirely in live/DB planes the slice never touched, and a fixed denominator
+  (MODELS = registry + probes) was never the explanation.
+instrument lesson recorded: an unexplained count mover must be diffed at NAME level against a second instrument
+  that runs the same tree under a different selector, before any product-side hypothesis is written down.
+
+the 84 mover names (skipped in run3, deselected by the gate's `-m "not e2e"`):
+tests/test_api_keys.py::TestApiKeyRoundTripOnMysql::test_issue_authenticate_revoke_round_trip
+tests/test_api_keys.py::TestApiKeysAgainstMysql::test_hash_is_unique_at_the_database_level
+tests/test_api_keys.py::TestApiKeysAgainstMysql::test_table_exists_with_the_expected_columns
+tests/test_data_query_api.py::TestAgainstTheWarehouse::test_adjust_without_factor_rows_fails_closed
+tests/test_data_query_api.py::TestAgainstTheWarehouse::test_catalog_carries_every_reading_the_acceptance_asks_for
+tests/test_data_query_api.py::TestAgainstTheWarehouse::test_diff_report_endpoint_answers_even_without_rows
+tests/test_data_query_api.py::TestAgainstTheWarehouse::test_injection_attempt_is_treated_as_a_literal_symbol
+tests/test_data_query_api.py::TestAgainstTheWarehouse::test_queries_dwd_rows_with_a_window_and_field_filter
+tests/test_data_query_api.py::TestAgainstTheWarehouse::test_the_catalog_expectation_is_a_trading_day
+tests/test_data_query_api.py::TestAgainstTheWarehouse::test_the_freshness_endpoint_and_the_catalog_agree
+tests/test_data_query_api.py::TestAgainstTheWarehouse::test_the_ods_freshness_door_uses_the_source_column
+tests/test_data_query_api.py::TestAgainstTheWarehouse::test_unknown_field_is_a_400
+tests/test_data_query_api.py::TestExportAgainstTheWarehouse::test_export_honours_the_field_filter
+tests/test_data_query_api.py::TestExportAgainstTheWarehouse::test_export_rejects_an_unknown_field
+tests/test_data_query_api.py::TestExportAgainstTheWarehouse::test_export_streams_a_header_and_the_rows
+tests/test_data_query_api.py::TestExportAgainstTheWarehouse::test_exported_cells_cannot_run_as_spreadsheet_formulas
+tests/test_data_query_api.py::TestWarehouseTablesLive::test_layer_filter_narrows_the_list
+tests/test_data_query_api.py::TestWarehouseTablesLive::test_lists_the_real_warehouse_tables
+tests/test_diff_report.py::TestReportAgainstMysql::test_writes_and_reads_back_the_sample_rows
+tests/test_diff_report.py::TestReportAgainstMysql::test_writing_the_same_batch_twice_does_not_duplicate
+tests/test_dump_import.py::TestImportAgainstMysql::test_adjustment_import_keeps_distinct_events
+tests/test_dump_import.py::TestImportAgainstMysql::test_daily_k_import_is_key_level_idempotent
+tests/test_dwd_merge.py::TestDwdWriteAgainstMysql::test_merge_writes_rows_with_trace_columns_and_is_idempotent
+tests/test_ecb_provider.py::TestLive::test_euro_area_anr_matches_the_portal
+tests/test_ecb_provider.py::TestLive::test_euro_area_gdp_matches_the_portal
+tests/test_ecb_provider.py::TestLive::test_euro_area_mrr_matches_the_portal
+tests/test_factor_builder_e2e.py::TestAdjustRest::test_adjust_hfq_serves_the_other_scale
+tests/test_factor_builder_e2e.py::TestAdjustRest::test_adjust_qfq_serves_the_synthesized_series
+tests/test_factor_builder_e2e.py::TestFactorBuilder::test_builder_cumulates_and_writes_the_factor_rows
+tests/test_factor_builder_e2e.py::TestFactorBuilder::test_builder_is_idempotent
+tests/test_freshness.py::TestPartitionPlanCollector::test_collects_gaps_for_partitioned_tables_only
+tests/test_futures_fetcher.py::TestFuturesLive::test_live_fetch_returns_trading_day_bars
+tests/test_fuyao_dumps.py::TestAgainstTheLiveDumps::test_download_and_parse_the_adjustment_factor_dump
+tests/test_fuyao_dumps.py::TestAgainstTheLiveDumps::test_download_and_parse_the_recent_daily_k_dump
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_adjustment_factors_are_events
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_daily_bars_come_back_as_contract_rows
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_fund_dividends_are_per_unit_cash_events
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_fund_etf_bars_are_converted_around_a_real_ex_date
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_fund_without_any_dividend_comes_back_empty
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_instrument_search_finds_an_a_share
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_trading_calendar_comes_back_as_rows
+tests/test_imf_provider.py::TestLive::test_usa_cpi_matches_the_datamapper
+tests/test_ods_writer.py::TestLiveUpsert::test_corrected_value_updates_in_place_without_duplicating
+tests/test_ods_writer.py::TestLiveUpsert::test_intra_batch_duplicate_keys_end_with_the_last_value
+tests/test_ods_writer.py::TestLiveUpsert::test_staging_and_direct_paths_agree
+tests/test_ods_writer.py::TestLiveUpsert::test_unknown_columns_never_reach_the_table
+tests/test_ods_writer.py::TestLiveUpsert::test_write_benchmark_records_throughput
+tests/test_oecd_provider.py::TestLive::test_gbr_cpi_matches_the_api
+tests/test_oecd_provider.py::TestLive::test_usa_unemployment_matches_the_api
+tests/test_opendata_client.py::TestAgainstTheRunningApi::test_bad_key_is_an_authentication_error
+tests/test_opendata_client.py::TestAgainstTheRunningApi::test_consumer_fetches_daily_bars_over_http
+tests/test_opendata_client.py::TestAgainstTheRunningApi::test_consumer_subscribes_over_a_real_socket
+tests/test_opendata_client.py::TestAgainstTheRunningApi::test_every_catalog_reading_reaches_a_consumer
+tests/test_opendata_client.py::TestAgainstTheRunningApi::test_json_payload_matches_the_documented_envelope
+tests/test_opendata_client.py::TestAgainstTheRunningApi::test_scoped_consumer_is_denied_elsewhere
+tests/test_partition_maintenance.py::TestCrossYearWrite::test_maintenance_extends_partitions_and_new_year_rows_land_alone
+tests/test_partition_maintenance.py::TestCrossYearWrite::test_maintenance_is_idempotent
+tests/test_partition_maintenance.py::TestCrossYearWrite::test_unpartitioned_table_is_a_noop
+tests/test_pipeline_runner.py::TestInterruptedResumeAgainstMysql::test_interrupted_run_resumes_without_rewriting_done_shards
+tests/test_retention.py::TestRetentionAgainstMysql::test_export_writes_every_column
+tests/test_retention.py::TestRetentionAgainstMysql::test_live_warehouse_tables_are_all_covered
+tests/test_retention.py::TestRetentionAgainstMysql::test_purge_keeps_rows_inside_the_window
+tests/test_ths_dwd_integration.py::TestThsSingleSourceDwdPassthrough::test_mapping_merge_and_idempotency
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_instrument_catalog_publishes_index_listing_dates
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_a_bare_index_code_to_the_fuyao_source
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_corporate_actions_to_the_fuyao_source
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_daily_bars_to_the_fuyao_source
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_fund_distributions_to_the_fuyao_source
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_the_instrument_catalog_to_the_fuyao_source
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_the_trading_calendar_to_the_fuyao_source
+tests/test_warehouse_migrations.py::TestLiveReplay::test_upgrade_then_downgrade_on_a_scratch_database
+tests/test_watermark.py::TestAgainstMysql::test_latest_batches_are_oldest_first
+tests/test_watermark.py::TestAgainstMysql::test_recording_the_same_batch_twice_does_not_duplicate
+tests/test_watermark.py::TestAgainstMysql::test_records_and_replays_only_later_batches
+tests/test_watermark.py::TestAgainstMysql::test_replay_is_scoped_to_the_domain
+tests/test_watermark.py::TestAgainstMysql::test_replay_of_an_unknown_watermark_returns_the_tail
+tests/test_watermark.py::TestAgainstMysql::test_window_and_layer_round_trip
+tests/test_watermark.py::TestNotifierAgainstMysql::test_a_broken_hub_does_not_fail_the_pipeline
+tests/test_watermark.py::TestNotifierAgainstMysql::test_full_payload_is_read_back_by_batch_id
+tests/test_watermark.py::TestNotifierAgainstMysql::test_full_wanted_but_unreadable_table_degrades_silently
+tests/test_watermark.py::TestNotifierAgainstMysql::test_hook_does_not_fail_the_pipeline_when_the_push_breaks
+tests/test_watermark.py::TestNotifierAgainstMysql::test_hook_records_the_batch_and_reaches_subscribers
+tests/test_watermark.py::TestNotifierAgainstMysql::test_meta_subscribers_do_not_pay_for_the_row_read
+tests/test_watermark.py::TestNotifierAgainstMysql::test_row_count_falls_back_when_the_table_is_absent
+mover_face_exit=0

@@ -491,7 +491,7 @@ SVENSSON_YIELD_CURVE = ModelSpec(
     columns=(
         ColumnSpec("date", "date", required=True, nullable=False),
         *(
-            ColumnSpec(field, "str", source_key=header, null_sentinel=SVENSSON_NULL_SENTINEL)
+            ColumnSpec(field, "float", source_key=header, null_sentinel=SVENSSON_NULL_SENTINEL)
             for field, header in SVENSSON_SERIES_COLUMNS
         ),
     ),
@@ -545,14 +545,23 @@ SVENSSON_YIELD_CURVE = ModelSpec(
         "here. The tokens are no longer among the unknowns: "
         "the pinned contract's own field validator "
         "(:1062-1082) maps '', 'NA', 'ND' and 'N/A' to null and treats -999.99 as a missing TAU2. "
-        "That is why the 99 columns are str and not float. The engine can cast a cell now -- "
+        "That is why the four tokens are declared; the column kind is a separate question, and the "
+        "answer is the reviewed row: every one of the 99 series fields of "
+        "FederalReserveSvenssonYieldCurve is ``float | None``, so the ``str`` kind these columns "
+        "carried was a declaration that disagreed with its own contract. C106 measured the "
+        "disagreement where it lands -- the contract suite refused the model with "
+        "FEDERAL_RESERVE_SHAPE_INVALID rejected=99, because the fixture publishes a cell of the "
+        "declared kind and a text cell cannot reach a float field. The kind is float now. The "
+        "sentinel still spells the four texts the validator nulls, because it is matched on the "
+        "record's own text before the row coerces it. The engine can cast a cell now -- "
         "columns.derive is present since this engine "
         "grew ModelSpec.column_derives -- and since C97 it has a sentinel-to-null map: "
         "null_sentinel=SVENSSON_NULL_SENTINEL declares the four text tokens on every one of the 99 "
         "series columns, so a cast stage no longer refuses the cells the contract was written to "
         "absorb and the H.15 body's 8,551 ND cells (capture 23f3ed8ae67b4d7d) read as nulls. What the field still cannot spell "
-        "is -999.99: a sentinel is matched on the published text before coercion and these columns "
-        "are str, so that one missing-value number stays priced in DECLARED_GAPS. Declaring the "
+        "is -999.99: a sentinel is matched on the published text and can only spell text, so no "
+        "column kind makes that numeric missing-value marker declarable, "
+        "so that one missing-value number stays priced in DECLARED_GAPS. Declaring the "
         "source tokens is the honest face; the cast is one step behind them and is not declared "
         "here. Units are omitted "
         "for the matching reason: these bodies ship "
@@ -630,7 +639,14 @@ FEDERAL_FUNDS_RATE = ModelSpec(
     ),
     columns=(
         ColumnSpec("date", "date", source_key="effectiveDate", required=True, nullable=False),
-        ColumnSpec("rate", "float", source_key="percentRate", units="published percent"),
+        ColumnSpec(
+            "rate",
+            "float",
+            source_key="percentRate",
+            units="published percent",
+            required=True,
+            nullable=False,
+        ),
         ColumnSpec(
             "target_range_upper", "float", source_key="targetRateTo", units="published percent"
         ),
@@ -740,6 +756,8 @@ SOFR = ModelSpec(
             "float",
             source_key="percentRate",
             units="published percent",
+            required=True,
+            nullable=False,
             # NO null_sentinel: the frozen contract SOFR (models/federal_reserve_clean_nyfed.py:14)
             # makes ``rate`` a required non-nullable float, so the rewrite a sentinel declares
             # (sentinel text -> None) lands on a row model that refuses the null -- the same
@@ -895,7 +913,14 @@ OVERNIGHT_BANK_FUNDING_RATE = ModelSpec(
     ),
     columns=(
         ColumnSpec("date", "date", source_key="effectiveDate", required=True, nullable=False),
-        ColumnSpec("rate", "float", source_key="percentRate", units="published percent"),
+        ColumnSpec(
+            "rate",
+            "float",
+            source_key="percentRate",
+            units="published percent",
+            required=True,
+            nullable=False,
+        ),
         ColumnSpec(
             "percentile_1", "float", source_key="percentPercentile1", units="published percent"
         ),

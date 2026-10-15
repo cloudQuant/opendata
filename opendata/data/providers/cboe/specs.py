@@ -41,7 +41,9 @@ AVAILABLE_INDICES = ModelSpec(
     rows_pointer="",
     params=(),
     columns=(
-        ColumnSpec("symbol", "str", source_key="index_symbol", required=True, units=""),
+        ColumnSpec(
+            "symbol", "str", source_key="index_symbol", required=True, units="", nullable=False
+        ),
         ColumnSpec("name", "str", source_key="index_name", required=True),
         ColumnSpec("currency", "str"),
         ColumnSpec("description", "str"),
@@ -99,7 +101,7 @@ INDEX_CONSTITUENTS = ModelSpec(
         ),
     ),
     columns=(
-        ColumnSpec("symbol", "str", required=True),
+        ColumnSpec("symbol", "str", required=True, nullable=False),
         ColumnSpec("name", "str"),
         ColumnSpec("currency", "str"),
         ColumnSpec("security_type", "str"),
@@ -173,8 +175,10 @@ INDEX_SEARCH = ModelSpec(
         ),
     ),
     columns=(
-        ColumnSpec("symbol", "str", source_key="index_symbol", required=True, units=""),
-        ColumnSpec("name", "str", source_key="index_name", required=True),
+        ColumnSpec(
+            "symbol", "str", source_key="index_symbol", required=True, units="", nullable=False
+        ),
+        ColumnSpec("name", "str", source_key="index_name", required=True, nullable=False),
         ColumnSpec("currency", "str"),
         ColumnSpec("description", "str"),
         ColumnSpec("data_delay", "int", source_key="mkt_data_delay", units="minutes"),
