@@ -28,8 +28,8 @@ version: 1
 upstream_commit: 3e071fcc2cd9f891cac6040ae60296dba76dab46
 upstream_model_count: 350
 unique_upstream_model_count: 202
-registered_source_count: 15
-registered_capability_count: 62
+registered_source_count: 30
+registered_capability_count: 351
 auto_routable_capability_count: 23
 model_implementation_task_status: MIXED
 model_live_verification_status: NOT_RUN
@@ -76,7 +76,7 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: CONFIRMED
-    registered_capability_count: 7
+    registered_capability_count: 39
     auto_routable_capability_count: 3
     status: 已实现未对照
     rights_rows: [FRED]
@@ -97,9 +97,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: CONFIRMED
-    registered_capability_count: 3
+    registered_capability_count: 11
     auto_routable_capability_count: 3
-    status: 已对照转正
+    status: 已实现未对照
     rights_rows: [ECB / IMF / OECD]
   - provider: oecd
     batch: P0
@@ -118,9 +118,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: CONFIRMED
-    registered_capability_count: 2
+    registered_capability_count: 11
     auto_routable_capability_count: 2
-    status: 已对照转正
+    status: 已实现未对照
     rights_rows: [ECB / IMF / OECD]
   - provider: yfinance
     batch: P0
@@ -139,9 +139,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: CONFIRMED
-    registered_capability_count: 1
+    registered_capability_count: 28
     auto_routable_capability_count: 1
-    status: 已对照转正
+    status: 已实现未对照
     rights_rows: [Yahoo Finance]
   - provider: alpha_vantage
     batch: P1
@@ -156,9 +156,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 3
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: bls
     batch: P1
     fetchers: 2
@@ -189,7 +189,7 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 1
+    registered_capability_count: 6
     auto_routable_capability_count: 0
     status: 已实现未对照
     rights_rows: [EconDB（econdb.com 静态名册 CSV）]
@@ -206,9 +206,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 2
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: famafrench
     batch: P1
     fetchers: 6
@@ -222,9 +222,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 6
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: federal_reserve
     batch: P1
     fetchers: 13
@@ -238,7 +238,7 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 6
+    registered_capability_count: 13
     auto_routable_capability_count: 0
     status: 已实现未对照
     rights_rows: [美联储理事会（Board of Governors）]
@@ -255,7 +255,7 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 2
+    registered_capability_count: 69
     auto_routable_capability_count: 0
     status: 已实现未对照
     rights_rows: [FMP（EquityHistorical / EquityQuote）]
@@ -272,7 +272,7 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 5
+    registered_capability_count: 37
     auto_routable_capability_count: 0
     status: 已实现未对照
     rights_rows: [Intrinio]
@@ -289,9 +289,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 1
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: seeking_alpha
     batch: P1
     fetchers: 3
@@ -321,7 +321,7 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 1
+    registered_capability_count: 7
     auto_routable_capability_count: 0
     status: 已实现未对照
     rights_rows: [Tiingo（api.tiingo.com）]
@@ -338,9 +338,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 1
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: benzinga
     batch: P2
     fetchers: 4
@@ -354,7 +354,7 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 1
+    registered_capability_count: 4
     auto_routable_capability_count: 0
     status: 已实现未对照
     rights_rows: [Benzinga（Benzinga Pro API）]
@@ -387,7 +387,7 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 4
+    registered_capability_count: 9
     auto_routable_capability_count: 0
     status: 已实现未对照
     rights_rows: [Cboe（cdn.cboe.com 公开接口）]
@@ -404,9 +404,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 2
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: congress_gov
     batch: P2
     fetchers: 8
@@ -420,9 +420,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 8
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: deribit
     batch: P2
     fetchers: 5
@@ -436,9 +436,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 5
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: finra
     batch: P2
     fetchers: 2
@@ -452,9 +452,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 2
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: finviz
     batch: P2
     fetchers: 7
@@ -468,9 +468,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 7
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: government_us
     batch: P2
     fetchers: 6
@@ -484,9 +484,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 5
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: nasdaq
     batch: P2
     fetchers: 9
@@ -500,9 +500,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 9
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: sec
     batch: P2
     fetchers: 24
@@ -516,9 +516,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 24
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: stockgrid
     batch: P2
     fetchers: 1
@@ -548,9 +548,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 8
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: tradier
     batch: P2
     fetchers: 5
@@ -564,9 +564,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 5
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: wsj
     batch: P2
     fetchers: 3
