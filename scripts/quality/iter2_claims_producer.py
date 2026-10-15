@@ -203,7 +203,7 @@ def build_claim(
     probe_files = [
         PROBE_RELATIVE,
         "scripts/quality/iter2_claims_fixtures.py",
-        witnesses.witness_module_rel(provider),
+        *witnesses.witness_module_rels(provider),
     ]
     contract_files = list(entry["contract_files"])
     fixture_files = [fixture_rel] if fixture_rel and phase != "implementation" else probe_files[:]

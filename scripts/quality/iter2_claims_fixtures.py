@@ -32,6 +32,12 @@ if TYPE_CHECKING:
 REPO_ROOT: Final = Path(__file__).resolve().parents[2]
 WITNESS_DIR: Final = Path(__file__).resolve().parent / "iter2_witnesses"
 WITNESS_DIR_REL: Final = "scripts/quality/iter2_witnesses"
+#: Optional per-provider shard directory. ``_parts/<provider>/<part>.py`` publishes ``MODELS``
+#: and is merged into that provider's ``CONFIG["models"]``, so several workers can author
+#: disjoint model sets of one provider without ever sharing a file. The leading underscore keeps
+#: the directory out of provider discovery, and a duplicated model key fails closed.
+PARTS_DIR: Final = WITNESS_DIR / "_parts"
+PARTS_DIR_REL: Final = f"{WITNESS_DIR_REL}/_parts"
 
 _REQUIRED_ENTRY_KEYS: Final = (
     "fixture_document",
@@ -85,30 +91,72 @@ def witness_module_rel(source: str) -> str:
     return f"{WITNESS_DIR_REL}/{source}.py"
 
 
+def witness_module_rels(source: str) -> list[str]:
+    """Every witness file a claim for this provider must pin: the module plus its shards."""
+    return [
+        witness_module_rel(source),
+        *(p.relative_to(REPO_ROOT).as_posix() for p in _part_files(source)),
+    ]
+
+
+def _import_config(path: Path, module_name: str) -> Any:  # noqa: ANN401  # the loaded witness module
+    """Import one witness file by location and return the module."""
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    if spec is None or spec.loader is None:
+        raise KeyError(f"{path.name}: witness file has no importable spec")
+    module: ModuleType = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _validate_entry(source: str, model: str, entry: object) -> dict[str, Any]:
+    """Check one witness entry carries every key the phases read."""
+    if not isinstance(entry, dict):
+        raise KeyError(f"{source}::{model}: witness entry is not a mapping")
+    missing = [key for key in _REQUIRED_ENTRY_KEYS if key not in entry]
+    if missing:
+        raise KeyError(f"{source}::{model}: witness entry lacks {missing}")
+    if "client_seam" in entry:
+        _validate_client_seam(source, model, entry["client_seam"])
+    return cast("dict[str, Any]", entry)
+
+
+def _part_files(source: str) -> list[Path]:
+    """Every shard file authored for one provider, in deterministic order."""
+    directory = PARTS_DIR / source
+    if not directory.is_dir():
+        return []
+    return sorted(p for p in directory.glob("*.py") if not p.name.startswith("_"))
+
+
 def _load(source: str) -> dict[str, Any]:
-    """Import one witness module by file location and return its validated ``CONFIG`` mapping."""
+    """Import one provider's witness module, merge its optional shards, validate the result."""
     path = WITNESS_DIR / f"{source}.py"
     if not path.is_file():
         raise KeyError(source)
-    spec = importlib.util.spec_from_file_location(f"iter2_witnesses_{source}", path)
-    if spec is None or spec.loader is None:
-        raise KeyError(f"{source}: witness module has no importable spec")
-    module: ModuleType = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    module = _import_config(path, f"iter2_witnesses_{source}")
     config = getattr(module, "CONFIG", None)
     if not isinstance(config, dict):
         raise KeyError(f"{source}: witness module publishes no CONFIG mapping")
     models = config.get("models")
     if not isinstance(models, dict):
         raise KeyError(f"{source}: CONFIG declares no per-model witness entries")
+    merged: dict[str, Any] = {}
     for model, entry in models.items():
-        if not isinstance(entry, dict):
-            raise KeyError(f"{source}::{model}: witness entry is not a mapping")
-        missing = [key for key in _REQUIRED_ENTRY_KEYS if key not in entry]
-        if missing:
-            raise KeyError(f"{source}::{model}: witness entry lacks {missing}")
-        if "client_seam" in entry:
-            _validate_client_seam(source, model, entry["client_seam"])
+        merged[model] = _validate_entry(source, model, entry)
+    for part in _part_files(source):
+        part_module = _import_config(part, f"iter2_witnesses_{source}_{part.stem}")
+        part_models = getattr(part_module, "MODELS", None)
+        if not isinstance(part_models, dict):
+            raise KeyError(f"{source}: shard {part.name} publishes no MODELS mapping")
+        for model, entry in part_models.items():
+            if model in merged:
+                raise KeyError(
+                    f"{source}::{model}: witness key is published by both the provider module "
+                    f"and shard {part.name}"
+                )
+            merged[model] = _validate_entry(source, model, entry)
+    config["models"] = merged
     return config
 
 
@@ -164,4 +212,5 @@ __all__ = [
     "provider_config",
     "providers_with_witness",
     "witness_module_rel",
+    "witness_module_rels",
 ]
