@@ -10,6 +10,7 @@ from typing import Any, ClassVar
 from pydantic import Field, ValidationError, model_validator
 
 from opendata.data.capability import Capability
+from opendata.data.models.base import ContractModel  # noqa: TC001 - get_type_hints reads row_model
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult
 from opendata.data.providers.fmp.models._client import (
     FMP_HISTORICAL_RESPONSE_LIMIT,
@@ -47,6 +48,7 @@ class EquityHistoricalFetcher(Fetcher[EquityHistoricalQuery, list[dict[str, Any]
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "EquityHistorical"
+    row_model: ClassVar[type[ContractModel]] = EquityHistorical
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="equity_historical",

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model PriceTargetConsensus --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "_industry_group_number accepts an int or a purely decimal string and refuses anything else, because the endpoint keys its industry groups with an integer id and OpenBB publishes it as int; '35.12' is neither, and truncating it to 35 would attribute the consensus to a group Intrinio never named, so the row must refuse with INTRINIO_MARKET_SHAPE_INVALID; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

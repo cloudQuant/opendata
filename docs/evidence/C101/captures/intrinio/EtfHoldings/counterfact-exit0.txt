@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model EtfHoldings --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "_percent_fraction refuses any weighting that is not a finite JSON number before the mapping multiplies it by 100, because the endpoint documents a fraction; the percent-formatted string '6.48%' would either be dropped as a null weight or, if coerced, published as a 648% position, so the row must refuse with INTRINIO_MARKET_SHAPE_INVALID; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

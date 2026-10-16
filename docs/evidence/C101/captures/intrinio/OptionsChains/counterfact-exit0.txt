@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model OptionsChains --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "transform_data checks option['code'] is a nonempty string before it maps anything else, because the OCC-style code is the contract_symbol the row is keyed by and the strike, expiry and type are all readable out of it; a contract object with no code cannot be addressed by a caller, so the chain must refuse with INTRINIO_MARKET_SHAPE_INVALID rather than publish an unnamed contract; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

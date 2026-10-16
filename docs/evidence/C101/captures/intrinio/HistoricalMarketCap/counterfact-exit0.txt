@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model HistoricalMarketCap --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "_get_pages raises unless payload[rows_key] is a list before it ever reads the cursor, and this route documents its observations under the historical_data pointer, so a page that publishes no such pointer is a shape failure: answering it as an empty market-cap series would tell the caller AAPL has never had a market cap rather than that this page was malformed; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

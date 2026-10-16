@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model EtfPricePerformance --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioResponseShapeError", "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "the row this route publishes is declared adjustment='splits_and_dividends' with calculation_method='adjusted_close_price_ratio_fraction_v1', and _adjusted_close_series walks the validated series and raises as soon as any day carries no adj_close, because the ratio would then be computed from one split-adjusted endpoint and one raw one; dropping the first day's adj_close must refuse instead of silently falling back to close; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

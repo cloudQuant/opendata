@@ -271,6 +271,7 @@ class IntrinioEtfPricePerformanceFetcher(_IntrinioMarketFetcher):
     """Compute OpenBB ETF return fields from documented Intrinio daily price rows."""
 
     canonical_model = "EtfPricePerformance"
+    row_model = IntrinioEtfPricePerformance
     query_model = _EtfPricePerformanceQuery
     capability = _capability("etf_price_performance", "us")
 

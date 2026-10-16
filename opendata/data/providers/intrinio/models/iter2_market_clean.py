@@ -354,6 +354,7 @@ class IntrinioEquityInfoFetcher(_IntrinioMarketFetcher[_CompanyInfoQuery, JsonOb
     """Fetch and normalize a single Intrinio company profile."""
 
     canonical_model = "EquityInfo"
+    row_model = IntrinioEquityInfo
     query_model = _CompanyInfoQuery
     capability = _capability("equity", "equity_info", "snapshot")
 
@@ -477,6 +478,7 @@ class IntrinioHistoricalMarketCapFetcher(
     """Fetch historical market-cap observations."""
 
     canonical_model = "HistoricalMarketCap"
+    row_model = IntrinioHistoricalMarketCap
     query_model = _HistoricalMarketCapQuery
     capability = _capability("equity", "historical_market_cap", "series")
 
@@ -632,6 +634,7 @@ class IntrinioEtfHoldingsFetcher(_IntrinioMarketFetcher[_EtfHoldingsQuery, JsonR
     """Fetch and normalize an ETF's holdings rows."""
 
     canonical_model = "EtfHoldings"
+    row_model = IntrinioEtfHolding
     query_model = _EtfHoldingsQuery
     capability = _capability("etf", "etf_holdings", "snapshot")
 
@@ -729,6 +732,7 @@ class IntrinioOptionsUnusualFetcher(_IntrinioMarketFetcher[_OptionsUnusualQuery,
     """Fetch and normalize unusual options trades for a symbol."""
 
     canonical_model = "OptionsUnusual"
+    row_model = IntrinioOptionsUnusual
     query_model = _OptionsUnusualQuery
     capability = _capability("option", "options_unusual", "event")
 
@@ -780,6 +784,7 @@ class IntrinioOptionsChainsFetcher(_IntrinioMarketFetcher[_OptionsChainQuery, Js
     """Fetch documented real-time option-chain rows for a ticker."""
 
     canonical_model = "OptionsChains"
+    row_model = IntrinioOptionsChain
     query_model = _OptionsChainQuery
     capability = _capability("option", "options_chains", "snapshot")
 
@@ -927,6 +932,7 @@ class IntrinioPriceTargetConsensusFetcher(
     """Fetch and normalize Zacks target-price consensus rows."""
 
     canonical_model = "PriceTargetConsensus"
+    row_model = IntrinioPriceTargetConsensus
     query_model = _PriceTargetConsensusQuery
     capability = _capability("equity", "price_target_consensus", "snapshot")
 

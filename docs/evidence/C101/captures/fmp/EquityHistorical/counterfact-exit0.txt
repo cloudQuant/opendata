@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fmp --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FMPProviderError", "refusal_code": "FMP_BAD_SHAPE", "rejected": [], "status": null}, "reason": "EquityHistorical declares open a required float -- an EOD bar with no session open is not a bar -- so model_validate raises a missing-field error that transform_data funnels into the bare FMP_BAD_SHAPE without echoing the row; a bar whose open was dropped would otherwise be published as a complete trading day and priced off its close alone; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

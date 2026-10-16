@@ -1,0 +1,60 @@
+{
+  "responses": [
+    {
+      "body": {
+        "contracts": [
+          {
+            "extended_price": {
+              "ask_close": 3.25,
+              "ask_high": 3.62,
+              "ask_low": 3.1,
+              "ask_open": 3.49,
+              "bid_close": 3.05,
+              "bid_high": 3.44,
+              "bid_low": 2.95,
+              "bid_open": 3.31,
+              "trade_close": 3.15,
+              "trade_high": 3.55,
+              "trade_low": 3.02,
+              "trade_open": 3.4
+            },
+            "option": {
+              "code": "AAPL260220C00190000",
+              "expiration": "2026-02-20",
+              "id": "OPT7742011",
+              "root": "AAPL",
+              "strike": 190.0,
+              "ticker": "AAPL",
+              "type": "call"
+            },
+            "price": {
+              "ask": 3.25,
+              "ask_size": 300,
+              "ask_timestamp": "2026-02-17T20:59:58Z",
+              "bid": 3.05,
+              "bid_size": 200,
+              "bid_timestamp": "2026-02-17T20:59:57Z",
+              "last": 3.15,
+              "last_size": 100,
+              "last_timestamp": "2026-02-17T20:59:58Z",
+              "mark": 3.15,
+              "open_interest": 24501,
+              "volume": 1842
+            },
+            "stats": {
+              "delta": 0.5512,
+              "gamma": 0.0288,
+              "implied_volatility": 0.2431,
+              "rho": 0.0431,
+              "theta": -0.0914,
+              "underlying_price": 189.71,
+              "vega": 0.1102
+            }
+          }
+        ],
+        "next_page": null
+      },
+      "url_contains": "/options/prices/by_ticker/AAPL/realtime"
+    }
+  ]
+}

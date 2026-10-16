@@ -2,7 +2,7 @@
   "acceptance_rule": "all five phase claims plus an explicit valid primary-model or human ACCEPT receipt; claim PASS alone is candidate only",
   "claims_input": {
     "path": "docs/evidence/C101/claims.merged.json",
-    "sha256": "035b07f94b35099c80aba4b7313420bc4377e2d6846d00d872e3ee89ea356e5b"
+    "sha256": "7f11b344c1abe52554c37113b840e243c0aa9bf17477b7ecb9f03056780a2aa3"
   },
   "claims_status_source": "explicit JSON claims only; no directory globbing or markdown status parsing",
   "global_issues": [],
@@ -7782,129 +7782,87 @@
       "upstream_model": "EquityActive"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "fmp::EquityHistorical",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/fmp/EquityHistorical/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "FMPProviderError",
+              "refusal_code": "FMP_BAD_SHAPE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "FMPProviderError",
+              "refusal_code": "FMP_BAD_SHAPE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "EquityHistorical declares open a required float -- an EOD bar with no session open is not a bar -- so model_validate raises a missing-field error that transform_data funnels into the bare FMP_BAD_SHAPE without echoing the row; a bar whose open was dropped would otherwise be published as a complete trading day and priced off its close alone; untampered control produced 2 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/fmp/EquityHistorical/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/fmp/EquityHistorical/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/fmp/EquityHistorical/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/fmp/EquityHistorical/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "fmp",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-fmp-EquityHistorical",
       "upstream_model": "EquityHistorical"
     },
@@ -16484,129 +16442,87 @@
       "upstream_model": "EquityHistorical"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "intrinio::EquityInfo",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EquityInfo/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "_get_json funnels the decoded document through _json_object with 'Intrinio response must be a JSON object' before any mapping runs, because /companies/<ticker> documents one profile object, so an answer that arrives as an array must be refused instead of being read as a profile whose every field is merely absent; untampered control produced 1 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EquityInfo/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EquityInfo/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EquityInfo/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EquityInfo/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "intrinio",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-intrinio-EquityInfo",
       "upstream_model": "EquityInfo"
     },
@@ -16870,129 +16786,87 @@
       "upstream_model": "EtfHistorical"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "intrinio::EtfHoldings",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EtfHoldings/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "_percent_fraction refuses any weighting that is not a finite JSON number before the mapping multiplies it by 100, because the endpoint documents a fraction; the percent-formatted string '6.48%' would either be dropped as a null weight or, if coerced, published as a 648% position, so the row must refuse with INTRINIO_MARKET_SHAPE_INVALID; untampered control produced 2 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EtfHoldings/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EtfHoldings/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EtfHoldings/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EtfHoldings/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "intrinio",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-intrinio-EtfHoldings",
       "upstream_model": "EtfHoldings"
     },
@@ -17082,129 +16956,87 @@
       "upstream_model": "EtfInfo"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "intrinio::EtfPricePerformance",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EtfPricePerformance/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the row this route publishes is declared adjustment='splits_and_dividends' with calculation_method='adjusted_close_price_ratio_fraction_v1', and _adjusted_close_series walks the validated series and raises as soon as any day carries no adj_close, because the ratio would then be computed from one split-adjusted endpoint and one raw one; dropping the first day's adj_close must refuse instead of silently falling back to close; untampered control produced 1 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EtfPricePerformance/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EtfPricePerformance/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EtfPricePerformance/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/EtfPricePerformance/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "intrinio",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-intrinio-EtfPricePerformance",
       "upstream_model": "EtfPricePerformance"
     },
@@ -18062,129 +17894,87 @@
       "upstream_model": "HistoricalDividends"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "intrinio::HistoricalMarketCap",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/HistoricalMarketCap/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "_get_pages raises unless payload[rows_key] is a list before it ever reads the cursor, and this route documents its observations under the historical_data pointer, so a page that publishes no such pointer is a shape failure: answering it as an empty market-cap series would tell the caller AAPL has never had a market cap rather than that this page was malformed; untampered control produced 2 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/HistoricalMarketCap/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/HistoricalMarketCap/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/HistoricalMarketCap/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/HistoricalMarketCap/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "intrinio",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-intrinio-HistoricalMarketCap",
       "upstream_model": "HistoricalMarketCap"
     },
@@ -18703,129 +18493,87 @@
       "upstream_model": "MarketSnapshots"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "intrinio::OptionsChains",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/OptionsChains/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "transform_data checks option['code'] is a nonempty string before it maps anything else, because the OCC-style code is the contract_symbol the row is keyed by and the strike, expiry and type are all readable out of it; a contract object with no code cannot be addressed by a caller, so the chain must refuse with INTRINIO_MARKET_SHAPE_INVALID rather than publish an unnamed contract; untampered control produced 1 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/OptionsChains/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/OptionsChains/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/OptionsChains/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/OptionsChains/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "intrinio",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-intrinio-OptionsChains",
       "upstream_model": "OptionsChains"
     },
@@ -18957,256 +18705,172 @@
       "upstream_model": "OptionsSnapshots"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "intrinio::OptionsUnusual",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/OptionsUnusual/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "extract_data reads payload['trades'] and raises 'unusual activity trades must be an array of objects' unless it is a list, because the delayed feed documents the block prints under that pointer; an answer without it is not a quiet day for the ticker, it is an unreadable payload, so INTRINIO_MARKET_SHAPE_INVALID is the only honest face; untampered control produced 1 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/OptionsUnusual/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/OptionsUnusual/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/OptionsUnusual/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/OptionsUnusual/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "intrinio",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-intrinio-OptionsUnusual",
       "upstream_model": "OptionsUnusual"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "intrinio::PriceTargetConsensus",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/PriceTargetConsensus/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "IntrinioResponseShapeError",
+              "refusal_code": "INTRINIO_MARKET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "_industry_group_number accepts an int or a purely decimal string and refuses anything else, because the endpoint keys its industry groups with an integer id and OpenBB publishes it as int; '35.12' is neither, and truncating it to 35 would attribute the consensus to a group Intrinio never named, so the row must refuse with INTRINIO_MARKET_SHAPE_INVALID; untampered control produced 1 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/PriceTargetConsensus/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/PriceTargetConsensus/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/PriceTargetConsensus/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/intrinio/PriceTargetConsensus/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "intrinio",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-intrinio-PriceTargetConsensus",
       "upstream_model": "PriceTargetConsensus"
     },
@@ -26222,11 +25886,11 @@
   "summary": {
     "claim_count": 1270,
     "identity_count": 350,
-    "offline_acceptance_count": 235,
-    "primary_review_count": 235,
+    "offline_acceptance_count": 243,
+    "primary_review_count": 243,
     "status_counts": {
-      "INCOMPLETE": 19,
-      "OFFLINE_ACCEPTED": 235,
+      "INCOMPLETE": 11,
+      "OFFLINE_ACCEPTED": 243,
       "UNREVIEWED": 96
     }
   }
