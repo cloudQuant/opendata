@@ -8,22 +8,25 @@ under ``opendata/data/models/``, and the only provider-side change this wave shi
 (``iter2_claims_probe_runner.py:400`` reads the attribute; ``:504`` requires the class to live under
 ``opendata.data.models.``). Each declaration was taken from the class the fetcher's own
 ``transform_data`` validates with. The domain-equality preflight below re-ran
-``contract_model(capability.domain)`` against all seven and every pair is the same class; that check
-is self-imposed, not inherited. The shipped guards assert the equality only for federal_reserve's own
-fetchers (``tests/test_federal_reserve_iter2_models.py:398-399``) and for the 21 declarative rows
-collected by ``tests/test_provider_model_contracts.py:577``, and ``--collect-only`` on that test
+``contract_model(capability.domain)`` against all seven and every pair is the same class;
+that check is self-imposed, not inherited. The shipped guards assert the equality only for
+federal_reserve's own fetchers (``tests/test_federal_reserve_iter2_models.py:398-399``) and
+for the 21 declarative rows collected by ``tests/test_provider_model_contracts.py:577``, and
+``--collect-only`` on that test
 shows none of the seven intrinio identities in its population. It still matters, because
 ``provider_model_query._serialize_contract_row`` revalidates every served row against
 ``contract_model(domain)`` -- a look-alike contract passes its direct leg and refuses on the
 service leg:
 
-    intrinio_equity_info              -> opendata.data.models.intrinio_market_clean.IntrinioEquityInfo
-    intrinio_historical_market_cap    -> ...intrinio_market_clean.IntrinioHistoricalMarketCap
-    intrinio_etf_holdings             -> ...intrinio_market_clean.IntrinioEtfHolding
-    intrinio_options_chains           -> ...intrinio_market_clean.IntrinioOptionsChain
-    intrinio_options_unusual          -> ...intrinio_market_clean.IntrinioOptionsUnusual
-    intrinio_price_target_consensus   -> ...intrinio_market_clean.IntrinioPriceTargetConsensus
-    intrinio_etf_price_performance    -> opendata.data.models.intrinio_snapshots_clean.IntrinioEtfPricePerformance
+    ``opendata.data.models.*`` is the package root of every class name below:
+
+    intrinio_equity_info              -> intrinio_market_clean.IntrinioEquityInfo
+    intrinio_historical_market_cap    -> intrinio_market_clean.IntrinioHistoricalMarketCap
+    intrinio_etf_holdings             -> intrinio_market_clean.IntrinioEtfHolding
+    intrinio_options_chains           -> intrinio_market_clean.IntrinioOptionsChain
+    intrinio_options_unusual          -> intrinio_market_clean.IntrinioOptionsUnusual
+    intrinio_price_target_consensus   -> intrinio_market_clean.IntrinioPriceTargetConsensus
+    intrinio_etf_price_performance    -> intrinio_snapshots_clean.IntrinioEtfPricePerformance
 
 Like its sibling shard, every leg rides the ``client_seam`` over
 ``opendata.data.providers.intrinio.models.iter2_market_clean``, because ``_get_json`` reads
@@ -365,10 +368,10 @@ MODELS: Final[dict[str, dict[str, Any]]] = {
         "refusal_code": _SHAPE_CODE,
         "tamper_reason": (
             "_get_pages raises unless payload[rows_key] is a list before it ever reads the cursor, "
-            "and this route documents its observations under the historical_data pointer, so a page "
-            "that publishes no such pointer is a shape failure: answering it as an empty market-cap "
-            "series would tell the caller AAPL has never had a market cap rather than that this "
-            "page was malformed"
+            "and this route documents its observations under the historical_data pointer, so a "
+            "page that publishes no such pointer is a shape failure: answering it as an empty "
+            "market-cap series would tell the caller AAPL has never had a market cap rather than "
+            "that this page was malformed"
         ),
         "source_files": [_MARKET_SOURCE, _CLIENT_SOURCE],
         "contract_files": [_MARKET_CONTRACT, _DOMAINS],
@@ -389,7 +392,8 @@ MODELS: Final[dict[str, dict[str, Any]]] = {
             "_percent_fraction refuses any weighting that is not a finite JSON number before the "
             "mapping multiplies it by 100, because the endpoint documents a fraction; the percent-"
             "formatted string '6.48%' would either be dropped as a null weight or, if coerced, "
-            "published as a 648% position, so the row must refuse with INTRINIO_MARKET_SHAPE_INVALID"
+            "published as a 648% position, so the row must refuse with "
+            "INTRINIO_MARKET_SHAPE_INVALID"
         ),
         "source_files": [_MARKET_SOURCE, _CLIENT_SOURCE],
         "contract_files": [_MARKET_CONTRACT, _DOMAINS],
@@ -407,10 +411,11 @@ MODELS: Final[dict[str, dict[str, Any]]] = {
         "refusal_code": _SHAPE_CODE,
         "tamper_reason": (
             "the row this route publishes is declared adjustment='splits_and_dividends' with "
-            "calculation_method='adjusted_close_price_ratio_fraction_v1', and _adjusted_close_series "
-            "walks the validated series and raises as soon as any day carries no adj_close, because "
-            "the ratio would then be computed from one split-adjusted endpoint and one raw one; "
-            "dropping the first day's adj_close must refuse instead of silently falling back to close"
+            "calculation_method='adjusted_close_price_ratio_fraction_v1', and "
+            "_adjusted_close_series walks the validated series and raises as soon as any day "
+            "carries no adj_close, because the ratio would then be computed from one "
+            "split-adjusted endpoint and one raw one; dropping the first day's adj_close must "
+            "refuse instead of silently falling back to close"
         ),
         "source_files": [_SNAPSHOT_SOURCE, _MARKET_SOURCE, _CLIENT_SOURCE],
         "contract_files": [_SNAPSHOT_CONTRACT, _MARKET_CONTRACT, _DOMAINS],
@@ -427,11 +432,11 @@ MODELS: Final[dict[str, dict[str, Any]]] = {
         "refusal_class": _REFUSAL_CLASS,
         "refusal_code": _SHAPE_CODE,
         "tamper_reason": (
-            "transform_data checks option['code'] is a nonempty string before it maps anything else, "
-            "because the OCC-style code is the contract_symbol the row is keyed by and the strike, "
-            "expiry and type are all readable out of it; a contract object with no code cannot be "
-            "addressed by a caller, so the chain must refuse with INTRINIO_MARKET_SHAPE_INVALID "
-            "rather than publish an unnamed contract"
+            "transform_data checks option['code'] is a nonempty string before it maps anything "
+            "else, because the OCC-style code is the contract_symbol the row is keyed by and the "
+            "strike, expiry and type are all readable out of it; a contract object with no code "
+            "cannot be addressed by a caller, so the chain must refuse with "
+            "INTRINIO_MARKET_SHAPE_INVALID rather than publish an unnamed contract"
         ),
         "source_files": [_MARKET_SOURCE, _CLIENT_SOURCE],
         "contract_files": [_MARKET_CONTRACT, _DOMAINS],
@@ -462,7 +467,14 @@ MODELS: Final[dict[str, dict[str, Any]]] = {
         "query": {"symbol": "AAPL"},
         "tamper": {
             "op": "set",
-            "path": ["responses", 0, "body", "target_price_consensuses", 0, "industry_group_number"],
+            "path": [
+                "responses",
+                0,
+                "body",
+                "target_price_consensuses",
+                0,
+                "industry_group_number",
+            ],
             "value": "35.12",
             "column": "industry_group_number",
         },

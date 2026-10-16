@@ -6,7 +6,7 @@ A claim status of `PASS` is only a candidate. Offline acceptance requires all fi
 - Fixed identities: **350** (expected **350**).
 - Identity projection SHA-256: `5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65`.
 - Input CSV SHA-256: `3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5`.
-- Claims input: `docs/evidence/C101/claims.merged.json` (SHA-256 `7f11b344c1abe52554c37113b840e243c0aa9bf17477b7ecb9f03056780a2aa3`).
+- Claims input: `docs/evidence/C101/claims.merged.json` (SHA-256 `48d0bfc4ea3e881a4a1c719a6c55a2368f8c1fd98b36110af7e68c868809ecf1`).
 - Offline accepted: **243**.
 - Status counts: `{"INCOMPLETE": 11, "OFFLINE_ACCEPTED": 243, "UNREVIEWED": 96}`.
 

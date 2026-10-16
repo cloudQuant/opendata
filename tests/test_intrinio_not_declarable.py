@@ -1,4 +1,4 @@
-"""Intrinio's 38-row accounting: thirty-five routable models, three recorded refusals.
+"""Intrinio's 38-row accounting: thirty-seven routable models, one recorded refusal.
 
 The provider's promise is that a censused model is either routable or written down with the
 declaration-plane capability that blocks it. This file judges the second half for Intrinio, offline:
@@ -161,8 +161,8 @@ class TestTheThirtyEightRowAccounting:
             "the package does not account for every census row: "
             f"{sorted(set(specs.UPSTREAM_ROWS) - declared - recorded)}"
         )
-        assert len(declared) == 35
-        assert len(recorded) == 3
+        assert len(declared) == 37
+        assert len(recorded) == 1
 
     def test_declared_models_are_the_runtime_bindings(self) -> None:
         """The ledger's declared half is what the runtime can actually route -- no paper model."""
@@ -303,12 +303,15 @@ class TestEveryRefusalIsAMeasurement:
         )
 
     def test_each_refusal_names_a_need_its_census_row_records(self) -> None:
-        """Reconciliation: all three current refusals quote a need their census row records.
+        """Reconciliation: the one current refusal quotes the need its census row records.
 
         The comparison is on canonical capability names, not the census' free-text labels. The
         seven news/attributes rows that previously exposed two ledger mismatches are now routed by
-        typed fetchers, so the remaining refused rows have a named blocker that intersects their
-        recorded need set.
+        typed fetchers, so the remaining refused row has a named blocker that intersects its
+        recorded need set. ``EtfPricePerformance`` and ``MarketSnapshots`` left the ledger the same
+        reading: :data:`specs.NOT_DECLARABLE` accounts for rows the package does not route, and both
+        have had snapshots bindings since ``360c61dd`` -- their engine-work blockers are kept as
+        prose above the ledger, and the delta (35/3 -> 37/1) is this file's own re-base.
         """
         gap_models = sorted(
             m for m, r in specs.NOT_DECLARABLE.items() if primary_blocker(r) is None
@@ -330,7 +333,9 @@ class TestEveryRefusalIsAMeasurement:
             for model in specs.NOT_DECLARABLE
             if model not in silent and primary_blocker(specs.NOT_DECLARABLE[model]) is not None
         ]
-        assert len(named) == 3, f"{len(named)} of 3 refusals reconcile, not the documented 3"
+        assert len(named) == 1, (
+            f"{len(named)} of {len(specs.NOT_DECLARABLE)} refusals reconcile, not the documented 1"
+        )
         assert {"CompanyFilings", "WorldNews"} <= set(specs.DECLARED_MODELS)
 
     def test_no_refusal_is_about_effort(self) -> None:
@@ -346,8 +351,7 @@ class TestEveryRefusalIsAMeasurement:
             key = primary_blocker(reason) or "unnamed"
             histogram[key] = histogram.get(key, 0) + 1
         assert histogram == {
-            "flow.join": 1,
-            "flow.preflight_lookup": 2,
+            "flow.preflight_lookup": 1,
         }
         assert sum(histogram.values()) == len(specs.NOT_DECLARABLE)
         assert "param.relative_default" not in histogram, (

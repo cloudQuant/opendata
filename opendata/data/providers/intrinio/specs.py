@@ -1,11 +1,11 @@
 """The Intrinio declarations and the remaining source-census refusals.
 
-Thirty-eight Intrinio model identities were recorded in the iteration-2 census. Thirty-five are
-routable: five declarative :class:`ModelSpec` models, thirteen clean-room typed market fetchers,
-seven typed news/attributes fetchers, and ten typed financial fetchers. The remaining three census
-rows stay in :data:`NOT_DECLARABLE`, with their measured blocker recorded there.
-:data:`DECLARED_MODELS` is an accounting view derived from the ledger; runtime routing remains the
-provider's lazy bindings.
+Thirty-eight Intrinio model identities were recorded in the iteration-2 census. Thirty-seven are
+routable, read off ``PROVIDER.fetcher_bindings`` and grouped by the module each binding names: five
+declarative :class:`ModelSpec` models, thirteen clean-room typed market fetchers, seven typed
+news/attributes fetchers, ten typed financial fetchers and two typed snapshots fetchers. The one
+census row left in :data:`NOT_DECLARABLE` is the row no binding routes. :data:`DECLARED_MODELS` is
+an accounting view derived from the ledger; runtime routing remains the provider's lazy bindings.
 """
 
 from __future__ import annotations
@@ -738,33 +738,39 @@ ENGINE_MODELS: Final[tuple[str, ...]] = tuple(
 #: the canonical capability that blocks it, the mechanism that needs it and the upstream line read
 #: this round. Re-measured row by row against :mod:`opendata.data.providers._engine.spec` (the only
 #: shared declaration-plane vocabulary) and :mod:`opendata.data.providers._engine.http_json` (what
-#: it performs at query time), not against the census' label mapping: every one of these three rows
-#: needs at least one capability that ``ModelSpec`` has no field for. Two kernels for two of them --
-#: ``_engine/multi_request.py`` (fan-out + join) and ``_engine/request_body.py`` (POST body + body
-#: paging) -- exist as pure modules today and are reachable by no declaration, because adding the
-#: fields that would wire them is the engine owner's call, not this package's.
+#: it performs at query time), not against the census' label mapping: the one row left below needs
+#: at least one capability that ``ModelSpec`` has no field for. Two kernels for the two rows that
+#: have left -- ``_engine/multi_request.py`` (fan-out + join) and ``_engine/request_body.py`` (POST
+#: body + body paging) -- exist as pure modules today and are reachable by no declaration, because
+#: adding the fields that would wire them is the engine owner's call, not this package's.
 #:
-#: ``param.relative_default`` is deliberately absent from the refusals below. ``RelativeDefault``
-#: (spec.py:117-195) landed mid-round and ``http_json`` performs it at query time (:229-245).
-#: ``InsiderTrading`` was withheld on ``columns.null_sentinel`` for one round; C97 shipped the
-#: sentinel facet, the row was re-judged, and it is declared above. ``CompanyFilings`` is now
-#: routed by a typed fetcher and is no longer part of this declaration-plane ledger.
+#: What leaves this ledger is a *route*, not a capability: a row goes to ``DECLARED_MODELS`` the
+#: round a provider binding starts serving it, and the mechanism prose below stays as the engine
+#: work still owed. ``param.relative_default`` is deliberately absent from the refusals.
+#: ``RelativeDefault`` (spec.py:117-195) landed mid-round and ``http_json`` performs it at query
+#: time (:229-245). ``InsiderTrading`` was withheld on ``columns.null_sentinel`` for one round; C97
+#: shipped the sentinel facet, the row was re-judged, and it is declared above. ``CompanyFilings``
+#: is now routed by a typed fetcher and is no longer part of this declaration-plane ledger.
+#:
+#: The snapshots wave moved two more rows on that same reading, and both are engine work, so their
+#: blockers are named here rather than dropped. ``EtfPricePerformance``
+#: (models/iter2_snapshots_clean.py:270) fetches a ``stats`` row per symbol and merges an
+#: ``analytics`` response into that same row (etf_price_performance.py:161-200) while dropping
+#: columns by substring tests against two parameter-derived needles (:177-181): ``flow.join`` +
+#: ``flow.fan_out``. ``MarketSnapshots`` (:437) reads gzip file URLs out of a JSON directory
+#: response (market_snapshots.py:168-177), decodes each as a second request of gzipped CSV
+#: (:185-196) and nulls ``Max``/``Min``/0/NaN after the frame lands (:241-247):
+#: ``flow.preflight_lookup`` + ``flow.fan_out``, with ``columns.null_sentinel`` no longer one of
+#: them since C97 shipped that facet.
 #:
 #: The census mis-maps one need and this ledger does not repeat it. Its instrument has no key
 #: for "the pages come from a cursor the response publishes", so it folds that need onto
 #: ``request.body_pagination`` for nine Intrinio rows. The typed bindings now handle the applicable
-#: cursor routes directly; the three remaining refusal reasons below name their measured blockers
-#: rather than treating cursor paging alone as unsupported.
+#: cursor routes directly; the one remaining refusal reason below names its measured blocker rather
+#: than treating cursor paging alone as unsupported.
 #:
 #: Reasons name the mechanism, never the effort: "not written yet" is not a blocker.
 NOT_DECLARABLE: dict[str, str] = {
-    "EtfPricePerformance": "flow.join + flow.fan_out: per symbol a ``stats`` row is fetched and an "
-    "``analytics`` response is merged into that same row (etf_price_performance.py:161-200), while "
-    "columns are dropped by substring tests against two parameter-derived needles (:177-181).",
-    "MarketSnapshots": "flow.preflight_lookup + flow.fan_out + columns.null_sentinel: a JSON "
-    "directory response publishes gzip file URLs (market_snapshots.py:168-177), each a second "
-    "request decoded as gzipped CSV (:185-196), and ``Max``/``Min``/0/NaN are nulled after the "
-    "frame lands (:241-247).",
     "OptionsSnapshots": "flow.preflight_lookup + shape.columnar: the JSON response publishes a "
     "file URL whose gzip bytes are parsed as CSV (options_snapshots.py:196-217), four columns are "
     "sliced out of ``contract_symbol`` by regex (:272-291) and the answer is validated as columnar "

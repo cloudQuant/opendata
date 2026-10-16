@@ -86,10 +86,11 @@ MODELS: Final[dict[str, dict[str, Any]]] = {
         "refusal_class": "FMPProviderError",
         "refusal_code": "FMP_BAD_SHAPE",
         "tamper_reason": (
-            "EquityHistorical declares open a required float -- an EOD bar with no session open is "
-            "not a bar -- so model_validate raises a missing-field error that transform_data funnels "
-            "into the bare FMP_BAD_SHAPE without echoing the row; a bar whose open was dropped would "
-            "otherwise be published as a complete trading day and priced off its close alone"
+            "EquityHistorical declares open a required float -- an EOD bar with no session open "
+            "is not a bar -- so model_validate raises a missing-field error that transform_data "
+            "funnels into the bare FMP_BAD_SHAPE without echoing the row; a bar whose open was "
+            "dropped would otherwise be published as a complete trading day and priced off its "
+            "close alone"
         ),
         "source_files": [_MODEL_SOURCE, _FMP_SOURCE],
         "contract_files": [_CONTRACT, _DOMAINS],
