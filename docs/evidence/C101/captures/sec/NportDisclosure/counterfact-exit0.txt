@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model NportDisclosure --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_NPORT_BAD_NUMBER", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_NPORT_BAD_NUMBER", "rejected": [], "status": null}, "reason": "balance is the declared holdings quantity and N-PORT publishes it as a number, so a position carrying a shorthand string cannot be counted, valued or compared and must be refused rather than stored as null; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

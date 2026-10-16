@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model ManagementDiscussionAnalysis --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_MDA_SECTION_NOT_FOUND", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_MDA_SECTION_NOT_FOUND", "rejected": [], "status": null}, "reason": "the contract publishes the management discussion narrative itself, and a 10-Q whose Item 2 heading no longer names management's discussion has no such section to extract, so the fetch must refuse rather than return neighbouring Item 1 text; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

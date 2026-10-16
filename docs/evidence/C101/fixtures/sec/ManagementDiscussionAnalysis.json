@@ -1,0 +1,72 @@
+{
+  "responses": [
+    {
+      "body": {
+        "0": {
+          "cik_str": 789019,
+          "ticker": "MSFT",
+          "title": "Microsoft Corporation"
+        }
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "files/company_tickers.json"
+    },
+    {
+      "body": {
+        "cik": 789019,
+        "filings": {
+          "files": [],
+          "recent": {
+            "accessionNumber": [
+              "0000950170-23-046672",
+              "0000950170-23-028615"
+            ],
+            "filingDate": [
+              "2023-10-24",
+              "2023-04-25"
+            ],
+            "form": [
+              "10-Q",
+              "10-Q"
+            ],
+            "primaryDocument": [
+              "msft-20230930.htm",
+              "msft-20230331.htm"
+            ],
+            "reportDate": [
+              "2023-09-30",
+              "2023-03-31"
+            ],
+            "size": [
+              1883342,
+              1739944
+            ]
+          }
+        },
+        "name": "Microsoft Corporation"
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "submissions/CIK0000789019.json"
+    },
+    {
+      "body": [
+        "<html><body>",
+        "<p>UNITED STATES SECURITIES AND EXCHANGE COMMISSION</p>",
+        "<p>FORM 10-Q FOR THE QUARTERLY PERIOD ENDED SEPTEMBER 30, 2023</p>",
+        "<h2>PART I Financial Information</h2>",
+        "<h3>Item 1. Financial Statements</h3>",
+        "<p>Condensed Consolidated Balance Sheets</p>",
+        "<h3>Item 2. Management's Discussion and Analysis of Financial Condition and Results of Operations</h3>",
+        "<p>Revenue increased on growth across each of our reporting segments, with Microsoft Cloud revenue up year over year and commercial remaining performance obligations continuing to grow.</p>",
+        "<h3>Item 3. Quantitative and Qualitative Disclosures About Market Risk</h3>",
+        "<p>Our market risk exposures relate to interest rate and foreign currency risk.</p>",
+        "</body></html>"
+      ],
+      "content_type": "text/html",
+      "status": 200,
+      "url_contains": "000095017023046672/msft-20230930.htm"
+    }
+  ]
+}

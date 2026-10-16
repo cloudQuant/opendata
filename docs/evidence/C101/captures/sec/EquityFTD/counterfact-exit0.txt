@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model EquityFTD --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_FTD_ARCHIVE_LINK_CONFLICT", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_FTD_ARCHIVE_LINK_CONFLICT", "rejected": [], "status": null}, "reason": "the FTD fetcher maps each half-month to exactly one archive URL, so a listing that republishes December 2023 first half under a second path cannot say which report the settlement rows came from and must refuse before any download; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

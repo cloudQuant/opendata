@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InstitutionsSearch --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_13F_DATASET_LATEST_BATCH_AMBIGUOUS", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_13F_DATASET_LATEST_BATCH_AMBIGUOUS", "rejected": [], "status": null}, "reason": "the witness reads the single newest filing-window batch, so a listing that publishes two batches whose windows both end 31Dec2024 has no unique latest batch and must refuse instead of picking one by link order; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

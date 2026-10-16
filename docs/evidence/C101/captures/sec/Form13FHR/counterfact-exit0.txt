@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model Form13FHR --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_13F_BAD_VALUE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_13F_BAD_VALUE", "rejected": [], "status": null}, "reason": "value is a required contract column carrying the reported dollar amount, and the Form 13F information table publishes it as an integer, so a holding whose value is not a number is refused instead of entering the row as a null or a guess; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,109 @@
+{
+  "responses": [
+    {
+      "body": {
+        "cik": 1234567,
+        "filings": {
+          "files": [],
+          "recent": {
+            "acceptanceDateTime": [
+              "2024-05-27T18:04:19.000Z"
+            ],
+            "accessionNumber": [
+              "0001234567-24-000012"
+            ],
+            "filingDate": [
+              "2024-05-27"
+            ],
+            "form": [
+              "NPORT-P"
+            ],
+            "primaryDocument": [
+              "primary_document.xml"
+            ],
+            "reportDate": [
+              "2024-03-31"
+            ],
+            "size": [
+              8123
+            ]
+          }
+        },
+        "name": "Offline Witness Growth Fund"
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "submissions/CIK0001234567.json"
+    },
+    {
+      "body": {
+        "directory": {
+          "item": [
+            {
+              "description": "Fund Portfolio Holdings File",
+              "name": "primary_document.xml",
+              "size": "8123",
+              "type": "NPORT-P"
+            },
+            {
+              "description": "JSON",
+              "name": "index.json",
+              "size": "2687",
+              "type": "INDEX"
+            }
+          ]
+        }
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "000123456724000012/index.json"
+    },
+    {
+      "body": [
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+        "<NPORT-P xmlns=\"http://www.sec.gov/xml/filings/edgar/formnport\">",
+        "<periodOfReport>2024-03-31</periodOfReport>",
+        "<regStateCY>DE</regStateCY>",
+        "<invstOrSec>",
+        "<name>APPLE INC</name>",
+        "<title>APPLE INC</title>",
+        "<cusip>037833100</cusip>",
+        "<identifiers>",
+        "<ticker idType=\"https://xbrl.sec.gov/dei/2023\">AAPL</ticker>",
+        "</identifiers>",
+        "<fairValLevel>2</fairValLevel>",
+        "<securityCategory>equityContract</securityCategory>",
+        "<payoffProfile>long</payoffProfile>",
+        "<assetCat>equity</assetCat>",
+        "<issuerCat>corp</issuerCat>",
+        "<invCountry>US</invCountry>",
+        "<balance>1250000</balance>",
+        "<unit>sh</unit>",
+        "<currency>USD</currency>",
+        "<valUSD>231875000</valUSD>",
+        "<pctVal>0.5234</pctVal>",
+        "</invstOrSec>",
+        "<invstOrSec>",
+        "<name>MICROSOFT CORP</name>",
+        "<title>MICROSOFT CORP</title>",
+        "<cusip>594918104</cusip>",
+        "<fairValLevel>2</fairValLevel>",
+        "<securityCategory>equityContract</securityCategory>",
+        "<payoffProfile>long</payoffProfile>",
+        "<assetCat>equity</assetCat>",
+        "<issuerCat>corp</issuerCat>",
+        "<invCountry>US</invCountry>",
+        "<balance>420000</balance>",
+        "<unit>sh</unit>",
+        "<currency>USD</currency>",
+        "<valUSD>151947600</valUSD>",
+        "<pctVal>0.3430</pctVal>",
+        "</invstOrSec>",
+        "</NPORT-P>"
+      ],
+      "content_type": "text/html",
+      "status": 200,
+      "url_contains": "000123456724000012/primary_document.xml"
+    }
+  ]
+}
