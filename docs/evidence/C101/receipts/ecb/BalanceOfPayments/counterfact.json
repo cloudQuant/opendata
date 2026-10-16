@@ -1,0 +1,214 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/ecb/BalanceOfPayments/counterfact-exit0.txt",
+    "sha256": "9c03e172ef1baf2098b6e5fa822805c01f83e838a5fc8bbd22cd0b21e4aff540",
+    "size_bytes": 904,
+    "stdout_excerpt": "COUNTERFACT_JSON={\"expected\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"EcbProviderError\", \"refusal_code\": \"ECB_BAD_RESPONSE\", \"rejected\": [], \"status\": 200}, \"observed\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"EcbProviderError\", \"refusal_code\": \"ECB_BAD_RESPONSE\", \"rejected\": [], \"status\": 200}, \"reason\": \"publishing a daily 2025-02-28 axis on a monthly FREQ=M series breaks the source period grammar the BPS contract is built on, so the parser must refuse the whole body with ECB_BAD_RESPONSE and status=200 instead of guessing which month was meant or trimming the period to 2025-02; untampered control produced 3 row(s) through the same seam\"}\nVERDICT=PASS\n"
+  },
+  "counterfact": {
+    "expected": {
+      "invalid": [],
+      "missing": [],
+      "refusal_class": "EcbProviderError",
+      "refusal_code": "ECB_BAD_RESPONSE",
+      "rejected": [],
+      "status": 200
+    },
+    "observed": {
+      "invalid": [],
+      "missing": [],
+      "refusal_class": "EcbProviderError",
+      "refusal_code": "ECB_BAD_RESPONSE",
+      "rejected": [],
+      "status": 200
+    },
+    "reason": "publishing a daily 2025-02-28 axis on a monthly FREQ=M series breaks the source period grammar the BPS contract is built on, so the parser must refuse the whole body with ECB_BAD_RESPONSE and status=200 instead of guessing which month was meant or trimming the period to 2025-02; untampered control produced 3 row(s) through the same seam"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase counterfact --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-16T04:14:29.243387+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+          "before_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+          "path": "opendata/data/models/ecb_series.py"
+        },
+        {
+          "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+          "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+          "path": "opendata/data/models/currency.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+      "fixture": [
+        {
+          "after_sha256": "deefa00368a4040390eb179b23f2bf0d4d83e89cef6eef66a3939e2dcb2e0553",
+          "before_sha256": "deefa00368a4040390eb179b23f2bf0d4d83e89cef6eef66a3939e2dcb2e0553",
+          "path": "docs/evidence/C101/fixtures/ecb/BalanceOfPayments.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+          "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+          "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+          "path": "scripts/quality/iter2_witnesses/ecb.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+          "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+          "path": "opendata/data/providers/ecb/registration.py"
+        },
+        {
+          "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+          "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+          "path": "opendata/data/providers/ecb/provider.py"
+        },
+        {
+          "after_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+          "before_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+          "path": "opendata/data/providers/ecb/models/balance_of_payments.py"
+        },
+        {
+          "after_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+          "before_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+          "path": "opendata/data/providers/ecb/models/_series_client.py"
+        },
+        {
+          "after_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+          "before_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+          "path": "opendata/data/providers/ecb/models/_series_query.py"
+        },
+        {
+          "after_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+          "before_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+          "path": "opendata/data/providers/ecb/models/_series_sdmx.py"
+        },
+        {
+          "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+          "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+          "path": "opendata/data/providers/ecb/models/_client.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "ecb::BalanceOfPayments",
+  "phase": "counterfact",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+        "before_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+        "path": "opendata/data/models/ecb_series.py"
+      },
+      {
+        "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+        "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+        "path": "opendata/data/models/currency.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+    "fixture": [
+      {
+        "after_sha256": "deefa00368a4040390eb179b23f2bf0d4d83e89cef6eef66a3939e2dcb2e0553",
+        "before_sha256": "deefa00368a4040390eb179b23f2bf0d4d83e89cef6eef66a3939e2dcb2e0553",
+        "path": "docs/evidence/C101/fixtures/ecb/BalanceOfPayments.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+        "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+        "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+        "path": "scripts/quality/iter2_witnesses/ecb.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+        "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+        "path": "opendata/data/providers/ecb/registration.py"
+      },
+      {
+        "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+        "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+        "path": "opendata/data/providers/ecb/provider.py"
+      },
+      {
+        "after_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+        "before_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+        "path": "opendata/data/providers/ecb/models/balance_of_payments.py"
+      },
+      {
+        "after_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+        "before_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+        "path": "opendata/data/providers/ecb/models/_series_client.py"
+      },
+      {
+        "after_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+        "before_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+        "path": "opendata/data/providers/ecb/models/_series_query.py"
+      },
+      {
+        "after_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+        "before_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+        "path": "opendata/data/providers/ecb/models/_series_sdmx.py"
+      },
+      {
+        "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+        "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+        "path": "opendata/data/providers/ecb/models/_client.py"
+      }
+    ]
+  },
+  "provider": "ecb",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-ecb-BalanceOfPayments",
+  "upstream_model": "BalanceOfPayments"
+}

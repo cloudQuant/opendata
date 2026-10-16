@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "EcbProviderError", "refusal_code": "ECB_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "EcbProviderError", "refusal_code": "ECB_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "renaming the second series' quote currency to CHF keeps a valid EUR-denominated SP00/A fixing but answers a currency the caller never asked for, so EcbCurrencyReferenceRatesFetcher.transform_data must refuse the row instead of letting an unrequested quote currency into the reference-rate frame; untampered control produced 4 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

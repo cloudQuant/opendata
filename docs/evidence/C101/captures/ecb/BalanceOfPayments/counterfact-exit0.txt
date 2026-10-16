@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "EcbProviderError", "refusal_code": "ECB_BAD_RESPONSE", "rejected": [], "status": 200}, "observed": {"invalid": [], "missing": [], "refusal_class": "EcbProviderError", "refusal_code": "ECB_BAD_RESPONSE", "rejected": [], "status": 200}, "reason": "publishing a daily 2025-02-28 axis on a monthly FREQ=M series breaks the source period grammar the BPS contract is built on, so the parser must refuse the whole body with ECB_BAD_RESPONSE and status=200 instead of guessing which month was meant or trimming the period to 2025-02; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

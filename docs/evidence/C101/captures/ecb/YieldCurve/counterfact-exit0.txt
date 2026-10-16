@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "EcbProviderError", "refusal_code": "ECB_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "EcbProviderError", "refusal_code": "ECB_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "moving one observation to 2026-02-13 keeps the body well-formed and the value numeric, but puts it outside the 2026-01-05..2026-01-07 window the query asked for, so EcbYieldCurveFetcher.transform_data must refuse the row rather than silently widen the caller's curve slice; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

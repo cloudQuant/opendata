@@ -1,0 +1,1535 @@
+{
+  "claims": [
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-16T04:14:25.198829+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "before_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "path": "opendata/data/models/ecb_series.py"
+          },
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+            "before_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+            "path": "opendata/data/providers/ecb/models/balance_of_payments.py"
+          },
+          {
+            "after_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "before_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "path": "opendata/data/providers/ecb/models/_series_client.py"
+          },
+          {
+            "after_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "before_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "path": "opendata/data/providers/ecb/models/_series_query.py"
+          },
+          {
+            "after_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "before_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "path": "opendata/data/providers/ecb/models/_series_sdmx.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::BalanceOfPayments",
+        "path": "docs/evidence/C101/receipts/ecb/BalanceOfPayments/implementation.json",
+        "sha256": "d43dfd1ab5f797b5f4a621afde3f2a0bdcb90cf2e1d75aab2cc363faa9475a79"
+      },
+      "status": "PASS",
+      "upstream_model": "BalanceOfPayments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-16T04:14:26.159818+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "before_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "path": "opendata/data/models/ecb_series.py"
+          },
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+        "fixture": [
+          {
+            "after_sha256": "deefa00368a4040390eb179b23f2bf0d4d83e89cef6eef66a3939e2dcb2e0553",
+            "before_sha256": "deefa00368a4040390eb179b23f2bf0d4d83e89cef6eef66a3939e2dcb2e0553",
+            "path": "docs/evidence/C101/fixtures/ecb/BalanceOfPayments.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+            "before_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+            "path": "opendata/data/providers/ecb/models/balance_of_payments.py"
+          },
+          {
+            "after_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "before_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "path": "opendata/data/providers/ecb/models/_series_client.py"
+          },
+          {
+            "after_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "before_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "path": "opendata/data/providers/ecb/models/_series_query.py"
+          },
+          {
+            "after_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "before_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "path": "opendata/data/providers/ecb/models/_series_sdmx.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::BalanceOfPayments",
+        "path": "docs/evidence/C101/receipts/ecb/BalanceOfPayments/direct.json",
+        "sha256": "42e222f18290768934a142f35dedac9b8e45045cca595fd60fff7cbed43aa9d8"
+      },
+      "status": "PASS",
+      "upstream_model": "BalanceOfPayments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-16T04:14:27.299256+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "before_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "path": "opendata/data/models/ecb_series.py"
+          },
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+        "fixture": [
+          {
+            "after_sha256": "deefa00368a4040390eb179b23f2bf0d4d83e89cef6eef66a3939e2dcb2e0553",
+            "before_sha256": "deefa00368a4040390eb179b23f2bf0d4d83e89cef6eef66a3939e2dcb2e0553",
+            "path": "docs/evidence/C101/fixtures/ecb/BalanceOfPayments.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+            "before_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+            "path": "opendata/data/providers/ecb/models/balance_of_payments.py"
+          },
+          {
+            "after_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "before_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "path": "opendata/data/providers/ecb/models/_series_client.py"
+          },
+          {
+            "after_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "before_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "path": "opendata/data/providers/ecb/models/_series_query.py"
+          },
+          {
+            "after_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "before_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "path": "opendata/data/providers/ecb/models/_series_sdmx.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::BalanceOfPayments",
+        "path": "docs/evidence/C101/receipts/ecb/BalanceOfPayments/service.json",
+        "sha256": "86f50265031195b6723a989d6e1a8682943c7c97bdf6047f31c5d0f4bc07d22a"
+      },
+      "status": "PASS",
+      "upstream_model": "BalanceOfPayments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-16T04:14:28.281449+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "before_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "path": "opendata/data/models/ecb_series.py"
+          },
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+        "fixture": [
+          {
+            "after_sha256": "deefa00368a4040390eb179b23f2bf0d4d83e89cef6eef66a3939e2dcb2e0553",
+            "before_sha256": "deefa00368a4040390eb179b23f2bf0d4d83e89cef6eef66a3939e2dcb2e0553",
+            "path": "docs/evidence/C101/fixtures/ecb/BalanceOfPayments.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+            "before_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+            "path": "opendata/data/providers/ecb/models/balance_of_payments.py"
+          },
+          {
+            "after_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "before_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "path": "opendata/data/providers/ecb/models/_series_client.py"
+          },
+          {
+            "after_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "before_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "path": "opendata/data/providers/ecb/models/_series_query.py"
+          },
+          {
+            "after_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "before_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "path": "opendata/data/providers/ecb/models/_series_sdmx.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::BalanceOfPayments",
+        "path": "docs/evidence/C101/receipts/ecb/BalanceOfPayments/contract.json",
+        "sha256": "8f990029686a8bd6abfdac419f356e765ce12fea7d0f54b35241b7747ac0b9cb"
+      },
+      "status": "PASS",
+      "upstream_model": "BalanceOfPayments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-16T04:14:29.243387+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "before_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "path": "opendata/data/models/ecb_series.py"
+          },
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+        "fixture": [
+          {
+            "after_sha256": "deefa00368a4040390eb179b23f2bf0d4d83e89cef6eef66a3939e2dcb2e0553",
+            "before_sha256": "deefa00368a4040390eb179b23f2bf0d4d83e89cef6eef66a3939e2dcb2e0553",
+            "path": "docs/evidence/C101/fixtures/ecb/BalanceOfPayments.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+            "before_sha256": "6b9d908fcb91da80bbcff2129b92bbd961bf8f1ffd4f3b20d6c5d683969e17b0",
+            "path": "opendata/data/providers/ecb/models/balance_of_payments.py"
+          },
+          {
+            "after_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "before_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "path": "opendata/data/providers/ecb/models/_series_client.py"
+          },
+          {
+            "after_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "before_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "path": "opendata/data/providers/ecb/models/_series_query.py"
+          },
+          {
+            "after_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "before_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "path": "opendata/data/providers/ecb/models/_series_sdmx.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::BalanceOfPayments",
+        "path": "docs/evidence/C101/receipts/ecb/BalanceOfPayments/counterfact.json",
+        "sha256": "ea148bf02d456b03e5c9dc0e27a6e640e7a5ac3dca8c590a81d2f83757422616"
+      },
+      "status": "PASS",
+      "upstream_model": "BalanceOfPayments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-16T04:14:30.232022+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "2ee9968b9b63f86f45f83a730551b24cc5cb27f3e3d6e2f42a230aab8d3ba9a5",
+            "before_sha256": "2ee9968b9b63f86f45f83a730551b24cc5cb27f3e3d6e2f42a230aab8d3ba9a5",
+            "path": "opendata/data/providers/ecb/models/reference_rates.py"
+          },
+          {
+            "after_sha256": "37137de953b196f8598d2fc75583de6c38fe5675e6ff36ac92afb9135996e7d4",
+            "before_sha256": "37137de953b196f8598d2fc75583de6c38fe5675e6ff36ac92afb9135996e7d4",
+            "path": "opendata/data/providers/ecb/models/_reference_client.py"
+          },
+          {
+            "after_sha256": "e82be5df91172f76e703d8ffd6e41326c066b2fec8e251acc5a5853f1b2eb313",
+            "before_sha256": "e82be5df91172f76e703d8ffd6e41326c066b2fec8e251acc5a5853f1b2eb313",
+            "path": "opendata/data/providers/ecb/models/_reference_rates.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::CurrencyReferenceRates",
+        "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/implementation.json",
+        "sha256": "d46dfd2f77d84f116c7f7998236522f50d7dc4e406c6b24a46394504653059f9"
+      },
+      "status": "PASS",
+      "upstream_model": "CurrencyReferenceRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-16T04:14:31.213455+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+        "fixture": [
+          {
+            "after_sha256": "dc8ae36552970b8510228e58724d215d92bc8b14fe0d29fb9bdeff22deb87d3c",
+            "before_sha256": "dc8ae36552970b8510228e58724d215d92bc8b14fe0d29fb9bdeff22deb87d3c",
+            "path": "docs/evidence/C101/fixtures/ecb/CurrencyReferenceRates.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "2ee9968b9b63f86f45f83a730551b24cc5cb27f3e3d6e2f42a230aab8d3ba9a5",
+            "before_sha256": "2ee9968b9b63f86f45f83a730551b24cc5cb27f3e3d6e2f42a230aab8d3ba9a5",
+            "path": "opendata/data/providers/ecb/models/reference_rates.py"
+          },
+          {
+            "after_sha256": "37137de953b196f8598d2fc75583de6c38fe5675e6ff36ac92afb9135996e7d4",
+            "before_sha256": "37137de953b196f8598d2fc75583de6c38fe5675e6ff36ac92afb9135996e7d4",
+            "path": "opendata/data/providers/ecb/models/_reference_client.py"
+          },
+          {
+            "after_sha256": "e82be5df91172f76e703d8ffd6e41326c066b2fec8e251acc5a5853f1b2eb313",
+            "before_sha256": "e82be5df91172f76e703d8ffd6e41326c066b2fec8e251acc5a5853f1b2eb313",
+            "path": "opendata/data/providers/ecb/models/_reference_rates.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::CurrencyReferenceRates",
+        "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/direct.json",
+        "sha256": "c1554fcedbe4507bcac17a7cb82b5f1da45abe769a7d20146e12269dccc2603e"
+      },
+      "status": "PASS",
+      "upstream_model": "CurrencyReferenceRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-16T04:14:32.340682+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+        "fixture": [
+          {
+            "after_sha256": "dc8ae36552970b8510228e58724d215d92bc8b14fe0d29fb9bdeff22deb87d3c",
+            "before_sha256": "dc8ae36552970b8510228e58724d215d92bc8b14fe0d29fb9bdeff22deb87d3c",
+            "path": "docs/evidence/C101/fixtures/ecb/CurrencyReferenceRates.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "2ee9968b9b63f86f45f83a730551b24cc5cb27f3e3d6e2f42a230aab8d3ba9a5",
+            "before_sha256": "2ee9968b9b63f86f45f83a730551b24cc5cb27f3e3d6e2f42a230aab8d3ba9a5",
+            "path": "opendata/data/providers/ecb/models/reference_rates.py"
+          },
+          {
+            "after_sha256": "37137de953b196f8598d2fc75583de6c38fe5675e6ff36ac92afb9135996e7d4",
+            "before_sha256": "37137de953b196f8598d2fc75583de6c38fe5675e6ff36ac92afb9135996e7d4",
+            "path": "opendata/data/providers/ecb/models/_reference_client.py"
+          },
+          {
+            "after_sha256": "e82be5df91172f76e703d8ffd6e41326c066b2fec8e251acc5a5853f1b2eb313",
+            "before_sha256": "e82be5df91172f76e703d8ffd6e41326c066b2fec8e251acc5a5853f1b2eb313",
+            "path": "opendata/data/providers/ecb/models/_reference_rates.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::CurrencyReferenceRates",
+        "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/service.json",
+        "sha256": "6ed575b53ce006a90d00efcfa935254b40d607493d345aecd3b9fbf114bb416f"
+      },
+      "status": "PASS",
+      "upstream_model": "CurrencyReferenceRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-16T04:14:33.283143+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+        "fixture": [
+          {
+            "after_sha256": "dc8ae36552970b8510228e58724d215d92bc8b14fe0d29fb9bdeff22deb87d3c",
+            "before_sha256": "dc8ae36552970b8510228e58724d215d92bc8b14fe0d29fb9bdeff22deb87d3c",
+            "path": "docs/evidence/C101/fixtures/ecb/CurrencyReferenceRates.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "2ee9968b9b63f86f45f83a730551b24cc5cb27f3e3d6e2f42a230aab8d3ba9a5",
+            "before_sha256": "2ee9968b9b63f86f45f83a730551b24cc5cb27f3e3d6e2f42a230aab8d3ba9a5",
+            "path": "opendata/data/providers/ecb/models/reference_rates.py"
+          },
+          {
+            "after_sha256": "37137de953b196f8598d2fc75583de6c38fe5675e6ff36ac92afb9135996e7d4",
+            "before_sha256": "37137de953b196f8598d2fc75583de6c38fe5675e6ff36ac92afb9135996e7d4",
+            "path": "opendata/data/providers/ecb/models/_reference_client.py"
+          },
+          {
+            "after_sha256": "e82be5df91172f76e703d8ffd6e41326c066b2fec8e251acc5a5853f1b2eb313",
+            "before_sha256": "e82be5df91172f76e703d8ffd6e41326c066b2fec8e251acc5a5853f1b2eb313",
+            "path": "opendata/data/providers/ecb/models/_reference_rates.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::CurrencyReferenceRates",
+        "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/contract.json",
+        "sha256": "654b6f958ad94853584686458dfe370b0b73180b66ed12e77fe8c76557c01ad0"
+      },
+      "status": "PASS",
+      "upstream_model": "CurrencyReferenceRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-16T04:14:34.260441+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+        "fixture": [
+          {
+            "after_sha256": "dc8ae36552970b8510228e58724d215d92bc8b14fe0d29fb9bdeff22deb87d3c",
+            "before_sha256": "dc8ae36552970b8510228e58724d215d92bc8b14fe0d29fb9bdeff22deb87d3c",
+            "path": "docs/evidence/C101/fixtures/ecb/CurrencyReferenceRates.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "2ee9968b9b63f86f45f83a730551b24cc5cb27f3e3d6e2f42a230aab8d3ba9a5",
+            "before_sha256": "2ee9968b9b63f86f45f83a730551b24cc5cb27f3e3d6e2f42a230aab8d3ba9a5",
+            "path": "opendata/data/providers/ecb/models/reference_rates.py"
+          },
+          {
+            "after_sha256": "37137de953b196f8598d2fc75583de6c38fe5675e6ff36ac92afb9135996e7d4",
+            "before_sha256": "37137de953b196f8598d2fc75583de6c38fe5675e6ff36ac92afb9135996e7d4",
+            "path": "opendata/data/providers/ecb/models/_reference_client.py"
+          },
+          {
+            "after_sha256": "e82be5df91172f76e703d8ffd6e41326c066b2fec8e251acc5a5853f1b2eb313",
+            "before_sha256": "e82be5df91172f76e703d8ffd6e41326c066b2fec8e251acc5a5853f1b2eb313",
+            "path": "opendata/data/providers/ecb/models/_reference_rates.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::CurrencyReferenceRates",
+        "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/counterfact.json",
+        "sha256": "cb0e14648ede288d016a37e3c3223073df0345909dab315fac5b433e9ad7b0e1"
+      },
+      "status": "PASS",
+      "upstream_model": "CurrencyReferenceRates"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-16T04:14:35.219313+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "before_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "path": "opendata/data/models/ecb_series.py"
+          },
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "59c06ba20c32092c3929996f5300897ba7453a4a26191e54e400736e251d10f5",
+            "before_sha256": "59c06ba20c32092c3929996f5300897ba7453a4a26191e54e400736e251d10f5",
+            "path": "opendata/data/providers/ecb/models/yield_curve.py"
+          },
+          {
+            "after_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "before_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "path": "opendata/data/providers/ecb/models/_series_client.py"
+          },
+          {
+            "after_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "before_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "path": "opendata/data/providers/ecb/models/_series_query.py"
+          },
+          {
+            "after_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "before_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "path": "opendata/data/providers/ecb/models/_series_sdmx.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::YieldCurve",
+        "path": "docs/evidence/C101/receipts/ecb/YieldCurve/implementation.json",
+        "sha256": "92629307fd42e485f78ffcd4c37da9f146c54810d768f8e8ea56206ccf2450e2"
+      },
+      "status": "PASS",
+      "upstream_model": "YieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-16T04:14:36.194972+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "before_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "path": "opendata/data/models/ecb_series.py"
+          },
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+        "fixture": [
+          {
+            "after_sha256": "837c30dfd4e86dd11631ce6b7e93794717c40b842701612c1e298a9f7ad38c45",
+            "before_sha256": "837c30dfd4e86dd11631ce6b7e93794717c40b842701612c1e298a9f7ad38c45",
+            "path": "docs/evidence/C101/fixtures/ecb/YieldCurve.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "59c06ba20c32092c3929996f5300897ba7453a4a26191e54e400736e251d10f5",
+            "before_sha256": "59c06ba20c32092c3929996f5300897ba7453a4a26191e54e400736e251d10f5",
+            "path": "opendata/data/providers/ecb/models/yield_curve.py"
+          },
+          {
+            "after_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "before_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "path": "opendata/data/providers/ecb/models/_series_client.py"
+          },
+          {
+            "after_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "before_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "path": "opendata/data/providers/ecb/models/_series_query.py"
+          },
+          {
+            "after_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "before_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "path": "opendata/data/providers/ecb/models/_series_sdmx.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::YieldCurve",
+        "path": "docs/evidence/C101/receipts/ecb/YieldCurve/direct.json",
+        "sha256": "26b536fa9c2aa96350de6474a37bcdcde729edf28aa56579ebd3d6c51381bb1a"
+      },
+      "status": "PASS",
+      "upstream_model": "YieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-16T04:14:37.333086+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "before_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "path": "opendata/data/models/ecb_series.py"
+          },
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+        "fixture": [
+          {
+            "after_sha256": "837c30dfd4e86dd11631ce6b7e93794717c40b842701612c1e298a9f7ad38c45",
+            "before_sha256": "837c30dfd4e86dd11631ce6b7e93794717c40b842701612c1e298a9f7ad38c45",
+            "path": "docs/evidence/C101/fixtures/ecb/YieldCurve.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "59c06ba20c32092c3929996f5300897ba7453a4a26191e54e400736e251d10f5",
+            "before_sha256": "59c06ba20c32092c3929996f5300897ba7453a4a26191e54e400736e251d10f5",
+            "path": "opendata/data/providers/ecb/models/yield_curve.py"
+          },
+          {
+            "after_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "before_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "path": "opendata/data/providers/ecb/models/_series_client.py"
+          },
+          {
+            "after_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "before_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "path": "opendata/data/providers/ecb/models/_series_query.py"
+          },
+          {
+            "after_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "before_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "path": "opendata/data/providers/ecb/models/_series_sdmx.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::YieldCurve",
+        "path": "docs/evidence/C101/receipts/ecb/YieldCurve/service.json",
+        "sha256": "53985d3e96f6f5481f990d00c9e4bdc8020048217c9e11a69e67d385b160e940"
+      },
+      "status": "PASS",
+      "upstream_model": "YieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-16T04:14:38.312380+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "before_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "path": "opendata/data/models/ecb_series.py"
+          },
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+        "fixture": [
+          {
+            "after_sha256": "837c30dfd4e86dd11631ce6b7e93794717c40b842701612c1e298a9f7ad38c45",
+            "before_sha256": "837c30dfd4e86dd11631ce6b7e93794717c40b842701612c1e298a9f7ad38c45",
+            "path": "docs/evidence/C101/fixtures/ecb/YieldCurve.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "59c06ba20c32092c3929996f5300897ba7453a4a26191e54e400736e251d10f5",
+            "before_sha256": "59c06ba20c32092c3929996f5300897ba7453a4a26191e54e400736e251d10f5",
+            "path": "opendata/data/providers/ecb/models/yield_curve.py"
+          },
+          {
+            "after_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "before_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "path": "opendata/data/providers/ecb/models/_series_client.py"
+          },
+          {
+            "after_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "before_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "path": "opendata/data/providers/ecb/models/_series_query.py"
+          },
+          {
+            "after_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "before_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "path": "opendata/data/providers/ecb/models/_series_sdmx.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::YieldCurve",
+        "path": "docs/evidence/C101/receipts/ecb/YieldCurve/contract.json",
+        "sha256": "9fdedd32585766a9a817331b7fd684682d52682bfedd89f93e2927fbe1ee11c6"
+      },
+      "status": "PASS",
+      "upstream_model": "YieldCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-16T04:14:39.268696+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "before_sha256": "43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+            "path": "opendata/data/models/ecb_series.py"
+          },
+          {
+            "after_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "before_sha256": "53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
+            "path": "opendata/data/models/currency.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:43b87c7349de04b2d5989263d4f34ee42015203a9e2300f2139c87519cbfe0da",
+        "fixture": [
+          {
+            "after_sha256": "837c30dfd4e86dd11631ce6b7e93794717c40b842701612c1e298a9f7ad38c45",
+            "before_sha256": "837c30dfd4e86dd11631ce6b7e93794717c40b842701612c1e298a9f7ad38c45",
+            "path": "docs/evidence/C101/fixtures/ecb/YieldCurve.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "before_sha256": "38d9185777139c9198bce59b44fae9d002d16e2bdf038a02a9b192a9a65f81b6",
+            "path": "scripts/quality/iter2_witnesses/ecb.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "before_sha256": "6a6e73766b81aeaa69430f3dd5252c5a9d8f14ceb7e4a594151a9b9f13e1f5e7",
+            "path": "opendata/data/providers/ecb/registration.py"
+          },
+          {
+            "after_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "before_sha256": "becdc97a293e08febaf9ec26ba6dbc3dd43eaaceb6cc663af012a72c22c9c893",
+            "path": "opendata/data/providers/ecb/provider.py"
+          },
+          {
+            "after_sha256": "59c06ba20c32092c3929996f5300897ba7453a4a26191e54e400736e251d10f5",
+            "before_sha256": "59c06ba20c32092c3929996f5300897ba7453a4a26191e54e400736e251d10f5",
+            "path": "opendata/data/providers/ecb/models/yield_curve.py"
+          },
+          {
+            "after_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "before_sha256": "1313cd55934339b5214483e0ebfc2434aca23692ddb559aa154ea0b82d4e4fc1",
+            "path": "opendata/data/providers/ecb/models/_series_client.py"
+          },
+          {
+            "after_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "before_sha256": "4c7501eaee53d0f1df0d899280c9bc659f5b076903aaab9515b381bb3219b57c",
+            "path": "opendata/data/providers/ecb/models/_series_query.py"
+          },
+          {
+            "after_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "before_sha256": "3bac8f81b2da658eb648cbdc2e0f86debc3de24d003e234ed100d2a0b5a29ca1",
+            "path": "opendata/data/providers/ecb/models/_series_sdmx.py"
+          },
+          {
+            "after_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "before_sha256": "ce8ca128a59a8bc4c5967805b7e1c786ac1b163927d66b4081af8d1995c2a5f6",
+            "path": "opendata/data/providers/ecb/models/_client.py"
+          }
+        ]
+      },
+      "provider": "ecb",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "ecb::YieldCurve",
+        "path": "docs/evidence/C101/receipts/ecb/YieldCurve/counterfact.json",
+        "sha256": "dc2699bb15c806f3b050a8b046c47a772a7f38c71eb12521a5e3d6f396df6d84"
+      },
+      "status": "PASS",
+      "upstream_model": "YieldCurve"
+    }
+  ],
+  "generated_at_utc": "2026-10-16T04:14:40.907363+00:00",
+  "generated_by": "scripts/quality/iter2_claims_producer.py",
+  "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
+  "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",
+  "primary_reviews": [],
+  "schema_version": 1
+}
