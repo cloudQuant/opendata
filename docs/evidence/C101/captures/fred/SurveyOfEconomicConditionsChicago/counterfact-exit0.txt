@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model SurveyOfEconomicConditionsChicago --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "every Chicago survey reading is published inside a real-time interval whose start precedes its end, and the contract keeps that vintage per series, so an observation whose realtime_end precedes its realtime_start must be refused with FRED_BAD_OBSERVATION surfaced as a ProviderEngineError-shaped FredProviderError instead of silently reversing the survey's vintage; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

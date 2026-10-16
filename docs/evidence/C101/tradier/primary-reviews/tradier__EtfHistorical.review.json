@@ -1,0 +1,371 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/tradier/claims.json",
+    "sha256": "07b21f5d23c2bfd134691bcb476cdd9ba7cb1d0c4ef542932b9604a89b2b5cdd"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/EtfHistorical/contract.json",
+          "sha256": "1f6074c75d9766a3e52e7dd2a6106d1167fe688e797bf91d2ad85184e7adbceb"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "6f79fd229d0b506c758a249594afdba3f87eede453f309a27f1264942dadebd4",
+            "before_sha256": "6f79fd229d0b506c758a249594afdba3f87eede453f309a27f1264942dadebd4",
+            "path": "opendata/data/providers/tradier/models/etf_historical.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/EtfHistorical/counterfact.json",
+          "sha256": "3978045e842bc8e7b20ab0c6b013738b1d42d812787c71035b7e98694caa753a"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "6f79fd229d0b506c758a249594afdba3f87eede453f309a27f1264942dadebd4",
+            "before_sha256": "6f79fd229d0b506c758a249594afdba3f87eede453f309a27f1264942dadebd4",
+            "path": "opendata/data/providers/tradier/models/etf_historical.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/EtfHistorical/direct.json",
+          "sha256": "d3f62025898dd107cc3efb8fa1519bce3ebce4adbb2e738758ea99dcfa1ead06"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "6f79fd229d0b506c758a249594afdba3f87eede453f309a27f1264942dadebd4",
+            "before_sha256": "6f79fd229d0b506c758a249594afdba3f87eede453f309a27f1264942dadebd4",
+            "path": "opendata/data/providers/tradier/models/etf_historical.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/EtfHistorical/implementation.json",
+          "sha256": "ca35575bc1c035584647bc7ecce7d25c538da6219967e2d274a83629202faaae"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "6f79fd229d0b506c758a249594afdba3f87eede453f309a27f1264942dadebd4",
+            "before_sha256": "6f79fd229d0b506c758a249594afdba3f87eede453f309a27f1264942dadebd4",
+            "path": "opendata/data/providers/tradier/models/etf_historical.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/EtfHistorical/service.json",
+          "sha256": "a470d35bc0462d22f5f9563a6030bb67ad9d005b175d5f3859491dbe5748c7f9"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "6f79fd229d0b506c758a249594afdba3f87eede453f309a27f1264942dadebd4",
+            "before_sha256": "6f79fd229d0b506c758a249594afdba3f87eede453f309a27f1264942dadebd4",
+            "path": "opendata/data/providers/tradier/models/etf_historical.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "EtfHistorical",
+  "model_identity": "tradier::EtfHistorical",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "tradier",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradier",
+        "--model",
+        "EtfHistorical",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradier",
+        "--model",
+        "EtfHistorical",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradier",
+        "--model",
+        "EtfHistorical",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradier",
+        "--model",
+        "EtfHistorical",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradier",
+        "--model",
+        "EtfHistorical",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-16T00:17:51Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "EtfHistorical"
+}

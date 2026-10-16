@@ -1,0 +1,57 @@
+{
+  "responses": [
+    {
+      "body": {
+        "securities": {
+          "security": {
+            "exch": "NASDAQ",
+            "name": "AAPL listed security",
+            "screensymbol": "AAPL",
+            "symbol": "AAPL",
+            "type": "stock"
+          }
+        }
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "/markets/lookup"
+    },
+    {
+      "body": {
+        "history": {
+          "count": 3,
+          "day": [
+            {
+              "close": 229.8,
+              "date": "2026-01-05",
+              "high": 230.1,
+              "low": 226.4,
+              "open": 227.2,
+              "volume": 55010300
+            },
+            {
+              "close": 231.5,
+              "date": "2026-01-06",
+              "high": 232.9,
+              "low": 228.7,
+              "open": 229.8,
+              "volume": 45120300
+            },
+            {
+              "close": 232.6,
+              "date": "2026-01-07",
+              "high": 233.4,
+              "low": 230.2,
+              "open": 231.5,
+              "volume": 41880000
+            }
+          ],
+          "symbol": "AAPL"
+        }
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "/markets/history"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model UniversityOfMichigan --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "the contract's consumer_sentiment and inflation_expectation columns are floats read straight from FRED's text value token, so a page whose token is not a number must be refused with FRED_BAD_OBSERVATION surfaced as a ProviderEngineError-shaped FredProviderError instead of guessing a sentiment index for the survey month; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

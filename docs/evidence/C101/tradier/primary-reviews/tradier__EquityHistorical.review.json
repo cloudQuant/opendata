@@ -1,0 +1,371 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/tradier/claims.json",
+    "sha256": "07b21f5d23c2bfd134691bcb476cdd9ba7cb1d0c4ef542932b9604a89b2b5cdd"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/EquityHistorical/contract.json",
+          "sha256": "939eddc82059f6749909d2d9e628e831b354ea8b0ad5705ddb30a4fa375108e5"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "50f49b66fb2ce92927bff1c2393d31e4b1ae847f70173fff07586650e2ab180a",
+            "before_sha256": "50f49b66fb2ce92927bff1c2393d31e4b1ae847f70173fff07586650e2ab180a",
+            "path": "opendata/data/providers/tradier/models/equity_historical.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/EquityHistorical/counterfact.json",
+          "sha256": "3dae557875ed60243804231965230e0171085fe3dba8021755b27fe5803757f4"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "50f49b66fb2ce92927bff1c2393d31e4b1ae847f70173fff07586650e2ab180a",
+            "before_sha256": "50f49b66fb2ce92927bff1c2393d31e4b1ae847f70173fff07586650e2ab180a",
+            "path": "opendata/data/providers/tradier/models/equity_historical.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/EquityHistorical/direct.json",
+          "sha256": "85fe6a6f2051f47c9df75854a2e8cae33a51b9bf8c2c014d0751080b2dd42cb6"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "50f49b66fb2ce92927bff1c2393d31e4b1ae847f70173fff07586650e2ab180a",
+            "before_sha256": "50f49b66fb2ce92927bff1c2393d31e4b1ae847f70173fff07586650e2ab180a",
+            "path": "opendata/data/providers/tradier/models/equity_historical.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/EquityHistorical/implementation.json",
+          "sha256": "fd53600f057db8633f096f157e2f4a333c4b59b4ed0821e44461481b5e09a8cd"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "50f49b66fb2ce92927bff1c2393d31e4b1ae847f70173fff07586650e2ab180a",
+            "before_sha256": "50f49b66fb2ce92927bff1c2393d31e4b1ae847f70173fff07586650e2ab180a",
+            "path": "opendata/data/providers/tradier/models/equity_historical.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/EquityHistorical/service.json",
+          "sha256": "d1ac7c549a0ac6689e40247bddcf1891709a643ec5770170989ad8ad42502cf6"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "50f49b66fb2ce92927bff1c2393d31e4b1ae847f70173fff07586650e2ab180a",
+            "before_sha256": "50f49b66fb2ce92927bff1c2393d31e4b1ae847f70173fff07586650e2ab180a",
+            "path": "opendata/data/providers/tradier/models/equity_historical.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "EquityHistorical",
+  "model_identity": "tradier::EquityHistorical",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "tradier",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reexecution": {
+    "contract": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradier",
+        "--model",
+        "EquityHistorical",
+        "--phase",
+        "contract",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "counterfact": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradier",
+        "--model",
+        "EquityHistorical",
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "direct": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradier",
+        "--model",
+        "EquityHistorical",
+        "--phase",
+        "direct",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "implementation": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradier",
+        "--model",
+        "EquityHistorical",
+        "--phase",
+        "implementation",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    },
+    "service": {
+      "argv": [
+        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
+        "scripts/quality/iter2_claims_probe_runner.py",
+        "--provider",
+        "tradier",
+        "--model",
+        "EquityHistorical",
+        "--phase",
+        "service",
+        "--evidence-root",
+        "docs/evidence/C101"
+      ],
+      "recorded_exit_code": 0,
+      "reviewer_exit_code": 0,
+      "status": "matched"
+    }
+  },
+  "reviewed_at_utc": "2026-10-16T00:17:37Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "EquityHistorical"
+}

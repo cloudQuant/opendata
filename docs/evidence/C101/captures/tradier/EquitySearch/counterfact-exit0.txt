@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquitySearch --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "TradierProviderError", "refusal_code": "TRADIER_DUPLICATE_SEARCH_RESULT", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "TradierProviderError", "refusal_code": "TRADIER_DUPLICATE_SEARCH_RESULT", "rejected": [], "status": null}, "reason": "a search result is identified by (symbol, exchange), so two listings that both name AAPL on NASDAQ are the same catalog row twice and transform_data must refuse the whole page instead of emitting a duplicated security; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

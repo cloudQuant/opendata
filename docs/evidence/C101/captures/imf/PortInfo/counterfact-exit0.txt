@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortInfo --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ImfPortWatchError", "refusal_code": "IMF_PORTWATCH_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ImfPortWatchError", "refusal_code": "IMF_PORTWATCH_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "ImfPortInfo.country_code is the layer's three-letter ISO identity, so a port row published with ISO3='US' fails the [A-Z]{3} shape that _required_iso3 enforces and must be refused as IMF_PORTWATCH_BAD_OBSERVATION instead of entering the catalogue with a two-letter country code; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "TradierProviderError", "refusal_code": "TRADIER_HISTORY_SYMBOL_MISMATCH", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "TradierProviderError", "refusal_code": "TRADIER_HISTORY_SYMBOL_MISMATCH", "rejected": [], "status": null}, "reason": "extract_data honors only history whose payload names the symbol it requested, so a /markets/history answer that carries symbol='MSFT' under an AAPL request must be refused instead of labeling MSFT candles as AAPL bars; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

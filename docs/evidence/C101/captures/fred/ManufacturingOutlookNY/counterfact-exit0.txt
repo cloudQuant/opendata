@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model ManufacturingOutlookNY --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "the NY survey row is keyed by its survey month, which FRED publishes only as a canonical YYYY-MM-DD date, so a non-canonical 'date' cell must be refused with FRED_BAD_OBSERVATION surfaced as a ProviderEngineError-shaped FredProviderError instead of inventing which diffusion reading belongs to which month; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortVolume --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ImfPortWatchError", "refusal_code": "IMF_PORTWATCH_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ImfPortWatchError", "refusal_code": "IMF_PORTWATCH_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "export_tanker is a metric-ton estimate, so a negative cell cannot be a traded quantity and _metric_ton_integer's non-negative clause must refuse the row as IMF_PORTWATCH_BAD_OBSERVATION rather than let -5 tons flow into the daily export total and its consistency diagnostics; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

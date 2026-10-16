@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model AvailableIndicators --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ImfSdmxError", "refusal_code": "IMF_BAD_RESPONSE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ImfSdmxError", "refusal_code": "IMF_BAD_RESPONSE", "rejected": [], "status": null}, "reason": "an SDMX dimension list is only usable when every dimension declares its position, because that is what fixes key order, so a DSD whose first dimension omits 'position' must be refused by data_dimensions as IMF_BAD_RESPONSE rather than cataloguing indicators from an unorderable structure; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

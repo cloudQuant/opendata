@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model OptionsChains --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "TradierProviderError", "refusal_code": "TRADIER_WRONG_EXPIRATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "TradierProviderError", "refusal_code": "TRADIER_WRONG_EXPIRATION", "rejected": [], "status": null}, "reason": "the chain was requested for one expiration, so a contract row carrying a different expiration_date than the query would mislabel the expiry of a whole page and must be refused by transform_data as TRADIER_WRONG_EXPIRATION; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

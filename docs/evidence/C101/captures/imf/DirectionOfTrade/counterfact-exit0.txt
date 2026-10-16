@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model DirectionOfTrade --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ImfSdmxError", "refusal_code": "IMF_BAD_RESPONSE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ImfSdmxError", "refusal_code": "IMF_BAD_RESPONSE", "rejected": [], "status": null}, "reason": "direction='balance' keys the request on INDICATOR=TBG_USD, so an observation row published under XG_FOB_USD is the exports series the caller never asked for and transform_data's per-row indicator check must refuse the payload as IMF_BAD_RESPONSE rather than emitting an export value as a trade balance; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---
