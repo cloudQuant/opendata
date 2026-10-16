@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model FredRegional --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "GeoFRED identifies a region by its exact source code, and the row's region column is only attributable through it, so an empty code must surface FRED_BAD_OBSERVATION as a ProviderEngineError-shaped FredProviderError instead of publishing a regional reading whose geography cannot be named; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

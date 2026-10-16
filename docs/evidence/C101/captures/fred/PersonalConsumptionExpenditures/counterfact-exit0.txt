@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model PersonalConsumptionExpenditures --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "the PCE row is contracted to carry the observation itself, so release_contract_values refuses any series element whose date, symbol, value or name is absent; re-typing the observation-less BEA container element 3219 as a series must therefore surface FRED_BAD_OBSERVATION as a ProviderEngineError-shaped FredProviderError instead of publishing a headline node of the release tree as if it were a PCE reading; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

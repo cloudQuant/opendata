@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model EuroShortTermRate --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_PAGINATION_ERROR", "rejected": [], "status": 200}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_PAGINATION_ERROR", "rejected": [], "status": 200}, "reason": "every ESTR leg asks the governed pager for min(page_size, max_records) = 100_000 rows and the pager compares its own request against the page's 'limit' echo, so a page that answers 100 must surface FRED_PAGINATION_ERROR as a ProviderEngineError-shaped FredProviderError instead of stitching a 99_900-row hole into the seven-column wide series; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

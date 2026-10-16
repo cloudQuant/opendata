@@ -854,6 +854,7 @@ class EuroShortTermRateFetcher(_RateExtraFetcher[FredEuroShortTermRateQuery]):
     """The public wide €STR contract sourced from seven ECB FRED series."""
 
     canonical_model: ClassVar[str | None] = "EuroShortTermRate"
+    row_model: ClassVar[type[ContractModel]] = FredEuroShortTermRate
     expected_market: ClassVar[Literal["eu"]] = "eu"
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
@@ -973,6 +974,7 @@ class SpotRateFetcher(_RateExtraFetcher[FredSpotRateQuery]):
     """Corporate spot/par rates from the complete official HQM release."""
 
     canonical_model: ClassVar[str | None] = "SpotRate"
+    row_model: ClassVar[type[ContractModel]] = FredSpotRate
     capability: ClassVar[Capability] = Capability(
         asset_class="fixed_income",
         domain="spot_rate",
@@ -1373,6 +1375,7 @@ class HighQualityMarketCorporateBondFetcher(
     """Complete HQM curves from FRED's official bulk release endpoint."""
 
     canonical_model: ClassVar[str | None] = "HighQualityMarketCorporateBond"
+    row_model: ClassVar[type[ContractModel]] = FredHighQualityMarketCorporateBond
     capability: ClassVar[Capability] = Capability(
         asset_class="fixed_income",
         domain="hqm_corporate_bond",

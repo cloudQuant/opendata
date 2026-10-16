@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model FredReleaseTable --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "a release-table element that names a FRED series publishes that name under the identifier grammar the flattener enforces, so re-writing element 3220's series_id with a space must surface FRED_BAD_OBSERVATION as a ProviderEngineError-shaped FredProviderError instead of storing a symbol no source series can be replayed against; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

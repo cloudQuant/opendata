@@ -185,6 +185,7 @@ class FredSeniorLoanOfficerSurveyFetcher(
     )
     query_model = FredSeniorLoanOfficerSurveyQuery
     output_model = FredSeniorLoanOfficerSurvey
+    row_model = FredSeniorLoanOfficerSurvey
 
     def transform_query(self, **kwargs: object) -> FredSeniorLoanOfficerSurveyQuery:
         """Validate public category, transform, dates, and local request bounds."""

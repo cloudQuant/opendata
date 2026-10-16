@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model EconomicCalendar --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "the calendar row is the official publication date, and the adapter parses only FRED's canonical zero-padded YYYY-MM-DD text, so unpadded 2025-12-1 must surface FRED_BAD_OBSERVATION as a ProviderEngineError-shaped FredProviderError instead of publishing an event date the frozen contract cannot round-trip; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

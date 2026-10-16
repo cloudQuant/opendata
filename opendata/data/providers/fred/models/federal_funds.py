@@ -235,6 +235,7 @@ class OvernightBankFundingRateFetcher(Fetcher[OvernightBankFundingRateQuery, lis
     )
     query_model = OvernightBankFundingRateQuery
     output_model = FredOvernightBankFundingRate
+    row_model: ClassVar[type[ContractModel]] = FredOvernightBankFundingRate
 
     def transform_query(self, **kwargs: object) -> OvernightBankFundingRateQuery:
         """Validate dates, revisions and page bounds before network access."""

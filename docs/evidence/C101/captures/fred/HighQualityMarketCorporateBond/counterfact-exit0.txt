@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model HighQualityMarketCorporateBond --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "every HQM curve row is published inside one release whose identity (id, name, url and source list) the pager fingerprints before it reads a tenor, so replacing the release's sources array with a bare string must surface FRED_BAD_OBSERVATION as a ProviderEngineError-shaped FredProviderError instead of attributing a par curve to a release whose provenance cannot be checked; untampered control produced 4 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

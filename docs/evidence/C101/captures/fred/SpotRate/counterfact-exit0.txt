@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model SpotRate --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "the reviewed contract reads the whole official HQM table -- 200 spot tenors from 0.5 to 100 years plus the 2/5/10/30-year par points -- before it cuts out the curve point a row reports, so a release missing its 0.5-Year spot series must surface FRED_BAD_OBSERVATION as a ProviderEngineError-shaped FredProviderError instead of publishing a spot rate read from a truncated table; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

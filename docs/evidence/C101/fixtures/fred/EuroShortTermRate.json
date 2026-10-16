@@ -1,0 +1,37 @@
+{
+  "responses": [
+    {
+      "body": {
+        "count": 2,
+        "file_type": "json",
+        "limit": 100000,
+        "observation_end": "2025-12-05",
+        "observation_start": "2025-12-04",
+        "observations": [
+          {
+            "date": "2025-12-04",
+            "realtime_end": "2026-01-06",
+            "realtime_start": "2026-01-06",
+            "value": "3"
+          },
+          {
+            "date": "2025-12-05",
+            "realtime_end": "2026-01-06",
+            "realtime_start": "2026-01-06",
+            "value": "4"
+          }
+        ],
+        "offset": 0,
+        "order_by": "observation_date",
+        "output_type": 1,
+        "realtime_end": "2026-01-06",
+        "realtime_start": "2026-01-06",
+        "sort_order": "asc",
+        "units": "lin"
+      },
+      "content_type": "application/json",
+      "status": 200,
+      "url_contains": "/fred/series/observations"
+    }
+  ]
+}

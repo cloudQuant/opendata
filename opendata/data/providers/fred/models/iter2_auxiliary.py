@@ -178,6 +178,7 @@ class FredReleaseTableFetcher(Fetcher[FredReleaseTableQuery, list[dict[str, Any]
     )
     query_model = FredReleaseTableQuery
     output_model = FredReleaseTable
+    row_model = FredReleaseTable
 
     def transform_query(self, **kwargs: object) -> FredReleaseTableQuery:
         """Validate the release-table identity and date fan-out before I/O."""
@@ -386,6 +387,7 @@ class EconomicCalendarFetcher(Fetcher[EconomicCalendarQuery, list[dict[str, Any]
     )
     query_model = EconomicCalendarQuery
     output_model = FredEconomicCalendar
+    row_model = FredEconomicCalendar
 
     def transform_query(self, **kwargs: object) -> EconomicCalendarQuery:
         """Validate the event-date window and bounded calendar paging."""
@@ -619,6 +621,7 @@ class FredRegionalFetcher(Fetcher[FredRegionalQuery, list[dict[str, Any]]]):
     )
     query_model = FredRegionalQuery
     output_model = FredRegional
+    row_model = FredRegional
 
     def transform_query(self, **kwargs: object) -> FredRegionalQuery:
         """Validate GeoFRED IDs, spatial options, and the date range."""
@@ -786,6 +789,7 @@ class BalanceOfPaymentsFetcher(Fetcher[BalanceOfPaymentsQuery, list[dict[str, An
     )
     query_model = BalanceOfPaymentsQuery
     output_model = FredBalanceOfPayments
+    row_model = FredBalanceOfPayments
 
     def transform_query(self, **kwargs: object) -> BalanceOfPaymentsQuery:
         """Validate the supported U.S. quarterly BOP request subset."""
@@ -957,6 +961,7 @@ class ProjectionsFetcher(Fetcher[ProjectionsQuery, list[dict[str, Any]]]):
     )
     query_model = ProjectionsQuery
     output_model = FredPROJECTIONS
+    row_model = FredPROJECTIONS
 
     def transform_query(self, **kwargs: object) -> ProjectionsQuery:
         """Validate the SEP vintage selector and explicit result limits."""
