@@ -21,11 +21,23 @@ MAX_RESPONSE_BYTES = 4 * 1024 * 1024
 
 
 class FinvizSourceError(RuntimeError):
-    """A public-page transport or response failure with a stable code."""
+    """A public-page transport or response failure with a stable code.
+
+    The code is published as an attribute, not only as the message, so an offline witness can
+    attribute a refusal to the shipped class instead of matching on prose.
+    """
+
+    def __init__(self, code: str, *, status: int | None = None) -> None:
+        super().__init__(code)
+        self.code = code
+        self.status = status
 
 
 class FinvizRateLimitError(FinvizSourceError):
     """Finviz declined a request with HTTP 429; the caller must not retry blindly."""
+
+    def __init__(self, code: str = "FINVIZ_HTTP_429") -> None:
+        super().__init__(code, status=429)
 
 
 _HTTP_CLIENT = GovernedHttpClient(
@@ -45,6 +57,11 @@ _HTTP_CLIENT = GovernedHttpClient(
 )
 
 
+def shared_http_client() -> GovernedHttpClient:
+    """Return the single paced client, resolved per call so an offline seam can replace it."""
+    return _HTTP_CLIENT
+
+
 def request_html(
     path: str,
     params: Mapping[str, str],
@@ -55,7 +72,7 @@ def request_html(
     if not path.startswith("/") or path.startswith("//") or ".." in path.split("/"):
         raise ValueError("Finviz path must be an absolute site-local path")
     try:
-        response = _HTTP_CLIENT.get(
+        response = shared_http_client().get(
             f"{BASE_URL}{path}",
             params=params,
             timeout=timeout or DEFAULT_TIMEOUT_SECONDS,
@@ -65,9 +82,9 @@ def request_html(
         raise
     except HttpFetchError as error:
         if error.status == 429:
-            raise FinvizRateLimitError("FINVIZ_HTTP_429") from None
-        status = "UNKNOWN" if error.status is None else str(error.status)
-        raise FinvizSourceError(f"FINVIZ_HTTP_{status}") from None
+            raise FinvizRateLimitError() from None
+        face = "UNKNOWN" if error.status is None else str(error.status)
+        raise FinvizSourceError(f"FINVIZ_HTTP_{face}", status=error.status) from None
     except Exception:
         raise FinvizSourceError("FINVIZ_TRANSPORT_ERROR") from None
     content_type = (

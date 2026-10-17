@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model PriceTarget --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FinvizSourceError", "refusal_code": "FINVIZ_INVALID_ANALYST_DATE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FinvizSourceError", "refusal_code": "FINVIZ_INVALID_ANALYST_DATE", "rejected": [], "status": null}, "reason": "Oct-85-26 keeps the page's three-part display shape but is not a day of any month, so _analyst_date must refuse the event instead of silently dropping the row and shortening the caller's analyst history; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

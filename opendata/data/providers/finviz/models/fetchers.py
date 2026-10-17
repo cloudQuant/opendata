@@ -190,6 +190,7 @@ class FinvizCompareGroupsFetcher(_FinvizFetcher[FinvizGroupQuery, FinvizGroupCom
     query_type = FinvizGroupQuery
     endpoint = "/groups"
     canonical_model = "CompareGroups"
+    row_model: ClassVar[type[ContractModel]] = FinvizGroupComparison
     capability = Capability(
         asset_class="equity_group",
         domain="finviz_compare_groups",
@@ -278,6 +279,7 @@ class FinvizEquityInfoFetcher(_FinvizFetcher[FinvizStockPageQuery, FinvizEquityI
     query_type = FinvizStockPageQuery
     endpoint = "/stock"
     canonical_model = "EquityInfo"
+    row_model: ClassVar[type[ContractModel]] = FinvizEquityInfo
     capability = Capability(
         asset_class="stock",
         domain="finviz_equity_info",
@@ -309,6 +311,7 @@ class FinvizKeyMetricsFetcher(_FinvizFetcher[FinvizStockPageQuery, FinvizKeyMetr
     query_type = FinvizStockPageQuery
     endpoint = "/stock"
     canonical_model = "KeyMetrics"
+    row_model: ClassVar[type[ContractModel]] = FinvizKeyMetrics
     capability = Capability(
         asset_class="stock",
         domain="finviz_key_metrics",
@@ -338,6 +341,7 @@ class FinvizPriceTargetFetcher(_FinvizFetcher[FinvizPriceTargetQuery, FinvizPric
     query_type = FinvizPriceTargetQuery
     endpoint = "/stock"
     canonical_model = "PriceTarget"
+    row_model: ClassVar[type[ContractModel]] = FinvizPriceTarget
     capability = Capability(
         asset_class="stock",
         domain="finviz_price_target",

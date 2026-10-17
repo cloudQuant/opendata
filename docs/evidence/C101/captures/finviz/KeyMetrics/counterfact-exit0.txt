@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model KeyMetrics --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FinvizSourceError", "refusal_code": "FINVIZ_INVALID_COMPOUND_METRIC", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FinvizSourceError", "refusal_code": "FINVIZ_INVALID_COMPOUND_METRIC", "rejected": [], "status": null}, "reason": "the 52W High cell is a displayed pair, price and distance from the high, so printing only 345.34 leaves one number where the contract expects two and parse_key_metrics must refuse rather than guess a zero change percentage; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

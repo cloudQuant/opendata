@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model CompareGroups --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FinvizSourceError", "refusal_code": "FINVIZ_INVALID_PERCENT", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FinvizSourceError", "refusal_code": "FINVIZ_INVALID_PERCENT", "rejected": [], "status": null}, "reason": "printing the Perf Year cell as 16.89 without the percent sign keeps the row twelve cells wide and the sector name legitimate, but the contract column is a percentage, so parse_group_comparison must refuse the cell rather than read 16.89 as either a percent or a ratio; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -2,7 +2,7 @@
   "acceptance_rule": "all five phase claims plus an explicit valid primary-model or human ACCEPT receipt; claim PASS alone is candidate only",
   "claims_input": {
     "path": "docs/evidence/C101/claims.merged.json",
-    "sha256": "48d0bfc4ea3e881a4a1c719a6c55a2368f8c1fd98b36110af7e68c868809ecf1"
+    "sha256": "d28e8edbd1c5fc8e4a24413efcc06c9a46478896265c60f04c7c34a286d67954"
   },
   "claims_status_source": "explicit JSON claims only; no directory globbing or markdown status parsing",
   "global_issues": [],
@@ -5602,64 +5602,200 @@
       "upstream_model": "EquityShortInterest"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "finviz::CompareGroups",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/CompareGroups/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "FinvizSourceError",
+              "refusal_code": "FINVIZ_INVALID_PERCENT",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "FinvizSourceError",
+              "refusal_code": "FINVIZ_INVALID_PERCENT",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "printing the Perf Year cell as 16.89 without the percent sign keeps the row twelve cells wide and the sector name legitimate, but the contract column is a percentage, so parse_group_comparison must refuse the cell rather than read 16.89 as either a percent or a ratio; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/CompareGroups/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/CompareGroups/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/CompareGroups/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/CompareGroups/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "finviz",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-finviz-CompareGroups",
       "upstream_model": "CompareGroups"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "finviz::EtfPricePerformance",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -5673,69 +5809,205 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "finviz",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-finviz-EtfPricePerformance",
       "upstream_model": "EtfPricePerformance"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "finviz::EquityInfo",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/EquityInfo/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "FinvizSourceError",
+              "refusal_code": "FINVIZ_STOCK_IDENTITY_MISSING",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "FinvizSourceError",
+              "refusal_code": "FINVIZ_STOCK_IDENTITY_MISSING",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "a page whose title carries MSFT while the caller asked for AAPL is a redirect or a stale cache entry, not a profile for the requested symbol, so _stock_identity must refuse the page instead of publishing Apple Inc's facts under MSFT or AAPL; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/EquityInfo/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/EquityInfo/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/EquityInfo/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/EquityInfo/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "finviz",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-finviz-EquityInfo",
       "upstream_model": "EquityInfo"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "finviz::EquityScreener",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -5749,69 +6021,205 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "finviz",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-finviz-EquityScreener",
       "upstream_model": "EquityScreener"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "finviz::KeyMetrics",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/KeyMetrics/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "FinvizSourceError",
+              "refusal_code": "FINVIZ_INVALID_COMPOUND_METRIC",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "FinvizSourceError",
+              "refusal_code": "FINVIZ_INVALID_COMPOUND_METRIC",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the 52W High cell is a displayed pair, price and distance from the high, so printing only 345.34 leaves one number where the contract expects two and parse_key_metrics must refuse rather than guess a zero change percentage; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/KeyMetrics/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/KeyMetrics/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/KeyMetrics/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/KeyMetrics/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "finviz",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-finviz-KeyMetrics",
       "upstream_model": "KeyMetrics"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "finviz::PricePerformance",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -5825,45 +6233,92 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "finviz",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-finviz-PricePerformance",
       "upstream_model": "PricePerformance"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "finviz::PriceTarget",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/PriceTarget/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "FinvizSourceError",
+              "refusal_code": "FINVIZ_INVALID_ANALYST_DATE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "FinvizSourceError",
+              "refusal_code": "FINVIZ_INVALID_ANALYST_DATE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "Oct-85-26 keeps the page's three-part display shape but is not a day of any month, so _analyst_date must refuse the event instead of silently dropping the row and shortening the caller's analyst history; untampered control produced 3 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/PriceTarget/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/PriceTarget/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/PriceTarget/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/finviz/PriceTarget/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "finviz",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-finviz-PriceTarget",
       "upstream_model": "PriceTarget"
     },
@@ -25884,14 +26339,14 @@
   ],
   "schema_version": 1,
   "summary": {
-    "claim_count": 1270,
+    "claim_count": 1305,
     "identity_count": 350,
-    "offline_acceptance_count": 243,
-    "primary_review_count": 243,
+    "offline_acceptance_count": 247,
+    "primary_review_count": 247,
     "status_counts": {
-      "INCOMPLETE": 11,
-      "OFFLINE_ACCEPTED": 243,
-      "UNREVIEWED": 96
+      "INCOMPLETE": 14,
+      "OFFLINE_ACCEPTED": 247,
+      "UNREVIEWED": 89
     }
   }
 }
