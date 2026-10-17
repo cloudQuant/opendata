@@ -139,7 +139,8 @@ def _price(identity: str) -> dict[str, Any]:
 
 def _entry(provider: str, model: str) -> dict[str, Any] | None:
     try:
-        return witnesses.model_entry(provider, model)
+        entry: dict[str, Any] = witnesses.model_entry(provider, model)
+        return entry
     except KeyError:
         return None
 
@@ -221,6 +222,23 @@ def _output_model_is_contract(fetcher: object, expected: type) -> bool:
     return getattr(fetcher, "output_model", None) is expected
 
 
+def _tag(row: dict[str, Any]) -> str:
+    """The one tag rule for a priced row, shared with the widened four-axis probe.
+
+    Inlining this in ``main`` meant a second instrument had to copy it to filter by bucket, and a
+    copied bucket rule is how two probes end up measuring different populations under one name.
+    """
+    holder = bool(row.get("contract_in_module"))
+    emitter = bool(row.get("emits"))
+    if holder and emitter:
+        return "DECLARE_AND_WITNESS"
+    if holder:
+        return "NEEDS_RETARGET"
+    if emitter:
+        return "NEEDS_IMPORT"
+    return "NEEDS_IMPORT_AND_RETARGET"
+
+
 def _both_values(rows: list[dict[str, Any]], key: str) -> bool:
     seen = {bool(row.get(key)) for row in rows}
     return seen == {True, False}
@@ -254,18 +272,7 @@ def main() -> int:
     by_provider: dict[str, Counter] = defaultdict(Counter)
     for row in priced:
         provider = row["identity"].split("::", 1)[0]
-        holder = bool(row.get("contract_in_module"))
-        emitter = bool(row.get("emits"))
-        verdict = (
-            "DECLARE_AND_WITNESS"
-            if holder and emitter
-            else "NEEDS_RETARGET"
-            if holder
-            else "NEEDS_IMPORT"
-            if emitter
-            else "NEEDS_IMPORT_AND_RETARGET"
-        )
-        by_provider[provider][verdict] += 1
+        by_provider[provider][_tag(row)] += 1
     print(
         "declare_face_by_provider="
         + json.dumps({p: dict(c) for p, c in sorted(by_provider.items())}, ensure_ascii=False)

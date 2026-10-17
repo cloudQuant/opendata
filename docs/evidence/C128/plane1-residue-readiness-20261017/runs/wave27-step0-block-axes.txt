@@ -1,0 +1,367 @@
+wave 27 step 0 -- 四轴 pointed at the DECLARE_AND_WITNESS block（yfinance 26 枚）
+================================================================================
+
+仪器：`probes/declare_block_axes.py`（本代新建，270 行 /
+12399 字节 / `sha16=485b41f8d02c8382`）。
+argv 原样（仓库根执行）：
+
+```sh
+PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C128/plane1-residue-readiness-20261017/probes/declare_block_axes.py
+```
+
+默认 `--provider yfinance --tag DECLARE_AND_WITNESS`；总体不是这里列的名单，而是
+`declare_candidates._residue_needs_declare` + `_tag` 现算的桶（臂 D 拿已入库载体的
+`declare_face_by_provider=` 行逐家对账），四个轴的每一枚读数都由 `incomplete_row_guard_check._row`
+原样导入计算 —— 两台仪器对同一枚读数不同，只能说明仪器坏了，不能算这枚行的发现。
+
+仪器自身的三关（每关退出码由运行自己重定向到文件，载档读盘）：
+  ruff_format_check_exit=0 stdout_bytes=25 stdout_sha16=fd2299c9f1c6dc86
+  ruff_check_exit=0 stdout_bytes=19 stdout_sha16=82b3e6a6c090a576
+  mypy_exit=0 stdout_bytes=206 stdout_sha16=550b040ed6ac600c
+mypy 对本文件的 in-file 错误数 0（`Success: no issues found in 1 source file`）。
+
+入库运行面：probe_exit=0 stderr_bytes=0
+stdout_lines=263 stdout_bytes=49664 stdout_sha16=36804bf6460fb0d2
+（`$?` 与 stderr 各自重定向到 `/tmp/w27_block_face.final.exit` / `.err`，无管道。）
+
+为什么这一桶此前没被测过
+------------------------
+
+波 26 step 0 的行总体是那七个 `INCOMPLETE` 身份，读出 `convertible=0`；同一轮定价里最便宜的一桶
+（`DECLARE_AND_WITNESS=28`，其中 yfinance 占 26）在第三、第四轴上仍未测。本载体就是补那一面。
+它同时是波 26 第三个缺陷在"整块"尺度上的后果面：那一代把"本家 `NOT_DECL*` 台账拒绝"与
+"本家根本没有 `specs.py` 台账"压成同一个 `ruled_out=True`（`NO_SPECS_MODULE:ModuleNotFoundError`
+是 truthy），修正方式已在 `runs/wave26-step0-second-axis.txt` 的"就地更正"一节留面
+（`rows_ruled_out_true before=6 after=5 ... ledger_and_cause_both_set=0`）。
+
+两代对照（同一台仪器、同一份工作树、修仪器前后各一次）：
+  分裂前那代：233 行 / 45746 字节 / `sha16=6a24d7eff054deb9` /
+    `pre_fix_exit_recorded=False` —— 那次运行的 `$?` 没有落到文件，所以这里不主张它的退出码；
+  分裂后这代：263 行 / 49664 字节 / `sha16=36804bf6460fb0d2` / probe_exit=0。
+rows_pre=26 rows_post=26 verdict_moves=0
+ruled_out_moves=26 all_post_ruled_out_are_False=True
+ruled_out_pre_all_True=True
+no_ledger_reported_rows=26/26 convertible_set_identical_across_generations=True
+convertible=15 is_contract_true=15/15
+declared_is_contract_false=15/15 arms_pre=6 arms_post=7 arms_passed=7
+verdict_moves_rows=[]
+
+逐字对照（行整体原样，不改一个字符）：
+    分裂前：row yfinance::BalanceSheet status=UNREVIEWED bound=True ruled_out=True witness_entry=False declared=False fetcher=YfinanceBalanceSheetFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    分裂后：row yfinance::BalanceSheet status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceBalanceSheetFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    分裂前：row yfinance::CompanyNews status=UNREVIEWED bound=True ruled_out=True witness_entry=False declared=False fetcher=YfinanceCompanyNewsFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 3, 'extract_data': 0, 'other': 0} raises=10 code_raises=3 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    分裂后：row yfinance::CompanyNews status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceCompanyNewsFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 3, 'extract_data': 0, 'other': 0} raises=10 code_raises=3 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    台账真拒绝（对照，未动）：G_ledger_cause cboe::FuturesCurve ruled_out=True no_ledger=- detail=NOT_DECLARABLE:The reviewed official All Access docs do not establish the fixed model
+    三态控制：G_ledger_cause_three_sided reads={'cboe::FuturesCurve': (True, False), 'federal_reserve::YieldCurve': (False, False), 'yfinance::BalanceSheet': (False, True)} PASS=True
+
+一行读数从 `True` 变成 `False no_ledger=NO_SPECS_MODULE:...` 是仪器的成因被拆开，不是这一枚行被改判：
+`verdict_moves=0`、可转集合在两代之间逐字相同，臂数从 6 增到 7（新增臂 G 就是为了让这两列能被
+同时看到三种组合：台账带着这枚 / 台账沉默 / 根本没有台账）。
+
+载档构建器的第二红，在这里就地复现（不转述已被覆盖的那一代字节）：
+  regex='convertible_rows=(\S+)' 读到 1 枚（yfinance::CompanyNews），因为 \S+ 在列表第一个空格处就停了；整段列表读到 15 枚 —— 两者不同才证明这条反例还在说话，而不是我抄了一句话
+
+判定所依据的报告（本步不重跑 judge，只证明"所据字节未变"）
+------------------------------------------------------------
+judge_report_sha16=73f4ed196e73aef5 pinned_by=precommit-staged-scan.wave25.txt pins_seen=1 report_total=350 report_statuses={'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 266, 'UNREVIEWED': 77} identity_set=5168e1e723999312
+  yfinance_rows=29 yfinance_statuses={'UNREVIEWED': 29} block_rows=26（其余 3 枚不在 DECLARE_AND_WITNESS 这一桶）
+  imported_measurer pin incomplete_row_guard_check.py = 96c2ea82968d5474 bytes=29282 lines=623 在波 26 载体里逐字存在（本机现算一致）
+
+载档构建器自己的第一次红（上面那枚 pin 对照的活性证明）
+------------------------------------------------
+
+构建器第一版把 `lines_and_bytes` 的 `(行, 字节)` 元组按 `(字节, 行)` 解包，于是它拿
+`bytes=623 lines=29282` 去波 26 载体里找，找不到就抛 —— 抛的是构建器，不是仪器：那一代载档没有落盘
+（`runs/` 里当时没有本文件，写入发生在所有对照通过之后）。逐字原文：
+  builder_first_red=AssertionError: imported measurer pin 96c2ea82968d5474 bytes=623 lines=29282 not found in the wave-26 carrier
+修好解包顺序后同一枚 pin 逐字命中（见上一节 `imported_measurer pin` 那行，`bytes=29282 lines=623`）。
+
+block_face provider=yfinance tag=DECLARE_AND_WITNESS rows=26 verdicts={'DOCUMENT_REACHABLE': 15, 'NO_CODE_SITE': 10, 'QUERY_ONLY': 1} convertible=15 movable=True seam_reachable=False（见 face 行，逐字在本载体末尾）
+
+四轴在这一桶的读数（数字全部由本机从 stdout 现算；三态枚举来自 `incomplete_row_guard_check.TRIPPABLE`）：
+  axis1 bound=26/26，registry 都给得出 fetcher；
+  axis2 ruled_out=0/26、no_ledger=26/26（`NO_SPECS_MODULE:ModuleNotFoundError`）—— 本家没有 specs.py 台账，这不是"台账拒绝"，
+        与波 26 那五枚 UNBOUND 的 `ruled_out=True` 是两种相反的成因；
+  axis3 guard：15 枚落在可撞集合 {'DOCUMENT_REACHABLE': 15}，撞不到带码守卫的是 {'NO_CODE_SITE': 10, 'QUERY_ONLY': 1}；
+  axis4 row_class：15 枚可转行 `is_contract=True` 15/15、
+        `declared_is_contract=False` 15/15，
+        即发出类已经是契约类，缺的只是 `row_model` 声明与见证模块（波 22 / 波 25 的形状），
+        不是新的 transform 代码。
+  15 枚可转行落到的契约类分布：{'YfinanceCompanyNewsObservation': 1, 'YfinanceDividendObservation': 1, 'YfinanceHistoricalBar': 6, 'YfinanceKeyExecutiveObservation': 1, 'YfinanceOptionChainObservation': 1, 'YfinancePayloadObservation': 4, 'YfinancePriceTargetConsensus': 1}
+  运行面首行（决定这一桶只能走引擎 transport 腿的那一列）：runner_surface yfinance seam_verbs=[] served=[] blocked=[] seam_reachable=False
+
+复算配方与本代重跑
+----------------
+
+上面那条 argv 在本机连着跑了两遍，退出码由运行自己写进 `/tmp/w27_block_face.*.exit`：
+  rerun_exit=0 rerun_stderr_bytes=0
+  rerun_lines=263 rerun_bytes=49664 rerun_sha16=36804bf6460fb0d2
+  cmp 第一遍与第二遍：identical=true
+两遍逐字节相同才是"这台仪器在当前工作树上的读数"；不同就是一段新的读数，不是确认。
+
+下面整段是本代 stdout 的逐字粘贴（263 行，`sha16=36804bf6460fb0d2`）。
+-------------------------------------------------------------------------------
+--- verbatim stdout: declare_block_axes.py (wave 27 step 0) ---
+runner_surface yfinance seam_verbs=[] served=[] blocked=[] seam_reachable=False
+row yfinance::BalanceSheet status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceBalanceSheetFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_balance_sheet canonical=BalanceSheet client_names=[] files=['opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::BalanceSheet contract=YfinanceFinancialStatementObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceFinancialStatementObservation']
+    pricer yfinance::BalanceSheet tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::CashFlowStatement status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceCashFlowStatementFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_cash_flow_statement canonical=CashFlowStatement client_names=[] files=['opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::CashFlowStatement contract=YfinanceFinancialStatementObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceFinancialStatementObservation']
+    pricer yfinance::CashFlowStatement tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::CompanyNews status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceCompanyNewsFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 3, 'extract_data': 0, 'other': 0} raises=10 code_raises=3 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::CompanyNews opendata/data/providers/yfinance/models/market_iter2.py:526 transform_data YFINANCE_NEWS_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != len(query.symbol
+    doc_site yfinance::CompanyNews opendata/data/providers/yfinance/models/market_iter2.py:536 transform_data YFINANCE_NEWS_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=not isinstance(entry, tuple) or len(entry) != 2 or entry[0
+    doc_site yfinance::CompanyNews opendata/data/providers/yfinance/models/market_iter2.py:540 transform_data YFINANCE_NEWS_DATE_MISSING client_call_at=0 raise_after_client=False test=published_at is None
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:526 transform_data YFINANCE_NEWS_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:536 transform_data YFINANCE_NEWS_SYMBOL_MISMATCH
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:540 transform_data YFINANCE_NEWS_DATE_MISSING
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_company_news canonical=CompanyNews client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::CompanyNews contract=YfinanceCompanyNewsObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceCompanyNewsObservation']
+    pricer yfinance::CompanyNews tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::CryptoHistorical status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceCryptoHistoricalFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 4, 'extract_data': 0, 'other': 0} raises=11 code_raises=4 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::CryptoHistorical opendata/data/providers/yfinance/models/market_iter2.py:300 transform_data YFINANCE_HISTORY_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != len(query.symbol
+    doc_site yfinance::CryptoHistorical opendata/data/providers/yfinance/models/market_iter2.py:316 transform_data YFINANCE_EMPTY_RESPONSE client_call_at=0 raise_after_client=False test=not rows
+    doc_site yfinance::CryptoHistorical opendata/data/providers/yfinance/models/market_iter2.py:309 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=not isinstance(entry, tuple) or len(entry) != 2 or entry[0
+    doc_site yfinance::CryptoHistorical opendata/data/providers/yfinance/models/market_iter2.py:313 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=any((row.symbol != expected_symbol for row in symbol_rows)
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:300 transform_data YFINANCE_HISTORY_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:316 transform_data YFINANCE_EMPTY_RESPONSE
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:309 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:313 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_crypto_historical canonical=CryptoHistorical client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::CryptoHistorical contract=YfinanceHistoricalBar is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceHistoricalBar']
+    pricer yfinance::CryptoHistorical tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::CurrencyHistorical status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceCurrencyHistoricalFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 4, 'extract_data': 0, 'other': 0} raises=11 code_raises=4 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::CurrencyHistorical opendata/data/providers/yfinance/models/market_iter2.py:300 transform_data YFINANCE_HISTORY_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != len(query.symbol
+    doc_site yfinance::CurrencyHistorical opendata/data/providers/yfinance/models/market_iter2.py:316 transform_data YFINANCE_EMPTY_RESPONSE client_call_at=0 raise_after_client=False test=not rows
+    doc_site yfinance::CurrencyHistorical opendata/data/providers/yfinance/models/market_iter2.py:309 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=not isinstance(entry, tuple) or len(entry) != 2 or entry[0
+    doc_site yfinance::CurrencyHistorical opendata/data/providers/yfinance/models/market_iter2.py:313 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=any((row.symbol != expected_symbol for row in symbol_rows)
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:300 transform_data YFINANCE_HISTORY_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:316 transform_data YFINANCE_EMPTY_RESPONSE
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:309 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:313 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_currency_historical canonical=CurrencyHistorical client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::CurrencyHistorical contract=YfinanceHistoricalBar is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceHistoricalBar']
+    pricer yfinance::CurrencyHistorical tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityActive status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityActiveFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_active canonical=EquityActive client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityActive contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityActive tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityAggressiveSmallCaps status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityAggressiveSmallCapsFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_aggressive_small_caps canonical=EquityAggressiveSmallCaps client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityAggressiveSmallCaps contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityAggressiveSmallCaps tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityGainers status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityGainersFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_gainers canonical=EquityGainers client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityGainers contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityGainers tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityHistorical status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityHistoricalFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 4, 'extract_data': 0, 'other': 0} raises=11 code_raises=4 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::EquityHistorical opendata/data/providers/yfinance/models/market_iter2.py:300 transform_data YFINANCE_HISTORY_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != len(query.symbol
+    doc_site yfinance::EquityHistorical opendata/data/providers/yfinance/models/market_iter2.py:316 transform_data YFINANCE_EMPTY_RESPONSE client_call_at=0 raise_after_client=False test=not rows
+    doc_site yfinance::EquityHistorical opendata/data/providers/yfinance/models/market_iter2.py:309 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=not isinstance(entry, tuple) or len(entry) != 2 or entry[0
+    doc_site yfinance::EquityHistorical opendata/data/providers/yfinance/models/market_iter2.py:313 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=any((row.symbol != expected_symbol for row in symbol_rows)
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:300 transform_data YFINANCE_HISTORY_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:316 transform_data YFINANCE_EMPTY_RESPONSE
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:309 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:313 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_historical canonical=EquityHistorical client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityHistorical contract=YfinanceHistoricalBar is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceHistoricalBar']
+    pricer yfinance::EquityHistorical tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityInfo status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityInfoFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 3, 'extract_data': 0, 'other': 0} raises=11 code_raises=3 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::EquityInfo opendata/data/providers/yfinance/models/market_iter2.py:594 transform_data YFINANCE_PAYLOAD_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != len(query.symbol
+    doc_site yfinance::EquityInfo opendata/data/providers/yfinance/models/market_iter2.py:604 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=not isinstance(entry, tuple) or len(entry) != 2 or entry[0
+    doc_site yfinance::EquityInfo opendata/data/providers/yfinance/models/market_iter2.py:610 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=returned_symbol is not None and (not isinstance(returned_s
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:594 transform_data YFINANCE_PAYLOAD_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:604 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:610 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_info canonical=EquityInfo client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityInfo contract=YfinancePayloadObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinancePayloadObservation']
+    pricer yfinance::EquityInfo tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityLosers status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityLosersFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_losers canonical=EquityLosers client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityLosers contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityLosers tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityQuote status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityQuoteFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 3, 'extract_data': 0, 'other': 0} raises=11 code_raises=3 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::EquityQuote opendata/data/providers/yfinance/models/market_iter2.py:594 transform_data YFINANCE_PAYLOAD_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != len(query.symbol
+    doc_site yfinance::EquityQuote opendata/data/providers/yfinance/models/market_iter2.py:604 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=not isinstance(entry, tuple) or len(entry) != 2 or entry[0
+    doc_site yfinance::EquityQuote opendata/data/providers/yfinance/models/market_iter2.py:610 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=returned_symbol is not None and (not isinstance(returned_s
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:594 transform_data YFINANCE_PAYLOAD_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:604 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:610 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_quote canonical=EquityQuote client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityQuote contract=YfinancePayloadObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinancePayloadObservation']
+    pricer yfinance::EquityQuote tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityScreener status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityScreenerFetcher verdict=QUERY_ONLY class_counts={'transform_data': 0, 'extract_data': 1, 'other': 0} raises=8 code_raises=1 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::EquityScreener opendata/data/providers/yfinance/models/market_iter2.py:1360 extract_data YFINANCE_SCREEN_QUERY_INVALID client_call_at=0 raise_after_client=False test=<unconditional>
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_screener canonical=EquityScreener client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityScreener contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityScreener tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityUndervaluedGrowth status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityUndervaluedGrowthFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_undervalued_growth canonical=EquityUndervaluedGrowth client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityUndervaluedGrowth contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityUndervaluedGrowth tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityUndervaluedLargeCaps status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityUndervaluedLargeCapsFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_undervalued_large_caps canonical=EquityUndervaluedLargeCaps client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityUndervaluedLargeCaps contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityUndervaluedLargeCaps tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EtfHistorical status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEtfHistoricalFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 4, 'extract_data': 0, 'other': 0} raises=11 code_raises=4 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::EtfHistorical opendata/data/providers/yfinance/models/market_iter2.py:300 transform_data YFINANCE_HISTORY_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != len(query.symbol
+    doc_site yfinance::EtfHistorical opendata/data/providers/yfinance/models/market_iter2.py:316 transform_data YFINANCE_EMPTY_RESPONSE client_call_at=0 raise_after_client=False test=not rows
+    doc_site yfinance::EtfHistorical opendata/data/providers/yfinance/models/market_iter2.py:309 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=not isinstance(entry, tuple) or len(entry) != 2 or entry[0
+    doc_site yfinance::EtfHistorical opendata/data/providers/yfinance/models/market_iter2.py:313 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=any((row.symbol != expected_symbol for row in symbol_rows)
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:300 transform_data YFINANCE_HISTORY_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:316 transform_data YFINANCE_EMPTY_RESPONSE
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:309 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:313 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_etf_historical canonical=EtfHistorical client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EtfHistorical contract=YfinanceHistoricalBar is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceHistoricalBar']
+    pricer yfinance::EtfHistorical tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EtfInfo status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEtfInfoFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 3, 'extract_data': 0, 'other': 0} raises=11 code_raises=3 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::EtfInfo opendata/data/providers/yfinance/models/market_iter2.py:594 transform_data YFINANCE_PAYLOAD_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != len(query.symbol
+    doc_site yfinance::EtfInfo opendata/data/providers/yfinance/models/market_iter2.py:604 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=not isinstance(entry, tuple) or len(entry) != 2 or entry[0
+    doc_site yfinance::EtfInfo opendata/data/providers/yfinance/models/market_iter2.py:610 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=returned_symbol is not None and (not isinstance(returned_s
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:594 transform_data YFINANCE_PAYLOAD_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:604 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:610 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_etf_info canonical=EtfInfo client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EtfInfo contract=YfinancePayloadObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinancePayloadObservation']
+    pricer yfinance::EtfInfo tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::FuturesHistorical status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceFuturesHistoricalFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 4, 'extract_data': 0, 'other': 0} raises=11 code_raises=4 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::FuturesHistorical opendata/data/providers/yfinance/models/market_iter2.py:300 transform_data YFINANCE_HISTORY_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != len(query.symbol
+    doc_site yfinance::FuturesHistorical opendata/data/providers/yfinance/models/market_iter2.py:316 transform_data YFINANCE_EMPTY_RESPONSE client_call_at=0 raise_after_client=False test=not rows
+    doc_site yfinance::FuturesHistorical opendata/data/providers/yfinance/models/market_iter2.py:309 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=not isinstance(entry, tuple) or len(entry) != 2 or entry[0
+    doc_site yfinance::FuturesHistorical opendata/data/providers/yfinance/models/market_iter2.py:313 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=any((row.symbol != expected_symbol for row in symbol_rows)
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:300 transform_data YFINANCE_HISTORY_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:316 transform_data YFINANCE_EMPTY_RESPONSE
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:309 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:313 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_futures_historical canonical=FuturesHistorical client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::FuturesHistorical contract=YfinanceHistoricalBar is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceHistoricalBar']
+    pricer yfinance::FuturesHistorical tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::GrowthTechEquities status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceGrowthTechEquitiesFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_growth_tech_equities canonical=GrowthTechEquities client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::GrowthTechEquities contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::GrowthTechEquities tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::HistoricalDividends status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceHistoricalDividendsFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 4, 'extract_data': 0, 'other': 0} raises=11 code_raises=4 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::HistoricalDividends opendata/data/providers/yfinance/models/iter2.py:380 transform_data YFINANCE_DIVIDENDS_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, pd.Series)
+    doc_site yfinance::HistoricalDividends opendata/data/providers/yfinance/models/iter2.py:382 transform_data YFINANCE_EMPTY_OR_DUPLICATE_RESPONSE client_call_at=0 raise_after_client=False test=raw.empty or raw.index.has_duplicates
+    doc_site yfinance::HistoricalDividends opendata/data/providers/yfinance/models/iter2.py:402 transform_data YFINANCE_EMPTY_RESPONSE client_call_at=0 raise_after_client=False test=not rows
+    doc_site yfinance::HistoricalDividends opendata/data/providers/yfinance/models/iter2.py:393 transform_data YFINANCE_VALUE_MISSING client_call_at=0 raise_after_client=False test=amount is None
+    trippable opendata/data/providers/yfinance/models/iter2.py:380 transform_data YFINANCE_DIVIDENDS_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/iter2.py:382 transform_data YFINANCE_EMPTY_OR_DUPLICATE_RESPONSE
+    trippable opendata/data/providers/yfinance/models/iter2.py:402 transform_data YFINANCE_EMPTY_RESPONSE
+    trippable opendata/data/providers/yfinance/models/iter2.py:393 transform_data YFINANCE_VALUE_MISSING
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_dividend_history canonical=HistoricalDividends client_names=[] files=['opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::HistoricalDividends contract=YfinanceDividendObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceDividendObservation']
+    pricer yfinance::HistoricalDividends tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::IncomeStatement status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceIncomeStatementFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_income_statement canonical=IncomeStatement client_names=[] files=['opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::IncomeStatement contract=YfinanceFinancialStatementObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceFinancialStatementObservation']
+    pricer yfinance::IncomeStatement tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::IndexHistorical status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceIndexHistoricalFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 4, 'extract_data': 0, 'other': 0} raises=11 code_raises=4 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::IndexHistorical opendata/data/providers/yfinance/models/market_iter2.py:300 transform_data YFINANCE_HISTORY_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != len(query.symbol
+    doc_site yfinance::IndexHistorical opendata/data/providers/yfinance/models/market_iter2.py:316 transform_data YFINANCE_EMPTY_RESPONSE client_call_at=0 raise_after_client=False test=not rows
+    doc_site yfinance::IndexHistorical opendata/data/providers/yfinance/models/market_iter2.py:309 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=not isinstance(entry, tuple) or len(entry) != 2 or entry[0
+    doc_site yfinance::IndexHistorical opendata/data/providers/yfinance/models/market_iter2.py:313 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=any((row.symbol != expected_symbol for row in symbol_rows)
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:300 transform_data YFINANCE_HISTORY_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:316 transform_data YFINANCE_EMPTY_RESPONSE
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:309 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:313 transform_data YFINANCE_HISTORY_SYMBOL_MISMATCH
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_index_historical canonical=IndexHistorical client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::IndexHistorical contract=YfinanceHistoricalBar is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceHistoricalBar']
+    pricer yfinance::IndexHistorical tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::KeyExecutives status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceKeyExecutivesFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 2, 'extract_data': 3, 'other': 0} raises=12 code_raises=5 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::KeyExecutives opendata/data/providers/yfinance/models/market_iter2.py:705 extract_data YFINANCE_EXECUTIVES_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(info, Mapping)
+    doc_site yfinance::KeyExecutives opendata/data/providers/yfinance/models/market_iter2.py:710 extract_data YFINANCE_EXECUTIVES_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=returned_symbol is not None and (not isinstance(returned_s
+    doc_site yfinance::KeyExecutives opendata/data/providers/yfinance/models/market_iter2.py:716 extract_data YFINANCE_EXECUTIVES_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(officers, list) or any((not isinstance(item
+    doc_site yfinance::KeyExecutives opendata/data/providers/yfinance/models/market_iter2.py:729 transform_data YFINANCE_EXECUTIVES_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != 2 or raw[0] != q
+    doc_site yfinance::KeyExecutives opendata/data/providers/yfinance/models/market_iter2.py:731 transform_data YFINANCE_EMPTY_RESPONSE client_call_at=0 raise_after_client=False test=not raw[1]
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:729 transform_data YFINANCE_EXECUTIVES_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:731 transform_data YFINANCE_EMPTY_RESPONSE
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_key_executives canonical=KeyExecutives client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::KeyExecutives contract=YfinanceKeyExecutiveObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceKeyExecutiveObservation']
+    pricer yfinance::KeyExecutives tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::OptionsChains status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceOptionsChainsFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 6, 'extract_data': 1, 'other': 0} raises=14 code_raises=7 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::OptionsChains opendata/data/providers/yfinance/models/market_iter2.py:1749 extract_data YFINANCE_BAD_QUERY client_call_at=0 raise_after_client=False test=expiration is None
+    doc_site yfinance::OptionsChains opendata/data/providers/yfinance/models/market_iter2.py:1758 transform_data YFINANCE_OPTIONS_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != 2
+    doc_site yfinance::OptionsChains opendata/data/providers/yfinance/models/market_iter2.py:1766 transform_data YFINANCE_BAD_QUERY client_call_at=0 raise_after_client=False test=expiration_date is None
+    doc_site yfinance::OptionsChains opendata/data/providers/yfinance/models/market_iter2.py:1797 transform_data YFINANCE_EMPTY_RESPONSE client_call_at=0 raise_after_client=False test=not rows
+    doc_site yfinance::OptionsChains opendata/data/providers/yfinance/models/market_iter2.py:1769 transform_data YFINANCE_OPTIONS_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(frame, pd.DataFrame) or frame.columns.has_d
+    doc_site yfinance::OptionsChains opendata/data/providers/yfinance/models/market_iter2.py:1771 transform_data YFINANCE_OPTIONS_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not {'contractSymbol', 'strike'}.issubset(frame.columns)
+    doc_site yfinance::OptionsChains opendata/data/providers/yfinance/models/market_iter2.py:1776 transform_data YFINANCE_OPTION_CONTRACT_INVALID client_call_at=0 raise_after_client=False test=not isinstance(contract, str) or not contract.strip()
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:1758 transform_data YFINANCE_OPTIONS_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:1766 transform_data YFINANCE_BAD_QUERY
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:1797 transform_data YFINANCE_EMPTY_RESPONSE
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:1769 transform_data YFINANCE_OPTIONS_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:1771 transform_data YFINANCE_OPTIONS_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:1776 transform_data YFINANCE_OPTION_CONTRACT_INVALID
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_options_chains canonical=OptionsChains client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::OptionsChains contract=YfinanceOptionChainObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceOptionChainObservation']
+    pricer yfinance::OptionsChains tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::PriceTargetConsensus status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinancePriceTargetFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 4, 'extract_data': 0, 'other': 0} raises=11 code_raises=4 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::PriceTargetConsensus opendata/data/providers/yfinance/models/market_iter2.py:1845 transform_data YFINANCE_PRICE_TARGET_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != len(query.symbol
+    doc_site yfinance::PriceTargetConsensus opendata/data/providers/yfinance/models/market_iter2.py:1850 transform_data YFINANCE_PRICE_TARGET_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(entry, tuple) or len(entry) != 2 or (not is
+    doc_site yfinance::PriceTargetConsensus opendata/data/providers/yfinance/models/market_iter2.py:1852 transform_data YFINANCE_PRICE_TARGET_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=entry[0] != expected_symbol
+    doc_site yfinance::PriceTargetConsensus opendata/data/providers/yfinance/models/market_iter2.py:1854 transform_data YFINANCE_PRICE_TARGET_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not required.issubset(entry[1])
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:1845 transform_data YFINANCE_PRICE_TARGET_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:1850 transform_data YFINANCE_PRICE_TARGET_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:1852 transform_data YFINANCE_PRICE_TARGET_SYMBOL_MISMATCH
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:1854 transform_data YFINANCE_PRICE_TARGET_SHAPE_INVALID
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_price_target_consensus canonical=PriceTargetConsensus client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::PriceTargetConsensus contract=YfinancePriceTargetConsensus is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinancePriceTargetConsensus']
+    pricer yfinance::PriceTargetConsensus tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::ShareStatistics status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceShareStatisticsFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 3, 'extract_data': 0, 'other': 1} raises=12 code_raises=4 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::ShareStatistics opendata/data/providers/yfinance/models/market_iter2.py:594 transform_data YFINANCE_PAYLOAD_SHAPE_INVALID client_call_at=0 raise_after_client=False test=not isinstance(raw, tuple) or len(raw) != len(query.symbol
+    doc_site yfinance::ShareStatistics opendata/data/providers/yfinance/models/market_iter2.py:604 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=not isinstance(entry, tuple) or len(entry) != 2 or entry[0
+    doc_site yfinance::ShareStatistics opendata/data/providers/yfinance/models/market_iter2.py:610 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH client_call_at=0 raise_after_client=False test=returned_symbol is not None and (not isinstance(returned_s
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:594 transform_data YFINANCE_PAYLOAD_SHAPE_INVALID
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:604 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH
+    trippable opendata/data/providers/yfinance/models/market_iter2.py:610 transform_data YFINANCE_PAYLOAD_SYMBOL_MISMATCH
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_share_statistics canonical=ShareStatistics client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::ShareStatistics contract=YfinancePayloadObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinancePayloadObservation']
+    pricer yfinance::ShareStatistics tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+A_landed_positive government_us::CommodityPsdData verdict=DOCUMENT_REACHABLE judge_status=OFFLINE_ACCEPTED PASS=True
+A_landed_positive government_us::CommodityPsdReport verdict=DOCUMENT_TRIPPED judge_status=OFFLINE_ACCEPTED PASS=True
+A_landed_positive all_pass=True PASS=True
+B_landed_negative government_us::WeatherBulletinDownload verdict=NO_CODE_SITE raises=8 code_raises=0 PASS=True
+C_row_class government_us::CommodityPsdData contract=CommodityPsdData is_contract=True look_alike=False emitted=['opendata.data.models.government_us.CommodityPsdData']
+C_row_class federal_reserve::YieldCurve contract=FederalReserveYieldCurveObservation is_contract=False look_alike=False emitted=['opendata.data.models.federal_reserve_macro.FederalReserveYieldCurve']
+C_row_class_arm_can_differ reads={'government_us::CommodityPsdData': True, 'federal_reserve::YieldCurve': False} PASS=True
+D_population_reconciles provider=yfinance tag=DECLARE_AND_WITNESS here=26 carrier=26 providers=6 divergent=0 drift=[] PASS=True
+E_seam tmx seam_verbs=['request'] served=[] blocked=['request']
+E_seam yfinance seam_verbs=[] served=[] blocked=[]
+E_seam_read_can_differ PASS=True
+F_verdict_enum off_enum=[] PASS=True
+G_ledger_cause cboe::FuturesCurve ruled_out=True no_ledger=- detail=NOT_DECLARABLE:The reviewed official All Access docs do not establish the fixed model
+G_ledger_cause federal_reserve::YieldCurve ruled_out=False no_ledger=- detail=-
+G_ledger_cause yfinance::BalanceSheet ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError detail=-
+G_ledger_cause_three_sided reads={'cboe::FuturesCurve': (True, False), 'federal_reserve::YieldCurve': (False, False), 'yfinance::BalanceSheet': (False, True)} PASS=True
+declare_block_face provider=yfinance tag=DECLARE_AND_WITNESS rows=26 verdicts={'DOCUMENT_REACHABLE': 15, 'NO_CODE_SITE': 10, 'QUERY_ONLY': 1} convertible=15 convertible_rows=['yfinance::CompanyNews', 'yfinance::CryptoHistorical', 'yfinance::CurrencyHistorical', 'yfinance::EquityHistorical', 'yfinance::EquityInfo', 'yfinance::EquityQuote', 'yfinance::EtfHistorical', 'yfinance::EtfInfo', 'yfinance::FuturesHistorical', 'yfinance::HistoricalDividends', 'yfinance::IndexHistorical', 'yfinance::KeyExecutives', 'yfinance::OptionsChains', 'yfinance::PriceTargetConsensus', 'yfinance::ShareStatistics'] movable=True seam_reachable=False arms=7 arms_passed=7 arms_failed=0 identity_set=5168e1e723999312

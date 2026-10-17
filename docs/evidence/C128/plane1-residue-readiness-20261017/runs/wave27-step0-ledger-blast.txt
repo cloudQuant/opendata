@@ -1,0 +1,146 @@
+# 波 27 step 0 补充测量：把拆开的那条台账轴指到**整个残差**，而不是只指 yfinance 那一桶
+
+仪器 `probes/ledger_axis_blast.py`（206 行 / 10405 字节 / `sha16=4568cf22c27db38a`，
+argv 无参数：总体直接取已入库判定报告的残差），一次运行打印五臂与一行汇总面。
+本机两次运行（`$?` 各自重定向到文件后读回，不经管道）：`probe_exit=0`、
+`rerun_exit=0`、两次 stdout 逐字节相同（20 行 / 2656 字节 /
+`sha16=34dd136ed868c5b2`，`cmp` 判定），stderr 两次均 0 字节。
+闸门：fmt_exit=0, lint_exit=0, mypy_exit=0；本载档构建时又现跑一次 `ruff format --check`，退出码
+`carrier_build_ruff_exit=0`。
+
+## 这台的母数（由它自己声明，不是别处的数）
+
+残差 = 判定报告里状态**不是** `OFFLINE_ACCEPTED` 的全部具名身份：
+84 = `INCOMPLETE` 7 + `UNREVIEWED` 77。
+报告面由臂 A 主张：`total=350`、`{'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 266, 'UNREVIEWED': 77}`、
+`identity_set=5168e1e723999312` —— 与 §87 / §88 入库的同一枚；一动就是重基，本载档所有数作废。
+
+## 面（逐字粘贴本机 stdout，20 行，一个字符不改）
+
+```
+  1| A_landed_report_face total=350 statuses={'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 266, 'UNREVIEWED': 77} identity_set=5168e1e723999312 landed=350 {'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 266, 'UNREVIEWED': 77} 5168e1e723999312 PASS=True
+  2| residue_population=84 statuses={'INCOMPLETE': 7, 'UNREVIEWED': 77}
+  3|   provider=biztoc rows=1 bound_true=0 ledger_refusal=0 ledger_silent=0 no_ledger_module=1 both=0
+  4|   provider=cboe rows=2 bound_true=0 ledger_refusal=2 ledger_silent=0 no_ledger_module=0 both=0
+  5|   provider=deribit rows=5 bound_true=5 ledger_refusal=0 ledger_silent=0 no_ledger_module=5 both=0
+  6|   provider=econdb rows=2 bound_true=0 ledger_refusal=2 ledger_silent=0 no_ledger_module=0 both=0
+  7|   provider=federal_reserve rows=2 bound_true=2 ledger_refusal=0 ledger_silent=2 no_ledger_module=0 both=0
+  8|   provider=government_us rows=2 bound_true=1 ledger_refusal=0 ledger_silent=0 no_ledger_module=2 both=0
+  9|   provider=intrinio rows=1 bound_true=0 ledger_refusal=1 ledger_silent=0 no_ledger_module=0 both=0
+ 10|   provider=nasdaq rows=9 bound_true=9 ledger_refusal=0 ledger_silent=0 no_ledger_module=9 both=0
+ 11|   provider=seeking_alpha rows=3 bound_true=0 ledger_refusal=3 ledger_silent=0 no_ledger_module=0 both=0
+ 12|   provider=stockgrid rows=1 bound_true=0 ledger_refusal=0 ledger_silent=0 no_ledger_module=1 both=0
+ 13|   provider=tmx rows=24 bound_true=8 ledger_refusal=0 ledger_silent=0 no_ledger_module=24 both=0
+ 14|   provider=wsj rows=3 bound_true=0 ledger_refusal=3 ledger_silent=0 no_ledger_module=0 both=0
+ 15|   provider=yfinance rows=29 bound_true=27 ledger_refusal=0 ledger_silent=0 no_ledger_module=29 both=0
+ 16| B_three_causes_reachable reads={(False, False): 2, (False, True): 71, (True, False): 11} PASS=True
+ 17| C_conflation_identity old_predicate_ruled_out=82 new_ruled_out=11 no_ledger=71 cause_3_both_set=0 overstated_by=71 PASS=True
+ 18| D_cause_matches_disk providers=32 specs_absent=18 sorted_absent=['akshare', 'bls', 'cftc', 'deribit', 'ecb', 'eia', 'famafrench', 'finra', 'finviz', 'fmp', 'fred', 'government_us', 'imf', 'nasdaq', 'ths', 'tmx', 'tradier', 'yfinance'] read_absent=['biztoc', 'deribit', 'government_us', 'nasdaq', 'stockgrid', 'tmx', 'yfinance'] providers_with_residue_rows=13 off_census=['biztoc', 'stockgrid'] off_census_bound_rows=0 uniform_per_package=True package_names_are_bounded=True PASS=True
+ 19| E_pricer_block_inside provider=yfinance tag=DECLARE_AND_WITNESS block=26 in_residue=26 block_bound_true=26 all_no_ledger_module=True PASS=True
+ 20| ledger_blast_face residue=84 bound_true=52 ledger_refusal=11 ledger_silent=2 no_ledger_module=71 no_ledger_module_and_bound=50 pre_split_overstatement=71 arms=5 arms_passed=5 arms_failed=0 identity_set=5168e1e723999312
+```
+
+## 这台仪器自己的第一次红：臂 D 第一代读 `PASS=False`
+
+第一版把臂 D 写成一条恒等："读到 `NO_SPECS_MODULE` 的 provider 集合 == 磁盘上没有 `specs.py` 的
+provider 集合"。跑出来 4 臂过 1 臂红。红的是这台仪器自己的母数假设，不是残差：
+判定报告里出现的 provider **名**可以是磁盘上根本没有包目录的名字 —— `biztoc`、`stockgrid` 两个名字
+在 `opendata/data/providers/` 下没有目录，`_ruled_out` 里那次 import 抛 `ModuleNotFoundError`，
+于是它们的行也带上 `NO_SPECS_MODULE`。第一代那一行逐字：
+
+```
+D_cause_matches_disk providers=32 specs_absent=18 sorted_absent=['akshare', 'bls', 'cftc', 'deribit', 'ecb', 'eia', 'famafrench', 'finra', 'finviz', 'fmp', 'fred', 'government_us', 'imf', 'nasdaq', 'ths', 'tmx', 'tradier', 'yfinance'] read_absent=['biztoc', 'deribit', 'government_us', 'nasdaq', 'stockgrid', 'tmx', 'yfinance'] providers_with_residue_rows=13 PASS=False
+```
+
+改法是把一臂拆成两条各能红的读数：`uniform_per_package` 只断言**盘上有目录**的那些 provider 里
+"整家同因"（台账因是包的属性，不是行的属性），`package_names_are_bounded` 断言盘外名字的每一行都读
+`bound=False`，并要求盘内至少有一行 `bound=True`，好让后一半不靠空集变绿。本机现测这两枚盘外行确实
+都 `bound=False`，`resolve_error=LookupError:unknown provider model`（`biztoc::WorldNews`、
+`stockgrid::ShortVolume`），也就是第一轴的 `UNBOUND`，本来就不在"能被一波转正"的母数里。
+第一代汇总面 `arms=5 arms_passed=4 arms_failed=1`，`residue=`
+与本代相同（84）：两代测的是同一批行，只有读数被拆开。
+
+第一代完整 stdout（20 行 / 2289 字节 / `sha16=c14a71f1982bc0a5`）：
+
+```
+  1| A_landed_report_face total=350 statuses={'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 266, 'UNREVIEWED': 77} identity_set=5168e1e723999312 landed=350 {'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 266, 'UNREVIEWED': 77} 5168e1e723999312 PASS=True
+  2| residue_population=84 statuses={'INCOMPLETE': 7, 'UNREVIEWED': 77}
+  3|   provider=biztoc rows=1 ledger_refusal=0 ledger_silent=0 no_ledger_module=1 both=0
+  4|   provider=cboe rows=2 ledger_refusal=2 ledger_silent=0 no_ledger_module=0 both=0
+  5|   provider=deribit rows=5 ledger_refusal=0 ledger_silent=0 no_ledger_module=5 both=0
+  6|   provider=econdb rows=2 ledger_refusal=2 ledger_silent=0 no_ledger_module=0 both=0
+  7|   provider=federal_reserve rows=2 ledger_refusal=0 ledger_silent=2 no_ledger_module=0 both=0
+  8|   provider=government_us rows=2 ledger_refusal=0 ledger_silent=0 no_ledger_module=2 both=0
+  9|   provider=intrinio rows=1 ledger_refusal=1 ledger_silent=0 no_ledger_module=0 both=0
+ 10|   provider=nasdaq rows=9 ledger_refusal=0 ledger_silent=0 no_ledger_module=9 both=0
+ 11|   provider=seeking_alpha rows=3 ledger_refusal=3 ledger_silent=0 no_ledger_module=0 both=0
+ 12|   provider=stockgrid rows=1 ledger_refusal=0 ledger_silent=0 no_ledger_module=1 both=0
+ 13|   provider=tmx rows=24 ledger_refusal=0 ledger_silent=0 no_ledger_module=24 both=0
+ 14|   provider=wsj rows=3 ledger_refusal=3 ledger_silent=0 no_ledger_module=0 both=0
+ 15|   provider=yfinance rows=29 ledger_refusal=0 ledger_silent=0 no_ledger_module=29 both=0
+ 16| B_three_causes_reachable reads={(False, False): 2, (False, True): 71, (True, False): 11} PASS=True
+ 17| C_conflation_identity old_predicate_ruled_out=82 new_ruled_out=11 no_ledger=71 overstated_by=71 PASS=True
+ 18| D_cause_matches_disk providers=32 specs_absent=18 sorted_absent=['akshare', 'bls', 'cftc', 'deribit', 'ecb', 'eia', 'famafrench', 'finra', 'finviz', 'fmp', 'fred', 'government_us', 'imf', 'nasdaq', 'ths', 'tmx', 'tradier', 'yfinance'] read_absent=['biztoc', 'deribit', 'government_us', 'nasdaq', 'stockgrid', 'tmx', 'yfinance'] providers_with_residue_rows=13 PASS=False
+ 19| E_pricer_block_inside provider=yfinance tag=DECLARE_AND_WITNESS block=26 in_residue=26 all_no_ledger_module=True PASS=True
+ 20| ledger_blast_face residue=84 ledger_refusal=11 ledger_silent=2 no_ledger_module=71 pre_split_overstatement=71 arms=5 arms_passed=4 arms_failed=1 identity_set=5168e1e723999312
+```
+
+## 这条轴在残差上的真实射程（每个数都由构建器从上面那两面算出，对不上就不落盘）
+
+- 残差 84 枚里第一轴 `bound=True` 有 **52** 枚；逐家 `rows=` 相加 =
+  84，与汇总面 `residue=` 一致（构建器要求两处相等，否则抛）。
+- 台账**真拒绝** 11 枚：cboe 2, econdb 2, intrinio 1, seeking_alpha 3, wsj 3。
+- 台账**沉默**（有 `specs.py` 但字典里没有这枚）2 枚，全在 federal_reserve。
+- **没有台账模块可读** 71 枚，落在 7 个 provider 名上：
+  biztoc 1, deribit 5, government_us 2, nasdaq 9, stockgrid 1, tmx 24, yfinance 29。
+- 分裂前那条"一个字符串两因"的谓词把这 71 枚一并读成"已排除"，所以它主张的排除数是
+  `82` 而真排除是 `11` —— **多报 71 枚**。恒等式由臂 C 现算：
+  `82 = 11 + 71 + 0`（`cause_3_both_set=0`：两因同时为真的枚数为 0）。
+- 射程要去掉第一轴已经死了的：`no_ledger_module_and_bound=` **50** 枚才是被这条缺陷遮住的
+  "能解析出 fetcher 又没有台账"候选集合；构建器把它与逐家 `bound_true` 列相加对齐（盘外两家的
+  `bound_true=0` 不贡献），两处不等就抛。
+- 盘上 32 家 provider 包里 **18** 家没有 `specs.py`；本残差里真正带着行的只有
+  **5** 家（deribit, government_us, nasdaq, tmx, yfinance），其余 13 家在残差里
+  一枚行都没有。所以"18 家没有台账"是包普查，"71 枚读成已排除"是行读数，
+  两个母数不许互相替换。
+
+## 与波 27 step 0 载档的交叉一致性（不是重复，是两台仪器对同一桶行必须同读数）
+
+`E_pricer_block_inside` 用**入库定价器**（`declare_candidates._residue_needs_declare` + `_tag`）现算
+`yfinance` 的 `DECLARE_AND_WITNESS` 桶：`block=26`、`in_residue=26`、
+`block_bound_true=26`，26 枚全读 `no_ledger_module`。
+构建器把这三列与 `runs/wave27-step0-block-axes.txt` 里
+`block_face provider=yfinance tag=DECLARE_AND_WITNESS rows=26` 那一行对齐，并要求本台逐家面里的
+`provider=yfinance rows=29` 等于那份载档的 `yfinance_rows=29`。
+两台仪器不一致就抛，不出这份载档。
+
+## 复算配方
+
+```
+PY=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+$PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/ledger_axis_blast.py \
+  > /tmp/blast.out 2> /tmp/blast.err; echo $? > /tmp/blast.exit
+```
+顺跑、不经管道；`/tmp/blast.exit` 读回 0 且 `/tmp/blast.err` 为
+0 字节，stdout 与本载档上面那 20 行逐字节比较。
+
+## 失效条件
+
+`identity_set[0:16]` 一动，臂 A 红，本载档的
+84 / 52 / 11 / 2 /
+71 / 50 / 18 / 32 全部作废；
+`opendata/data/providers/` 下**任何一家**增删 `specs.py`（含给 yfinance 新建一份），
+`specs_absent=18` 与行读数一起移动 —— 那是预期的重测，不是仪器坏了；
+`incomplete_row_guard_check._ruled_out` 的返回签名（两个字符串）一改，这台仪器的两列就没了来源，
+必须先重基 §88.8 与波 27 step 0 那两份载档，再谈这里的数。
+
+## 失败读法
+
+臂 C 两个不等式任一不成立 ⇒ 这台仪器对"分裂前那条规则"的复述是猜的，先修仪器再谈射程；
+臂 B 的三面读值相加不等于残差或集合不是那三个元组 ⇒ 当前总体里某一因不可达，本文不许写"三因都出现"；
+臂 D 的 `package_names_are_bounded` 红 ⇒ 判定报告出现了一个盘外 provider 名**且**它的行解析得到
+fetcher，那是绑定层的真缺口（注册表把一个不存在的包的名字解析出来了），按 `UNBOUND` 之外的新轴处理；
+臂 E 的 `block` 与 step-0 载档不等 ⇒ 定价器的桶规则动了，两份载档一起重基；
+构建器任一断言红 ⇒ 不落盘，不要改成打印。
+
+token 字面量一律运行时生成，本载档不含任何凭据；无 push 授权，本地提交。

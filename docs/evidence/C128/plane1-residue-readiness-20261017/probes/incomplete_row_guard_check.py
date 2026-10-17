@@ -12,7 +12,10 @@ screen:
 2. ``ruled_out`` -- does the provider's own ledger dict (spelled ``NOT_DECLARABLE`` in cboe and
    intrinio, ``NOT_DECLARED`` in econdb) carry the identity? The spelling differs, so the probe
    takes any module attribute whose name starts with ``NOT_DECL`` and whose keys contain the
-   model, instead of hardcoding one name -- a hardcoded name is how a guard goes mute.
+   model, instead of hardcoding one name -- a hardcoded name is how a guard goes mute. A missing
+   ``specs`` module is **not** a ledger hit: yfinance has no ``specs.py`` at all, and reading "no
+   ledger exists" as "this row is ruled out" made one boolean carry two opposite causes, so the
+   two are returned and printed apart (``ruled_out`` / ``no_ledger``).
 3. ``guard`` -- *this row's own* fetcher class must hold a refusal a fixture-document tamper can
    trip. The shipped census buckets by method name and stops there, which is not enough:
    ``commodity_psd_report.py:104`` (checks the bytes that came back) and
@@ -21,8 +24,11 @@ screen:
    buckets and adds one measured relation -- the raise sits *after* a governed-client call inside
    the same function. The client call is found by receiver, and the receiver names are read off
    the module (imports of a ``_client`` module, names assigned from the seam factory), never from a
-   hardcoded alias list: attribute-name matching alone invented a transport call at
-   ``fomc_documents.py:134``, which is ``anchor.get_text(...)`` on a BeautifulSoup tag.
+   hardcoded alias list: attribute-name matching alone invented transport calls in
+   ``federal_reserve/models/fomc_documents.py``, where ``transform_data`` matches the verb list
+   twice on a BeautifulSoup tag -- ``anchor.get("href")`` at ``:111`` and ``anchor.get_text(...)``
+   at ``:134`` -- and the first of them is what makes the raises at ``:113`` and ``:127`` read
+   document-trippable (``_transport_line`` takes ``min``, not ``max``).
 4. ``row_class`` -- *and* the class the bound fetcher constructs in its own body has to **be**
    ``contract_model(domain)``, not merely be shaped like it. A row that passes 1-3 and fails this
    one is not a witness wave: the declaration the wave would write is refused either by
@@ -138,18 +144,23 @@ def _fetcher(provider: str, model: str) -> tuple[Any, str]:
         return None, f"{type(exc).__name__}:{exc}"
 
 
-def _ruled_out(provider: str, model: str) -> str:
-    """Which ``NOT_DECL*`` ledger dict of this provider carries the identity, and why."""
+def _ruled_out(provider: str, model: str) -> tuple[str, str]:
+    """Return (ledger entry carrying this identity, why no ledger could be read).
+
+    These were one string until the widened run printed ``ruled_out=True`` for 26 yfinance rows that
+    no ledger rules out -- yfinance ships no ``specs.py`` -- because a "no module" message was
+    truthy. A boolean with two opposite causes cannot gate a wave, so the causes come back apart.
+    """
     try:
         specs = importlib.import_module(f"opendata.data.providers.{provider}.specs")
     except Exception as exc:  # no specs module is a reading, not a crash
-        return f"NO_SPECS_MODULE:{type(exc).__name__}"
+        return "", f"NO_SPECS_MODULE:{type(exc).__name__}"
     for name, value in vars(specs).items():
         if not name.startswith("NOT_DECL") or not isinstance(value, dict):
             continue
         if model in value:
-            return f"{name}:{str(value[model])[:70]}"
-    return ""
+            return f"{name}:{str(value[model])[:70]}", ""
+    return "", ""
 
 
 def _client_names(tree: ast.Module) -> set[str]:
@@ -380,7 +391,8 @@ def _verdict(measured: dict[str, Any]) -> str:
 
 def _entry(provider: str, model: str) -> dict[str, Any] | None:
     try:
-        return witnesses.model_entry(provider, model)
+        entry: dict[str, Any] = witnesses.model_entry(provider, model)
+        return entry
     except KeyError:
         return None
 
@@ -396,7 +408,7 @@ def _row(identity: str, status: str) -> dict[str, Any]:
     fetcher, error = _fetcher(provider, model)
     face["bound"] = fetcher is not None
     face["resolve_error"] = error
-    face["ruled_out"] = _ruled_out(provider, model)
+    face["ruled_out"], face["no_ledger"] = _ruled_out(provider, model)
     if fetcher is None:
         face["verdict"] = "UNBOUND"
         return face
@@ -429,7 +441,8 @@ def _print_row(row: dict[str, Any], screen: dict[str, int]) -> None:
     counts = row.get("counts", {})
     print(
         f"row {row['identity']} status={row['status']} bound={row['bound']} "
-        f"ruled_out={bool(row['ruled_out'])} witness_entry={row['witness_entry']} "
+        f"ruled_out={bool(row['ruled_out'])} no_ledger={row.get('no_ledger') or '-'} "
+        f"witness_entry={row['witness_entry']} "
         f"declared={row.get('declared', False)} fetcher={row.get('fetcher', '-')} "
         f"verdict={row['verdict']} class_counts={ {k: counts.get(k, 0) for k in BUCKETS} } "
         f"raises={row.get('raises', 0)} code_raises={row.get('code_raises', 0)} "
@@ -443,8 +456,12 @@ def _print_row(row: dict[str, Any], screen: dict[str, int]) -> None:
         )
     for note in row.get("trippable", []):
         print(f"    trippable {note}")
+    if row["ruled_out"] or row.get("no_ledger"):
+        print(
+            f"    ruled_out_detail={row['ruled_out']} no_ledger={row.get('no_ledger') or '-'} "
+            f"resolve_error={row.get('resolve_error') or '-'}"
+        )
     if not row["bound"]:
-        print(f"    ruled_out_detail={row['ruled_out']} resolve_error={row['resolve_error']}")
         return
     print(
         f"    domain={row.get('domain')} canonical={row.get('canonical_model')} "

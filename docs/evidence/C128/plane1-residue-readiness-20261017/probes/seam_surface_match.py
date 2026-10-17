@@ -102,7 +102,8 @@ def _transport_verbs(provider: str) -> set[str]:
 
 def _load_report() -> dict[str, Any]:
     """Read the judge report that the gate actually uses, at the shipped path."""
-    return json.loads(JUDGE_REPORT.read_text(encoding="utf-8"))
+    report: dict[str, Any] = json.loads(JUDGE_REPORT.read_text(encoding="utf-8"))
+    return report
 
 
 def _accepted_by_provider(report: dict[str, Any]) -> dict[str, dict[str, int]]:

@@ -85,10 +85,14 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
   `f"{spec.error_prefix}_SHAPE_INVALID"` 组合码都要能解析，否则 `absent` 会把"解析器不知道"读成"码不存在"）。
   三臂含栽码反证：`C_planted_negative` 要求一个全树不存在的码读成 `absent`，否则 A 臂的 `absent=0`
   是不可反证的零。
-- `probes/incomplete_row_guard_check.py`（606 行、`sha16=94ebdba8adb9ea33`）：波 26 的 step 0 仪器，把
+- `probes/incomplete_row_guard_check.py`（623 行、`sha16=96c2ea82968d5474`；波 26 定稿那一代是 606 行、
+  `sha16=94ebdba8adb9ea33`，本目录 `runs/wave26-step0-second-axis.txt` 的两代并列处留着那一代的读数）：
+  波 26 的 step 0 仪器，把
   "这一枚能不能靠一波 witness 转正"拆成**四条独立轴**逐枚打印：`bound`（注册表解析得到 fetcher）、
-  `ruled_out`（本家 `NOT_DECL*` 台账带着它 —— cboe/intrinio 拼 `NOT_DECLARABLE`、econdb 拼
-  `NOT_DECLARED`，所以按属性名**前缀**匹配，不硬编码一个名字）、`guard`（篡改文档撞得到本类带的码）、
+  `ruled_out` **与** `no_ledger`（本家 `NOT_DECL*` 台账带着它 —— cboe/intrinio 拼 `NOT_DECLARABLE`、
+  econdb 拼 `NOT_DECLARED`，所以按属性名**前缀**匹配，不硬编码一个名字；"这家根本没有 `specs.py`"
+  从前被并进同一个 truthy 串，于是 yfinance 那 26 枚读成"台账已拒绝"，实际是"没有台账可拒绝"，
+  见 `runs/wave27-step0-block-axes.txt` 的两代对照）、`guard`（篡改文档撞得到本类带的码）、
   `row_class`（bound fetcher 造的类必须**就是** `contract_model(domain)`，不是长得像）。判定枚举六值
   `DOCUMENT_REACHABLE / DOCUMENT_TRIPPED / ROW_CLASS_NOT_CONTRACT / QUERY_ONLY / NO_CODE_SITE / UNBOUND`，
   梯子里 `row_class` 排在 `guard` 之前。六臂里两臂是为了修仪器自己才加的：`E_transport_predicate_discriminates`
@@ -97,6 +101,26 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
   `probes/transport_matcher_delta.py` 现测，不在这条臂里凭记忆写数），
   `F_row_class_identity` 三面要求同名替身读 `look_alike_name`、异名替身读 `no`、自己读 `match`，
   否则"分类器看不见"会被读成"这行不是替身"。
+- `probes/declare_block_axes.py`（270 行、`sha16=485b41f8d02c8382`）：波 27 的 step 0 仪器，把上面那四轴
+  指向**另一桶**总体 —— 已入库定价器判为 `DECLARE_AND_WITNESS` 的行（默认 `--provider yfinance`，26 枚）。
+  它不自己数总体：桶来自 `declare_candidates._residue_needs_declare` + `_tag`，每枚读数由
+  `incomplete_row_guard_check._row` 原样导入，运输面那一列由 `seam_surface_match` 的 AST 读提供，
+  臂 D 再拿 `runs/wave26-step0-second-axis.txt` 里那条 `declare_face_by_provider=` 逐家对账 ——
+  手挑子集冒充"整桶"就是这一臂存在的理由。七臂里 `G_ledger_cause_three_sided` 是上一枚仪器那次两成因
+  压布尔的直接后果：一次运行里必须同时看到"台账带着这枚"`(True, False)`、"台账沉默"`(False, False)`、
+  "根本没有台账"`(False, True)` 三种组合，否则第二轴又退回一个不能区分的布尔。换 `--provider` 跑一家
+  **有** `specs.py` 的包只能出现前两种，这一臂就会红 —— 那是预期读数，不是臂坏了。
+- `probes/ledger_axis_blast.py`（206 行、`sha16=4568cf22c27db38a`）：把拆开的那条台账轴指到**整个残差**
+  （判定报告里状态不是 `OFFLINE_ACCEPTED` 的 84 枚 = `INCOMPLETE` 7 + `UNREVIEWED` 77），量这条缺陷的射程，
+  而不只是 yfinance 那一桶。行读数仍由 `incomplete_row_guard_check._row` 原样给出；磁盘普查
+  （`opendata/data/providers/*/specs.py` 存在与否）是同一事实的**第二次独立测量**。五臂里两处是它自己的
+  第一次红教出来的：`C_conflation_identity` 要求分裂前那条一个字符串的谓词复述得精确
+  （`82 = 11 + 71 + 0`，两因同时为真 0 枚），`D_cause_matches_disk` 拆成 `uniform_per_package`
+  （台账因是**包**的属性：盘上有目录的 provider 必须整家同因）与 `package_names_are_bounded`
+  （盘外名字 —— 本机现测 `biztoc`、`stockgrid` —— 的每一行必须读 `bound=False`，且盘内至少一行的
+  `bound=True`，不许靠空集变绿）。第一代把这两条写成一条恒等，红在 `PASS=False`：报告里的 provider
+  **名**可以根本没有包目录，两母数不同。`E_pricer_block_inside` 用入库定价器现算 yfinance 那 26 枚，
+  与 `runs/wave27-step0-block-axes.txt` 的 `rows=26` / `yfinance_rows=29` 对齐，不等就抛。
 - `probes/transport_matcher_delta.py`（209 行、`sha16=c90fcffbeafcad76`）：**只替换那条不一致的规则**的
   差分仪器。它 import 已入库探针的站点枚举、行总体与所有 helper，只把 `_transport_line` 换成 draft 2 的
   松规则（动词命中即算，接收者不查），所以两代读数只差一条规则。臂 A 先自证能复算已入库面
@@ -154,14 +178,21 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
   那 18 行 stdout 用 awk 切片重算，行号漂移不会让配方变哑）。中间是逐家 `guard_provider=…` 面与三臂，
   末尾 `--- pre-fix readings ---` 块逐字留了解析器四代 + 分块一代的原始 stdout（各带 `/tmp` 路径、
   mtime、字节数、shasum16），因为那些临时文件不可久存。
-- `runs/wave26-step0-second-axis.txt`（565 行、`sha16=64a7c7bd96d7f94b`）：波 26 step 0 只读载体，也是
+- `runs/wave26-step0-second-axis.txt`（608 行、`sha16=77f74c74be1c0bd4`）：波 26 step 0 只读载体，也是
   本目录里唯一**没有落地任何一行**的波次载体。三代探针 stdout 并置且各自带现算 digest：draft 1 那代
   被推翻的臂（`A_landed_positive government_us::CommodityPsdReport verdict=DOCUMENT_ADJACENT … PASS=False`，
   它错在只认 `transform_data`，而这一枚在 `extract_data` 的 `_client.get_bytes` **之后**拒绝）、
   draft 2 那代四条假阳性（其面里只有 `after_transport=True`，draft 2 **没有**打印过传输行号；
   到底是哪个调用让它们读成 True 由 `transport_matcher_delta.py` 臂 E 现测：
-  `loose_matched=anchor.get@111`、strict 侧 `no_transport_call@0`）、draft 3 入库面
-  逐字 57 行（`shasum -a 256` 取管道外的 stdin 现算，`lines=` 用 `splitlines()` 与 `wc -l` 同定义）。
+  `loose_matched=anchor.get@111`、strict 侧 `no_transport_call@0`）、draft 3 入库面逐字 58 行
+  （`sha16=df2aec232c4ee006`；`shasum -a 256` 取管道外的 stdin 现算，`lines=` 用 `splitlines()` 与
+  `wc -l` 同定义）。它的前一代 `4e1a8fa25ec96075`（57 行）故意留在同一载体的"就地更正"一节：那一代的
+  `ruled_out` 列把"本家 `NOT_DECL*` 台账拒绝"与"本家根本没有 `specs.py` 台账"两种相反的成因压成同一个
+  `True`（`NO_SPECS_MODULE:ModuleNotFoundError` 字符串是 truthy），修法是拆成 `ruled_out` + `no_ledger`
+  两列而不是改口径。波 26 的裁决没有移动 —— `second_axis_face … convertible=0 arms_passed=6` 在两代之间
+  逐字节相同，行的读数只有 `government_us::WeatherBulletinDownload` 一枚变了，载体里
+  `rows_ruled_out_true before=6 after=5 ledger_and_cause_both_set=0` 就是这个差分的现算面（构建器不满足
+  就抛，不打印）。
   裁决与三面冲突写在正文里，服务腿是**产品代码**摘录（`provider_model_query.py:208-212 / 316-320 / 322-328`）
   而不是测试 docstring 的转述；第一轴的"引擎必然把解码载荷交给 `transform_data`"也改成产品代码逐字摘录
   （`opendata/data/protocol.py:312-317`，并注明异步入口 `_fetch_async` 的两条腿 `:477→:486`、
@@ -172,8 +203,35 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
   `DECLARE_AND_WITNESS`，且 `reconcile=28+24==52` 是构建器算的（不满足就抛，不打印）。
   末尾"复算配方"四条命令均可直接执行，且**本代已按顺序重跑过一遍**：每条的 `exit` 由运行自己重定向到
   文件、载档读盘（四条全 0、stderr 全 0 字节），四个捕获与载档所钉逐字节相同
-  （`4e1a8fa25ec96075`、`9f61e0692da0a006`、`7b009c9374472c4d`、`c0bc8c8ff727cea6`）。同一轮还把它自己
+  （`df2aec232c4ee006`、`9f61e0692da0a006`、`7b009c9374472c4d`、`c0bc8c8ff727cea6`）。同一轮还把它自己
   先前写的那句"declare 那次没记 `$?`，所以不主张退出码"撤了 —— 撤的办法是重跑一次拿到退出码，不是改口。
+- `runs/wave27-step0-block-axes.txt`（367 行、`sha16=e00f1c5cb1b3b616`）：波 27 step 0 只读载体，本目录里
+  第二份**没有落地任何一行**的波次载体。它把四轴指向 `DECLARE_AND_WITNESS` 那桶（yfinance 26 枚），面是
+  `rows=26 verdicts={'DOCUMENT_REACHABLE': 15, 'NO_CODE_SITE': 10, 'QUERY_ONLY': 1} convertible=15`
+  `seam_reachable=False`；可转的 15 枚 `is_contract=True` 15/15、`declared_is_contract=False` 15/15，
+  所以缺的是 `row_model` 声明与见证模块（波 22 / 波 25 的形状），不是新的 transform 代码。它同时留了三样
+  仪器自己的账：两代对照（分裂前 233 行 `6a24d7eff054deb9`、分裂后 263 行 `36804bf6460fb0d2`，
+  `verdict_moves=0` 而 `ruled_out_moves=26`，即改的是仪器的成因列、不是任何一枚行的裁决；那一代 `$?`
+  没落盘，所以载体明写 `pre_fix_exit_recorded=False` 而不主张退出码）、构建器自己的第一次红（把
+  `lines_and_bytes` 的 `(行, 字节)` 按 `(字节, 行)` 解包，被波 26 那枚 measurer pin 当场拒掉，逐字原文在
+  载体里）、以及"本步不重跑 judge"所依据的字节不变式（报告 `sha16=73f4ed196e73aef5` 仍被
+  `runs/precommit-staged-scan.wave25.txt` 钉着，`350 / 266 OFFLINE_ACCEPTED / 7 INCOMPLETE`、
+  `identity_set=5168e1e723999312` 与 yfinance 29 枚全 `UNREVIEWED` 都是从那份报告现算的）。
+  构建器里的数字一律现算：`convertible_rows` 那一度被 `\S+` 在第一个空格截断成 1 枚，修成整段列表后
+  载体的 `convertible=` 与列表长度、可撞 verdict 之和三者必须相等才写盘。
+- `runs/wave27-step0-ledger-blast.txt`（146 行、`sha16=930fac41fa640308`）：波 27 step 0 的第二份只读载体，
+  记 `ledger_axis_blast.py` 在**整个残差**上的射程：84 枚残差里 `bound=True` 52 枚，台账真拒绝只有
+  **11** 枚（cboe 2 / econdb 2 / intrinio 1 / seeking_alpha 3 / wsj 3），台账沉默 2 枚（federal_reserve），
+  没有台账模块可读 **71** 枚；分裂前那条两成因谓词主张的排除数是 82，也就是**多报 71 枚**，
+  而其中第一轴还活着的（"没有台账**且**解析得到 fetcher"）是 **50** 枚。包普查那一面同时写清：
+  盘上 32 家 provider 包里 18 家没有 `specs.py`，其中只有 5 家在残差里带着行。这台仪器自己的
+  第一次红逐字留在载体里（第一代 `arms=5 arms_passed=4`、`D_cause_matches_disk … PASS=False`），
+  红因是它把"报告里的 provider 名"与"盘上的包目录"当成同一母数：`biztoc`、`stockgrid` 两个名字在
+  `opendata/data/providers/` 下没有目录，两枚行都读 `UNBOUND`。两次运行 stdout 逐字节相同
+  （20 行 / 2656 字节 / `sha16=34dd136ed868c5b2`）、stderr 两次 0 字节、`$?` 从磁盘读回 0，
+  闸门 `ruff format --check` / `ruff check` / `mypy` 三次退出码都是 0；构建器把每个 prose 数与两面
+  对齐（逐家 `rows=`/`bound_true=` 相加、`82 = 11 + 71 + 0`、与 step-0 载档的 `rows=26` /
+  `yfinance_rows=29` 交叉），任一不等就抛而不出载档。
 - `runs/declare_candidates.post-batch.txt`（61 行、54 条 `row `）：**波 24 那一代**的定价面，与波前面
   `runs/declare_candidates.txt`（58 枚）不同代，别把两者混比；波 25 之后总体已是 52 枚，当代读数在
   `runs/wave25-step0-reachability.txt` block ⑥（波前 54）与 `runs/wave25-government_us.txt` 的波后
@@ -188,7 +246,9 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
   `.py` + `runs/` 10 个 `.txt`）`arm_a_findings=0 arm_b_findings=1 payload_secret_face PASS=True`。
   这台只收那两个根，所以总体是**代际敏感**的：pin 闸门落地后重跑读 `payload_files=20`（8 + 12），
   这份 README 与 precommit 载档定稿后再读是 `21`（8 + 13），其余四行逐字不变；波 26 的 step 0 探针与载体
-  落盘后目录里是 10 个 `.py` + 14 个 `.txt`（`probes/__pycache__/` 的 `.pyc` 不在后缀总体内），当代读数
+  落盘后目录里是 10 个 `.py` + 14 个 `.txt`（`probes/__pycache__/` 的 `.pyc` 不在后缀总体内）；波 27 的
+  step 0 落了**两**枚探针与**两**份载体（`declare_block_axes.py` + `ledger_axis_blast.py`，
+  `wave27-step0-block-axes.txt` + `wave27-step0-ledger-blast.txt`），本机现数是 12 个 `.py` + 16 个 `.txt`，当代读数
   以入库前那次扫描自己打印的 `payload_files` 为准，不在这里替它填数。
   取 4 跑过但故意不写进来（载档不能扫自己最后一行）。
 - `runs/precommit-staged-scan.wave25.txt`：**提交那一刻**的入库面，人群换成索引本身 ——
@@ -236,7 +296,8 @@ A 臂的 `td/ed/other/engine` 计数与 `absent` 都可能移动，届时要按"
 `absent` 必须仍为 0 且 `C_planted_negative` 必须仍读成 `absent`，否则这台仪器自己就哑了。
 
 波 26 那台的四条命令**逐字抄在** `runs/wave26-step0-second-axis.txt` 末尾"复算配方"里，第一条已在本机重跑
-并重读到同一 `sha16=4e1a8fa25ec96075`（无管道，`$?` 直接取，stderr 0 字节）。它也是当代仪器：只要不动
+并重读到同一 `sha16=df2aec232c4ee006`（无管道，`$?` 直接取，stderr 0 字节；分裂前那一代读到的是
+`4e1a8fa25ec96075`，重跑对不上它是预期的，不是仪器坏了）。它也是当代仪器：只要不动
 `provider.py` / `domains.yaml` / 那两个 `models/federal_reserve_*.py`，重跑应当复现 `verdicts=` 那一行的
 `{'ROW_CLASS_NOT_CONTRACT': 2, 'UNBOUND': 5}` 与 `convertible=0`；`identity_set` 必须仍是
 `5168e1e723999312`，而 `verdicts` **允许**移动 —— 一旦某枚的 `row_class` 转成 `is_contract=True`，
