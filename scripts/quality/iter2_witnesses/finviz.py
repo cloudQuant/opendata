@@ -22,12 +22,15 @@ without its percent sign, a page whose ``<title>`` names another ticker, a two-v
 printed with one number, and an analyst date that is not a real day are all refused before any
 contract column is addressed, so no cell exists for the refusal to attribute.
 
-What these four witnesses do not cover: ``EtfPricePerformance`` publishes capability domain
-``finviz_etf_performance`` (``opendata/data/providers/finviz/models/fetchers.py:226``) while
-``opendata/data/domains.yaml`` registers ``finviz_etf_price_performance``, so its
-``implementation`` phase would compare a capability against an unregistered domain and is filed as
-a gap instead of being witnessed here; ``PricePerformance`` and ``EquityScreener`` fetch through
-``models/price_performance.py`` with their own decode path and are not witnessed in this wave.
+What this module does not cover, and where the rest lives: the three rows it leaves --
+``PricePerformance``, ``EtfPricePerformance`` and ``EquityScreener`` -- are witnessed by
+``_parts/finviz/raw_page_rows.py``, whose fixture lines are verbatim slices of the retained live
+captures rather than bodies reconstructed from receipt excerpts. ``EtfPricePerformance`` is bound
+to a fetcher that declares the registered domain ``finviz_etf_price_performance``
+(``opendata/data/providers/finviz/models/price_performance.py:474``); the name
+``finviz_etf_performance`` belongs to an unbound twin of the same class
+(``opendata/data/providers/finviz/models/fetchers.py:226``) that registration never selects, and
+ruling on that twin pair is a separate open item, not a gap in the witnessed row.
 """
 
 from __future__ import annotations

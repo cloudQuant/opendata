@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from html.parser import HTMLParser
-from typing import ClassVar, Literal
+from typing import TYPE_CHECKING, ClassVar, Literal
 from urllib.parse import urlencode
 
 from pydantic import field_validator
@@ -27,6 +27,9 @@ from opendata.data.request_budget import (
     RequestAttemptLimitError,
     current_request_scopes,
 )
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
 
 _TICKER = re.compile(r"[A-Za-z][A-Za-z0-9.\-]{0,9}\Z")
 _PERCENT = re.compile(r"[+-]?(?:\d+(?:,\d{3})*(?:\.\d*)?|\.\d+)%\Z")
@@ -440,6 +443,7 @@ class FinvizPricePerformanceFetcher(_FinvizPerformanceFetcher):
     """Return bounded public Finviz quote-page returns for equity symbols."""
 
     canonical_model = "PricePerformance"
+    row_model: ClassVar[type[ContractModel]] = FinvizPricePerformance
     capability = Capability(
         asset_class="stock",
         domain="finviz_price_performance",
@@ -466,6 +470,7 @@ class FinvizEtfPricePerformanceFetcher(_FinvizPerformanceFetcher):
     """Return bounded public quote-page returns after exact ETF classification."""
 
     canonical_model = "EtfPricePerformance"
+    row_model: ClassVar[type[ContractModel]] = FinvizEtfPricePerformance
     capability = Capability(
         asset_class="etf",
         domain="finviz_etf_price_performance",

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model PricePerformance --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FinvizSourceError", "refusal_code": "FINVIZ_INVALID_NUMBER", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FinvizSourceError", "refusal_code": "FINVIZ_INVALID_NUMBER", "rejected": [], "status": null}, "reason": "the captured page prints the week return as 2.04%; printing it as 2.04 keeps the cell in the same markup and the same row, but a displayed percent is what the column's unit is, so _parse_percent must refuse rather than publish 2.04 as a fraction of 1 or as 204 percent; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

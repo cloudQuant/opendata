@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EtfPricePerformance --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FinvizSourceError", "refusal_code": "FINVIZ_NOT_ETF", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FinvizSourceError", "refusal_code": "FINVIZ_NOT_ETF", "rejected": [], "status": null}, "reason": "the ETF identity is published as one category anchor, so deleting that anchor leaves a page that still carries a QQQM heading, a quote timestamp and the full performance grid: the only fact that made it an ETF is gone, and _parse_page must refuse instead of returning ETF rows for an unclassified symbol; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

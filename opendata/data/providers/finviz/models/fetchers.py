@@ -379,6 +379,7 @@ class FinvizEquityScreenerFetcher(_FinvizFetcher[FinvizEquityScreenerQuery, Finv
     query_type = FinvizEquityScreenerQuery
     endpoint = "/screener"
     canonical_model = "EquityScreener"
+    row_model: ClassVar[type[ContractModel]] = FinvizEquityScreener
     capability = Capability(
         asset_class="stock",
         domain="finviz_equity_screener",

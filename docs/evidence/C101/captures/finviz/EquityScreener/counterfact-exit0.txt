@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EquityScreener --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FinvizSourceError", "refusal_code": "FINVIZ_INVALID_AMOUNT", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FinvizSourceError", "refusal_code": "FINVIZ_INVALID_AMOUNT", "rejected": [], "status": null}, "reason": "the captured row prints Agilent's market capitalisation as 48.13B with one magnitude suffix; printing 48.13BB keeps the eleven-column row intact and the ticker legitimate but makes the suffix unreadable, so _amount must refuse the cell rather than guess whether the author meant billions twice; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---
