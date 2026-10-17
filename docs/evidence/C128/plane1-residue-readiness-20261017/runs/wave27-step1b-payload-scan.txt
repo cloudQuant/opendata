@@ -1,0 +1,33 @@
+# wave27 step1b: payload scan before staging (two-arm self-scan over this evidence root)
+created_utc=2026-10-17T15:45:41Z
+head_commit=f7906eb2
+two_arm_scan_exit=0
+two_arm_stderr_bytes=0
+--- stdout verbatim ---
+planted_into=declare_candidates.txt at_line=31 lines=65
+payload_files=45 payload_roots=2
+B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+arm_a_findings=0 arm_a_rc=0
+arm_b_findings=1 arm_b_rc=1
+payload_secret_face PASS=True
+scan_exit=0
+--- end stdout ---
+note=the run above is the same face the C125/C126/C127 generations recorded, re-taken in this generation: its population is probes/*.py + runs/*.txt under this evidence root, so it counts the carrier it is being written into (the file already existed with a three-line header when the scan ran).
+
+## staged-index scan (population = the index itself, not the worktree)
+index_paths=24
+take1_exit=0
+take1_stderr_bytes=0
+take1_stdout_lines=2
+take1: payload_scan_files=24 payload_scan_roots=24 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+take1: payload_scan=PASS 24 file(s) clean
+
+invariant_after_appending_take1_face=index_paths_still=24 identical_stdout=True sha_equal=True
+disclosure=take2 scanned the bytes as they stood after take1's face line had been appended to this carrier, so the appended line is proven inert rather than asserted; this carrier's own last line is still not covered by any scan (same limit the wave-25 carrier named for itself).
+
+## take 3: the scan re-taken after the README and dev-log prose edits landed on top of take 1/2
+take3_index_paths=24
+take3_exit=0
+take3_stderr_bytes=0
+take3: payload_scan_files=24 payload_scan_roots=24 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+take3: payload_scan=PASS 24 file(s) clean

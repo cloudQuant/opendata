@@ -1,0 +1,35 @@
+# wave27 step1b: the same 7 node ids run in the worktree (pins re-based) and at HEAD (clean tree)
+population=the 7 ids that the batch5 pin re-base turned green; each is a caller of the 31-file fence
+worktree_head_commit=f7906eb2
+head_worktree_commit=f7906eb2
+
+worktree_exit=0 reading=['7 passed in 0.65s']
+head_exit=1 reading=['7 failed in 0.57s']
+
+## first error line in each run (the cause, verbatim)
+worktree_first_error=NONE (all seven collected and passed)
+head_first_error=["/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/pathlib/_local.py:537: FileNotFoundError: [Errno 2] No such file or directory: '/private/tmp/opendata-head-attrib/docs/evidence/C100/acceptance-fred-sloos/runs/20261012T181729.721761Z/receipt.json'"]
+
+## the HEAD-side cause is the fence's own population, not this edit
+fence_population=31
+pinned_but_untracked=15
+of_those_absent_in_the_head_worktree=15
+ignore_rule=.gitignore:249:/docs/evidence/C100/**	docs/evidence/C100/acceptance-fred-sloos/runs/202610
+reading=the fence hashes 31 paths from disk; 15 of them live under the C113 gitignore rule, so a clean tree raises FileNotFoundError before any digest is compared. Those 7 ids therefore fail at HEAD for a cause this step neither created nor fixed -- and the earlier claim in this wave that 'all 35 fail at HEAD, so my edit broke nothing' was count-coincidental: the two 35s are different populations, and 7 of them overlap by node id with a different cause on each side.
+
+## the third side of the control: HEAD bytes with the ignored pinned files supplied
+method=copied the 15 untracked pinned files from the main tree into the throwaway HEAD worktree (repo bytes
+untouched; the worktree is removed after this wave's record lands)
+copied_ignored_pinned_files=15
+head_with_copies_exit=0 reading=['7 passed in 0.61s']
+
+## what the three sides together prove
+- worktree before step1b: these 7 were red on `AssertionError: opendata/data/providers/yfinance/models/iter2.py`
+  (digest drift) and the wave-27 step-1 full-suite carrier counts them inside its 35 failures
+  (assertion lines 27, of which yfinance-pin lines 7).
+- HEAD worktree, clean: red, but on FileNotFoundError -- a different cause.
+- HEAD worktree + the 15 files supplied: 7 passed.
+=> the 15 row_model declarations DID break exactly these 7 tests, and step1b repaired exactly those 7. The
+   step-1 claim "35 fail at HEAD too, so my edit broke nothing" is withdrawn: the two 35s were never the same
+   population (one was a 590 s full suite, the other a 10.98 s rerun of 35 ids), and equal counts were read
+   as equal sets.

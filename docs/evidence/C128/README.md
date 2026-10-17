@@ -249,7 +249,10 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
   落盘后目录里是 10 个 `.py` + 14 个 `.txt`（`probes/__pycache__/` 的 `.pyc` 不在后缀总体内）；波 27 的
   step 0 落了**两**枚探针与**两**份载体（`declare_block_axes.py` + `ledger_axis_blast.py`，
   `wave27-step0-block-axes.txt` + `wave27-step0-ledger-blast.txt`），本机现数是 12 个 `.py` + 16 个 `.txt`，当代读数
-  以入库前那次扫描自己打印的 `payload_files` 为准，不在这里替它填数。
+  以入库前那次扫描自己打印的 `payload_files` 为准，不在这里替它填数。波 27 step 1 落一枚探针与五份载体、
+  step 1b 再落七份载体之后，本机 `ls | wc -l` 现读是 **13 个 `.py` + 32 个 `.txt`**，两臂自扫描那一代打印
+  `payload_files=45`（44 枚在册 + 载档自己）；入库前扫索引那一次读的是**文件表**（24 条路径），与这两个母数
+  互不替换。
   取 4 跑过但故意不写进来（载档不能扫自己最后一行）。
 - `runs/precommit-staged-scan.wave25.txt`：**提交那一刻**的入库面，人群换成索引本身 ——
   `git -c core.quotepath=off diff --cached --name-only -z | xargs -0 … staged_payload_scan.py --paths`
@@ -267,6 +270,51 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
   内容只有 `after_sha256 == 工作树字节`）和一份**代际史**（第一版两臂探针 `0674a7928a87b9c4` 的面原样保留，
   连同那条把一次性 inline 验证器的结论写成仪器说明书的 limit —— slot 数、by_kind、`stale=0` 与两个
   `targeted_slots` 等式在两代之间逐字未变）。
+
+- `probes/witness_seam_kind_census.py`（411 行、`sha16=88870a6f957d9dba`）与
+  `runs/wave27-step1-seam-kinds.txt`（44 行 / `624ddf9ea0a7ebee`）：波 27 step 1 的新仪器与它的七臂面。
+  它否证了 §89.5 谓词后半"见证腿取引擎 `transport`"：臂 A 四枚**已入库**、无 `client_seam` 的行逐枚读
+  `rows>0 transport_calls=1`（引擎 seam 本身活的），臂 B 对 `yfinance::EquityQuote` 读
+  `transport_calls=0` + `YfinanceProviderError:YFINANCE_REQUEST_FAILED`，臂 C 对本家两个 seam 属性的读取数是
+  (0, 0) 而 `http_transport_holders=5 shared_client_holders=6` 都非零，臂 F 从包里读出
+  `_sdk` 的 12 个调用点最小 1 个位置参数。产品面 `E_declaration_face declared=15 expected=15
+  row_model_is_contract=15 PASS=True` 走的是入库仪器 `incomplete_row_guard_check._row`，不是手抄清单。
+  这台仪器自己崩过两次（臂 B 之前 `WitnessBlocked` 把载体压到 3 行；臂 A 漏了 runner 的 `credential_env`
+  注入读到 `BENZINGA_CREDENTIAL_MISSING`），两次红连同修法逐字留在 §90.3。
+- `runs/wave27-step1-declare-candidates.txt`（42 / `bb1acde0012fb212`）、
+  `runs/wave27-step1-diff-face.txt`、`runs/wave27-step1-receipt-pins.txt`（6 / `3de420aed0e68f10`）、
+  `runs/wave27-step1-block-axes-rerun.txt`（75 / `bfe05f3be880a7b2`）：同一轮另外四面。定价面
+  `NEED_DECLARE 52 → 37`、桶 `DECLARE_AND_WITNESS 28 → 13`、逐家 5+2+1+9+8+12=37；四轴那台对本家改读
+  `rows=11 convertible=0 arms_passed=6 arms_failed=1`，那一格**按设计是红的**（它的 `CARRIER` 常量指向
+  上一代载档，红且 drift 只指 yfinance 一格才是"15 枚离开桶"的读数）；回执 pin 闸门仍 `slots=19382 stale=0`，
+  而它的 B 臂在内存里把 runner 摘要换成占位值读到 `targeted_slots=1330` —— 任何 runner 编辑的代价是实测量出来的。
+- `runs/wave27-step1-fullsuite-worktree.txt` 与 `runs/wave27-step1-fullsuite-head.txt`：全量归因两面
+  （工作树 `35 failed, 26244 passed, 271 skipped in 590.09s`；HEAD 那份是 35 枚 id 的重跑 `35 failed in 10.98s`）。
+  **这两行的数目相等不是集合相等** —— 由它们得出的"本轮没弄坏任何测试"已被 §90.8 的三面对照撤回。
+- `runs/wave27-step1b-pin-rebase.txt`（73 / `1d4093d5a001dae4`）：那 15 行动了**另一道 tracked
+  围栏**（`tests/fixtures/registry_batch5_snapshot.json` 的 31 条 `source_hashes_sha256`，判定者
+  `tests/test_alert_matrix.py:39` + `tests/test_provider_domains.py:1363/:1368`；回执闸门看不见它）。
+  重基走产出器 `docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py --apply`：`matched=29 stale=2`、
+  两枚 `iter2.py`/`market_iter2.py` 摘要按盘上现算写回、载荷摘要 `d434b9137178e0df… -> bcdca191aa39064a…`
+  并重钉两处字面量站点，`bytes_delta=0` 且 candidate/counts/identities 六面不变；判定簇四模块 `117 passed`。
+  载体里还留了这一步我自己的**三次仪器故障**（`-m ruff format` 是 zsh 词切分错的产物、`mypy` 被我在
+  `^tests/` 暗区外指路径上无中生有 93 errors、把 JSON 夹具交给 ruff 导致 720 KB 喷进载档草稿）。
+- `runs/wave27-step1b-judge-cluster.txt`（4）、`runs/wave27-step1b-fence-counterfact.txt`（6）、
+  `runs/wave27-step1b-failed35-rerun.txt`（7）、`runs/wave27-step1b-seven-rebased-ids.txt`（10）、
+  `runs/wave27-step1b-head-seven-reproducers.txt`（35 / `98180e493c957b91`）、
+  `runs/wave27-step1b-refusal-gate.txt`（12 / `336e6cf122367d27`）、
+  `runs/wave27-step1b-payload-scan.txt`：同一代的两面扫描 —— 两臂自扫描 `payload_files=45 payload_roots=2`
+  `arm_a_findings=0 arm_b_findings=1 PASS=True scan_exit=0`（B 臂是在 `/tmp` 的**影子副本**里把一枚运行时生成的
+  token 种进同一份 `declare_candidates.txt` 的第 31 行再扫 —— 仓内字节一个不动，这一臂只是为了证明闸门不是哑的），入库前扫索引 `24 files / 24 roots / unresolved=0 / findings=0 rc=0` 取 1 与取 2
+  stdout 逐字相同（`identical_stdout=True`）。这七份合起来是重基后的面：判定簇四模块 `117 passed`；反例是活的 ——
+  `stale_before_arms=0`、arm_A_forged `exit=1 4 failed, 2 passed`、arm_B_inert `exit=0 6 passed` 且它打印的
+  `fixture_sha256` 与重基后夹具逐字节相同；三面对照证明"本轮弄坏 7 枚、修回 7 枚"（工作树重基后 `7 passed`；
+  HEAD 干净树 `7 failed` 但原因是 `FileNotFoundError`；HEAD + 补齐那 15 枚被 ignore 的钉文件 `7 passed`）；
+  产出器在 settled 之后读 `matched=31 stale=0` + `verdict: REFUSED` + `pin_rebase_exit=1`，那是拒写门不是判定红。
+- 一条**先前就在、本轮既不制造也不修**的缺陷（task #60）：这道围栏 31 条母数里 `pinned_but_untracked=15`，
+  全部在 `.gitignore:249 /docs/evidence/C100/**` 之下、`of_those_absent_in_the_head_worktree=15`。它按路径从盘上
+  重算，所以本机绿、干净克隆红 —— 现在它是机器本地的围栏。`wave27-step1b-head-seven-reproducers.txt` 三面里
+  第二面就是这条的形状。
 
 复算配方（仓库根）：
 

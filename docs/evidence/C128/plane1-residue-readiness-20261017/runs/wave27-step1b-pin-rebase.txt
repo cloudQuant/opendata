@@ -1,0 +1,73 @@
+# wave27 step1b: re-base the batch5 source pins staled by the 15 yfinance row_model declarations
+producer=docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py
+interpreter=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+date_utc=2026-10-17T15:30:46Z
+head_commit=f7906eb2
+## pre-apply bytes (digest of the four files the producer may write)
+pre_sha[tests/fixtures/registry_batch5_snapshot.json]=d434b9137178e0df899681ed0a183f1e63fdec599646e1aca24ab1143ea8cd1a
+pre_sha[tests/test_provider_domains.py]=35475a774a557bfe385d43d1018cdb217d4e2639cb420967c8cf66b2d71212cc
+pre_sha[tests/test_pipeline_jobs.py]=6dec8efeaf6870aaa4edbb1862a8e0c0f17c745216e6d9214086feeb385068d6
+header_exit=0
+face: repo_root=/Users/yunjinqi/Documents/new_projects/opendata
+face: argv=['--apply']
+face: pin_entries=31
+face: snapshot_payload_sha_before=d434b9137178e0df899681ed0a183f1e63fdec599646e1aca24ab1143ea8cd1a
+face: candidate_sha256_before=775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e
+face: matched=29 stale=2 missing=0
+face: stale[opendata/data/providers/yfinance/models/iter2.py] before=88fd4471823a7db319d7d08b25fc5f65a92999cc275e9844583633bbd395f7af
+face: stale[opendata/data/providers/yfinance/models/iter2.py] live =c8bfdd339c8d0834706f6dd25d2eb172dc7944d15b2a05e091b24d5491d6adc1
+face: stale[opendata/data/providers/yfinance/models/iter2.py] vs_HEAD_numstat=1	0	opendata/data/providers/yfinance/models/iter2.py
+face: stale[opendata/data/providers/yfinance/models/market_iter2.py] before=3678f6c8a851822730660ac80d360785723ce426bddead0ad9c059db9e3060ea
+face: stale[opendata/data/providers/yfinance/models/market_iter2.py] live =ac37fd81642352e00024cbf92e09dff9f44ab42fc42b90a89d610bf5a4a0a229
+face: stale[opendata/data/providers/yfinance/models/market_iter2.py] vs_HEAD_numstat=14	0	opendata/data/providers/yfinance/models/market_iter2.py
+face: snapshot_payload_sha_after=bcdca191aa39064a8fc7040651c6694a572f5137d9c1d0868916b39ac284924d
+face: candidate_sha256_after=775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e
+face: candidate_unchanged=True
+face: snapshot_id_unchanged=True
+face: snapshot_status_unchanged=True
+face: counts_unchanged=True
+face: identities_unchanged=True
+face: pin_keys_unchanged=True
+face: bytes_delta=0
+face: literal[tests/test_provider_domains.py] occurrences_of_old_payload_sha=1
+face: literal[tests/test_pipeline_jobs.py] occurrences_of_old_payload_sha=1
+face: applied snapshot=True
+face: applied[tests/test_provider_domains.py] new_literal_present=True stale_literal=False
+face: applied[tests/test_pipeline_jobs.py] new_literal_present=True stale_literal=False
+verdict: APPLIED - 2 source pins re-based from live bytes and 2 payload literals re-pinned
+pin_rebase_exit=0
+## post-apply bytes
+post_sha[tests/fixtures/registry_batch5_snapshot.json]=bcdca191aa39064a8fc7040651c6694a572f5137d9c1d0868916b39ac284924d
+post_sha[tests/test_provider_domains.py]=dd5d8b6e373187bdbad1a0893c9ccf0418a836e7671dc83f1e7fcc9a0c4422aa
+post_sha[tests/test_pipeline_jobs.py]=7bafa37f10f28c9d6fc3945e2cd54b46baa85ed8f5832ea255b3943491894809
+## worktree diff vs HEAD (files touched by this step)
+2	2	tests/fixtures/registry_batch5_snapshot.json
+1	1	tests/test_pipeline_jobs.py
+1	1	tests/test_provider_domains.py
+post_exit=0
+## plane-1 invariance (this step writes no claim and no report; face read from the landed report)
+report_sha16=73f4ed196e73aef5
+report_mtime_utc=2026-10-17T08:35:46Z
+plane1_face identities=350 offline_accepted=266 status_counts={'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 266, 'UNREVIEWED': 77}
+identity_set=5168e1e723999312
+plane1_read_exit=0
+## files written by this step (nothing else touched)
+ M tests/fixtures/registry_batch5_snapshot.json
+ M tests/test_pipeline_jobs.py
+ M tests/test_provider_domains.py
+
+## gates over the files written by this step
+ruff_format_population=['tests/test_provider_domains.py', 'tests/test_pipeline_jobs.py']
+ruff_format_exit=0
+ruff_format_stdout=2 files already formatted
+ruff_format_stderr_bytes=0
+ruff_check_population=['tests/test_provider_domains.py', 'tests/test_pipeline_jobs.py']
+ruff_check_exit=0
+ruff_check_stdout=All checks passed!
+ruff_check_stderr_bytes=0
+mypy_config_exclude_patterns=['^opendata/data/providers/akshare/_vendor/', '^tests/', '^opendata/data_fetch/']
+mypy_scope[tests/fixtures/registry_batch5_snapshot.json] excluded_by=['^tests/']
+mypy_scope[tests/test_provider_domains.py] excluded_by=['^tests/']
+mypy_scope[tests/test_pipeline_jobs.py] excluded_by=['^tests/']
+mypy_face=no file in the mypy-lit scope was written by this step (all three written paths are excluded by the repo's own [tool.mypy] pattern, measured above), so this step cannot move that plane.
+instrument_faults_this_step=3  # (1) `python -m ruff format` came from a bad zsh word split: exit 1 on a command that never ran; (2) `mypy <two test paths>` overrode the configured target set and invented a 93-error population over a mypy-dark root; (3) the JSON fixture was passed to ruff, which parsed a 238 KB document as Python and printed 720 KB into this carrier's previous draft. All three are readings about my commands, not about this edit; each is re-taken above with its population named.

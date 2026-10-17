@@ -1,0 +1,75 @@
+runner_surface yfinance seam_verbs=[] served=[] blocked=[] seam_reachable=False
+row yfinance::BalanceSheet status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceBalanceSheetFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_balance_sheet canonical=BalanceSheet client_names=[] files=['opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::BalanceSheet contract=YfinanceFinancialStatementObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceFinancialStatementObservation']
+    pricer yfinance::BalanceSheet tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::CashFlowStatement status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceCashFlowStatementFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_cash_flow_statement canonical=CashFlowStatement client_names=[] files=['opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::CashFlowStatement contract=YfinanceFinancialStatementObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceFinancialStatementObservation']
+    pricer yfinance::CashFlowStatement tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityActive status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityActiveFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_active canonical=EquityActive client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityActive contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityActive tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityAggressiveSmallCaps status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityAggressiveSmallCapsFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_aggressive_small_caps canonical=EquityAggressiveSmallCaps client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityAggressiveSmallCaps contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityAggressiveSmallCaps tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityGainers status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityGainersFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_gainers canonical=EquityGainers client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityGainers contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityGainers tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityLosers status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityLosersFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_losers canonical=EquityLosers client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityLosers contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityLosers tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityScreener status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityScreenerFetcher verdict=QUERY_ONLY class_counts={'transform_data': 0, 'extract_data': 1, 'other': 0} raises=8 code_raises=1 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    doc_site yfinance::EquityScreener opendata/data/providers/yfinance/models/market_iter2.py:1372 extract_data YFINANCE_SCREEN_QUERY_INVALID client_call_at=0 raise_after_client=False test=<unconditional>
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_screener canonical=EquityScreener client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityScreener contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityScreener tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityUndervaluedGrowth status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityUndervaluedGrowthFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_undervalued_growth canonical=EquityUndervaluedGrowth client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityUndervaluedGrowth contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityUndervaluedGrowth tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::EquityUndervaluedLargeCaps status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceEquityUndervaluedLargeCapsFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_equity_undervalued_large_caps canonical=EquityUndervaluedLargeCaps client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::EquityUndervaluedLargeCaps contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::EquityUndervaluedLargeCaps tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::GrowthTechEquities status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceGrowthTechEquitiesFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_growth_tech_equities canonical=GrowthTechEquities client_names=[] files=['opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/providers/yfinance/models/market_iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::GrowthTechEquities contract=YfinanceScreenerObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceScreenerObservation']
+    pricer yfinance::GrowthTechEquities tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+row yfinance::IncomeStatement status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError witness_entry=False declared=False fetcher=YfinanceIncomeStatementFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=7 code_raises=0 package_screen={'transform_data': 30, 'extract_data': 6, 'other': 84}
+    ruled_out_detail= no_ledger=NO_SPECS_MODULE:ModuleNotFoundError resolve_error=-
+    domain=yfinance_income_statement canonical=IncomeStatement client_names=[] files=['opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/providers/yfinance/models/iter2.py', 'opendata/data/protocol.py']
+    row_class yfinance::IncomeStatement contract=YfinanceFinancialStatementObservation is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.yfinance_iter2.YfinanceFinancialStatementObservation']
+    pricer yfinance::IncomeStatement tag=DECLARE_AND_WITNESS contract_in_module=True emits=True judge_status=UNREVIEWED
+A_landed_positive government_us::CommodityPsdData verdict=DOCUMENT_REACHABLE judge_status=OFFLINE_ACCEPTED PASS=True
+A_landed_positive government_us::CommodityPsdReport verdict=DOCUMENT_TRIPPED judge_status=OFFLINE_ACCEPTED PASS=True
+A_landed_positive all_pass=True PASS=True
+B_landed_negative government_us::WeatherBulletinDownload verdict=NO_CODE_SITE raises=8 code_raises=0 PASS=True
+C_row_class government_us::CommodityPsdData contract=CommodityPsdData is_contract=True look_alike=False emitted=['opendata.data.models.government_us.CommodityPsdData']
+C_row_class federal_reserve::YieldCurve contract=FederalReserveYieldCurveObservation is_contract=False look_alike=False emitted=['opendata.data.models.federal_reserve_macro.FederalReserveYieldCurve']
+C_row_class_arm_can_differ reads={'government_us::CommodityPsdData': True, 'federal_reserve::YieldCurve': False} PASS=True
+D_population_reconciles provider=yfinance tag=DECLARE_AND_WITNESS here=11 carrier=26 providers=6 divergent=1 drift=['yfinance:DECLARE_AND_WITNESS carrier=26 here=11'] PASS=False
+E_seam tmx seam_verbs=['request'] served=[] blocked=['request']
+E_seam yfinance seam_verbs=[] served=[] blocked=[]
+E_seam_read_can_differ PASS=True
+F_verdict_enum off_enum=[] PASS=True
+G_ledger_cause cboe::FuturesCurve ruled_out=True no_ledger=- detail=NOT_DECLARABLE:The reviewed official All Access docs do not establish the fixed model
+G_ledger_cause federal_reserve::YieldCurve ruled_out=False no_ledger=- detail=-
+G_ledger_cause yfinance::BalanceSheet ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError detail=-
+G_ledger_cause_three_sided reads={'cboe::FuturesCurve': (True, False), 'federal_reserve::YieldCurve': (False, False), 'yfinance::BalanceSheet': (False, True)} PASS=True
+declare_block_face provider=yfinance tag=DECLARE_AND_WITNESS rows=11 verdicts={'NO_CODE_SITE': 10, 'QUERY_ONLY': 1} convertible=0 convertible_rows=[] movable=True seam_reachable=False arms=7 arms_passed=6 arms_failed=1 identity_set=5168e1e723999312
+axes_exit=1

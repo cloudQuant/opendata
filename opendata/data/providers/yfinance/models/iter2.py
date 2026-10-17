@@ -352,6 +352,7 @@ class YfinanceHistoricalDividendsFetcher(Fetcher[YfinanceDividendQuery, pd.Serie
 
     async_mode = "bounded_thread"
     canonical_model = "HistoricalDividends"
+    row_model: ClassVar[type[YfinanceDividendObservation]] = YfinanceDividendObservation
 
     capability = Capability(
         asset_class="security",

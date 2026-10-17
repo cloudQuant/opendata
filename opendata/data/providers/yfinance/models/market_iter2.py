@@ -323,6 +323,7 @@ class YfinanceCryptoHistoricalFetcher(YfinanceHistoryFetcher):
     model_id = "CryptoHistorical"
     canonical_model = "CryptoHistorical"
     domain = "yfinance_crypto_historical"
+    row_model: ClassVar[type[YfinanceHistoricalBar]] = YfinanceHistoricalBar
 
 
 class YfinanceCurrencyHistoricalFetcher(YfinanceHistoryFetcher):
@@ -331,6 +332,7 @@ class YfinanceCurrencyHistoricalFetcher(YfinanceHistoryFetcher):
     model_id = "CurrencyHistorical"
     canonical_model = "CurrencyHistorical"
     domain = "yfinance_currency_historical"
+    row_model: ClassVar[type[YfinanceHistoricalBar]] = YfinanceHistoricalBar
     query_type = YfinanceCurrencyHistoricalQuery
 
 
@@ -340,6 +342,7 @@ class YfinanceEquityHistoricalFetcher(YfinanceHistoryFetcher):
     model_id = "EquityHistorical"
     canonical_model = "EquityHistorical"
     domain = "yfinance_equity_historical"
+    row_model: ClassVar[type[YfinanceHistoricalBar]] = YfinanceHistoricalBar
     query_type = YfinanceEquityHistoricalQuery
 
 
@@ -349,6 +352,7 @@ class YfinanceEtfHistoricalFetcher(YfinanceHistoryFetcher):
     model_id = "EtfHistorical"
     canonical_model = "EtfHistorical"
     domain = "yfinance_etf_historical"
+    row_model: ClassVar[type[YfinanceHistoricalBar]] = YfinanceHistoricalBar
     query_type = YfinanceEtfHistoricalQuery
 
 
@@ -358,6 +362,7 @@ class YfinanceFuturesHistoricalFetcher(YfinanceHistoryFetcher):
     model_id = "FuturesHistorical"
     canonical_model = "FuturesHistorical"
     domain = "yfinance_futures_historical"
+    row_model: ClassVar[type[YfinanceHistoricalBar]] = YfinanceHistoricalBar
     query_type = YfinanceFuturesHistoricalQuery
 
 
@@ -367,6 +372,7 @@ class YfinanceIndexHistoricalFetcher(YfinanceHistoryFetcher):
     model_id = "IndexHistorical"
     canonical_model = "IndexHistorical"
     domain = "yfinance_index_historical"
+    row_model: ClassVar[type[YfinanceHistoricalBar]] = YfinanceHistoricalBar
 
 
 def _json_safe(value: object) -> object:
@@ -496,6 +502,7 @@ class YfinanceCompanyNewsFetcher(Fetcher[YfinanceNewsQuery, NewsRaw]):
 
     async_mode = "bounded_thread"
     canonical_model = "CompanyNews"
+    row_model: ClassVar[type[YfinanceCompanyNewsObservation]] = YfinanceCompanyNewsObservation
     capability = Capability(
         asset_class="equity",
         domain="yfinance_company_news",
@@ -618,6 +625,7 @@ class YfinanceEquityInfoFetcher(YfinancePayloadFetcher):
     model_id = "EquityInfo"
     canonical_model = "EquityInfo"
     domain = "yfinance_equity_info"
+    row_model: ClassVar[type[YfinancePayloadObservation]] = YfinancePayloadObservation
 
     def _fetch_one(self, symbol: str, ctx: FetchContext) -> object:
         from opendata.data.providers.yfinance.models import _sdk
@@ -631,6 +639,7 @@ class YfinanceEquityQuoteFetcher(YfinancePayloadFetcher):
     model_id = "EquityQuote"
     canonical_model = "EquityQuote"
     domain = "yfinance_equity_quote"
+    row_model: ClassVar[type[YfinancePayloadObservation]] = YfinancePayloadObservation
 
     def _fetch_one(self, symbol: str, ctx: FetchContext) -> object:
         from opendata.data.providers.yfinance.models import _sdk
@@ -644,6 +653,7 @@ class YfinanceEtfInfoFetcher(YfinancePayloadFetcher):
     model_id = "EtfInfo"
     canonical_model = "EtfInfo"
     domain = "yfinance_etf_info"
+    row_model: ClassVar[type[YfinancePayloadObservation]] = YfinancePayloadObservation
 
     def _fetch_one(self, symbol: str, ctx: FetchContext) -> object:
         from opendata.data.providers.yfinance.models import _sdk
@@ -681,6 +691,7 @@ class YfinanceKeyExecutivesFetcher(Fetcher[YfinanceCurrentSymbolQuery, Executive
     model_id = "KeyExecutives"
     canonical_model = "KeyExecutives"
     domain = "yfinance_key_executives"
+    row_model: ClassVar[type[YfinanceKeyExecutiveObservation]] = YfinanceKeyExecutiveObservation
 
     capability: ClassVar[Capability] = Capability(
         asset_class="security",
@@ -757,6 +768,7 @@ class YfinanceShareStatisticsFetcher(YfinancePayloadFetcher):
     model_id = "ShareStatistics"
     canonical_model = "ShareStatistics"
     domain = "yfinance_share_statistics"
+    row_model: ClassVar[type[YfinancePayloadObservation]] = YfinancePayloadObservation
     SHARE_FIELDS = frozenset(
         {
             "sharesOutstanding",
@@ -1724,6 +1736,7 @@ class YfinanceOptionsChainsFetcher(
 
     async_mode = "bounded_thread"
     canonical_model = "OptionsChains"
+    row_model: ClassVar[type[YfinanceOptionChainObservation]] = YfinanceOptionChainObservation
     capability = Capability(
         asset_class="option",
         domain="yfinance_options_chains",
@@ -1814,6 +1827,7 @@ class YfinancePriceTargetFetcher(Fetcher[YfinanceCurrentMultiSymbolQuery, PriceT
 
     async_mode = "bounded_thread"
     canonical_model = "PriceTargetConsensus"
+    row_model: ClassVar[type[YfinancePriceTargetConsensus]] = YfinancePriceTargetConsensus
     capability = Capability(
         asset_class="equity",
         domain="yfinance_price_target_consensus",

@@ -1,0 +1,7 @@
+# wave27 step1b: the 35 ids that failed in the wave-27 step-1 worktree, re-run after the pin re-base
+ids_population=35
+argv=['-m','pytest','-o','addopts=','-p','no:cacheprovider','-q','--tb=line','<%d ids>' % len(ids)
+rerun_exit=1
+summary=['/Users/yunjinqi/Documents/new_projects/opendata/tests/test_congress_cboe_iter2.py:599: pydantic_core._pydantic_core.ValidationError: 1 validation error for CongressAmendment', '/Users/yunjinqi/Documents/new_projects/opendata/tests/script_download_backend_harness.py:834: tests.script_download_backend_harness.DockerCommandError: Docker command failed: class=CalledProcessError stage=image-inspect return_code=1 stderr_sha256=5192198ad4329ee7ec763ca62c240c22c9a59b69e727d83a9ed52cf6679ca7d6 stderr_bytes=117', '28 failed, 7 passed in 80.76s (0:01:20)']
+yfinance_pin_assertions_after=0
+stderr_bytes=0

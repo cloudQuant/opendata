@@ -1,0 +1,12 @@
+# wave27 step1b: the producer's own refuse-to-write gate, read one generation after the re-base
+argv=['docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py']  # no --apply
+pin_rebase_exit=1
+stderr_bytes=0
+stdout_lines=7
+stdout_sha16=433daaeb50801c81
+reading_lines=
+  face: pin_entries=31
+  face: snapshot_payload_sha_before=bcdca191aa39064a8fc7040651c6694a572f5137d9c1d0868916b39ac284924d
+  face: matched=31 stale=0 missing=0
+  verdict: REFUSED - no stale pin to re-base, refusing to re-pin a moving digest
+gate_face=exit 1 here is the designed refusal: the census finds stale=0, so the producer will not re-pin a digest that has already settled. Green (exit 0) on this command would mean a product file drifted again and the fence is being silently re-pinned.
