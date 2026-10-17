@@ -1,0 +1,284 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/federal_reserve/claims.json",
+    "sha256": "c26e9e92e07c5c075c63bafa7aad234a78515958146b1f6e88ba8d88a555a4af"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "before_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "path": "opendata/data/models/federal_reserve_macro.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/InflationExpectations/contract.json",
+          "sha256": "cc89c0f001accf64236d55e5efb3a8c41fbc33bd4065ffa1ba8787b32b8a44b8"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "7fe5cd4431cdf80c1810db82c9a88b2819dd334803a68b786ae52b45205bc3eb",
+            "before_sha256": "7fe5cd4431cdf80c1810db82c9a88b2819dd334803a68b786ae52b45205bc3eb",
+            "path": "opendata/data/providers/federal_reserve/models/inflation_expectations.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          },
+          {
+            "after_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "before_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "path": "opendata/data/providers/federal_reserve/models/_iter2_common.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "before_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "path": "opendata/data/models/federal_reserve_macro.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/InflationExpectations/counterfact.json",
+          "sha256": "ff5eefea1661969466cf50030f949d205c6e1d8bbd3537e1f0a41e14442dbd64"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "7fe5cd4431cdf80c1810db82c9a88b2819dd334803a68b786ae52b45205bc3eb",
+            "before_sha256": "7fe5cd4431cdf80c1810db82c9a88b2819dd334803a68b786ae52b45205bc3eb",
+            "path": "opendata/data/providers/federal_reserve/models/inflation_expectations.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          },
+          {
+            "after_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "before_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "path": "opendata/data/providers/federal_reserve/models/_iter2_common.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "before_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "path": "opendata/data/models/federal_reserve_macro.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/InflationExpectations/direct.json",
+          "sha256": "7fdce336f545b58c14d09e41c2dd5d0004bc91aa5b4d3eb32f06a1e47579ea62"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "7fe5cd4431cdf80c1810db82c9a88b2819dd334803a68b786ae52b45205bc3eb",
+            "before_sha256": "7fe5cd4431cdf80c1810db82c9a88b2819dd334803a68b786ae52b45205bc3eb",
+            "path": "opendata/data/providers/federal_reserve/models/inflation_expectations.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          },
+          {
+            "after_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "before_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "path": "opendata/data/providers/federal_reserve/models/_iter2_common.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "before_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "path": "opendata/data/models/federal_reserve_macro.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/InflationExpectations/implementation.json",
+          "sha256": "53ee62f7a28bfc32e44d9ca7d3b7280e21453a780855314ace6f6c78f88f7406"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "7fe5cd4431cdf80c1810db82c9a88b2819dd334803a68b786ae52b45205bc3eb",
+            "before_sha256": "7fe5cd4431cdf80c1810db82c9a88b2819dd334803a68b786ae52b45205bc3eb",
+            "path": "opendata/data/providers/federal_reserve/models/inflation_expectations.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          },
+          {
+            "after_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "before_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "path": "opendata/data/providers/federal_reserve/models/_iter2_common.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "before_sha256": "dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+            "path": "opendata/data/models/federal_reserve_macro.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/InflationExpectations/service.json",
+          "sha256": "0daa7ada2a4bfb4121495a120ccd33360c6ce6553ac72055b99f27c0614a1e5e"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "7fe5cd4431cdf80c1810db82c9a88b2819dd334803a68b786ae52b45205bc3eb",
+            "before_sha256": "7fe5cd4431cdf80c1810db82c9a88b2819dd334803a68b786ae52b45205bc3eb",
+            "path": "opendata/data/providers/federal_reserve/models/inflation_expectations.py"
+          },
+          {
+            "after_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "before_sha256": "98106cc6ed7340853b19f82f752cc42b924a094689d32e364ca8cfed96a74df7",
+            "path": "opendata/data/providers/federal_reserve/_iter2_client.py"
+          },
+          {
+            "after_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "before_sha256": "6f7a0513683b813d2639fe4a6bf735cae581b00cfd76e428712076d76b89ba8f",
+            "path": "opendata/data/providers/federal_reserve/models/_iter2_common.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "InflationExpectations",
+  "model_identity": "federal_reserve::InflationExpectations",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "federal_reserve",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T03:11:16Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "InflationExpectations"
+}

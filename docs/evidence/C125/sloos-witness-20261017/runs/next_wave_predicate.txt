@@ -1,0 +1,30 @@
+POSITIVE_CONTROL fred::SeniorLoanOfficerSurvey status=OFFLINE_ACCEPTED grant=6 expected_grant=6 -> the instrument must see the grant this wave ran on
+identity_count=350 accepted=257 residue=93
+truth_table bound/row_model/witness/preflight/grant -> n (each False is one edit):
+  bound=True row_model=False witness=False preflight=False grant=NO_WITNESS      58
+  bound=False row_model=False witness=False preflight=False grant=NO_WITNESS     32
+  bound=True row_model=False witness=False preflight=True grant=NO_WITNESS       2
+  bound=True row_model=True witness=False preflight=True grant=NO_WITNESS        1
+grant_histogram={'NO_WITNESS': 93}
+SHARD_ONLY_ROWS=1 ['sec::InsiderTrading']
+PREFLIGHT_RESIDUE=3 (these fetchers consult the request budget, so their carrier must answer every leg or the runner refuses before transport):
+  intrinio::ForwardEbitdaEstimates@grant=NO_WITNESS@row_model=ABSENT
+  intrinio::ForwardSalesEstimates@grant=NO_WITNESS@row_model=ABSENT
+  sec::InsiderTrading@grant=NO_WITNESS@row_model=SecInsiderTransaction
+per_provider_residue:
+  yfinance               residue=29 [bound=False row_model=False witness=False preflight=False grant=NO_WITNESS]=2 [bound=True row_model=False witness=False preflight=False grant=NO_WITNESS]=27
+  tmx                    residue=24 [bound=False row_model=False witness=False preflight=False grant=NO_WITNESS]=16 [bound=True row_model=False witness=False preflight=False grant=NO_WITNESS]=8
+  nasdaq                 residue= 9 [bound=True row_model=False witness=False preflight=False grant=NO_WITNESS]=9
+  government_us          residue= 6 [bound=False row_model=False witness=False preflight=False grant=NO_WITNESS]=1 [bound=True row_model=False witness=False preflight=False grant=NO_WITNESS]=5
+  deribit                residue= 5 [bound=True row_model=False witness=False preflight=False grant=NO_WITNESS]=5
+  intrinio               residue= 3 [bound=False row_model=False witness=False preflight=False grant=NO_WITNESS]=1 [bound=True row_model=False witness=False preflight=True grant=NO_WITNESS]=2
+  seeking_alpha          residue= 3 [bound=False row_model=False witness=False preflight=False grant=NO_WITNESS]=3
+  wsj                    residue= 3 [bound=False row_model=False witness=False preflight=False grant=NO_WITNESS]=3
+  cboe                   residue= 2 [bound=False row_model=False witness=False preflight=False grant=NO_WITNESS]=2
+  econdb                 residue= 2 [bound=False row_model=False witness=False preflight=False grant=NO_WITNESS]=2
+  eia                    residue= 2 [bound=True row_model=False witness=False preflight=False grant=NO_WITNESS]=2
+  federal_reserve        residue= 2 [bound=True row_model=False witness=False preflight=False grant=NO_WITNESS]=2
+  biztoc                 residue= 1 [bound=False row_model=False witness=False preflight=False grant=NO_WITNESS]=1
+  sec                    residue= 1 [bound=True row_model=True witness=False preflight=True grant=NO_WITNESS]=1
+  stockgrid              residue= 1 [bound=False row_model=False witness=False preflight=False grant=NO_WITNESS]=1
+NEXT_WAVE_BUCKETS_OK=True

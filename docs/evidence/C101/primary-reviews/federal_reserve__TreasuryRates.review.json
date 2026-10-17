@@ -1,0 +1,334 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/federal_reserve/claims.json",
+    "sha256": "c26e9e92e07c5c075c63bafa7aad234a78515958146b1f6e88ba8d88a555a4af"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/TreasuryRates/contract.json",
+          "sha256": "6aa03e4f8947802968b5d16e11649355d04a9f3e0dcfd175b0d8d4271219c048"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "4688d805ac84327dea8dd2745c322bc627e90db8d3c1be06e3270f6f934d776c",
+            "before_sha256": "4688d805ac84327dea8dd2745c322bc627e90db8d3c1be06e3270f6f934d776c",
+            "path": "opendata/data/providers/federal_reserve/models/treasury_rates.py"
+          },
+          {
+            "after_sha256": "58eb1d30c8756e7567458b0683f27a293d7579ad1ab2ffe5e26f5c8e146b6a65",
+            "before_sha256": "58eb1d30c8756e7567458b0683f27a293d7579ad1ab2ffe5e26f5c8e146b6a65",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "165e4ed5dfef841d3f7da7a6c796d2741c01bb547202d50affbf71b248183c8d",
+            "before_sha256": "165e4ed5dfef841d3f7da7a6c796d2741c01bb547202d50affbf71b248183c8d",
+            "path": "opendata/data/providers/_engine/decoders.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/TreasuryRates/counterfact.json",
+          "sha256": "1b9cc82fc7968ce5929502f14df21b6a624f94a35a100c9fdcd5c7387fef6f92"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "4688d805ac84327dea8dd2745c322bc627e90db8d3c1be06e3270f6f934d776c",
+            "before_sha256": "4688d805ac84327dea8dd2745c322bc627e90db8d3c1be06e3270f6f934d776c",
+            "path": "opendata/data/providers/federal_reserve/models/treasury_rates.py"
+          },
+          {
+            "after_sha256": "58eb1d30c8756e7567458b0683f27a293d7579ad1ab2ffe5e26f5c8e146b6a65",
+            "before_sha256": "58eb1d30c8756e7567458b0683f27a293d7579ad1ab2ffe5e26f5c8e146b6a65",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "165e4ed5dfef841d3f7da7a6c796d2741c01bb547202d50affbf71b248183c8d",
+            "before_sha256": "165e4ed5dfef841d3f7da7a6c796d2741c01bb547202d50affbf71b248183c8d",
+            "path": "opendata/data/providers/_engine/decoders.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/TreasuryRates/direct.json",
+          "sha256": "bc1f0d5ef94f1225fb3b31ef6fbb65c687bb467359027fe9ce99c84fd60b25b8"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "4688d805ac84327dea8dd2745c322bc627e90db8d3c1be06e3270f6f934d776c",
+            "before_sha256": "4688d805ac84327dea8dd2745c322bc627e90db8d3c1be06e3270f6f934d776c",
+            "path": "opendata/data/providers/federal_reserve/models/treasury_rates.py"
+          },
+          {
+            "after_sha256": "58eb1d30c8756e7567458b0683f27a293d7579ad1ab2ffe5e26f5c8e146b6a65",
+            "before_sha256": "58eb1d30c8756e7567458b0683f27a293d7579ad1ab2ffe5e26f5c8e146b6a65",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "165e4ed5dfef841d3f7da7a6c796d2741c01bb547202d50affbf71b248183c8d",
+            "before_sha256": "165e4ed5dfef841d3f7da7a6c796d2741c01bb547202d50affbf71b248183c8d",
+            "path": "opendata/data/providers/_engine/decoders.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/TreasuryRates/implementation.json",
+          "sha256": "f81252ee828db44187c89503cd2e2fcf1f75cca7d1a06d7ed3954a05ba99d312"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "4688d805ac84327dea8dd2745c322bc627e90db8d3c1be06e3270f6f934d776c",
+            "before_sha256": "4688d805ac84327dea8dd2745c322bc627e90db8d3c1be06e3270f6f934d776c",
+            "path": "opendata/data/providers/federal_reserve/models/treasury_rates.py"
+          },
+          {
+            "after_sha256": "58eb1d30c8756e7567458b0683f27a293d7579ad1ab2ffe5e26f5c8e146b6a65",
+            "before_sha256": "58eb1d30c8756e7567458b0683f27a293d7579ad1ab2ffe5e26f5c8e146b6a65",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "165e4ed5dfef841d3f7da7a6c796d2741c01bb547202d50affbf71b248183c8d",
+            "before_sha256": "165e4ed5dfef841d3f7da7a6c796d2741c01bb547202d50affbf71b248183c8d",
+            "path": "opendata/data/providers/_engine/decoders.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "before_sha256": "99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+            "path": "opendata/data/models/federal_reserve_clean_rates.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:99c1ff3be1e1c67fcb78444f8c21b9852139753b590a55c6300794687fc87c21",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/federal_reserve/TreasuryRates/service.json",
+          "sha256": "994b19ad3bb580d12085fdda4e83159c1b094ba61c11d543a95a40363c13934f"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "before_sha256": "872c66897afce7b7c6b0fdf19f1653da6c7eb506ecb8ddc01c59d78ed5ba7599",
+            "path": "opendata/data/providers/federal_reserve/registration.py"
+          },
+          {
+            "after_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "before_sha256": "7950eb626b5140460c91740149e310554133a2aa4099ba2719e890a26e0e450c",
+            "path": "opendata/data/providers/federal_reserve/provider.py"
+          },
+          {
+            "after_sha256": "4688d805ac84327dea8dd2745c322bc627e90db8d3c1be06e3270f6f934d776c",
+            "before_sha256": "4688d805ac84327dea8dd2745c322bc627e90db8d3c1be06e3270f6f934d776c",
+            "path": "opendata/data/providers/federal_reserve/models/treasury_rates.py"
+          },
+          {
+            "after_sha256": "58eb1d30c8756e7567458b0683f27a293d7579ad1ab2ffe5e26f5c8e146b6a65",
+            "before_sha256": "58eb1d30c8756e7567458b0683f27a293d7579ad1ab2ffe5e26f5c8e146b6a65",
+            "path": "opendata/data/providers/federal_reserve/specs.py"
+          },
+          {
+            "after_sha256": "165e4ed5dfef841d3f7da7a6c796d2741c01bb547202d50affbf71b248183c8d",
+            "before_sha256": "165e4ed5dfef841d3f7da7a6c796d2741c01bb547202d50affbf71b248183c8d",
+            "path": "opendata/data/providers/_engine/decoders.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "TreasuryRates",
+  "model_identity": "federal_reserve::TreasuryRates",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "federal_reserve",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T03:11:16Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "TreasuryRates"
+}

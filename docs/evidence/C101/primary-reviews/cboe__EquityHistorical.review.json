@@ -1,0 +1,259 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/cboe/claims.json",
+    "sha256": "ebf2c0b212c086722eeeddd9c138a814c7e271a52c7008f8a2abb056c809c527"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+            "before_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+            "path": "opendata/data/models/congress_cboe_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/EquityHistorical/contract.json",
+          "sha256": "93722d65d449bbf841fa3f7adbae672e336a40e1822a0f263380577294dc5cdf"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "before_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+            "before_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+            "path": "opendata/data/providers/cboe/models/all_access.py"
+          },
+          {
+            "after_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+            "before_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+            "path": "opendata/data/providers/cboe/models/_all_access_client.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+            "before_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+            "path": "opendata/data/models/congress_cboe_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/EquityHistorical/counterfact.json",
+          "sha256": "f53ce7a08ca26152792ad91c4276e69ceb662bb52b521c1e4c07966a69fc5402"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "before_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+            "before_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+            "path": "opendata/data/providers/cboe/models/all_access.py"
+          },
+          {
+            "after_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+            "before_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+            "path": "opendata/data/providers/cboe/models/_all_access_client.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+            "before_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+            "path": "opendata/data/models/congress_cboe_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/EquityHistorical/direct.json",
+          "sha256": "01d66833489a789e6e88b7b1561d67d0a044019dce913e62adc7e737bbf64c4a"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "before_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+            "before_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+            "path": "opendata/data/providers/cboe/models/all_access.py"
+          },
+          {
+            "after_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+            "before_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+            "path": "opendata/data/providers/cboe/models/_all_access_client.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+            "before_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+            "path": "opendata/data/models/congress_cboe_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/EquityHistorical/implementation.json",
+          "sha256": "8e94a9ca1809cf9c7ecc3fbcba5ff2d428cb4f23401887804b525ae4cfe4460d"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "before_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+            "before_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+            "path": "opendata/data/providers/cboe/models/all_access.py"
+          },
+          {
+            "after_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+            "before_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+            "path": "opendata/data/providers/cboe/models/_all_access_client.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+            "before_sha256": "71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+            "path": "opendata/data/models/congress_cboe_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:71152ab3a24391db80cd0418f8505741c6356c05256a655f58b18d32f5e97829",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/EquityHistorical/service.json",
+          "sha256": "2d0f3ee2e7960a1907902ea86d73c83b1607e5987e24937451ad02ea9ada2534"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "before_sha256": "5d223f732fa706f4f0be6b94ff598a400569b1a5fce13617a6d982b522553e29",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+            "before_sha256": "963f831df07022ee1f25bd55486b67e60861081974333ea9d44245d94d10209f",
+            "path": "opendata/data/providers/cboe/models/all_access.py"
+          },
+          {
+            "after_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+            "before_sha256": "4cfc8c7c7083ac520664ff4165246e87a39a2e626393f4d35d0dbbe2bd3be6b8",
+            "path": "opendata/data/providers/cboe/models/_all_access_client.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "EquityHistorical",
+  "model_identity": "cboe::EquityHistorical",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "cboe",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T03:08:10Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "EquityHistorical"
+}

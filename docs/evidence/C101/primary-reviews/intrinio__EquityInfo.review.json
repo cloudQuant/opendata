@@ -1,0 +1,234 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/intrinio/claims.json",
+    "sha256": "89e0ec39f4b1fcc61b879ccc96b08c6a0c786c67436904be36e4107e200d215b"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "before_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "path": "opendata/data/models/intrinio_market_clean.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/EquityInfo/contract.json",
+          "sha256": "82004e381accf6b490791643c52c376ff818645b895b9f61f95a2d814827151a"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "56f87e339fcc0b461379856d225317fc0187fa3b85ee526a476e4551eb2f28b9",
+            "before_sha256": "56f87e339fcc0b461379856d225317fc0187fa3b85ee526a476e4551eb2f28b9",
+            "path": "opendata/data/providers/intrinio/models/iter2_market_clean.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "before_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "path": "opendata/data/models/intrinio_market_clean.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/EquityInfo/counterfact.json",
+          "sha256": "8e839a843e538f5ab0208be8f78e3efaf9256f250777b4a8898022cc68d862ee"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "56f87e339fcc0b461379856d225317fc0187fa3b85ee526a476e4551eb2f28b9",
+            "before_sha256": "56f87e339fcc0b461379856d225317fc0187fa3b85ee526a476e4551eb2f28b9",
+            "path": "opendata/data/providers/intrinio/models/iter2_market_clean.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "before_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "path": "opendata/data/models/intrinio_market_clean.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/EquityInfo/direct.json",
+          "sha256": "d51c5ec230b6433586354ec905e01cf8b9d1944020d3a878c71fe3db15323743"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "56f87e339fcc0b461379856d225317fc0187fa3b85ee526a476e4551eb2f28b9",
+            "before_sha256": "56f87e339fcc0b461379856d225317fc0187fa3b85ee526a476e4551eb2f28b9",
+            "path": "opendata/data/providers/intrinio/models/iter2_market_clean.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "before_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "path": "opendata/data/models/intrinio_market_clean.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/EquityInfo/implementation.json",
+          "sha256": "7035838bb814959c2b3690781b696e7988b94679125809a71a0d4162869a3b37"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "56f87e339fcc0b461379856d225317fc0187fa3b85ee526a476e4551eb2f28b9",
+            "before_sha256": "56f87e339fcc0b461379856d225317fc0187fa3b85ee526a476e4551eb2f28b9",
+            "path": "opendata/data/providers/intrinio/models/iter2_market_clean.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "before_sha256": "aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+            "path": "opendata/data/models/intrinio_market_clean.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:aae499cd802fa2d1ceec1d6032e5d3667a1e06d1d9e41504997f047387aac35a",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/EquityInfo/service.json",
+          "sha256": "257cd95d1aa82c73f92ce436a076a6ab4cb5bce12c76ba0d893fb12460c539f7"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "56f87e339fcc0b461379856d225317fc0187fa3b85ee526a476e4551eb2f28b9",
+            "before_sha256": "56f87e339fcc0b461379856d225317fc0187fa3b85ee526a476e4551eb2f28b9",
+            "path": "opendata/data/providers/intrinio/models/iter2_market_clean.py"
+          },
+          {
+            "after_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "before_sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+            "path": "opendata/data/http_client.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "EquityInfo",
+  "model_identity": "intrinio::EquityInfo",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "intrinio",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T03:24:27Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "EquityInfo"
+}

@@ -1,0 +1,234 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/intrinio/claims.json",
+    "sha256": "89e0ec39f4b1fcc61b879ccc96b08c6a0c786c67436904be36e4107e200d215b"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "before_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "path": "opendata/data/models/intrinio_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/ReportedFinancials/contract.json",
+          "sha256": "aae7dc97f730ca0ee9cab4b3c8eec5fde97099f8d0dba316e5a348aff1b071b2"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "before_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "path": "opendata/data/providers/intrinio/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "before_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "path": "opendata/data/models/intrinio_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/ReportedFinancials/counterfact.json",
+          "sha256": "d3b9a482761d2547211bb261765f3a8c9f06aaac2d5df98da96a78df2c5e5f8c"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "before_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "path": "opendata/data/providers/intrinio/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "before_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "path": "opendata/data/models/intrinio_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/ReportedFinancials/direct.json",
+          "sha256": "7339050e7337e1ff420b55575355b5c1e1b78e9a8223bd7dc88b77976a15c9f8"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "before_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "path": "opendata/data/providers/intrinio/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "before_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "path": "opendata/data/models/intrinio_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/ReportedFinancials/implementation.json",
+          "sha256": "0fa6aafc88ee9e7f2b9c49c7b472e318563e4b77b90d9224e8a623534a5486ca"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "before_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "path": "opendata/data/providers/intrinio/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "before_sha256": "ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+            "path": "opendata/data/models/intrinio_financials.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:ce88a9824ee98570ea9a747387a4f2abfeca2de394d3919601a3e2958575f13b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/ReportedFinancials/service.json",
+          "sha256": "da367b272bc20f5921284113ac31a899081c2c7560c42e21bf7170a184f07bae"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "before_sha256": "d28914c199897a3705cf81e8a149ff102283616f4eef50ba94c0515ae2946654",
+            "path": "opendata/data/providers/intrinio/models/iter2_financials.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "ReportedFinancials",
+  "model_identity": "intrinio::ReportedFinancials",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "intrinio",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T03:24:27Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "ReportedFinancials"
+}

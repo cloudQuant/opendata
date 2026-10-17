@@ -1,7 +1,7 @@
 {
   "claims_document": {
     "path": "docs/evidence/C101/ecb/claims.json",
-    "sha256": "982dd15b63409e2e69d9bf318a6f99da4f582aa495abb687bc485cc17ed8b4f7"
+    "sha256": "2ee3742d0c8f160edc3b428ae5f5e465d3c54c6bae03d9f225e20642bbc3282b"
   },
   "decision": "ACCEPT",
   "evidence_snapshot": {
@@ -22,7 +22,7 @@
         "contract_version": "sha256:53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
         "receipt": {
           "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/contract.json",
-          "sha256": "654b6f958ad94853584686458dfe370b0b73180b66ed12e77fe8c76557c01ad0"
+          "sha256": "40cf20e6974d28a5ebcad06e1f40120a5a38146abf8c533ccebfcbc65a52bdaa"
         },
         "source_pins": [
           {
@@ -78,7 +78,7 @@
         "contract_version": "sha256:53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
         "receipt": {
           "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/counterfact.json",
-          "sha256": "cb0e14648ede288d016a37e3c3223073df0345909dab315fac5b433e9ad7b0e1"
+          "sha256": "23e06e5f6ab5ed8f6a4482acd91cae7501f71052dcaf5a2d20d2c64c2c7c058c"
         },
         "source_pins": [
           {
@@ -134,7 +134,7 @@
         "contract_version": "sha256:53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
         "receipt": {
           "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/direct.json",
-          "sha256": "c1554fcedbe4507bcac17a7cb82b5f1da45abe769a7d20146e12269dccc2603e"
+          "sha256": "b376a36383706f0a593b39e961dd3d529087e92876ae727c923f8e83e239597a"
         },
         "source_pins": [
           {
@@ -190,7 +190,7 @@
         "contract_version": "sha256:53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
         "receipt": {
           "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/implementation.json",
-          "sha256": "d46dfd2f77d84f116c7f7998236522f50d7dc4e406c6b24a46394504653059f9"
+          "sha256": "d3b077674cba7774d8f83f3ba4db261840f72a846ee711a41a75699706a7773d"
         },
         "source_pins": [
           {
@@ -246,7 +246,7 @@
         "contract_version": "sha256:53107a380a606eeabf2bff239c6b0461d98da917d56ae43df25b2e677956794a",
         "receipt": {
           "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/service.json",
-          "sha256": "6ed575b53ce006a90d00efcfa935254b40d607493d345aecd3b9fbf114bb416f"
+          "sha256": "0ddeb10795d47efba9e546dc98699a90cd7c25aa9bc8019ec54505ae57da7400"
         },
         "source_pins": [
           {
@@ -300,94 +300,7 @@
   "provider": "ecb",
   "receipt_schema_version": 1,
   "record_type": "primary_review",
-  "reexecution": {
-    "contract": {
-      "argv": [
-        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
-        "scripts/quality/iter2_claims_probe_runner.py",
-        "--provider",
-        "ecb",
-        "--model",
-        "CurrencyReferenceRates",
-        "--phase",
-        "contract",
-        "--evidence-root",
-        "docs/evidence/C101"
-      ],
-      "recorded_exit_code": 0,
-      "reviewer_exit_code": 0,
-      "status": "matched"
-    },
-    "counterfact": {
-      "argv": [
-        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
-        "scripts/quality/iter2_claims_probe_runner.py",
-        "--provider",
-        "ecb",
-        "--model",
-        "CurrencyReferenceRates",
-        "--phase",
-        "counterfact",
-        "--evidence-root",
-        "docs/evidence/C101"
-      ],
-      "recorded_exit_code": 0,
-      "reviewer_exit_code": 0,
-      "status": "matched"
-    },
-    "direct": {
-      "argv": [
-        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
-        "scripts/quality/iter2_claims_probe_runner.py",
-        "--provider",
-        "ecb",
-        "--model",
-        "CurrencyReferenceRates",
-        "--phase",
-        "direct",
-        "--evidence-root",
-        "docs/evidence/C101"
-      ],
-      "recorded_exit_code": 0,
-      "reviewer_exit_code": 0,
-      "status": "matched"
-    },
-    "implementation": {
-      "argv": [
-        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
-        "scripts/quality/iter2_claims_probe_runner.py",
-        "--provider",
-        "ecb",
-        "--model",
-        "CurrencyReferenceRates",
-        "--phase",
-        "implementation",
-        "--evidence-root",
-        "docs/evidence/C101"
-      ],
-      "recorded_exit_code": 0,
-      "reviewer_exit_code": 0,
-      "status": "matched"
-    },
-    "service": {
-      "argv": [
-        "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python",
-        "scripts/quality/iter2_claims_probe_runner.py",
-        "--provider",
-        "ecb",
-        "--model",
-        "CurrencyReferenceRates",
-        "--phase",
-        "service",
-        "--evidence-root",
-        "docs/evidence/C101"
-      ],
-      "recorded_exit_code": 0,
-      "reviewer_exit_code": 0,
-      "status": "matched"
-    }
-  },
-  "reviewed_at_utc": "2026-10-16T04:14:45Z",
+  "reviewed_at_utc": "2026-10-17T03:09:13Z",
   "reviewer_id": "iter2-acceptance-reviewer",
   "reviewer_model": "qoder-cli-agent",
   "reviewer_role": "acceptance_reviewer",

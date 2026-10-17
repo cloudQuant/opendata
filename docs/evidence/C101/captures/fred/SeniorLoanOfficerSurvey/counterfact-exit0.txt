@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider fred --model SeniorLoanOfficerSurvey --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FredProviderError", "refusal_code": "FRED_BAD_OBSERVATION", "rejected": [], "status": null}, "reason": "publishing a non-numeric 'value' token in one leg's page breaks the documented source-token float conversion every SLOOS spread observation goes through, so the adapter must refuse the whole selection with FRED_BAD_OBSERVATION surfaced as a ProviderEngineError-shaped FredProviderError instead of coercing the cell or silently dropping the observation; untampered control produced 12 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

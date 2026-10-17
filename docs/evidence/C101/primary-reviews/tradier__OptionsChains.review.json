@@ -1,0 +1,284 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/tradier/claims.json",
+    "sha256": "2e5ba4d14512a5f76033d79112e3975c45b7d8ee3d22e65d3b175fca63704797"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/OptionsChains/contract.json",
+          "sha256": "c4629277e56c3c6dbd135590dc379aa78127745b211f7c7ac70a707e66f2aba3"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "7c347ea4c964be408127f90892972cfa7aeda1390dffd7bd0e41a691a3927973",
+            "before_sha256": "7c347ea4c964be408127f90892972cfa7aeda1390dffd7bd0e41a691a3927973",
+            "path": "opendata/data/providers/tradier/models/options_chains.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/OptionsChains/counterfact.json",
+          "sha256": "9a593f3b36388b1ad10ff7b2bedaedb04118cf2f6728e87b899b926b52f080ab"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "7c347ea4c964be408127f90892972cfa7aeda1390dffd7bd0e41a691a3927973",
+            "before_sha256": "7c347ea4c964be408127f90892972cfa7aeda1390dffd7bd0e41a691a3927973",
+            "path": "opendata/data/providers/tradier/models/options_chains.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/OptionsChains/direct.json",
+          "sha256": "192888ecf8590ff760c1ab2de93239764d6d6fbb707161df939c97af7322feaa"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "7c347ea4c964be408127f90892972cfa7aeda1390dffd7bd0e41a691a3927973",
+            "before_sha256": "7c347ea4c964be408127f90892972cfa7aeda1390dffd7bd0e41a691a3927973",
+            "path": "opendata/data/providers/tradier/models/options_chains.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/OptionsChains/implementation.json",
+          "sha256": "0c60ca79aa3ba769eca4e7faa7e1fd70aeb0d06dd6f9b69a7531412dbe94da0c"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "7c347ea4c964be408127f90892972cfa7aeda1390dffd7bd0e41a691a3927973",
+            "before_sha256": "7c347ea4c964be408127f90892972cfa7aeda1390dffd7bd0e41a691a3927973",
+            "path": "opendata/data/providers/tradier/models/options_chains.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "before_sha256": "0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+            "path": "opendata/data/models/tradier.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:0add1ede690282a2565f24cdce8bf91f4976b8aca603ad0cf43868cc97216e28",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/tradier/OptionsChains/service.json",
+          "sha256": "d440c276161743d5f705ad24aad72d095f3f2b21ea065517ca09040d5042eca2"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "before_sha256": "40c68738d5ab281ab121b973941415be28c57546ffc6719ef34647c2a8953743",
+            "path": "opendata/data/providers/tradier/registration.py"
+          },
+          {
+            "after_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "before_sha256": "a7fb94e5e3f73478144c6561ceea3f3e51656a3248415ef89fa454f90d96d8ce",
+            "path": "opendata/data/providers/tradier/provider.py"
+          },
+          {
+            "after_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "before_sha256": "52257105a1e12321c42e429244d8d397d3efe2f0392e379cf7dc68112fd4ab6a",
+            "path": "opendata/data/providers/tradier/models/_client.py"
+          },
+          {
+            "after_sha256": "7c347ea4c964be408127f90892972cfa7aeda1390dffd7bd0e41a691a3927973",
+            "before_sha256": "7c347ea4c964be408127f90892972cfa7aeda1390dffd7bd0e41a691a3927973",
+            "path": "opendata/data/providers/tradier/models/options_chains.py"
+          },
+          {
+            "after_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "before_sha256": "6337b2d5039fc0949589a53357f00d840ecbc821347cb6e9b93cc7dd3ef9ed7e",
+            "path": "opendata/data/providers/tradier/models/_queries.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "OptionsChains",
+  "model_identity": "tradier::OptionsChains",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "tradier",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T03:28:11Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "OptionsChains"
+}

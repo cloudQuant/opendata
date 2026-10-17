@@ -1,0 +1,334 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/fred/claims.json",
+    "sha256": "b733ea14ee30287424f1a5631417750c3614ff176e2c657b365a0c05301bde23"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+            "before_sha256": "49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+            "path": "opendata/data/models/fred_macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/RetailPrices/contract.json",
+          "sha256": "be517e6b6d2f412afb57527b6682c7833f0da5549c09d665912610958643236b"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "eb3f9f6ffc6d844a5515e9cf9d38e2264aaada5940c63290a3b3522d04371c25",
+            "before_sha256": "eb3f9f6ffc6d844a5515e9cf9d38e2264aaada5940c63290a3b3522d04371c25",
+            "path": "opendata/data/providers/fred/models/iter2_macro.py"
+          },
+          {
+            "after_sha256": "9f28d23f87f0ccf5ab26565ae6dadbe24f3c019235dfc71a8a58cf346eaf4f5a",
+            "before_sha256": "9f28d23f87f0ccf5ab26565ae6dadbe24f3c019235dfc71a8a58cf346eaf4f5a",
+            "path": "opendata/data/providers/fred/models/iter2_macro_remaining.py"
+          },
+          {
+            "after_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "before_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+            "before_sha256": "49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+            "path": "opendata/data/models/fred_macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/RetailPrices/counterfact.json",
+          "sha256": "1b45243c3363f7e30e2e309488759afbc6081ae086e0cb1edcbde1914fb28976"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "eb3f9f6ffc6d844a5515e9cf9d38e2264aaada5940c63290a3b3522d04371c25",
+            "before_sha256": "eb3f9f6ffc6d844a5515e9cf9d38e2264aaada5940c63290a3b3522d04371c25",
+            "path": "opendata/data/providers/fred/models/iter2_macro.py"
+          },
+          {
+            "after_sha256": "9f28d23f87f0ccf5ab26565ae6dadbe24f3c019235dfc71a8a58cf346eaf4f5a",
+            "before_sha256": "9f28d23f87f0ccf5ab26565ae6dadbe24f3c019235dfc71a8a58cf346eaf4f5a",
+            "path": "opendata/data/providers/fred/models/iter2_macro_remaining.py"
+          },
+          {
+            "after_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "before_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+            "before_sha256": "49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+            "path": "opendata/data/models/fred_macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/RetailPrices/direct.json",
+          "sha256": "256fcd1c8b15bb9fc05cb8475207a7957a9c04e27a0e67e3921d2df9dd858ab8"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "eb3f9f6ffc6d844a5515e9cf9d38e2264aaada5940c63290a3b3522d04371c25",
+            "before_sha256": "eb3f9f6ffc6d844a5515e9cf9d38e2264aaada5940c63290a3b3522d04371c25",
+            "path": "opendata/data/providers/fred/models/iter2_macro.py"
+          },
+          {
+            "after_sha256": "9f28d23f87f0ccf5ab26565ae6dadbe24f3c019235dfc71a8a58cf346eaf4f5a",
+            "before_sha256": "9f28d23f87f0ccf5ab26565ae6dadbe24f3c019235dfc71a8a58cf346eaf4f5a",
+            "path": "opendata/data/providers/fred/models/iter2_macro_remaining.py"
+          },
+          {
+            "after_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "before_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+            "before_sha256": "49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+            "path": "opendata/data/models/fred_macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/RetailPrices/implementation.json",
+          "sha256": "0b32fb974a16a09c28374728b499dcc58e85ac4facc513058cd21a9f878528d6"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "eb3f9f6ffc6d844a5515e9cf9d38e2264aaada5940c63290a3b3522d04371c25",
+            "before_sha256": "eb3f9f6ffc6d844a5515e9cf9d38e2264aaada5940c63290a3b3522d04371c25",
+            "path": "opendata/data/providers/fred/models/iter2_macro.py"
+          },
+          {
+            "after_sha256": "9f28d23f87f0ccf5ab26565ae6dadbe24f3c019235dfc71a8a58cf346eaf4f5a",
+            "before_sha256": "9f28d23f87f0ccf5ab26565ae6dadbe24f3c019235dfc71a8a58cf346eaf4f5a",
+            "path": "opendata/data/providers/fred/models/iter2_macro_remaining.py"
+          },
+          {
+            "after_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "before_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+            "before_sha256": "49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+            "path": "opendata/data/models/fred_macro_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:49ee17eae1038a674347e1a327b82cae2f09b71842f68e1577dc74ac8818879a",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/RetailPrices/service.json",
+          "sha256": "de6436c129664180dd140126b16f91188da7c8285e115f3dfd072db6c051abe0"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "eb3f9f6ffc6d844a5515e9cf9d38e2264aaada5940c63290a3b3522d04371c25",
+            "before_sha256": "eb3f9f6ffc6d844a5515e9cf9d38e2264aaada5940c63290a3b3522d04371c25",
+            "path": "opendata/data/providers/fred/models/iter2_macro.py"
+          },
+          {
+            "after_sha256": "9f28d23f87f0ccf5ab26565ae6dadbe24f3c019235dfc71a8a58cf346eaf4f5a",
+            "before_sha256": "9f28d23f87f0ccf5ab26565ae6dadbe24f3c019235dfc71a8a58cf346eaf4f5a",
+            "path": "opendata/data/providers/fred/models/iter2_macro_remaining.py"
+          },
+          {
+            "after_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "before_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "RetailPrices",
+  "model_identity": "fred::RetailPrices",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "fred",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T03:20:46Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "RetailPrices"
+}

@@ -1,0 +1,259 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/fred/claims.json",
+    "sha256": "b733ea14ee30287424f1a5631417750c3614ff176e2c657b365a0c05301bde23"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/EconomicCalendar/contract.json",
+          "sha256": "04ebefe6430f5afefaa3c3c7254626867eb6b8749c308b76e0f06f7ab0f0d60e"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "before_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "path": "opendata/data/providers/fred/models/iter2_auxiliary.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/EconomicCalendar/counterfact.json",
+          "sha256": "36418d24d3004af44d4a182c550e41e57223e8a9ec39cbaa8eea6ab234fec8f1"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "before_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "path": "opendata/data/providers/fred/models/iter2_auxiliary.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/EconomicCalendar/direct.json",
+          "sha256": "0fe1958318c6fc02eefb4d35dfb0af213ff629c01b204ec7a97889332bf7a1f1"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "before_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "path": "opendata/data/providers/fred/models/iter2_auxiliary.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/EconomicCalendar/implementation.json",
+          "sha256": "173f3be03174a1261d9269c08b226f3af3abbb4298f31d562c48a3c83636740d"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "before_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "path": "opendata/data/providers/fred/models/iter2_auxiliary.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/EconomicCalendar/service.json",
+          "sha256": "ecb94ebcc28d82fdef1ecc0f3f4d0e5144aab7c98c4efeb5983b4fff88c05512"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "before_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "path": "opendata/data/providers/fred/models/iter2_auxiliary.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "EconomicCalendar",
+  "model_identity": "fred::EconomicCalendar",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "fred",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T03:20:46Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "EconomicCalendar"
+}

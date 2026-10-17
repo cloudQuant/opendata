@@ -1,0 +1,309 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/fred/claims.json",
+    "sha256": "b733ea14ee30287424f1a5631417750c3614ff176e2c657b365a0c05301bde23"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+            "before_sha256": "a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+            "path": "opendata/data/models/fred_sonia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/SONIA/contract.json",
+          "sha256": "f927d09b2cf4b66c73dd8680d92acb67bdb2c2bdfba460c1ce4175190107c747"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "803d615db913e91390f5f35d972638a76a1756063d9bac7b3ad68e5fd30094ef",
+            "before_sha256": "803d615db913e91390f5f35d972638a76a1756063d9bac7b3ad68e5fd30094ef",
+            "path": "opendata/data/providers/fred/models/sonia.py"
+          },
+          {
+            "after_sha256": "ce87674b609d45071967bd41c3afcb434f351d4a2c6019f824aa0795cd914e80",
+            "before_sha256": "ce87674b609d45071967bd41c3afcb434f351d4a2c6019f824aa0795cd914e80",
+            "path": "opendata/data/providers/fred/models/_sonia_client.py"
+          },
+          {
+            "after_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+            "before_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+            "path": "opendata/data/providers/fred/models/_fixed_observation_pages.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+            "before_sha256": "a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+            "path": "opendata/data/models/fred_sonia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/SONIA/counterfact.json",
+          "sha256": "97dc581b07c6c6c1001d5a61a309df3e65b1caa8171bd532cc893f93d6c0e861"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "803d615db913e91390f5f35d972638a76a1756063d9bac7b3ad68e5fd30094ef",
+            "before_sha256": "803d615db913e91390f5f35d972638a76a1756063d9bac7b3ad68e5fd30094ef",
+            "path": "opendata/data/providers/fred/models/sonia.py"
+          },
+          {
+            "after_sha256": "ce87674b609d45071967bd41c3afcb434f351d4a2c6019f824aa0795cd914e80",
+            "before_sha256": "ce87674b609d45071967bd41c3afcb434f351d4a2c6019f824aa0795cd914e80",
+            "path": "opendata/data/providers/fred/models/_sonia_client.py"
+          },
+          {
+            "after_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+            "before_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+            "path": "opendata/data/providers/fred/models/_fixed_observation_pages.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+            "before_sha256": "a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+            "path": "opendata/data/models/fred_sonia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/SONIA/direct.json",
+          "sha256": "f99bcec4076cad5228bde25324b7b4e12bc86370565a556736fcb2d84881a2c8"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "803d615db913e91390f5f35d972638a76a1756063d9bac7b3ad68e5fd30094ef",
+            "before_sha256": "803d615db913e91390f5f35d972638a76a1756063d9bac7b3ad68e5fd30094ef",
+            "path": "opendata/data/providers/fred/models/sonia.py"
+          },
+          {
+            "after_sha256": "ce87674b609d45071967bd41c3afcb434f351d4a2c6019f824aa0795cd914e80",
+            "before_sha256": "ce87674b609d45071967bd41c3afcb434f351d4a2c6019f824aa0795cd914e80",
+            "path": "opendata/data/providers/fred/models/_sonia_client.py"
+          },
+          {
+            "after_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+            "before_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+            "path": "opendata/data/providers/fred/models/_fixed_observation_pages.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+            "before_sha256": "a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+            "path": "opendata/data/models/fred_sonia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/SONIA/implementation.json",
+          "sha256": "a6b3f62b08c9afb9f4a3c04a213a96525766a0ca4e1ada5a874ed6137dbfb0f0"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "803d615db913e91390f5f35d972638a76a1756063d9bac7b3ad68e5fd30094ef",
+            "before_sha256": "803d615db913e91390f5f35d972638a76a1756063d9bac7b3ad68e5fd30094ef",
+            "path": "opendata/data/providers/fred/models/sonia.py"
+          },
+          {
+            "after_sha256": "ce87674b609d45071967bd41c3afcb434f351d4a2c6019f824aa0795cd914e80",
+            "before_sha256": "ce87674b609d45071967bd41c3afcb434f351d4a2c6019f824aa0795cd914e80",
+            "path": "opendata/data/providers/fred/models/_sonia_client.py"
+          },
+          {
+            "after_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+            "before_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+            "path": "opendata/data/providers/fred/models/_fixed_observation_pages.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+            "before_sha256": "a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+            "path": "opendata/data/models/fred_sonia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a87682f320584d639f6c844818b36fd2c435fbc0f3d364bbf0652d99ca56f640",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/SONIA/service.json",
+          "sha256": "4bf0babfe352108c9f8d2063995ac23b374449c41991f145da841fc08e5caaa2"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "803d615db913e91390f5f35d972638a76a1756063d9bac7b3ad68e5fd30094ef",
+            "before_sha256": "803d615db913e91390f5f35d972638a76a1756063d9bac7b3ad68e5fd30094ef",
+            "path": "opendata/data/providers/fred/models/sonia.py"
+          },
+          {
+            "after_sha256": "ce87674b609d45071967bd41c3afcb434f351d4a2c6019f824aa0795cd914e80",
+            "before_sha256": "ce87674b609d45071967bd41c3afcb434f351d4a2c6019f824aa0795cd914e80",
+            "path": "opendata/data/providers/fred/models/_sonia_client.py"
+          },
+          {
+            "after_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+            "before_sha256": "8266c46d2f8982ff86c5f367f34dc8519fb87da03a95317c2569339569630788",
+            "path": "opendata/data/providers/fred/models/_fixed_observation_pages.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "SONIA",
+  "model_identity": "fred::SONIA",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "fred",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T03:20:46Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "SONIA"
+}

@@ -1,0 +1,259 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/intrinio/claims.json",
+    "sha256": "89e0ec39f4b1fcc61b879ccc96b08c6a0c786c67436904be36e4107e200d215b"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "before_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "path": "opendata/data/models/intrinio.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/HistoricalDividends/contract.json",
+          "sha256": "9f81608c65a3915e3a286e4a959fd3ff11250cb4ef0de92b57d6a31459a3f7da"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "831f46bd28300310fec393c786b6f15bcad4ac7d91132374928c958d4df84d1f",
+            "before_sha256": "831f46bd28300310fec393c786b6f15bcad4ac7d91132374928c958d4df84d1f",
+            "path": "opendata/data/providers/intrinio/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "a2de5612a399d085b324bcd71d928fce78a50003ba4c1b3e2e7c22bb378c2c0f",
+            "before_sha256": "a2de5612a399d085b324bcd71d928fce78a50003ba4c1b3e2e7c22bb378c2c0f",
+            "path": "opendata/data/providers/intrinio/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "before_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "path": "opendata/data/models/intrinio.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/HistoricalDividends/counterfact.json",
+          "sha256": "6f2e425710ded231b084068f8a606721008da796d08dbf673a414479fc0c7895"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "831f46bd28300310fec393c786b6f15bcad4ac7d91132374928c958d4df84d1f",
+            "before_sha256": "831f46bd28300310fec393c786b6f15bcad4ac7d91132374928c958d4df84d1f",
+            "path": "opendata/data/providers/intrinio/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "a2de5612a399d085b324bcd71d928fce78a50003ba4c1b3e2e7c22bb378c2c0f",
+            "before_sha256": "a2de5612a399d085b324bcd71d928fce78a50003ba4c1b3e2e7c22bb378c2c0f",
+            "path": "opendata/data/providers/intrinio/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "before_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "path": "opendata/data/models/intrinio.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/HistoricalDividends/direct.json",
+          "sha256": "28be3348ef50c987a416146b7d0eec3f78134aaf69a640e5cebd0f6ae6051ed9"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "831f46bd28300310fec393c786b6f15bcad4ac7d91132374928c958d4df84d1f",
+            "before_sha256": "831f46bd28300310fec393c786b6f15bcad4ac7d91132374928c958d4df84d1f",
+            "path": "opendata/data/providers/intrinio/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "a2de5612a399d085b324bcd71d928fce78a50003ba4c1b3e2e7c22bb378c2c0f",
+            "before_sha256": "a2de5612a399d085b324bcd71d928fce78a50003ba4c1b3e2e7c22bb378c2c0f",
+            "path": "opendata/data/providers/intrinio/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "before_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "path": "opendata/data/models/intrinio.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/HistoricalDividends/implementation.json",
+          "sha256": "0a445d9174a31c063dd8beba35652a65683dfd84e4a9290776b9a9f2bbbfa072"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "831f46bd28300310fec393c786b6f15bcad4ac7d91132374928c958d4df84d1f",
+            "before_sha256": "831f46bd28300310fec393c786b6f15bcad4ac7d91132374928c958d4df84d1f",
+            "path": "opendata/data/providers/intrinio/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "a2de5612a399d085b324bcd71d928fce78a50003ba4c1b3e2e7c22bb378c2c0f",
+            "before_sha256": "a2de5612a399d085b324bcd71d928fce78a50003ba4c1b3e2e7c22bb378c2c0f",
+            "path": "opendata/data/providers/intrinio/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "before_sha256": "8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+            "path": "opendata/data/models/intrinio.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:8e44489d23e72ef5b1ae64634da0371c39f9c57e31266bde6091770ce6580fa4",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/intrinio/HistoricalDividends/service.json",
+          "sha256": "b63dae4e7dbd16e95768035f524c7c71fa00cb674f3305c469a5107c5abddbf8"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "before_sha256": "419678f8ac444a9aefd179b20dda2f4a100c8aac7a4cab1eb55a6dce6254dbef",
+            "path": "opendata/data/providers/intrinio/provider.py"
+          },
+          {
+            "after_sha256": "831f46bd28300310fec393c786b6f15bcad4ac7d91132374928c958d4df84d1f",
+            "before_sha256": "831f46bd28300310fec393c786b6f15bcad4ac7d91132374928c958d4df84d1f",
+            "path": "opendata/data/providers/intrinio/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "a2de5612a399d085b324bcd71d928fce78a50003ba4c1b3e2e7c22bb378c2c0f",
+            "before_sha256": "a2de5612a399d085b324bcd71d928fce78a50003ba4c1b3e2e7c22bb378c2c0f",
+            "path": "opendata/data/providers/intrinio/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "HistoricalDividends",
+  "model_identity": "intrinio::HistoricalDividends",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "intrinio",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T03:24:27Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "HistoricalDividends"
+}

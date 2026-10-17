@@ -35,7 +35,7 @@ import socket
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Final
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -78,7 +78,38 @@ class WitnessBlocked(Exception):  # noqa: N818  # verdict vocabulary, not a retr
     """A precondition is missing, so the witness could not honestly run."""
 
 
-def _grant_context(provider: str, model: str, hosts: list[str], *, sends: int = 3) -> FetchContext:
+#: The grant a witness that declares no carrier gets, exactly as it has always been.
+_DEFAULT_SENDS: Final = 3
+
+
+def _carrier_sends(entry: dict, document: Any) -> int:  # noqa: ANN401  # the fixture document is arbitrary JSON
+    """Budget the sends the offline carrier can actually answer -- never a free-hand number.
+
+    A fetcher that preflights its own fan-out against ``authorize_request`` asks the process how
+    many sends its grant covers before it sends anything (``models/sloos.py:61``), so a six-leg
+    selection under a three-send grant refuses with ``FRED_QUERY_LIMIT`` before any fixture is
+    read. The carrier already states how many sends it can serve: one body per ``url_contains``
+    entry, or one per page of its ``sequence``. The witness borrows that count instead of declaring
+    a budget, so an entry cannot grant itself more sends than it could answer, and an entry that
+    declares no seam keeps the shipped three.
+    """
+    if "client_seam" not in entry or not isinstance(document, dict):
+        return _DEFAULT_SENDS
+    responses = document.get("responses")
+    if not isinstance(responses, list):
+        return _DEFAULT_SENDS
+    answerable = 0
+    for spec in responses:
+        if not isinstance(spec, dict):
+            continue
+        sequence = spec.get("sequence")
+        answerable += len(sequence) if isinstance(sequence, list) and sequence else 1
+    return max(_DEFAULT_SENDS, answerable)
+
+
+def _grant_context(
+    provider: str, model: str, hosts: list[str], *, sends: int = _DEFAULT_SENDS
+) -> FetchContext:
     profile = RequestBudgetProfile.BOUNDED_REQUEST
     grant = RequestGrant(
         source=provider,
@@ -261,7 +292,7 @@ def _run_direct(
         f"Probed{fetcher_type.__name__}", (fetcher_type,), {"http_transport": transport}
     )
     instance = probe_class()
-    ctx = _grant_context(provider, model, entry["hosts"])
+    ctx = _grant_context(provider, model, entry["hosts"], sends=_carrier_sends(entry, document))
     rows = list(instance.fetch(ctx=ctx, **entry["query"]))
     if not transport.calls:
         raise WitnessFailure("the fetch completed without ever calling the offline transport seam")
@@ -291,7 +322,7 @@ def _run_direct_with_seam(
         return _run_direct(provider, model, entry, document)
     fetcher_type = _resolve_fetcher_type(provider, model)
     instance = fetcher_type()
-    ctx = _grant_context(provider, model, entry["hosts"])
+    ctx = _grant_context(provider, model, entry["hosts"], sends=_carrier_sends(entry, document))
     with _client_seam(entry, document) as client:
         rows = list(instance.fetch(ctx=ctx, **entry["query"]))
         _seam_guard(client)
@@ -438,7 +469,9 @@ def witness_service(provider: str, model: str, entry: dict) -> None:
     registry = ProviderRegistry()
     register_provider(provider, registry)
     fetcher = registry.resolve_model(provider, model)
-    ctx = _grant_context(provider, model, entry["hosts"])
+    ctx = _grant_context(
+        provider, model, entry["hosts"], sends=_carrier_sends(entry, entry["document"])
+    )
 
     domain = fetcher.capability.domain
 

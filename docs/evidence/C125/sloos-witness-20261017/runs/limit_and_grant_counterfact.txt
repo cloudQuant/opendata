@@ -1,0 +1,6 @@
+fixture=docs/evidence/C101/fixtures/fred/SeniorLoanOfficerSurvey.json pages=6 limits=10000,9998,9996,9994,9992,9990
+GRANT derived=6 expected=6 rows=12 seam_requests=6 code=None expected_code=None
+LEGACY_GRANT sends=3 rows=0 seam_requests=0 code=FRED_QUERY_LIMIT expected=FRED_QUERY_LIMIT
+CONSTANT_LIMIT grant=6 rows=0 seam_requests=0 code=FRED_PAGINATION_ERROR expected=FRED_PAGINATION_ERROR
+EXPECTED_LIMITS=10000,9998,9996,9994,9992,9990 distinct=True
+LIMIT_AND_GRANT_PROVEN=True

@@ -1,0 +1,309 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/fred/claims.json",
+    "sha256": "b733ea14ee30287424f1a5631417750c3614ff176e2c657b365a0c05301bde23"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/BalanceOfPayments/contract.json",
+          "sha256": "389c529aeb53c209e25b5b7f93d6f81ceb0e63d16d9f5918bcf385e52379bc40"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "before_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "path": "opendata/data/providers/fred/models/iter2_auxiliary.py"
+          },
+          {
+            "after_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "before_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/BalanceOfPayments/counterfact.json",
+          "sha256": "f5b9343edc44c38c73a39a7c01797105ed603820120d8eeaf1fd074c2ba8d9f2"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "before_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "path": "opendata/data/providers/fred/models/iter2_auxiliary.py"
+          },
+          {
+            "after_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "before_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/BalanceOfPayments/direct.json",
+          "sha256": "dc932a66c0f230a3c604d99d78d02e764820e158fd0a6177512c4983a8efe22f"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "before_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "path": "opendata/data/providers/fred/models/iter2_auxiliary.py"
+          },
+          {
+            "after_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "before_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/BalanceOfPayments/implementation.json",
+          "sha256": "e38c070c1e2768e9ca80bb323d42f2e632c8a0062145f54dfd87f8c920798653"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "before_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "path": "opendata/data/providers/fred/models/iter2_auxiliary.py"
+          },
+          {
+            "after_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "before_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "before_sha256": "2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+            "path": "opendata/data/models/fred_iter2.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:2e75031e64dae69f9ee1fc16f11b71227830e7d989e547720fdc214c67897f80",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/fred/BalanceOfPayments/service.json",
+          "sha256": "f572cada85056cc56ddbbb3ca485b77d359aa8dcdbaf253aa0ef6ac297e30feb"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "before_sha256": "a3495759aca8b5f65275b53b3442881132900e3c23b1024863201395112f430b",
+            "path": "opendata/data/providers/fred/registration.py"
+          },
+          {
+            "after_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "before_sha256": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
+            "path": "opendata/data/providers/fred/provider.py"
+          },
+          {
+            "after_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "before_sha256": "7d37ce57a735651f3e11e734ec9c0b501c02760355978bc5bef23ead22f354dd",
+            "path": "opendata/data/providers/fred/models/_client.py"
+          },
+          {
+            "after_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "before_sha256": "bc4fc285359418dc90e619c5b6662a247e75ebfa3ce0842035bf04d49430cbe9",
+            "path": "opendata/data/providers/fred/models/iter2_auxiliary.py"
+          },
+          {
+            "after_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "before_sha256": "12b0cf73d068603f7c7d0824c60a1414c028307906541b292a810d1be37d335f",
+            "path": "opendata/data/providers/fred/models/series.py"
+          },
+          {
+            "after_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "before_sha256": "00c67b431f141bea197b47133201234060a392bdb0a759769a36e1ecc9490952",
+            "path": "opendata/data/providers/fred/models/_paged.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "BalanceOfPayments",
+  "model_identity": "fred::BalanceOfPayments",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "fred",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T03:20:46Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "BalanceOfPayments"
+}
