@@ -1,0 +1,17 @@
+C126 §9 桶面预言的仪器：三臂都走仓里的 judge（scripts/quality/iter2_model_evidence.py），合成文档只写 .w21-scratch/bucket/，用完即删。
+生成：2026-10-17 12:53（本机）。argv：PYTHONPATH=. $PY probes/next_wave_bucket_simulation.py
+
+--- 第一版臂 C 的红面（保留，不入库为通过）---
+我按 judge 的 1194-1197 行断言『把 decision 改成 REJECT → status=REJECTED』，实测落的是 INCOMPLETE：
+  C_review_decision: FAIL subject=alpha_vantage::EquityHistorical status=OFFLINE_ACCEPTED->INCOMPLETE accepted=258->257 status_counts={'INCOMPLETE': 10, 'OFFLINE_ACCEPTED': 257, 'UNREVIEWED': 83}
+  bucket_arms=3 bucket_passed=2 bucket_failed=1 / bucket_exit=1
+原因就是下面 C 臂现在断言的那条：decision 被 receipt.sha256 绑在入库的 review 文件上，只改合并文档不改文件 → primary_review_receipt_decision_mismatch。
+预期是我猜的，不是读的 —— 改判据为实测的拒绝面，然后重跑：
+
+A_control: PASS accepted=258 buckets={'INCOMPLETE': 9, 'OFFLINE_ACCEPTED': 258, 'UNREVIEWED': 83} population=350 six_target_rows=['INCOMPLETE'] two_target_rows=['UNREVIEWED']
+B_claims_presence: PASS blocked_claims_dropped=30 (all statuses=['BLOCKED']) INCOMPLETE=9->3 UNREVIEWED=83->89 re-bucketed=['UNREVIEWED'] accepted=258->258
+C_review_receipt_binding: PASS subject=alpha_vantage::EquityHistorical status=OFFLINE_ACCEPTED->INCOMPLETE issues=['primary_review_receipt_decision_mismatch'] accepted=258->257 top_invalid_claims=0
+C_scope: the arm shows the judge REFUSES an unsigned decision edit — a review object's receipt.sha256 is the digest of docs/evidence/C101/primary-reviews/<id>.review.json and the decision in the merged document must match that file. It does NOT show the REJECTED branch is reachable: getting there means writing the review file itself, which is the recorder's job, not this probe's.
+§9_reading INCOMPLETE=9->3 UNREVIEWED=83->81 if the 6 BLOCKED-claim rows gain five CANDIDATE phases and the 2 claimless rows gain claims+reviews; 8 rows accepted -> 266
+bucket_arms=3 bucket_passed=3 bucket_failed=0
+bucket_exit=0

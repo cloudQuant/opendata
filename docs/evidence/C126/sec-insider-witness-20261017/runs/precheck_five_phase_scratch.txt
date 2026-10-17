@@ -1,0 +1,17 @@
+== provider sec: 1 inventory row(s) of 350 total ==
+InsiderTrading implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InsiderTrading --phase implementation --evidence-root .w21-scratch
+InsiderTrading direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InsiderTrading --phase direct --evidence-root .w21-scratch
+InsiderTrading service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InsiderTrading --phase service --evidence-root .w21-scratch
+InsiderTrading contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InsiderTrading --phase contract --evidence-root .w21-scratch
+InsiderTrading counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InsiderTrading --phase counterfact --evidence-root .w21-scratch
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=318/350; provider rows covered=1 of provider inventory rows=24, of which bound now=1/318 resolvable; claims emitted=5 (5 PASS, 0 FAIL, 0 BLOCKED) = 1 row(s) x 5 phases; phases actually executed as subprocesses=5
+Traceback (most recent call last):
+  File "/Users/yunjinqi/Documents/new_projects/opendata/scripts/quality/iter2_claims_producer.py", line 453, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/scripts/quality/iter2_claims_producer.py", line 448, in main
+    print(f"wrote {output_path.relative_to(REPO_ROOT)}")
+                   ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/pathlib/_local.py", line 385, in relative_to
+    raise ValueError(f"{str(self)!r} is not in the subpath of {str(other)!r}")
+ValueError: '/tmp/w21_precheck_claims.json' is not in the subpath of '/Users/yunjinqi/Documents/new_projects/opendata'

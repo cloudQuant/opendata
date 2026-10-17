@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InsiderTrading --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_INSIDER_PRIMARY_XML_AMBIGUOUS", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SecProviderError", "refusal_code": "SEC_INSIDER_PRIMARY_XML_AMBIGUOUS", "rejected": [], "status": null}, "reason": "the filing index addresses one primary ownership document per filing, and ``_parse_index_xml_name`` counts the ``.xml`` rows typed as the filing's form, so a directory that publishes a second such row -- the original plus an amended-looking one -- leaves the Form 4 document without a unique address and the fetch must refuse instead of returning whichever row the listing happened to put first; untampered control produced 11 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

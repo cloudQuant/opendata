@@ -1,0 +1,47 @@
+--- iter2_claims_merge.py ---
+shards merged=22
+  shard docs/evidence/C101/alpha_vantage/claims.reviewed.json
+  shard docs/evidence/C101/benzinga/claims.reviewed.json
+  shard docs/evidence/C101/bls/claims.reviewed.json
+  shard docs/evidence/C101/cboe/claims.reviewed.json
+  shard docs/evidence/C101/cftc/claims.reviewed.json
+  shard docs/evidence/C101/congress_gov/claims.reviewed.json
+  shard docs/evidence/C101/ecb/claims.reviewed.json
+  shard docs/evidence/C101/econdb/claims.reviewed.json
+  shard docs/evidence/C101/famafrench/claims.reviewed.json
+  shard docs/evidence/C101/federal_reserve/claims.reviewed.json
+  shard docs/evidence/C101/finra/claims.reviewed.json
+  shard docs/evidence/C101/finviz/claims.reviewed.json
+  shard docs/evidence/C101/fmp/claims.reviewed.json
+  shard docs/evidence/C101/fred/claims.reviewed.json
+  shard docs/evidence/C101/imf/claims.reviewed.json
+  shard docs/evidence/C101/intrinio/claims.reviewed.json
+  shard docs/evidence/C101/multpl/claims.reviewed.json
+  shard docs/evidence/C101/oecd/claims.reviewed.json
+  shard docs/evidence/C101/sec/claims.reviewed.json
+  shard docs/evidence/C101/tiingo/claims.reviewed.json
+  shard docs/evidence/C101/tradier/claims.reviewed.json
+  shard docs/evidence/C101/tradingeconomics/claims.reviewed.json
+claims=1335 identities=267 reviews=258 accepted_identities=258
+wrote docs/evidence/C101/claims.merged.json
+merge_exit=0
+--- iter2_model_evidence.py (judge) ---
+wrote docs/evidence/C101/judge/claims.merged.report.json and docs/evidence/C101/judge/claims.merged.report.md: 350 identities, 258 offline accepted
+judge_exit=0
+--- derived after the fact from the two artifacts the two steps wrote (not retyped from memory) ---
+$ python -c "import json,collections;m=json.load(open('docs/evidence/C101/claims.merged.json'));..."
+identity_set_sha256[0:16]=5168e1e723999312          (= §79/§81/§82 同值 → 本波零重基)
+claims_by_status={'PASS': 1290, 'BLOCKED': 45}       (波 19: PASS 1285 / BLOCKED 50 → 5 枚 BLOCKED 转 PASS)
+judge_summary={'claim_count': 1335, 'identity_count': 350, 'offline_acceptance_count': 258,
+               'primary_review_count': 258}
+judge_status_counts={'OFFLINE_ACCEPTED': 258, 'UNREVIEWED': 83, 'INCOMPLETE': 9}
+sec_claims=120 sec_statuses={'PASS': 120}
+InsiderTrading_claims=5 phases=['contract','counterfact','direct','implementation','service']
+
+一次取数自己踩的形：查 InsiderTrading 的 review 时先用 `r["model_identity"] == "sec::InsiderTrading"`
+过滤，读回 `reviews=0`。`primary_reviews` 的对象根本没有 `model_identity` 这个键 —— 它的 8 个键是
+decision/provider/receipt/reviewed_at_utc/reviewer_id/reviewer_model/reviewer_role/reviewer_type，
+身份要由 provider + upstream_model 两个字段合成。按真实键重查：1 枚 decision=ACCEPT。
+又是一条「错键的 0」：键不存在时 `get()` 返回 None，谓词恒假，计数看起来像结论。
+`probes/acceptance_delta_and_phase_floor.py` 从第一步就按 provider+upstream_model 合成匹配，
+所以 §4 的三臂没有带上这个 0。

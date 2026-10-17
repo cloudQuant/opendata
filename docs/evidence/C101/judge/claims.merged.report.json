@@ -2,7 +2,7 @@
   "acceptance_rule": "all five phase claims plus an explicit valid primary-model or human ACCEPT receipt; claim PASS alone is candidate only",
   "claims_input": {
     "path": "docs/evidence/C101/claims.merged.json",
-    "sha256": "4f6611b496d175adf111ce6240879a0ba0e35a66ba880bd9f86613fd664c7576"
+    "sha256": "573ca80bb25ea2ee9354d6071be5157287eaf9104973441978d01cd68d45dae8"
   },
   "claims_status_source": "explicit JSON claims only; no directory globbing or markdown status parsing",
   "global_issues": [],
@@ -22166,129 +22166,87 @@
       "upstream_model": "IncomeStatementGrowth"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "sec::InsiderTrading",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/sec/InsiderTrading/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "SecProviderError",
+              "refusal_code": "SEC_INSIDER_PRIMARY_XML_AMBIGUOUS",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "SecProviderError",
+              "refusal_code": "SEC_INSIDER_PRIMARY_XML_AMBIGUOUS",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the filing index addresses one primary ownership document per filing, and ``_parse_index_xml_name`` counts the ``.xml`` rows typed as the filing's form, so a directory that publishes a second such row -- the original plus an amended-looking one -- leaves the Form 4 document without a unique address and the fetch must refuse instead of returning whichever row the listing happened to put first; untampered control produced 11 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/sec/InsiderTrading/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/sec/InsiderTrading/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/sec/InsiderTrading/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/sec/InsiderTrading/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "sec",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-sec-InsiderTrading",
       "upstream_model": "InsiderTrading"
     },
@@ -26455,11 +26413,11 @@
   "summary": {
     "claim_count": 1335,
     "identity_count": 350,
-    "offline_acceptance_count": 257,
-    "primary_review_count": 257,
+    "offline_acceptance_count": 258,
+    "primary_review_count": 258,
     "status_counts": {
-      "INCOMPLETE": 10,
-      "OFFLINE_ACCEPTED": 257,
+      "INCOMPLETE": 9,
+      "OFFLINE_ACCEPTED": 258,
       "UNREVIEWED": 83
     }
   }

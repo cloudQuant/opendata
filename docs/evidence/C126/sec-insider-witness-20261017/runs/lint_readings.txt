@@ -1,0 +1,47 @@
+$ ruff check <file> ; ruff format --check <file>   (both exit codes derived, never typed)
+
+shard_check_exit=0 output=All checks passed!
+shard_format_check_exit=0 output=1 file already formatted
+carrier_probe_check_exit=0 output=All checks passed!
+carrier_probe_format_check_exit=0 output=1 file already formatted
+delta_probe_check_exit=0 output=All checks passed!
+delta_probe_format_check_exit=0 output=1 file already formatted
+
+pre-fix reading kept beside the green one, from the same instrument before this wave's lint pass:
+shard_pre_check_exit=1 findings='1 I001 (import block un-sorted)'
+shard_pre_format_check_exit=1 findings='1 file would be reformatted (an f-string split across two lines)'
+carrier_probe_pre_check_exit=1 findings='18 RUF100 + 2 E501 + 1 D103 + 1 F401'
+scope_note: make lint walks PY_SELFDEV=opendata scripts tests alembic alembic_data (Makefile:25), so only the shard is inside the gated plane; both probes live under docs/evidence and are measured here anyway.
+
+bucket probe (probes/next_wave_bucket_simulation.py), written after §9's first draft:
+bucket_pre_check_exit=1 findings='1 D103 (main() without docstring) + 6 E501'
+  E501 lines as reported: 106 152 156 179 191 192 208 — 152/156 were one f-string that inlined a
+  set-comprehension over the merged claims; hoisted to `dropped_statuses` / `control_accepted`
+  instead of wrapping inside the string.
+bucket_post_check_exit=0  bucket_post_format_exit=0 ('1 file reformatted', then --check clean)
+scope_note: still outside make lint's plane (docs/evidence/** is not in PY_SELFDEV); measured
+because the shard is digest-pinned and a reformat after the producer run would stale arm B.
+
+## 全树 A1 面：`make lint` 的实测读数与上面那条 scope_note 的更正
+
+上面 scope_note 把 `make lint` 说成"被门禁的那个面"，这句不准，按 Makefile 自己写的更正：
+`lint:` 目标在 Makefile:44 的注释下 —— "Developer views (full tree; A1 debt is expected here)"。
+门禁那一条是 `a2-check: python scripts/quality/a2_check.py`（Makefile:41-42），规则是 A2
+「碰到才算数」，不是全树零违例。所以本文件上面那些 per-file exit=0 是 A2 那一侧的读数，
+全树的 157 是 A1 欠量，两件事不冲突。全树实测（提交前跑，ruff 0.15.20，PATH 与 py313 环境同版本）：
+
+```
+make_lint_exit=2  ruff_check='Found 157 errors'（60 fixable）  format_check='10 files would be reformatted, 1137 already formatted'
+157 条分布在 50 枚文件；规则普查 D212 57 / E501 45 / D415 21 / F841 9 / ANN401 7 / PERF203 4 / E402 4 / TC001 3 / D107 3
+scripts/quality 下的 13 条属于既往波的其它分片：intrinio/market.py 4、fmp/rows_c.py 4、
+  federal_reserve/rows_a.py 2、econdb/rows_a.py 2、cboe/historical.py 1 —— 都不在本波载荷里
+抽样核过 `opendata/api/executions.py` 与 HEAD 逐字节相同，即这 157 是 HEAD 就有的，不是本波造出来的
+```
+
+本波载荷与这 50 枚的交集为空：`overlap_with_payload=0`。但这条 0 第一次取的时候是假的 ——
+`grep -oE '^[a-zA-Z_][^: ]*\.py'` 在 ruff 的输出上一枚文件都没匹配到（路径在 `--> path:line:col`
+那一行，且前面有缩进），产出的清单是空文件，空清单与任何东西求交当然为 0。改成
+`grep -oE '\-\-> [^:]+:[0-9]+:[0-9]+'` 再剥掉行列，distinct_files 从 0 变 50，交集仍是 0。
+同一批里还有一条同族：`git status --porcelain -- $(cat 空清单)` 展开成不带路径的 `git status`，
+读出 `dirty_among_them=360` —— 那不是"360 枚 lint 文件是脏的"，那是我传了个空参数。
+两条都按"分母要先非空、参数要先解析出来"重取。
