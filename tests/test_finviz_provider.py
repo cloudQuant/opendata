@@ -358,7 +358,7 @@ EPS (ttm)8.72 Price336.64 Change %-1.11%</td></tr></table>
 </body></html>"""
 
 
-def test_provider_descriptor_binds_four_models_and_leaves_three_gaps_unbound() -> None:
+def test_provider_descriptor_binds_every_census_model() -> None:
     census_models = {
         "CompareGroups",
         "EtfPricePerformance",
@@ -368,15 +368,12 @@ def test_provider_descriptor_binds_four_models_and_leaves_three_gaps_unbound() -
         "PriceTarget",
         "EquityScreener",
     }
-    available_models = {"CompareGroups", "EquityInfo", "KeyMetrics", "PriceTarget"}
-    gap_models = {"EtfPricePerformance", "PricePerformance", "EquityScreener"}
     actual = {
         model_id
         for binding in PROVIDER.fetcher_bindings
         for model_id in (binding.canonical_model_ids or (binding.model_key,))
     }
-    assert actual == available_models
-    assert census_models - actual == gap_models
+    assert actual == census_models
     assert PROVIDER.credentials == ()
 
 
