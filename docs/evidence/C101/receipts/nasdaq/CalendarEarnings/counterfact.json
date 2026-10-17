@@ -1,0 +1,164 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/nasdaq/CalendarEarnings/counterfact-exit0.txt",
+    "sha256": "613d103cf6535bf68ad351519c6e1594c63953de427ba82578bbc4b39554ea49",
+    "size_bytes": 1000,
+    "stdout_excerpt": "COUNTERFACT_JSON={\"expected\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"ProviderEngineError\", \"refusal_code\": \"NASDAQ_SHAPE_INVALID\", \"rejected\": [], \"status\": null}, \"observed\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"ProviderEngineError\", \"refusal_code\": \"NASDAQ_SHAPE_INVALID\", \"rejected\": [], \"status\": null}, \"reason\": \"a row whose symbol is Nasdaq's own withheld token still has the as-of day the request asked for and every numeric cell intact, so nothing else in the document disagrees: symbol is a required contract column of NasdaqCalendarEarnings, and CalendarEarningsFetcher must refuse the calendar rather than publish a row about no ticker or invent one from the name; untampered control produced 2 row(s) through the same seam\"}\nVERDICT=PASS\n"
+  },
+  "counterfact": {
+    "expected": {
+      "invalid": [],
+      "missing": [],
+      "refusal_class": "ProviderEngineError",
+      "refusal_code": "NASDAQ_SHAPE_INVALID",
+      "rejected": [],
+      "status": null
+    },
+    "observed": {
+      "invalid": [],
+      "missing": [],
+      "refusal_class": "ProviderEngineError",
+      "refusal_code": "NASDAQ_SHAPE_INVALID",
+      "rejected": [],
+      "status": null
+    },
+    "reason": "a row whose symbol is Nasdaq's own withheld token still has the as-of day the request asked for and every numeric cell intact, so nothing else in the document disagrees: symbol is a required contract column of NasdaqCalendarEarnings, and CalendarEarningsFetcher must refuse the calendar rather than publish a row about no ticker or invent one from the name; untampered control produced 2 row(s) through the same seam"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarEarnings --phase counterfact --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-17T17:59:21.871056+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+          "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+          "path": "opendata/data/models/nasdaq.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+      "fixture": [
+        {
+          "after_sha256": "1d0058419a70291f16ffc94c7c75c835901a8aaf30ec8b2e8ad2a36e39e97d6b",
+          "before_sha256": "1d0058419a70291f16ffc94c7c75c835901a8aaf30ec8b2e8ad2a36e39e97d6b",
+          "path": "docs/evidence/C101/fixtures/nasdaq/CalendarEarnings.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+          "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+          "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+          "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+          "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+          "path": "opendata/data/providers/nasdaq/provider.py"
+        },
+        {
+          "after_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+          "before_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+          "path": "opendata/data/providers/nasdaq/models/calendar_earnings.py"
+        },
+        {
+          "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+          "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+          "path": "opendata/data/providers/nasdaq/models/_common.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "nasdaq::CalendarEarnings",
+  "phase": "counterfact",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "path": "opendata/data/models/nasdaq.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+    "fixture": [
+      {
+        "after_sha256": "1d0058419a70291f16ffc94c7c75c835901a8aaf30ec8b2e8ad2a36e39e97d6b",
+        "before_sha256": "1d0058419a70291f16ffc94c7c75c835901a8aaf30ec8b2e8ad2a36e39e97d6b",
+        "path": "docs/evidence/C101/fixtures/nasdaq/CalendarEarnings.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+        "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+        "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+        "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+        "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+        "path": "opendata/data/providers/nasdaq/provider.py"
+      },
+      {
+        "after_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+        "before_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+        "path": "opendata/data/providers/nasdaq/models/calendar_earnings.py"
+      },
+      {
+        "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+        "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+        "path": "opendata/data/providers/nasdaq/models/_common.py"
+      }
+    ]
+  },
+  "provider": "nasdaq",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-nasdaq-CalendarEarnings",
+  "upstream_model": "CalendarEarnings"
+}

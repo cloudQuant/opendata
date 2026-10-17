@@ -32,6 +32,7 @@ class CalendarDividendFetcher(
     """Read each bounded calendar day, then validate and sort all dividend rows."""
 
     canonical_model: ClassVar[str] = "CalendarDividend"
+    row_model: ClassVar[type[NasdaqCalendarDividend]] = NasdaqCalendarDividend
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="nasdaq_calendar_dividend",

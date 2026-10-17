@@ -46,6 +46,7 @@ class EquityScreenerFetcher(NasdaqFetcher[EquityScreenerQuery, tuple[Mapping[str
     """Read a bounded series of Nasdaq screener pages and validate typed rows."""
 
     canonical_model: ClassVar[str] = "EquityScreener"
+    row_model: ClassVar[type[NasdaqEquityScreener]] = NasdaqEquityScreener
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="nasdaq_equity_screener",

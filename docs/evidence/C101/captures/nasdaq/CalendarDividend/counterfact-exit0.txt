@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarDividend --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "0,5O1 is neither a decimal nor one of Nasdaq's blank-or-N/A cells: the ex-date, symbol and both record/payment dates still parse, and the row survives everyshape guard except the one that reads the rate. amount is a contract column of NasdaqCalendarDividend that a fetcher may coerce to 0.0 or drop silently, and CalendarDividendFetcher must refuse instead of publishing a wrong dividend; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

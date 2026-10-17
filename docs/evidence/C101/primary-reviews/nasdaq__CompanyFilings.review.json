@@ -1,0 +1,234 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/nasdaq/claims.json",
+    "sha256": "4e1f383576d4f282a268d256b76aa1035e8b3c1e6afee6cab7e614ec2de2ecd5"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/contract.json",
+          "sha256": "eb5e2f15827e1aa9d26dc723be3f3128398d8a6f5c017d1ac1a0f3ad4df384fe"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "before_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "path": "opendata/data/providers/nasdaq/models/company_filings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/counterfact.json",
+          "sha256": "8d7feaa5ca53111a0d2ec149f5bd1b5de51c069af7acfea99ae378b16a4cc18d"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "before_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "path": "opendata/data/providers/nasdaq/models/company_filings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/direct.json",
+          "sha256": "5262c4ee003c7fadbfb0ba7f6d19b3f95b896bfb918d5d7f5c6c13dc5493e564"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "before_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "path": "opendata/data/providers/nasdaq/models/company_filings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/implementation.json",
+          "sha256": "746f88b5330b42eda732d46fa114a9b3538c41bc2a2d7ee6c105c046aee85b09"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "before_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "path": "opendata/data/providers/nasdaq/models/company_filings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/service.json",
+          "sha256": "c958cc84c877b4f39cfdc48785b281229ef490a5bcaa8497724900adb8dc6f85"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "before_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "path": "opendata/data/providers/nasdaq/models/company_filings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "CompanyFilings",
+  "model_identity": "nasdaq::CompanyFilings",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "nasdaq",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T17:59:53Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "CompanyFilings"
+}

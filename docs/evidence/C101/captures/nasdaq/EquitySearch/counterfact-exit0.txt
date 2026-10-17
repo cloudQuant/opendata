@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquitySearch --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["Symbol"], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["Symbol"], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "a directory line whose Symbol cell is Nasdaq's own N/A token still matches the requested term on its security name and carries valid market-category, ETF and test-issue flags, so every local filter admits it: pipe_file_rows keeps the line because the cell is not empty, while optional_text folds N/A to nothing, and NasdaqEquitySearch has no row without a symbol -- EquitySearchFetcher must refuse the file rather than emit a nameless listing or shift every later column; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

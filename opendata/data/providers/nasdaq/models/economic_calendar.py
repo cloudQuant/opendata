@@ -33,6 +33,7 @@ class EconomicCalendarFetcher(
     """Fetch weekdays in a bounded range, synthesize UTC event timestamps, and filter country."""
 
     canonical_model: ClassVar[str] = "EconomicCalendar"
+    row_model: ClassVar[type[NasdaqEconomicEvent]] = NasdaqEconomicEvent
     capability: ClassVar[Capability] = Capability(
         asset_class="economy",
         domain="nasdaq_economic_calendar",

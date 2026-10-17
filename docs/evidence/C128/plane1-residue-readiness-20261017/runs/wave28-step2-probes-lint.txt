@@ -1,0 +1,33 @@
+wave-28 step 2 -- instrument hygiene for the probe tree this step ships into.
+argv: PYTHONPATH= $PY -m ruff check   docs/evidence/C128/plane1-residue-readiness-20261017/probes   (cwd = repo root, no pipes)
+argv: PYTHONPATH= $PY -m ruff format --check docs/evidence/C128/plane1-residue-readiness-20261017/probes   (cwd = repo root, no pipes)
+scope stated: Makefile PY_SELFDEV = opendata scripts tests alembic alembic_data, so this tree is in
+NO gate member's file set. The face below is instrument hygiene that step 0 and step 1 already held
+(17 pre-existing probes were already format-clean before step 2), not a gate claim.
+ruff_check_probes_exit=0
+ruff_check_probes_stdout=All checks passed!
+ruff_format_probes_exit=0
+ruff_format_probes_stdout=21 files already formatted
+probe_py_files=21
+denominator_agreement=21 == 21 (glob count of *.py equals ruff's own reported file count, so neither
+number is a hand-typed label)
+history of the same generation: before this final gate the dir carried 25 findings, then 11, then 2
+E501 lines; ruff format reformatted the four step-2 probes and its own reflow surfaced one further
+E501 in w28s2_run_chain.py that the formatter cannot split (a string literal), hand-wrapped next.
+behavior neutrality of the format-only edit, measured rather than asserted:
+argv: $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/w28s2_shard_faces.py
+shard_faces_rerun_exit=0
+carrier_wave28-step2-shard_coherence byte_identical_after_format=True
+carrier_wave28-step2-claims_reproducibility byte_identical_after_format=False
+diff_lines_only_in=prose wrap of the quoted cross-generation paragraph (6 reflowed lines, lines 12-16
+of the prior carrier); every counter line -- claims_array, envelope_delta, verdict_counts,
+array_comparison_can_move, all_pass -- is unchanged in both files.
+argv: $PY -m py_compile probes/{receipt_drift_counterfact,w28s2_lint_pass,w28s2_run_chain,w28s2_shard_faces}.py
+py_compile_receipt_drift_counterfact=0
+py_compile_w28s2_lint_pass=0
+py_compile_w28s2_run_chain=0
+py_compile_w28s2_shard_faces=0
+lag stated: receipt_drift_counterfact.py and w28s2_run_chain.py were edited after their carriers were
+taken. Their carriers were produced by the pre-format bytes, and py_compile is the only proof here
+that the post-format bytes still parse; the format diff touched no statement in either file, and the
+drift carrier's own three arms remain the judgment that the shipped chain behaves as recorded.

@@ -34,6 +34,7 @@ class EquitySearchFetcher(NasdaqFetcher[EquitySearchQuery, bytes | str]):
     """Download the official pipe-delimited symbol directory and filter it locally."""
 
     canonical_model: ClassVar[str] = "EquitySearch"
+    row_model: ClassVar[type[NasdaqEquitySearch]] = NasdaqEquitySearch
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="nasdaq_equity_search",

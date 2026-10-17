@@ -39,6 +39,7 @@ class CompanyFilingsFetcher(NasdaqFetcher[CompanyFilingsQuery, tuple[Mapping[str
     """Page until Nasdaq's declared total is satisfied or fail on the safety bound."""
 
     canonical_model: ClassVar[str] = "CompanyFilings"
+    row_model: ClassVar[type[NasdaqCompanyFiling]] = NasdaqCompanyFiling
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="nasdaq_company_filings",

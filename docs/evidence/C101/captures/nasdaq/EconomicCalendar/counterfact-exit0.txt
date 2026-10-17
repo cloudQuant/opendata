@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EconomicCalendar --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "25:99 is not any of the three GMT spellings the route publishes, while the event name, country and all three figures stay well-formed: date is the ordering column of NasdaqEconomicEvent and the day is what the weekday filter already vouchedfor, so EconomicCalendarFetcher must refuse the day rather than synthesize a midnight timestamp the source never announced; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

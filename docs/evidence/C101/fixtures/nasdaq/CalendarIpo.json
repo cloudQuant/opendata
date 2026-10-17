@@ -1,0 +1,31 @@
+{
+  "responses": [
+    {
+      "body": {
+        "data": {
+          "priced": {
+            "rows": [
+              {
+                "companyName": "Acme Instruments",
+                "dollarValueOfSharesOffered": 240.5,
+                "expectedPriceDate": "2026-01-02",
+                "pricedDate": "2026-01-05",
+                "sharesOffered": 12000000,
+                "symbol": "ACME"
+              },
+              {
+                "companyName": "Blue Triton Energy",
+                "dollarValueOfSharesOffered": 98.0,
+                "filedDate": "2025-12-18",
+                "pricedDate": "2026-01-05",
+                "sharesOffered": 7000000,
+                "symbol": "BLTE"
+              }
+            ]
+          }
+        }
+      },
+      "url_contains": "/api/ipo/calendar"
+    }
+  ]
+}

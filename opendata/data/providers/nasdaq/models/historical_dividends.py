@@ -34,6 +34,7 @@ class HistoricalDividendsFetcher(
     """Fetch bounded symbol history using Nasdaq's stock asset-class route."""
 
     canonical_model: ClassVar[str] = "HistoricalDividends"
+    row_model: ClassVar[type[NasdaqHistoricalDividend]] = NasdaqHistoricalDividend
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="nasdaq_historical_dividends",

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model TopRetail --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "one corrupted activity cell leaves the column names, the row width and the ticker and sentiment cells exactly as the table declares them, and it is the cell the latest-day selection and the descending sort are both computed from: activity isa required float of NasdaqTopRetail, so TopRetailFetcher must refuse the tablerather than rank the top-ten list on a number it could not read; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

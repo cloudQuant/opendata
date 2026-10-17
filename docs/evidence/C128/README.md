@@ -452,6 +452,104 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   `bytes_equal_HEAD=True`）而不是默认七条齐全；取 2 扫 8 条，`unresolved=0 findings=0 rc=0` 两代相同。两份载档
   末尾同样写全了自己取不到的字节：README 与本记录在 take 2 之后才补上这些条目，最后一次复核的逐字读数住在
   提交说明里。
+- 波 28 step 2（产品轮：nasdaq 9 枚落地，`266 → 275/350`）新增四台仪器，全在 `probes/` 下，argv 逐字写在各自载档头部：
+  * `probes/w28s2_run_chain.py`（280 行 / `sha16=2beb0d72a0547559`）：把这一轮的 15 份载档一次落成一条链
+    （producer → recorder → merge×2 → judge → readiness → residue → seam → 两个 pin 平面 → ruff / ruff format /
+    mypy / bandit / pytest → 两份面），每格自带 `*_exit=<digit>` 与自己的 argv。**这台是写盘链**，起的是已入库
+    的判定件，所以它一次跑就换代：重跑之前先想清楚要不要重产 45 枚回执。头部把本步那次事故逐字记在仪器里，
+    不只在散文里。
+  * `probes/receipt_drift_counterfact.py`（204 行 / `sha16=4bd1d10e3d67faa4`）：回执漂移的三臂反例。A 读绿代；
+    B 用 `--output` 指向草稿文件重跑 producer（canonical claims 文档不动）**然后重跑 judge**；C 按代次顺序
+    重落 produce→sign→merge→judge。面（19 行 / `113cc6276ee878be`，`receipt_drift_face PASS=True`）：
+    `A_pre accepted=275 drift_rows=0` → `B_after_rotate accepted=266 drift_rows=9 nasdaq_statuses=['STALE']` →
+    `C_after_reland accepted=275 drift_rows=0`。**机制**：回执路径由 `--evidence-root` 派生
+    （`scripts/quality/iter2_claims_producer.py:233` 拼路径、`:262` 落盘），`--output` 管不到它；回执嵌
+    `machine_execution.executed_at_utc`（`:251`）而 claim 钉回执字节的 sha（`:282`），判定件
+    `iter2_model_evidence.py:461` 的 `_validate_receipt` 在 `:489` 追加 `f"{label}_receipt_hash_drift"` ⇒ 整批
+    STALE。所以"只改 `--output` 的复算性重跑"是假安全，复算必须把 `--evidence-root` 一起指走。这台仪器自己还
+    红过一次：首跑 `arm_B_expected_266_nine_drift=False`，因为 `read_face()` 只读盘上报告、B 臂没重跑 judge，
+    于是印的是 A 的判定回声 —— **不重新测量的臂等于没有臂**，补 `B_rejudge` 之后三臂才各自命中。
+  * `probes/w28s2_shard_faces.py`（142 行 / `sha16=070724a974349b50`）：两份只读面。复算性面
+    `claims_array: produced=0b0c3ff3a5619e74 signed=0b0c3ff3a5619e74 equal=True` +
+    `envelope_delta keys_only_in_produced=['generated_at_utc', 'generated_by', 'notes']
+    reviews_produced=0 reviews_signed=9` + `array_comparison_can_move=True`；一致性面
+    `merged_nasdaq_claims=45 identities=9 verdict_agreement produced_eq_signed=True signed_eq_merged=True
+    receipt_digest_mismatch_on_disk=0 [] judge_nasdaq_issue_rows=0 review_rows=9 of 9`。这里修掉一条我自己写的
+    坏谓词：先前对**整份文档**取哈希判"可复算"，于是 recorder 换信封被读成不一致；有意义的比较是 claims 数组
+    加信封差分两行，且必须配一格能红的（翻一枚 verdict 为 FAIL，数组哈希就得动）。跨代那一半按**引用而非重算**
+    标注，因为它对照的草稿文档已在比较后被删；同一论断的可重算形式交给上面那台的 C 臂。
+  * `probes/w28s2_lint_pass.py`（91 行 / `sha16=b18e5988ee9587be`）：一次性改写器（补 docstring、给
+    `subprocess.run(` 加 S603 noqa、把固定 `/tmp` 名换成 `tempfile.mkdtemp()`）。它把 25 条 findings 收到 11 条，
+    其余手工收。**它的错也记档**：按"函数名→一句话 docstring"表填法时把两支不同探针的 `main()` 填串了行，
+    读回才发现 —— 脚本改文档字符串这件事本身不可信，必须逐支读回。
+- 换代面（step 2 的载档，全部同代）：producer `wave28-step2-producer.txt`（52 行 / `12d232330c7f452d`，
+  `claims emitted=45 (45 PASS, 0 FAIL, 0 BLOCKED) = 9 row(s) x 5 phases`、45 条子进程逐枚 `exit=0 status=PASS`）；
+  recorder（15 行 / `984b8d6e6bf954fc`，`signed=9 refused=0 reviews_total=9`，先印 `re-signing: dropped 9 earlier
+  review(s)`）；merge 两取（`3dc44471f501a6c3` / `c2df71864efe1575`，`shards merged=25 claims=1410 identities=282
+  reviews=275 accepted_identities=275`，幂等格 `take1=8027e19a441638fa take2=… identical=True`）；judge
+  （5 行 / `81372ec2c1a2dcb6`，`350 identities, 275 offline accepted`）。换代用两把尺核：committed 侧
+  `git show HEAD:` 的报告是 `accepted=266 status_counts={'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 266,
+  'UNREVIEWED': 77}` 且 nasdaq 9 枚 `['UNREVIEWED']`；工作树侧 `accepted=275 … 'UNREVIEWED': 68` 且 9 枚
+  `['OFFLINE_ACCEPTED']`、`issue_rows=0` —— `77-68=9`、`275-266=9`、"9 枚换状态"三处对齐，`INCOMPLETE` 仍 7。
+- 两个 pin 平面在漂移反例**之后**同代复核（C 臂会重产回执，这步不是可选）：
+  `runs/wave28-step2-receipt_pin_consistency.txt`（9 行 / `89cb6e499ff14c8f`）读 `slots=19850 stale=0
+  distinct_pinned_paths=558`、`receipt_files=1375`；`runs/wave28-step2-batch5_fence_dry_census.txt`
+  （11 行 / `07ed6b5a0aa67c8f`）读 `pin_entries=31 matched=31 stale=0 missing=0` + `verdict: REFUSED`
+  （`batch5_fence_dry_census_exit=1` 是 `--apply` 有意不传时的设计拒绝）。与 step 1 面做差：
+  `slots 19382 → 19850`、`distinct_pinned_paths 536 → 558`、`receipt_files 1330 → 1375` —— 最后这一格差的
+  **正好是 45**，等于本波新增的回执数，所以它是测出来的而非抄来的。落地之后我又把 pin 面重取一遍，逐格与
+  载档相同，才算"反例留在绿代"。B 臂 `substitute=scripts/quality/iter2_claims_probe_runner.py
+  stale=1375 targeted_slots=1375` 是"改这台 runner 会脏 1375 枚"的可红控制；本波 write-set 里 runner 与
+  harness 文件 0 处，所以 §93 给 nasdaq 那 9 枚标的 `shard_entry_needs_harness`（"落地要先加宽接缝"）被这批
+  自己的落地否证 —— 走的是已入库的 `shared_http_client` 接缝。
+- 残差重定价面（step 2 同代）：`readiness_census`（12 行 / `20d35f19e40c64f9`）
+  `residue=75 buckets={'NEED_BINDING': 32, 'NEED_DECLARE': 28, 'NEED_SHARD_ENTRY': 15} sums_to_residue=True
+  readiness_arms=3 readiness_passed=3 identity_set=5168e1e723999312 expected_match=True`；
+  `residue_axis_census`（94 行 / `dfe317f9729168ce`）`witnessable_today=0 rows_without_module=66
+  arms=8 arms_passed=8`（step 0 那份是 `rows_without_module=75`，本波 9 枚有了模块 ⇒ 75−9=66，两代同尺）；
+  臂 F 本代现读 `count=0 rows=[]` 而两面控制仍在（`control_actions_on_harness=['shard_entry_only']` /
+  `control_actions_off_harness=['shard_entry_needs_harness']`），所以 §92 那扇门落地之后仍然关着。
+  `seam_reachability_census`（41 行 / `fde2d5b502095459`）给出机制价格
+  `residual_by_mechanism={'client_seam': 7, 'client_seam_other_module': 5, 'engine_transport': 37,
+  'new_provider_package': 2, 'runner_surface_widening': 24} residual_total=75 accepted_total=275
+  accepted_plus_residual=350`，并印出本目录那台分类器的第二枚缺陷：落地后的 nasdaq 仍读
+  `bucket=SEAM_NEVER_USED mechanism=engine_transport` 而 `witness_module=True client_seam=True rows=9
+  accepted=9 residual=0` —— 与 §93 已记的 `_row_class_face`（只看 fetcher 自己 MRO，服务路径造普通 dict 就
+  `emitted=[]`）同族：两台都拿"现在没在用"当"不可能用"。**引用这一格时必须带着这句**，否则会把桶读成可达性。
+- 质量面与仪器卫生：`ruff_check` / `ruff_e501` / `mypy` / `bandit` 四档全 0（范围 = 见证模块 + 9 枚模型），
+  `pytest_nasdaq_and_pin_planes`（`748 passed, 179 skipped in 2.80s`，`pytest_nasdaq_and_pin_planes_exit=0`）。
+  `runs/wave28-step2-probes-lint.txt` 是本目录自己的卫生面：`probe_py_files=21`、`ruff_check_probes_exit=0`、
+  `ruff_format_probes_exit=0`、`21 files already formatted`（母数由 glob 与 ruff 各数一次相符）。**范围如实标**：
+  Makefile 的 `PY_SELFDEV = opendata scripts tests alembic alembic_data` 不含 `docs/evidence`，所以探针树不在
+  17 员 gate 的任何一档里，这道面一直是自课的、不是 gate 读数。格式化之后必须证行为不变：重跑只读面探针
+  `w28s2_shard_faces.py`（exit 0），`shard_coherence` 载档逐字节相同、`claims_reproducibility` 只动我手工重排的
+  散文换行 5 行而每个计数行不变，另加四支 `py_compile=0`。
+- `runs/wave28-step2-payload-scan.txt`：入库前两臂面。母数换代可追：step 0 收在 80（16 `.py` + 52 `.txt` +
+  12 `.err`）→ step 1 take 1 读 85 → take 2 读 86 → 两份写完 87 → **step 2 take 1 读 111（= 探针 21 + 载档 90，
+  两个母数各数一次再相加核对）、take 2 读 112**（本载档自己加入），`diff` 实测只有 `payload_files` 一格动、
+  判定四格逐字相同（`arm_a_findings=0 arm_a_rc=0 / arm_b_findings=1 arm_b_rc=1 / PASS=True / scan_exit=0`），
+  臂 B 仍往 `runs/declare_candidates.txt` 的一次性副本种运行时生成的 token（`B_PLANTED_FOUND
+  rule=generic-api-key at=declare_candidates.txt:31`），仓库字节不变。写完本 README 条目与 §94、stage 之后取的
+  索引面在 `runs/wave28-step2-precommit-staged-scan.txt`，最后那一次复核的逐字读数住在提交说明里。
+- `runs/wave28-step2-precommit-staged-scan.txt`（51 行 / `59c52a3976b37ac4`，取 1/取 2 时代；追加取 3 块后 63 行 / `9e41e3fe0891d4cb`；本条目与 §94 的同款条目又改过字节，载档末尾追了取 4 块（含取 3 块里一句被后继编辑否证后的撤回），终态 76 行 / `aeee6bd7535ca34f`；探针
+  `staged_payload_scan.py` 127 行 / `f5402c4e39098d93`，本步没改它一个字节）：**索引面**。母数 = 本步要
+  提交的全部路径，`git diff --cached --name-status` 实测 159 = 145 新增 + 14 修改（修改 14 = 9 枚 nasdaq
+  模型 + `claims.merged.json` + judge 的 `.json`/`.md` + 本 README + 开发验收记录；新增 145 = 1 见证
+  模块 + 4 探针 + 21 载档 + 119 nasdaq 证据）。取 1 读 `files=159 roots=159 unresolved=0 findings=0
+  rc=0`，本载档加入索引后取 2 读 **160**，字段逐一对下来只有两格计数器动（`findings 0 -> 0`、
+  `rc 0 -> 0`、`unresolved 0 -> 0`）。这一面本步**自己补了一条双面控制**（step 0/1 的索引面没有，缺的
+  正是"这台能抓到东西"的证明）：运行时生成的一枚 token 写进
+  `docs/evidence/C100/w28s2-scan-control/`（先用 `git check-ignore -v` 证其被 `.gitignore:249` 的
+  `/docs/evidence/C100/**` 忽略），单扫读 `findings=1 rc=1`，**追加到真实的 159 之后**再扫读
+  `files=160 findings=1 rc=1`：158 条仍干净、那一条被抓到，所以 `findings=0` 不是复制器溢出也不是
+  哑计数器；控制文件随后删除，token 字面量不入库也不在载档里复述。取 1 的 argv 是在 shell 命令替换里
+  拼的（逐项加引号），控制臂与取 2 用 `subprocess` argv 列表；这处差异如实写在载档头部，没把取 1 美化成
+  argv —— 判定靠的是这台会把未解析路径打印出来并强制 FAIL，所以"开发验收记录的 CJK 路径确在扫描集内"
+  是被测的。**两个母数互不替换**：`payload_files`（上面那台的 probes+runs 树，现数 113 = 21 `.py` +
+  80 `.txt` + 12 `.err`）与 `payload_scan_files`（本台的"本步要提交的路径"，含两份 `docs/` 叙事与
+  119 枚 C101 证据、不含 12 `.err`）是两个不同总体，各自的控制臂只证明自己那个总体。取 2 之后 README 与 §94 各补过本条目，载档末尾又追加了取 3、取 4
+  两块，取 3 块里“最后一次由取 3 说”那句已被同一步内的后继编辑否证、并在取 4 块里撤回；这些追加
+  与本条自身都是它之前各取没扫到的字节，终取的逐字读数住在本次提交说明里。
 - `runs/wave28-step0-receipt_pin_consistency.txt`（9 行 / `965eb3f9b9324955`，`receipt_pin_consistency_exit=0`）
   与 `runs/wave28-step0-batch5_fence_dry_census.txt`（15 行 / `600128e34e133c44`，`pin_rebase_exit=1`）：
   改臂之后的**两个 pin 平面**同代重取。前者 `pin_face slots=19382 stale=0 before_ne_after=0
@@ -562,11 +660,16 @@ stderr 0 字节），而它的 B 臂在内存里把 runner 摘要换成占位值
 `D_verbs_are_measured` 把 `new_verbs` 钉成"表面 ∪ 实测调用点"，所以凭猜测给假客户端加一个 `post`
 会让这一臂变红而不是让数字变大。
 
-本目录 17 台仪器（`ls probes/*.py` 现数）都只做普查：除自己的臂失败外退出 0，绝不改动任何被判定的面。波 23 起
+本目录 21 台仪器（`ls probes/*.py` 现数；step 2 之前 17 台，本轮 +4）里 **18 台只读**：除自己的臂失败外退出 0，
+绝不改动任何被判定的面。**三台会写，写的东西按代次记账**：`w28s2_run_chain.py` 起已入库的
+producer→recorder→merge→judge，一次跑就换代（本波 45 枚回执重产），所以它排在链首、其余载档全在同代重取；
+`receipt_drift_counterfact.py` 的 B 臂**真的重写 canonical 回执**（那正是它要证明的事），随后由 C 臂把树落回绿代；
+`w28s2_lint_pass.py` 改写的是探针自己的文本（docstring / noqa / tempfile），不是任何被判定面。波 23 起
 （readiness、declare、payload 两臂扫描、seam 表面），波 24 收编 staged 扫描那一列，波 25 加两台正交轴
 （可达性普查、后响应守卫）与一台入库前 pin 闸门，波 26 加四轴逐枚测量器，波 27 step 0 加台账轴拆分、射程
 与那条运输规则的差分三台加 seam 种类普查，step 2 再加三支（乙支 7 枚定价、甲支加宽反例、整残差成像），
 波 28 step 1 再加一台 `retarget_rowclass_counterfactual.py`（把已落地的守卫与分类器在内存里逐枚开闸，给
-`retarget 24` 那一格定价；它经 `census._run` 起已落地的普查取接缝总体，见该文件 :152）。
-新仪器同样只打印屏幕与臂，不判定任何行；三处例外都不落盘：pin 闸门的 C 臂在**内存里**造一枚假 slot，
+`retarget 24` 那一格定价；它经 `census._run` 起已落地的普查取接缝总体，见该文件 :152），step 2 再加四台
+（上面那三台，加只读的 `w28s2_shard_faces.py`）。
+新仪器同样只打印屏幕与臂，不判定任何行；不写盘的那几处例外都不落盘：pin 闸门的 C 臂在**内存里**造一枚假 slot，
 step 2b 的甲支在**内存里**加宽假客户端，step 1 的 I 臂在**内存 deepcopy 里**把一枚行的 `is_contract` 取反。

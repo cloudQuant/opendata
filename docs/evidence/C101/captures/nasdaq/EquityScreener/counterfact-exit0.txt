@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquityScreener --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "142,3B keeps totalrecords equal to the rows on the page, so the offset loop stops after one send, and the symbol, name, change and percentage all still parse: last_price is the one required numeric of NasdaqEquityScreener, and EquityScreenerFetcher must refuse the screen rather than publish a screen rowwhose price is a placeholder; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -34,6 +34,7 @@ class CalendarEarningsFetcher(
     """Read each bounded day and attach the response's as-of day to its rows."""
 
     canonical_model: ClassVar[str] = "CalendarEarnings"
+    row_model: ClassVar[type[NasdaqCalendarEarnings]] = NasdaqCalendarEarnings
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="nasdaq_calendar_earnings",

@@ -1,0 +1,33 @@
+{
+  "responses": [
+    {
+      "body": {
+        "data": {
+          "dividends": {
+            "rows": [
+              {
+                "amount": 0.25,
+                "currency": "USD",
+                "declarationDate": "2025-12-04",
+                "exOrEffDate": "2026-01-05",
+                "paymentDate": "2026-02-12",
+                "recordDate": "2026-01-06",
+                "type": "Cash Dividend"
+              },
+              {
+                "amount": "0.24",
+                "currency": "USD",
+                "exOrEffDate": "2026-01-02",
+                "paymentDate": "2026-02-10",
+                "recordDate": "2026-01-03",
+                "type": "Cash Dividend"
+              }
+            ]
+          },
+          "symbol": "AAPL"
+        }
+      },
+      "url_contains": "/api/quote/AAPL/dividends"
+    }
+  ]
+}

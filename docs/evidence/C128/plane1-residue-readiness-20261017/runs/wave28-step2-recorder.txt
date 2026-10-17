@@ -1,0 +1,15 @@
+wave-28 step 2 -- primary reviews over the regenerated nasdaq claims document
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/nasdaq/claims.json --output docs/evidence/C101/nasdaq/claims.reviewed.json --identity nasdaq::CalendarDividend --identity nasdaq::CalendarEarnings --identity nasdaq::CalendarIpo --identity nasdaq::CompanyFilings --identity nasdaq::EconomicCalendar --identity nasdaq::EquityScreener --identity nasdaq::EquitySearch --identity nasdaq::HistoricalDividends --identity nasdaq::TopRetail --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+re-signing: dropped 9 earlier review(s) for the addressed identities
+REVIEW_SIGNED: nasdaq::CalendarDividend
+REVIEW_SIGNED: nasdaq::CalendarEarnings
+REVIEW_SIGNED: nasdaq::CalendarIpo
+REVIEW_SIGNED: nasdaq::CompanyFilings
+REVIEW_SIGNED: nasdaq::EconomicCalendar
+REVIEW_SIGNED: nasdaq::EquityScreener
+REVIEW_SIGNED: nasdaq::EquitySearch
+REVIEW_SIGNED: nasdaq::HistoricalDividends
+REVIEW_SIGNED: nasdaq::TopRetail
+recorder_exit=0 signed=9 refused=0 reviews_total=9 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/nasdaq/claims.reviewed.json
+recorder_exit=0

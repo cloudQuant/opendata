@@ -1,0 +1,76 @@
+wave-28 step 2 -- the staged index, scanned as working-tree bytes.
+argv: git -c core.quotepath=off diff --cached --name-only, then
+      $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/staged_payload_scan.py \
+          --paths <that list>
+      probe: 127 lines / f5402c4e39098d93 (tracked, unmodified by this step)
+      Stated as run, not tidied: take 1 built the argv inside a shell command substitution with
+      per-item quoting, so a mangled or dropped path was possible; the controls and take 2 passed the
+      list as subprocess argv. The guard that makes the difference visible is in the instrument itself
+      -- unresolved paths print and force a FAIL -- and every take below reads unresolved=0.
+Staged set, counted from git diff --cached --name-status: 159 paths = 145 added + 14 modified.
+  modified 14 = 9 nasdaq model files + C101/claims.merged.json + C101/judge/claims.merged.report.json
+  + C101/judge/claims.merged.report.md + C128/README.md + the acceptance record.
+  added 145 = 1 witness module (scripts/quality/iter2_witnesses/nasdaq.py) + 4 new C128 probes
+  + 21 wave28-step2-*.txt carriers + 119 nasdaq evidence files under C101 (45 receipts + 45 captures
+  + 11 in C101/nasdaq/ + 9 primary-reviews + 9 fixtures).
+Out of the index by ruling, not by accident: the 12 wave-27 .err intermediates (README carries the
+standing ruling that .err siblings do not join a wave commit) and every unrelated untracked top-level.
+The non-ASCII path is censused, not assumed: the acceptance record's path was passed as argv and
+returned resolved (payload_scan_unresolved=0 with roots==files==159), so it is inside the scanned set.
+take1 index_paths=159
+take1: payload_scan_files=159 payload_scan_roots=159 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 159 file(s) clean
+take1_stderr_bytes=0
+staged_take1_exit=0
+Two-sided control on the same instrument and the same code path (the clean zero is a measurement):
+a token-shaped literal was generated at runtime with secrets.token_hex and written to ONE file under
+docs/evidence/C100/w28s2-scan-control/ -- a path proven ignored by `git check-ignore -v`
+(.gitignore:249 /docs/evidence/C100/**) -- and that file was then deleted. Its literal is not quoted
+here and was never staged.
+control_standalone: payload_scan_files=1 payload_scan_roots=1 payload_scan_unresolved=0 payload_scan_findings=1 payload_scan_rc=1
+control_standalone_exit=1
+control_added_to_the_real_159: payload_scan_files=160 payload_scan_roots=160 payload_scan_unresolved=0 payload_scan_findings=1 payload_scan_rc=1
+control_added_exit=1
+control_face PASS=True finding_count_moves_from_0_to_1=True
+The second control arm is the one that matters for this commit: adding one dirty path to the exact
+159 leaves 158 clean rows and still reports the finding, so findings=0 above is not an overflow or a
+silent skip in the copier.
+take2 index_paths=160
+take2: payload_scan_files=160 payload_scan_roots=160 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 160 file(s) clean
+take2_stderr_bytes=0
+staged_take2_exit=0
+take2_vs_take1: differing_fields=['payload_scan_files', 'payload_scan_roots']
+take2_vs_take1_only_counters_moved=True  (findings 0 -> 0, rc 0 -> 0, unresolved 0 -> 0)
+The moved counters are this carrier joining the index between the takes, which is the self-reference
+the probe's docstring names: the appended lines are inert text because the same path scanned dirty in
+the control arm above still reports findings=1, and a clean 159 still becomes a clean 160.
+Lag stated in full: take 2 scanned this file as it stood when take 2 ran, so the take-2 block printed
+above, and the bullets the acceptance record and C128/README.md add about this scan, are bytes no take
+in this file scanned. The last word belongs to the run whose reading goes into the commit message.
+take3 (run after the record's and README's index-face entries joined the index; same 160 paths, new
+bytes in two of them): payload_scan_files=160 payload_scan_roots=160 payload_scan_unresolved=0
+payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 160 file(s) clean
+take3_stderr_bytes=0
+staged_take3_exit=0
+take3_vs_take2_face_fields_identical=True (160/160/0/0/0 -- the two narrative files grew and the scan
+still reads clean, which is the self-reference this instrument cannot otherwise close: the entries
+describing this very file are inside the scanned set and are inert text)
+This block claimed take 3 was the run whose reading goes to the commit message, and that claim
+was overtaken inside the same step: two narrative files (the acceptance record's index-face entry
+and C128/README.md's) were edited afterwards, so take 3 no longer described the bytes about to be
+committed. The claim is retracted here rather than left standing, and take 4 below is the last word.
+take4 (argv as a subprocess list over the final 160-path index, after the two narrative entries and
+this correction had joined it): payload_scan_files=160 payload_scan_roots=160
+payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 160 file(s) clean
+take4_stderr_bytes=0
+staged_take4_exit=0
+take4_vs_take3_face_fields_identical=True (160/160/0/0/0) while two of the 160 files did change bytes
+in between -- so the moved prose is inert text to the scanner, which is the claim this file could not
+otherwise make about itself.
+take4 is the verbatim reading quoted in the commit message. The only bytes in this file that no take
+scanned are the lines this block appends; they were staged and `git diff --name-only` is empty at
+commit time (index == worktree).
+carrier_final_exit_line=staged_scan_final_exit=0

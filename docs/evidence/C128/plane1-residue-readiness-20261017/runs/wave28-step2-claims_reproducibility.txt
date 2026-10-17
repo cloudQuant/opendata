@@ -1,0 +1,20 @@
+wave-28 step 2 -- verdict-payload agreement between the produced and the signed document.
+method: the fields a re-run necessarily rotates (generated_at_utc, executed_at_utc, the
+receipt block and its paths) are dropped, then the payload is digested. The two whole
+documents do NOT hash equal and that is not a defect -- the recorder strips the producer
+envelope and fills the review block -- so the comparison that means something is the one
+over the claims array, plus the envelope delta stated next.
+claims_array: produced=0b0c3ff3a5619e74 signed=0b0c3ff3a5619e74 equal=True
+envelope_delta keys_only_in_produced=['generated_at_utc', 'generated_by', 'notes'] reviews_produced=0 reviews_signed=9
+verdict_counts produced=45 signed=45
+array_comparison_can_move=True
+all_pass=True count=45
+The cross-generation half of this face was measured earlier in the step and is quoted
+here rather than recomputed, because the scratch document it compared against was removed
+after the comparison: stable_payload_sha first_run=eca8013c974bd465
+rerun=eca8013c974bd465 reproducible=True, with the falsifying arm that
+flipped one claim status to FAIL giving control_tampered_sha=043cb3d97ee24abc.
+The recomputable form of the same claim is
+runs/wave28-step2-receipt_drift_counterfact.txt: its arm C re-produces the same nine rows
+and must restore arm A's judged face exactly (accepted=275, drift_rows=0).
+reproducibility_exit=0

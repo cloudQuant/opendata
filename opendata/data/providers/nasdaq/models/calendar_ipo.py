@@ -36,6 +36,7 @@ class CalendarIpoFetcher(
     """Fetch at most twelve month slices from the selected IPO status table."""
 
     canonical_model: ClassVar[str] = "CalendarIpo"
+    row_model: ClassVar[type[NasdaqCalendarIpo]] = NasdaqCalendarIpo
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="nasdaq_calendar_ipo",

@@ -1,0 +1,234 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/nasdaq/claims.json",
+    "sha256": "4e1f383576d4f282a268d256b76aa1035e8b3c1e6afee6cab7e614ec2de2ecd5"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/contract.json",
+          "sha256": "1ebdf9001d74f2f84e494831c54e739f6c12ec3f8d93e382e04f51bfc90ab663"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "before_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "path": "opendata/data/providers/nasdaq/models/equity_screener.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/counterfact.json",
+          "sha256": "6243715b60cf677b6578a8ef7c85710ff4c7152e0a13a7ecc15c47fb588dfd74"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "before_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "path": "opendata/data/providers/nasdaq/models/equity_screener.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/direct.json",
+          "sha256": "bfc2971666b7f692d96f56cc929cb0a4372f5491295ab63dfe56bdd5eb346872"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "before_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "path": "opendata/data/providers/nasdaq/models/equity_screener.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/implementation.json",
+          "sha256": "fe850f625fcb38e120b6c78a11502760487f0e217df27278514b160ab3a5bc98"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "before_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "path": "opendata/data/providers/nasdaq/models/equity_screener.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/service.json",
+          "sha256": "3925ec0c63aca6dbf8cab6a5999897629e9e495aad1867d9e0d3c6aa5a32b893"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "before_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "path": "opendata/data/providers/nasdaq/models/equity_screener.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "EquityScreener",
+  "model_identity": "nasdaq::EquityScreener",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "nasdaq",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T17:59:53Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "EquityScreener"
+}

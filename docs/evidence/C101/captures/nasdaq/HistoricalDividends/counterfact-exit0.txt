@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model HistoricalDividends --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": ["amount"], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": ["amount"], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "a payment row that publishes no amount cell at all still carries an ex-dateinside the requested window, a dividend type, a currency and three well-formed dates,so it passes every shape guard on its way to the row mapper: amount is a requiredfloat of NasdaqHistoricalDividend, so HistoricalDividendsFetcher must refuse the history rather than invent a zero dividend or drop the payment the source declared; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

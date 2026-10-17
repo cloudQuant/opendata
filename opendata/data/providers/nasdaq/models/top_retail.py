@@ -37,6 +37,7 @@ class TopRetailFetcher(NasdaqFetcher[TopRetailQuery, dict[str, object]]):
     """Query NDAQ/RTAT10 with the key only for this specific model."""
 
     canonical_model: ClassVar[str] = "TopRetail"
+    row_model: ClassVar[type[NasdaqTopRetail]] = NasdaqTopRetail
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="nasdaq_top_retail",

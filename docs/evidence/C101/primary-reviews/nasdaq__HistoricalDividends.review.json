@@ -1,0 +1,234 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/nasdaq/claims.json",
+    "sha256": "4e1f383576d4f282a268d256b76aa1035e8b3c1e6afee6cab7e614ec2de2ecd5"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/contract.json",
+          "sha256": "373d39fdc3c9bf8328247fe25d1fddc104783a31470bf8b96d2e0559635a7aea"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "before_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "path": "opendata/data/providers/nasdaq/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/counterfact.json",
+          "sha256": "60aa82007216156b3fd9554ab31660d081fc5c0ce87e9911a834c6ec6d3f0744"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "before_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "path": "opendata/data/providers/nasdaq/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/direct.json",
+          "sha256": "e704532f92ddaff0ec6f17e58958ec905740ae1ef363202685ae109a46298ab0"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "before_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "path": "opendata/data/providers/nasdaq/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/implementation.json",
+          "sha256": "eecf035a12888bc2cd749446f89282e4d6482aa36e09f76910c7e736f288496d"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "before_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "path": "opendata/data/providers/nasdaq/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/service.json",
+          "sha256": "067133b922e4bb44bdd61de2059698bef8113246b1856353c2012ede44d4b2ff"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "before_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "path": "opendata/data/providers/nasdaq/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "HistoricalDividends",
+  "model_identity": "nasdaq::HistoricalDividends",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "nasdaq",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T17:59:53Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "HistoricalDividends"
+}

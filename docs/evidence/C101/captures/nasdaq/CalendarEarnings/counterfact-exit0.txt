@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarEarnings --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "NASDAQ_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "a row whose symbol is Nasdaq's own withheld token still has the as-of day the request asked for and every numeric cell intact, so nothing else in the document disagrees: symbol is a required contract column of NasdaqCalendarEarnings, and CalendarEarningsFetcher must refuse the calendar rather than publish a row about no ticker or invent one from the name; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

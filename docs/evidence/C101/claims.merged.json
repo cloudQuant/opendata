@@ -114571,6 +114571,3606 @@
       "upstream_model": "SP500Multiples"
     },
     {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarDividend --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T17:59:14.058654+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "e896aecebce98bde7e47d0e53a7d9618394dd5212af348f2b6935a1231474e6a",
+            "before_sha256": "e896aecebce98bde7e47d0e53a7d9618394dd5212af348f2b6935a1231474e6a",
+            "path": "opendata/data/providers/nasdaq/models/calendar_dividend.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarDividend",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarDividend/implementation.json",
+        "sha256": "21b1e8cb25a774adf63df08fa32c13561309f5b3e7dd2f66346936c9e084e40c"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarDividend"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarDividend --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T17:59:14.880583+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "794b69ea549a1006a8e01cf5962174761400afd933e895f6d66c031687fde70f",
+            "before_sha256": "794b69ea549a1006a8e01cf5962174761400afd933e895f6d66c031687fde70f",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CalendarDividend.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "e896aecebce98bde7e47d0e53a7d9618394dd5212af348f2b6935a1231474e6a",
+            "before_sha256": "e896aecebce98bde7e47d0e53a7d9618394dd5212af348f2b6935a1231474e6a",
+            "path": "opendata/data/providers/nasdaq/models/calendar_dividend.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarDividend",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarDividend/direct.json",
+        "sha256": "e7e65ab155df8061f7904c1860126915e01bb18019a5db97ee1db87b1f5a3b73"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarDividend"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarDividend --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T17:59:15.863783+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "794b69ea549a1006a8e01cf5962174761400afd933e895f6d66c031687fde70f",
+            "before_sha256": "794b69ea549a1006a8e01cf5962174761400afd933e895f6d66c031687fde70f",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CalendarDividend.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "e896aecebce98bde7e47d0e53a7d9618394dd5212af348f2b6935a1231474e6a",
+            "before_sha256": "e896aecebce98bde7e47d0e53a7d9618394dd5212af348f2b6935a1231474e6a",
+            "path": "opendata/data/providers/nasdaq/models/calendar_dividend.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarDividend",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarDividend/service.json",
+        "sha256": "8d1fb9a9f1493bb205c9269998dd87979456c00148160f7116444cddc1e22833"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarDividend"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarDividend --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T17:59:16.723822+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "794b69ea549a1006a8e01cf5962174761400afd933e895f6d66c031687fde70f",
+            "before_sha256": "794b69ea549a1006a8e01cf5962174761400afd933e895f6d66c031687fde70f",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CalendarDividend.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "e896aecebce98bde7e47d0e53a7d9618394dd5212af348f2b6935a1231474e6a",
+            "before_sha256": "e896aecebce98bde7e47d0e53a7d9618394dd5212af348f2b6935a1231474e6a",
+            "path": "opendata/data/providers/nasdaq/models/calendar_dividend.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarDividend",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarDividend/contract.json",
+        "sha256": "83f253b7cd48609feba8085e280f1eb7889c546821895da5de1bab118c344cdb"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarDividend"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarDividend --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T17:59:17.546540+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "794b69ea549a1006a8e01cf5962174761400afd933e895f6d66c031687fde70f",
+            "before_sha256": "794b69ea549a1006a8e01cf5962174761400afd933e895f6d66c031687fde70f",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CalendarDividend.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "e896aecebce98bde7e47d0e53a7d9618394dd5212af348f2b6935a1231474e6a",
+            "before_sha256": "e896aecebce98bde7e47d0e53a7d9618394dd5212af348f2b6935a1231474e6a",
+            "path": "opendata/data/providers/nasdaq/models/calendar_dividend.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarDividend",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarDividend/counterfact.json",
+        "sha256": "44e3f7ca4009f01a8a9e71e9f6eb5447e6476a66f0276bdff8872ee71d0bc8d4"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarDividend"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarEarnings --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T17:59:18.336968+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+            "before_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+            "path": "opendata/data/providers/nasdaq/models/calendar_earnings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarEarnings",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarEarnings/implementation.json",
+        "sha256": "0ac790214affa33ddc9de7e7e6f290c9cdaecaaa10e475509d3e661a595762c1"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarEarnings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarEarnings --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T17:59:19.202888+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "1d0058419a70291f16ffc94c7c75c835901a8aaf30ec8b2e8ad2a36e39e97d6b",
+            "before_sha256": "1d0058419a70291f16ffc94c7c75c835901a8aaf30ec8b2e8ad2a36e39e97d6b",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CalendarEarnings.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+            "before_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+            "path": "opendata/data/providers/nasdaq/models/calendar_earnings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarEarnings",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarEarnings/direct.json",
+        "sha256": "941d25f5a9dbc90a60e3604aa75505ffe5fe8c32d98ba0c9d2f148bb923916b7"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarEarnings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarEarnings --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T17:59:20.162208+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "1d0058419a70291f16ffc94c7c75c835901a8aaf30ec8b2e8ad2a36e39e97d6b",
+            "before_sha256": "1d0058419a70291f16ffc94c7c75c835901a8aaf30ec8b2e8ad2a36e39e97d6b",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CalendarEarnings.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+            "before_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+            "path": "opendata/data/providers/nasdaq/models/calendar_earnings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarEarnings",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarEarnings/service.json",
+        "sha256": "4551bbcb953a2405b78cdff58c571d6b76c04a479f7c776f2ca3bb362acb0532"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarEarnings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarEarnings --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T17:59:21.052811+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "1d0058419a70291f16ffc94c7c75c835901a8aaf30ec8b2e8ad2a36e39e97d6b",
+            "before_sha256": "1d0058419a70291f16ffc94c7c75c835901a8aaf30ec8b2e8ad2a36e39e97d6b",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CalendarEarnings.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+            "before_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+            "path": "opendata/data/providers/nasdaq/models/calendar_earnings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarEarnings",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarEarnings/contract.json",
+        "sha256": "1fc779a6761b3337c60a5e24e22cb061510a98c30d623735c3eaf13a210b49b1"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarEarnings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarEarnings --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T17:59:21.871056+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "1d0058419a70291f16ffc94c7c75c835901a8aaf30ec8b2e8ad2a36e39e97d6b",
+            "before_sha256": "1d0058419a70291f16ffc94c7c75c835901a8aaf30ec8b2e8ad2a36e39e97d6b",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CalendarEarnings.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+            "before_sha256": "eed82dfad10c978799b128d38063a08912d5007dbc098a4fd1a7f15c62603356",
+            "path": "opendata/data/providers/nasdaq/models/calendar_earnings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarEarnings",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarEarnings/counterfact.json",
+        "sha256": "3b1810c3652816c021aceda437f5df07f6ded705129eb06df45d9f4f9ee579de"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarEarnings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarIpo --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T17:59:22.662665+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "b638209e437c67dc56f6ae638eea833f8b2db86ab1d35870c635e1305fedc973",
+            "before_sha256": "b638209e437c67dc56f6ae638eea833f8b2db86ab1d35870c635e1305fedc973",
+            "path": "opendata/data/providers/nasdaq/models/calendar_ipo.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarIpo",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarIpo/implementation.json",
+        "sha256": "5c3fe8ba676c7c84a03186396d06f2441dbe3122e0bd6bf26af9a42bd07a2202"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarIpo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarIpo --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T17:59:23.520467+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "524e5bce6a1e5efd3d5266ddc71a6f32c314da9e0d968b0c4710af4ec9f8495a",
+            "before_sha256": "524e5bce6a1e5efd3d5266ddc71a6f32c314da9e0d968b0c4710af4ec9f8495a",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CalendarIpo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "b638209e437c67dc56f6ae638eea833f8b2db86ab1d35870c635e1305fedc973",
+            "before_sha256": "b638209e437c67dc56f6ae638eea833f8b2db86ab1d35870c635e1305fedc973",
+            "path": "opendata/data/providers/nasdaq/models/calendar_ipo.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarIpo",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarIpo/direct.json",
+        "sha256": "185f1d6faf0baa9b3b23eef747a1d76b8422692e3bb50861130dd83a6f2cf44a"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarIpo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarIpo --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T17:59:24.480443+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "524e5bce6a1e5efd3d5266ddc71a6f32c314da9e0d968b0c4710af4ec9f8495a",
+            "before_sha256": "524e5bce6a1e5efd3d5266ddc71a6f32c314da9e0d968b0c4710af4ec9f8495a",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CalendarIpo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "b638209e437c67dc56f6ae638eea833f8b2db86ab1d35870c635e1305fedc973",
+            "before_sha256": "b638209e437c67dc56f6ae638eea833f8b2db86ab1d35870c635e1305fedc973",
+            "path": "opendata/data/providers/nasdaq/models/calendar_ipo.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarIpo",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarIpo/service.json",
+        "sha256": "bf64bce332b8f046b0d8ef2d3c78a99a351592f01e254fede9f68f708b0dba32"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarIpo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarIpo --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T17:59:25.361500+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "524e5bce6a1e5efd3d5266ddc71a6f32c314da9e0d968b0c4710af4ec9f8495a",
+            "before_sha256": "524e5bce6a1e5efd3d5266ddc71a6f32c314da9e0d968b0c4710af4ec9f8495a",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CalendarIpo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "b638209e437c67dc56f6ae638eea833f8b2db86ab1d35870c635e1305fedc973",
+            "before_sha256": "b638209e437c67dc56f6ae638eea833f8b2db86ab1d35870c635e1305fedc973",
+            "path": "opendata/data/providers/nasdaq/models/calendar_ipo.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarIpo",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarIpo/contract.json",
+        "sha256": "147fbe5c99449572ab6509475c0636e1271e45e457aac01b8c39922307eed103"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarIpo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarIpo --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T17:59:26.187393+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "524e5bce6a1e5efd3d5266ddc71a6f32c314da9e0d968b0c4710af4ec9f8495a",
+            "before_sha256": "524e5bce6a1e5efd3d5266ddc71a6f32c314da9e0d968b0c4710af4ec9f8495a",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CalendarIpo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "b638209e437c67dc56f6ae638eea833f8b2db86ab1d35870c635e1305fedc973",
+            "before_sha256": "b638209e437c67dc56f6ae638eea833f8b2db86ab1d35870c635e1305fedc973",
+            "path": "opendata/data/providers/nasdaq/models/calendar_ipo.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarIpo",
+        "path": "docs/evidence/C101/receipts/nasdaq/CalendarIpo/counterfact.json",
+        "sha256": "f9daad2d5aedddb27b1798105915327572905b202545a4730ece4031eee4a4e9"
+      },
+      "status": "PASS",
+      "upstream_model": "CalendarIpo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CompanyFilings --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T17:59:26.981238+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "before_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "path": "opendata/data/providers/nasdaq/models/company_filings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CompanyFilings",
+        "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/implementation.json",
+        "sha256": "746f88b5330b42eda732d46fa114a9b3538c41bc2a2d7ee6c105c046aee85b09"
+      },
+      "status": "PASS",
+      "upstream_model": "CompanyFilings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CompanyFilings --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T17:59:27.840312+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "cfbaa03933b3ccc759c748486835a04636e40b4dd4809a75712dbcff6b206823",
+            "before_sha256": "cfbaa03933b3ccc759c748486835a04636e40b4dd4809a75712dbcff6b206823",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CompanyFilings.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "before_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "path": "opendata/data/providers/nasdaq/models/company_filings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CompanyFilings",
+        "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/direct.json",
+        "sha256": "5262c4ee003c7fadbfb0ba7f6d19b3f95b896bfb918d5d7f5c6c13dc5493e564"
+      },
+      "status": "PASS",
+      "upstream_model": "CompanyFilings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CompanyFilings --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T17:59:28.806269+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "cfbaa03933b3ccc759c748486835a04636e40b4dd4809a75712dbcff6b206823",
+            "before_sha256": "cfbaa03933b3ccc759c748486835a04636e40b4dd4809a75712dbcff6b206823",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CompanyFilings.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "before_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "path": "opendata/data/providers/nasdaq/models/company_filings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CompanyFilings",
+        "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/service.json",
+        "sha256": "c958cc84c877b4f39cfdc48785b281229ef490a5bcaa8497724900adb8dc6f85"
+      },
+      "status": "PASS",
+      "upstream_model": "CompanyFilings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CompanyFilings --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T17:59:29.684444+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "cfbaa03933b3ccc759c748486835a04636e40b4dd4809a75712dbcff6b206823",
+            "before_sha256": "cfbaa03933b3ccc759c748486835a04636e40b4dd4809a75712dbcff6b206823",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CompanyFilings.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "before_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "path": "opendata/data/providers/nasdaq/models/company_filings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CompanyFilings",
+        "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/contract.json",
+        "sha256": "eb5e2f15827e1aa9d26dc723be3f3128398d8a6f5c017d1ac1a0f3ad4df384fe"
+      },
+      "status": "PASS",
+      "upstream_model": "CompanyFilings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CompanyFilings --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T17:59:30.520152+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "cfbaa03933b3ccc759c748486835a04636e40b4dd4809a75712dbcff6b206823",
+            "before_sha256": "cfbaa03933b3ccc759c748486835a04636e40b4dd4809a75712dbcff6b206823",
+            "path": "docs/evidence/C101/fixtures/nasdaq/CompanyFilings.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "before_sha256": "ebd9520ca47d2b0426483363a13908cf468d20e5534abd29f2d81403397e64cc",
+            "path": "opendata/data/providers/nasdaq/models/company_filings.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::CompanyFilings",
+        "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/counterfact.json",
+        "sha256": "8d7feaa5ca53111a0d2ec149f5bd1b5de51c069af7acfea99ae378b16a4cc18d"
+      },
+      "status": "PASS",
+      "upstream_model": "CompanyFilings"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EconomicCalendar --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T17:59:31.320591+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "6bec3924dd275e5912c3f0bec87b3e2a80c9f7956d31246d6e11c142424952d0",
+            "before_sha256": "6bec3924dd275e5912c3f0bec87b3e2a80c9f7956d31246d6e11c142424952d0",
+            "path": "opendata/data/providers/nasdaq/models/economic_calendar.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EconomicCalendar",
+        "path": "docs/evidence/C101/receipts/nasdaq/EconomicCalendar/implementation.json",
+        "sha256": "42032035c7197bf2cb1a01c37888f68517dd4ea11153bbda167cabcb9de64e33"
+      },
+      "status": "PASS",
+      "upstream_model": "EconomicCalendar"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EconomicCalendar --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T17:59:32.187712+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "04cdd070ddfe8e845c3f04e47552684455d3da889f677147f7e50409d30878b3",
+            "before_sha256": "04cdd070ddfe8e845c3f04e47552684455d3da889f677147f7e50409d30878b3",
+            "path": "docs/evidence/C101/fixtures/nasdaq/EconomicCalendar.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "6bec3924dd275e5912c3f0bec87b3e2a80c9f7956d31246d6e11c142424952d0",
+            "before_sha256": "6bec3924dd275e5912c3f0bec87b3e2a80c9f7956d31246d6e11c142424952d0",
+            "path": "opendata/data/providers/nasdaq/models/economic_calendar.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EconomicCalendar",
+        "path": "docs/evidence/C101/receipts/nasdaq/EconomicCalendar/direct.json",
+        "sha256": "f3fbe65f524aae4e9b662ff5924324069df02f94e8d3855a70bfccdcfbf165f8"
+      },
+      "status": "PASS",
+      "upstream_model": "EconomicCalendar"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EconomicCalendar --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T17:59:33.164999+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "04cdd070ddfe8e845c3f04e47552684455d3da889f677147f7e50409d30878b3",
+            "before_sha256": "04cdd070ddfe8e845c3f04e47552684455d3da889f677147f7e50409d30878b3",
+            "path": "docs/evidence/C101/fixtures/nasdaq/EconomicCalendar.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "6bec3924dd275e5912c3f0bec87b3e2a80c9f7956d31246d6e11c142424952d0",
+            "before_sha256": "6bec3924dd275e5912c3f0bec87b3e2a80c9f7956d31246d6e11c142424952d0",
+            "path": "opendata/data/providers/nasdaq/models/economic_calendar.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EconomicCalendar",
+        "path": "docs/evidence/C101/receipts/nasdaq/EconomicCalendar/service.json",
+        "sha256": "1e805e279cac75956a3d8bc2241e8d767a556a736988a8a693e197f152bfdd54"
+      },
+      "status": "PASS",
+      "upstream_model": "EconomicCalendar"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EconomicCalendar --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T17:59:34.038824+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "04cdd070ddfe8e845c3f04e47552684455d3da889f677147f7e50409d30878b3",
+            "before_sha256": "04cdd070ddfe8e845c3f04e47552684455d3da889f677147f7e50409d30878b3",
+            "path": "docs/evidence/C101/fixtures/nasdaq/EconomicCalendar.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "6bec3924dd275e5912c3f0bec87b3e2a80c9f7956d31246d6e11c142424952d0",
+            "before_sha256": "6bec3924dd275e5912c3f0bec87b3e2a80c9f7956d31246d6e11c142424952d0",
+            "path": "opendata/data/providers/nasdaq/models/economic_calendar.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EconomicCalendar",
+        "path": "docs/evidence/C101/receipts/nasdaq/EconomicCalendar/contract.json",
+        "sha256": "1678bc87c89db667f559b359a1285ce90ed9440465adbf8b03ec279dfd825a31"
+      },
+      "status": "PASS",
+      "upstream_model": "EconomicCalendar"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EconomicCalendar --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T17:59:34.865405+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "04cdd070ddfe8e845c3f04e47552684455d3da889f677147f7e50409d30878b3",
+            "before_sha256": "04cdd070ddfe8e845c3f04e47552684455d3da889f677147f7e50409d30878b3",
+            "path": "docs/evidence/C101/fixtures/nasdaq/EconomicCalendar.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "6bec3924dd275e5912c3f0bec87b3e2a80c9f7956d31246d6e11c142424952d0",
+            "before_sha256": "6bec3924dd275e5912c3f0bec87b3e2a80c9f7956d31246d6e11c142424952d0",
+            "path": "opendata/data/providers/nasdaq/models/economic_calendar.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EconomicCalendar",
+        "path": "docs/evidence/C101/receipts/nasdaq/EconomicCalendar/counterfact.json",
+        "sha256": "166da59187c4e94ee16679dc6caf39f6f5e5ed830fd079a3269baadcb2161e8b"
+      },
+      "status": "PASS",
+      "upstream_model": "EconomicCalendar"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquitySearch --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T17:59:35.658717+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ecdb4948adb5ee9f172d446b1f4d4a2d1e3cab8efdbe721894eee3bb1526f9ff",
+            "before_sha256": "ecdb4948adb5ee9f172d446b1f4d4a2d1e3cab8efdbe721894eee3bb1526f9ff",
+            "path": "opendata/data/providers/nasdaq/models/equity_search.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EquitySearch",
+        "path": "docs/evidence/C101/receipts/nasdaq/EquitySearch/implementation.json",
+        "sha256": "4590dd92c83d17d05ea1abbd8960f2ffe716a2d6265dda64a6dfc548050a0407"
+      },
+      "status": "PASS",
+      "upstream_model": "EquitySearch"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquitySearch --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T17:59:36.512543+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "2c6a657de0fede68a73713d01af2a2696bcb50e9652519b0286c2a93ca9e8c54",
+            "before_sha256": "2c6a657de0fede68a73713d01af2a2696bcb50e9652519b0286c2a93ca9e8c54",
+            "path": "docs/evidence/C101/fixtures/nasdaq/EquitySearch.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ecdb4948adb5ee9f172d446b1f4d4a2d1e3cab8efdbe721894eee3bb1526f9ff",
+            "before_sha256": "ecdb4948adb5ee9f172d446b1f4d4a2d1e3cab8efdbe721894eee3bb1526f9ff",
+            "path": "opendata/data/providers/nasdaq/models/equity_search.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EquitySearch",
+        "path": "docs/evidence/C101/receipts/nasdaq/EquitySearch/direct.json",
+        "sha256": "938ac0c7f2733e86480e996174e8d5102f3fa1f17db6179e4f77e939e3edb50a"
+      },
+      "status": "PASS",
+      "upstream_model": "EquitySearch"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquitySearch --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T17:59:37.475227+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "2c6a657de0fede68a73713d01af2a2696bcb50e9652519b0286c2a93ca9e8c54",
+            "before_sha256": "2c6a657de0fede68a73713d01af2a2696bcb50e9652519b0286c2a93ca9e8c54",
+            "path": "docs/evidence/C101/fixtures/nasdaq/EquitySearch.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ecdb4948adb5ee9f172d446b1f4d4a2d1e3cab8efdbe721894eee3bb1526f9ff",
+            "before_sha256": "ecdb4948adb5ee9f172d446b1f4d4a2d1e3cab8efdbe721894eee3bb1526f9ff",
+            "path": "opendata/data/providers/nasdaq/models/equity_search.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EquitySearch",
+        "path": "docs/evidence/C101/receipts/nasdaq/EquitySearch/service.json",
+        "sha256": "4b2fa748ee959e9565265f70b955ab05cdc5a0527755afbde59017ad2a778130"
+      },
+      "status": "PASS",
+      "upstream_model": "EquitySearch"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquitySearch --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T17:59:38.362472+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "2c6a657de0fede68a73713d01af2a2696bcb50e9652519b0286c2a93ca9e8c54",
+            "before_sha256": "2c6a657de0fede68a73713d01af2a2696bcb50e9652519b0286c2a93ca9e8c54",
+            "path": "docs/evidence/C101/fixtures/nasdaq/EquitySearch.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ecdb4948adb5ee9f172d446b1f4d4a2d1e3cab8efdbe721894eee3bb1526f9ff",
+            "before_sha256": "ecdb4948adb5ee9f172d446b1f4d4a2d1e3cab8efdbe721894eee3bb1526f9ff",
+            "path": "opendata/data/providers/nasdaq/models/equity_search.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EquitySearch",
+        "path": "docs/evidence/C101/receipts/nasdaq/EquitySearch/contract.json",
+        "sha256": "42e112da072847921082616dbcb31878edaa4680b726b9e6c9642ed09b539715"
+      },
+      "status": "PASS",
+      "upstream_model": "EquitySearch"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquitySearch --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T17:59:39.183934+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "2c6a657de0fede68a73713d01af2a2696bcb50e9652519b0286c2a93ca9e8c54",
+            "before_sha256": "2c6a657de0fede68a73713d01af2a2696bcb50e9652519b0286c2a93ca9e8c54",
+            "path": "docs/evidence/C101/fixtures/nasdaq/EquitySearch.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "ecdb4948adb5ee9f172d446b1f4d4a2d1e3cab8efdbe721894eee3bb1526f9ff",
+            "before_sha256": "ecdb4948adb5ee9f172d446b1f4d4a2d1e3cab8efdbe721894eee3bb1526f9ff",
+            "path": "opendata/data/providers/nasdaq/models/equity_search.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EquitySearch",
+        "path": "docs/evidence/C101/receipts/nasdaq/EquitySearch/counterfact.json",
+        "sha256": "d7f10a8d7d26b9ce82aa33212bab28a5d4f634cece8c9703a08c0d6694066a4a"
+      },
+      "status": "PASS",
+      "upstream_model": "EquitySearch"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquityScreener --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T17:59:39.984843+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "before_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "path": "opendata/data/providers/nasdaq/models/equity_screener.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EquityScreener",
+        "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/implementation.json",
+        "sha256": "fe850f625fcb38e120b6c78a11502760487f0e217df27278514b160ab3a5bc98"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityScreener"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquityScreener --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T17:59:40.853136+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "8b08caa7f566d9c2f1e1db211923c448115c2286b92a454ce05eb5f259217a93",
+            "before_sha256": "8b08caa7f566d9c2f1e1db211923c448115c2286b92a454ce05eb5f259217a93",
+            "path": "docs/evidence/C101/fixtures/nasdaq/EquityScreener.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "before_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "path": "opendata/data/providers/nasdaq/models/equity_screener.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EquityScreener",
+        "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/direct.json",
+        "sha256": "bfc2971666b7f692d96f56cc929cb0a4372f5491295ab63dfe56bdd5eb346872"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityScreener"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquityScreener --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T17:59:41.828160+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "8b08caa7f566d9c2f1e1db211923c448115c2286b92a454ce05eb5f259217a93",
+            "before_sha256": "8b08caa7f566d9c2f1e1db211923c448115c2286b92a454ce05eb5f259217a93",
+            "path": "docs/evidence/C101/fixtures/nasdaq/EquityScreener.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "before_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "path": "opendata/data/providers/nasdaq/models/equity_screener.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EquityScreener",
+        "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/service.json",
+        "sha256": "3925ec0c63aca6dbf8cab6a5999897629e9e495aad1867d9e0d3c6aa5a32b893"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityScreener"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquityScreener --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T17:59:42.728998+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "8b08caa7f566d9c2f1e1db211923c448115c2286b92a454ce05eb5f259217a93",
+            "before_sha256": "8b08caa7f566d9c2f1e1db211923c448115c2286b92a454ce05eb5f259217a93",
+            "path": "docs/evidence/C101/fixtures/nasdaq/EquityScreener.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "before_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "path": "opendata/data/providers/nasdaq/models/equity_screener.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EquityScreener",
+        "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/contract.json",
+        "sha256": "1ebdf9001d74f2f84e494831c54e739f6c12ec3f8d93e382e04f51bfc90ab663"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityScreener"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquityScreener --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T17:59:43.551247+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "8b08caa7f566d9c2f1e1db211923c448115c2286b92a454ce05eb5f259217a93",
+            "before_sha256": "8b08caa7f566d9c2f1e1db211923c448115c2286b92a454ce05eb5f259217a93",
+            "path": "docs/evidence/C101/fixtures/nasdaq/EquityScreener.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "before_sha256": "1efbe4c0a388e83ba2bcc13e7776142c507ef166fd565f183915520a4a77bf5e",
+            "path": "opendata/data/providers/nasdaq/models/equity_screener.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::EquityScreener",
+        "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/counterfact.json",
+        "sha256": "6243715b60cf677b6578a8ef7c85710ff4c7152e0a13a7ecc15c47fb588dfd74"
+      },
+      "status": "PASS",
+      "upstream_model": "EquityScreener"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model HistoricalDividends --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T17:59:44.352548+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "before_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "path": "opendata/data/providers/nasdaq/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::HistoricalDividends",
+        "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/implementation.json",
+        "sha256": "eecf035a12888bc2cd749446f89282e4d6482aa36e09f76910c7e736f288496d"
+      },
+      "status": "PASS",
+      "upstream_model": "HistoricalDividends"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model HistoricalDividends --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T17:59:45.219976+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "feeb7ab3c082f1287e7c8a4aebe5d8b82af9b5284f6c87673e1c966d2c3fe91e",
+            "before_sha256": "feeb7ab3c082f1287e7c8a4aebe5d8b82af9b5284f6c87673e1c966d2c3fe91e",
+            "path": "docs/evidence/C101/fixtures/nasdaq/HistoricalDividends.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "before_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "path": "opendata/data/providers/nasdaq/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::HistoricalDividends",
+        "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/direct.json",
+        "sha256": "e704532f92ddaff0ec6f17e58958ec905740ae1ef363202685ae109a46298ab0"
+      },
+      "status": "PASS",
+      "upstream_model": "HistoricalDividends"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model HistoricalDividends --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T17:59:46.182402+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "feeb7ab3c082f1287e7c8a4aebe5d8b82af9b5284f6c87673e1c966d2c3fe91e",
+            "before_sha256": "feeb7ab3c082f1287e7c8a4aebe5d8b82af9b5284f6c87673e1c966d2c3fe91e",
+            "path": "docs/evidence/C101/fixtures/nasdaq/HistoricalDividends.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "before_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "path": "opendata/data/providers/nasdaq/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::HistoricalDividends",
+        "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/service.json",
+        "sha256": "067133b922e4bb44bdd61de2059698bef8113246b1856353c2012ede44d4b2ff"
+      },
+      "status": "PASS",
+      "upstream_model": "HistoricalDividends"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model HistoricalDividends --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T17:59:47.068323+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "feeb7ab3c082f1287e7c8a4aebe5d8b82af9b5284f6c87673e1c966d2c3fe91e",
+            "before_sha256": "feeb7ab3c082f1287e7c8a4aebe5d8b82af9b5284f6c87673e1c966d2c3fe91e",
+            "path": "docs/evidence/C101/fixtures/nasdaq/HistoricalDividends.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "before_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "path": "opendata/data/providers/nasdaq/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::HistoricalDividends",
+        "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/contract.json",
+        "sha256": "373d39fdc3c9bf8328247fe25d1fddc104783a31470bf8b96d2e0559635a7aea"
+      },
+      "status": "PASS",
+      "upstream_model": "HistoricalDividends"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model HistoricalDividends --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T17:59:47.889878+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "feeb7ab3c082f1287e7c8a4aebe5d8b82af9b5284f6c87673e1c966d2c3fe91e",
+            "before_sha256": "feeb7ab3c082f1287e7c8a4aebe5d8b82af9b5284f6c87673e1c966d2c3fe91e",
+            "path": "docs/evidence/C101/fixtures/nasdaq/HistoricalDividends.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "before_sha256": "8f0ab99579085d3f32e71f6aacff4b71e24f99cbef59321ff667c8a39f0f95a7",
+            "path": "opendata/data/providers/nasdaq/models/historical_dividends.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::HistoricalDividends",
+        "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/counterfact.json",
+        "sha256": "60aa82007216156b3fd9554ab31660d081fc5c0ce87e9911a834c6ec6d3f0744"
+      },
+      "status": "PASS",
+      "upstream_model": "HistoricalDividends"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model TopRetail --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T17:59:48.683014+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "4a4041513dc2f091458ee67b5b46b87640b6a55e83551f4c61ee9b28406a77ce",
+            "before_sha256": "4a4041513dc2f091458ee67b5b46b87640b6a55e83551f4c61ee9b28406a77ce",
+            "path": "opendata/data/providers/nasdaq/models/top_retail.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::TopRetail",
+        "path": "docs/evidence/C101/receipts/nasdaq/TopRetail/implementation.json",
+        "sha256": "22b405c5ff0d04e75519ed0f3391d536b8722483fa17d78049cdd5f149360d19"
+      },
+      "status": "PASS",
+      "upstream_model": "TopRetail"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model TopRetail --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T17:59:49.542169+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "31ca8f82ed255afdd6b315c76d21db18239d51fd648caf1cd14df0db08653840",
+            "before_sha256": "31ca8f82ed255afdd6b315c76d21db18239d51fd648caf1cd14df0db08653840",
+            "path": "docs/evidence/C101/fixtures/nasdaq/TopRetail.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "4a4041513dc2f091458ee67b5b46b87640b6a55e83551f4c61ee9b28406a77ce",
+            "before_sha256": "4a4041513dc2f091458ee67b5b46b87640b6a55e83551f4c61ee9b28406a77ce",
+            "path": "opendata/data/providers/nasdaq/models/top_retail.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::TopRetail",
+        "path": "docs/evidence/C101/receipts/nasdaq/TopRetail/direct.json",
+        "sha256": "37fbad13f67452fea9c5fe3fff5b7185f39fa328cb45d16cc6222c096df09d1f"
+      },
+      "status": "PASS",
+      "upstream_model": "TopRetail"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model TopRetail --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T17:59:50.519011+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "31ca8f82ed255afdd6b315c76d21db18239d51fd648caf1cd14df0db08653840",
+            "before_sha256": "31ca8f82ed255afdd6b315c76d21db18239d51fd648caf1cd14df0db08653840",
+            "path": "docs/evidence/C101/fixtures/nasdaq/TopRetail.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "4a4041513dc2f091458ee67b5b46b87640b6a55e83551f4c61ee9b28406a77ce",
+            "before_sha256": "4a4041513dc2f091458ee67b5b46b87640b6a55e83551f4c61ee9b28406a77ce",
+            "path": "opendata/data/providers/nasdaq/models/top_retail.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::TopRetail",
+        "path": "docs/evidence/C101/receipts/nasdaq/TopRetail/service.json",
+        "sha256": "a2cf82f8d24f83504bca3de9deb35e9a34f9b518ccbf0d9e5cccf433f6358162"
+      },
+      "status": "PASS",
+      "upstream_model": "TopRetail"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model TopRetail --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T17:59:51.442867+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "31ca8f82ed255afdd6b315c76d21db18239d51fd648caf1cd14df0db08653840",
+            "before_sha256": "31ca8f82ed255afdd6b315c76d21db18239d51fd648caf1cd14df0db08653840",
+            "path": "docs/evidence/C101/fixtures/nasdaq/TopRetail.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "4a4041513dc2f091458ee67b5b46b87640b6a55e83551f4c61ee9b28406a77ce",
+            "before_sha256": "4a4041513dc2f091458ee67b5b46b87640b6a55e83551f4c61ee9b28406a77ce",
+            "path": "opendata/data/providers/nasdaq/models/top_retail.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::TopRetail",
+        "path": "docs/evidence/C101/receipts/nasdaq/TopRetail/contract.json",
+        "sha256": "0b74f2dd19f4b08ae622980da5a6cba0240c932bb6b6072e3d11880f86e82ee5"
+      },
+      "status": "PASS",
+      "upstream_model": "TopRetail"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model TopRetail --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T17:59:52.339210+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "before_sha256": "fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+            "path": "opendata/data/models/nasdaq.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:fb736473107aa2d6f543c18023e3fec392cd428252222cac6458cebb1119e0fd",
+        "fixture": [
+          {
+            "after_sha256": "31ca8f82ed255afdd6b315c76d21db18239d51fd648caf1cd14df0db08653840",
+            "before_sha256": "31ca8f82ed255afdd6b315c76d21db18239d51fd648caf1cd14df0db08653840",
+            "path": "docs/evidence/C101/fixtures/nasdaq/TopRetail.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "before_sha256": "1d1abb73335907593f0736f4097d9b1b266e15f389d6ad8593280dcfa5d8ce1f",
+            "path": "scripts/quality/iter2_witnesses/nasdaq.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "before_sha256": "83d3db4ed2cdfc54c2d99cd1efcde702bcb28ba9fd954870a57cf13d865c2801",
+            "path": "opendata/data/providers/nasdaq/provider.py"
+          },
+          {
+            "after_sha256": "4a4041513dc2f091458ee67b5b46b87640b6a55e83551f4c61ee9b28406a77ce",
+            "before_sha256": "4a4041513dc2f091458ee67b5b46b87640b6a55e83551f4c61ee9b28406a77ce",
+            "path": "opendata/data/providers/nasdaq/models/top_retail.py"
+          },
+          {
+            "after_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "before_sha256": "3c0ddf0f9855b5d3ca065849d9abe727fcef4d782068a9c7e42be144466ea310",
+            "path": "opendata/data/providers/nasdaq/models/_common.py"
+          }
+        ]
+      },
+      "provider": "nasdaq",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "nasdaq::TopRetail",
+        "path": "docs/evidence/C101/receipts/nasdaq/TopRetail/counterfact.json",
+        "sha256": "1567e0bc2378edc1f61abb801f1b93d2fa0e17ec7f3d9c05459eb3d90ba2da2e"
+      },
+      "status": "PASS",
+      "upstream_model": "TopRetail"
+    },
+    {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CompositeLeadingIndicator --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
       "executed_at_utc": "2026-10-17T03:24:28.167949+00:00",
@@ -138294,6 +141894,141 @@
       "reviewer_role": "acceptance_reviewer",
       "reviewer_type": "primary_model",
       "upstream_model": "SP500Multiples"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "nasdaq",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarDividend",
+        "path": "docs/evidence/C101/primary-reviews/nasdaq__CalendarDividend.review.json",
+        "sha256": "34adc3627b5952801fd21968c1d592756a435c21c894a246c17c0a91ae0663f7"
+      },
+      "reviewed_at_utc": "2026-10-17T17:59:53Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "CalendarDividend"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "nasdaq",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarEarnings",
+        "path": "docs/evidence/C101/primary-reviews/nasdaq__CalendarEarnings.review.json",
+        "sha256": "d360cf5645f59c9930719587cd7b09ed30a1f85cb62700bd3c02fc6a13529b26"
+      },
+      "reviewed_at_utc": "2026-10-17T17:59:53Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "CalendarEarnings"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "nasdaq",
+      "receipt": {
+        "model_identity": "nasdaq::CalendarIpo",
+        "path": "docs/evidence/C101/primary-reviews/nasdaq__CalendarIpo.review.json",
+        "sha256": "779953feaa8ac852e1ab1477a7ec8a69d12416e48e8c6a37d44cb6c03c1016a3"
+      },
+      "reviewed_at_utc": "2026-10-17T17:59:53Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "CalendarIpo"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "nasdaq",
+      "receipt": {
+        "model_identity": "nasdaq::CompanyFilings",
+        "path": "docs/evidence/C101/primary-reviews/nasdaq__CompanyFilings.review.json",
+        "sha256": "a7474255128a038dcfba481d294d1c197ef968ff865f5d40c3b2d22638aa6463"
+      },
+      "reviewed_at_utc": "2026-10-17T17:59:53Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "CompanyFilings"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "nasdaq",
+      "receipt": {
+        "model_identity": "nasdaq::EconomicCalendar",
+        "path": "docs/evidence/C101/primary-reviews/nasdaq__EconomicCalendar.review.json",
+        "sha256": "00502ad63a10cdfa9b588d7959898e8f22e02593d118034d01c98d21592be867"
+      },
+      "reviewed_at_utc": "2026-10-17T17:59:53Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "EconomicCalendar"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "nasdaq",
+      "receipt": {
+        "model_identity": "nasdaq::EquityScreener",
+        "path": "docs/evidence/C101/primary-reviews/nasdaq__EquityScreener.review.json",
+        "sha256": "e8718b88d5239bd1ca68081a2a7ea42387894fb74e3b30f8e34aababcadb0a31"
+      },
+      "reviewed_at_utc": "2026-10-17T17:59:53Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "EquityScreener"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "nasdaq",
+      "receipt": {
+        "model_identity": "nasdaq::EquitySearch",
+        "path": "docs/evidence/C101/primary-reviews/nasdaq__EquitySearch.review.json",
+        "sha256": "5984cded8bc62a881237a7e98310d86493f9dc8bc78e51c0898c9d6b583e1f15"
+      },
+      "reviewed_at_utc": "2026-10-17T17:59:53Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "EquitySearch"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "nasdaq",
+      "receipt": {
+        "model_identity": "nasdaq::HistoricalDividends",
+        "path": "docs/evidence/C101/primary-reviews/nasdaq__HistoricalDividends.review.json",
+        "sha256": "e9ee5e612e08e1d0ced0b2a79eee42e4b01b9aa8024d712bd188f10aab86f2ca"
+      },
+      "reviewed_at_utc": "2026-10-17T17:59:53Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "HistoricalDividends"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "nasdaq",
+      "receipt": {
+        "model_identity": "nasdaq::TopRetail",
+        "path": "docs/evidence/C101/primary-reviews/nasdaq__TopRetail.review.json",
+        "sha256": "cf221d339c3e08b2fa8e5069e7c9e53486783aeddd01bff63e0ca44dc762da20"
+      },
+      "reviewed_at_utc": "2026-10-17T17:59:53Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "TopRetail"
     },
     {
       "decision": "ACCEPT",
