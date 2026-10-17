@@ -148,10 +148,16 @@ def _bucket(face: dict[str, Any]) -> str:
     return "PRODUCIBLE_NOW"
 
 
+def _pair(identity: str) -> tuple[str, str]:
+    """Split one ``provider::Model`` identity into the two arguments ``_readiness`` takes."""
+    provider, _sep, model = identity.partition("::")
+    return provider, model
+
+
 def _faces(residue: dict[str, str]) -> dict[str, dict[str, Any]]:
     """Measure every residue row once; the arms re-bucket these faces, they do not re-resolve."""
     domain_ok: dict = {}
-    return {identity: _readiness(*identity.split("::", 1), domain_ok) for identity in residue}
+    return {identity: _readiness(*_pair(identity), domain_ok) for identity in residue}
 
 
 def _bucket_all(
@@ -179,8 +185,8 @@ def main() -> int:
     """Print the residue's readiness face, then gate the instrument on its own two arms."""
     report = json.loads((REPO_ROOT / REPORT).read_text(encoding="utf-8"))
     residue = _residue(report)
-    landed = _readiness(*LANDED_CONTROL.split("::", 1), {})
-    unbound = _readiness(*UNBOUND_CONTROL.split("::", 1), {})
+    landed = _readiness(*_pair(LANDED_CONTROL), {})
+    unbound = _readiness(*_pair(UNBOUND_CONTROL), {})
 
     arm_a = all(landed[c] for c in COLUMNS) and not unbound["bound"]
     print(

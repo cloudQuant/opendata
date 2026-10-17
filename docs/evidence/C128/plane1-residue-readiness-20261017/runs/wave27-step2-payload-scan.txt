@@ -1,0 +1,29 @@
+wave-27 step 2 -- pre-commit secret face for the plane-1 residue census.
+Gate interpreter CPython 3.13; repo root; every *_exit line below is that run's own return
+code (no pipes). argv: PYTHONPATH=. $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/payload_secret_scan.py
+This scanner takes EVERY file under probes/ and runs/ except __pycache__ and .json, so the
+12 untracked .err siblings are inside the denominator -- the 59-byte yfinance delisted
+warning among them is covered by arm A's zero, not skipped by a suffix rule.
+take1: ran before these two scan carriers existed, denominator=73
+planted_into=declare_candidates.txt at_line=31 lines=65
+payload_files=73 payload_roots=2
+B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+arm_a_findings=0 arm_a_rc=0
+arm_b_findings=1 arm_b_rc=1
+payload_secret_face PASS=True
+scan_exit=0
+payload_secret_scan_exit=0
+payload_secret_scan_stderr_bytes=0
+take2: ran after both scan carriers were on disk, denominator=75
+planted_into=declare_candidates.txt at_line=31 lines=65
+payload_files=75 payload_roots=2
+B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+arm_a_findings=0 arm_a_rc=0
+arm_b_findings=1 arm_b_rc=1
+payload_secret_face PASS=True
+scan_exit=0
+payload_secret_scan_exit=0
+payload_secret_scan_stderr_bytes=0
+The arm-B face is the same in both takes because arm B plants a runtime-generated token into
+a throwaway copy of runs/declare_candidates.txt line 31 -- repo bytes never change, and
+arm_b_findings=1 is what keeps arm_a_findings=0 from being a mute counter.

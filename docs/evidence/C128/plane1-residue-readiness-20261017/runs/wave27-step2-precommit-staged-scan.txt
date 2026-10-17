@@ -1,0 +1,28 @@
+wave-27 step 2 -- the staged index, scanned as working-tree bytes.
+argv: git -c core.quotepath=off diff --cached --name-only -z, then
+      PYTHONPATH=. $PY .../probes/staged_payload_scan.py --paths <that list>
+Self-reference, stated not hidden: take 1 ran while the two scan carriers this file belongs to
+were not yet staged, so it never saw their bytes; take 2 runs after they are staged.
+take1 index_paths=19
+take1: payload_scan_files=19 payload_scan_roots=19 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 19 file(s) clean
+take1_stderr_bytes=0
+staged_take1_exit=0
+take1_identical_stdout_vs_the_earlier_console_run=True
+take2 index_paths=21
+take2: payload_scan_files=21 payload_scan_roots=21 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 21 file(s) clean
+take2_stderr_bytes=0
+staged_take2_exit=0
+take3 index_paths=21
+take3: payload_scan_files=21 payload_scan_roots=21 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 21 file(s) clean
+take3_stderr_bytes=0
+staged_take3_exit=0
+take3_vs_take2_all_five_fields_identical=True differing_fields=[]
+take 3 scanned README.md while it had not yet gained its two step-2 scan-carrier bullets, and
+scanned this carrier as the 16 lines it held at that moment. Those are the only committed bytes
+with no take recorded in this file: the take-3 block above, the bullets added afterwards, and
+whatever the final take 4 appends. take 4 re-scans the same 21 index paths over the final bytes
+and its reading is carried by the commit message, because a carrier cannot hold the reading of
+the line it appends next.

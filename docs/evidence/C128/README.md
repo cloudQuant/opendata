@@ -59,6 +59,21 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
 `BLOCKED_ON_RUNNER_SURFACE` —— 剩下的 yfinance 那一块是本波**没有**测第三、四轴的，载体里没有为它主张
 任何可转正性。谓词由此从"一个状态类"换成"这块总体"。叙述在 §88。
 
+**波 27 三步都不动 plane 1，但它第一次把"剩下的 84 枚到底是什么活"读成一面**（`docs/evidence/C129/` 依旧
+不存在）。step 0 把波 26 那条两成因布尔指到**整个残差**：84 枚里台账真拒绝只有 11 枚、台账沉默 2 枚、
+"本家根本没有 `specs.py` 可拒"71 枚（`runs/wave27-step0-ledger-blast.txt`），射程 71 枚而波 26 的裁决
+一枚也没被移动。step 1 落 yfinance 15 行 `row_model` 声明并逐枚做身份判定，plane 1 **未动**（`266/350`、
+identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHARD_ENTRY`，缺的是见证分片与 harness 表面，
+不是声明；同一轮新仪器 `witness_seam_kind_census.py` 否证了 §90.5 谓词后半"见证腿取引擎 `transport`"
+（`subject_transport_calls=0`）。step 1b 处理这 15 行撞上的**第二道 tracked 围栏**（batch5
+`source_hashes_sha256`，回执 pin 闸门看不见它）。step 2 先给两条分支定价再决定：普查叫 `SEAM_REACHABLE` 的
+7 枚与"把共享假客户端加宽到 `request`"能翻开的 29 枚，两支都读 `convertible=0` —— 加宽只翻 deribit 与 tmx
+两家、`post_required=False`，即整棵树重签买来 **0 枚**（§90.5 那条"`request` / `post`"规格按此更正）。
+于是 step 2b 把 `350 - 266 = 84` 一次跨三台已落地仪器成像：`witnessable_today=0`、`rows_without_module=75`、
+`registry_publish_model=0` 而 `implement_missing_model=19`（32 枚 `UNBOUND` 全读
+`LookupError: unknown provider model`，且模型名在自家包源码里一个整词都找不到），残差主体是 provider 码
+`24 + 19 + 13 = 56` 枚，既不是声明也不是 runner。叙述在 §89–§91。
+
 ## 载体
 
 - `probes/readiness_census.py`、`probes/declare_candidates.py`：两台仪器，各自带正控制与可动性闸。
@@ -252,8 +267,13 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
   以入库前那次扫描自己打印的 `payload_files` 为准，不在这里替它填数。波 27 step 1 落一枚探针与五份载体、
   step 1b 再落七份载体之后，本机 `ls | wc -l` 现读是 **13 个 `.py` + 32 个 `.txt`**，两臂自扫描那一代打印
   `payload_files=45`（44 枚在册 + 载档自己）；入库前扫索引那一次读的是**文件表**（24 条路径），与这两个母数
-  互不替换。
-  取 4 跑过但故意不写进来（载档不能扫自己最后一行）。
+  互不替换。波 27 step 2 再落**三**枚探针与**十五**份载档（13 份仪器载档 + 本节末尾那两条扫描载体）：
+  同一台扫描取 1 读 **`payload_files=73`** = 16 个 `.py` + 45 个 `.txt` + 12 个 `.err`，取 2 读 **75**
+  = 16 + 47 + 12，差的两枚就是这两份扫描载档自己（这台收两根下的**全部**文件，只排
+  `__pycache__` 与 `.json`，所以 `.err` 在母数里 —— 那 59 字节的 yfinance 警告因此**是被扫过的**，
+  `arm_a_findings=0` 就是它的惰性证明），而 `.err` 兄弟文件不进本波提交。
+  上一代那份载档记到取 3、取 4 跑过但故意不写进来（载档不能扫自己最后一行）；波 27 step 2 的同一件事
+  按本 README 末尾两条扫描载体那节逐代写明。
 - `runs/precommit-staged-scan.wave25.txt`：**提交那一刻**的入库面，人群换成索引本身 ——
   `git -c core.quotepath=off diff --cached --name-only -z | xargs -0 … staged_payload_scan.py --paths`
   读 `55 files / 55 roots / unresolved=0 / findings=0 rc=0`，前置控制是 `git diff --name-only` 为空
@@ -315,6 +335,84 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
   全部在 `.gitignore:249 /docs/evidence/C100/**` 之下、`of_those_absent_in_the_head_worktree=15`。它按路径从盘上
   重算，所以本机绿、干净克隆红 —— 现在它是机器本地的围栏。`wave27-step1b-head-seven-reproducers.txt` 三面里
   第二面就是这条的形状。
+- `probes/seam_reachable_axes.py`（225 行、`sha16=a6efe3f0b1f80f36`）：波 27 step 2a 的**乙支**仪器，把已落地的
+  四轴测量器指向**可达性普查自己的总体**（`bucket=SEAM_REACHABLE mechanism=client_seam` 那 7 枚）而不是自己重挑
+  一行。它不重打桶规则：分母是 subprocess 跑 `seam_reachability_census.py` 的 stdout，逐行列来自
+  `incomplete_row_guard_check._row` 的原样 import。`C_population_reconciles` 要求"按状态逐枚选出的数"与"普查按家
+  聚合的 `residual=` 之和"相等（两个来源，任何一侧悄悄缩小都是红，不是批次变小）；`D_selector_can_differ` 要求
+  这台选择器能给非零（`blocked_rows=24 blocked_sample=['bls', 'finra', 'tmx'] overlap=0`）；
+  `G_two_instruments_agree` 逐枚对两台仪器，`contradictions=0` 才是"两台说的是同一枚行"。
+- `probes/counterfactual_runner_widening.py`（261 行、`sha16=e9e7c1dab90f8df3`）：step 2b 的**甲支**仪器，
+  **在编辑 runner 之前**给加宽定价，一个被钉字节都不碰。要加的动词 = provider 包在共享客户端上调过的并集，
+  且经已落地的受体规则（`_client_names` / `_is_client_receiver`）过滤，所以 BeautifulSoup 的 `tag.get(...)`
+  冒充不了接缝调用；包里没有调过的动词**不会被提议**（波 24 那句备忘写的是"`request` / `post`"，这一台打印
+  `post` 到底有没有被测到：`post_required=False`）。翻开哪几家、各带多少残差走普查自己的桶算术；每枚翻开后的行
+  仍过 `_row`，因为四轴都不依赖假客户端 —— 今天读 `UNBOUND` / `ROW_CLASS_NOT_CONTRACT` 的枚加宽之后还是不可转。
+- `probes/residue_axis_census.py`（374 行、`sha16=45f2cb2d7d3bfbab`）：step 2b 的主仪器。两支都 `convertible=0`
+  之后不再按切片决定，把 `350 - 266 = 84` 整个残差与三台已落地仪器交叉，逐枚并列打印
+  `status bucket verdict seam mechanism witness_module fake_ok name_in_package ruled_out declared witness_entry`
+  加这三台**共同**蕴含的第一份工作（`_action` 按梯子取第一格：`new_provider_package` / `ledger_ruled_out` /
+  `registry_publish_model` / `implement_missing_model` / `retarget_fetcher_output` / `shard_entry_only` /
+  `shard_entry_needs_harness` / `add_code_carrying_guard`）。六面 `1_cross_tab`…`6_registry_name_axis` 是同一
+  总体的三种切法，`4_action_totals` 打印 `actions` 与 `nested_sum` 好让最后一面被比较而不是被相信。
+  `name_in_package` 那一轴把 32 枚 `UNBOUND` 按"模型名在自家包源码里能否作为**整词**找到"分开（两种活的大小
+  不同：类已存在但没注册 vs 没人写过这个模型），`lookup_shape` 测它们在注册表里**怎么**失败而非断言（本代单值
+  `{'unknown_provider_model': 32}`）。这台仪器第一版把两半统称 `rebind_fetcher`，名字轴的读数证明那是"未实现"
+  被读成"接错线"；撤回写在 `_action` 的文档串与 §91 里，旧读数不抹。
+- `runs/wave27-step2a-seam-reachable-axes.txt`（19 行 / `1a71df1c34df0c29`）与
+  `runs/wave27-step2b-counterfactual-widening.txt`（43 行 / `950bf73b3b0619d2`）：两条分支的面，
+  `seam_reachable_axes_face population=7 … convertible=0 witness_only=0 arms=7 arms_passed=7` 与
+  `counterfactual_widening_face flipped_providers={'deribit': 5, 'tmx': 24} new_verbs=['request']
+  post_required=False population=29 … convertible=0 arms=7 arms_passed=7`，两支 `identity_set` 与仓内已定面相同。
+  前者另带 `1_declaration_axis … inside_NEED_DECLARE=3 outside=4 contradictions=0`，后者另带
+  `G_declaration_axis inside=13 contradictions=0`。
+- `runs/wave27-step2b-residue-axis-census.txt`（100 行 / `5613d9417fc0c446`，`residue_axis_census_exit=0`，
+  `arms=8 arms_passed=8 arms_failed=0`）：整残差成像面。
+  `2_actions … sums=84 registry_publish_model=0`、`4_action_totals actions=6 nested_sum=84 residue=84`、
+  `5_needs_first_module … rows=75 of=84`、`6_registry_name_axis unbound={'absent': 21, 'present': 11} total=32`、
+  `witnessable_today=0`。同一根探针的三份中间代留在旁边，代际可辨：`.v1-6arms`（96 行 / `86003dc768b1328f`）、
+  `.v2-7arms`（98 行 / `fdcccf9c1358dd07`）、`.v3-armH-red`（100 行 / `8a963a5a99b6f0c3`，
+  `residue_axis_census_exit=1`）。红那一份是"这条臂能红"的**唯一**证据：`H_name_test_identity` 的恒等式漏掉
+  `NO_PACKAGE_ON_DISK` 那 2 枚（`unbound=32` vs `actions_sum=30`），又把两家本来就没有包的 `empty_blobs` 非空
+  判成失败 —— 两条都是臂自己写错，不是行读数错。
+- `runs/wave27-step2b-receipt_pin_consistency.txt`（10 行 / `f96636cd09d028cf`，
+  `receipt_pin_consistency_exit=0`，stderr 0 字节）：**step 2b 之后**重取的回执 pin 面
+  （`pin_face slots=19382 stale=0 before_ne_after=0 distinct_pinned_paths=536 arms=3 arms_passed=3`，
+  B 臂 `stale=1330 targeted_slots=1330 substitute=scripts/quality/iter2_claims_probe_runner.py`）。
+  它存在的理由是把"甲支加宽只算在内存里、被钉字节一个没动"钉成**同代**读数，而不是引 step 2a 那份更早的面。
+- step 2a 把六台**已落地**仪器在同一条只读链上重跑，各成一份载档，用来先固定分母再谈新仪器：
+  `wave27-step2a-seam_reachability_census.txt`（38 / `a3c93020cae34c4c`，`seam_census_units=35`、
+  `residual_by_mechanism_sum=84`、`accepted_plus_residual=350`、`disk_only=['_engine', 'akshare', 'ths']`）、
+  `wave27-step2a-readiness_census.txt`（9 / `aadf0418535c9af2`，`residue=84 bound=52
+  buckets={'NEED_BINDING': 32, 'NEED_DECLARE': 37, 'NEED_SHARD_ENTRY': 15}`，声明位 `declared=15` 而
+  `witness_entry=0` —— step 1 那 15 枚只是从"没声明"移到"没有见证分片"；这一份**没有** `.err` 兄弟文件，
+  所以不主张它的 stderr 字节数，退出码只认载档自己的 `readiness_census_exit=0`）、
+  `wave27-step2a-declare_candidates.txt`（42 / `d303e4983265e911`，
+  `needs_declare=37 counts={'contract_in_module': 35, 'emits': 14, 'witness_entry': 0}`，逐家 tag 面
+  `declare_face_by_provider` 里 `NEEDS_RETARGET` 22 / `DECLARE_AND_WITNESS` 13 / `NEEDS_IMPORT` 1 /
+  `NEEDS_IMPORT_AND_RETARGET` 1，四面相加 37 与桶读数一致）、
+  `wave27-step2a-declare_block_axes.txt`（75 / `243a04b5d8ed8fe4`，`declare_block_axes_exit=1`：红的仍是
+  `D_population_reconciles here=11 carrier=26 drift=['yfinance:DECLARE_AND_WITNESS carrier=26 here=11']` 那一格
+  —— 它的 `CARRIER` 常量还钉着上一代载档，**按设计是红的**，且 drift 只指 yfinance 一格正是"15 枚离开桶"的读数）、
+  `wave27-step2a-receipt_pin_consistency.txt`（6 / `a8a570a80bdc7c80`，`slots=19382 stale=0`，本波没把任何 pin 弄旧）、
+  `wave27-step2a-witness_seam_kind_census.txt`（43 / `843ab627634d862d`，`residue=84 subject_transport_calls=0`，
+  stderr 单独落盘 59 字节，内容是 yfinance 那条 delisted 警告，逐字见 §91 仪器事故第 3 条）。
+  这一代 step 2 十三次运行里有十二次把 stderr 重定向到同名 `.err`（本机现数 12 份，只有刚提到那一份非空），
+  上面单列出来的 `wave27-step2a-readiness_census.txt` 是那一次缺的；**`.err` 不进本波提交** —— 所以
+  "stderr 0 字节"这类句子读的是工作树属性，不是载档属性；要复算就按 §91 的配方自己重定向。
+  载档里能自证的只有逐字 stdout 与末尾那一条 `<name>_exit=<digit>`。
+- `runs/wave27-step2-payload-scan.txt`（29 行 / `3d7b2c0b1d1ed3eb`）：step 2 入库前的**两臂**扫描面，
+  两次取像的母数是 73 → 75，差的正是这两份扫描载档自己（这台收 `probes/` 与 `runs/` 两根下的**全部**
+  文件、只排 `__pycache__` 与 `.json`，所以 12 份 `.err` 兄弟文件也在母数内），而
+  `arm_a_findings=0 arm_b_findings=1` 两次逐字不动：臂 B 把运行时生成的 token 种进
+  `runs/declare_candidates.txt` 第 31 行的一份**一次性副本**，仓库字节不改，所以那个零不是哑计数器。
+- `runs/wave27-step2-precommit-staged-scan.txt`（28 行 / `f0a1ed96e2d050ee`）：人群换成**索引本身**的
+  扫描面 —— `git -c core.quotepath=off diff --cached --name-only -z` 的文件表交给
+  `probes/staged_payload_scan.py --paths`，字节取自工作树。三代取像读 19 / 21 / 21 条路径，
+  `unresolved=0 findings=0 rc=0` 三行逐字相同，`take3_vs_take2_all_five_fields_identical=True`。
+  这两份载档都留了**一行取不到的滞后**：载档不能扫自己最后一行，take 3 扫到的 README 还没有本节这两条
+  载体、扫到的本载档还是 16 行。take 4 是对"即将提交的那 21 枚字节"的最后一次复核，它的逐字读数放进
+  **提交说明**而不是这里 —— 写进这里就会再动一次字节，把同一句"最后一行没被扫过"原样推到下一行。
 
 复算配方（仓库根）：
 
@@ -356,7 +454,23 @@ A 臂的 `td/ed/other/engine` 计数与 `absent` 都可能移动，届时要按"
 `arms_failed>0` 说明本波把某个共享文件的 pin 弄旧了，补产补签再提交；`C_rearm PASS=False` 是仪器坏了；
 `before_ne_after>0` 则推翻上面那条"pin 无差分语义"的实测结论，那时要重基线而不是沿用本波的说法。
 
-本目录八台仪器都只做普查：除自己的臂失败外退出 0，绝不改动任何被判定的面。波 23 五台
+波 27 step 2 三台的 argv 逐字抄在 `开发验收记录.md` §91 的"复算配方"里，形状都是仓库根执行
+`PYTHONPATH=. <门禁解释器> docs/evidence/C128/plane1-residue-readiness-20261017/probes/<name>.py`；
+三台都会 subprocess 起普查（`seam_reachable_axes.py` 与 `residue_axis_census.py` 起 `seam_reachability_census.py`，
+后者还起 `readiness_census.py`，`counterfactual_runner_widening.py` 起普查取桶算术），一次 60–90 s。
+两台 step 2b 仪器是**反例式**的：它们把加宽算在内存里，不写 `iter2_claims_probe_runner.py` 一个字节，
+所以跑完之后重取 pin 闸门仍读 `pin_face slots=19382 stale=0 before_ne_after=0 arms=3 arms_passed=3`
+（`runs/wave27-step2b-receipt_pin_consistency.txt`，10 行 / `f96636cd09d028cf`，`receipt_pin_consistency_exit=0`、
+stderr 0 字节），而它的 B 臂在内存里把 runner 摘要换成占位值读到 `stale=1330 targeted_slots=1330`
+—— 这 1330 枚就是"真去加宽"的代价，本轮一次也没有付。重跑若移动读数，按"重基线而非放宽"：`E_verdict_enum` / `F_verdict_enum`
+钉死判定枚举六值、普查桶五值不许增删，`C_widening_can_differ` 要求 flip 集合两侧都能不同
+（对**已入库**表面每家至少缺一个动词、对加宽表面缺 0 个，任一侧空集就是反例没被施加），
+`D_verbs_are_measured` 把 `new_verbs` 钉成"表面 ∪ 实测调用点"，所以凭猜测给假客户端加一个 `post`
+会让这一臂变红而不是让数字变大。
+
+本目录 16 台仪器（`ls probes/*.py` 现数）都只做普查：除自己的臂失败外退出 0，绝不改动任何被判定的面。波 23 起
 （readiness、declare、payload 两臂扫描、seam 表面），波 24 收编 staged 扫描那一列，波 25 加两台正交轴
-（可达性普查、后响应守卫），入库前再加一台 pin 闸门。新仪器同样只打印屏幕与臂，不判定任何行；
-唯一例外是 pin 闸门的 C 臂在**内存里**造一枚假 slot —— 不落盘、不写任何证据文件。
+（可达性普查、后响应守卫）与一台入库前 pin 闸门，波 26 加四轴逐枚测量器，波 27 step 0 加台账轴拆分、射程
+与那条运输规则的差分三台加 seam 种类普查，step 2 再加三支（乙支 7 枚定价、甲支加宽反例、整残差成像）。
+新仪器同样只打印屏幕与臂，不判定任何行；两处例外都不落盘：pin 闸门的 C 臂在**内存里**造一枚假 slot，
+step 2b 的甲支在**内存里**加宽假客户端。

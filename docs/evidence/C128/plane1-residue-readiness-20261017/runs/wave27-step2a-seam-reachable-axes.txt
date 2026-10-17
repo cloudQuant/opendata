@@ -1,0 +1,19 @@
+0_census_denominator reachable_providers=15 census_residual=7 blocked_providers=3 blocked_rows=24 overlap=0
+row cboe::FuturesCurve status=INCOMPLETE bound=False ruled_out=True no_ledger=- declared=False witness_entry=False verdict=UNBOUND fetcher=- raises=0 code_raises=0 witness_module=True
+row cboe::IndexSnapshots status=INCOMPLETE bound=False ruled_out=True no_ledger=- declared=False witness_entry=False verdict=UNBOUND fetcher=- raises=0 code_raises=0 witness_module=True
+row federal_reserve::FomcDocuments status=INCOMPLETE bound=True ruled_out=False no_ledger=- declared=False witness_entry=False verdict=ROW_CLASS_NOT_CONTRACT fetcher=FederalReserveFomcDocumentsFetcher raises=13 code_raises=6 witness_module=True
+row federal_reserve::YieldCurve status=INCOMPLETE bound=True ruled_out=False no_ledger=- declared=False witness_entry=False verdict=ROW_CLASS_NOT_CONTRACT fetcher=FederalReserveYieldCurveFetcher raises=17 code_raises=10 witness_module=True
+row government_us::TreasuryPrices status=UNREVIEWED bound=False ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError declared=False witness_entry=False verdict=UNBOUND fetcher=- raises=0 code_raises=0 witness_module=True
+row government_us::WeatherBulletinDownload status=UNREVIEWED bound=True ruled_out=False no_ledger=NO_SPECS_MODULE:ModuleNotFoundError declared=False witness_entry=False verdict=NO_CODE_SITE fetcher=WeatherBulletinDownloadFetcher raises=8 code_raises=0 witness_module=True
+row intrinio::OptionsSnapshots status=INCOMPLETE bound=False ruled_out=True no_ledger=- declared=False witness_entry=False verdict=UNBOUND fetcher=- raises=0 code_raises=0 witness_module=True
+1_declaration_axis population=7 inside_NEED_DECLARE=3 ids=['federal_reserve::FomcDocuments', 'federal_reserve::YieldCurve', 'government_us::WeatherBulletinDownload'] outside=4 contradictions=0
+A_landed_positive government_us::CommodityPsdData status=OFFLINE_ACCEPTED verdict=DOCUMENT_REACHABLE PASS=True
+A_landed_positive government_us::CommodityPsdReport status=OFFLINE_ACCEPTED verdict=DOCUMENT_TRIPPED PASS=True
+B_landed_negative government_us::WeatherBulletinDownload status=UNREVIEWED verdict=NO_CODE_SITE PASS=True
+C_population_reconciles rows=7 census_residual=7 PASS=True
+D_selector_can_differ blocked_rows=24 blocked_sample=['bls', 'finra', 'tmx'] overlap=0 PASS=True
+E_module_shape witness_module_missing=0 providers=[] PASS=True
+F_verdict_enum distinct=3 violations=[] PASS=True
+G_two_instruments_agree contradictions=0 ids=[] PASS=True
+seam_reachable_axes_face population=7 by_provider={'cboe': 2, 'federal_reserve': 2, 'government_us': 2, 'intrinio': 1} verdicts={'NO_CODE_SITE': 1, 'ROW_CLASS_NOT_CONTRACT': 2, 'UNBOUND': 4} convertible=0 convertible_rows=[] witness_only=0 witness_only_rows=[] movable=True arms=7 arms_passed=7 arms_failed=0 identity_set=5168e1e723999312
+seam_reachable_axes_exit=0

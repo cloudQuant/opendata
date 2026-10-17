@@ -1,0 +1,96 @@
+row biztoc::WorldNews status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=NO_PACKAGE_ON_DISK fake_ok=False ruled_out=False declared=False witness_entry=False action=new_provider_package
+row cboe::FuturesCurve status=INCOMPLETE bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_REACHABLE fake_ok=True ruled_out=True declared=False witness_entry=False action=ledger_ruled_out
+row cboe::IndexSnapshots status=INCOMPLETE bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_REACHABLE fake_ok=True ruled_out=True declared=False witness_entry=False action=ledger_ruled_out
+row deribit::FuturesCurve status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_USED_OUTSIDE_MODELS fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row deribit::FuturesHistorical status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_USED_OUTSIDE_MODELS fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row deribit::FuturesInfo status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_USED_OUTSIDE_MODELS fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row deribit::FuturesInstruments status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_USED_OUTSIDE_MODELS fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row deribit::OptionsChains status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_USED_OUTSIDE_MODELS fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row econdb::CountryProfile status=INCOMPLETE bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_NEVER_USED fake_ok=False ruled_out=True declared=False witness_entry=False action=ledger_ruled_out
+row econdb::ExportDestinations status=INCOMPLETE bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_NEVER_USED fake_ok=False ruled_out=True declared=False witness_entry=False action=ledger_ruled_out
+row federal_reserve::FomcDocuments status=INCOMPLETE bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_REACHABLE fake_ok=True ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row federal_reserve::YieldCurve status=INCOMPLETE bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_REACHABLE fake_ok=True ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row government_us::TreasuryPrices status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_REACHABLE fake_ok=True ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row government_us::WeatherBulletinDownload status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE seam=SEAM_REACHABLE fake_ok=True ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row intrinio::OptionsSnapshots status=INCOMPLETE bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_REACHABLE fake_ok=True ruled_out=True declared=False witness_entry=False action=ledger_ruled_out
+row nasdaq::CalendarDividend status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row nasdaq::CalendarEarnings status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row nasdaq::CalendarIpo status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row nasdaq::CompanyFilings status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row nasdaq::EconomicCalendar status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row nasdaq::EquityScreener status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row nasdaq::EquitySearch status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row nasdaq::HistoricalDividends status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row nasdaq::TopRetail status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row seeking_alpha::CalendarEarnings status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_NEVER_USED fake_ok=False ruled_out=True declared=False witness_entry=False action=ledger_ruled_out
+row seeking_alpha::ForwardEpsEstimates status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_NEVER_USED fake_ok=False ruled_out=True declared=False witness_entry=False action=ledger_ruled_out
+row seeking_alpha::ForwardSalesEstimates status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_NEVER_USED fake_ok=False ruled_out=True declared=False witness_entry=False action=ledger_ruled_out
+row stockgrid::ShortVolume status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=NO_PACKAGE_ON_DISK fake_ok=False ruled_out=False declared=False witness_entry=False action=new_provider_package
+row tmx::AvailableIndices status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::BondPrices status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::CalendarEarnings status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::CompanyFilings status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row tmx::CompanyNews status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::EquityGainers status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::EquityHistorical status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row tmx::EquityInfo status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row tmx::EquityQuote status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row tmx::EquitySearch status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row tmx::EtfCountries status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::EtfHistorical status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::EtfHoldings status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::EtfInfo status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::EtfSearch status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::EtfSectors status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::HistoricalDividends status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row tmx::IndexConstituents status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row tmx::IndexSectors status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::IndexSnapshots status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::InsiderTrading status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::OptionsChains status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row tmx::PriceTargetConsensus status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row tmx::TreasuryPrices status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=BLOCKED_ON_RUNNER_SURFACE fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row wsj::ETFActive status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_NEVER_USED fake_ok=False ruled_out=True declared=False witness_entry=False action=ledger_ruled_out
+row wsj::ETFGainers status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_NEVER_USED fake_ok=False ruled_out=True declared=False witness_entry=False action=ledger_ruled_out
+row wsj::ETFLosers status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_NEVER_USED fake_ok=False ruled_out=True declared=False witness_entry=False action=ledger_ruled_out
+row yfinance::AvailableIndices status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row yfinance::BalanceSheet status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row yfinance::CashFlowStatement status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row yfinance::CompanyNews status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::CryptoHistorical status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::CurrencyHistorical status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::EquityActive status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row yfinance::EquityAggressiveSmallCaps status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row yfinance::EquityGainers status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row yfinance::EquityHistorical status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::EquityInfo status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::EquityLosers status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row yfinance::EquityQuote status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::EquityScreener status=UNREVIEWED bucket=NEED_DECLARE verdict=QUERY_ONLY seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row yfinance::EquityUndervaluedGrowth status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row yfinance::EquityUndervaluedLargeCaps status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row yfinance::EtfHistorical status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::EtfInfo status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::FuturesCurve status=UNREVIEWED bucket=NEED_BINDING verdict=UNBOUND seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=rebind_fetcher
+row yfinance::FuturesHistorical status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::GrowthTechEquities status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row yfinance::HistoricalDividends status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::IncomeStatement status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=add_code_carrying_guard
+row yfinance::IndexHistorical status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::KeyExecutives status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::KeyMetrics status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=False witness_entry=False action=retarget_fetcher_output
+row yfinance::OptionsChains status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::PriceTargetConsensus status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+row yfinance::ShareStatistics status=UNREVIEWED bucket=NEED_SHARD_ENTRY verdict=DOCUMENT_REACHABLE seam=SEAM_NEVER_USED fake_ok=False ruled_out=False declared=True witness_entry=False action=shard_entry_needs_harness
+1_cross_tab {('NEED_BINDING', 'UNBOUND'): 32, ('NEED_DECLARE', 'NO_CODE_SITE'): 12, ('NEED_DECLARE', 'QUERY_ONLY'): 1, ('NEED_DECLARE', 'ROW_CLASS_NOT_CONTRACT'): 24, ('NEED_SHARD_ENTRY', 'DOCUMENT_REACHABLE'): 15}
+2_actions {'add_code_carrying_guard': 13, 'ledger_ruled_out': 11, 'new_provider_package': 2, 'rebind_fetcher': 19, 'retarget_fetcher_output': 24, 'shard_entry_needs_harness': 15} sums=84
+3_action_by_provider {'add_code_carrying_guard': {'government_us': 1, 'tmx': 1, 'yfinance': 11}, 'ledger_ruled_out': {'cboe': 2, 'econdb': 2, 'intrinio': 1, 'seeking_alpha': 3, 'wsj': 3}, 'new_provider_package': {'biztoc': 1, 'stockgrid': 1}, 'rebind_fetcher': {'government_us': 1, 'tmx': 16, 'yfinance': 2}, 'retarget_fetcher_output': {'deribit': 5, 'federal_reserve': 2, 'nasdaq': 9, 'tmx': 7, 'yfinance': 1}, 'shard_entry_needs_harness': {'yfinance': 15}}
+4_action_totals actions=6 nested_sum=84 residue=84
+A_landed_positive controls=2 PASS=True
+B_landed_negative government_us::WeatherBulletinDownload verdict=NO_CODE_SITE PASS=True
+C_population_identity residue=84 report_rows=350 nested_sum=84 identity_set=5168e1e723999312 PASS=True
+D_bucket_reconciles providers=13 status_drift=[] bucket_drift=[] PASS=True
+E_verdict_enum off_verdict=[] off_seam=[] PASS=True
+F_witnessable_today count=0 rows=[] counter=0 PASS=True
+residue_axis_census_face residue=84 actions={'add_code_carrying_guard': 13, 'ledger_ruled_out': 11, 'new_provider_package': 2, 'rebind_fetcher': 19, 'retarget_fetcher_output': 24, 'shard_entry_needs_harness': 15} witnessable_today=0 cross_distinct=5 identity_set=5168e1e723999312 arms=6 arms_passed=6 arms_failed=0
+residue_axis_census_exit=0

@@ -1,0 +1,43 @@
+A_landed_report_face total=350 summary_count=350 accepted=266 summary_accepted=266 identity_set=5168e1e723999312
+A_landed_report_face PASS=True
+A_engine_transport_control benzinga::AnalystSearch rows=1 transport_calls=1 document=fixture granted=BENZINGA_API_KEY error=None
+A_engine_transport_control bls::BlsSearch rows=2 transport_calls=1 document=fixture granted=BLS_API_KEY error=None
+A_engine_transport_control cboe::AvailableIndices rows=2 transport_calls=1 document=fixture granted=CBOE_LIVEVOL_ACCESS_TOKEN error=None
+A_engine_transport_control cftc::COT rows=2 transport_calls=1 document=fixture granted=none error=None
+A_engine_transport_controls attempted=4 passed=4 need=2 PASS=True
+B_subject yfinance::EquityQuote rows=-1 transport_calls=0 document=placeholder probe_fault=False error=YfinanceProviderError:YFINANCE_REQUEST_FAILED PASS=True
+C_seam_reads provider=biztoc rows=1 http_transport=NA shared_client=NA
+C_seam_reads provider=cboe rows=2 http_transport=1 shared_client=2
+C_seam_reads provider=deribit rows=5 http_transport=0 shared_client=1
+C_seam_reads provider=econdb rows=2 http_transport=1 shared_client=0
+C_seam_reads provider=federal_reserve rows=2 http_transport=2 shared_client=5
+C_seam_reads provider=government_us rows=2 http_transport=0 shared_client=1
+C_seam_reads provider=intrinio rows=1 http_transport=3 shared_client=2
+C_seam_reads provider=nasdaq rows=9 http_transport=1 shared_client=0
+C_seam_reads provider=seeking_alpha rows=3 http_transport=0 shared_client=0
+C_seam_reads provider=stockgrid rows=1 http_transport=NA shared_client=NA
+C_seam_reads provider=tmx rows=24 http_transport=0 shared_client=1
+C_seam_reads provider=wsj rows=3 http_transport=0 shared_client=0
+C_seam_reads provider=yfinance rows=29 http_transport=0 shared_client=0
+C_static_seam_attribute_census providers=13 subject=(0, 0) http_transport_holders=5 shared_client_holders=6 PASS=True
+D_harness_surface installed=lambda10 required_args=0 seam_kinds=['shared_http_client'] test_patched_sdk_callables=10 sorted=['require_dividends_series', 'require_fast_info', 'require_fund_sections', 'require_history_snapshot', 'require_info', 'require_news'] PASS=True
+F_sdk_call_surface receiver=_sdk call_sites=12 min_positional_args=1 names=[('require_dividends_series', 1), ('require_fast_info', 1), ('require_fund_sections', 1), ('require_history_frame', 1)] PASS=True
+E_declared yfinance::CompanyNews fetcher=YfinanceCompanyNewsFetcher domain=yfinance_company_news contract=YfinanceCompanyNewsObservation row_model_is_contract=True witness_entry=False
+E_declared yfinance::CryptoHistorical fetcher=YfinanceCryptoHistoricalFetcher domain=yfinance_crypto_historical contract=YfinanceHistoricalBar row_model_is_contract=True witness_entry=False
+E_declared yfinance::CurrencyHistorical fetcher=YfinanceCurrencyHistoricalFetcher domain=yfinance_currency_historical contract=YfinanceHistoricalBar row_model_is_contract=True witness_entry=False
+E_declared yfinance::EquityHistorical fetcher=YfinanceEquityHistoricalFetcher domain=yfinance_equity_historical contract=YfinanceHistoricalBar row_model_is_contract=True witness_entry=False
+E_declared yfinance::EquityInfo fetcher=YfinanceEquityInfoFetcher domain=yfinance_equity_info contract=YfinancePayloadObservation row_model_is_contract=True witness_entry=False
+E_declared yfinance::EquityQuote fetcher=YfinanceEquityQuoteFetcher domain=yfinance_equity_quote contract=YfinancePayloadObservation row_model_is_contract=True witness_entry=False
+E_declared yfinance::EtfHistorical fetcher=YfinanceEtfHistoricalFetcher domain=yfinance_etf_historical contract=YfinanceHistoricalBar row_model_is_contract=True witness_entry=False
+E_declared yfinance::EtfInfo fetcher=YfinanceEtfInfoFetcher domain=yfinance_etf_info contract=YfinancePayloadObservation row_model_is_contract=True witness_entry=False
+E_declared yfinance::FuturesHistorical fetcher=YfinanceFuturesHistoricalFetcher domain=yfinance_futures_historical contract=YfinanceHistoricalBar row_model_is_contract=True witness_entry=False
+E_declared yfinance::HistoricalDividends fetcher=YfinanceHistoricalDividendsFetcher domain=yfinance_dividend_history contract=YfinanceDividendObservation row_model_is_contract=True witness_entry=False
+E_declared yfinance::IndexHistorical fetcher=YfinanceIndexHistoricalFetcher domain=yfinance_index_historical contract=YfinanceHistoricalBar row_model_is_contract=True witness_entry=False
+E_declared yfinance::KeyExecutives fetcher=YfinanceKeyExecutivesFetcher domain=yfinance_key_executives contract=YfinanceKeyExecutiveObservation row_model_is_contract=True witness_entry=False
+E_declared yfinance::OptionsChains fetcher=YfinanceOptionsChainsFetcher domain=yfinance_options_chains contract=YfinanceOptionChainObservation row_model_is_contract=True witness_entry=False
+E_declared yfinance::PriceTargetConsensus fetcher=YfinancePriceTargetFetcher domain=yfinance_price_target_consensus contract=YfinancePriceTargetConsensus row_model_is_contract=True witness_entry=False
+E_declared yfinance::ShareStatistics fetcher=YfinanceShareStatisticsFetcher domain=yfinance_share_statistics contract=YfinancePayloadObservation row_model_is_contract=True witness_entry=False
+E_declaration_face provider=yfinance declared=15 expected=15 row_model_is_contract=15 PASS=True
+pricer_face needs_declare=37 tags={'DECLARE_AND_WITNESS': 13, 'NEEDS_IMPORT': 1, 'NEEDS_IMPORT_AND_RETARGET': 1, 'NEEDS_RETARGET': 22} declared_inside_population=0
+seam_kind_face residue=84 subject_transport_calls=0 subject_error=YfinanceProviderError controls=4 declared=15 arms=7 arms_passed=7 arms_failed=0 identity_set=5168e1e723999312
+witness_seam_kind_census_exit=0
