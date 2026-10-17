@@ -62,6 +62,7 @@ class CommodityPsdReportFetcher(
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CommodityPsdReport"
+    row_model: ClassVar[type[CommodityPsdReport]] = CommodityPsdReport
     capability: ClassVar[Capability] = Capability(
         asset_class="commodity",
         domain="government_us_commodity_psd_report",

@@ -1,0 +1,106 @@
+# wave 25 receipt-pin consistency -- the pre-commit gate for a stale digest pin
+
+generation: worktree on branch dev, after wave 25 landed plane 1 264 -> 266/350, after the four
+payload-scan takes in `post_batch_payload_scan.wave25.txt`, before any `git add`.
+
+probe: `probes/receipt_pin_consistency.py`, 181 lines, sha16=954fa541f9d511e4
+(ruff format --check: "1 file already formatted" exit 0; ruff check: "All checks passed!" exit 0)
+supersedes the two-arm generation, sha16=0674a7928a87b9c4 -- see "generation history" below.
+
+argv (repo root, cwd = repo root, PY=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python):
+
+    PYTHONPATH=. $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/receipt_pin_consistency.py --providers government_us
+    PYTHONPATH=. $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/receipt_pin_consistency.py
+
+Exits taken without a pipe: PIN_GOV_exit=0, PIN_ALL_exit=0. Both stderr files 0 bytes.
+stdout: government_us 5 lines / 528 bytes sha16=f71867e65435f760; ALL 5 lines / 538 bytes
+sha16=535004eebbc96f4d. mtime of both captures 2026-10-17T17:23 (local).
+
+--- why this instrument, in one line ---
+
+Every phase receipt pins `before_sha256`/`after_sha256` for the files it read. When a wave edits a
+shared file -- the runner, the fixture builder, another provider's witness module -- after some
+receipts were produced, those receipts silently keep pinning bytes that no longer exist. Gate member 2
+catches that eventually, several waves late, and the charge lands on whoever is standing there. This
+gate asks the question inside the wave, before the commit.
+
+--- scope 1: the four rows this wave touched (20 receipts = 4 rows x 5 phases) ---
+
+    pin_scope=government_us receipt_files=20 pin_kinds=contract,fixture,probe,source
+    A_clean: slots=228 stale=0 before_ne_after=0 samples=[] by_kind={'contract': 40, 'fixture': 28, 'probe': 60, 'source': 100}
+    B_forced: slots=228 stale=20 targeted_slots=20 substitute=scripts/quality/iter2_claims_probe_runner.py must_equal_targeted=True
+    C_rearm: stale=0 before_ne_after=1 expected=stale=0/before_ne_after=1 PASS=True
+    pin_face slots=228 stale=0 before_ne_after=0 distinct_pinned_paths=17 arms=3 arms_passed=3 arms_failed=0 PASS=True
+
+`contract_version` is a string field, not a byte pin, and the probe says so instead of silently
+skipping it -- a skipped branch is how a counter reads 0 without measuring anything.
+
+--- scope 2: the whole receipt tree (all providers) ---
+
+    pin_scope=ALL receipt_files=1330 pin_kinds=contract,fixture,probe,source
+    A_clean: slots=19382 stale=0 before_ne_after=0 samples=[] by_kind={'contract': 2730, 'fixture': 2522, 'probe': 7290, 'source': 6840}
+    B_forced: slots=19382 stale=1330 targeted_slots=1330 substitute=scripts/quality/iter2_claims_probe_runner.py must_equal_targeted=True
+    C_rearm: stale=0 before_ne_after=1 expected=stale=0/before_ne_after=1 PASS=True
+    pin_face slots=19382 stale=0 before_ne_after=0 distinct_pinned_paths=536 arms=3 arms_passed=3 arms_failed=0 PASS=True
+
+--- the three arms, and what each one is against ---
+
+* A is the claim: 228 slots in this wave's scope and 19382 tree-wide, every pinned digest equals the
+  worktree bytes, `stale=0`, no missing path.
+* B replaces one pin's *expectation* with a real digest taken from a different pinned file
+  (`iter2_claims_probe_runner.py` standing in for `iter2_claims_fixtures.py`) and requires
+  `stale == targeted_slots`: 20 of 20 in scope 1, 1330 of 1330 in scope 2, because that path is pinned
+  by exactly one entry per receipt. Without B, `stale=0` would be unfalsifiable -- it is the same
+  reading a `if pin.get(...) == ...` typo produces.
+* C is the counter-proof for the *new* counter only. It builds one slot in memory whose path really
+  exists on disk, whose `after_sha256` is that file's real digest, and whose `before_sha256` is 64
+  zeros. Expected and obtained: `stale=0 before_ne_after=1`. A reads 0 in both scopes with C at 1, so
+  the arm-A zero is a measurement of the receipts, not a dead wire. C never touches the disk.
+
+--- the finding the third arm was added to make safe: the pin pair carries no mutation claim ---
+
+Measured, not asserted: across all 19382 slots of all 1330 receipts, `before_sha256 == after_sha256`
+in every one (`before_ne_after=0`, denominators 228 and 19382 printed beside it, per-kind breakdown
+contract 2730 / fixture 2522 / probe 7290 / source 6840). The recorder writes the same digest into
+both fields. Consequences for anyone reasoning from receipt pins:
+
+* A pin is a *pointing* claim ("this file's bytes were these, when this phase ran"), not a diff claim
+  ("this file changed from X to Y"). Reasoning of the second kind is unsupported by the artifact.
+* Therefore the only live falsifiable content of a pin is `after_sha256 == worktree bytes`, which is
+  arm A / arm B. The `before_sha256` field is currently information-free, and this probe keeps it
+  counted so that stays visible instead of becoming folklore.
+* This is a reading of the *current* tree. If a future producer starts writing differing pairs,
+  `before_ne_after` becomes non-zero and is no longer evidence of degeneracy -- re-run, don't reuse.
+
+--- generation history (my first face kept in the record, refuted rather than deleted) ---
+
+Generation 1 landed as a two-arm gate: probe 140 lines sha16=0674a7928a87b9c4, scope 1 face
+`pin_face slots=228 stale=0 distinct_pinned_paths=17 arms=2 arms_passed=2 arms_failed=0 PASS=True`
+(412 bytes, sha16=cee33f75fa474ebb) and scope 2 `slots=19382 ... distinct_pinned_paths=536 arms=2
+arms_passed=2` (422 bytes, sha16=595774c40a2781e8), both exit 0. The slot counts, per-kind counts,
+`stale=0` and both `targeted_slots` equalities are unchanged between the generations -- the numbers
+that mattered were right. What was wrong was this carrier's own limit item 1, which read
+"`before_sha256 == after_sha256` is checked slot-by-slot". It was not checked by the landed probe at
+all; the check existed only in a throwaway inline validator I had run, whose result (`b==a` for all
+slots) I had converted into a description of the shipped instrument. Generation 2 turns that sentence
+into a counter, and the counter into an arm that can move. Lesson kept: an instrument's limits have
+to be written from its printed lines, not from the ad-hoc code that answered the same question.
+
+--- what this gate does NOT cover, stated so it is not mistaken for coverage ---
+
+1. It does not verify that a mutation a receipt claims actually happened -- and per the finding above,
+   the receipts claim none: 19382 of 19382 pin pairs are equal. Whether a counterfact's before/after
+   pair really differs is that phase's own `expected==observed` face, not this one.
+2. Equal-to-worktree is not equal-to-HEAD. This probe reads the worktree; `git grep` against HEAD is a
+   different face and gate member 2 runs that one.
+3. `stale=0` says nothing about rows the judge does not accept; scope 2 walks every receipt file on
+   disk, including ones for rows still INCOMPLETE.
+4. Arm C re-arms only the `before_ne_after` counter. Arm A itself has no second arm for "path missing
+   from disk" as distinct from "path present, digest differs" -- both fold into `stale`, and `samples`
+   is capped at 5 by design, so a large stale set prints 5 examples rather than a histogram.
+
+--- re-computation recipe ---
+
+Run the two argv lines above from the repo root with `$PY` = the py313 env interpreter. The face is
+five lines per scope and every number in this carrier is on them; the probe reads only
+`docs/evidence/C101/receipts/**` and the pinned paths themselves, writes nothing.

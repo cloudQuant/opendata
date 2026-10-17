@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdReport --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "GovernmentUSProviderError", "refusal_code": "USDA_REPORT_NOT_PDF", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "GovernmentUSProviderError", "refusal_code": "USDA_REPORT_NOT_PDF", "rejected": [], "status": null}, "reason": "the tampered carrier is the same length, arrives under the same URL and with the same content type, and would base64-encode into a well-shaped content string, but its first six bytes are <!DOCT instead of %PDF-, so what the archive served is a gateway page and not the circular the contract publishes. CommodityPsdReportFetcher.extract_data must refuse it before transform_data turns the bytes into a report row; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

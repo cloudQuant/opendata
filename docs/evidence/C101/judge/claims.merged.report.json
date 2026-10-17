@@ -2,7 +2,7 @@
   "acceptance_rule": "all five phase claims plus an explicit valid primary-model or human ACCEPT receipt; claim PASS alone is candidate only",
   "claims_input": {
     "path": "docs/evidence/C101/claims.merged.json",
-    "sha256": "7eeb5739ec725f69eeb855aafcb7ec822f88e95b77886e53c511f84f745c130f"
+    "sha256": "a8b3796e4aff407d9ee6d0fce641f85b70ece6f9146663a53eb5f315d78c043f"
   },
   "claims_status_source": "explicit JSON claims only; no directory globbing or markdown status parsing",
   "global_issues": [],
@@ -15594,78 +15594,172 @@
       "upstream_model": "YieldCurve"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "government_us::CommodityPsdData",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/CommodityPsdData/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "GovernmentUSProviderError",
+              "refusal_code": "USDA_BAD_COMMODITY_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "GovernmentUSProviderError",
+              "refusal_code": "USDA_BAD_COMMODITY_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "a Value cell written 265.0t keeps the country, commodity, attribute and market-year keys the mapping reads and still arrives as one well-formed JSON row, but value is typed float | int | None on the contract and 265.0t is none of those, so CommodityPsdDataFetcher.transform_data must refuse the page rather than coerce the cell to 0, drop the row silently, or ship a string in a numeric column; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/CommodityPsdData/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/CommodityPsdData/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/CommodityPsdData/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/CommodityPsdData/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "government_us",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-government_us-CommodityPsdData",
       "upstream_model": "CommodityPsdData"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "government_us::CommodityPsdReport",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/CommodityPsdReport/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "GovernmentUSProviderError",
+              "refusal_code": "USDA_REPORT_NOT_PDF",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "GovernmentUSProviderError",
+              "refusal_code": "USDA_REPORT_NOT_PDF",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the tampered carrier is the same length, arrives under the same URL and with the same content type, and would base64-encode into a well-shaped content string, but its first six bytes are <!DOCT instead of %PDF-, so what the archive served is a gateway page and not the circular the contract publishes. CommodityPsdReportFetcher.extract_data must refuse it before transform_data turns the bytes into a report row; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/CommodityPsdReport/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/CommodityPsdReport/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/CommodityPsdReport/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/CommodityPsdReport/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "government_us",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-government_us-CommodityPsdReport",
       "upstream_model": "CommodityPsdReport"
     },
@@ -26515,14 +26609,14 @@
   ],
   "schema_version": 1,
   "summary": {
-    "claim_count": 1355,
+    "claim_count": 1365,
     "identity_count": 350,
-    "offline_acceptance_count": 264,
-    "primary_review_count": 264,
+    "offline_acceptance_count": 266,
+    "primary_review_count": 266,
     "status_counts": {
       "INCOMPLETE": 7,
-      "OFFLINE_ACCEPTED": 264,
-      "UNREVIEWED": 79
+      "OFFLINE_ACCEPTED": 266,
+      "UNREVIEWED": 77
     }
   }
 }

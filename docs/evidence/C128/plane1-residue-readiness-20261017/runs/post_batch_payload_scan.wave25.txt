@@ -1,0 +1,135 @@
+# wave 25 pre-commit payload scan -- the 23 roots this wave stages
+
+generation: worktree on branch dev, after wave 25 landed plane 1 264 -> 266/350 and after
+`runs/post_response_guard_census.txt` and `runs/wave25-government_us.txt` were written, before any
+`git add`.
+
+Interpreter: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python is the gate interpreter, but both
+scanners here are stdlib-plus-`gitleaks` drivers and were run with the anaconda base `python` on PATH,
+exactly as recorded in the argv lines below. Nothing about a finding depends on the interpreter.
+
+Why two scanners: `make secret-check` runs `gitleaks detect --source .`, which reads commit history
+and therefore cannot see a file that is staged but not yet committed. `staged_payload_scan.py` copies
+working-tree bytes into one throwaway tree and scans it with the shipped `.gitleaks.toml` and no
+allowlist additions; `payload_secret_scan.py` is the two-arm control that proves the scanner is not
+mute. Neither one relaxes a rule: wave 23 found a credential-shaped literal in its own pricing carrier
+that way, and the fix was the carrier's column order, not the config.
+
+--- argv (repo root, cwd = repo root), verbatim ---
+
+    python docs/evidence/C128/plane1-residue-readiness-20261017/probes/staged_payload_scan.py --paths <23 roots>
+    python docs/evidence/C128/plane1-residue-readiness-20261017/probes/payload_secret_scan.py
+
+The 23 roots, in the order passed (directories are expanded by the probe, `.json` and `__pycache__`
+files are excluded by `payload_secret_scan.py` but NOT by `staged_payload_scan.py`, which scans every
+byte it is handed):
+
+    docs/evidence/C101/claims.merged.json
+    docs/evidence/C101/government_us/claims.json
+    docs/evidence/C101/government_us/claims.reviewed.json
+    docs/evidence/C101/judge/claims.merged.report.json
+    docs/evidence/C101/judge/claims.merged.report.md
+    docs/evidence/C101/primary-reviews/government_us__CommodityPsdData.review.json
+    docs/evidence/C101/primary-reviews/government_us__CommodityPsdReport.review.json
+    docs/evidence/C101/primary-reviews/government_us__TreasuryAuctions.review.json
+    docs/evidence/C101/primary-reviews/government_us__WeatherBulletin.review.json
+    docs/evidence/C101/receipts/government_us
+    docs/evidence/C101/captures/government_us
+    docs/evidence/C101/fixtures/government_us
+    docs/evidence/C128/README.md
+    docs/evidence/C128/plane1-residue-readiness-20261017/probes/post_response_guard_census.py
+    docs/evidence/C128/plane1-residue-readiness-20261017/probes/seam_reachability_census.py
+    docs/evidence/C128/plane1-residue-readiness-20261017/probes/seam_surface_match.py
+    docs/evidence/C128/plane1-residue-readiness-20261017/runs/post_response_guard_census.txt
+    docs/evidence/C128/plane1-residue-readiness-20261017/runs/wave25-government_us.txt
+    docs/evidence/C128/plane1-residue-readiness-20261017/runs/wave25-step0-reachability.txt
+    docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/开发验收记录.md
+    opendata/data/providers/government_us/models/commodity_psd_data.py
+    opendata/data/providers/government_us/models/commodity_psd_report.py
+    scripts/quality/iter2_witnesses/government_us.py
+
+Roots deliberately NOT in the set: `docs/evidence/C100/**` (ignored by C113 **except** its `.md` files,
+which the `!*.md` negation re-includes -- 1846 of them were counted untracked at the pre-commit
+generation, see `precommit-staged-scan.wave25.txt` limit 2; they are censused by gate member 5 and not
+committed here), `docs/evidence/C108/`, `quality-source-repairs/`, `uv.lock`, `DISCLAIMER.md` and the
+three `LICENSE*.md` drafts at the repo root (beside `LICENSE` and `LICENSE-AKSHARE`, which are neither
+drafts nor this wave's). Those are either other waves' work or not this wave's payload; "only code plus
+curated evidence" is the standing ruling, so the staged set is exactly the list above.
+
+--- take 1: payload roots as they will be committed, before this carrier existed ---
+
+Exit taken without a pipe: STAGED_SCAN_exit=0. stderr_bytes=0. Face, verbatim:
+
+    payload_scan_files=64 payload_scan_roots=23 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+    payload_scan=PASS 64 file(s) clean
+
+`payload_scan_unresolved=0` is the field that makes the other three numbers mean anything: a root that
+does not resolve used to be silently skipped, so the scanned set could shrink while `findings=0` kept
+printing green. 23 roots handed in, 23 resolved, 64 files on disk inside them.
+
+--- the two-arm control (shipped scanner, run this generation) ---
+
+Exit taken without a pipe: SECRET_scan_exit=0. stderr_bytes=0. Face, verbatim:
+
+    planted_into=declare_candidates.txt at_line=31 lines=65
+    payload_files=17 payload_roots=2
+    B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+    arm_a_findings=0 arm_a_rc=0
+    arm_b_findings=1 arm_b_rc=1
+    payload_secret_face PASS=True
+    scan_exit=0
+
+Arm A scans the two roots clean and reports 0; arm B plants a runtime-generated token into a throwaway
+copy of one carrier already inside those roots and must find exactly 1. The planted value is generated
+at run time, written only under the temp tree, and never appears in this file or in any committed
+bytes -- the finding line cites `file:line`, not the secret, because quoting the flagged line would
+make this carrier the next finding.
+
+`payload_files=17 payload_roots=2` decomposes against the tree, which is the denominator for this
+instrument (it only takes the two evidence sub-roots, not the 23 roots above): 7 `.py` files in
+`probes/` plus 10 `.txt` files in `runs/` = 17, excluding `.json` and `__pycache__`. Wave 24's carrier
+printed `payload_files=15`; that is a different generation's population and I am not attributing the
+delta, because the wave-24 face does not list which files it counted -- the honest reading is "17 now,
+18 as soon as this carrier exists", and a future re-base should cite the disk decomposition rather
+than a remembered delta.
+
+--- what each zero here does NOT prove ---
+
+1. `payload_scan_findings=0` says nothing about files outside the 23 roots. The whole-tree gate member
+   (`make secret-check`, plus member 5's untracked-evidence census) is a different population and a
+   different tool; it has not been re-run this wave.
+2. Neither scanner reads the judge. A clean scan cannot make a row accepted, and a row's ACCEPT cannot
+   make a scan clean.
+3. gitleaks is regex-shaped: an actual credential in a form its rules do not match would still read 0.
+   That is why arm B exists and why arm B's target is a file the scanner already covers.
+4. Self-reference limit, stated plainly: the face line for take N is appended after take N ran, so
+   take N did not scan its own face line. take N+1 scans it. The last line of this file is covered
+   only by the next wave's scan, which is the same limitation every carrier of this shape has.
+
+--- take 2: same roots plus this carrier (proves take 1's text is inert) ---
+
+Exit taken without a pipe: STAGED_SCAN_TAKE2_exit=0. stderr_bytes=0. Face, verbatim:
+
+    payload_scan_files=65 payload_scan_roots=24 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+    payload_scan=PASS 65 file(s) clean
+
+`payload_scan_roots 23 -> 24` and `payload_scan_files 64 -> 65`: the single added file is this carrier,
+so the denominator moved by exactly the amount the added root accounts for and nothing else changed.
+`findings` stayed 0 across the two takes, which is the control the probe's own docstring asks for --
+if the recorded face lines were credential-shaped, take 2 would report them and take 1 would not.
+
+--- take 3: byte-identical argv over the final-ish bytes of this carrier ---
+
+Exit taken without a pipe: STAGED_SCAN_TAKE3_exit=0. stderr_bytes=0. Face, verbatim:
+
+    payload_scan_files=65 payload_scan_roots=24 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+    payload_scan=PASS 65 file(s) clean
+
+Same four numbers as take 2 with different bytes under this carrier (this take scanned the file as it
+stood after the take-2 block, digest a09a3aefaf11883b, 117 lines). The claim being made here is
+therefore not "these exact bytes hash to X" -- the take-3 block appended below moves the hash again,
+and no carrier can pin its own last line. The claim is the invariant: **this argv over these 24 roots
+prints `payload_scan_files=65 payload_scan_findings=0 payload_scan_unresolved=0` at every generation
+of this wave's text**, so anyone re-running it after the append gets the same verdict, and a future run
+that prints a non-zero `findings` or a non-zero `unresolved` is a finding about new bytes, not about
+this file aging.

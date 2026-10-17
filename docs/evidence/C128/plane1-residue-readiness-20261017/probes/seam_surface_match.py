@@ -16,12 +16,20 @@ acceptance rule forbids:
 * arm B is the claim under test: every verb each un-witnessed provider's transport module calls on
   the shared client, intersected with the fake's public surface.
 
+There are three verdicts, not two. An empty verb set means the collection found no call on the
+shared client at all, so the surface question was never posed -- it does *not* mean the seam
+answers this provider's transport. Providers that own their transport (a lazy SDK import, an
+injected ``http_transport`` for the engine leg) read NO_SEAM_VERBS_MEASURED and need a different
+witness mechanism; collapsing that into WITNESSABLE would make the arm unsatisfiable-by-failure and
+turn a reachability claim into the verbal judgment the acceptance rule forbids.
+
 Prints one line per provider plus the face line the narrative quotes, and exits non-zero when an
 arm reads opposite to its expected verdict.
 """
 
 from __future__ import annotations
 
+import argparse
 import ast
 import json
 import sys
@@ -35,6 +43,7 @@ import iter2_claims_probe_runner as runner  # noqa: E402  # the shipped fake is 
 
 JUDGE_REPORT = REPO_ROOT / "docs/evidence/C101/judge/claims.merged.report.json"
 PROVIDERS = (("eia", "WITNESSABLE"), ("tmx", "BLOCKED_ON_RUNNER_SURFACE"))
+VERDICTS = ("WITNESSABLE", "BLOCKED_ON_RUNNER_SURFACE", "NO_SEAM_VERBS_MEASURED")
 
 
 def _fake_surface() -> set[str]:
@@ -46,42 +55,54 @@ def _fake_surface() -> set[str]:
     }
 
 
+def _verbs_in(module_path: Path) -> set[str]:
+    """Collect the verbs one module calls on ``get_shared_http_client()``."""
+    verbs: set[str] = set()
+    tree = ast.parse(module_path.read_text(encoding="utf-8"), filename=str(module_path))
+    # Shape 1: get_shared_http_client().verb(...) -- the governed client read inline.
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Call)
+            and isinstance(node.func.value.func, ast.Name)
+            and node.func.value.func.id == "get_shared_http_client"
+        ):
+            verbs.add(node.func.attr)
+    # Shape 2: client = get_shared_http_client() and a later client.verb(...) in one module.
+    holders = {
+        target.id
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Assign)
+        and isinstance(node.value, ast.Call)
+        and isinstance(node.value.func, ast.Name)
+        and node.value.func.id == "get_shared_http_client"
+        for target in node.targets
+        if isinstance(target, ast.Name)
+    }
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id in holders
+        ):
+            verbs.add(node.func.attr)
+    return verbs
+
+
 def _transport_verbs(provider: str) -> set[str]:
-    """Collect the verbs this provider's models call on ``get_shared_http_client()``."""
+    """Every verb this provider's ``models/`` modules call on the shared client."""
     models_dir = REPO_ROOT / "opendata/data/providers" / provider / "models"
     verbs: set[str] = set()
     for module_path in sorted(models_dir.glob("*.py")):
-        tree = ast.parse(module_path.read_text(encoding="utf-8"), filename=str(module_path))
-        # Shape 1: get_shared_http_client().verb(...) -- the governed client read inline.
-        for node in ast.walk(tree):
-            if (
-                isinstance(node, ast.Call)
-                and isinstance(node.func, ast.Attribute)
-                and isinstance(node.func.value, ast.Call)
-                and isinstance(node.func.value.func, ast.Name)
-                and node.func.value.func.id == "get_shared_http_client"
-            ):
-                verbs.add(node.func.attr)
-        # Shape 2: client = get_shared_http_client() and a later client.verb(...) in one module.
-        holders = {
-            target.id
-            for node in ast.walk(tree)
-            if isinstance(node, ast.Assign)
-            and isinstance(node.value, ast.Call)
-            and isinstance(node.value.func, ast.Name)
-            and node.value.func.id == "get_shared_http_client"
-            for target in node.targets
-            if isinstance(target, ast.Name)
-        }
-        for node in ast.walk(tree):
-            if (
-                isinstance(node, ast.Call)
-                and isinstance(node.func, ast.Attribute)
-                and isinstance(node.func.value, ast.Name)
-                and node.func.value.id in holders
-            ):
-                verbs.add(node.func.attr)
+        verbs |= _verbs_in(module_path)
     return verbs
+
+
+def _load_report() -> dict[str, Any]:
+    """Read the judge report that the gate actually uses, at the shipped path."""
+    return json.loads(JUDGE_REPORT.read_text(encoding="utf-8"))
 
 
 def _accepted_by_provider(report: dict[str, Any]) -> dict[str, dict[str, int]]:
@@ -94,17 +115,37 @@ def _accepted_by_provider(report: dict[str, Any]) -> dict[str, dict[str, int]]:
     return counts
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     """Print each arm's measured verbs and refuse a reading opposite to its expectation."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--arm",
+        action="append",
+        default=[],
+        metavar="PROVIDER:VERDICT",
+        help="extra arm to measure, e.g. government_us:WITNESSABLE; repeatable",
+    )
+    args = parser.parse_args(argv)
+    arms = list(PROVIDERS)
+    for spec in args.arm:
+        provider, _sep, expected = spec.partition(":")
+        if not provider or expected not in VERDICTS:
+            raise SystemExit(f"bad --arm {spec!r}, want PROVIDER:{'|'.join(VERDICTS)}")
+        arms.append((provider, expected))
     surface = _fake_surface()
     report: dict[str, Any] = json.loads(JUDGE_REPORT.read_text(encoding="utf-8"))
     identity_set = report["inventory"]["expected_identity_set_sha256"][:16]
     accepted = _accepted_by_provider(report)
     failures = 0
-    for provider, expected in PROVIDERS:
+    for provider, expected in arms:
         verbs = _transport_verbs(provider)
         missing = sorted(verbs - surface)
-        verdict = "WITNESSABLE" if not missing else "BLOCKED_ON_RUNNER_SURFACE"
+        if not verbs:
+            verdict = "NO_SEAM_VERBS_MEASURED"
+        elif missing:
+            verdict = "BLOCKED_ON_RUNNER_SURFACE"
+        else:
+            verdict = "WITNESSABLE"
         face = accepted.get(provider, {})
         print(
             f"seam_surface_provider={provider} fake_methods={sorted(surface)} "
@@ -117,8 +158,7 @@ def main() -> int:
             # An arm may not be satisfied by a phrase: the positive control has to show rows.
             failures += 1
     print(
-        f"seam_surface_arms={len(PROVIDERS)} seam_surface_failed={failures} "
-        f"identity_set={identity_set}"
+        f"seam_surface_arms={len(arms)} seam_surface_failed={failures} identity_set={identity_set}"
     )
     return 1 if failures else 0
 

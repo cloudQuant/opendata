@@ -1,0 +1,56 @@
+{
+  "responses": [
+    {
+      "body": [
+        {
+          "CommodityCode": "10402",
+          "CommodityDescription": "Corn",
+          "CommodityName": "Corn"
+        }
+      ],
+      "url_contains": "/api/psd/commodities"
+    },
+    {
+      "body": [
+        {
+          "CountryCode": "2750",
+          "CountryName": "China",
+          "RegionCode": "51000"
+        }
+      ],
+      "url_contains": "/api/psd/countries"
+    },
+    {
+      "body": [
+        {
+          "RegionCode": "51000",
+          "RegionName": "China (Mainland)"
+        }
+      ],
+      "url_contains": "/api/psd/regions"
+    },
+    {
+      "body": [
+        {
+          "AttributeId": "10",
+          "AttributeName": "Production"
+        }
+      ],
+      "url_contains": "/api/psd/commodityAttributes"
+    },
+    {
+      "body": [
+        {
+          "AttributeDescription": "Production",
+          "CommodityCode": "10402",
+          "CommodityDescription": "Corn",
+          "CountryCode": "2750",
+          "MarketYear": 2024,
+          "UnitDescription": "Metric Ton",
+          "Value": 265.0
+        }
+      ],
+      "url_contains": "/api/psd/commodity/10402/country/all/year/2024"
+    }
+  ]
+}

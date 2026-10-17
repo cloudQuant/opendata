@@ -1,0 +1,194 @@
+wave 25 step 0 -- reachability and pricing measured on the generation that the wave will run on
+=============================================================================================
+
+Repo root: /Users/yunjinqi/Documents/new_projects/opendata (branch dev, after commit 0cadc10a)
+Interpreter: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python  (the gate interpreter)
+cwd for every command below: the repo root. No command is piped; each exit code is taken from the
+run itself.
+
+Why this carrier exists
+-----------------------
+Section 85.8 armed a wave and section 86.8 narrowed the predicate to the *cheapest* rows, but cost
+and reachability are different axes. The pricing census answers "what has to be written"; it does
+not answer "which witness mechanism can actually execute the row". Step 0 answers the second
+question with the shipped runner's own fake surface, for the whole 350-identity population rather
+than for the three providers spot-checked in wave 24.
+
+Fix that this run depends on
+----------------------------
+probes/seam_surface_match.py previously had two verdicts and derived WITNESSABLE from
+`not missing`, where `missing = verbs - fake_surface`. An empty `verbs` set -- a provider that
+never calls `get_shared_http_client()` -- made `missing` empty, so the probe reported WITNESSABLE
+for a provider the seam does not reach at all. That is a vacuous truth, and it was measured, not
+assumed: the first five-arm run printed `verbs=[] missing=[] verdict=WITNESSABLE` for yfinance and
+nasdaq and exited 1 only because the positive control (the provider must show accepted rows) caught
+it. The probe now has a third verdict, NO_SEAM_VERBS_MEASURED, emitted when the AST collection
+returns no verbs. Controls 1 and 2 below are the two-sided proof that the new branch is live and
+that the WITNESSABLE branch did not simply get muted.
+
+argv recorded for every block
+-----------------------------
+# (1) python docs/evidence/C128/plane1-residue-readiness-20261017/probes/seam_surface_match.py \
+#         --arm government_us:WITNESSABLE \
+#         --arm yfinance:NO_SEAM_VERBS_MEASURED \
+#         --arm nasdaq:NO_SEAM_VERBS_MEASURED
+# (2) control 1, expected RED: same file, --arm yfinance:WITNESSABLE
+# (3) control 2, expected RED: same file, --arm government_us:NO_SEAM_VERBS_MEASURED
+# (4) python docs/evidence/C128/plane1-residue-readiness-20261017/probes/seam_reachability_census.py
+# (5) python docs/evidence/C128/plane1-residue-readiness-20261017/probes/readiness_census.py
+# (6) python docs/evidence/C128/plane1-residue-readiness-20261017/probes/declare_candidates.py
+# (4) is new in this generation; it imports the collector, the fake and the judge-report reader from
+# (1) rather than restating them, so the two instruments cannot disagree about what a verb is.
+
+Reading limits stated before the numbers
+----------------------------------------
+- The residual-per-mechanism table from (4) is a partition of the 86 residual rows by *which shipped
+  mechanism is the applicable one*, derived from transport-call shape. It is not a claim that each
+  mechanism currently has an entry for those rows: "engine_transport" rows include INCOMPLETE rows
+  whose phases already failed for other reasons (cboe 2, econdb 2, federal_reserve 2, intrinio 1 =
+  the 7 INCOMPLETE), and SEAM_NEVER_USED providers that are fully accepted (tiingo, benzinga,
+  finviz, alpha_vantage, tradingeconomics) prove that the engine transport leg lands plane-1 rows
+  without any client seam at all.
+- (4) counts 35 units, not 32 providers: 33 directories under opendata/data/providers (including
+  the shared `_engine` package and `akshare`/`ths`, which hold zero of the 350 identities) plus the
+  2 inventory names with no directory. Providers whose name appears only on disk are printed in
+  disk_only; nothing is silently dropped.
+- Nothing in this carrier changes a claim, a review, or the judge. Step 0 is read-only.
+
+
+=== (1) five arms, corrected expectations ===
+seam_surface_provider=eia fake_methods=['get'] verbs=['get'] missing=[] verdict=WITNESSABLE expected=WITNESSABLE judge_statuses={'OFFLINE_ACCEPTED': 2}
+seam_surface_provider=tmx fake_methods=['get'] verbs=['request'] missing=['request'] verdict=BLOCKED_ON_RUNNER_SURFACE expected=BLOCKED_ON_RUNNER_SURFACE judge_statuses={'UNREVIEWED': 24}
+seam_surface_provider=government_us fake_methods=['get'] verbs=['get'] missing=[] verdict=WITNESSABLE expected=WITNESSABLE judge_statuses={'UNREVIEWED': 4, 'OFFLINE_ACCEPTED': 2}
+seam_surface_provider=yfinance fake_methods=['get'] verbs=[] missing=[] verdict=NO_SEAM_VERBS_MEASURED expected=NO_SEAM_VERBS_MEASURED judge_statuses={'UNREVIEWED': 29}
+seam_surface_provider=nasdaq fake_methods=['get'] verbs=[] missing=[] verdict=NO_SEAM_VERBS_MEASURED expected=NO_SEAM_VERBS_MEASURED judge_statuses={'UNREVIEWED': 9}
+seam_surface_arms=5 seam_surface_failed=0 identity_set=5168e1e723999312
+block1_exit=0
+
+=== (2) control 1: yfinance armed as WITNESSABLE, must be RED (new branch is live) ===
+seam_surface_provider=eia fake_methods=['get'] verbs=['get'] missing=[] verdict=WITNESSABLE expected=WITNESSABLE judge_statuses={'OFFLINE_ACCEPTED': 2}
+seam_surface_provider=tmx fake_methods=['get'] verbs=['request'] missing=['request'] verdict=BLOCKED_ON_RUNNER_SURFACE expected=BLOCKED_ON_RUNNER_SURFACE judge_statuses={'UNREVIEWED': 24}
+seam_surface_provider=yfinance fake_methods=['get'] verbs=[] missing=[] verdict=NO_SEAM_VERBS_MEASURED expected=WITNESSABLE judge_statuses={'UNREVIEWED': 29}
+seam_surface_arms=3 seam_surface_failed=2 identity_set=5168e1e723999312
+block2_exit=1
+
+=== (3) control 2: government_us armed as NO_SEAM_VERBS_MEASURED, must be RED (WITNESSABLE not muted) ===
+seam_surface_provider=eia fake_methods=['get'] verbs=['get'] missing=[] verdict=WITNESSABLE expected=WITNESSABLE judge_statuses={'OFFLINE_ACCEPTED': 2}
+seam_surface_provider=tmx fake_methods=['get'] verbs=['request'] missing=['request'] verdict=BLOCKED_ON_RUNNER_SURFACE expected=BLOCKED_ON_RUNNER_SURFACE judge_statuses={'UNREVIEWED': 24}
+seam_surface_provider=government_us fake_methods=['get'] verbs=['get'] missing=[] verdict=WITNESSABLE expected=NO_SEAM_VERBS_MEASURED judge_statuses={'UNREVIEWED': 4, 'OFFLINE_ACCEPTED': 2}
+seam_surface_arms=3 seam_surface_failed=1 identity_set=5168e1e723999312
+block3_exit=1
+
+=== (4) whole-population reachability census (35 units, all 350 identities) ===
+seam_census_provider=_engine bucket=SEAM_USED_OUTSIDE_MODELS mechanism=client_seam_other_module models_verbs=[] package_verbs=['get'] witness_module=False client_seam=False rows=0 accepted=0 residual=0
+seam_census_provider=akshare bucket=SEAM_NEVER_USED mechanism=engine_transport models_verbs=[] package_verbs=[] witness_module=False client_seam=False rows=0 accepted=0 residual=0
+seam_census_provider=alpha_vantage bucket=SEAM_NEVER_USED mechanism=engine_transport models_verbs=[] package_verbs=[] witness_module=True client_seam=True rows=3 accepted=3 residual=0
+seam_census_provider=benzinga bucket=SEAM_NEVER_USED mechanism=engine_transport models_verbs=[] package_verbs=[] witness_module=True client_seam=False rows=4 accepted=4 residual=0
+seam_census_provider=bls bucket=BLOCKED_ON_RUNNER_SURFACE mechanism=runner_surface_widening models_verbs=['get', 'request'] package_verbs=['get', 'request'] witness_module=True client_seam=False rows=2 accepted=2 residual=0
+seam_census_provider=cboe bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=False rows=11 accepted=9 residual=2
+seam_census_provider=cftc bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=False rows=2 accepted=2 residual=0
+seam_census_provider=congress_gov bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=False rows=8 accepted=8 residual=0
+seam_census_provider=deribit bucket=SEAM_USED_OUTSIDE_MODELS mechanism=client_seam_other_module models_verbs=[] package_verbs=['request'] witness_module=False client_seam=False rows=5 accepted=0 residual=5
+seam_census_provider=ecb bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=False rows=3 accepted=3 residual=0
+seam_census_provider=econdb bucket=SEAM_NEVER_USED mechanism=engine_transport models_verbs=[] package_verbs=[] witness_module=True client_seam=False rows=8 accepted=6 residual=2
+seam_census_provider=eia bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=True rows=2 accepted=2 residual=0
+seam_census_provider=famafrench bucket=SEAM_USED_OUTSIDE_MODELS mechanism=client_seam_other_module models_verbs=[] package_verbs=['get'] witness_module=True client_seam=False rows=6 accepted=6 residual=0
+seam_census_provider=federal_reserve bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=False rows=13 accepted=11 residual=2
+seam_census_provider=finra bucket=BLOCKED_ON_RUNNER_SURFACE mechanism=runner_surface_widening models_verbs=['request'] package_verbs=['request'] witness_module=True client_seam=False rows=2 accepted=2 residual=0
+seam_census_provider=finviz bucket=SEAM_NEVER_USED mechanism=engine_transport models_verbs=[] package_verbs=[] witness_module=True client_seam=True rows=7 accepted=7 residual=0
+seam_census_provider=fmp bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=False rows=69 accepted=69 residual=0
+seam_census_provider=fred bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=True rows=36 accepted=36 residual=0
+seam_census_provider=government_us bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=True rows=6 accepted=2 residual=4
+seam_census_provider=imf bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=True rows=8 accepted=8 residual=0
+seam_census_provider=intrinio bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=False rows=38 accepted=37 residual=1
+seam_census_provider=multpl bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=False rows=1 accepted=1 residual=0
+seam_census_provider=nasdaq bucket=SEAM_NEVER_USED mechanism=engine_transport models_verbs=[] package_verbs=[] witness_module=False client_seam=False rows=9 accepted=0 residual=9
+seam_census_provider=oecd bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=True rows=9 accepted=9 residual=0
+seam_census_provider=sec bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=True rows=24 accepted=24 residual=0
+seam_census_provider=seeking_alpha bucket=SEAM_NEVER_USED mechanism=engine_transport models_verbs=[] package_verbs=[] witness_module=False client_seam=False rows=3 accepted=0 residual=3
+seam_census_provider=ths bucket=SEAM_NEVER_USED mechanism=engine_transport models_verbs=[] package_verbs=[] witness_module=False client_seam=False rows=0 accepted=0 residual=0
+seam_census_provider=tiingo bucket=SEAM_NEVER_USED mechanism=engine_transport models_verbs=[] package_verbs=[] witness_module=True client_seam=False rows=7 accepted=7 residual=0
+seam_census_provider=tmx bucket=BLOCKED_ON_RUNNER_SURFACE mechanism=runner_surface_widening models_verbs=['request'] package_verbs=['request'] witness_module=False client_seam=False rows=24 accepted=0 residual=24
+seam_census_provider=tradier bucket=SEAM_REACHABLE mechanism=client_seam models_verbs=['get'] package_verbs=['get'] witness_module=True client_seam=True rows=5 accepted=5 residual=0
+seam_census_provider=tradingeconomics bucket=SEAM_NEVER_USED mechanism=engine_transport models_verbs=[] package_verbs=[] witness_module=True client_seam=False rows=1 accepted=1 residual=0
+seam_census_provider=wsj bucket=SEAM_NEVER_USED mechanism=engine_transport models_verbs=[] package_verbs=[] witness_module=False client_seam=False rows=3 accepted=0 residual=3
+seam_census_provider=yfinance bucket=SEAM_NEVER_USED mechanism=engine_transport models_verbs=[] package_verbs=[] witness_module=False client_seam=False rows=29 accepted=0 residual=29
+seam_census_provider=biztoc bucket=NO_PACKAGE_ON_DISK mechanism=new_provider_package models_verbs=NA package_verbs=NA witness_module=False client_seam=False rows=1 accepted=0 residual=1
+seam_census_provider=stockgrid bucket=NO_PACKAGE_ON_DISK mechanism=new_provider_package models_verbs=NA package_verbs=NA witness_module=False client_seam=False rows=1 accepted=0 residual=1
+seam_census_units=35 buckets={'BLOCKED_ON_RUNNER_SURFACE': 3, 'NO_PACKAGE_ON_DISK': 2, 'SEAM_NEVER_USED': 12, 'SEAM_REACHABLE': 15, 'SEAM_USED_OUTSIDE_MODELS': 3} witness_modules=24 client_seam_modules=9 census_rows=350 report_rows=350 rows_covered=True disk_only=['_engine', 'akshare', 'ths']
+seam_census_residual_by_bucket={'BLOCKED_ON_RUNNER_SURFACE': 24, 'NO_PACKAGE_ON_DISK': 2, 'SEAM_NEVER_USED': 46, 'SEAM_REACHABLE': 9, 'SEAM_USED_OUTSIDE_MODELS': 5} residual_by_mechanism={'client_seam': 9, 'client_seam_other_module': 5, 'engine_transport': 46, 'new_provider_package': 2, 'runner_surface_widening': 24} residual_total=86 residual_by_mechanism_sum=86 accepted_total=264 accepted_plus_residual=350 report_rows=350 identity_set=5168e1e723999312
+block4_exit=0
+
+=== (5) pricing readiness census -- pre-batch baseline of this generation ===
+A_controls: landed={'bound': True, 'declared': True, 'frozen_module': True, 'is_domain_contract': True, 'witness_entry': True} row_model=IntrinioForwardSalesEstimate unbound={'bound': False, 'declared': False, 'frozen_module': False, 'is_domain_contract': False, 'witness_entry': False} resolve_error=LookupError PASS=True
+B_forced_declared: movable=True base_need_declare=54 forced_off_need_declare=54 forced_on_need_declare=0 forced_on_buckets={'DECLARE_NOT_FROZEN': 54, 'NEED_BINDING': 32} PASS=True
+C_forced_domain_contract: movable=False base_look_alike=0 forced_off_look_alike=0 forced_off_producible=0 sums=True
+column_census: residue=86 bound=54 columns={'bound': 54, 'declared': 0, 'frozen_module': 0, 'is_domain_contract': 0, 'witness_entry': 0} buckets={'NEED_BINDING': 32, 'NEED_DECLARE': 54} sums_to_residue=True
+residue_by_provider={"biztoc": {"UNREVIEWED": 1}, "cboe": {"INCOMPLETE": 2}, "deribit": {"UNREVIEWED": 5}, "econdb": {"INCOMPLETE": 2}, "federal_reserve": {"INCOMPLETE": 2}, "government_us": {"UNREVIEWED": 4}, "intrinio": {"INCOMPLETE": 1}, "nasdaq": {"UNREVIEWED": 9}, "seeking_alpha": {"UNREVIEWED": 3}, "stockgrid": {"UNREVIEWED": 1}, "tmx": {"UNREVIEWED": 24}, "wsj": {"UNREVIEWED": 3}, "yfinance": {"UNREVIEWED": 29}}
+buckets_by_provider={"biztoc": {"NEED_BINDING": 1}, "cboe": {"NEED_BINDING": 2}, "deribit": {"NEED_DECLARE": 5}, "econdb": {"NEED_BINDING": 2}, "federal_reserve": {"NEED_DECLARE": 2}, "government_us": {"NEED_DECLARE": 3, "NEED_BINDING": 1}, "intrinio": {"NEED_BINDING": 1}, "nasdaq": {"NEED_DECLARE": 9}, "seeking_alpha": {"NEED_BINDING": 3}, "stockgrid": {"NEED_BINDING": 1}, "tmx": {"NEED_BINDING": 16, "NEED_DECLARE": 8}, "wsj": {"NEED_BINDING": 3}, "yfinance": {"NEED_BINDING": 2, "NEED_DECLARE": 27}}
+identity_set=5168e1e723999312 expected_match=True inventory_keys=['csv_sha256', 'expected_identity_count', 'expected_identity_set_sha256', 'identity_count', 'identity_set_sha256', 'integrity', 'path']
+readiness_arms=3 readiness_passed=3 readiness_failed=0
+block5_exit=0
+
+=== (6) declaration pricing -- pre-batch baseline of this generation ===
+A_landed_positive: intrinio::ForwardSalesEstimates declared=True canonical=ForwardSalesEstimates contract=IntrinioForwardSalesEstimate module=opendata.data.providers.intrinio.models.iter2_financials flags={'contract_in_module': True, 'emits': True, 'witness_entry': True} PASS=True
+B_flags_discriminate: needs_declare=54 counts={'contract_in_module': 52, 'emits': 31, 'witness_entry': 0} movable={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_in_module_true=52 PASS=True
+declare_face_by_provider={"deribit": {"NEEDS_RETARGET": 5}, "federal_reserve": {"NEEDS_IMPORT": 1, "NEEDS_IMPORT_AND_RETARGET": 1}, "government_us": {"DECLARE_AND_WITNESS": 3}, "nasdaq": {"NEEDS_RETARGET": 9}, "tmx": {"NEEDS_RETARGET": 7, "DECLARE_AND_WITNESS": 1}, "yfinance": {"DECLARE_AND_WITNESS": 26, "NEEDS_RETARGET": 1}}
+row deribit::FuturesCurve by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.deribit fetcher=DeribitFuturesCurveFetcher canonical=FuturesCurve contract=DeribitFuturesCurve
+row deribit::FuturesHistorical by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.deribit fetcher=DeribitFuturesHistoricalFetcher canonical=FuturesHistorical contract=DeribitFuturesHistorical
+row deribit::FuturesInfo by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.deribit fetcher=DeribitFuturesInfoFetcher canonical=FuturesInfo contract=DeribitFuturesInfo
+row deribit::FuturesInstruments by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.deribit fetcher=DeribitFuturesInstrumentsFetcher canonical=FuturesInstruments contract=DeribitFuturesInstruments
+row deribit::OptionsChains by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.deribit fetcher=DeribitOptionsChainsFetcher canonical=OptionsChains contract=DeribitOptionsChains
+row federal_reserve::FomcDocuments by_name=True output_model=False flags={'contract_in_module': False, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.federal_reserve_clean_documents fetcher=FederalReserveFomcDocumentsFetcher canonical=FomcDocuments contract=FederalReserveFomcDocument
+row federal_reserve::YieldCurve by_name=False output_model=False flags={'contract_in_module': False, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.federal_reserve_clean_documents fetcher=FederalReserveYieldCurveFetcher canonical=YieldCurve contract=FederalReserveYieldCurveObservation
+row government_us::CommodityPsdData by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.government_us fetcher=CommodityPsdDataFetcher canonical=CommodityPsdData contract=CommodityPsdData
+row government_us::CommodityPsdReport by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.government_us fetcher=CommodityPsdReportFetcher canonical=CommodityPsdReport contract=CommodityPsdReport
+row government_us::WeatherBulletinDownload by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.government_us fetcher=WeatherBulletinDownloadFetcher canonical=WeatherBulletinDownload contract=WeatherBulletinDownload
+row nasdaq::CalendarDividend by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.nasdaq fetcher=CalendarDividendFetcher canonical=CalendarDividend contract=NasdaqCalendarDividend
+row nasdaq::CalendarEarnings by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.nasdaq fetcher=CalendarEarningsFetcher canonical=CalendarEarnings contract=NasdaqCalendarEarnings
+row nasdaq::CalendarIpo by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.nasdaq fetcher=CalendarIpoFetcher canonical=CalendarIpo contract=NasdaqCalendarIpo
+row nasdaq::CompanyFilings by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.nasdaq fetcher=CompanyFilingsFetcher canonical=CompanyFilings contract=NasdaqCompanyFiling
+row nasdaq::EconomicCalendar by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.nasdaq fetcher=EconomicCalendarFetcher canonical=EconomicCalendar contract=NasdaqEconomicEvent
+row nasdaq::EquityScreener by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.nasdaq fetcher=EquityScreenerFetcher canonical=EquityScreener contract=NasdaqEquityScreener
+row nasdaq::EquitySearch by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.nasdaq fetcher=EquitySearchFetcher canonical=EquitySearch contract=NasdaqEquitySearch
+row nasdaq::HistoricalDividends by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.nasdaq fetcher=HistoricalDividendsFetcher canonical=HistoricalDividends contract=NasdaqHistoricalDividend
+row nasdaq::TopRetail by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.nasdaq fetcher=TopRetailFetcher canonical=TopRetail contract=NasdaqTopRetail
+row tmx::CompanyFilings by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.tmx fetcher=CompanyFilingsFetcher canonical=CompanyFilings contract=TmxCompanyFiling
+row tmx::EquityHistorical by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.tmx fetcher=EquityHistoricalFetcher canonical=EquityHistorical contract=TmxEquityHistorical
+row tmx::EquityInfo by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.tmx fetcher=EquityInfoFetcher canonical=EquityInfo contract=TmxEquityInfo
+row tmx::EquityQuote by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.tmx fetcher=EquityQuoteFetcher canonical=EquityQuote contract=TmxEquityQuote
+row tmx::EquitySearch by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.tmx fetcher=EquitySearchFetcher canonical=EquitySearch contract=TmxEquitySearch
+row tmx::HistoricalDividends by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.tmx fetcher=HistoricalDividendsFetcher canonical=HistoricalDividends contract=TmxHistoricalDividend
+row tmx::IndexConstituents by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.tmx fetcher=IndexConstituentsFetcher canonical=IndexConstituents contract=TmxIndexConstituent
+row tmx::PriceTargetConsensus by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.tmx fetcher=PriceTargetConsensusFetcher canonical=PriceTargetConsensus contract=TmxPriceTargetConsensus
+row yfinance::BalanceSheet by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceBalanceSheetFetcher canonical=BalanceSheet contract=YfinanceFinancialStatementObservation
+row yfinance::CashFlowStatement by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceCashFlowStatementFetcher canonical=CashFlowStatement contract=YfinanceFinancialStatementObservation
+row yfinance::CompanyNews by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceCompanyNewsFetcher canonical=CompanyNews contract=YfinanceCompanyNewsObservation
+row yfinance::CryptoHistorical by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceCryptoHistoricalFetcher canonical=CryptoHistorical contract=YfinanceHistoricalBar
+row yfinance::CurrencyHistorical by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceCurrencyHistoricalFetcher canonical=CurrencyHistorical contract=YfinanceHistoricalBar
+row yfinance::EquityActive by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceEquityActiveFetcher canonical=EquityActive contract=YfinanceScreenerObservation
+row yfinance::EquityAggressiveSmallCaps by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceEquityAggressiveSmallCapsFetcher canonical=EquityAggressiveSmallCaps contract=YfinanceScreenerObservation
+row yfinance::EquityGainers by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceEquityGainersFetcher canonical=EquityGainers contract=YfinanceScreenerObservation
+row yfinance::EquityHistorical by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceEquityHistoricalFetcher canonical=EquityHistorical contract=YfinanceHistoricalBar
+row yfinance::EquityInfo by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceEquityInfoFetcher canonical=EquityInfo contract=YfinancePayloadObservation
+row yfinance::EquityLosers by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceEquityLosersFetcher canonical=EquityLosers contract=YfinanceScreenerObservation
+row yfinance::EquityQuote by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceEquityQuoteFetcher canonical=EquityQuote contract=YfinancePayloadObservation
+row yfinance::EquityScreener by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceEquityScreenerFetcher canonical=EquityScreener contract=YfinanceScreenerObservation
+row yfinance::EquityUndervaluedGrowth by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceEquityUndervaluedGrowthFetcher canonical=EquityUndervaluedGrowth contract=YfinanceScreenerObservation
+row yfinance::EquityUndervaluedLargeCaps by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceEquityUndervaluedLargeCapsFetcher canonical=EquityUndervaluedLargeCaps contract=YfinanceScreenerObservation
+row yfinance::EtfHistorical by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceEtfHistoricalFetcher canonical=EtfHistorical contract=YfinanceHistoricalBar
+row yfinance::EtfInfo by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceEtfInfoFetcher canonical=EtfInfo contract=YfinancePayloadObservation
+row yfinance::FuturesHistorical by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceFuturesHistoricalFetcher canonical=FuturesHistorical contract=YfinanceHistoricalBar
+row yfinance::GrowthTechEquities by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceGrowthTechEquitiesFetcher canonical=GrowthTechEquities contract=YfinanceScreenerObservation
+row yfinance::HistoricalDividends by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceHistoricalDividendsFetcher canonical=HistoricalDividends contract=YfinanceDividendObservation
+row yfinance::IncomeStatement by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceIncomeStatementFetcher canonical=IncomeStatement contract=YfinanceFinancialStatementObservation
+row yfinance::IndexHistorical by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceIndexHistoricalFetcher canonical=IndexHistorical contract=YfinanceHistoricalBar
+row yfinance::KeyExecutives by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceKeyExecutivesFetcher canonical=KeyExecutives contract=YfinanceKeyExecutiveObservation
+row yfinance::KeyMetrics by_name=False output_model=False flags={'contract_in_module': True, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceKeyMetricsFetcher canonical=KeyMetrics contract=YfinanceKeyMetricObservation
+row yfinance::OptionsChains by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceOptionsChainsFetcher canonical=OptionsChains contract=YfinanceOptionChainObservation
+row yfinance::PriceTargetConsensus by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinancePriceTargetFetcher canonical=PriceTargetConsensus contract=YfinancePriceTargetConsensus
+row yfinance::ShareStatistics by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.yfinance_iter2 fetcher=YfinanceShareStatisticsFetcher canonical=ShareStatistics contract=YfinancePayloadObservation
+declare_arms=2 declare_passed=2 declare_failed=0
+block6_exit=0
+
+=== end of wave 25 step 0 ===

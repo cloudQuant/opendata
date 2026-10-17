@@ -89,6 +89,7 @@ class CommodityPsdDataFetcher(Fetcher[CommodityPsdDataQuery, list[dict[str, Any]
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "CommodityPsdData"
+    row_model: ClassVar[type[CommodityPsdData]] = CommodityPsdData
     capability: ClassVar[Capability] = Capability(
         asset_class="commodity",
         domain="government_us_commodity_psd_data",

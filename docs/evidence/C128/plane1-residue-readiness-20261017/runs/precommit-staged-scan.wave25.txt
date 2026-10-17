@@ -1,0 +1,161 @@
+# wave 25 pre-commit face -- the 55 files that go into the index, scanned as staged
+
+generation: worktree on branch dev, after every wave-25 write (code, evidence, `开发验收记录.md` §87.9,
+C128 README), after `git add`, **before** `git commit`. This is the face that says the bytes being
+committed are the bytes the instruments read.
+
+index-vs-worktree control taken first: `git diff --name-only` printed nothing (`unstaged_modified_count=0`),
+and the intersection of `git diff --cached --name-only` with `git diff --name-only` is empty. So the
+staged blob for each of the 55 paths equals its worktree bytes, and a scan of the worktree is a scan of
+what is about to be committed. That control matters because this repo has been bitten by committing the
+*before* bytes of a file staged earlier in a long session.
+
+--- argv (repo root, cwd = repo root), verbatim ---
+
+    git -c core.quotepath=off diff --cached --name-only -z \
+      | xargs -0 python docs/evidence/C128/plane1-residue-readiness-20261017/probes/staged_payload_scan.py --paths
+    python docs/evidence/C128/plane1-residue-readiness-20261017/probes/payload_secret_scan.py
+    PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python \
+      docs/evidence/C128/plane1-residue-readiness-20261017/probes/receipt_pin_consistency.py --providers government_us
+    PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python \
+      docs/evidence/C128/plane1-residue-readiness-20261017/probes/receipt_pin_consistency.py
+    /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_model_evidence.py \
+      --inventory "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv" \
+      --claims docs/evidence/C101/claims.merged.json --output /tmp/judge_recheck.json
+
+Two things in that list are not shortcuts:
+`-c core.quotepath=off` is required because one of the 55 paths is the Chinese-named record file; with
+the default the path arrives as `"docs/\350\277\255..."` and the scanner reports it unresolved -- which
+is exactly the field that makes `findings=0` mean anything. And `--output` goes to `/tmp` here because
+this run is a *recheck*: pointing it at `docs/evidence/C101/judge/claims.merged.report.json` would
+rewrite a file already staged.
+
+--- the four faces ---
+
+Staged payload scan, exit taken without a pipe: STAGED_final_exit=0, stderr 0 bytes, stdout 2 lines /
+147 bytes, sha16=cccd80bebb4a076e, mtime 2026-10-17T17:33:10.
+
+    payload_scan_files=55 payload_scan_roots=55 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+    payload_scan=PASS 55 file(s) clean
+
+Fifty-five roots were handed in and fifty-five resolved -- `roots == files` here because the input is the
+index listing, one file per entry, no directory expansion. `payload_scan_unresolved=0` is the column that
+proves the population is the one claimed, not a shrunk one.
+
+Two-arm secret scan over the two C128 sub-roots: SECRET_final_exit=0 (and a second run `SECRET2_exit=0`
+whose stdout hashes the same, `sha16=57bbb162ed6cc273`, 7 lines / 253 bytes, mtime 2026-10-17T17:30:49),
+stderr 0 bytes.
+
+    planted_into=declare_candidates.txt at_line=31 lines=65
+    payload_files=20 payload_roots=2
+    B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+    arm_a_findings=0 arm_a_rc=0
+    arm_b_findings=1 arm_b_rc=1
+    payload_secret_face PASS=True
+    scan_exit=0
+
+`payload_files` moved 17 -> 20 against `runs/post_batch_payload_scan.wave25.txt`'s generation, and that
+delta *is* attributable here because this instrument enumerates its own population: `probes/` went 7 -> 8
+`.py` (the pin gate added `receipt_pin_consistency.py`) and `runs/` went 10 -> 12 `.txt` (the payload
+carrier and the pin carrier `wave25-receipt-pins.txt`). The other six lines are byte-identical to the
+recorded face, including arm B still finding its planted token and arm A still reading zero. This carrier
+is a thirteenth `.txt` under `runs/`, so the next run of this instrument reads `payload_files=21` -- and
+this carrier's own bytes were not in the 20 that just scanned clean (see limits).
+
+Pin gate, both scopes, on the final bytes: PIN_GOV_final_exit=0 and PIN_ALL_final_exit=0, stderr 0 bytes
+each, stdout 5 lines / 528 bytes `sha16=f71867e65435f760` and 5 lines / 538 bytes `sha16=535004eebbc96f4d`.
+`cmp` against the captures behind `runs/wave25-receipt-pins.txt` returns identical for both, and the probe
+digest is unchanged at `954fa541f9d511e4`. So the wave-25 pin face was not aged by §87.9 or the README:
+228 slots in scope, 19382 tree-wide, `stale=0`, all three arms green.
+
+Judge recheck (stdout 1 line / 94 bytes, sha16=90f4387ac7afe99a, JUDGE_exit=0, stderr 0 bytes):
+
+    wrote /tmp/judge_recheck.json and /tmp/judge_recheck.md: 350 identities, 266 offline accepted
+
+`cmp /tmp/judge_recheck.json docs/evidence/C101/judge/claims.merged.report.json` -> identical, both
+`sha16=73f4ed196e73aef5`. Plane 1 reads 266/350 on the bytes about to be committed, and re-running the
+judge does not move the report it is charged with reproducing.
+
+Lint/compile gate on the seven changed `.py` files: `ruff check` -> "All checks passed!" exit 0;
+`ruff format --check` -> "7 files already formatted" exit 0.
+
+--- a failed invocation kept in the record ---
+
+The first staged-scan attempt exited non-zero with **no stdout at all**:
+`STAGED_exit=1`, stderr 138 bytes = `error: the following arguments are required: --paths`. Cause is mine,
+not the instrument's: `xargs` appends the file list *after* the command, so the `--paths` flag has to sit
+in the command prefix, and I left it out. Worth keeping because a scanner that dies on usage prints to
+stderr and exits 1 -- if the reading were taken from the exit code alone, this attempt would have looked
+like a clean run that scanned nothing, and the next line of prose would have quoted `findings=0` from a
+file that never existed. The corrected argv is the one above.
+
+--- limits of this carrier ---
+
+1. This file is written after the staged scan ran, so it is **not** inside the 55-file set scanned above
+   and none of its own bytes were scanned by its own face. It is covered by the next wave's staged scan
+   and by `payload_secret_scan.py` on the next run (its root is `runs/`, which it enumerates fresh).
+2. `findings=0` is a reading about these 55 files. It says nothing about the rest of the untracked tree --
+   `git -c core.quotepath=off status --porcelain=v1 -uall` counted **2504** untracked files at this
+   generation, decomposed as `docs/evidence/C100` 1846 (the `.md` files are re-included by C113's
+   `!*.md` negation and are censused by gate member 5, not committed), `docs/evidence/C108` 11,
+   `docs/evidence/C128` 1 (this carrier, written after staging), `quality-source-repairs/` 641, and 5
+   root files (`uv.lock`, `DISCLAIMER.md`, three `LICENSE*.md` drafts). It also says nothing about the
+   whole-tree gate members, which have not been re-run this wave.
+3. Neither scanner reads the judge; the judge recheck is the only line here that touches acceptance, and
+   it rechecks a face produced before this commit rather than producing one.
+4. gitleaks is regex-shaped; arm B exists precisely because arm A's zero is not self-certifying. Arm B's
+   planted token is generated at run time, written only into the temp tree, and never appears in these
+   bytes -- the finding line cites `file:line`.
+5. The judge was re-run to a temp output, so this carrier does not certify that `--output` pointed at the
+   staged report at any moment after staging; it certifies that the staged report's bytes are what the
+   judge produces from the staged claims.
+
+--- re-take after the narrative aged (this carrier's own first face is superseded by this block) ---
+
+The four faces above were taken before `README.md`, `开发验收记录.md` §87.9 and
+`post_batch_payload_scan.wave25.txt` were corrected (the LICENSE count was off by one, the C100-ignore
+nuance needed the `!*.md` negation, and the two new carriers needed adding). All three files were
+re-staged and the whole instrument set was run again over the resulting index.
+
+Controls re-taken first: `git diff --name-only` empty again (`unstaged=0`) and the staged count is still
+55 -- re-staging moved bytes, not membership. Exits taken without a pipe:
+
+    STAGED_final2_exit=0  stderr_bytes=0  stdout 2 lines / 147 bytes / sha16=cccd80bebb4a076e  mtime 17:37:37
+    SECRET_final3_exit=0  stderr_bytes=0  stdout 7 lines / 253 bytes / sha16=b6d928c8d27343d7  mtime 17:37:37
+    PIN_GOV_f2_exit=0  PIN_ALL_f2_exit=0  stderr_bytes=0  mtime 17:37:38 / 17:37:39
+    JUDGE2_exit=0  stderr_bytes=0  stdout 1 line / 96 bytes / sha16=6700f930f2d78473  mtime 17:37:40
+
+Readings:
+
+    payload_scan_files=55 payload_scan_roots=55 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+    payload_scan=PASS 55 file(s) clean
+    payload_files=21 payload_roots=2
+    arm_a_findings=0 arm_a_rc=0
+    arm_b_findings=1 arm_b_rc=1
+    payload_secret_face PASS=True
+    wrote /tmp/judge_recheck2.json and /tmp/judge_recheck2.md: 350 identities, 266 offline accepted
+
+The staged-scan stdout is **byte-identical** to the earlier capture (`cccd80bebb4a076e` both times) even
+though three of the 55 files changed between the two runs -- the face is a count-and-verdict line, and
+the narrative edits added no files and no findings. The secret scan moved exactly where the README said
+it would: `payload_files 20 -> 21` (this carrier is the thirteenth `.txt` under `runs/`), other six lines
+unchanged, arm B still green. Its stdout hash differs from the previous take for that one two-character
+field only. The pin gate's two scope faces are again `cmp`-identical to the landed faces in
+`wave25-receipt-pins.txt`, and the judge still reproduces the staged report byte-for-byte
+(`73f4ed196e73aef5`).
+
+So the population this carrier certifies is: the 55 staged files as they stand at this wave's final
+`git add`, plus the judge's and the pin gate's readings over them. The claim being made is the invariant,
+not the timestamp -- a **third take** at 17:38:50, after two more narrative edits (this carrier's line
+count cited in `README.md` and §87.9, which aged it from 111 to 151 lines) and a re-`git add` of those two
+files, printed a stdout **byte-identical** to both earlier takes (`cccd80bebb4a076e`, 2 lines / 147 bytes;
+`STAGED_final3_exit=0`, stderr 0 bytes) and the staged count stayed 55 with `unstaged=0`. Narrative moves;
+`55 / 55 / unresolved=0 / findings=0` does not. This carrier is the 56th file in the commit and is added
+after this block, so its own bytes are certified only by the next wave's scan -- limit 1 still stands and
+is now the *reason* this block exists rather than a footnote. Final note on the churn itself: `README.md`
+and §87.9 both cited this file's line count, both citations aged as the block grew (111 -> 151 -> this),
+and both have now been **dropped** rather than re-updated -- a count that must be edited to stay true is
+not a pin, so the narrative anchors on the file name and the face lines. The two counts still cited
+(`post_batch_payload_scan.wave25.txt` 135, `wave25-receipt-pins.txt` 106) are of carriers closed at this
+commit; if either is ever appended to, its count goes the same way.
+

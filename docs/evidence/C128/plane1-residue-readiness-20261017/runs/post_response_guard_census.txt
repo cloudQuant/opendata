@@ -1,0 +1,204 @@
+# post-response guard census -- the second axis wave 25 proved exists
+
+generation: worktree on branch dev, after wave 25 landed plane 1 264 -> 266/350. This instrument is
+the reason that wave's batch was two rows and not three, promoted from a hand-grep into a driver:
+`seam_reachability_census.py` measures whether the runner's get-only fake can reach a provider's
+transport, and that is NOT the question a counterfact needs answered. The question is whether a
+tampered *document* can trip a refusal at all. `government_us::WeatherBulletinDownload` is
+seam-reachable and unwitnessable, so a predicate armed on reachability alone over-counts.
+
+argv (repo root, cwd = repo root, interpreter /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python):
+
+    PYTHONPATH=. $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/post_response_guard_census.py
+
+Exit taken without a pipe: GUARD_LANDED_exit=0. stderr_bytes=0. probe_sha16=b6d18160fd2c8985
+output_sha16=e8db1735d7603cfe. Verbatim stdout below.
+
+Re-compute recipe for the pin: this carrier's prose is commentary, the evidence is the 18-line block
+from `provider_screen:` through `guard_face`, and it anchors on content rather than line numbers so
+editing this file cannot stale the recipe:
+
+    awk '/^provider_screen:/{f=1} f{print} /^guard_face/{if(f)exit}' <this file> | shasum -a 256
+
+That prints e8db1735d7603cfe. The end block quotes the four earlier stdout captures, whose `/tmp`
+files are not durable; there the byte counts and digests are the claim, and re-running the *landed*
+probe is the only way to reproduce a stdout face.
+
+provider_screen: td=transform_data ed=extract_data other=query-path/helper (raise sites carrying a code-shaped literal; td>0 is a screen, not a verdict)
+guard_provider=cboe residual=2 seam_verbs=['get'] seam_reachable=True td=2 ed=10 other=39 modules=13 screen=GUARD_PRESENT landed_code_resolutions={'engine': 3, 'extract_data': 1, 'other': 5} td_classes=['CboeIndexHistoricalFetcher', 'CboeOptionsChainsFetcher'] residual_rows=['FuturesCurve:INCOMPLETE', 'IndexSnapshots:INCOMPLETE']
+guard_provider=deribit residual=5 seam_verbs=[] seam_reachable=False td=18 ed=5 other=50 modules=6 screen=GUARD_PRESENT landed_code_resolutions={} td_classes=['DeribitFuturesCurveFetcher', 'DeribitFuturesHistoricalFetcher', 'DeribitFuturesInfoFetcher', 'DeribitFuturesInstrumentsFetcher'] residual_rows=['FuturesCurve:UNREVIEWED', 'FuturesHistorical:UNREVIEWED', 'FuturesInfo:UNREVIEWED', 'FuturesInstruments:UNREVIEWED', 'OptionsChains:UNREVIEWED']
+guard_provider=econdb residual=2 seam_verbs=[] seam_reachable=False td=10 ed=1 other=21 modules=8 screen=GUARD_PRESENT landed_code_resolutions={'transform_data': 6} td_classes=['EconDBEconomicIndicatorsFetcher', 'EconDBPortVolumeFetcher', 'EconDBYieldCurveFetcher', '_GdpFetcher'] residual_rows=['CountryProfile:INCOMPLETE', 'ExportDestinations:INCOMPLETE']
+guard_provider=federal_reserve residual=2 seam_verbs=['get'] seam_reachable=True td=54 ed=9 other=140 modules=26 screen=GUARD_PRESENT landed_code_resolutions={'engine': 6, 'other': 4, 'transform_data': 1} td_classes=['CentralBankHoldingsFetcher', 'FederalReserveCentralBankHoldingsFetcher', 'FederalReserveFomcDocumentsFetcher', 'FederalReserveInflationExpectationsFetcher'] residual_rows=['FomcDocuments:INCOMPLETE', 'YieldCurve:INCOMPLETE']
+guard_provider=government_us residual=2 seam_verbs=['get'] seam_reachable=True td=4 ed=13 other=10 modules=10 screen=GUARD_PRESENT landed_code_resolutions={'extract_data': 1, 'transform_data': 3} td_classes=['CommodityPsdDataFetcher', 'TreasuryAuctionsFetcher', 'WeatherBulletinFetcher'] residual_rows=['TreasuryPrices:UNREVIEWED', 'WeatherBulletinDownload:UNREVIEWED']
+guard_provider=intrinio residual=1 seam_verbs=['get'] seam_reachable=True td=7 ed=19 other=80 modules=14 screen=GUARD_PRESENT landed_code_resolutions={'engine': 15, 'extract_data': 13, 'other': 6, 'transform_data': 3} td_classes=['IntrinioForwardEbitdaEstimatesFetcher', 'IntrinioForwardPeEstimatesFetcher', 'IntrinioReportedFinancialsFetcher', '_IntrinioFetcher'] residual_rows=['OptionsSnapshots:INCOMPLETE']
+guard_provider=nasdaq residual=9 seam_verbs=[] seam_reachable=False td=12 ed=16 other=55 modules=15 screen=GUARD_PRESENT landed_code_resolutions={} td_classes=['CalendarEarningsFetcher', 'CalendarIpoFetcher', 'CompanyFilingsFetcher', 'EconomicCalendarFetcher'] residual_rows=['CalendarDividend:UNREVIEWED', 'CalendarEarnings:UNREVIEWED', 'CalendarIpo:UNREVIEWED', 'CompanyFilings:UNREVIEWED', 'EconomicCalendar:UNREVIEWED']
+guard_provider=seeking_alpha residual=3 seam_verbs=[] seam_reachable=False td=0 ed=0 other=0 modules=2 screen=GUARD_STRICT_ZERO landed_code_resolutions={} td_classes=[] residual_rows=['CalendarEarnings:UNREVIEWED', 'ForwardEpsEstimates:UNREVIEWED', 'ForwardSalesEstimates:UNREVIEWED']
+guard_provider=tmx residual=24 seam_verbs=['request'] seam_reachable=False td=5 ed=6 other=12 modules=5 screen=GUARD_PRESENT landed_code_resolutions={} td_classes=['CompanyFilingsFetcher', 'EquityInfoFetcher', 'EquityQuoteFetcher', 'PriceTargetConsensusFetcher'] residual_rows=['AvailableIndices:UNREVIEWED', 'BondPrices:UNREVIEWED', 'CalendarEarnings:UNREVIEWED', 'CompanyFilings:UNREVIEWED', 'CompanyNews:UNREVIEWED']
+guard_provider=wsj residual=3 seam_verbs=[] seam_reachable=False td=0 ed=0 other=0 modules=2 screen=GUARD_STRICT_ZERO landed_code_resolutions={} td_classes=[] residual_rows=['ETFActive:UNREVIEWED', 'ETFGainers:UNREVIEWED', 'ETFLosers:UNREVIEWED']
+guard_provider=yfinance residual=29 seam_verbs=[] seam_reachable=False td=30 ed=6 other=84 modules=11 screen=GUARD_PRESENT landed_code_resolutions={} td_classes=['YfinanceCompanyNewsFetcher', 'YfinanceHistoricalDividendsFetcher', 'YfinanceHistoryFetcher', 'YfinanceKeyExecutivesFetcher'] residual_rows=['AvailableIndices:UNREVIEWED', 'BalanceSheet:UNREVIEWED', 'CashFlowStatement:UNREVIEWED', 'CompanyNews:UNREVIEWED', 'CryptoHistorical:UNREVIEWED']
+guard_provider=biztoc residual=1 seam_verbs=NA seam_reachable=False td=NA ed=NA other=NA modules=0 screen=NO_PACKAGE_ON_DISK landed_code_resolutions={} td_classes=[] residual_rows=['WorldNews:UNREVIEWED']
+guard_provider=stockgrid residual=1 seam_verbs=NA seam_reachable=False td=NA ed=NA other=NA modules=0 screen=NO_PACKAGE_ON_DISK landed_code_resolutions={} td_classes=[] residual_rows=['ShortVolume:UNREVIEWED']
+A_landed_codes: population=266 distinct=99 providers=24 engine_sites=53 td=136 ed=21 other=78 engine=28 text_only=3 absent=0 absent_sample=[] PASS=True
+B_two_sided: government_us accepted_rows=4 codes_in_document_methods=4 code_buckets=['extract_data', 'transform_data'] weather_bulletin_download.py td=0 ed=0 other=0 PASS=True
+C_planted_negative: planted=CODE_THE_PROBE_JUST_MADE_UP resolves_to=absent counter_can_read_nonzero=True
+guard_face residual_units=13 residual_rows=84 residual_rows_no_package=2 packages=33 strict_positive_providers=9 strict_zero_providers=2 arms=3 arms_passed=3 arms_failed=0 identity_set=5168e1e723999312
+
+--- what the columns mean ---
+
+Every `raise` site in a provider package (and in `providers/_engine/`) whose first argument is a
+SCREAMING_SNAKE literal is recorded, and bucketed by the method that holds it:
+
+* `td` -- `transform_data`. The engine protocol hands it the decoded payload
+  (`_engine/http_json.py:1462`), so a document tamper reaches a refusal here by construction.
+* `ed` -- `extract_data`. Document-adjacent but ambiguous: `commodity_psd_report.py:104` (the
+  PDF magic-byte check on the fetched body) sits in `extract_data` and landed this wave, while
+  `weather_bulletin_download.py:112` sits in `extract_data` too and fires *before* any transport.
+  A method name cannot separate those, so the two counts are printed apart and never merged.
+* `other` -- every other method, class helper or module function, including a helper that
+  `transform_data` calls. Unreachable by tampering a response body.
+
+Codes raised through the `_fail("SUFFIX")` factories or the engine's
+`f"{spec.error_prefix}_SHAPE_INVALID"` are resolved by suffix match, and a code that resolves only
+in the engine is reported as `engine`, not as "no guard exists" -- that single reading is what
+turns 28 declarative rows from false negatives into what they are, rows whose guard is real and
+lives in shared code.
+
+--- the three arms ---
+
+* `A_landed_codes` takes the 266 accepted rows' own `expected.refusal_code` values out of the landed
+  judge report (99 distinct codes, 24 providers) and resolves each one. `absent=0` is the pass
+  condition, and it is the arm that found the engine shape. The same arm run four times read
+  `unexplained=60`, then `absent=9`, then `absent=4`, then `absent=0`; the four lines are verbatim in
+  the pre-fix-readings block at the end of this file. The split (136 td / 21 ed / 78 other / 28
+  engine / 3 text_only) is the instrument's own coverage statement.
+* `B_two_sided` requires the 4 accepted `government_us` rows to resolve into a document method and
+  `models/weather_bulletin_download.py` to contribute zero `td` sites. Both halves are the same rule
+  applied to a row the wave landed and the row the wave refused; if the module's strict count had
+  been non-zero the arm would have gone red and the wave's exclusion would have needed re-arguing.
+  Its `ed=0 other=0` is because those nine guards are `ValueError("NWS ...")` sentences, not
+  code-shaped literals -- the screen only counts raises a counterfact could name.
+* `C_planted_negative` resolves a code that exists nowhere and requires the counter to read
+  `absent`. Without it, `absent=0` in arm A is an unfalsifiable zero.
+
+--- the arithmetic that closes ---
+
+`guard_face residual_units=13 residual_rows=84 residual_rows_no_package=2` -- 84 is the same residue
+`readiness_census.py` prints from the other direction, and it decomposes per provider here against
+the seam census's mechanism partition (24 tmx runner-surface, 46 engine-transport, 7 client-seam,
+5 deribit other-module, 2 no-package). `strict_positive_providers=9 strict_zero_providers=2`: the
+two strict zeros are `seeking_alpha` and `wsj`, whose 3 + 3 rows have no code-carrying raise site
+anywhere in their package.
+
+--- limits of this screen ---
+
+1. `td=0` is not "unwitnessable": a refusal living in a helper called from `transform_data` lands in
+   `other`, so the strict count is a floor. `screen=GUARD_PRESENT` says the provider has at least one
+   document-reachable site; it does not say the residual row's own fetcher has one. That per-row
+   reading is the author's job and is exactly the step §86.8 skipped.
+2. Nothing here is a judge. It prints a screen and exits non-zero only when one of its own three
+   control arms fails, so it can never be read as acceptance evidence for a row.
+
+--- pre-fix readings (the five generations, verbatim) ---
+
+The landed pass condition (`absent=0`, three arms green) was reached by four real runs of the same
+instrument, then a fifth that only fixed the provider-division arithmetic. Each block below is that
+run's own stdout, copied before the next edit. The probe source was edited in place between runs, so
+the intermediate probe digests are not recoverable; only the output bytes are pinned, and those
+`/tmp` files do not survive a restart -- which is exactly why these lines live in this carrier
+instead of being cited by path.
+
+    G1  /tmp/wave25/guard_census.txt     16:44:50  bytes 4456  shasum16=3bee7f12efc736ec
+    A_landed_codes: population=266 distinct=99 in_transform_data=133 extract_data_only=20 unexplained=60 unexplained_sample=[('alpha_vantage', 'ALPHA_VANTAGE_BAD_RESPONSE'), ('bls', 'BLS_CATALOG_MISSING_ID'), ('cboe', 'CBOE_INDEX_HISTORICAL_BAD_CSV'), ('cboe', 'CBOE_LIVEVOL_BAD_INTEGER_FIELD'), ('cboe', 'CBOE_LIVEVOL_BAD_NUMERIC_FIELD')] PASS=False
+    B_query_path_only: WeatherBulletinDownloadFetcher td=0 ed=1 other=0 ed_sites=[('NWS URLs must be validated before fetching', 112)] PASS=False
+    guard_face residual_units=11 residual_rows=82 packages=33 strict_positive_providers=9 strict_zero_providers=2 arms=2 arms_passed=0 arms_failed=2 identity_set=5168e1e723999312
+
+  What G1 got wrong: it bucketed by lexical position only, then reported every code that was not
+  literally inside a document method as `unexplained`. `ALPHA_VANTAGE_BAD_RESPONSE` is the
+  `ClassVar[str] = ...` default on that provider's own error class and `BLS_CATALOG_MISSING_ID` is
+  raised through a factory, so 60 measured the resolver's ignorance, not missing guards. The B half
+  was not a control yet -- it just printed the module, and `ed_sites` shows it mistook an exception
+  *message* for a refusal code.
+
+    G2  /tmp/wave25/guard_census2.txt    16:47:24  bytes 4695  shasum16=9a0e626c6b74e6dc
+    A_landed_codes: population=266 distinct=99 in_transform_data=133 in_extract_data=20 in_other_method=90 literal_only=4 absent=9 absent_sample=[('cboe', 'CBOE_SHAPE_INVALID'), ('intrinio', 'INTRINIO_FINANCIALS_AMBIGUOUS_TAG_MAPPING'), ('intrinio', 'INTRINIO_FINANCIALS_BAD_SHAPE'), ('intrinio', 'INTRINIO_FINANCIALS_CONSENSUS_TYPE_MISMATCH'), ('intrinio', 'INTRINIO_FINANCIALS_CONTRACT_INVALID')] PASS=False
+    A2_planted_negative: planted=('government_us', 'CODE_THE_PROBE_JUST_MADE_UP') resolves_to=absent literal_in_package=False counter_can_read_nonzero=True
+    B_two_sided: weather_bulletin_download.py td=0 ed=1 other=8 ed_sites=[('ValueError', 112)] landed_psd_td={'CommodityPsdData': [186], 'CommodityPsdReport': []} PASS=False
+    guard_face residual_units=11 residual_rows=82 packages=33 strict_positive_providers=9 strict_zero_providers=2 arms=3 arms_passed=1 arms_failed=2 identity_set=5168e1e723999312
+
+  What G2 fixed and what it exposed: `_is_code_literal` (SCREAMING_SNAKE, >= 8 chars) dropped the
+  message-string false positives, and `code: ClassVar[str]` defaults plus `raise _fail("CODE")`
+  factory literals took the field from 60 to 9. A planted-negative arm already existed here under the
+  name `A2_planted_negative`. Two real gaps surfaced: B went red because `CommodityPsdReport`'s guard
+  lives in `extract_data` while the arm demanded `transform_data` -- the same reachability/method
+  confusion the wave was about -- and the remaining 9 `absent` codes were codes no literal in the repo
+  can produce.
+
+    G3  /tmp/wave25/guard_census3.txt    16:49:55  bytes 4548  shasum16=e4c0bd2efe2b985c
+    A_landed_codes: population=266 distinct=99 providers=24 td=136 ed=21 other=78 text_only=27 absent=4 absent_sample=[('cboe', 'AvailableIndices'), ('cboe', 'IndexConstituents'), ('cboe', 'IndexSearch'), ('tradingeconomics', 'EconomicCalendar')] PASS=False
+    B_two_sided: government_us accepted_rows=4 codes_in_document_methods=4 code_buckets=['extract_data', 'transform_data'] weather_bulletin_download.py td=0 ed=0 other=0 PASS=True
+    C_planted_negative: planted=CODE_THE_PROBE_JUST_MADE_UP resolves_to=absent counter_can_read_nonzero=True
+    guard_face residual_units=11 residual_rows=82 packages=33 strict_positive_providers=9 strict_zero_providers=2 arms=3 arms_passed=2 arms_failed=1 identity_set=5168e1e723999312
+
+  What G3 fixed and what it exposed: matching any code-carrying raise in the class or file (not only
+  inside the fetcher method) turned the landed rows' codes into a per-row screen; B became a true
+  two-sided control and went green; `A2` was re-labelled `C_planted_negative` so the counter's
+  falsifiability sits beside the zero it calibrates. `absent` fell to 4 -- and that sample line is
+  itself a defect of this generation: it printed `(provider, model)` where the field is
+  `(provider, code)`, which is why the four items read like class names. The real residues were
+  `CBOE_SHAPE_INVALID`, `INTRINIO_FINANCIALS_*` and `TRADINGECONOMICS_SHAPE_INVALID`. The per-provider
+  `other` column also moved here (tmx 23 -> 12, yfinance 167 -> 84) because G3 stopped double-counting
+  raises that belong to a nested helper; the td/ed/other columns are this instrument's own coverage
+  statement and they were not stable until G4.
+
+    G4  /tmp/wave25/guard_census4.txt    16:51:55  bytes 4951  shasum16=2985c45cace83cbe
+    A_landed_codes: population=266 distinct=99 providers=24 engine_sites=53 td=136 ed=21 other=78 engine=28 text_only=3 absent=0 absent_sample=[] PASS=True
+    B_two_sided: government_us accepted_rows=4 codes_in_document_methods=4 code_buckets=['extract_data', 'transform_data'] weather_bulletin_download.py td=0 ed=0 other=0 PASS=True
+    C_planted_negative: planted=CODE_THE_PROBE_JUST_MADE_UP resolves_to=absent counter_can_read_nonzero=True
+    guard_face residual_units=11 residual_rows=82 packages=33 strict_positive_providers=9 strict_zero_providers=2 arms=3 arms_passed=3 arms_failed=0 identity_set=5168e1e723999312
+
+  What G4 fixed: `_engine_sites()` plus suffix / f-string-segment resolution, so the engine-composed
+  `raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID")` at `_engine/http_json.py:629`
+  counts as a guard instead of reading as an absent code. 28 of the 99 landed codes resolve only
+  through the engine; `absent=0` with arm C still green is what makes that zero mean something.
+  What G4 still got wrong: the face line carries no `residual_rows_no_package` field at all, and
+  `residual_units=11 / residual_rows=82` excludes the two providers with no package (biztoc,
+  stockgrid) -- so it printed 82 while `readiness_census.py` printed 84. Note the shape of this
+  error: a counter that is *absent from the output* is not a counter that printed 0, and had I
+  recorded it as `=0` here the carrier would have manufactured the very failure mode this project has
+  been charged with repeatedly. The correction is stated only as absent -> present.
+
+    G5  /tmp/wave25/guard_landed.txt     16:53:48  bytes 5393  shasum16=e8db1735d7603cfe  <-- landed
+    A_landed_codes: population=266 distinct=99 providers=24 engine_sites=53 td=136 ed=21 other=78 engine=28 text_only=3 absent=0 absent_sample=[] PASS=True
+    B_two_sided: government_us accepted_rows=4 codes_in_document_methods=4 code_buckets=['extract_data', 'transform_data'] weather_bulletin_download.py td=0 ed=0 other=0 PASS=True
+    C_planted_negative: planted=CODE_THE_PROBE_JUST_MADE_UP resolves_to=absent counter_can_read_nonzero=True
+    guard_face residual_units=13 residual_rows=84 residual_rows_no_package=2 packages=33 strict_positive_providers=9 strict_zero_providers=2 arms=3 arms_passed=3 arms_failed=0 identity_set=5168e1e723999312
+
+  G5 changes only the partition arithmetic, via an explicit edit rather than a scripted patch:
+  `residual_units 11 -> 13`, `residual_rows 82 -> 84`, and the newly present `residual_rows_no_package=2`,
+  which is what makes this file's `guard_face` line agree with `readiness_census.py`'s independent 84.
+  The three arm lines are byte-identical to G4, so the resolver did not move to reach 84 and the 84
+  did not move to reach the resolver.
+
+Beside these five there is `/tmp/wave25/guard_final.txt` (16:53, 5393 bytes, shasum16
+e8db1735d7603cfe): byte-identical to `guard_landed.txt`, the same probe invoked twice in a row, which
+is why the carrier's `output_sha16` matches both. The five blocks above are the generations with
+distinct output.
+
+Two face lines worth keeping from the earlier generations, because the landed file's provider lines
+are the ones a reader will check them against: in G1-G4 `guard_provider=wsj` already printed
+`seam_verbs=[] seam_reachable=False ... screen=GUARD_STRICT_ZERO`, and `guard_provider=yfinance`
+printed `seam_verbs=[] seam_reachable=False ... screen=GUARD_PRESENT` with `td=30`. yfinance is the
+proof that the two axes are independent -- it has 30 document-method guards yet no reachable seam in
+this harness, which is why its 29 rows need the engine `transport` leg and no amount of guard
+authoring moves them.
+
+--- re-take on this worktree (the README's re-run claim, measured not asserted) ---
+
+    RERUN_exit=0  stdout 18 lines / 5393 bytes  output sha16=e8db1735d7603cfe  stderr_bytes=0
+
+Taken at 17:09 local on the same worktree as the landed face, same argv, output redirected (no pipe).
+The digest equals both `guard_landed.txt` above and the `output_sha16` pin, so the landed face is
+reproducible rather than a one-time transcript. The instrument reads only the judge report and the
+provider packages, so a re-take stays valid until a wave changes a model's guards or a landed row's
+`expected.refusal_code` -- at which point `td/ed/other/engine` move and this file is re-based, not
+relaxed.

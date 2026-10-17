@@ -1,0 +1,330 @@
+# wave 25 -- government_us CommodityPsdData + CommodityPsdReport to plane 1
+
+generation: worktree on branch dev at HEAD 0cadc10a; the wave commit lands after this carrier.
+repo root /Users/yunjinqi/Documents/new_projects/opendata; interpreter
+/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python (the gate interpreter); cwd = repo root and
+PYTHONPATH=. for every command below. Each block is verbatim tool output; every `_exit` was taken
+without a pipe except where a line says otherwise.
+
+LANDED FACE: plane 1 264 -> 266/350, identity set `5168e1e723999312` unmoved, `invalid_claims=[]`,
+`claims=1365 identities=273 reviews=266`, `merged_sha16=a8b3796e4aff407d`, census residue 86 -> 84.
+
+## why the batch is two rows and not three
+
+Task #55 was armed as "government_us 3 rows (CommodityPsdData / CommodityPsdReport /
+WeatherBulletinDownload)". Measurement cut it to two:
+
+* The witness module's own docstring had excluded the two PSD rows: "they refuse with
+  USDA_FAS_API_KEY_MISSING_OR_INVALID before any transport, so a witness for them would be a witness
+  of credential plumbing". That exclusion is false on the current code. The credential is satisfiable
+  through the runner's `credential_env` injection (the eia witness already does it), and both rows
+  carry a post-response guard the fixture can reach -- `commodity_psd_data.py:186`
+  (`USDA_BAD_COMMODITY_ROW`) and `commodity_psd_report.py:104` (`USDA_REPORT_NOT_PDF`). Reversed in
+  the module docstring as a correction on the record.
+* `WeatherBulletinDownload` stays out, but the *reason* the module carried for it was also false, and
+  the first draft of this carrier repeated it. Measured: it declares no `row_model`
+  (`weather_bulletin_download.py:91` prints `canonical_model` only) and its nine `raise` sites --
+  :33, :36, :51, :54, :63, :70, :75, :77, :112 -- are all bare `ValueError` with an `NWS_*` message,
+  every one a query/URL-shape guard that fires before transport. The shipped counterfact mechanism
+  tampers the fixture *document* (`tamper.path` always starts at `responses`), so no tamper can reach
+  a refusal the query itself must trip. The module docstring now says this; the previous wording
+  ("its only rejections are the `GOV_US_*` transport codes") is superseded, not deleted.
+
+Both PSD rows also needed a `row_model` declaration -- the same one-line form shipped on
+`treasury_auctions.py:63` and `weather_bulletin.py:47`.
+
+## the three generations of this wave, and which one landed
+
+The chain was run three times because two of my own findings intervened. Recording all three, since
+the rejected faces are the evidence that nothing was chosen after the fact:
+
+  G1 whole-provider produce (30 claims). Judged: 266 accepted but UNREVIEWED 79 -> 75 and
+     INCOMPLETE 7 -> 9 -- TreasuryPrices and WeatherBulletinDownload moved out of UNREVIEWED because
+     the producer enumerates every inventory row of the provider and emitted 10 honest BLOCKED claims
+     for the two rows this wave does not witness. Rejected on the rule "a wave moves only rows it
+     witnesses"; the other 23 shards carry only their witnessed rows.
+  G2 subset produce, 4 rows x 5 = 20 PASS, judged 266 with INCOMPLETE 7 and UNREVIEWED 77. Landed,
+     then superseded only because of the docstring fix below (witness-module pin 313cb2b7297a5b99).
+  G3 same 20 PASS after the `WeatherBulletinDownload` reason was corrected in the pinned module
+     (witness-module pin 7c0c9eeef6b1eea8). THIS is the generation on disk.
+
+The judge face is identical in G2 and G3 -- `status_moves=2`, same two identities, same counts -- so
+the extra cycle bought accuracy in a pinned file, not a better number.
+
+## argv, verbatim
+
+1. produce, whole provider (G1, taken then rejected):
+   `PYTHONPATH=. $PY scripts/quality/iter2_claims_producer.py --provider government_us
+   --inventory "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv"
+   --evidence-root docs/evidence/C101 --output docs/evidence/C101/government_us/claims.json`
+2. produce, the shard that landed (G2 and G3 add `--models`):
+   same argv `... --models CommodityPsdData,CommodityPsdReport,TreasuryAuctions,WeatherBulletin
+   --output docs/evidence/C101/government_us/claims.json`
+3. review: `PYTHONPATH=. $PY scripts/quality/iter2_primary_review_recorder.py
+   --claims docs/evidence/C101/government_us/claims.json
+   --output docs/evidence/C101/government_us/claims.reviewed.json
+   --identity government_us::CommodityPsdData --identity government_us::CommodityPsdReport
+   --identity government_us::TreasuryAuctions --identity government_us::WeatherBulletin
+   --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer
+   --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer`
+   No `--reexecute`: the recorder records which claims document the reviewer signed; re-running the
+   witness is the producer's evidence, not the reviewer's.
+4. merge: `PYTHONPATH=. $PY scripts/quality/iter2_claims_merge.py` (defaults: shards
+   `docs/evidence/C101/*/claims.reviewed.json` -> `docs/evidence/C101/claims.merged.json`); run twice
+   for the idempotency reading in block 4b.
+5. judge: `PYTHONPATH=. $PY scripts/quality/iter2_model_evidence.py
+   --inventory "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv"
+   --claims docs/evidence/C101/claims.merged.json
+   --output docs/evidence/C101/judge/claims.merged.report.json`
+6. instruments, all under `docs/evidence/C128/plane1-residue-readiness-20261017/probes/`:
+   `readiness_census.py`, `declare_candidates.py`, `seam_reachability_census.py` (no arguments), and
+   `seam_surface_match.py --arm government_us:WITNESSABLE --arm yfinance:NO_SEAM_VERBS_MEASURED
+   --arm nasdaq:NO_SEAM_VERBS_MEASURED`.
+7. lint/type/security: `ruff check`, `ruff format --check`, `mypy` (two PSD fetchers),
+   `bandit -q -c bandit.yaml` (the witness module plus `eia.py`).
+8. tests: `pytest tests -k "government_us or psd or usda" -o addopts= -p no:cacheprovider -q`;
+   `pytest tests -k "iter2 or witness or claims or budget or grant" -o addopts= -p no:cacheprovider
+   -q`.
+
+READING LIMITS. (a) Plane 1 is five-phase claims plus one valid primary ACCEPT; none of this is
+plane-2 DEV_DONE. (b) All four bodies here are hand-authored offline fixture bodies. The two earlier
+rows transcribe retained C100 fixtures; the two PSD bodies have no retained fixture behind them --
+they prove lookup resolution, the region-versus-country projection, the typed `value` guard and the
+PDF magic-byte gate, not any USDA value. (c) The judge runs from the repo root with relative paths,
+as every instrument in this root does. (d) A re-produced shard always moves `executed_at_utc`, so
+`merged_sha` moves every generation; blocks 4b/4c isolate what actually changed.
+
+--- block 1: whole-provider produce, G1 (PRODUCE_exit=0) ---
+
+== provider government_us: 6 inventory row(s) of 350 total ==
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=318/350; provider rows covered=6 of provider inventory rows=6, of which bound now=5/318 resolvable; claims emitted=30 (20 PASS, 0 FAIL, 10 BLOCKED) = 6 row(s) x 5 phases; phases actually executed as subprocesses=30
+TreasuryPrices implementation <not run> exit=- status=BLOCKED reason=no model witness
+WeatherBulletinDownload implementation <not run> exit=- status=BLOCKED reason=no model witness
+
+Judged against HEAD, that generation moved FOUR identities:
+status_moves=4
+  move government_us::CommodityPsdData UNREVIEWED -> OFFLINE_ACCEPTED
+  move government_us::CommodityPsdReport UNREVIEWED -> OFFLINE_ACCEPTED
+  move government_us::TreasuryPrices UNREVIEWED -> INCOMPLETE
+  move government_us::WeatherBulletinDownload UNREVIEWED -> INCOMPLETE
+old_counts={'OFFLINE_ACCEPTED': 264, 'UNREVIEWED': 79, 'INCOMPLETE': 7}
+new_counts={'OFFLINE_ACCEPTED': 266, 'UNREVIEWED': 75, 'INCOMPLETE': 9}
+
+RULING, not a re-take of a bad result: 266 is the same in both generations, but G1 changes a tracked
+face (INCOMPLETE 7 -> 9) for rows this wave witnesses nothing of. Block 2 re-took the shard as the
+four-row subset, which is how the other 23 shards in this root are shaped.
+
+block1_exit=0
+
+--- block 2: subset produce, the shard that landed (G3: PRODUCE_FINAL_exit=0; G2 same argv,
+    PRODUCE_SUBSET_exit=0, identical denominators line) ---
+
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=318/350; provider rows covered=4 of provider inventory rows=6, of which bound now=4/318 resolvable; claims emitted=20 (20 PASS, 0 FAIL, 0 BLOCKED) = 4 row(s) x 5 phases; phases actually executed as subprocesses=20
+wrote docs/evidence/C101/government_us/claims.json
+
+block2_exit=0
+
+--- block 3: primary reviews (G3: REVIEW_FINAL_exit=0; G1/G2 takes also exited 0, signed=4/4) ---
+
+REVIEW_SIGNED: government_us::CommodityPsdData
+REVIEW_SIGNED: government_us::CommodityPsdReport
+REVIEW_SIGNED: government_us::TreasuryAuctions
+REVIEW_SIGNED: government_us::WeatherBulletin
+recorder_exit=0 signed=4 refused=0 reviews_total=4 output=docs/evidence/C101/government_us/claims.reviewed.json
+
+`signed=4 refused=0` is the whole reading: nothing was signed with `--allow-unproven`, and no
+`decision=REJECT` was filed against a row whose five phases did not all pass.
+
+block3_exit=0
+
+--- block 4a: merge and judge (G3: MERGE_FINAL_exit=0, MERGE_RETAKE_exit=0, JUDGE_FINAL_exit=0) ---
+
+shards merged=24
+claims=1365 identities=273 reviews=266 accepted_identities=266
+wrote docs/evidence/C101/claims.merged.json
+wrote docs/evidence/C101/judge/claims.merged.report.json and docs/evidence/C101/judge/claims.merged.report.md: 350 identities, 266 offline accepted
+
+Against §86's landed face `claims=1355 identities=271 reviews=264`, this is exactly `+10 claim / +2
+identity / +2 review` -- 10 == 2 rows x 5 phases -- and `accepted_identities` equals `reviews` again,
+so no review was signed against a row the judge does not accept.
+
+Merge idempotency on the landed bytes, taken by re-running the same argv and hashing the file again:
+MERGE_RETAKE_exit=0 sha=a8b3796e4aff407d, equal to the first take. (In G1 a third merge was aimed at
+an out-of-repo `--output` and exited 1 while writing identical bytes: `ValueError:
+'/private/tmp/wave25/merged_probe.json' is not in the subpath of '<repo root>'` at
+`iter2_claims_merge.py:129`, i.e. `output_path.relative_to(REPO_ROOT)` in its closing print. That is
+a defect of this instrument -- it only supports an in-repo output -- recorded here so nobody reads
+that exit 1 as a merge conflict.)
+
+block4a_exit=0
+
+--- block 4b: what a re-produced shard does and does not move ---
+
+The 10 carried-forward claims (TreasuryAuctions and WeatherBulletin x 5 phases) differ from the
+prior generation in exactly three kinds of field, and in nothing else:
+  /executed_at_utc            new subprocess wall time
+  /receipt/sha256             the receipt embeds that timestamp
+  /pins/probe[2] + /pins/fixture[2], before and after  3adb2856b2da5587 -> 313cb2b7297a5b99 (G2)
+                                                       -> 7c0c9eeef6b1eea8 (G3)
+`[2]` is `scripts/quality/iter2_witnesses/government_us.py` -- the file this wave edits. Its blast
+radius was measured, not assumed:
+  pin keys of a claim: contract, contract_version, fixture, probe, source
+  source[0..4] = catalog.py, government_us/registration.py, provider.py, models/treasury_auctions.py,
+                 models/_client.py    -- none edited this wave
+  who pins that witness module in the merged document: government_us only, 24 pin slots
+     -> no other shard staled, so no cross-provider re-sign was needed.
+The 8 phase captures of the two new rows are byte-identical across G2 and G3 (same sha16 below),
+because a capture holds probe stdout and no timestamp: only the claims' own stamps moved.
+
+block4b_exit=0 (derived by python over the two claims documents and the merged document)
+
+--- block 5: the judged face, diffed against HEAD ---
+
+populations old=350 new=350 ids_equal=True identity_set=5168e1e723999312
+status_moves=2
+  move government_us::CommodityPsdData UNREVIEWED -> OFFLINE_ACCEPTED
+  move government_us::CommodityPsdReport UNREVIEWED -> OFFLINE_ACCEPTED
+old_counts={'OFFLINE_ACCEPTED': 264, 'UNREVIEWED': 79, 'INCOMPLETE': 7}
+new_counts={'OFFLINE_ACCEPTED': 266, 'UNREVIEWED': 77, 'INCOMPLETE': 7}
+invalid_claims=[]
+government_us=[('CommodityPsdData','OFFLINE_ACCEPTED'), ('CommodityPsdReport','OFFLINE_ACCEPTED'),
+               ('TreasuryAuctions','OFFLINE_ACCEPTED'), ('TreasuryPrices','UNREVIEWED'),
+               ('WeatherBulletin','OFFLINE_ACCEPTED'), ('WeatherBulletinDownload','UNREVIEWED')]
+
+Prediction armed at 08:22 from the step-0 censuses: plane 1 264 -> 266, `NEED_DECLARE 54 -> 52`,
+`NEED_BINDING` 32, `UNREVIEWED 79 -> 77`, `INCOMPLETE` 7, identity set unmoved, `invalid_claims` 0.
+Measured: all seven hold. What did not survive contact with the tool was §86.8's predicate of 3 rows
+-> 267, whose third row is not witnessable by the shipped mechanism (see the second bullet above);
+the refuted number stays in §86.8 and §87.3 of 开发验收记录.md owns the correction.
+The identity arithmetic `264 + 2 == 266` with `UNREVIEWED 79 - 2 == 77` and `INCOMPLETE` unmoved is
+the shape that excludes a label flip, so no separate REMOVED instrument was opened (§84.10's rule).
+
+block5_exit=0
+
+--- block 6: the two new rows' ten receipts, then the four review receipts (landed bytes) ---
+
+receipt CommodityPsdData/implementation exit=0 bytes=382 sha=238c137b1a27d1d4 face=implementation: registered domain=government_us_commodity_psd_data row_model=CommodityPsdData verified=False transport=offline-only VERDICT=PASS
+receipt CommodityPsdData/direct exit=0 bytes=366 sha=6c0caf44978909d1 face=direct: fetcher=CommodityPsdDataFetcher seam_requests=5 rows=1 row_class=CommodityPsdData first_row_sha256=8a48111df4eab3fe VERDICT=PASS
+receipt CommodityPsdData/service exit=0 bytes=372 sha=b6d7b17d2f3359a5 face=service: query_provider_model executed for real (registry + reviewed domain semantics), rows=1 first_row_sha256=8a48111df4eab3fe VERDICT=PASS
+receipt CommodityPsdData/contract exit=0 bytes=351 sha=bb2da52152fa0337 face=contract: CommodityPsdData validated 1 produced row(s); strict round-trip and extra-forbid boundaries hold VERDICT=PASS
+receipt CommodityPsdData/counterfact exit=0 bytes=1060 sha=0faf61b10046c4f6 face=COUNTERFACT_JSON expected.refusal_code=USDA_BAD_COMMODITY_ROW observed.refusal_code=USDA_BAD_COMMODITY_ROW; both sides invalid=[] missing=[] rejected=[] status=null VERDICT=PASS
+receipt CommodityPsdReport/implementation exit=0 bytes=388 sha=e9cb87255631cf12 face=implementation: registered domain=government_us_commodity_psd_report row_model=CommodityPsdReport verified=False transport=offline-only VERDICT=PASS
+receipt CommodityPsdReport/direct exit=0 bytes=372 sha=828e9ae308e92b49 face=direct: fetcher=CommodityPsdReportFetcher seam_requests=1 rows=1 row_class=CommodityPsdReport first_row_sha256=467713eff2d8aa04 VERDICT=PASS
+receipt CommodityPsdReport/service exit=0 bytes=374 sha=8f735739f3337c79 face=service: query_provider_model executed for real (registry + reviewed domain semantics), rows=1 first_row_sha256=467713eff2d8aa04 VERDICT=PASS
+receipt CommodityPsdReport/contract exit=0 bytes=355 sha=d37f8da31b7a14e3 face=contract: CommodityPsdReport validated 1 produced row(s); strict round-trip and extra-forbid boundaries hold VERDICT=PASS
+receipt CommodityPsdReport/counterfact exit=0 bytes=1074 sha=4d9a04af9e80c00e face=COUNTERFACT_JSON expected.refusal_code=USDA_REPORT_NOT_PDF observed.refusal_code=USDA_REPORT_NOT_PDF; both sides invalid=[] missing=[] rejected=[] status=null VERDICT=PASS
+
+Four things in those lines are load-bearing, not decoration:
+* `seam_requests=5` on the data row is the fetcher's own fan-out (commodities, countries, regions,
+  commodityAttributes, then the value page) and the grant covers it, because the carrier-sends budget
+  is `max(3, answerable responses)` = 5 here (`iter2_claims_probe_runner.py:85-107`). A hand-declared
+  budget would have been a free number.
+* `direct` and `service` print the same `first_row_sha256` per row (`8a48111df4eab3fe`,
+  `467713eff2d8aa04`) -- the two legs really return the same rows.
+* `verified=False` is the domain's own flag; no live capture backs these rows and none is claimed.
+* the two refusal codes each appear at exactly one site in the tree
+  (`commodity_psd_data.py:186`, `commodity_psd_report.py:104`), so the observed code identifies the
+  guard rather than merely agreeing with a declared string.
+
+review government_us::CommodityPsdData decision=ACCEPT claims_sha=31d489cba840e43d receipt_sha=2b472a30f5193b30
+review government_us::CommodityPsdReport decision=ACCEPT claims_sha=31d489cba840e43d receipt_sha=89a734d7ebae9722
+review government_us::TreasuryAuctions decision=ACCEPT claims_sha=31d489cba840e43d receipt_sha=735efd2c959b5bf3
+review government_us::WeatherBulletin decision=ACCEPT claims_sha=31d489cba840e43d receipt_sha=0486fa25f646f686
+
+All four carry `reviewer_type=primary_model reviewer_id=iter2-acceptance-reviewer
+reviewer_role=acceptance_reviewer reviewer_model=qoder-cli-agent` and
+`phases=['implementation','direct','service','contract','counterfact']`.
+`claims_sha=31d489cba840e43d` is the landed `government_us/claims.json`; the two carried-forward rows
+were re-signed rather than carried, so every ACCEPT on disk points at the bytes now in the shard.
+
+block6_exit=0
+
+--- block 7: readiness census, landed bytes (READINESS_FINAL_exit=0; G2 take also 0) ---
+
+column_census: residue=84 bound=52 columns={'bound': 52, 'declared': 0, 'frozen_module': 0, 'is_domain_contract': 0, 'witness_entry': 0} buckets={'NEED_BINDING': 32, 'NEED_DECLARE': 52} sums_to_residue=True
+buckets_by_provider={…, "government_us": {"NEED_BINDING": 1, "NEED_DECLARE": 1}, …}
+residue_by_provider={…, "government_us": {"UNREVIEWED": 2}, …}
+A_controls: landed={'bound': True, 'declared': True, 'frozen_module': True, 'is_domain_contract': True, 'witness_entry': True} row_model=IntrinioForwardSalesEstimate unbound={'bound': False, 'declared': False, 'frozen_module': False, 'is_domain_contract': False, 'witness_entry': False} resolve_error=LookupError PASS=True
+B_forced_declared: movable=True base_need_declare=52 forced_off_need_declare=52 forced_on_need_declare=0 forced_on_buckets={'DECLARE_NOT_FROZEN': 52, 'NEED_BINDING': 32} PASS=True
+C_forced_domain_contract: movable=False base_look_alike=0 forced_off_look_alike=0 forced_off_producible=0 sums=True
+identity_set=5168e1e723999312 expected_match=True
+readiness_arms=3 readiness_passed=3 readiness_failed=0
+
+Residue 86 -> 84, `NEED_DECLARE` 54 -> 52, `NEED_BINDING` still 32. government_us went from
+`{NEED_DECLARE: 3, NEED_BINDING: 1}` to `{NEED_DECLARE: 1, NEED_BINDING: 1}` -- the remaining declare
+row is WeatherBulletinDownload and the remaining binding row is reserved TreasuryPrices, the two this
+carrier keeps excluding, and the census agrees with the carrier rather than with my arm.
+
+block7_exit=0
+
+--- block 8: declare candidates, landed bytes (DECLARE_FINAL_exit=0) ---
+
+A_landed_positive: intrinio::ForwardSalesEstimates declared=True canonical=ForwardSalesEstimates contract=IntrinioForwardSalesEstimate module=opendata.data.providers.intrinio.models.iter2_financials flags={'contract_in_module': True, 'emits': True, 'witness_entry': True} PASS=True
+B_flags_discriminate: needs_declare=52 counts={'contract_in_module': 50, 'emits': 29, 'witness_entry': 0} movable={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_in_module_true=50 PASS=True
+declare_face_by_provider={"deribit": {"NEEDS_RETARGET": 5}, "federal_reserve": {"NEEDS_IMPORT": 1, "NEEDS_IMPORT_AND_RETARGET": 1}, "government_us": {"DECLARE_AND_WITNESS": 1}, "nasdaq": {"NEEDS_RETARGET": 9}, "tmx": {"NEEDS_RETARGET": 7, "DECLARE_AND_WITNESS": 1}, "yfinance": {"DECLARE_AND_WITNESS": 26, "NEEDS_RETARGET": 1}}
+declare_arms=2 declare_passed=2 declare_failed=0
+
+Pre-batch: `needs_declare=54`, `counts={'contract_in_module': 52, 'emits': 31, 'witness_entry': 0}`,
+government_us `DECLARE_AND_WITNESS: 3`. Both PSD rows left the declare population on both of their
+own counters (52 -> 50 and 31 -> 29), which is the two-flag agreement this instrument is built to
+require -- the bucket label moving alone would not have been evidence.
+
+block8_exit=0
+
+--- block 9: seam reachability census, landed bytes (CENSUS_FINAL_exit=0) ---
+
+seam_census_units=35 buckets={'BLOCKED_ON_RUNNER_SURFACE': 3, 'NO_PACKAGE_ON_DISK': 2, 'SEAM_NEVER_USED': 12, 'SEAM_REACHABLE': 15, 'SEAM_USED_OUTSIDE_MODELS': 3} witness_modules=24 client_seam_modules=9 census_rows=350 report_rows=350 rows_covered=True disk_only=['_engine', 'akshare', 'ths']
+seam_census_residual_by_bucket={'BLOCKED_ON_RUNNER_SURFACE': 24, 'NO_PACKAGE_ON_DISK': 2, 'SEAM_NEVER_USED': 46, 'SEAM_REACHABLE': 7, 'SEAM_USED_OUTSIDE_MODELS': 5} residual_by_mechanism={'client_seam': 7, 'client_seam_other_module': 5, 'engine_transport': 46, 'new_provider_package': 2, 'runner_surface_widening': 24} residual_total=84 residual_by_mechanism_sum=84 accepted_total=266 accepted_plus_residual=350 report_rows=350 identity_set=5168e1e723999312
+
+350 closes as 266 + 84, and the two instruments reach 84 by different routes (readiness buckets vs
+mechanism partition), so the number is crossed, not asserted. `client_seam` fell 9 -> 7 and every
+other mechanism bucket is exactly where step 0 left it.
+
+block9_exit=0
+
+--- block 10: seam surface probe, same five arms as the step-0 baseline (SEAMARMS_FINAL_exit=0) ---
+
+seam_surface_provider=eia fake_methods=['get'] verbs=['get'] missing=[] verdict=WITNESSABLE expected=WITNESSABLE judge_statuses={'OFFLINE_ACCEPTED': 2}
+seam_surface_provider=tmx fake_methods=['get'] verbs=['request'] missing=['request'] verdict=BLOCKED_ON_RUNNER_SURFACE expected=BLOCKED_ON_RUNNER_SURFACE judge_statuses={'UNREVIEWED': 24}
+seam_surface_provider=government_us fake_methods=['get'] verbs=['get'] missing=[] verdict=WITNESSABLE expected=WITNESSABLE judge_statuses={'OFFLINE_ACCEPTED': 4, 'UNREVIEWED': 2}
+seam_surface_provider=yfinance fake_methods=['get'] verbs=[] missing=[] verdict=NO_SEAM_VERBS_MEASURED expected=NO_SEAM_VERBS_MEASURED judge_statuses={'UNREVIEWED': 29}
+seam_surface_provider=nasdaq fake_methods=['get'] verbs=[] missing=[] verdict=NO_SEAM_VERBS_MEASURED expected=NO_SEAM_VERBS_MEASURED judge_statuses={'UNREVIEWED': 9}
+seam_surface_arms=5 seam_surface_failed=0 identity_set=5168e1e723999312
+
+The one line that moved against step 0 is government_us: `{'UNREVIEWED': 4, 'OFFLINE_ACCEPTED': 2}` ->
+`{'OFFLINE_ACCEPTED': 4, 'UNREVIEWED': 2}` -- the wave's own two rows, and no other provider's face.
+Instrument note: `--arm` APPENDS to the built-in `PROVIDERS` list (eia, tmx) rather than replacing it,
+so five `--arm` flags print `seam_surface_arms=7`. That take was also run (SEAMARMS_exit=0,
+failed=0); arms=5 is the like-for-like population against step 0 and is what this block shows.
+
+block10_exit=0
+
+--- block 11: lint, types, security, tests (exits taken without pipes; landed bytes) ---
+
+RUFF_check_exit=0    All checks passed!   (5 files: two PSD fetchers, the witness module, two C128 probes)
+RUFF_format_exit=0   5 files already formatted
+MYPY_exit=0          Success: no issues found in 2 source files  (the two PSD fetchers)
+BANDIT_exit=0        bandit -q -c bandit.yaml over iter2_witnesses/government_us.py + eia.py: no issue lines
+PYTEST_GOV_FINAL_exit=0     30 passed, 26520 deselected in 2.57s   (-k "government_us or psd or usda")
+PYTEST_ITER2_FINAL_exit=1   2 failed, 1607 passed, 24941 deselected in 9.26s
+  FAILED tests/test_congress_cboe_iter2.py::test_provider_model_service_injects_identity_and_serializes_typed_rows[CongressAmendments]
+  FAILED tests/test_script_download_backend_iter2.py::test_real_browser_download_chain_against_owned_mysql
+
+Neither red is this wave, and the attribution was measured rather than argued: a detached worktree of
+HEAD (`git worktree add --detach /tmp/wave25-head HEAD`, then `git worktree remove --force`, both
+exit 0, main tree untouched) printed the same two failures with none of this wave's files present --
+`1 failed, 1 passed, 32 deselected` for CongressAmendments (pydantic_core int_type on the test's own
+expected literal `number='42'` against an int column, under the py313 gate env's pydantic 2.12) and
+`1 failed in 0.78s` for owned_mysql (DockerCommandError, stage=image-inspect). Pre-existing, unmoved.
+The CongressAmendments shape belongs with the open frozen-judge tasks #9/#11; the Docker one with the
+live-backend legs. One earlier `ruff check` of this wave (RUFF2_exit=1, 4 x E501) was the docstring I
+had just written, fixed before landing -- recorded so the green check above is not read as first-time.
+
+block11_exit=1 for the iter2 slice only, and that 1 is the two pre-existing reds above.
+
+--- block 12: pre-commit payload scans ---
+
+The staged scanner over this wave's payload roots and the shipped two-arm gitleaks re-measurement are
+in runs/post_batch_payload_scan.txt, written after this carrier so this file is inside the scanned
+set. That file carries its own argv and its own exit readings; its self-reference limit is the scan
+carrier itself.

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdData --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "GovernmentUSProviderError", "refusal_code": "USDA_BAD_COMMODITY_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "GovernmentUSProviderError", "refusal_code": "USDA_BAD_COMMODITY_ROW", "rejected": [], "status": null}, "reason": "a Value cell written 265.0t keeps the country, commodity, attribute and market-year keys the mapping reads and still arrives as one well-formed JSON row, but value is typed float | int | None on the contract and 265.0t is none of those, so CommodityPsdDataFetcher.transform_data must refuse the page rather than coerce the cell to 0, drop the row silently, or ship a string in a numeric column; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---
