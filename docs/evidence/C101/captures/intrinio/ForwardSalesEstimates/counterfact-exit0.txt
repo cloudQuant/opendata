@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model ForwardSalesEstimates --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_CONTRACT_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_CONTRACT_INVALID", "rejected": [], "status": null}, "reason": "the sales page decodes through _SalesEstimateRow, whose mean is a FinancialValue that takes any finite JSON number, while _map_estimate copies that cell into IntrinioForwardSalesEstimate.mean -- a FinancialAmount accepting only a JSON integer or null -- so a consensus mean stated in cents is decoded and then refused by the output stage as INTRINIO_FINANCIALS_CONTRACT_INVALID instead of being silently rounded to a whole dollar of revenue; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

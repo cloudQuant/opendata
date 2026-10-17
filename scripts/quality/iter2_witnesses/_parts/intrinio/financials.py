@@ -1,6 +1,6 @@
-"""Wave 8 shard: offline witnesses for intrinio's eight unwitnessed financial rows.
+"""Wave 8 shard (ten rows since wave 22): offline witnesses for intrinio's financial rows.
 
-These eight rows are the hand-written slice of the provider
+These ten rows are the hand-written slice of the provider
 (``opendata/data/providers/intrinio/models/iter2_financials.py``), not its declarative
 ``ModelSpec`` rows: every fetch leg goes through the module-level ``_request`` helper, which
 calls the engine's ``_http_get_json``, which imports ``get_shared_http_client`` *inside the
@@ -19,23 +19,31 @@ each URL to its own body. A single engine document could not do this: ``_Fundame
 
 Precondition (``row_model``) -- five of these fetchers declared only ``output_model`` and the
 estimate/PE fetchers declared the wire-parse class, so the shard's provider-local change is the
-``row_model`` declaration itself. Each printed resolution below is the output of
+``row_model`` declaration itself. Wave 22 added the last two rows of this slice the same way:
+``IntrinioForwardSalesEstimatesFetcher`` published ``_SalesEstimateRow`` (the class
+``page_model`` decodes, not the class ``transform_data`` emits) and
+``IntrinioForwardEbitdaEstimatesFetcher`` published nothing, so both now name the domain contract
+they already serve, and the witness instrument's ``type(row) is row_model`` assertion is what
+proves the name matches the served bytes rather than a look-alike. Each printed resolution below
+is the output of
 ``python -c "from opendata.data.domains import contract_model; print(contract_model(d).__module__
 + '.' + contract_model(d).__name__)"`` run on the gate interpreter, and every one lands in
 ``opendata/data/models/intrinio_financials.py`` -- the same class the fetcher validates its rows
 with, so no look-alike is involved:
 
-``opendata.data.models.intrinio_financials`` holds all eight classes; each domain printed
+``opendata.data.models.intrinio_financials`` holds all ten classes; each domain printed
 ``<module>.<class>``, and the module part is identical for every line:
 
-    intrinio_income_statement      -> ...intrinio_financials.IntrinioIncomeStatement
-    intrinio_balance_sheet         -> ...intrinio_financials.IntrinioBalanceSheet
-    intrinio_cash_flow_statement   -> ...intrinio_financials.IntrinioCashFlowStatement
-    intrinio_financial_ratios      -> ...intrinio_financials.IntrinioFinancialRatios
-    intrinio_key_metrics           -> ...intrinio_financials.IntrinioKeyMetrics
-    intrinio_reported_financials   -> ...intrinio_financials.IntrinioReportedFinancials
-    intrinio_forward_eps_estimates -> ...intrinio_financials.IntrinioForwardEpsEstimate
-    intrinio_forward_pe_estimates  -> ...intrinio_financials.IntrinioForwardPeEstimate
+    intrinio_income_statement           -> ...intrinio_financials.IntrinioIncomeStatement
+    intrinio_balance_sheet              -> ...intrinio_financials.IntrinioBalanceSheet
+    intrinio_cash_flow_statement        -> ...intrinio_financials.IntrinioCashFlowStatement
+    intrinio_financial_ratios           -> ...intrinio_financials.IntrinioFinancialRatios
+    intrinio_key_metrics                -> ...intrinio_financials.IntrinioKeyMetrics
+    intrinio_reported_financials        -> ...intrinio_financials.IntrinioReportedFinancials
+    intrinio_forward_eps_estimates      -> ...intrinio_financials.IntrinioForwardEpsEstimate
+    intrinio_forward_pe_estimates       -> ...intrinio_financials.IntrinioForwardPeEstimate
+    intrinio_forward_sales_estimates    -> ...intrinio_financials.IntrinioForwardSalesEstimate
+    intrinio_forward_ebitda_estimates   -> ...intrinio_financials.IntrinioForwardEbitdaEstimate
 
 Every refusal is the provider's own typed, code-bearing error
 (``IntrinioFinancialError``, a ``ProviderEngineError`` subclass declared by this provider
@@ -43,7 +51,10 @@ package), and every ``tamper`` breaks one cell a contract in this slice declares
 integer-only ``FinancialAmount`` wide column, a tag's unit in ``tag_units``, the fiscal period
 the query promised, a numeric fact value, the tag/value pairing the mapper refuses to guess
 between, the required ``axis``/``member`` pair of an XBRL dimension, the "one fiscal-period
-field is required" alias rule, and the identifier the snapshot is addressed by. Following the
+field is required" alias rule, the identifier the snapshot is addressed by, the same
+``FinancialAmount`` guard seen from the other side of the two-stage validation (the consensus
+mean the wire parse class accepts as a float and the output contract refuses), and the one
+consensus type the query said it was asking for. Following the
 branch-B convention the base ``intrinio`` module already uses for its hand-written rows, no
 ``expected_missing``/``expected_rejected``/``expected_invalid`` face is declared: this slice's
 refusals carry a code and a status face, and a per-column attribution would claim a detail the
@@ -335,6 +346,81 @@ def _intrinio_forward_pe_estimates_document() -> dict[str, Any]:
     }
 
 
+def _intrinio_forward_sales_estimates_document() -> dict[str, Any]:
+    """One annual Zacks sales consensus period with the revision history the row documents."""
+    return {
+        "responses": [
+            {
+                "url_contains": "zacks/sales_estimates",
+                "body": {
+                    "estimates": [
+                        {
+                            "company": _company(),
+                            "date": "2025-12-31",
+                            "fiscal_year": 2026,
+                            "fiscal_period": "FY",
+                            "calendar_year": 2026,
+                            "calendar_period": "FY",
+                            "count": 18,
+                            "mean": 415_300_000_000,
+                            "median": 415_000_000_000,
+                            "high": 431_900_000_000,
+                            "low": 402_400_000_000,
+                            "standard_deviation": 6_100_000_000,
+                            "analyst_revisions_percent_change_1w": 0.3,
+                            "analyst_revisions_up_1w": 3,
+                            "analyst_revisions_down_1w": 1,
+                            "analyst_revisions_percent_change_1m": 1.2,
+                            "analyst_revisions_up_1m": 6,
+                            "analyst_revisions_down_1m": 2,
+                            "analyst_revisions_percent_change_3m": 2.8,
+                            "analyst_revisions_up_3m": 9,
+                            "analyst_revisions_down_3m": 3,
+                        }
+                    ],
+                    "next_page": None,
+                },
+            }
+        ]
+    }
+
+
+def _intrinio_forward_ebitda_estimates_document() -> dict[str, Any]:
+    """One annual EBITDA consensus under the collection key ``_EbitdaEstimatePage`` accepts.
+
+    The page validator takes exactly one of ``ebitda_consensus``/``ebitda_consensuses``, and the
+    provider's own capability note records that the official sample uses both spellings across
+    table and sample collections, so the carrier picks the singular one and leaves the alias to
+    the validator.
+    """
+    return {
+        "responses": [
+            {
+                "url_contains": "zacks/ebitda_consensus",
+                "body": {
+                    "ebitda_consensus": [
+                        {
+                            "ticker": "AAPL",
+                            "company_name": "Apple Inc.",
+                            "estimate_year": 2026,
+                            "estimate_month": 12,
+                            "period": "fy",
+                            "consensus_type": "ebitda",
+                            "updated_date": "2026-02-17",
+                            "estimate_count": 22,
+                            "high": 155_400_000_000,
+                            "low": 149_800_000_000,
+                            "mean": 152_100_000_000,
+                            "std_dev": 1_300_000_000,
+                        }
+                    ],
+                    "next_page": None,
+                },
+            }
+        ]
+    }
+
+
 MODELS: Final[dict[str, dict[str, Any]]] = {
     "BalanceSheet": {
         "client_seam": _SEAM,
@@ -505,6 +591,51 @@ MODELS: Final[dict[str, dict[str, Any]]] = {
             "transform_data verifies the two agree: an 'MSFT' answer to an AAPL request is "
             "INTRINIO_FINANCIALS_SYMBOL_MISMATCH rather than a valuation multiple filed under "
             "the wrong company"
+        ),
+        "source_files": [*_SOURCE_FILES],
+        "contract_files": list(_CONTRACT_FILES),
+    },
+    "ForwardSalesEstimates": {
+        "client_seam": _SEAM,
+        "fixture_document": _intrinio_forward_sales_estimates_document,
+        "query": {"symbol": "AAPL", "period": "annual", "limit": 1},
+        "tamper": {
+            "op": "set",
+            "path": ["responses", 0, "body", "estimates", 0, "mean"],
+            "value": 415_300_000_000.5,
+            "column": "mean",
+        },
+        "refusal_class": _REFUSAL_CLASS,
+        "refusal_code": _refusal("CONTRACT_INVALID"),
+        "tamper_reason": (
+            "the sales page decodes through _SalesEstimateRow, whose mean is a FinancialValue "
+            "that takes any finite JSON number, while _map_estimate copies that cell into "
+            "IntrinioForwardSalesEstimate.mean -- a FinancialAmount accepting only a JSON "
+            "integer or null -- so a consensus mean stated in cents is decoded and then refused "
+            "by the output stage as INTRINIO_FINANCIALS_CONTRACT_INVALID instead of being "
+            "silently rounded to a whole dollar of revenue"
+        ),
+        "source_files": [*_SOURCE_FILES],
+        "contract_files": list(_CONTRACT_FILES),
+    },
+    "ForwardEbitdaEstimates": {
+        "client_seam": _SEAM,
+        "fixture_document": _intrinio_forward_ebitda_estimates_document,
+        "query": {"symbol": "AAPL", "period": "annual", "limit": 1},
+        "tamper": {
+            "op": "set",
+            "path": ["responses", 0, "body", "ebitda_consensus", 0, "consensus_type"],
+            "value": "ebit",
+            "column": "consensus_type",
+        },
+        "refusal_class": _REFUSAL_CLASS,
+        "refusal_code": _refusal("CONSENSUS_TYPE_MISMATCH"),
+        "tamper_reason": (
+            "_EbitdaEstimateQuery.estimate_type names the single consensus the request asked "
+            "for (type=ebitda is sent in the query string) and extract_data compares each row's "
+            "consensus_type with it before the annual/quarter filter runs, so a body answering "
+            "an EBITDA request with EBIT consensus is INTRINIO_FINANCIALS_CONSENSUS_TYPE_MISMATCH "
+            "rather than a second metric published in the ebitda column"
         ),
         "source_files": [*_SOURCE_FILES],
         "contract_files": list(_CONTRACT_FILES),

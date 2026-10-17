@@ -1438,7 +1438,12 @@ class IntrinioForwardSalesEstimatesFetcher(_PagedEstimateFetcher):
     endpoint = "/zacks/sales_estimates"
     response_key = "estimates"
     output_model = IntrinioForwardSalesEstimate
-    row_model = _SalesEstimateRow
+    # The served row is the domain contract, exactly as on the EPS row above; the wire-parse class
+    # stays reachable through ``page_model`` (``_SalesEstimatePage.estimates``), and
+    # ``transform_data`` validates into ``output_model`` through ``_PagedEstimateFetcher``, so this
+    # name and the class the serving path publishes are the same object (``contract_model`` for
+    # ``intrinio_forward_sales_estimates`` resolves to it on the gate interpreter).
+    row_model = IntrinioForwardSalesEstimate
     page_model = _SalesEstimatePage
     capability = Capability(
         asset_class="equity",
@@ -1522,6 +1527,10 @@ class IntrinioForwardEbitdaEstimatesFetcher(
 
     async_mode = "bounded_thread"
     canonical_model = "ForwardEbitdaEstimates"
+    # ``transform_data`` validates every mapped payload into this class through
+    # ``_strict_validate``, so the published row name is the class the serving path emits --
+    # the same form the PE row uses.
+    row_model: ClassVar[type[ContractModel]] = IntrinioForwardEbitdaEstimate
     capability = Capability(
         asset_class="equity",
         domain="intrinio_forward_ebitda_estimates",

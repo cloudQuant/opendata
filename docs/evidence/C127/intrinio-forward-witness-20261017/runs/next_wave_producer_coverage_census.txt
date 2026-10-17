@@ -1,0 +1,6 @@
+# wave-22 next-wave selection census: plane-1 residue joined against measured producer coverage
+# cmd: PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C127/intrinio-forward-witness-20261017/probes/next_wave_producer_coverage_census.py
+A_coverage_split: PASS identities=350 accepted=260 unreviewed=83 incomplete=7 produced_providers=22 never_produced=10 residue_by_kind={'never_produced': 83, 'produced': 7} unreviewed_in_produced=0 incomplete_in_unproduced=0 identity_set=5168e1e723999312 frozen=True never_produced_list=['biztoc', 'deribit', 'eia', 'government_us', 'nasdaq', 'seeking_alpha', 'stockgrid', 'tmx', 'wsj', 'yfinance']
+B_control_flip: PASS drop=cboe add=biztoc drop_misfiles=2 incomplete_as_unproduced add_misfiles=1 unreviewed_as_produced p1_unreviewed_subset={'unperturbed': True, 'drop': True, 'add': False} p2_incomplete_subset={'unperturbed': True, 'drop': False, 'add': True} drop_reds_only_p2=True add_reds_only_p1=True
+coverage_arms=2 coverage_passed=2 coverage_failed=0
+census_exit=0

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model ForwardEbitdaEstimates --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_CONSENSUS_TYPE_MISMATCH", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "IntrinioFinancialError", "refusal_code": "INTRINIO_FINANCIALS_CONSENSUS_TYPE_MISMATCH", "rejected": [], "status": null}, "reason": "_EbitdaEstimateQuery.estimate_type names the single consensus the request asked for (type=ebitda is sent in the query string) and extract_data compares each row's consensus_type with it before the annual/quarter filter runs, so a body answering an EBITDA request with EBIT consensus is INTRINIO_FINANCIALS_CONSENSUS_TYPE_MISMATCH rather than a second metric published in the ebitda column; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---
