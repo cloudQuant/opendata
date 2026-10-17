@@ -1,0 +1,12 @@
+wave-28 step 4d -- five-column readiness census after the YieldCurve landing
+/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C128/plane1-residue-readiness-20261017/probes/readiness_census.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+readiness_census_exit=0
+A_controls: landed={'bound': True, 'declared': True, 'frozen_module': True, 'is_domain_contract': True, 'witness_entry': True} row_model=IntrinioForwardSalesEstimate unbound={'bound': False, 'declared': False, 'frozen_module': False, 'is_domain_contract': False, 'witness_entry': False} resolve_error=LookupError PASS=True
+B_forced_declared: movable=True base_need_declare=27 forced_off_need_declare=42 forced_on_need_declare=0 forced_on_buckets={'DECLARE_NOT_FROZEN': 27, 'NEED_BINDING': 32, 'NEED_SHARD_ENTRY': 15} PASS=True
+C_forced_domain_contract: movable=False base_look_alike=0 forced_off_look_alike=15 forced_off_producible=0 sums=True
+column_census: residue=74 bound=42 columns={'bound': 42, 'declared': 15, 'frozen_module': 15, 'is_domain_contract': 15, 'witness_entry': 0} buckets={'NEED_BINDING': 32, 'NEED_DECLARE': 27, 'NEED_SHARD_ENTRY': 15} sums_to_residue=True
+residue_by_provider={"biztoc": {"UNREVIEWED": 1}, "cboe": {"INCOMPLETE": 2}, "deribit": {"UNREVIEWED": 5}, "econdb": {"INCOMPLETE": 2}, "federal_reserve": {"INCOMPLETE": 1}, "government_us": {"UNREVIEWED": 2}, "intrinio": {"INCOMPLETE": 1}, "seeking_alpha": {"UNREVIEWED": 3}, "stockgrid": {"UNREVIEWED": 1}, "tmx": {"UNREVIEWED": 24}, "wsj": {"UNREVIEWED": 3}, "yfinance": {"UNREVIEWED": 29}}
+buckets_by_provider={"biztoc": {"NEED_BINDING": 1}, "cboe": {"NEED_BINDING": 2}, "deribit": {"NEED_DECLARE": 5}, "econdb": {"NEED_BINDING": 2}, "federal_reserve": {"NEED_DECLARE": 1}, "government_us": {"NEED_BINDING": 1, "NEED_DECLARE": 1}, "intrinio": {"NEED_BINDING": 1}, "seeking_alpha": {"NEED_BINDING": 3}, "stockgrid": {"NEED_BINDING": 1}, "tmx": {"NEED_BINDING": 16, "NEED_DECLARE": 8}, "wsj": {"NEED_BINDING": 3}, "yfinance": {"NEED_BINDING": 2, "NEED_DECLARE": 12, "NEED_SHARD_ENTRY": 15}}
+identity_set=5168e1e723999312 expected_match=True inventory_keys=['csv_sha256', 'expected_identity_count', 'expected_identity_set_sha256', 'identity_count', 'identity_set_sha256', 'integrity', 'path']
+readiness_arms=3 readiness_passed=3 readiness_failed=0

@@ -1,0 +1,17 @@
+wave-28 step 4d -- yfinance shard entry price re-read on the step-4 landed generation (arm A reads the census LANDED_ACCEPTED, so this run proves the generation gate is green at 276 rather than remembered).
+argv: PYTHONPATH= /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C128/plane1-residue-readiness-20261017/probes/yfinance_shard_entry_price.py
+A_void_gate total=350 expected=350 accepted=276 expected_accepted=276 identity_set=5168e1e723999312 expected_identity_set=5168e1e723999312 statuses={'INCOMPLETE': 6, 'OFFLINE_ACCEPTED': 276, 'UNREVIEWED': 68} VOID=no
+B_population count=15 expected=15 verdicts={'DOCUMENT_REACHABLE': 15} statuses={'UNREVIEWED': 15} all_trippable=True
+C_no_witness_module subject_has_witness_module=False providers_with_module=25
+D_seam_reads packages_read=33 subject_http_transport=0 subject_get_shared_http_client=0 providers_reading_a_seam=27 sample=['_engine', 'alpha_vantage', 'benzinga']
+E_shipped_refusal target outcome=refused exception=WitnessBlocked message="client seam module 'opendata.data.providers.yfinance.models._sdk' publishes no 'get_shared_http_client' to patch" control outcome=answered control_calls=1 control_guard=clean
+F_shape_gap patch_accepted=True positional outcome=passthrough calls=0 guard=WitnessFailure | with_product outcome=raised:TypeError exception=TypeError calls=0 guard=WitnessFailure | with_fake outcome=raised:TypeError exception=TypeError calls=0 guard=WitnessFailure | zero_arg_get outcome=answered calls=1 guard=clean
+G_call_site_shapes subject_attr=governed_yfinance_session subject={'files': 7, 'sites': 1, 'min_positional': 1, 'with_wrapped': 1} landed_attr=get_shared_http_client landed={'files': 693, 'sites': 39, 'min_positional': 0, 'with_wrapped': 0} installed_arity=(1,0) differ=True
+H_classifier forge_fake_ok=False as_measured={'shard_entry_needs_harness': 15} widened={'shard_entry_needs_harness': 15} forged={'shard_entry_only': 15} census_lines=35 shipped_surface=['get'] widened_surface=['get', 'request'] fake_ok_shipped=False fake_ok_widened=False rows=15 rows_flipped_by_widening=0 predicate_disagreements=0 absent_providers=[]
+I_tmx_is_a_different_cause subject_bucket=SEAM_NEVER_USED subject_verbs=[] subject_mechanism=engine_transport contrast_bucket=BLOCKED_ON_RUNNER_SURFACE contrast_verbs=['request'] contrast_mechanism=runner_surface_widening contrast_answered_by_shipped_fake=False pooled=False
+J_runner_edit_price receipt_files=1380 pin_slots=19918 runner_pinned_slots=1656 pin_exit=0 clean_stale=0 forced_stale=1380 forced_targeted_slots=1380 forced_matches_targeted=True
+K_gate_is_trippable live_void=False forged_void=True live_accepted=276 forged_accepted=275 accepted_delta=-1 forged_identity_set=0000000000000000 status_rows_flipped=1
+yfinance_shard_entry_price_face arms=11 arms_passed=11 arms_failed=0 failed=[] identity_set=5168e1e723999312 rows=15
+chain_exit=0
+entry_price_exit=0
+stderr_bytes=0

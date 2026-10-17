@@ -1,0 +1,24 @@
+wave-28 step 4a -- H.15 official-body shape price for the retargeted YieldCurve reader (seven arms A-G, all falsifiable)
+argv: PYTHONPATH= /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C128/plane1-residue-readiness-20261017/probes/fed_h15_official_shape_price.py   (cwd = repo root, no pipes)
+stderr_bytes=0
+h15_probe_exit=0
+note: the A/B body tagged materialized_fixture is the C100 staged h15.csv (docs/evidence/C100/model-current-retakes/fed-eight/product-patch-staging-20261013T111344Z/fixtures/h15.csv, one data row) named in the probe's own CAPTURES table -- it is NOT this wave's three-row shard fixture, which is carried by docs/evidence/C101/fixtures/federal_reserve/YieldCurve.json and witnessed by the claims receipts.
+subject=opendata/data/providers/federal_reserve/models/yield_curve.py domain=federal_reserve_yield_curve head_module=w28s4_head_yield_curve repo=opendata reader_cells=12 rows_per_observation=11 padded_fifth='Unique Identifier: '
+A_bodies source_capture kind=capture bytes=1050989 sha16=23f3ed8ae67b4d7d padded_fifth=True header_cells=13 header_equals_reader=False data_rows=16898
+A_bodies official_11_series_a kind=official bytes=1999 sha16=104ce4020efa5ca8 padded_fifth=True header_cells=12 header_equals_reader=True data_rows=2
+A_bodies official_11_series_b kind=official bytes=1999 sha16=104ce4020efa5ca8 padded_fifth=True header_cells=12 header_equals_reader=True data_rows=2
+A_bodies synthetic_normalized kind=synthetic bytes=1998 sha16=7a8e96f6172f3b05 padded_fifth=False header_cells=12 header_equals_reader=True data_rows=2
+A_bodies materialized_fixture kind=synthetic bytes=373 sha16=0263900d6aa9187a padded_fifth=False header_cells=12 header_equals_reader=True data_rows=1
+A_census files=5 expected=5 padded=3 unpadded=2 padded_tags=['official_11_series_a', 'official_11_series_b', 'source_capture'] official_or_capture_padded=3
+B_leg_on_body source_capture kind=capture head=REFUSED:FEDERAL_RESERVE_BAD_CSV_PREAMBLE worktree=REFUSED:FEDERAL_RESERVE_BAD_CSV_HEADER full_parse_would_be=PARSED:185878 moved=True
+B_leg_on_body official_11_series_a kind=official head=REFUSED:FEDERAL_RESERVE_BAD_CSV_PREAMBLE worktree=PARSED:22 full_parse_would_be=PARSED:22 moved=True
+B_leg_on_body official_11_series_b kind=official head=REFUSED:FEDERAL_RESERVE_BAD_CSV_PREAMBLE worktree=PARSED:22 full_parse_would_be=PARSED:22 moved=True
+B_leg_on_body synthetic_normalized kind=synthetic head=PARSED:22 worktree=PARSED:22 full_parse_would_be=PARSED:22 moved=False
+B_leg_on_body materialized_fixture kind=synthetic head=PARSED:11 worktree=PARSED:11 full_parse_would_be=PARSED:11 moved=False
+C_guard_kept label='Unit:' replaced_with='Frequency:' reads=REFUSED:FEDERAL_RESERVE_BAD_CSV_PREAMBLE tampered_sha16=3574ec4732193c5e
+C_guard_kept label='Currency:' replaced_with='Currency' reads=REFUSED:FEDERAL_RESERVE_BAD_CSV_PREAMBLE tampered_sha16=ecec4059b8dc2b59
+D_parsed_rows rows=22 expected=22 classes=['opendata.data.models.federal_reserve_clean_documents.FederalReserveYieldCurveObservation'] rate_types=['float'] nulls=0 dates=['2026-10-07', '2026-10-08'] first_rate=0.0407
+E_look_alike contract_resolved=opendata.data.models.federal_reserve_clean_documents.FederalReserveYieldCurveObservation macro_is_contract=False names_equal=False macro_fields=('date', 'maturity', 'rate') contract_fields=('date', 'maturity', 'rate') field_face_equal=True
+F_row_model_guard declared=opendata.data.models.federal_reserve_clean_documents.FederalReserveYieldCurveObservation passes=True look_alike_forged_fails=True restored_after=True
+G_full_package_columns header_cells=13 reader_cells=12 data_row_widths=[13] columns_the_reader_does_not_declare=['RIFSGFSW04_N.B'] pinned_url_series_hash=bf17364827e38702b42a58cf8eaa3f78
+fed_h15_official_shape_price_face arms=A,B,C,D,E,F,G arms_failed=0 failed=[] bodies=5 contract_class=FederalReserveYieldCurveObservation

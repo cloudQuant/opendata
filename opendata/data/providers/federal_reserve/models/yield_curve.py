@@ -5,12 +5,14 @@ from __future__ import annotations
 import csv
 import io
 from datetime import date
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from pydantic import StrictStr, field_validator
 
 from opendata.data.capability import Capability
-from opendata.data.models.federal_reserve_macro import FederalReserveYieldCurve
+from opendata.data.models.federal_reserve_clean_documents import (
+    FederalReserveYieldCurveObservation,
+)
 from opendata.data.protocol import FetchContext, Fetcher
 from opendata.data.providers.federal_reserve._iter2_client import (
     FederalReserveSourceError,
@@ -20,6 +22,9 @@ from opendata.data.providers.federal_reserve.models._iter2_common import (
     FederalReserveDateQuery,
     parse_decimal,
 )
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
 
 _H15_URL = (
     "https://www.federalreserve.gov/datadownload/Output.aspx?rel=H15"
@@ -93,6 +98,9 @@ class FederalReserveYieldCurveFetcher(Fetcher[YieldCurveQuery, bytes]):
         source="federal_reserve",
         verified=False,
     )
+    #: The contract ``domains.yaml`` declares for this domain — the governed query service
+    #: serializes rows against it, so :meth:`transform_data` has to build exactly this class.
+    row_model: ClassVar[type[ContractModel]] = FederalReserveYieldCurveObservation
 
     def transform_query(self, **kwargs: object) -> YieldCurveQuery:
         """Validate the date window and optional H.15 maturity selection."""
@@ -108,7 +116,7 @@ class FederalReserveYieldCurveFetcher(Fetcher[YieldCurveQuery, bytes]):
         self,
         raw: bytes,
         params: YieldCurveQuery,
-    ) -> tuple[FederalReserveYieldCurve, ...]:
+    ) -> tuple[FederalReserveYieldCurveObservation, ...]:
         """Validate the released CSV shape, normalize percent units, and retain null rows."""
         if not isinstance(raw, bytes):
             raise FederalReserveSourceError("FEDERAL_RESERVE_BAD_CSV")
@@ -116,14 +124,17 @@ class FederalReserveYieldCurveFetcher(Fetcher[YieldCurveQuery, bytes]):
             rows = list(csv.reader(io.StringIO(raw.decode("utf-8-sig"), newline="")))
         except (UnicodeDecodeError, csv.Error):
             raise FederalReserveSourceError("FEDERAL_RESERVE_BAD_CSV") from None
-        if len(rows) <= 5 or tuple(row[0] if row else "" for row in rows[:5]) != _PREAMBLE_LABELS:
+        preamble = tuple(row[0].strip() if row else "" for row in rows[:5])
+        # The released package pads its fifth label ("Unique Identifier: ") ahead of the comma, so
+        # the compare drops surrounding whitespace; a wrong or missing label still refuses.
+        if len(rows) <= 5 or preamble != _PREAMBLE_LABELS:
             raise FederalReserveSourceError("FEDERAL_RESERVE_BAD_CSV_PREAMBLE")
         header = tuple(rows[5])
         if header != _HEADER:
             raise FederalReserveSourceError("FEDERAL_RESERVE_BAD_CSV_HEADER")
 
         selected = set(params.maturities or _MATURITIES)
-        records: list[FederalReserveYieldCurve] = []
+        records: list[FederalReserveYieldCurveObservation] = []
         last_date: date | None = None
         for source_row in rows[6:]:
             if not source_row or all(cell == "" for cell in source_row):
@@ -154,7 +165,7 @@ class FederalReserveYieldCurveFetcher(Fetcher[YieldCurveQuery, bytes]):
                     parsed = parse_decimal(raw_value, nullable=True)
                     rate = None if parsed is None else float(parsed / 100)
                 records.append(
-                    FederalReserveYieldCurve(
+                    FederalReserveYieldCurveObservation(
                         date=observation_date,
                         maturity=maturity,
                         rate=rate,

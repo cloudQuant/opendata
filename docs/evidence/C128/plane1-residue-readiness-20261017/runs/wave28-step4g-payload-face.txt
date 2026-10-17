@@ -1,0 +1,72 @@
+# wave 28 step 4g -- the C128 payload face at the end of the step-4 generation (two takes + a write-freedom control)
+
+Instrument: docs/evidence/C128/plane1-residue-readiness-20261017/probes/payload_secret_scan.py
+  instrument_pin: 131 lines / 5451 bytes / sha256[:16]=6277dcf7f61fc9df (this step did not change one byte of it)
+What it judges: the two roots this wave writes into -- probes/ and runs/ -- for committed-secret shapes.
+  Arm A scans the tree as it stands and must find nothing; arm B re-scans a throwaway copy of
+  runs/declare_candidates.txt with a token planted on its line 31 and must find exactly that one.
+  The repo bytes are never touched by arm B; the copy lives in a temp dir the probe removes.
+argv (take 1, verbatim as executed; the scratch names below are the ones this take really used -- an earlier
+ draft of this header named /tmp/w28s4g.take1.out, which no tool result ever produced, so the name was
+ corrected to the file that exists rather than the file that would have been tidy):
+  cd /Users/yunjinqi/Documents/new_projects/opendata && PYTHONPATH= \
+    /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python \
+    docs/evidence/C128/plane1-residue-readiness-20261017/probes/payload_secret_scan.py \
+    > /tmp/take1.out 2> /tmp/take1.err
+  (stdout below is verbatim from that take; stderr was measured at 0 bytes and kept outside the payload tree,
+   so this carrier adds no .err sibling to the census it reports)
+
+take1_verbatim_stdout:
+planted_into=declare_candidates.txt at_line=31 lines=65
+payload_files=181 payload_roots=2
+B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+arm_a_findings=0 arm_a_rc=0
+arm_b_findings=1 arm_b_rc=1
+payload_secret_face PASS=True
+scan_exit=0
+
+take1_denominator_split (second route, counted with ls per bucket and summed, not read off the probe):
+  probes/*.py = 25   runs/*.txt = 118   runs/*.err = 37   runs/.step4f.rcs = 1
+  sum = 181  matches_take1 = True
+  Why the odd member is named: runs/.step4f.rcs is the one physical leftover of the step-4f zsh incident -- the
+  12 --identity arguments went unquoted, argparse got one blob, exit=2, and the failing stdout/stderr were
+  overwritten in place by the successful re-run. The denominator counting it is more checkable than the prose
+  describing it, so the bucket is declared instead of silently folded into "37 .err".
+  The 37 .err siblings are captured stderr from this wave's runs; by standing ruling they stay uncommitted
+  (git ls-files docs/evidence/C128/**/*.err = 0) but they are really in these two trees, so they are counted
+  rather than erased.
+
+take1_write_freedom_control (measured around the same run, not asserted):
+  git_status_porcelain_lines_before = 426
+  git_status_porcelain_lines_after  = 426
+  diff_before_after_exit = 0  (the two captures are byte-identical)
+  stderr_bytes = 0
+  So "this instrument only reads" is a measurement, not a claim about it.
+
+generation_context: plane 1 = 350 identities / 276 offline accepted, identity set 5168e1e723999312,
+  residue = 74 = NEED_BINDING 32 / NEED_DECLARE 27 / NEED_SHARD_ENTRY 15 (carriers
+  runs/wave28-step4f-judge.txt and runs/wave28-step4f-readiness_census.txt in this same generation).
+  Previous payload face in this README: step 3b recorded 121 -> 122 -> 123 across its own three takes,
+  so 181 is the same counter after the step-4 chain plus the 4a-4g carriers, not a different quantity.
+
+take2_verbatim_stdout (same argv, redirecting to /tmp/w28s4g.take2.out and /tmp/w28s4g.take2.err; taken AFTER
+  this carrier file existed, so its own bytes are inside the population it counts -- the convention this
+  directory has used since step 3b: the carrier counts itself and says so):
+planted_into=declare_candidates.txt at_line=31 lines=65
+payload_files=182 payload_roots=2
+B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+arm_a_findings=0 arm_a_rc=0
+arm_b_findings=1 arm_b_rc=1
+payload_secret_face PASS=True
+scan_exit=0
+
+take2_vs_take1: stdout_bytes=254/254, diff exit=1, differing lines=['2c2 payload_files=181 -> 182']
+  the four judgement fields (arm_a_findings, arm_a_rc, arm_b_findings, arm_b_rc), the PASS face line and
+  scan_exit are byte-identical between the two takes (diff over the grep'd subset returned exit 0), so the
+  only mover is the denominator gaining this file. take2_stderr_bytes=0.
+
+uncommitted_err_ruling_check (second route to the sentence in the split above):
+  git ls-files | grep '^docs/evidence/C128/' | grep -c '\.err$'  ->  0
+  So the 37 .err siblings counted in the denominator are all untracked, as the ruling says.
+
+payload_face_exit=0

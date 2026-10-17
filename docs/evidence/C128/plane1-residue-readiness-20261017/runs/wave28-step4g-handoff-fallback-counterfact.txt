@@ -1,0 +1,36 @@
+# wave 28 step 4g -- the stale-contract-name fallback in the federal_reserve handoff judge, priced in memory
+
+Instrument: docs/evidence/C128/plane1-residue-readiness-20261017/probes/handoff_fallback_counterfact.py
+  instrument_pin: 283 lines / 12817 bytes / sha256[:16]=63a1bcdc9552bd2f
+  subject_pin: tests/test_federal_reserve_iter2_models.py -> 864 lines / 31968 bytes / sha256[:16]=501b927b5b92e69d
+What it judges: the branch shipped at tests/test_federal_reserve_iter2_models.py:374-380 in
+  test_integration_handoff_semantics_reference_typed_contract_fields. Nothing on disk is edited;
+  contract_model is forged and restored inside one loaded copy of the test module.
+argv: cd /Users/yunjinqi/Documents/new_projects/opendata && PYTHONPATH=. \
+    /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python \
+    docs/evidence/C128/plane1-residue-readiness-20261017/probes/handoff_fallback_counterfact.py \
+    > docs/evidence/C128/plane1-residue-readiness-20261017/runs/wave28-step4g-handoff-fallback-counterfact.txt \
+    2> docs/evidence/C128/plane1-residue-readiness-20261017/runs/wave28-step4g-handoff-fallback-counterfact.err
+  (the body below was captured to /tmp/hf4g.body by the same argv and assembled into this carrier by
+   /tmp/compose_4g.py; the compose step reads the verdict line and refuses to write if it is absent)
+stderr_bytes=0
+reproduce: see the argv above; the .err sibling is not committed
+
+repo_root=/Users/yunjinqi/Documents/new_projects/opendata root_marker_present=True
+test_file=tests/test_federal_reserve_iter2_models.py
+judge_assert_sites=4 fallback_site=379 field_site=388
+  assert@366: set(handoff['domains']) == {fetcher.capability.domain for fetcher in PROVIDER.fetchers if fetcher.canonical_model in _MODELS}
+  assert@379: shipped.__name__ in contracts_by_name
+  assert@388: set(semantic_fields) <= contract_fields
+  assert@389: not set(spec.filter_dims) & query_only_fields
+handoff_domains=7 stale_named_domains=1 ['federal_reserve_yield_curve']
+registered_model_names=['FederalReserveCentralBankHolding', 'FederalReserveFomcDocument', 'FederalReserveInflationExpectations', 'FederalReserveTotalFactorProductivity', 'FederalReserveYieldCurveObservation', 'PrimaryDealerFails', 'PrimaryDealerPositioning']
+A_unmodified_green=True err= line=0
+target_domain=federal_reserve_yield_curve spec_contract=FederalReserveYieldCurve shipped=opendata.data.models.federal_reserve_clean_documents.FederalReserveYieldCurveObservation shipped_registered=True time_field=date natural_key=['date', 'maturity'] filter_dims=['maturity'] semantic_fields=['date', 'date', 'maturity', 'maturity'] semantic_in_shipped=True
+B_absent_name_reddens=True forged=opendata.data.models.federal_reserve_macro.FederalReserveYieldCurve forged_registered=False err=AssertionError: federal_reserve_yield_curve raise_line=379 expect=379 raise_text='assert shipped.__name__ in contracts_by_name, domain' patched_domains=['federal_reserve_yield_curve'] calls=[('federal_reserve_yield_curve', 'FederalReserveYieldCurve')] B_raise_is_the_fallback_assert=True B_patch_touched_only_target=True
+C_registered_wrong_reddens=True candidates=['FederalReserveCentralBankHolding', 'FederalReserveFomcDocument', 'FederalReserveInflationExpectations', 'FederalReserveTotalFactorProductivity', 'PrimaryDealerFails', 'PrimaryDealerPositioning'] forged=opendata.data.models.federal_reserve_macro.FederalReserveCentralBankHolding forged_registered=True semantic_missing_from_forged={'FederalReserveCentralBankHolding': ['maturity']} err=AssertionError:  raise_line=388 expect=388 raise_text='assert set(semantic_fields) <= contract_fields' calls=[('federal_reserve_yield_curve', 'FederalReserveCentralBankHolding')] C_raise_is_the_field_assert=True C_patch_touched_only_target=True
+E_no_fallback_keyerror=1 ['federal_reserve_yield_curve'] E_no_fallback_ok=6 stale=['federal_reserve_yield_curve'] E_fallback_is_load_bearing=True E_not_vacuous=True
+D_restored_green=True err= line=0
+F_guard_green_after_restore=True guard=test_declared_row_models_are_their_domain_contracts err= line=0 contract_model_identity_restored=True
+handoff_fallback_counterfact_face stale_named_domains=1 fallback_site=379 field_site=388 flags={'A_unmodified_green': True, 'B_absent_name_reddens': True, 'B_patch_touched_only_target': True, 'B_raise_is_the_fallback_assert': True, 'C_can_differ': True, 'C_patch_touched_only_target': True, 'C_raise_is_the_field_assert': True, 'C_registered_wrong_reddens': True, 'D_restored_green': True, 'E_fallback_is_load_bearing': True, 'E_not_vacuous': True, 'F_guard_green_after_restore': True} arms=12 arms_passed=12 arms_failed=0 verdict=GREEN
+handoff_fallback_counterfact_exit=0

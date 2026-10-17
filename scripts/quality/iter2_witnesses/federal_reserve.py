@@ -16,8 +16,8 @@ declare ``DecoderSpec(kind="csv")`` (the H.6 and H.15 ``Output.aspx`` releases a
 wide table), and a delimited declaration reads :attr:`HttpResponse.payload`, which the
 evidence probe's ``HttpResponse(200, document)`` never populates -- :func:`decode_response`
 answers that wiring with ``FEDERAL_RESERVE_PAYLOAD_MISSING``. Witnessing that code would
-record the fixture's missing bytes as if it were the contract's refusal, so the three stay
-unwitnessed and are reported instead.
+record the fixture's missing bytes as if it were the contract's refusal, so the three moved to
+this provider's shard and its declared client seam instead.
 
 Two of the seven bound rows with no frozen inventory contract row -- ``PrimaryDealerFails`` and
 ``PrimaryDealerPositioning`` -- are witnessed here after this wave's clean-room step. Each bound
@@ -31,11 +31,16 @@ provider's two ``service`` claims were reporting. The New York Fed primary-deale
 the engine's ``HttpGet`` seam. Their refusals are this provider's own sanitized source codes,
 which the probe reads as ``ProviderEngineError`` faces because ``FederalReserveSourceError`` now
 carries that family beside the ``ValueError`` it has always been; both are code-only, so neither
-entry declares attributed detail. The five remaining bound rows (``YieldCurve``,
-``CentralBankHoldings``, ``InflationExpectations``, ``FomcDocuments``,
-``TotalFactorProductivity``) read workbook/archive bytes or an HTML index, which the single
-canned JSON document answers with a decode refusal that belongs to the fixture, not the
-contract.
+entry declares attributed detail. The seven further bound rows are witnessed by this provider's
+shard :file:`_parts/federal_reserve/rows_a.py`: ``TreasuryRates``, ``MoneyMeasures`` and
+``SvenssonYieldCurve`` through the ``opendata.data.http_client`` seam and ``CentralBankHoldings``,
+``InflationExpectations``, ``TotalFactorProductivity`` and -- since wave 28 retargeted its reader
+onto the class its own domain declares -- ``YieldCurve`` through the ``_iter2_client`` seam, for
+the body-shape reason the paragraph above records. Only ``FomcDocuments`` stays unwitnessed: it
+reads an HTML index, and its fetcher still builds a look-alike of the contract its domain declares,
+so naming either class as ``row_model`` either trips
+``tests/test_federal_reserve_iter2_models.py:392-413`` or hides the defect -- the ruling its shard
+header records.
 
 Witnesses run exclusively through the offline seam (the engine's ``transport`` / the fetchers'
 ``http_transport``) served by ``FixedResponseTransport``. No leg touches the network and no

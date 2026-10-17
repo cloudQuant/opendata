@@ -1,0 +1,18 @@
+wave-28 step 4f -- two-arm gitleaks scan of the C128 payload (A clean, B planted), take 1 then take 2
+/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C128/plane1-residue-readiness-20261017/probes/payload_secret_scan.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+take1_stderr_bytes=0 (captured to a scratch file outside the payload tree)
+note: gitleaks is installed and ran; the face is the measured arms, not a SKIPPED line
+take1_exit=0
+--- take 1 (before this carrier existed) ---
+planted_into=declare_candidates.txt at_line=31 lines=65
+payload_files=177 payload_roots=2
+B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+arm_a_findings=0 arm_a_rc=0
+arm_b_findings=1 arm_b_rc=1
+payload_secret_face PASS=True
+scan_exit=0
+--- take 2 (after this carrier joined the payload tree) ---
+take2_stderr_bytes=0
+take2_exit=0
+take2_vs_take1_differing_lines=["'payload_files=177 payload_roots=2' != 'payload_files=178 payload_roots=2'"]
+take2_vs_take1_verdict_fields_identical=True

@@ -16,7 +16,7 @@ and the reason is a property of the binding, not of the evidence tree:
 ``is_domain_contract``
     ``row_model is contract_model(fetcher.capability.domain)``. This is the gate the *service* leg
     enforces through ``provider_model_query._serialize_contract_row`` and the one
-    ``tests/test_federal_reserve_iter2_models.py:382-403`` guards: a fetcher that builds a
+    ``tests/test_federal_reserve_iter2_models.py:392-413`` guards: a fetcher that builds a
     look-alike class passes its direct leg and refuses on the service leg, so declaring that class
     would move the row from INCOMPLETE to REJECT-shaped rather than to accepted.
 ``witness_entry``

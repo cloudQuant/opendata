@@ -1,0 +1,60 @@
+波 28 步骤 4g 索引面（staged payload scan）：对**将要提交的那一份清单**扫凭据
+==============================================================================
+
+作用对象是 index，不是工作树：`make secret-check` 走的 `gitleaks detect --source .` 读提交历史，
+所以「已 stage、尚未提交」正是凭据形状还便宜可修的那一刻，而那一刻没有任何出厂闸门看得见。
+本目录用的走器是 `probes/staged_payload_scan.py`（127 行 / 4890 字节 / `sha16=f5402c4e39098d93`，
+本步一个字节没改，三个数现测于写档之前；该文件本身是 tracked 的，也在这 187 枚之外另算）。
+
+argv 逐字（从工具结果里抄，不补写）：
+
+    git -c core.quotepath=off diff --cached --name-only -z | xargs -0 /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C128/plane1-residue-readiness-20261017/probes/staged_payload_scan.py --paths > /tmp/w28s5.stage1.out 2> /tmp/w28s5.stage1.err
+
+`--paths` 留在 argv 前缀里、只能让 xargs 往尾部追加文件清单；把它挪到尾部会让走器收到空清单并把
+stdout 留空，那是一条「干净的 0」而不是读数。`-c core.quotepath=off` 同理：少了它，本仓库那枚 CJK
+记录文件（开发验收记录）会被引用成八进制串而无法解析，清单会静默少一枚而仍印 `findings=0`。
+
+take 1（在写本载档之前，index 里就是本波要提交的那 187 枚）stdout 逐字：
+
+    payload_scan_files=187 payload_scan_roots=187 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+    payload_scan=PASS 187 file(s) clean
+
+take1_stdout_bytes=150 take1_stderr_bytes=0 staged_scan_take1_exit=0
+
+本代面（写档时现读，用于让下一位能核对这份清单属于哪一代）：
+- plane 1：`offline_acceptance_count=276`，`status_counts={'INCOMPLETE': 6, 'OFFLINE_ACCEPTED': 276, 'UNREVIEWED': 68}`，
+  `claim_count=1410`，`identity_count=350`，`identity_set_sha256[:16]=5168e1e723999312`，
+  `expected_identity_set_sha256[:16]=5168e1e723999312`，`integrity=PINNED_EXACT_SET`，
+  `global_issues=0 invalid_claims=0` —— 六个读数全部取自 staged blob
+  （`git show :docs/evidence/C101/judge/claims.merged.report.json`），不是取自工作树副本，因为本载档要证明的是
+  **将要成为历史的那一份字节**。
+- 清单构成：`187 = 142 枚 tracked 修改 + 45 枚精选未跟踪`，三个母数现数以 `awk` 分桶核过
+  （`c101=12 c128_probes=2 c128_runs=31 other=0`，相加 45；`142` 由
+  `git diff --cached --name-only | grep -vcFf <未跟踪清单>` 读出）。未跟踪那 45 枚 = C128 的 2 枚新探针 +
+  31 枚本波载档 + C101 的 12 枚 federal_reserve::YieldCurve 产物（5 相回执 / 5 相捕获 / fixture / review）。
+  **本文件不在这 31 枚里**：take 1 跑时它还不存在，它是那之后的第 32 枚载档，也正是 take 2 的母数要从 187
+  变 188 的唯一理由。
+- 按约定不进提交的：37 枚 `.err` 捕获兄弟（`git ls-files docs/evidence/C128/*.err` 现读 0）与
+  `runs/.step4f.rcs` 一枚（点开头、不是任何仪器的输出，是本步一条命令的重定向残留）。
+- 两格母数分别是走器自己数的（`roots == files` 那格说清单里每一枚都解析到了真文件），不接受我手填的 187。
+
+lag_statement：一份载档永远扫不到它接下来要追加的那几行，所以本文件的 take 1 只覆盖「take 1 之前已在
+index 里」的字节；把本文件 stage 之后重取记为 take 2；覆盖**即将提交的最终字节**的那一次（take 3）由本次
+提交说明逐字携带，本文件内不写它自己的读数。
+
+take 2（本文件 stage 之后；此刻 index 是 188 枚，被扫的这份载档是
+43 行 / 3705 字节 / `sha16=f2b8122fc0faaf36`，三个数在它被追加之前现测）stdout 逐字：
+
+    payload_scan_files=188 payload_scan_roots=188 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+    payload_scan=PASS 188 file(s) clean
+
+take2_stdout_bytes=150 take2_stderr_bytes=0 staged_scan_take2_exit=0
+
+`diff /tmp/w28s5.stage1.out /tmp/w28s5.stage2.out` 退出 **1**，报 `1,2c1,2`：动的只有两格计数器
+（`payload_scan_files`/`payload_scan_roots` 与 `PASS N file(s) clean` 里的 N，187 → 188），
+三条 0（`unresolved` / `findings` / `rc`）与第二行除 N 之外逐字相同，stdout 仍是 150 字节。
+这条 diff 是本载档存在的理由：它证明「多出来一枚载档」读出来的是母数，不是判定 —— 若 `findings`
+跟着母数一起动，那说明 stage 进来的那份是 finding 而不是文档。
+
+追加本段之后的字节由 take 3 扫描，take 3 的读数住在提交说明里（不在本文件内，写进来就又是下一格 lag）。
+`staged_scan_final_take=commit_message`

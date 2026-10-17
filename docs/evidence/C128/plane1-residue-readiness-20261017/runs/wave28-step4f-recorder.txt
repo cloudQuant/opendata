@@ -1,0 +1,20 @@
+wave-28 step 4f -- primary reviews over the step-4f federal_reserve claims document (12 identities; FomcDocuments stays unwitnessed and is ruled on separately).
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/federal_reserve/claims.json --output docs/evidence/C101/federal_reserve/claims.reviewed.json --identity federal_reserve::CentralBankHoldings --identity federal_reserve::FederalFundsRate --identity federal_reserve::InflationExpectations --identity federal_reserve::MoneyMeasures --identity federal_reserve::OvernightBankFundingRate --identity federal_reserve::PrimaryDealerFails --identity federal_reserve::PrimaryDealerPositioning --identity federal_reserve::SOFR --identity federal_reserve::SvenssonYieldCurve --identity federal_reserve::TotalFactorProductivity --identity federal_reserve::TreasuryRates --identity federal_reserve::YieldCurve --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+re-signing: dropped 12 earlier review(s) for the addressed identities
+REVIEW_SIGNED: federal_reserve::CentralBankHoldings
+REVIEW_SIGNED: federal_reserve::FederalFundsRate
+REVIEW_SIGNED: federal_reserve::InflationExpectations
+REVIEW_SIGNED: federal_reserve::MoneyMeasures
+REVIEW_SIGNED: federal_reserve::OvernightBankFundingRate
+REVIEW_SIGNED: federal_reserve::PrimaryDealerFails
+REVIEW_SIGNED: federal_reserve::PrimaryDealerPositioning
+REVIEW_SIGNED: federal_reserve::SOFR
+REVIEW_SIGNED: federal_reserve::SvenssonYieldCurve
+REVIEW_SIGNED: federal_reserve::TotalFactorProductivity
+REVIEW_SIGNED: federal_reserve::TreasuryRates
+REVIEW_SIGNED: federal_reserve::YieldCurve
+recorder_exit=0 signed=12 refused=0 reviews_total=12 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/federal_reserve/claims.reviewed.json
+failed_take_of_this_step: the first attempt built the 12 --identity flags inside a shell variable and expanded it unquoted; zsh performs no word splitting, so argparse received one blob and refused with exit 2 and 1440 stderr bytes. That take's stdout/stderr were overwritten by this successful take, so this line is the record of it. Reading: my argv construction, not a product defect.
+consequence_measured: because the reviews were not re-signed, the merge+judge taken in that same batch read the previous generation's review pins and plane 1 printed 264 offline accepted = 276 - 12. Restored by re-running recorder, merge and judge in generation order.
+recorder_exit=0

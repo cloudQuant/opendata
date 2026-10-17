@@ -1,0 +1,19 @@
+wave-28 step 4d -- the five-file test plane after the YieldCurve retarget
+/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_federal_reserve_iter2_models.py tests/test_federal_reserve_clean_documents.py tests/test_provider_model_contracts.py tests/test_provider_domains.py tests/test_iter2_model_evidence.py -o addopts= -p no:cacheprovider -q   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+collected=919 (measured by a separate --collect-only take: '919 tests collected in 0.60s') passed=740 skipped=179 sum_equals_collected=True
+pytest_exit=0
+........................................................................ [  7%]
+.............................................................s..s....s.. [ 15%]
+..........s.sssssssssss.......sssssssssss.....ss.s...................... [ 23%]
+....s.s..ss...........sss.s.ss..ssssssssssssss.s.ss..sssssssssss...s.s.. [ 31%]
+ss...........sss.s.ss..sssssssssss..........s..................s........ [ 39%]
+...............ss...................ss.........s........s..........s.ss. [ 47%]
+......ss.......s........................................................ [ 54%]
+........................................................................ [ 62%]
+........................................sssssssssssssssss.ssssssssssssss [ 70%]
+ssssss.ssssssssssssssssssss.ssss.sssssssssss..s.ssss.................... [ 78%]
+........................................................................ [ 86%]
+........................................................................ [ 94%]
+.......................................................                  [100%]
+740 passed, 179 skipped in 2.90s

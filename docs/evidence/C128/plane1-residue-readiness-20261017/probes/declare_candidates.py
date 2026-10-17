@@ -21,7 +21,7 @@ The federal_reserve family has 6 contract class *names* duplicated across ``fede
 and the ``federal_reserve_clean_*`` modules, and ``opendata.data.domains._CONTRACT_MODELS`` is a
 flat name-to-class map. So identity against ``contract_model(domain)``, never name equality, is what
 this probe tests: a declaration that binds the same-named class from the other module passes a name
-check and fails ``tests/test_federal_reserve_iter2_models.py:382-403``.
+check and fails ``tests/test_federal_reserve_iter2_models.py:392-413``.
 
 Two readings of the probe's own defects are worth keeping in the record. The first draft gated on
 ``canonical_model == contract_model(domain).__name__`` and its landed control read False: the two

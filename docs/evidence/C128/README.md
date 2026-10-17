@@ -74,6 +74,30 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
 `LookupError: unknown provider model`，且模型名在自家包源码里一个整词都找不到），残差主体是 provider 码
 `24 + 19 + 13 = 56` 枚，既不是声明也不是 runner。叙述在 §89–§91。
 
+**波 28 五步落了 10 枚，`266 → 276/350`，而每一步的"下一枚在哪"都是仪器读出来的，不是状态桶猜的**
+（`docs/evidence/C129/` 依旧不存在）。step 0 先把残差普查那条只会重复自己的 F 臂改成两面控制
+（`witnessable_today=0` 从此由"表面 ∪ 实测调用点"现算）；step 1 给 `retarget 24` 那一格定价，价钱是
+**2 枚**、两枚都挂在待裁 #57；step 2 落 nasdaq 9 枚（9 行 `row_model` 声明 + 本仓首份该 provider 见证模块，
+五相 45 枚全 PASS、0 处 harness 改动，`266 → 275`）；step 3a 把两台波 27 仪器里钉住上一代落地面的常量
+追平，并用新驱动证明追平那条臂**仍然能红**（锻造回上一代时两台各只红 `A_landed_report_face`）；
+step 3b 是纯仪器轮，把 §94 (b) 支那句谓词读成 `answer=NO` —— 卡住 yfinance 15 枚的是**替换形状**
+（产品侧 1 枚站点、`min_positional=1`，runner 装进去的 `lambda _c=client: _c` 元数 `(1,0)` 会把实参原样退回）
+而不是假客户端的动词集，改 runner 的价按 pin 格子读 1650。**step 4 落这一波的最后一枚**：
+`federal_reserve::YieldCurve` 的行类从宏模型换成域契约类
+`FederalReserveYieldCurveObservation`，五相 `exit=0 status=PASS`，`275 → 276/350`，
+而这枚动的是 `INCOMPLETE`（`7 → 6`），`UNREVIEWED` 68 一枚没动 —— 我起初按"UNREVIEWED 少一枚"写常量，
+驱动立刻红给我看。残差 `75 → 74`、`NEED_DECLARE 28 → 27`、`client_seam` 机制价 `7 → 6`；
+五台钉落地面的仪器全部换代并各自被证明仍然扳得动，其中 `yfinance_shard_entry_price.py` 经
+`kinds.LANDED_ACCEPTED` 自动追平、重取读 `VOID=no`，那笔 runner 价顺带从 1650 走到 **1656**。step 4 之后另有
+三取收尾：**4e** 把第二道 tracked 围栏（batch5 `source_hashes_sha256`）在 step-4 树上重取，`matched=31 stale=0`
+与 step 2 那份逐字同代，并另落一份 31 个 pin key 的清单载档把"`federal_reserve` 一个 key 都不在这道围栏里"
+从抽查变成集合陈述；**4f** 是字面引用勾出来的 —— 产品与仪器散文把那条 frozen guard 的行号写成 `:382-403`，
+实测在 `:392-413`（assert `:406`），而改引用动的是被 claim 钉住的见证分片字节，于是整条
+federal_reserve produce→sign→merge→judge 重落一代，六台只读面同代再取，**plane 1 一格没动，仍 `276/350`**；
+**4g** 把 step 4 自己改进 handoff 判定的那条 stale 名回退补上反例，六臂 12 格全绿、两个 raise 位实测在 `:379`
+与 `:388`，同样一格计数没动。
+叙述在 §92–§97。
+
 ## 载体
 
 - `probes/readiness_census.py`、`probes/declare_candidates.py`：两台仪器，各自带正控制与可动性闸。
@@ -125,10 +149,10 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   压布尔的直接后果：一次运行里必须同时看到"台账带着这枚"`(True, False)`、"台账沉默"`(False, False)`、
   "根本没有台账"`(False, True)` 三种组合，否则第二轴又退回一个不能区分的布尔。换 `--provider` 跑一家
   **有** `specs.py` 的包只能出现前两种，这一臂就会红 —— 那是预期读数，不是臂坏了。
-- `probes/ledger_axis_blast.py`（波 28 step 3a 后 222 行、`sha16=f2a4bfd8a151491a`；写成的那一代是 206 行、
-  `4568cf22c27db38a`）：把拆开的那条台账轴指到**整个残差**
+- `probes/ledger_axis_blast.py`（波 28 step 3a 后 222 行、`f2a4bfd8a151491a`；step 4 追平后 223 行、11549 字节、
+  `495b95a057f8c92a`；写成的那一代是 206 行、`4568cf22c27db38a`）：把拆开的那条台账轴指到**整个残差**
   （判定报告里状态不是 `OFFLINE_ACCEPTED` 的行 —— nasdaq 落地那一代是 84 枚 = `INCOMPLETE` 7 +
-  `UNREVIEWED` 77，本机现测 75 枚 = 7 + 68），量这条缺陷的射程，
+  `UNREVIEWED` 77，波 28 step 4 现测 74 枚 = 6 + 68），量这条缺陷的射程，
   而不只是 yfinance 那一桶。行读数仍由 `incomplete_row_guard_check._row` 原样给出；磁盘普查
   （`opendata/data/providers/*/specs.py` 存在与否）是同一事实的**第二次独立测量**。五臂里两处是它自己的
   第一次红教出来的：`C_conflation_identity` 要求分裂前那条一个字符串的谓词复述得精确
@@ -139,8 +163,10 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   **名**可以根本没有包目录，两母数不同。`E_pricer_block_inside` 用入库定价器现算 yfinance 那 26 枚，
   与 `runs/wave27-step0-block-axes.txt` 的 `rows=26` / `yfinance_rows=29` 对齐，不等就抛。
   step 3a 只把那条**钉住上一代落地面**的常量追平，并被钉的旧值留在源码里（`LANDED_STATUSES_PREVIOUS`），
-  由新面 `A_rebase_from_landed` 逐状态打印 `rebase_delta`（现测 `OFFLINE_ACCEPTED +9 / UNREVIEWED -9`，
-  和为 0）与 `identity_set_moved`，所以"追平"是被比较出来的、不是被我改出来的。
+  由新面 `A_rebase_from_landed` 逐状态打印 `rebase_delta`（step 3a 那代现测 `OFFLINE_ACCEPTED +9 /
+  UNREVIEWED -9`；step 4 落 `federal_reserve::YieldCurve` 之后现测 `{'INCOMPLETE': -1,
+  'OFFLINE_ACCEPTED': 1, 'UNREVIEWED': 0}`，见 `runs/wave28-step4b-landed-face-rebase.txt`），和为 0、
+  `identity_set_moved=False`，所以"追平"是被比较出来的、不是被我改出来的。
 - `probes/transport_matcher_delta.py`（209 行、`sha16=c90fcffbeafcad76`）：**只替换那条不一致的规则**的
   差分仪器。它 import 已入库探针的站点枚举、行总体与所有 helper，只把 `_transport_line` 换成 draft 2 的
   松规则（动词命中即算，接收者不查），所以两代读数只差一条规则。臂 A 先自证能复算已入库面
@@ -296,9 +322,11 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   连同那条把一次性 inline 验证器的结论写成仪器说明书的 limit —— slot 数、by_kind、`stale=0` 与两个
   `targeted_slots` 等式在两代之间逐字未变）。
 
-- `probes/witness_seam_kind_census.py`（波 28 step 3a 后 416 行、`sha16=139f5b6e79d4edc0`；写成那一代是 411
+- `probes/witness_seam_kind_census.py`（波 28 step 3a 后 416 行、`139f5b6e79d4edc0`；step 4 追平后 417 行、
+  20089 字节、`a8d7ef6a7d4ada09`；写成那一代是 411
   行、`88870a6f957d9dba`；同样只追平 `LANDED_ACCEPTED` 并把旧值留在 `LANDED_ACCEPTED_PREVIOUS`，面末追加
-  `previous_accepted=266 accepted_delta=9 identity_set_moved=False`）与
+  `previous_accepted=275 accepted_delta=1 identity_set_moved=False`；step 3a 那代这一格是
+  `previous_accepted=266 accepted_delta=9`）与
   `runs/wave27-step1-seam-kinds.txt`（44 行 / `624ddf9ea0a7ebee`）：波 27 step 1 的新仪器与它的七臂面。
   它否证了 §89.5 谓词后半"见证腿取引擎 `transport`"：臂 A 四枚**已入库**、无 `client_seam` 的行逐枚读
   `rows>0 transport_calls=1`（引擎 seam 本身活的），臂 B 对 `yfinance::EquityQuote` 读
@@ -358,8 +386,8 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
 - `probes/residue_axis_census.py`（波 28 step 3a 后 402 行、`sha16=80f6c70369be8be4`；波 28 step 0 那一代是
   401 行、`5145178f8a586c04`；入库那一代是 374 行、
   `45f2cb2d7d3bfbab`）：step 2b 的主仪器。两支都 `convertible=0`
-  之后不再按切片决定，把 `350 - 落地的 accepted` 整个残差（写成那一代 `350 - 266 = 84`；本机现测
-  `350 - 275 = 75`；step 3a 只改了 docstring 里那句会过期的算术，改成由 `C_population_identity` 现算）
+  之后不再按切片决定，把 `350 - 落地的 accepted` 整个残差（写成那一代 `350 - 266 = 84`；波 28 step 4 现测
+  `350 - 276 = 74`，step 3a 那代记的是 `350 - 275 = 75`；step 3a 只改了 docstring 里那句会过期的算术，改成由 `C_population_identity` 现算）
   与三台已落地仪器交叉，逐枚并列打印
   `status bucket verdict seam mechanism witness_module fake_ok name_in_package ruled_out declared witness_entry`
   加这三台**共同**蕴含的第一份工作（`_action` 按梯子取第一格：`new_provider_package` / `ledger_ruled_out` /
@@ -430,7 +458,9 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   `landing_today=2 landing_needing_edit_only=2 identity_set=5168e1e723999312` —— **这一格的价钱是 2 行而不是 24 行**，
   而那 2 行恰是 `federal_reserve::FomcDocuments` / `::YieldCurve`，已经挂在待裁的 #57 上，并且被
   `tests/test_federal_reserve_iter2_models.py:382-403`（`test_declared_row_models_are_their_domain_contracts`，
-  assert 在 :399，要求 `row_model is contract_model(domain)`）挡住，所以"给它们加一行声明"这条路本身不成立。
+  assert 在 :399，要求 `row_model is contract_model(domain)`；**波 28 step 4f 就地更正**：该 guard 当代实测在
+  `:392-413`、assert 在 `:406`，`382-403`/`:399` 是写这代时的行号、留着不改，而这两枚的命运此后分开 ——
+  `::YieldCurve` 在 step 4 换成域契约类后落地，仍被这条路挡住的只剩 `::FomcDocuments`）挡住，所以"给它们加一行声明"这条路本身不成立。
   其余 22 枚**根本不构造契约类**（`emitted=[]` 而契约存在），第一版 H 臂把这个形状读成"解释不了"是臂自己写错 ——
   已落地的 `_row_class_face` 只走 fetcher 自己 MRO 内的类与同模块 helper，服务路径造普通 dict 就是这种合法形状。
   两份红代（take 1 崩在自己的打印句：`raises` / `code_raises` 是 int 却取了 `len()`，崩在总体已算出之后、
@@ -468,7 +498,10 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
     mypy / bandit / pytest → 两份面），每格自带 `*_exit=<digit>` 与自己的 argv。**这台是写盘链**，起的是已入库
     的判定件，所以它一次跑就换代：重跑之前先想清楚要不要重产 45 枚回执。头部把本步那次事故逐字记在仪器里，
     不只在散文里。
-  * `probes/receipt_drift_counterfact.py`（204 行 / `sha16=4bd1d10e3d67faa4`）：回执漂移的三臂反例。A 读绿代；
+  * `probes/receipt_drift_counterfact.py`（204 行 / `4bd1d10e3d67faa4`；波 28 step 4 追平落地面后 225 行、
+    8836 字节 / `56556b389eb6a5e2`；step 4g 再把它 format 重排为 223 行、8822 字节 / `5bfdb04d9ac027d0`，
+    见本节末 4g 条目；载档常量 `CARRIER_NAME` 也从 `wave28-step2-…` 改名为
+    `wave28-step4c-receipt-drift-counterfact.txt`，免得这台把已提交的 step 2 那份整体重写掉）：回执漂移的三臂反例。A 读绿代；
     B 用 `--output` 指向草稿文件重跑 producer（canonical claims 文档不动）**然后重跑 judge**；C 按代次顺序
     重落 produce→sign→merge→judge。面（19 行 / `113cc6276ee878be`，`receipt_drift_face PASS=True`）：
     `A_pre accepted=275 drift_rows=0` → `B_after_rotate accepted=266 drift_rows=9 nasdaq_statuses=['STALE']` →
@@ -479,7 +512,8 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
     STALE。所以"只改 `--output` 的复算性重跑"是假安全，复算必须把 `--evidence-root` 一起指走。这台仪器自己还
     红过一次：首跑 `arm_B_expected_266_nine_drift=False`，因为 `read_face()` 只读盘上报告、B 臂没重跑 judge，
     于是印的是 A 的判定回声 —— **不重新测量的臂等于没有臂**，补 `B_rejudge` 之后三臂才各自命中。
-  * `probes/w28s2_shard_faces.py`（142 行 / `sha16=070724a974349b50`）：两份只读面。复算性面
+  * `probes/w28s2_shard_faces.py`（142 行 / `070724a974349b50`；step 4 只把引用那台漂移仪器的**散文**换代，
+    一个计数器没动，现 143 行、6983 字节 / `0841716818c8f6de`）：两份只读面。复算性面
     `claims_array: produced=0b0c3ff3a5619e74 signed=0b0c3ff3a5619e74 equal=True` +
     `envelope_delta keys_only_in_produced=['generated_at_utc', 'generated_by', 'notes']
     reviews_produced=0 reviews_signed=9` + `array_comparison_can_move=True`；一致性面
@@ -513,7 +547,8 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   harness 文件 0 处，所以 §93 给 nasdaq 那 9 枚标的 `shard_entry_needs_harness`（"落地要先加宽接缝"）被这批
   自己的落地否证 —— 走的是已入库的 `shared_http_client` 接缝。
 - 波 28 step 3a（把两台波 27 仪器里那条**钉住上一代落地面**的常量追平，被判定量一个没动）：
-  `probes/landed_face_rebase.py`（278 行、`sha16=5db7f6d97a5083e4`）与它的载档
+  `probes/landed_face_rebase.py`（278 行、`5db7f6d97a5083e4`；step 4 换代后 282 行、13196 字节、
+  `86844e72941374b5`）与它的载档
   `runs/wave28-step3a-landed-face-rebase.txt`（62 行 / `sha16=70edc11b36ef2102`；第 24 行是本次运行的
   `chain_exit=0`，其后是四次取的账）。
   它 import 那两台 subject 并在**同一进程里各跑三遍**同一份报告字节：出库常量 → 把常量锻造回波 27
@@ -616,6 +651,229 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   stderr 0），把本载档 stage 后取 2 读 **6**，`diff` 实测只有两格计数器动、三条 0 与进程退出不变；
   `roots == files` 那格保证 CJK 路径没被静默丢掉。覆盖 README 与本条目这些字节的最后一次读数是 stage 之后再取的
   那一次，逐字住在本次提交说明里（两枚载档头部的 `lag_statement` 记的是同一句账）。
+- 波 28 step 4（产品轮：`federal_reserve::YieldCurve` 把行类换成域契约类并落地，**275 → 276/350**）：
+  这一枚动的是 `INCOMPLETE` 那一格，不是 `UNREVIEWED` —— 换代前后
+  `{INCOMPLETE: 7→6, OFFLINE_ACCEPTED: 275→276, UNREVIEWED: 68 不动}`，残差 `75 → 74`，
+  桶 `NEED_DECLARE 28 → 27`，机制价 `client_seam 7 → 6`（桶侧 `SEAM_REACHABLE 7 → 6` 同步，两份载档同一格）。
+  我起初按上一代的错误印象把常量写成 `{'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 276, 'UNREVIEWED': 67}`、差写成
+  `{0, +1, -1}`，驱动立刻红在 `A_unmodified_green=False` 与 `F_delta_matches_committed_face=False` 并把实测
+  `{6, 276, 68}` 打出来 —— **红的是我的假设而不是仪器**。被否证的那个值留在这里，不进任何仪器；这一趟红取的
+  stdout 已不在盘上（这台驱动**整体重写**自己的载档，就是本目录末段记过的那条自指滞后），所以它按
+  **不可复现**记账，可复现的两面证据是 4b 的 `B_forged_previous_red=True`（出厂那代常量被锻造回上一代时
+  确实变红）与 4c 的 `measured_A=276 moved=True`（漂移反例的期望值确实跟着落地面走）。
+  * 换代链五份载档：producer `wave28-step4-producer.txt`（72 行 / 17054 字节 / `9a757cea541bd185`）读
+    `claims emitted=65 (60 PASS, 0 FAIL, 5 BLOCKED) = 13 row(s) x 5 phases`，五枚 BLOCKED 全是
+    `FomcDocuments … <not run> reason=no model witness`（第 16–20 行，待裁 #68），落地那枚的五个动词在
+    第 66–70 行逐枚 `YieldCurve <phase> exit=0 status=PASS`。**一条要记的读数缺陷**：同一行末的
+    `phases actually executed as subprocesses=65` 数的是 claims 条数而不是子进程数（本载档现数
+    `status=PASS` 60 行 + `<not run>` 5 行 = 65），标签比算术多算 5；它只住在这台产品的展示行里、
+    没有任何判定读它，本波**没改** `iter2_claims_producer.py` 一个字节（改共享件要把 pin 面重走一遍），
+    所以按"读数如实、缺陷另立"记账。recorder `wave28-step4-recorder.txt`（18 行 / `6159f16afa371d96`）
+    先印 `re-signing: dropped 11 earlier review(s)` 再 `signed=12 refused=0 reviews_total=12` —— 11 是上一代
+    在册那 11 枚，第 12 枚就是这轮落地的；merge 两取 `wave28-step4-merge_take1/2.txt`（各 32 行 /
+    `63a5977cd22884e7`、`7f78e58d0268a6a3`）第 31 行 `claims=1410 identities=282 reviews=276
+    accepted_identities=276`，两份**除我自己那格派生退出行**（`merge1_exit` / `merge2_exit`）之外逐字节相同，
+    共同面 1520 字节 / `0cddcb9640002c50`，`diff` 从第 5 行起退出 0；judge `wave28-step4-judge.txt`
+    （5 行 / `3735930db50dbd63`）`350 identities, 276 offline accepted`，其 argv 里那条 CJK 清单路径是从
+    producer 模块自己的 `DEFAULT_INVENTORY` 现取的，不是我抄的。
+  * 新增一台 `probes/fed_h15_official_shape_price.py`（346 行 / 15453 字节 / `f2044e2788678f65`）与载档
+    `runs/wave28-step4a-fed-h15-official-shape-price.txt`（24 行 / 3889 字节 / `7221e0db232bdd42`；
+    `arms=A,B,C,D,E,F,G arms_failed=0 failed=[] bodies=5 contract_class=FederalReserveYieldCurveObservation`、
+    `h15_probe_exit=0`）。它把"官方 H.15 到底是什么形状"从散文变成七臂读数：A 给五枚 body 各自的
+    `padded_fifth / header_cells / data_rows`（3 枚带第 5 格填充 `Unique Identifier: `，其中含 1050989 字节的
+    源捕获），B 逐 body 并置**出厂头**与**工作树头**两种读法并要求 `moved` 那格只在该动的 body 上动，C 把
+    preamble 标签各改一字符仍必须读 `REFUSED:FEDERAL_RESERVE_BAD_CSV_PREAMBLE`（两枚 `tampered_sha16` 现算），
+    D 读 `rows=22 expected=22 rate_types=['float'] nulls=0`，E/F 是对**待裁 #57 的更正**：
+    `names_equal=False field_face_equal=True` —— 宏模型与契约类**名字不同、字段面相同**，此前我写成"字段面
+    待裁"是过强的；`F_row_model_guard passes=True look_alike_forged_fails=True restored_after=True` 证明
+    加了 `row_model` 之后那枚假声明仍然被守卫扳住。G 开出一个新待裁：包体把 **13** 格头发布出来而这个读者只
+    声明 12 格，差的那一格是 `RIFSGFSW04_N.B`（`columns_the_reader_does_not_declare=['RIFSGFSW04_N.B']`），
+    与 §Fed 汇率裁决"不改 C100 钉住的契约"同源，**本波不擅自补声明**。载档头部另写了一条消歧：
+    A/B 里 tag 作 `materialized_fixture` 的那枚 body 是 C100 那份**单行**staged `h15.csv`
+    （`…/product-patch-staging-20261013T111344Z/fixtures/h15.csv`，`data_rows=1`、`PARSED:11`），由探针自己的
+    `CAPTURES` 表命名，**不是**本波三行分片 fixture（那枚住 `docs/evidence/C101/fixtures/federal_reserve/
+    YieldCurve.json`、由五相回执见证）—— 不写这句，`PARSED:11` 会读成与见证的 `rows=33` 矛盾。
+  * 落地面追平 **五台**，并逐台证明追平之后仍然能红：`ledger_axis_blast.py` 223 行 / `495b95a057f8c92a`、
+    `witness_seam_kind_census.py` 417 行 / `a8d7ef6a7d4ada09`、`landed_face_rebase.py` 282 行 /
+    `86844e72941374b5`、`receipt_drift_counterfact.py` 225 行 / `56556b389eb6a5e2`（step 4g 重排后 223 行 /
+    `5bfdb04d9ac027d0`；那一代没有重跑它，见本节末 4g 条目）、
+    `w28s2_shard_faces.py` 143 行 / `0841716818c8f6de`（最后一台只换散文里那处指向漂移反例的引用，一个计数器
+    没动）。驱动载档 `runs/wave28-step4b-landed-face-rebase.txt`（28 行 / 4538 字节 / `27df9dd6b7379d2e`）读
+    `subjects=2 arms=12 arms_passed=12 arms_failed=0 PASS=True` / `chain_exit=0`，形状与 step 3a 同：
+    每台 subject 在同一进程里跑三遍（出厂常量 → 锻造回 step 3 那一代 → 复原），锻造那一遍两台**各只红一臂**
+    `forged_failed_arms=['A_landed_report_face']`、`exits first=0 forged=1 restored=0`，而被报告决定的计数器
+    两侧逐字不动（`residue=74/74`、`identity=5168e1e723999312/…`、`accepted=276/276`）；
+    `D_measurement_unchanged` 这一臂在 step 4 还多教一条：**探针不打印的计数器要报 `MISSING` 并判红**，
+    不许读成"未变"（第一遍就是因为向 dict 型落地面要裸 `accepted=` 而读到 `MISSING`）。
+    `yfinance_shard_entry_price.py` 不在追平名单里 —— 臂 A 读的是 `kinds.LANDED_ACCEPTED` 而不是自己的常量，
+    所以它随普查换代自动追平；本轮重取一次证明这句不是自称：
+    `runs/wave28-step4d-yfinance-entry-price.txt`（17 行 / 2926 字节 / `80126002277ecf1c`；
+    `A_void_gate … accepted=276 expected_accepted=276 … VOID=no`、`arms=11 arms_passed=11 arms_failed=0`、
+    `K_gate_is_trippable live_accepted=276 forged_accepted=275 accepted_delta=-1`、`entry_price_exit=0`、
+    stderr 0 字节）。这台顺带把 §94 那笔报价换了代：`J_runner_edit_price receipt_files=1380
+    pin_slots=19918 runner_pinned_slots=1656` —— **1650 → 1656（+6）**、`1375 → 1380 枚回执`，两个总体仍不合并。
+  * 漂移反例 `runs/wave28-step4c-receipt-drift-counterfact.txt`（23 行 / 3329 字节 / `5ef996e869ef3bf6`）：
+    三臂数值各不相同才算数 —— `A_pre accepted=276 drift_rows=0` → `B_after_rotate accepted=267 drift_rows=9
+    nasdaq_statuses=['STALE'] status_counts={…, 'STALE': 9, …}` → `C_after_reland accepted=276 drift_rows=0`，
+    `arm_A_expected_276_no_drift=True / arm_B_expected_267_with_9_drift=True /
+    arm_C_restores_arm_A_face=True / receipt_drift_face PASS=True`。267 与 9 都由
+    `LANDED_ACCEPTED - len(MODELS)` **现算**而不是我打出来的，所以换代时这一臂不会悄悄变成恒真；
+    面末那格 `landed_face_rebase previous=275 shipped=276 measured_A=276 moved=True` 把"这台仪器的期望值确实
+    跟着落地面走"钉成读数。它重写了 canonical nasdaq 回执（B 臂就是那次事故的可复现形态），C 臂再按
+    produce→sign→merge→judge 落回绿代，载档末行写明"本波提交的就是 C 那一代"。
+  * 五台只读面同代重取（`wave28-step4-{readiness_census,residue_axis_census,seam_reachability_census,
+    receipt_pin_consistency,pytest_planes}.txt`，12 / 93 / 41 / 9 / 19 行，`43bc7d1ae926eca3` /
+    `5804de51d5331c03` / `ec05317232fe4286` / `920a58ed4b19915a` / `a04ece988fd8abad`）：
+    `residue=74 buckets={'NEED_BINDING': 32, 'NEED_DECLARE': 27, 'NEED_SHARD_ENTRY': 15} sums_to_residue=True
+    readiness_arms=3 readiness_passed=3`；`residue_axis_census_face residue=74 … witnessable_today=0
+    rows_without_module=66 arms=8 arms_passed=8`（`retarget_fetcher_output` 那 14 枚里现在带
+    `federal_reserve: 1`，即剩下那枚 `FomcDocuments`，其 `seam=SEAM_REACHABLE mechanism=client_seam
+    witness_module=True fake_ok=True` —— 它缺的只是字段面裁决，不是接缝）；
+    `seam_census_residual_by_bucket` 里 `SEAM_REACHABLE` 的残差 `7 → 6`、`accepted_total=276
+    accepted_plus_residual=350`；`pin_face slots=19918 stale=0 before_ne_after=0 distinct_pinned_paths=561
+    arms=3 arms_passed=3 PASS=True`，B 臂 `stale=1380 targeted_slots=1380` 仍是一笔没付的价；
+    `collected=919 (…'919 tests collected in 0.60s') passed=740 skipped=179 sum_equals_collected=True`
+    —— 母数由另一趟 `--collect-only` 现取，加法闭合才算这 919 没被静默丢掉。
+    两台 step-2 面在这代**逐字复现**（不经写盘，直接调 `reproducibility()` / `coherence()`）：
+    `claims_array: produced=0b0c3ff3a5619e74 signed=… equal=True` 与
+    `receipt_digest_mismatch_on_disk=0 [] judge_nasdaq_issue_rows=0 review_rows=9 of 9` 一字未动，
+    说明 C 臂那次重产没有将 claims 数组搬代。
+  * 一条留在档里、**没有判定臂**的观察（写下来是为了下一波不再重猜）：`wave28-step4b-…` 的
+    `run_record` 捕获到 stderr **59 字节**（`$AAPL: possibly delisted; no price data found (period=5d)`，
+    那台驱动在**进程内**跑普查时打出来的），而我用 shell 重定向单独重取的那五台 `wave28-step4-*.err`
+    **全 0 字节**（`find runs -name '*.err' -size +0` 现数全树仍只有波 27 那一份非空）。两种取像的判定面
+    相同（`subject_transport_calls=0` 两侧都在），所以这不是"某个 stderr 被吞成了干净的 0"那一类缺陷；
+    但**机制未测**，本波不给解释。要结算这一格就同一条命令跑两遍（一遍带 `--providers` 分片、一遍不带），
+    把 stderr 各自落盘再看哪一侧出现那一行 —— 若将来某个臂改成读 stderr，这一格必须先结算，
+    否则会出现"同一台仪器两种宿主两种字节数"的不可复现面。
+- 波 28 step 4e/4f/4g（step 4 的收尾三取，**plane 1 一格没动，仍 `276/350`，identity set `5168e1e723999312` 未变**）：
+  * 4e 第二道 tracked 围栏换代复核。仪器住在 `docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py`
+    （178 行 / 6967 字节 / `76ef703eb4d0d54d`，本步没动它一个字节）。我起初按
+    `.../probes/batch5_fence_dry_census.py` 去跑，退出 2、stderr 228 字节"文件不存在"，真实路径是从
+    `runs/wave28-step2-batch5_fence_dry_census.txt` 自己的 `argv:` 行读回来的而不是猜的。
+    `runs/wave28-step4e-batch5_fence_dry_census.txt`（11 行 / 931 字节 / `e45a3c14c0d48bff`，stderr 0 字节，
+    `batch5_fence_dry_census_exit=1`）读 `pin_entries=31 matched=31 stale=0 missing=0` + `verdict: REFUSED`，
+    那六个 `face:` 字段与 step 2 那份**逐字同代**（含
+    `snapshot_payload_sha_before=bcdca191aa39064a8fc7040651c6694a572f5137d9c1d0868916b39ac284924d`），
+    所以 step 4 动的 4 个产品/测试文件没有一个在这道围栏里；`exit=1` 仍是"无过期 pin 时拒绝重写正在动的 digest"
+    那个设计门，不是判定红。为了把这句变成集合陈述而不是抽查，另落
+    `runs/wave28-step4e-batch5_fence_pin_keys.txt`（42 行 / 2969 字节 / `fb968dce1a9e32b2`，
+    `fence_pin_keys_exit=0`）：31 个 key 逐条列出，`federal_reserve_keys=0`、`yield_curve_in_pins=False`、
+    `provider_keys_under_opendata_data=['finviz', 'fred', 'yfinance']`，它自己数出的
+    `snapshot_sha16=bcdca191aa39064a` 与上面那台印出的整枚 sha256 前 16 位相同（两台独立仪器对同一份快照取像一致）。
+    **这道围栏与回执 pin 闸门是两个总体**：4f 撞上的正是前者看不见的后者。
+  * 4f 一行错误引用勾出整条重落。当时那句"`382-403` 这个字面 grep 现数 7 处"**有两个毛病，本步把它撤下**：
+    一是它自己那串枚举相加就不是 7 —— 散文 5 处（`_parts/federal_reserve/rows_a.py` 两行、
+    `iter2_witnesses/federal_reserve.py` 一行、本目录 `probes/declare_candidates.py` 与
+    `probes/readiness_census.py` 各一行）加 README 1、开发验收记录 1、载档 1，共 **8**；
+    二是那条 grep 的 argv 没进载档，今天无法复算，所以 **7 与 8 都按不可复现处理**。
+    当代换成能重跑的集合陈述，配方见 §97，读数 `literal_382_403_hits=9 distinct_files=4`，按文件角色拆开：
+    产品/仪器散文 **0**（那 5 处本步已全改 `392-413`）、本 README **5**（`:94` 那句报告、`:460` 历史句、`:462`
+    它的更正，这三处在本次编辑之前就按这三个号命中，另两处在**本条自己**里面——它们随本条行长漂移，所以只报角色不报号，
+    这正是"读法"那句说的事）、开发验收记录 **2**（历史句与本步更正句）、
+    历史载档 **2**（`runs/wave28-step1-retarget_rowclass_counterfactual.txt:60`，以及本步才第一次看见的
+    `docs/evidence/C100/C120-gate-chain/member8_a2_check.txt:4414`——那枚 gate 原始输出逐字抄下了 `rows_a.py`
+    改前的 docstring，**不可改也不该改**）。**读法**：引用一处错误行号时把原句逐字抄进报告，报告自己就变成下一个
+    命中；这类普查要么按文件角色拆，要么只报 `file:line` 不抄原文。真实位置由行首缩进推出的读者量出：
+    `guard_def_line=392 guard_body_last_line=413 next_item_line=416`，assert 在 `:406`。**写 `382-403`/`:399`
+    那一代这两个数是对的**（此后该测试文件在它上面长过行），所以只有声称"现在在哪"的 docstring 改成 `392-413`，
+    历史面留旧值并把更正并排写。
+  * 代价是实测的而不是估的：`rows_a.py` 与 `federal_reserve.py` 都在 claim 的 `probe` 钉集合里
+    （`iter2_claims_producer.py:203-207` 把 `witnesses.witness_module_rels(provider)` 摊进 `probe_files`），
+    所以一个纯 docstring 改动就必须重产该 provider 的五相，否则 pin 闸门读 stale。重落链五份载档
+    `wave28-step4f-{producer,recorder,merge_take1,merge_take2,judge}.txt`
+    （72 / 20 / 33 / 33 / 5 行，`e26e9126bdf9c72b` / `7d8d5442a93cf012` / `33f64747b10eebc1` /
+    `02514745bb251135` / `5d7960a4d0cf1acc`，stderr 全 0 字节，`producer_exit=0`、`recorder_exit=0`、
+    `merge1_exit=0`、`merge2_exit=0`、`judge_exit=0`）：producer `claims emitted=65 (60 PASS, 0 FAIL, 5 BLOCKED)
+    = 13 row(s) x 5 phases`（5 枚 BLOCKED 是 `FomcDocuments` 那条没跑的相，逐字 `<not run>`，本机现数
+    `status=PASS` 60 行、`<not run>` 5 行），recorder `signed=12 refused=0`（`FomcDocuments` 仍不签，归 #68），
+    merge 两取**逐字节相同**（`merge_takes_identical=True bytes=1520/1520 sha16=0cddcb9640002c50/0cddcb9640002c50
+    lines=28/28 first_diff_line=None`），judge `350 identities, 276 offline accepted`。同代再取六台只读面
+    `wave28-step4f-{receipt_pin_consistency,readiness_census,residue_axis_census,seam_reachability_census,declare_candidates,pytest_planes}.txt`
+    （9 / 12 / 93 / 41 / 35 / 19 行，`1aad4f401d9f0c14` / `1dbcda6f71328d25` / `ba65eb895c5c8a2e` /
+    `4976bdd450cca3b0` / `a539857287c7106c` / `acf313186a61c89a`，stderr 全 0 字节）：
+    `pin_face slots=19918 stale=0 before_ne_after=0 distinct_pinned_paths=561 arms=3 arms_passed=3 PASS=True`、
+    `residue=74 buckets={'NEED_BINDING': 32, 'NEED_DECLARE': 27, 'NEED_SHARD_ENTRY': 15} sums_to_residue=True
+    readiness_arms=3 readiness_passed=3`、`residue_axis_census_face residue=74 … arms=8 arms_passed=8`、
+    `residual_total=74 accepted_total=276 accepted_plus_residual=350`、`declare_arms=2 declare_passed=2`、
+    `740 passed, 179 skipped`（`pytest_face passed=740 skipped=179 sum=919 sum_equals_collected=True`）。
+    **一个计数器都没动** —— 这一代的产物是"字节换代而面不变"本身，也顺带第二次 reproducer 了 step 4 记过的那个
+    产出器分母错标（`phases actually executed as subprocesses=65` 数的还是 claims 条数，实测子进程 60）。
+  * 我自己在这一步红过一次，且红得有价值：12 个 `--identity` 拼进一个 shell 变量再**不加引号**展开，
+    zsh 不做词拆分 ⇒ argparse 收到一整块、`exit=2`、stderr 1440 字节；那一份 stdout/stderr 被成功取代就地覆盖，
+    上面这句加 `wave28-step4f-recorder.txt` 末段是它唯一的记录。后果是同批的 merge+judge 读到没重签的评审钉，
+    plane 1 印出 **264 = 276 − 12**；按 produce→sign→merge→judge 生成序重跑才恢复 276。读法：这不是产品缺陷，
+    是我在本波复刻了 §91 已经记过的同一件事（变量展开不拆分），而那批 264 的载档我没有留下 —— 下次"错 argv 把面
+    打移动"的取证要先把失败载档改名保留再重跑，不要就地覆盖。
+  * step 2 那两台只读面在这代仍然对得上，但**取像方式换了**：不调 `main()`（它会把
+    `runs/wave28-step2-claims_reproducibility.txt` 与 `runs/wave28-step2-shard_coherence.txt` 这两份已入库载档
+    整体重写，`w28s2_shard_faces.py:132-135`），而是把 `reproducibility()` / `coherence()` 两个纯函数在进程内各调
+    一次（`main_not_called=True`，两份载档字节一个没动）。`coherence()` 与入库那份**逐字节相同**
+    （355 / 355，两侧 sha16 `eb9b21fef21d79ab`，`receipt_digest_mismatch_on_disk=0`、`review_rows=9 of 9`）；
+    `reproducibility()` 与入库那份**不同**：前 17 行逐字同（含第 7 行
+    `claims_array: produced=0b0c3ff3a5619e74 signed=0b0c3ff3a5619e74 equal=True`），从第 18 行起分叉，
+    20 → 21 行、1412 → 1426 字节（+14）。差的那一行是 step 4 把这台引用的漂移载档从
+    `wave28-step2-receipt_drift_counterfact.txt` 改指到 `wave28-step4c-…` 之后的**散文换代**，不是计数移动。
+    这一格把上面 step 2 条目里"只动我手工重排的散文换行"那半句在这代**否证**了（已就地标注）；
+    "每个计数行不变"这半句是测出来的，可以照引。
+  * 4g 给 step 4 自己改进的那条 judge 分支补反例。判定改动要自带反例，而 step 4 往
+    `tests/test_federal_reserve_iter2_models.py` 的 handoff 判定里加的是 stale 名回退 `:374-380`，
+    它一直欠一枚 counterfact。仪器 `probes/handoff_fallback_counterfact.py`（283 行 / 12817 字节 /
+    `63a1bcdc9552bd2f`）在同一进程里 `spec_from_file_location` 载入那支测试模块、把模块全局的
+    `contract_model` 换掉再换回来，**盘上文件一个都不编辑**。载档
+    `runs/wave28-step4g-handoff-fallback-counterfact.txt`（36 行 / 4674 字节 / `cbf3c0a4b5b3083c`，
+    stderr 0 字节，`handoff_fallback_counterfact_exit=0`）读 `arms=12 arms_passed=12 arms_failed=0 verdict=GREEN`。
+    总体先摆出来：`handoff_domains=7 stale_named_domains=1 ['federal_reserve_yield_curve']`，
+    该格 `spec_contract=FederalReserveYieldCurve` 对 `shipped=opendata.data.models.federal_reserve_clean_documents.FederalReserveYieldCurveObservation`。
+    六臂读法：A/D 未改与复原都绿；B 锻造回同名不同模组的 `federal_reserve_macro.FederalReserveYieldCurve`
+    （`forged_registered=False`）⇒ 红在 `:379` 那行 `assert shipped.__name__ in contracts_by_name`，
+    载档同时印出 `raise_text=` 逐字与 `calls=[('federal_reserve_yield_curve', 'FederalReserveYieldCurve')]`，
+    后者证明补丁只碰到那一格 domain（`B_patch_touched_only_target=True`）；C 锻造回**在册但错**的
+    `FederalReserveCentralBankHolding`（`forged_registered=True`，名字那一关放行）⇒ 只能红在 `:388`
+    `assert set(semantic_fields) <= contract_fields`，`semantic_missing_from_forged={'FederalReserveCentralBankHolding': ['maturity']}`，
+    跑之前先量 `C_can_differ=True`（在册 7 类里 6 个候选的字段面确实不含该 domain 的语义字段）——
+    跑不红的臂不算证据；E 把回退删掉（直接拿 handoff 的名查表）⇒ `KeyError` 落在同一格、其余 6 格绿，
+    `E_fallback_is_load_bearing=True`，这条才把"分支承重、不是装饰"说成测量；F 复原后在同模块里再跑一遍
+    姊妹 guard `test_declared_row_models_are_their_domain_contracts`（绿，`contract_model_identity_restored=True`），
+    防"补丁泄漏冒充绿判定"。两个 raise 位由 `ast` 从被测文件自己读出来（`judge_assert_sites=4` 连表达式全表印出），
+    载档不硬写行号，`raise_line=379 expect=379` 是两边对照的结果。
+  * 4g 里我自己红过两处，都留在记录里。第一处是臂的极性：`flags["B_absent_name_reddens"]` 我直接接了
+    `_run()` 的第一个返回值，而那个位置是"green"，语义反了 ⇒ 首跑 `arms=12 arms_passed=10 arms_failed=2
+    verdict=RED`，红的两格是我的臂，判定件那两行照样在 `:379`/`:388` 红在预期位。改极性后重取才是上面这份，
+    首跑那份 stdout 落在 /tmp、没有改名留档。第二处是 lint 总体：`ruff check` 在这台新仪器上数出 22 条
+    （15 N806 / 2 C416 / 1 D103 / 2 ANN401 / 1 TC003 / 1 RUF100），全部由本步引入、逐条清掉后整棵探针树
+    `All checks passed!` + `25 files already formatted`。其中一处值得记：**C416 与 C402 在同一个表达式上互相指**——
+    `{marker: lineno for marker, lineno in (…)}` 被 C416 要求改写成 `dict(…)`，改完 `dict(…)` 又被 C402
+    要求改回 dict 推导；收口写法是直接对 `MARKERS` 写 dict 推导，两条规则同时闭嘴。
+    顺带查出 `receipt_drift_counterfact.py` 自 step 4c 之后没再 format（`--check` 会 red），本步把它重排
+    −2 行 / −14 字节，现 223 行 / 8822 字节 / `5bfdb04d9ac027d0`。本目录那两处旧钉已就地更正，一处在本文件
+    "波 28 step 2 新增四台仪器"条目里它自己的那行、一处在 step 4"落地面追平五台"清单里；**这两处只报角色不报行号**，
+    因为本条每长一行它们就挪一格 —— 上一版这里写的是两个行号，写完本条就已失效，那正是 §96 末段说的那件事。
+    **没有重跑它**：它就是 step 4c 那条写盘链，重跑等于在 live canonical 回执上再旋转一遍 B 臂，
+    所以"重排不改语义"这一句在这里是按 formatter 的合同**断言**的、不是测出来的；能测的两格是
+    `py_compile` 过、以及没有任何载档钉过这台仪器的字节（`runs/wave28-step4c-…` 只记 argv）。
+    重取条件：下一次真要动这台仪器时，先按 step 4c 的生成序 produce→sign→merge→judge 备好了再跑。
+  * 4g 的本代母数面另落一份 `runs/wave28-step4g-payload-face.txt`（72 行 / 4601 字节 / `66afab111e010fa1`）：
+    `payload_secret_scan.py`（131 行 / 5451 字节 / `6277dcf7f61fc9df`，本步没动它一个字节）取 1 读
+    `payload_files=181` = `probes/*.py` 25 + `runs/*.txt` 118 + `runs/*.err` 37 + **1** 枚 `runs/.step4f.rcs`
+    （4f 那次就地覆盖留下的唯一实物，所以这里单列一个奇数成员而不是折进 37），本载档存在之后取 2 读 **182**
+    （`runs/*.txt` 那一格正是 119，多的就是这份载档自己），两取 stdout 254/254 字节、`diff` 只动分母那一行，
+    判定四格与 `scan_exit` 逐字相同；`.err` 37 枚不入库那句用第二条路数核过
+    （`git ls-files | grep '^docs/evidence/C128/' | grep -c '\.err$'` → 0）。"只读"照旧是测的：跑前跑后
+    `git -c core.quotepath=off status --porcelain` 两份 426 行逐字节相同、`diff` 退出 0，stderr 0 字节。
+    **这份载档自己的 argv 起初写错了一格**（头部写 `/tmp/w28s4g.take1.out`，那一趟真正落在 `/tmp/take1.out`，
+    前者没有任何工具结果指向），已按真实文件名更正并把这句话留在载档头部里 —— 规矩收严：argv 从工具结果里抄，不补写。
+  * 4g 的索引面 `runs/wave28-step4g-staged-scan.txt`（定稿 60 行 / 4862 字节 / `5563a120a439422e`）：
+    走器是 `staged_payload_scan.py`（127 行 / 4890 字节 / `f5402c4e39098d93`，未改）。取 1 对 index 里那 187 枚
+    （= 142 枚 tracked 修改 + 45 枚精选未跟踪，`awk` 分桶现读 `c101=12 c128_probes=2 c128_runs=31`）读
+    `payload_scan_files=187 roots=187 unresolved=0 findings=0 rc=0`；把这份载档 stage 之后取 2 读 **188**，
+    `diff` 退出 1、报 `1,2c1,2`，动的只有两格计数器，三条 0 与 `rc` 逐字相同，stdout 两取都 150 字节、stderr 都 0。
+    取 1 的 31 枚载档**不含本文件**，所以 187→188 的唯一理由就是这份载档自己 —— 若 `findings` 跟着母数一起动，
+    那说明 stage 进来的是 finding 而不是文档，这一格是这台仪器存在的目的。plane-1 面同代取自 **index blob**
+    （`git show :docs/evidence/C101/judge/claims.merged.report.json`）：`276/350`、`claim_count=1410`、
+    `identity_set=5168e1e723999312`、`integrity=PINNED_EXACT_SET`、`global_issues=0 invalid_claims=0`，
+    同一份 blob 里 `federal_reserve::YieldCurve` 是 `OFFLINE_ACCEPTED issues=[]`、`FomcDocuments` 仍 `INCOMPLETE`。
+    覆盖最终字节的取 3 按 lag 约定住在提交说明里，本文件不写它自己的读数；配方与完整读数见 §97 的索引面条目。
 - 残差重定价面（step 2 同代）：`readiness_census`（12 行 / `20d35f19e40c64f9`）
   `residue=75 buckets={'NEED_BINDING': 32, 'NEED_DECLARE': 28, 'NEED_SHARD_ENTRY': 15} sums_to_residue=True
   readiness_arms=3 readiness_passed=3 identity_set=5168e1e723999312 expected_match=True`；
@@ -637,7 +895,11 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   Makefile 的 `PY_SELFDEV = opendata scripts tests alembic alembic_data` 不含 `docs/evidence`，所以探针树不在
   17 员 gate 的任何一档里，这道面一直是自课的、不是 gate 读数。格式化之后必须证行为不变：重跑只读面探针
   `w28s2_shard_faces.py`（exit 0），`shard_coherence` 载档逐字节相同、`claims_reproducibility` 只动我手工重排的
-  散文换行 5 行而每个计数行不变，另加四支 `py_compile=0`。
+  散文换行 5 行而每个计数行不变，另加四支 `py_compile=0`。**波 28 step 4f 更正这半句**：这台一跑 `main()` 就把
+  那两份已入库的 step 2 载档整体重写（`w28s2_shard_faces.py:132-135`），所以当代复核改在进程内调
+  `reproducibility()` / `coherence()` 两个纯函数；`coherence()` 仍逐字节相同，而 `reproducibility()` 的差
+  已不是换行 —— 前 17 行逐字同、从第 18 行起分叉（20 → 21 行、+14 字节），那一行是 step 4 把引用改指到
+  `wave28-step4c-…` 之后的散文换代。详见本节末 step 4e/4f/4g 条目。
 - `runs/wave28-step2-payload-scan.txt`：入库前两臂面。母数换代可追：step 0 收在 80（16 `.py` + 52 `.txt` +
   12 `.err`）→ step 1 take 1 读 85 → take 2 读 86 → 两份写完 87 → **step 2 take 1 读 111（= 探针 21 + 载档 90，
   两个母数各数一次再相加核对）、take 2 读 112**（本载档自己加入），`diff` 实测只有 `payload_files` 一格动、
@@ -705,7 +967,11 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   `wave27-step2a-receipt_pin_consistency.txt`（6 / `a8a570a80bdc7c80`，`slots=19382 stale=0`，本波没把任何 pin 弄旧）、
   `wave27-step2a-witness_seam_kind_census.txt`（43 / `843ab627634d862d`，`residue=84 subject_transport_calls=0`，
   stderr 单独落盘 59 字节，内容是 yfinance 那条 delisted 警告，逐字见 §91 仪器事故第 3 条）。
-  这一代 step 2 十三次运行里有十二次把 stderr 重定向到同名 `.err`（本机现数 12 份，只有刚提到那一份非空），
+  这一代 step 2 十三次运行里有十二次把 stderr 重定向到同名 `.err`（那一代本机现数 12 份，只有刚提到那一份非空；
+  波 28 step 4 之后全树 `ls runs/*.err` 现数 **24** 份，波 28 step 4e/4f 之后 **36** 份（= 24 + 围栏那 1 份
+  + step 4f 的 11 份），step 4g 之后 **37** 份（+ 那台 counterfact 自己的 1 份，0 字节），
+  `find -name '*.err' -size +0` 现数仍只有那一份非空，即
+  `wave27-step2a-witness_seam_kind_census.err`），
   上面单列出来的 `wave27-step2a-readiness_census.txt` 是那一次缺的；**`.err` 不进本波提交** —— 所以
   "stderr 0 字节"这类句子读的是工作树属性，不是载档属性；要复算就按 §91 的配方自己重定向。
   载档里能自证的只有逐字 stdout 与末尾那一条 `<name>_exit=<digit>`。
@@ -776,8 +1042,9 @@ stderr 0 字节），而它的 B 臂在内存里把 runner 摘要换成占位值
 `D_verbs_are_measured` 把 `new_verbs` 钉成"表面 ∪ 实测调用点"，所以凭猜测给假客户端加一个 `post`
 会让这一臂变红而不是让数字变大。
 
-本目录 23 台仪器（`ls probes/*.py` 现数；step 2 之前 17 台，step 2 那轮 +4，波 28 step 3a 再 +1，step 3b 再 +1）里
-**20 台只读**：除自己的臂失败外退出 0，绝不改动任何被判定的面。**三台会写，写的东西按代次记账**：`w28s2_run_chain.py` 起已入库的
+本目录 24 台仪器（`ls probes/*.py` 现数；step 2 之前 17 台，step 2 那轮 +4，波 28 step 3a 再 +1，step 3b 再 +1，
+step 4 再 +1）里
+**21 台只读**：除自己的臂失败外退出 0，绝不改动任何被判定的面。**三台会写，写的东西按代次记账**：`w28s2_run_chain.py` 起已入库的
 producer→recorder→merge→judge，一次跑就换代（本波 45 枚回执重产），所以它排在链首、其余载档全在同代重取；
 `receipt_drift_counterfact.py` 的 B 臂**真的重写 canonical 回执**（那正是它要证明的事），随后由 C 臂把树落回绿代；
 `w28s2_lint_pass.py` 改写的是探针自己的文本（docstring / noqa / tempfile），不是任何被判定面。波 23 起
@@ -791,9 +1058,17 @@ producer→recorder→merge→judge，一次跑就换代（本波 45 枚回执�
 step 2b 的甲支在**内存里**加宽假客户端，step 1 的 I 臂在**内存 deepcopy 里**把一枚行的 `is_contract` 取反，
 step 3a 的驱动在**内存里**把两台 subject 的落地面常量锻造回上一代再复原（`setattr` 在已导入模块对象上，
 subject 源码字节一个不写）。它与 step 2 那三台同属"自己写载档"那一类，写的只有
-`runs/wave28-step3a-landed-face-rebase.txt` 一份；它写载档的方式是**整体重写**，所以追加在末尾的历史块会被
+`runs/wave28-step3a-landed-face-rebase.txt` 一份（波 28 step 4 换代后 `CARRIER` 常量指向
+`runs/wave28-step4b-landed-face-rebase.txt`，step 3a 那份就此冻结成历史，不再被重写）；它写载档的方式是**整体重写**，所以追加在末尾的历史块会被
 下一趟吞掉 —— take 3 就吞掉过一次 take 2 追加的那一块，这条滞后连同被吞掉的读数逐字记在载档末段。波 28
 step 3b 再加一台 `yfinance_shard_entry_price.py`（只读、11 臂，载档由 shell 重定向写、探针自己不写盘）：
 它把 §94 (b) 支的谓词从散文变成读数，手法与上一条同族 —— **在内存里**进 runner 的 `_client_seam` 再复原，
 `setattr` 只落在已导入的模块对象上；它跑一趟之后 `git status --porcelain` 两份相同、`-newer` 数出的 `.pyc` 为 0，
-所以"只读"这一格在本波是测量而不是自称。
+所以"只读"这一格在本波是测量而不是自称。波 28 step 4 再加一台 `fed_h15_official_shape_price.py`（只读、七臂，
+载档同样由 shell 重定向写）：它唯一落笔的地方是把 HEAD 版的读者源码复制进 `tempfile` 再
+`importlib` 加载（为的是在同一进程里并置"出厂头"与"工作树头"两种读法），`finally` 里 `staged.unlink()`
+并把 `sys.modules` 那一格弹出（见该文件 :149），所以仓库字节与被判定面一个不动；它不写自己的载档，
+因此 step 4 那批 `.err`（本波 12 枚，全树现数 24 枚）里它的 stderr 与其余一样按约定不入库。
+写盘仪器的名单在这代没有变宽：`receipt_drift_counterfact.py` 仍是唯一真的重写 canonical 回执的那台，
+step 4 只是把它的载档常量改名为 `wave28-step4c-receipt-drift-counterfact.txt`，好让已提交的 step 2 那份
+不被这台的整体重写吞掉。

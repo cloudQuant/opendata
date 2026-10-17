@@ -1,0 +1,23 @@
+wave-28 step 4c -- receipt-drift counterfact re-taken on the current landed face; the step-2 carrier runs/wave28-step2-receipt_drift_counterfact.txt is kept beside this one.
+arms: A green read, B receipts rotated by a producer re-run whose --output pointed at a
+scratch file (canonical claims document left alone), C re-landed in generation order.
+argvs: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider nasdaq --output docs/evidence/C101/nasdaq/claims.driftscratch.json || /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_model_evidence.py --inventory docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv --claims docs/evidence/C101/claims.merged.json --output docs/evidence/C101/judge/claims.merged.report.json || /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider nasdaq --output docs/evidence/C101/nasdaq/claims.json || /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/nasdaq/claims.json --output docs/evidence/C101/nasdaq/claims.reviewed.json --identity nasdaq::CalendarDividend --identity nasdaq::CalendarEarnings --identity nasdaq::CalendarIpo --identity nasdaq::CompanyFilings --identity nasdaq::EconomicCalendar --identity nasdaq::EquityScreener --identity nasdaq::EquitySearch --identity nasdaq::HistoricalDividends --identity nasdaq::TopRetail --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer || /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_merge.py || /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_model_evidence.py --inventory docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv --claims docs/evidence/C101/claims.merged.json --output docs/evidence/C101/judge/claims.merged.report.json
+A_pre: accepted=276 nasdaq_rows=9 drift_rows=0 nasdaq_statuses=['OFFLINE_ACCEPTED'] status_counts={'INCOMPLETE': 6, 'OFFLINE_ACCEPTED': 276, 'UNREVIEWED': 68}
+B_rotate: exit=0 stderr_bytes=0
+B_rejudge: exit=0 stderr_bytes=0
+B_after_rotate: accepted=267 nasdaq_rows=9 drift_rows=9 nasdaq_statuses=['STALE'] status_counts={'INCOMPLETE': 6, 'OFFLINE_ACCEPTED': 267, 'STALE': 9, 'UNREVIEWED': 68}
+C_after_reland: accepted=276 nasdaq_rows=9 drift_rows=0 nasdaq_statuses=['OFFLINE_ACCEPTED'] status_counts={'INCOMPLETE': 6, 'OFFLINE_ACCEPTED': 276, 'UNREVIEWED': 68}
+C_reproduce: exit=0 stderr_bytes=0
+C_resign: exit=0 stderr_bytes=0
+C_remerge: exit=0 stderr_bytes=0
+C_rejudge: exit=0 stderr_bytes=0
+arm_A_expected_276_no_drift=True
+arm_B_expected_267_with_9_drift=True
+landed_face_rebase previous=275 shipped=276 measured_A=276 moved=True
+arm_C_restores_arm_A_face=True
+scratch_claims_removed=True
+receipt_drift_face PASS=True
+chain_exit=0
+run_record: argv PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C128/plane1-residue-readiness-20261017/probes/receipt_drift_counterfact.py (cwd = repo root, no pipes)
+run_record: stderr_bytes=0 drift_exit=0
+run_record: arm C leaves the tree in the re-landed generation that this carrier commits

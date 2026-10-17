@@ -15,6 +15,9 @@ import pytest
 from openpyxl import Workbook
 
 from opendata.data.domains import DomainSpec, contract_model
+from opendata.data.models.federal_reserve_clean_documents import (
+    FederalReserveYieldCurveObservation,
+)
 from opendata.data.models.federal_reserve_clean_nyfed import (
     PrimaryDealerFails,
     PrimaryDealerPositioning,
@@ -24,7 +27,6 @@ from opendata.data.models.federal_reserve_macro import (
     FederalReserveFomcDocument,
     FederalReserveInflationExpectations,
     FederalReserveTotalFactorProductivity,
-    FederalReserveYieldCurve,
 )
 from opendata.data.protocol import FetchContext
 from opendata.data.providers.catalog import register_provider
@@ -157,7 +159,7 @@ def _h15_csv(*, malformed_header: bool = False) -> bytes:
 
 def _domain_spec(domain: str, model_type: type[Any]) -> DomainSpec:
     model_name = {
-        FederalReserveYieldCurve: "YieldCurve",
+        FederalReserveYieldCurveObservation: "YieldCurve",
         PrimaryDealerFails: "PrimaryDealerFails",
         PrimaryDealerPositioning: "PrimaryDealerPositioning",
         FederalReserveCentralBankHolding: "CentralBankHoldings",
@@ -320,7 +322,7 @@ def _fomc_html() -> str:
 
 
 _MODELS = {
-    "YieldCurve": (FederalReserveYieldCurve, "www.federalreserve.gov"),
+    "YieldCurve": (FederalReserveYieldCurveObservation, "www.federalreserve.gov"),
     "PrimaryDealerFails": (
         PrimaryDealerFails,
         "markets.newyorkfed.org",
@@ -366,9 +368,17 @@ def test_integration_handoff_semantics_reference_typed_contract_fields() -> None
         for fetcher in PROVIDER.fetchers
         if fetcher.canonical_model in _MODELS
     }
-    for entry in handoff["domains"].values():
+    for domain, entry in handoff["domains"].items():
         spec = DomainSpec.model_validate(entry)
-        contract = contracts_by_name[spec.contract]
+        name = spec.contract
+        if name not in contracts_by_name:
+            # The C100 handoff names the class the leg emitted when the handoff was written; wave
+            # 28 retargeted the H.15 leg to the class domains.yaml declares. Resolve a stale name
+            # through the shipped registry so a real drift still reddens the field check below.
+            shipped = contract_model(domain)
+            assert shipped.__name__ in contracts_by_name, domain
+            name = shipped.__name__
+        contract = contracts_by_name[name]
         contract_fields = set(contract.model_fields)
         semantic_fields = (
             (() if spec.time_field is None else (spec.time_field,))

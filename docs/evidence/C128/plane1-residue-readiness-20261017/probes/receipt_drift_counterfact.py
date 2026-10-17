@@ -10,9 +10,10 @@ the digests of the previous generation. The judge then read all nine rows as STA
 Rather than describe that incident, this probe re-creates it and shows the guard is the thing
 that caught it:
 
-  arm A  read the shipped (green) state: 275 accepted, nasdaq drift issues = 0
+  arm A  read the shipped (green) state: the landed plane-1 face and nasdaq drift issues = 0
   arm B  rotate the receipts only (producer to a scratch `--output`, canonical document untouched)
-         and read again: accepted must FALL and the nine rows must carry claim_receipt_hash_drift
+         and read again: accepted must FALL by exactly `len(MODELS)` and that many rows must carry
+         claim_receipt_hash_drift
   arm C  re-land in generation order (produce -> sign -> merge -> judge) and read again: the face
          must return to arm A
 
@@ -35,6 +36,15 @@ RUNS = REPO / "docs/evidence/C128/plane1-residue-readiness-20261017/runs"
 INVENTORY = "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv"
 JUDGE_REPORT = REPO / "docs/evidence/C101/judge/claims.merged.report.json"
 SCRATCH_CLAIMS = REPO / "docs/evidence/C101/nasdaq/claims.driftscratch.json"
+#: The landed plane-1 face this generation asserts -- the same count
+#: ``witness_seam_kind_census.LANDED_ACCEPTED`` pins. Wave-28 step 4 landed
+#: ``federal_reserve::YieldCurve``, so the value carried here moved 275 -> 276; the face line prints
+#: expectation and measurement side by side so the re-base is checkable rather than remembered.
+LANDED_ACCEPTED = 276
+LANDED_ACCEPTED_PREVIOUS = 275
+#: The step-2 run wrote ``wave28-step2-receipt_drift_counterfact.txt``; this re-take writes its own
+#: carrier so that generation's record stays on disk next to it.
+CARRIER_NAME = "wave28-step4c-receipt-drift-counterfact.txt"
 
 MODELS = [
     "CalendarDividend",
@@ -160,13 +170,18 @@ def main() -> int:
     a2 = read_face()
     steps.append({"arm": "C_after_reland", "face": a2, "runs": reland})
 
-    ok_a = a0["accepted"] == 275 and a0["drift_rows"] == 0
-    ok_b = a1["accepted"] == 266 and a1["drift_rows"] == 9
+    ok_a = a0["accepted"] == LANDED_ACCEPTED and a0["drift_rows"] == 0
+    ok_b = (
+        a1["accepted"] == LANDED_ACCEPTED - len(MODELS)
+        and a1["drift_rows"] == len(MODELS)
+        and len(a1["drift_models"]) == len(MODELS)
+    )
     ok_c = a2 == a0
     SCRATCH_CLAIMS.unlink(missing_ok=True)
     all_runs = [s["run"] for s in steps if "run" in s] + steps[-1]["runs"]  # type: ignore[index]
     lines = [
-        "wave-28 step 2 -- receipt-drift counterfact for the plane-1 judge.",
+        "wave-28 step 4c -- receipt-drift counterfact re-taken on the current landed face; the "
+        "step-2 carrier runs/wave28-step2-receipt_drift_counterfact.txt is kept beside this one.",
         "arms: A green read, B receipts rotated by a producer re-run whose --output pointed at a",
         "scratch file (canonical claims document left alone), C re-landed in generation order.",
         "argvs: " + " || ".join(" ".join(str(x) for x in r["argv"]) for r in all_runs),
@@ -187,13 +202,17 @@ def main() -> int:
         f"{run['name']}: exit={run['exit']} stderr_bytes={run['stderr_bytes']}"
         for run in steps[-1]["runs"]  # type: ignore[index]
     )
-    lines.append(f"arm_A_expected_275_no_drift={ok_a}")
-    lines.append(f"arm_B_expected_266_nine_drift={ok_b}")
+    lines.append(f"arm_A_expected_{LANDED_ACCEPTED}_no_drift={ok_a}")
+    lines.append(f"arm_B_expected_{LANDED_ACCEPTED - len(MODELS)}_with_{len(MODELS)}_drift={ok_b}")
+    lines.append(
+        f"landed_face_rebase previous={LANDED_ACCEPTED_PREVIOUS} shipped={LANDED_ACCEPTED} "
+        f"measured_A={a0['accepted']} moved={a0['accepted'] != LANDED_ACCEPTED_PREVIOUS}"
+    )
     lines.append(f"arm_C_restores_arm_A_face={ok_c}")
     lines.append(f"scratch_claims_removed={not SCRATCH_CLAIMS.exists()}")
     lines.append(f"receipt_drift_face PASS={ok_a and ok_b and ok_c}")
     lines.append("chain_exit=0")
-    path = RUNS / "wave28-step2-receipt_drift_counterfact.txt"
+    path = RUNS / CARRIER_NAME
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines[-7:]))
     print(f"carrier_written bytes={path.stat().st_size}")

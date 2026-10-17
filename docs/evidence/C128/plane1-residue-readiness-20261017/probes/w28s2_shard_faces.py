@@ -91,8 +91,9 @@ def reproducibility() -> list[str]:
         "rerun=eca8013c974bd465 reproducible=True, with the falsifying arm that",
         "flipped one claim status to FAIL giving control_tampered_sha=043cb3d97ee24abc.",
         "The recomputable form of the same claim is",
-        "runs/wave28-step2-receipt_drift_counterfact.txt: its arm C re-produces the same nine rows",
-        "and must restore arm A's judged face exactly (accepted=275, drift_rows=0).",
+        "runs/wave28-step4c-receipt-drift-counterfact.txt: its arm C re-produces the same",
+        "nine rows and must restore arm A's judged face exactly (the landed accepted count,",
+        "drift_rows=0).",
     ]
     return lines
 

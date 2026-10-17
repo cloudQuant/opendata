@@ -1,4 +1,4 @@
-"""Wave 8 shard: offline witnesses for the six federal_reserve rows that read workbook, CSV or
+"""Wave 8 shard: offline witnesses for the seven federal_reserve rows that read workbook, CSV or
 SOMA JSON carriers.
 
 The base module withheld these rows because of the *body* its seam could hand over: the probe's
@@ -12,7 +12,7 @@ production transport (:func:`opendata.data.providers._engine.http_json._http_get
 patching that one module attribute routes the real transport through the fixture, and a delimited
 declaration gets a genuine ``response.content``. The declared seam is therefore
 ``opendata.data.http_client`` for the three engine rows and
-``opendata.data.providers.federal_reserve._iter2_client`` for the three hand-written rows, which
+``opendata.data.providers.federal_reserve._iter2_client`` for the four hand-written rows, which
 read the same attribute at module level. Nothing here replaces a fetch stage: the shipped decoders,
 value transforms, row models and refusal sites are the code under test, and no leg can open a
 socket (the runner blocks sockets by construction).
@@ -38,8 +38,13 @@ Every ``expected_*`` face below was read off the *contract*, not off a run:
   ``ProviderEngineError`` subclass with a ``status`` face), which is code-only: the numeric guards
   :func:`parse_decimal` / :func:`parse_float` deliberately do not attribute a column, so all
   three attribution faces stay empty, exactly as branch B requires.
+* ``YieldCurve`` -- the same code-only shape, and the row wave 28 retargeted onto its own contract:
+  :file:`models/yield_curve.py` now builds the class ``domains.yaml`` names for the domain,
+  ``FederalReserveYieldCurveObservation``, whose ``rate`` is a ``float | None`` reachable only
+  through the published ``ND`` token or a blank cell, so prose in a ``RIFLGFCY10_N.B`` cell refuses
+  as ``FEDERAL_RESERVE_BAD_NUMERIC_VALUE`` and names no column.
 
-Two of the eight assigned rows are NOT witnessed here, and both are the provider's look-alike
+One of the eight assigned rows is NOT witnessed here, and the reason is the provider's look-alike
 contract defect rather than a missing fixture, so per the wave rules the contract, the domain yaml
 and the fetcher's row construction stay untouched:
 
@@ -48,11 +53,18 @@ and the fetcher's row construction stay untouched:
   ``contract_model('federal_reserve_fomc_documents')`` resolves to
   ``opendata.data.models.federal_reserve_clean_documents.FederalReserveFomcDocument``: same name,
   different module, different fields. Declaring either class as ``row_model`` either trips
-  ``tests/test_federal_reserve_iter2_models.py:382-403`` or hides the defect.
-* ``YieldCurve`` -- ``opendata/data/providers/federal_reserve/models/yield_curve.py:13`` builds
-  ``opendata.data.models.federal_reserve_macro.FederalReserveYieldCurve`` (long-form
-  ``date``/``maturity``/``rate``) while the domain contract is
-  ``opendata.data.models.federal_reserve_clean_documents.FederalReserveYieldCurveObservation``.
+  ``tests/test_federal_reserve_iter2_models.py:392-413`` or hides the defect.
+
+``YieldCurve`` was the second row withheld this way and no longer is. The wording above used to call
+it a same-name pair like ``FomcDocuments``; the instrument measured the opposite -- the look-alike
+``federal_reserve_macro.FederalReserveYieldCurve`` and the contract
+``federal_reserve_clean_documents.FederalReserveYieldCurveObservation`` differ in name
+(``names_equal=False``) and agree only on their field face (``field_face_equal=True``, ``date`` /
+``maturity`` / ``rate`` in both). Retargeting the reader to the declared contract is what let the
+frozen guard ``tests/test_federal_reserve_iter2_models.py:392-413`` hold for it, and the guard's
+discriminating power was shown by forging the look-alike back into ``row_model`` in memory: the
+check goes false and restores true. See
+``docs/evidence/C128/plane1-residue-readiness-20261017/probes/fed_h15_official_shape_price.py``.
 
 Witnesses run exclusively through the offline seam. No leg touches the network and no
 ``OPENDATA_ALLOW_LIVE_E2E`` path is enabled.
@@ -68,6 +80,9 @@ from openpyxl import Workbook
 
 from opendata.data.providers.federal_reserve.models.total_factor_productivity import (
     _HEADER as _TFP_HEADER,
+)
+from opendata.data.providers.federal_reserve.models.yield_curve import (
+    _HEADER as _H15_LONG_HEADER,
 )
 from opendata.data.providers.federal_reserve.specs import SVENSSON_SERIES_COLUMNS
 
@@ -149,6 +164,51 @@ def _treasury_rates_first_row(year_10: str) -> str:
     """The first H.15 row with its 10-year cell replaced (the counterfact's tampered line)."""
     cells = list(_TREASURY_RATES_ROWS[0].split(","))
     cells[_H15_YEAR_10_CELL] = year_10
+    return ",".join(cells)
+
+
+#: The five metadata rows a released H.15 ``type=package`` body prints ahead of its table. Only
+#: each line's first cell is compared, and the fifth is published padded -- ``Unique Identifier: ``
+#: with a trailing space before its comma -- which is the byte the long-form reader used to refuse
+#: and now strips before comparing.
+_YIELD_CURVE_PREAMBLE: Final[tuple[str, ...]] = (
+    "Series Description,Market yield on U.S. Treasury securities at constant maturity",
+    "Unit:,Percent:_Per_Year",
+    "Multiplier:,1",
+    "Currency:,NA",
+    "Unique Identifier: ,H15/H15/RIFLGFCM01_N.B",
+)
+#: The first two rows are the 2026-10-07 and 2026-10-08 observations of the eleven-series package
+#: exactly as the official capture publishes them; the third row adds the release's two null
+#: spellings for a tenor it does not observe or has not yet revised (``ND`` and a blank), both of
+#: which the retargeted reader has to land as ``rate=None`` on the contract instead of refusing.
+_YIELD_CURVE_ROWS: Final[tuple[str, ...]] = (
+    "2026-10-07,4.07,4.22,4.28,4.42,4.77,4.87,5.03,5.15,5.28,5.71,5.67",
+    "2026-10-08,4.14,4.23,4.30,4.44,4.75,4.85,4.99,5.11,5.22,5.64,5.60",
+    "2026-10-09,4.11,,4.26,4.40,4.73,4.83,4.97,5.09,5.20,ND,5.58",
+)
+#: The zero-based cell index of the 10-year series in a long-form row. Cell 0 is the date and header
+#: cell 0 is ``Time Period``, so the header position is the cell position -- no offset.
+_H15_LONG_YEAR_10_CELL: Final[int] = _H15_LONG_HEADER.index("RIFLGFCY10_N.B")
+
+
+def _fed_yield_curve_envelope() -> dict[str, Any]:
+    """The H.15 long-form package body the pinned reader expands to date/maturity/rate rows."""
+    return {
+        "responses": [
+            {
+                "url_contains": "rel=H15",
+                "content_type": "text/csv",
+                "body": [*_YIELD_CURVE_PREAMBLE, ",".join(_H15_LONG_HEADER), *_YIELD_CURVE_ROWS],
+            }
+        ]
+    }
+
+
+def _yield_curve_first_row(year_10: str) -> str:
+    """The first long-form row with its ``RIFLGFCY10_N.B`` cell replaced."""
+    cells = list(_YIELD_CURVE_ROWS[0].split(","))
+    cells[_H15_LONG_YEAR_10_CELL] = year_10
     return ",".join(cells)
 
 
@@ -362,6 +422,7 @@ _ENGINE: Final[str] = "opendata/data/providers/_engine/http_json.py"
 _HTTP_CLIENT: Final[str] = "opendata/data/http_client.py"
 _CLEAN_RATES: Final[str] = "opendata/data/models/federal_reserve_clean_rates.py"
 _MACRO: Final[str] = "opendata/data/models/federal_reserve_macro.py"
+_CLEAN_DOCUMENTS: Final[str] = "opendata/data/models/federal_reserve_clean_documents.py"
 _ITER2_CLIENT: Final[str] = "opendata/data/providers/federal_reserve/_iter2_client.py"
 _ITER2_COMMON: Final[str] = "opendata/data/providers/federal_reserve/models/_iter2_common.py"
 _DOMAINS: Final[str] = "opendata/data/domains.yaml"
@@ -544,5 +605,33 @@ MODELS: Final[dict[str, dict[str, Any]]] = {
             _ITER2_COMMON,
         ],
         "contract_files": [_MACRO, _DOMAINS],
+    },
+    "YieldCurve": {
+        "client_seam": _ITER2_CLIENT_SEAM,
+        "fixture_document": _fed_yield_curve_envelope,
+        "query": {"start_date": "2026-10-07", "end_date": "2026-10-09"},
+        "tamper": {
+            "op": "set",
+            "path": ["responses", 0, "body", 6],
+            "value": _yield_curve_first_row("five point two eight"),
+            "column": "RIFLGFCY10_N.B",
+        },
+        "refusal_class": "FederalReserveSourceError",
+        "refusal_code": "FEDERAL_RESERVE_BAD_NUMERIC_VALUE",
+        "tamper_reason": (
+            "the retargeted long-form reader sends every cell that is not the published token ND "
+            "through parse_decimal(nullable=True) into "
+            "FederalReserveYieldCurveObservation.rate, a float | None whose only null spellings "
+            "are ND and a blank, so a 10-year cell spelled 'five point two eight' is prose where "
+            "H.15 prints a number and must refuse as FEDERAL_RESERVE_BAD_NUMERIC_VALUE instead "
+            "of publishing one business day's headline yield as an invented fraction; the guard "
+            "attributes no column, so all three detail faces stay empty"
+        ),
+        "source_files": [
+            "opendata/data/providers/federal_reserve/models/yield_curve.py",
+            _ITER2_CLIENT,
+            _ITER2_COMMON,
+        ],
+        "contract_files": [_CLEAN_DOCUMENTS, _DOMAINS],
     },
 }

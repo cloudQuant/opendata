@@ -1,0 +1,42 @@
+wave-28 step 4e -- the batch5 fence's 31 pinned keys, listed so that "the step-4 product edits are outside this
+fence" is a measured set statement rather than a spot check. Read-only: the snapshot is parsed and counted,
+nothing is hashed for writing and no --apply path is reachable from this probe.
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python - <<PY  (inline census in a quoted heredoc, cwd = repo root, no pipes, PYTHONPATH=not set, no arguments passed)
+reproduce: json.load(open('tests/fixtures/registry_batch5_snapshot.json'))['source_hashes_sha256'], sorted(), counted; then substring tests for 'federal_reserve' and 'yield_curve' over the keys
+snapshot_bytes=238509 snapshot_sha16=bcdca191aa39064a
+federal_reserve_keys=0
+yield_curve_in_pins=False
+provider_keys_under_opendata_data=['finviz', 'fred', 'yfinance']
+keys:
+  docs/evidence/C100/acceptance-fred-sloos/runs/20261012T181729.721761Z/receipt.json
+  docs/evidence/C100/fred-sloos/source-freeze-v2.json
+  docs/evidence/C100/integration/candidates/central-wiring-batch4-candidate.json
+  docs/evidence/C100/integration/candidates/central-wiring-batch5-candidate.json
+  docs/evidence/C100/integration/candidates/central-wiring-batch5-count-adjudication.json
+  docs/evidence/C100/integration/candidates/central-wiring-batch5-static-freeze.json
+  docs/evidence/C100/integration/preimages/central-wiring-batch5-preimages.tar
+  docs/evidence/C100/integration/root-guarded-batch3-retake1/receipt.json
+  docs/evidence/C100/integration/root-guarded-batch3-retake1/smoke.json
+  docs/evidence/C100/integration/runs/central-wiring-20261012T193703Z-batch5-sloos-retake1/batch5-adjudication.json
+  docs/evidence/C100/integration/runs/central-wiring-20261012T193703Z-batch5-sloos-retake1/batch5-source-freeze.json
+  docs/evidence/C100/integration/runs/central-wiring-20261012T193703Z-batch5-sloos-retake1/judge_batch5_adjudication.py
+  docs/evidence/C100/integration/runs/central-wiring-20261012T193703Z-batch5-sloos-retake1/run.json
+  docs/evidence/C100/integration/runs/central-wiring-20261012T193703Z-batch5-sloos-retake1/run.log
+  docs/evidence/C100/integration/runs/central-wiring-20261012T193703Z-batch5-sloos-retake1/smoke.py
+  docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv
+  opendata/data/domains.yaml
+  opendata/data/mappings/akshare.yaml
+  opendata/data/mappings/ths.yaml
+  opendata/data/models/__init__.py
+  opendata/data/models/finviz_performance.py
+  opendata/data/models/fred_sloos.py
+  opendata/data/models/yfinance_iter2.py
+  opendata/data/providers/finviz/models/price_performance.py
+  opendata/data/providers/fred/models/sloos.py
+  opendata/data/providers/fred/provider.py
+  opendata/data/providers/fred/sloos_series.py
+  opendata/data/providers/yfinance/models/iter2.py
+  opendata/data/providers/yfinance/models/market_iter2.py
+  tests/fixtures/registry_batch3_snapshot.json
+  tests/fixtures/registry_batch4_snapshot.json
+fence_pin_keys_exit=0

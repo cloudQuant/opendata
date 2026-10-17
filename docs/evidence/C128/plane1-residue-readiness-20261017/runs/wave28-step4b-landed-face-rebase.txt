@@ -1,0 +1,28 @@
+wave-28 step 4b -- landed-face re-base, with the forged arm that proves it still bites.
+argv: PYTHONPATH= $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/landed_face_rebase.py
+runs: each subject probe's main() called three times here over the same report bytes -- shipped landed constant, then that constant forged back to the wave-28 step-3 generation, then restored. No product file is written; the only file this probe writes is its carrier.
+self-reference: the two subject probes were edited before run 1, so their line/sha pins move with this step and are re-pinned in docs/evidence/C128/README.md.
+ledger_axis_blast: constant=LANDED_STATUSES shipped={'INCOMPLETE': 6, 'OFFLINE_ACCEPTED': 276, 'UNREVIEWED': 68} forged_to={'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 275, 'UNREVIEWED': 68}
+ledger_axis_blast: exits first=0 forged=1 restored=0
+ledger_axis_blast: shipped_face ledger_blast_face residue=74 bound_true=42 ledger_refusal=11 ledger_silent=1 no_ledger_module=62 no_ledger_module_and_bound=41 pre_split_overstatement=62 arms=5 arms_passed=5 arms_failed=0 identity_set=5168e1e723999312
+ledger_axis_blast: forged_face ledger_blast_face residue=74 bound_true=42 ledger_refusal=11 ledger_silent=1 no_ledger_module=62 no_ledger_module_and_bound=41 pre_split_overstatement=62 arms=5 arms_passed=4 arms_failed=1 identity_set=5168e1e723999312
+ledger_axis_blast: forged_failed_arms=['A_landed_report_face']
+ledger_axis_blast: counters residue=74/74 identity=5168e1e723999312/5168e1e723999312 statuses={'INCOMPLETE': 6, 'OFFLINE_ACCEPTED': 276, 'UNREVIEWED': 68}/{'INCOMPLETE': 6, 'OFFLINE_ACCEPTED': 276, 'UNREVIEWED': 68}
+ledger_axis_blast: rebase_delta={'INCOMPLETE': -1, 'OFFLINE_ACCEPTED': 1, 'UNREVIEWED': 0} forged_measured={'INCOMPLETE': 6, 'OFFLINE_ACCEPTED': 276, 'UNREVIEWED': 68} forged_asserted={'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 275, 'UNREVIEWED': 68}
+ledger_axis_blast: aging_lines=0 all_grant_lines=True sample=[]
+ledger_axis_blast_arms A_unmodified_green=True B_forged_previous_red=True C_only_landed_arm_moves=True D_measurement_unchanged=True E_restored_green_and_aging_named=True F_delta_matches_committed_face=True
+witness_seam_kind_census: constant=LANDED_ACCEPTED shipped=276 forged_to=275
+witness_seam_kind_census: exits first=0 forged=1 restored=0
+witness_seam_kind_census: shipped_face seam_kind_face residue=74 subject_transport_calls=0 subject_error=YfinanceProviderError controls=4 declared=15 arms=7 arms_passed=7 arms_failed=0 identity_set=5168e1e723999312
+witness_seam_kind_census: forged_face seam_kind_face residue=74 subject_transport_calls=0 subject_error=YfinanceProviderError controls=4 declared=15 arms=7 arms_passed=6 arms_failed=1 identity_set=5168e1e723999312
+witness_seam_kind_census: forged_failed_arms=['A_landed_report_face']
+witness_seam_kind_census: counters residue=74/74 identity=5168e1e723999312/5168e1e723999312 accepted=276/276
+witness_seam_kind_census: accepted_delta=1 forged_line=A_landed_report_face total=350 summary_count=350 accepted=276 summary_accepted=276 identity_set=5168e1e723999312 previous_accepted=275 accepted_delta=1 identity_set_moved=False
+witness_seam_kind_census: aging_lines=2 all_grant_lines=True sample=["'A_engine_transport_control benzinga::AnalystSearch rows=1 transport_calls=1 document=fixture granted=BENZINGA_API_KEY error=None' != 'A_engine_transport_control benzinga::AnalystSearch rows=1 transport_calls=1 document=fixture granted=none error=None'"]
+witness_seam_kind_census_arms A_unmodified_green=True B_forged_previous_red=True C_only_landed_arm_moves=True D_measurement_unchanged=True E_restored_green_and_aging_named=True F_delta_matches_committed_face=True
+landed_face_rebase_face subjects=2 arms=12 arms_passed=12 arms_failed=0 PASS=True
+chain_exit=0
+run_record: argv PYTHONPATH= /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C128/plane1-residue-readiness-20261017/probes/landed_face_rebase.py (cwd = repo root, no pipes)
+run_record: stderr_bytes=59 stderr_text='$AAPL: possibly delisted; no price data found  (period=5d)' -- yfinance's own offline-data notice printed by the census control attempts; the face line reports subject_transport_calls=0, so no outbound socket was used
+run_record: rebase_exit=0 arms=12 arms_passed=12 arms_failed=0 identity_set=5168e1e723999312
+run_record: this take follows wave28-step4c-receipt-drift-counterfact.txt, so the report bytes are the nasdaq re-land generation; the face (350 / 276 accepted / {6 INCOMPLETE, 68 UNREVIEWED}) and the identity set are unchanged by it

@@ -1,13 +1,16 @@
 """Re-base the landed-face constants, and show the re-based arm can still go red.
 
-Wave-28 step 2 landed nine nasdaq rows, so the landed plane-1 face moved ``266 -> 275`` and
-``77 -> 68`` while the identity set stayed ``5168e1e723999312``. Two wave-27 instruments assert that
-face (``ledger_axis_blast.A_landed_report_face``, ``witness_seam_kind_census.A_landed_report_face``)
-and both were reading ``arms_failed=1`` for it. Re-basing an expected value is only safe if the arm
-still discriminates, so this driver calls each probe's ``main()`` three times in one process over
-the same report bytes: with the shipped constant, with the constant forged back to the wave-27
-generation, then with it restored. A re-base that leaves an arm incapable of failing is how a stale
-judge survives its own correction, which is the failure mode being guarded.
+Wave-28 step 4 landed one row -- ``federal_reserve::YieldCurve``, after its reader was retargeted
+onto the class ``opendata/data/domains.yaml`` declares -- so the landed plane-1 face moved
+``275 -> 276`` accepted and ``7 -> 6`` INCOMPLETE (the row's claims were BLOCKED, so UNREVIEWED
+held at 68) while the identity set stayed ``5168e1e723999312``. Two wave-27
+instruments assert that face (``ledger_axis_blast.A_landed_report_face``,
+``witness_seam_kind_census.A_landed_report_face``) and both read ``arms_failed=1`` for it until
+their constants moved. Re-basing an expected value is only safe if the arm still discriminates, so
+this driver calls each probe's ``main()`` three times in one process over the same report bytes:
+with the shipped constant, with the constant forged back to the previous generation, then with it
+restored. A re-base that leaves an arm incapable of failing is how a stale judge survives its own
+correction, which is the failure mode being guarded.
 
 Arms, six per subject, all of which can fail:
 
@@ -32,7 +35,7 @@ Arms, six per subject, all of which can fail:
     so ``granted=`` is the one field that legitimately ages inside a single process. Comparing whole
     stdout would have read that aging as a broken re-base.
 ``F_delta_matches_the_committed_face``
-    the delta the re-based probe prints is exactly the step-2 move (nine rows out of UNREVIEWED and
+    the delta the re-based probe prints is exactly the step-4 move (one row out of INCOMPLETE and
     into OFFLINE_ACCEPTED, summing to zero) and the forged run still *reports* the real accepted
     count while asserting the old one, which is what tells a reader which side was wrong.
 
@@ -64,10 +67,10 @@ PROBE_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROBE_DIR))
 
 RUNS = PROBE_DIR.parent / "runs"
-CARRIER = RUNS / "wave28-step3a-landed-face-rebase.txt"
+CARRIER = RUNS / "wave28-step4b-landed-face-rebase.txt"
 
-EXPECTED_ACCEPTED = 275
-EXPECTED_DELTA = {"INCOMPLETE": 0, "OFFLINE_ACCEPTED": 9, "UNREVIEWED": -9}
+EXPECTED_ACCEPTED = 276
+EXPECTED_DELTA = {"INCOMPLETE": -1, "OFFLINE_ACCEPTED": 1, "UNREVIEWED": 0}
 SUBJECTS = (
     {
         "module": "ledger_axis_blast",
@@ -247,12 +250,13 @@ def main(argv: list[str] | None = None) -> int:
     """Run each probe three times and gate the shipped/forged/restored comparison."""
     argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0]).parse_args(argv)
     lines: list[str] = [
-        "wave-28 step 3a -- landed-face re-base, with the forged arm that proves it still bites.",
+        "wave-28 step 4b -- landed-face re-base, with the forged arm that proves it still bites.",
         "argv: PYTHONPATH= $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/"
         "landed_face_rebase.py",
         "runs: each subject probe's main() called three times here over the same report bytes -- "
-        "shipped landed constant, then that constant forged back to the wave-27 generation, then "
-        "restored. No product file is written; the only file this probe writes is its carrier.",
+        "shipped landed constant, then that constant forged back to the wave-28 step-3 "
+        "generation, then restored. No product file is written; the only file this probe writes is "
+        "its carrier.",
         "self-reference: the two subject probes were edited before run 1, so their line/sha pins "
         "move with this step and are re-pinned in docs/evidence/C128/README.md.",
     ]
