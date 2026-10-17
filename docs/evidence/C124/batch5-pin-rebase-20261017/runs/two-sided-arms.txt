@@ -1,0 +1,12 @@
+run: python docs/evidence/C124/batch5-pin-rebase-20261017/probes/b5shadow_rearm.py
+cwd: /Users/yunjinqi/Documents/new_projects/opendata
+interpreter: /Users/yunjinqi/opt/anaconda3/bin/python (3.11.8, pydantic 2.13.4)
+arms_exit=0 arms_stdout_bytes=743 arms_stderr_bytes=0
+note: pytest wall-clock seconds in the reading lines vary run to run; the counts do not.
+--- stdout verbatim ---
+pin_entries=31 stale_before_arms=0 famafrench_pinned_paths=0
+victim=docs/evidence/C100/acceptance-fred-sloos/runs/20261012T181729.721761Z/receipt.json victim_digest_on_disk=6bbf32147907ddc9729865cbe54e7b7446bd7f47e93b5d345883e2e1de6cf4c5
+arm_A_forged_exit=1 reading=4 failed, 2 passed in 0.90s fixture_sha256=eae064cc90573d958dfa11a9b3d5e4b35ac1ab0eae6277fcb30decf60d912b39 fixture_bytes=238509 forged=True
+  first_bite: /tmp/b5shadow_arm_A_forged/tests/test_provider_domains.py:1368: AssertionError: docs/evidence/C100/acceptance-fred-sloos/runs/20261012T181729.721761Z/receipt.json
+arm_B_inert_exit=0 reading=6 passed in 0.92s fixture_sha256=d434b9137178e0df899681ed0a183f1e63fdec599646e1aca24ab1143ea8cd1a fixture_bytes=238509 forged=False
+--- end stdout ---

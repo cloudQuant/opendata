@@ -1,0 +1,17 @@
+run: python docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py   (no --apply)
+why: the C103 instrument performed the previous re-base of this same fence and derives
+     every digest from the live file, never from a typed literal, so its census is an
+     independent confirmation of the values written in C124.
+pin_rebase_exit=1 stdout_bytes=407 stderr_bytes=0
+reading: matched=31 stale=0 missing=0 is the post-re-base census. exit=1 is the
+     instrument's own refusal gate (it refuses to re-pin when nothing is stale), not a
+     judgement failure.
+--- stdout verbatim ---
+face: repo_root=/Users/yunjinqi/Documents/new_projects/opendata
+face: argv=[]
+face: pin_entries=31
+face: snapshot_payload_sha_before=d434b9137178e0df899681ed0a183f1e63fdec599646e1aca24ab1143ea8cd1a
+face: candidate_sha256_before=775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e
+face: matched=31 stale=0 missing=0
+verdict: REFUSED - no stale pin to re-base, refusing to re-pin a moving digest
+--- end stdout ---

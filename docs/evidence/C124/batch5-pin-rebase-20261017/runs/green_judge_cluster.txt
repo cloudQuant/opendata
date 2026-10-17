@@ -1,0 +1,11 @@
+run: python -m pytest tests/test_provider_domains.py tests/test_alert_matrix.py
+     tests/test_alert_matrix_model_domains.py tests/test_pipeline_jobs.py
+     -o addopts= -p no:cacheprovider -q
+cluster_exit=0
+--- stdout verbatim ---
+........................................................................ [ 61%]
+.............................................                            [100%]
+117 passed in 1.39s
+--- end stdout ---
+denominator: 117 items. 开发验收记录.md 第 2849 行（§59 / C103）for the same four-module
+  cluster reads `117 passed in 1.24s`; the re-base therefore moves no collected count.
