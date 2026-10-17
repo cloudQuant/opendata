@@ -1,0 +1,32 @@
+wave-28 step 3b -- index-face (staged) secret scan for the five paths this step commits.
+argv (take 1, verbatim): git -c core.quotepath=off diff --cached --name-only -z | xargs -0 $PY
+  docs/evidence/C128/plane1-residue-readiness-20261017/probes/staged_payload_scan.py --paths
+  ($PY = the gate's py313 binary; `--paths` stays in the prefix, never at the command tail, because
+  xargs can only append the file list -- the shape of this instrument's first red in
+  `precommit-staged-scan.wave25.txt` was `STAGED_exit=1` with 0 bytes of stdout, which is exactly the
+  usage error this column guards against via `payload_scan_unresolved`.)
+precondition_control git_diff_name_only_files=0 (measured immediately before take 1: worktree == index,
+  so "scan the worktree bytes" is literally "scan the bytes about to be committed"; the write-set is
+  README.md + the new probe + 2 carriers + the dev record with the new section)
+take1 payload_scan_files=5 payload_scan_roots=5 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+take1: payload_scan=PASS 5 file(s) clean
+take1 scan_exit=0 take1_stdout_bytes=144 take1_stderr_bytes=0
+Self-reference stated: take 1 scanned the five paths above; this carrier was not in the index yet, so it
+is not in that file list. Take 2 (below, to be appended after this file is staged) is the same command
+with one more path, and only the `payload_scan_files` counter may move between them.
+take2 (this carrier staged; write-set is now six paths) payload_scan_files=6 payload_scan_roots=6
+take2 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+take2: payload_scan=PASS 6 file(s) clean
+take2 scan_exit=0 take2_stdout_bytes=144 take2_stderr_bytes=0
+take2_vs_take1 diff measured, not assumed: `diff` over the two stdouts exits 1 and the changed bytes are
+the two counters only (5 -> 6 in both `payload_scan_files` and the `PASS N file(s) clean` wording);
+`payload_scan_unresolved=0`, `payload_scan_findings=0`, `payload_scan_rc=0` and the process exit are
+identical, so the clean reading is not a function of how many paths were handed in. The CJK path
+`docs/迭代计划/…/开发验收记录.md` is in the file list -- that is what `-c core.quotepath=off` in front of
+`diff --cached` is for, and `payload_scan_roots=6 == payload_scan_files=6` is the column that says every
+one of them resolved to a real file rather than being silently dropped.
+lag_statement: take 2 scanned this carrier at its take-1 bytes, so the block just appended is not covered
+by either take. The file list does not change when the block is appended (same path), so the last reading
+quoted in this step's commit message -- a third take after re-staging -- is the one that covers these
+bytes; both the two-arm tree scan and this index scan are recorded there with their own exit lines.
+step3b_staged_scan_exit=0

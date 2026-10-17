@@ -1,0 +1,91 @@
+wave-28 step 3b -- the §94 branch-(b) gate priced by a new instrument, no product byte touched.
+argv (green take, and the identical re-take below): PYTHONPATH= $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/yfinance_shard_entry_price.py
+argv (red take):            PYTHONPATH= $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/yfinance_shard_entry_price.py --forge-fake-ok
+cwd = repo root, interpreter = the gate's py313, no pipes; $PY names the env binary, it is not a secret.
+question answered (verbatim from §94): can the 15 yfinance NEED_SHARD_ENTRY rows be served by
+kind=shared_http_client WITHOUT editing scripts/quality/iter2_claims_probe_runner.py? The instrument
+answers with a price measured in shapes, and the reading is NO -- see `answer=` at the bottom.
+subject=opendata.data.providers.yfinance.models._sdk  contrast_provider=tmx  control_seam=iter2_witnesses/nasdaq._SEAM
+probe_lines=602 probe_bytes=28468 probe_sha16=23efc3a86a087171
+precondition_the_probe_checks_itself: arm A re-applies the landed-face gate (350 rows / 275 accepted /
+  identity set 5168e1e723999312) to the live judged report and exits 1 with VOID=yes if it moved, so
+  this face is only produced on the generation §94 priced against. arm K forges one generation in
+  memory (flip a single OFFLINE_ACCEPTED row, replace the identity set) and requires the SAME gate to
+  read void=True, which is what stops arm A's VOID=no from being an unfalsifiable zero.
+
+take3_green exit=0 (13 lines, 2525 bytes, sha16=4bd9e2aad5a4a543):
+A_void_gate total=350 expected=350 accepted=275 expected_accepted=275 identity_set=5168e1e723999312 expected_identity_set=5168e1e723999312 statuses={'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 275, 'UNREVIEWED': 68} VOID=no
+B_population count=15 expected=15 verdicts={'DOCUMENT_REACHABLE': 15} statuses={'UNREVIEWED': 15} all_trippable=True
+C_no_witness_module subject_has_witness_module=False providers_with_module=25
+D_seam_reads packages_read=33 subject_http_transport=0 subject_get_shared_http_client=0 providers_reading_a_seam=27 sample=['_engine', 'alpha_vantage', 'benzinga']
+E_shipped_refusal target outcome=refused exception=WitnessBlocked message="client seam module 'opendata.data.providers.yfinance.models._sdk' publishes no 'get_shared_http_client' to patch" control outcome=answered control_calls=1 control_guard=clean
+F_shape_gap patch_accepted=True positional outcome=passthrough calls=0 guard=WitnessFailure | with_product outcome=raised:TypeError exception=TypeError calls=0 guard=WitnessFailure | with_fake outcome=raised:TypeError exception=TypeError calls=0 guard=WitnessFailure | zero_arg_get outcome=answered calls=1 guard=clean
+G_call_site_shapes subject_attr=governed_yfinance_session subject={'files': 7, 'sites': 1, 'min_positional': 1, 'with_wrapped': 1} landed_attr=get_shared_http_client landed={'files': 693, 'sites': 39, 'min_positional': 0, 'with_wrapped': 0} installed_arity=(1,0) differ=True
+H_classifier forge_fake_ok=False as_measured={'shard_entry_needs_harness': 15} widened={'shard_entry_needs_harness': 15} forged={'shard_entry_only': 15} census_lines=35 shipped_surface=['get'] widened_surface=['get', 'request'] fake_ok_shipped=False fake_ok_widened=False rows=15 rows_flipped_by_widening=0 predicate_disagreements=0 absent_providers=[]
+I_tmx_is_a_different_cause subject_bucket=SEAM_NEVER_USED subject_verbs=[] subject_mechanism=engine_transport contrast_bucket=BLOCKED_ON_RUNNER_SURFACE contrast_verbs=['request'] contrast_mechanism=runner_surface_widening contrast_answered_by_shipped_fake=False pooled=False
+J_runner_edit_price receipt_files=1375 pin_slots=19850 runner_pinned_slots=1650 pin_exit=0 clean_stale=0 forced_stale=1375 forced_targeted_slots=1375 forced_matches_targeted=True
+K_gate_is_trippable live_void=False forged_void=True live_accepted=275 forged_accepted=274 accepted_delta=-1 forged_identity_set=0000000000000000 status_rows_flipped=1
+yfinance_shard_entry_price_face arms=11 arms_passed=11 arms_failed=0 failed=[] identity_set=5168e1e723999312 rows=15
+chain_exit=0
+
+take4_forged exit=1 (13 lines, 2547 bytes, sha16=1f554e3a81c3f507) -- the red take stays in this
+carrier beside the green one; only the H line and the face line differ from take3, which is what a
+single forged predicate must do:
+H_classifier forge_fake_ok=True as_measured={'shard_entry_only': 15} widened={'shard_entry_only': 15} forged={'shard_entry_only': 15} census_lines=35 shipped_surface=['get'] widened_surface=['get', 'request'] fake_ok_shipped=True fake_ok_widened=True rows=15 rows_flipped_by_widening=0 predicate_disagreements=15 absent_providers=[]
+yfinance_shard_entry_price_face arms=11 arms_passed=10 arms_failed=1 failed=['H_classifier_cannot_be_moved_by_widening'] identity_set=5168e1e723999312 rows=15
+chain_exit=1
+
+determinism: the run was taken a third time with no byte changed and stdout is identical --
+take5_exit=0 take3_vs_take5_diff_exit=0 take3_vs_take5_stderr_diff_exit=0
+take3_stderr_bytes=0 take4_stderr_bytes=0 (no warning line, unlike the witness driver's yfinance
+delisted notice; sockets stayed blocked for both takes).
+hygiene_of_the_new_instrument: ruff check over the 23 probes/*.py files exits 0 ("All checks passed")
+and ruff format --check exits 0 ("23 files already formatted"); py_compile of this probe exits 0;
+awk length>100 over the probe prints nothing. Two of those readings are re-takes: the first draft of
+this probe was red on ruff (2x RUF100 unused-noqa for BLE001/PLW0603, 3x E501, then 1x W291 after the
+fixes), so the green pair below is measured after the fix, not assumed. The two rules the removed
+noqa comments named are NOT enabled in this repo's ruff config, which is why keeping them would have
+been a finding rather than insurance.
+lint_positive_control: that green pair is falsified by a planted file, not asserted. A copy of this
+probe at probes/_lint_control_tmp.py carrying one deliberately unused ``# noqa: BLE001`` and one
+138-character assignment was placed beside the 23 real probes (24 .py files on disk). Its ruff face:
+control_ruff_check_exit=1 found=3, RUF100 "Unused `noqa` directive (non-enabled: `BLE001`)" at
+_lint_control_tmp.py:290:18, N806 at :291:5, E501 "Line too long (138 > 100)" at :291:101. Its format
+face: control_ruff_format_exit=1, "1 file would be reformatted, 23 files already formatted", and the
+one file named is _lint_control_tmp.py.
+control_tmp_sha256=c871875931d9c98cacd07616b29f13d5a06413baa3dafdabb0582644a0b445ca is kept so the red
+face can be regenerated byte-for-byte; the flagged source lines themselves are not pasted here, so this
+carrier does not become the next lint finding. N806 fired because the long line needed an assignment and
+an uppercase local is its own violation -- the control over-reached rather than being trimmed to exactly
+one rule. After deleting it: ls probes/*.py = 23, ruff_check_exit=0 ("All checks passed!"),
+ruff_format_exit=0 ("23 files already formatted"). The control file is not on disk and was never staged.
+pinned_bytes_untouched: arm J ran the shipped receipt-pin walker over 1375 receipts AFTER this probe
+existed on disk and reads clean_stale=0, so the new file staled no pin; the forced arm reads
+stale=targeted_slots=1375, which is the walker's own proof that it can still see a harness byte move.
+
+answer=NO_on_the_shipped_seam_kind  blocker=substitution_shape  blocker_not=fake_verb_set
+rows_priced=15  rows_flipped_by_widening=0  rows_flipped_by_forging_the_predicate=15
+runner_edit_price_slots=1650  runner_edit_price_receipts_walked=1375
+why_the_fake_verb_set_is_exonerated: the fourth F reading drives the *same* patch point with zero
+positionals and uses the result as ``.get``, and it comes back answered / calls=1 / guard=clean,
+while the shipped fake surface is ['get'] and the widened surface ['get', 'request'] still leaves
+fake_ok False for yfinance because its package_verbs is empty. What the product actually does at that
+attribute is pass one positional inside a ``with`` (arm G: 1 site, min_positional=1, with_wrapped=1,
+against 39 landed sites at min_positional=0, with_wrapped=0 over 693 files), and the installed
+``lambda _c=client: _c`` (arity (1,0)) swallows that positional and hands the caller its own argument
+back -- so the seam cannot even reach a refusal on its own. The only thing that surfaces the mismatch
+is ``_seam_guard`` firing on zero calls, which is a WitnessFailure, not a witness.
+what_this_probe_does_not_measure: no fixture exists under docs/evidence/C101/fixtures/yfinance/ and
+none was written; the five phases and the primary review are untouched; the SDK's own session surface
+(yfinance 0.2.66 / curl_cffi 0.13.0 installed here) was not exercised, because no real fetch was
+attempted; plane 1 is unchanged at 275/350 (arm A's own reading), and the 15 rows keep their
+NEED_SHARD_ENTRY action. The runner-widening price this step reads is a *slot count*, and the
+pre-existing wave-27 instrument counterfactual_runner_widening.py already priced the verb-set lever
+separately -- this file prices the substitution shape, and the two must not be merged into one number.
+lag_statement: this carrier's own bytes were scanned by the two-arm payload screen and by the index
+face only AFTER the lines above were written; the tail appended here is covered by the closing takes
+recorded in this step's commit message, which is the only carrier that can read its own last bytes.
+take3_exit=0
+take4_exit=1
+take5_exit=0
+step3b_chain_exit=0

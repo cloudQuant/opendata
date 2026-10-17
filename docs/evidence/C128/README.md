@@ -570,6 +570,52 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   载档末段还写了一条**自指滞后**：两取扫的都是这份载档追加自己末段之前的字节，所以第 13–29 行不被
   索引面覆盖；母数 119 在追加之后重数过（文件数不随内容变），覆盖这 17 行的是本步收尾那两取，
   它们的读数写在**提交说明正文**里 —— 那是唯一装得下对自己最后字节的读数的载体。
+- 波 28 step 3b（§94 (b) 支的门，纯仪器轮：plane 1 原地不动 275/350，一枚行也没落）新增一台
+  `probes/yfinance_shard_entry_price.py`（602 行 / 28468 字节 / `sha16=23efc3a86a087171`；
+  `arms=11 arms_passed=11 arms_failed=0 failed=[] identity_set=5168e1e723999312 rows=15`）与载档
+  `runs/wave28-step3b-shard-entry-price.txt`（91 行 / 9483 字节 / `sha16=94a587ca70e3ced2`；绿取 3 次
+  逐字节相同 + 一枚锻造红取同档并置）。它答的谓词逐字是 §94 末条那句"动这 15 枚之前先造一支反例式仪器，
+  证明 yfinance 的 15 枚能被 `kind=shared_http_client` 服务而无需改 runner"，**answer=NO**，而 blocker 钉在
+  **替换形状**上、不是假客户端的动词集（`blocker_not=fake_verb_set`）：`F_shape_gap` 的第四读
+  `zero_arg_get outcome=answered calls=1 guard=clean` 证明 verb 面够用，而 `G_call_site_shapes` 读到产品侧
+  `governed_yfinance_session` 只有 1 枚站点且 `min_positional=1 / with_wrapped=1`，落地面
+  `get_shared_http_client` 是 693 个文件里 39 枚站点、`min_positional=0 / with_wrapped=0`，runner 装进去的
+  `lambda _c=client: _c` 自己元数是 `(1,0)` ⇒ 把调用方的实参**原样退回**（`positional outcome=passthrough
+  calls=0`），连拒绝都到不了，只有 `_seam_guard` 在零调用上抛 `WitnessFailure`。分类器推不动：
+  `H_classifier` 用出厂谓词读 `as_measured={'shard_entry_needs_harness': 15}`，把假面从 `['get']` 加宽到
+  `['get', 'request']` 仍是 15（`rows_flipped_by_widening=0`，因为 yfinance 的 `package_verbs` 是空集），
+  只有把 `fake_ok` 直接锻造掉才动（红取 `forged={'shard_entry_only': 15}`、
+  `predicate_disagreements=15`、`arms_failed=1 failed=['H_classifier_cannot_be_moved_by_widening']`、退出 1）。
+  改 runner 的价按 slot 读：`J_runner_edit_price receipt_files=1375 pin_slots=19850 runner_pinned_slots=1650
+  pin_exit=0 clean_stale=0 forced_stale=1375 forced_targeted_slots=1375 forced_matches_targeted=True`
+  —— 1650 是 pin 到 `iter2_claims_probe_runner.py` 的格子，1375 是 B 臂那一格（走器改脏的是
+  `ARM_B_TARGET_KIND = "probe"` 且路径以 `iter2_claims_fixtures.py` 结尾的 slot），**两个总体不许合并成一个数**。
+  臂 A 自带换代闸（350 / 275 / `5168e1e723999312` 任一移动就 `VOID=yes` 退出 1），臂 K 在内存里锻造一代
+  证明这台闸扳得动（`K_gate_is_trippable live_void=False forged_void=True live_accepted=275
+  forged_accepted=274 accepted_delta=-1 forged_identity_set=0000000000000000 status_rows_flipped=1`）；
+  tmx 按机制单列（`I_tmx_is_a_different_cause … pooled=False`），所以 15 与 24 不收进同一桶。
+  这台是**只读**的，而"只读"这条是测出来的不是声称的：为验它又原样重取了一趟绿取（载档外记为 take 6，即本探针
+  的第 6 次运行、第三趟绿取；载档内入库的绿取只有 take3 与 take5），跑之前之后
+  `git -c core.quotepath=off status --porcelain` 两份逐字节相同（各 226 行、`diff` 退出 0），
+  `find . -name '*.pyc' -newer <跑前的标记文件>` 读 **0**（这一趟连字节码都没重写，模块缓存是热的），
+  take 6 与入库 take3 的 stdout `diff` 退出 0。它只在内存里 `setattr` 再复原；take 6 的 stdout 只在会话 scratch、
+  没有入库载档，所以那一行按**不具复现性**记账，可复现的绿取是载档里的 take3 与 take5。lint 绿面这轮带**正控制**：
+  把探针复制成 `_lint_control_tmp.py`
+  并注入一枚失效的 `# noqa: BLE001` 与一条 138 字符长行，读 `control_ruff_check_exit=1`（RUF100 + N806 +
+  E501，found=3）与 `control_ruff_format_exit=1`（`1 file would be reformatted, 23 files already formatted`），
+  删掉之后才读回 `ruff_check_exit=0` / `ruff_format_exit=0`；控制文件 sha256 记在载档里、被点名的源码行不贴，
+  免得载档自己成为下一条 finding。入库前两臂面 `runs/wave28-step3b-payload-scan.txt`（38 行 / 2635 字节 /
+  `sha16=284b0134f1117006`）：取 1 读 `payload_files=121`（= 23 `.py` + 86 `.txt` + 12 `.err`，三个母数各数
+  一次相加核对）、写完本载档后取 2 读 **122** = 23 + 87 + 12，`diff` 实测只有母数一格动，四格
+  `arm_a_findings=0 arm_a_rc=0 / arm_b_findings=1 arm_b_rc=1 / PASS=True / scan_exit=0` 逐字相同；
+  两枚扫描载档都写完后的第三取读 **123** = 23 + 88 + 12，四格仍逐字相同、`scan_exit=0`、stdout 254 字节。
+  索引面 `runs/wave28-step3b-staged-scan.txt`（32 行 / 2847 字节 / `sha16=ae1e1b0eb596cbaf`，同一台
+  `staged_payload_scan.py --paths`，本步未改它一个字节）：前置控制 `git_diff_name_only_files=0`（worktree==index，
+  所以"扫 worktree 字节"就是"扫将要提交的字节"），取 1 读 `payload_scan_files=5 payload_scan_roots=5
+  payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0`（`PASS 5 file(s) clean`，stdout 144 字节、
+  stderr 0），把本载档 stage 后取 2 读 **6**，`diff` 实测只有两格计数器动、三条 0 与进程退出不变；
+  `roots == files` 那格保证 CJK 路径没被静默丢掉。覆盖 README 与本条目这些字节的最后一次读数是 stage 之后再取的
+  那一次，逐字住在本次提交说明里（两枚载档头部的 `lag_statement` 记的是同一句账）。
 - 残差重定价面（step 2 同代）：`readiness_census`（12 行 / `20d35f19e40c64f9`）
   `residue=75 buckets={'NEED_BINDING': 32, 'NEED_DECLARE': 28, 'NEED_SHARD_ENTRY': 15} sums_to_residue=True
   readiness_arms=3 readiness_passed=3 identity_set=5168e1e723999312 expected_match=True`；
@@ -614,7 +660,9 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   拼的（逐项加引号），控制臂与取 2 用 `subprocess` argv 列表；这处差异如实写在载档头部，没把取 1 美化成
   argv —— 判定靠的是这台会把未解析路径打印出来并强制 FAIL，所以"开发验收记录的 CJK 路径确在扫描集内"
   是被测的。**两个母数互不替换**：`payload_files`（上面那台的 probes+runs 树，step 2 那代记 113 = 21 `.py` +
-  80 `.txt` + 12 `.err`；波 28 step 3a 现数 **119** = 22 + 85 + 12）与 `payload_scan_files`（本台的"本步要提交的路径"，含两份 `docs/` 叙事与
+  80 `.txt` + 12 `.err`；波 28 step 3a 记 **119** = 22 + 85 + 12；step 3b 三取代依次为 **121 → 122 → 123**
+  （23 `.py` + 86/87/88 `.txt` + 12 `.err`，动的那一格永远是载档自己），12 枚 `.err`
+  是 wave-27 留下的捕获、按约定不入库但仍在这两棵树里，所以如实计入）与 `payload_scan_files`（本台的"本步要提交的路径"，含两份 `docs/` 叙事与
   119 枚 C101 证据、不含 12 `.err`）是两个不同总体，各自的控制臂只证明自己那个总体。取 2 之后 README 与 §94 各补过本条目，载档末尾又追加了取 3、取 4
   两块，取 3 块里“最后一次由取 3 说”那句已被同一步内的后继编辑否证、并在取 4 块里撤回；这些追加
   与本条自身都是它之前各取没扫到的字节，终取的逐字读数住在本次提交说明里。
@@ -728,8 +776,8 @@ stderr 0 字节），而它的 B 臂在内存里把 runner 摘要换成占位值
 `D_verbs_are_measured` 把 `new_verbs` 钉成"表面 ∪ 实测调用点"，所以凭猜测给假客户端加一个 `post`
 会让这一臂变红而不是让数字变大。
 
-本目录 22 台仪器（`ls probes/*.py` 现数；step 2 之前 17 台，step 2 那轮 +4，波 28 step 3a 再 +1）里
-**19 台只读**：除自己的臂失败外退出 0，绝不改动任何被判定的面。**三台会写，写的东西按代次记账**：`w28s2_run_chain.py` 起已入库的
+本目录 23 台仪器（`ls probes/*.py` 现数；step 2 之前 17 台，step 2 那轮 +4，波 28 step 3a 再 +1，step 3b 再 +1）里
+**20 台只读**：除自己的臂失败外退出 0，绝不改动任何被判定的面。**三台会写，写的东西按代次记账**：`w28s2_run_chain.py` 起已入库的
 producer→recorder→merge→judge，一次跑就换代（本波 45 枚回执重产），所以它排在链首、其余载档全在同代重取；
 `receipt_drift_counterfact.py` 的 B 臂**真的重写 canonical 回执**（那正是它要证明的事），随后由 C 臂把树落回绿代；
 `w28s2_lint_pass.py` 改写的是探针自己的文本（docstring / noqa / tempfile），不是任何被判定面。波 23 起
@@ -744,4 +792,8 @@ step 2b 的甲支在**内存里**加宽假客户端，step 1 的 I 臂在**内�
 step 3a 的驱动在**内存里**把两台 subject 的落地面常量锻造回上一代再复原（`setattr` 在已导入模块对象上，
 subject 源码字节一个不写）。它与 step 2 那三台同属"自己写载档"那一类，写的只有
 `runs/wave28-step3a-landed-face-rebase.txt` 一份；它写载档的方式是**整体重写**，所以追加在末尾的历史块会被
-下一趟吞掉 —— take 3 就吞掉过一次 take 2 追加的那一块，这条滞后连同被吞掉的读数逐字记在载档末段。
+下一趟吞掉 —— take 3 就吞掉过一次 take 2 追加的那一块，这条滞后连同被吞掉的读数逐字记在载档末段。波 28
+step 3b 再加一台 `yfinance_shard_entry_price.py`（只读、11 臂，载档由 shell 重定向写、探针自己不写盘）：
+它把 §94 (b) 支的谓词从散文变成读数，手法与上一条同族 —— **在内存里**进 runner 的 `_client_seam` 再复原，
+`setattr` 只落在已导入的模块对象上；它跑一趟之后 `git status --porcelain` 两份相同、`-newer` 数出的 `.pyc` 为 0，
+所以"只读"这一格在本波是测量而不是自称。

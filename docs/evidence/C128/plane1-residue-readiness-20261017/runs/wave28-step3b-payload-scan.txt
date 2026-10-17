@@ -1,0 +1,38 @@
+wave-28 step 3b -- pre-commit secret face for the shard-entry-price payload.
+argv: PYTHONPATH= $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/payload_secret_scan.py   (cwd = repo root, stdout and stderr captured separately, no pipes)
+Self-reference stated: take 1 ran while this carrier did not exist, so it is not inside the arm A
+denominator below; take 2 ran after it was written and is the same scan with one more file. Nothing in
+this payload is a credential: the arm-B token is generated at runtime by ``secrets.token_hex(18)`` and
+is planted only into a tempfile copy of runs/declare_candidates.txt, which the instrument deletes; it
+is reported here by rule id and location, never by its bytes.
+take1 denominator_measured=23 probes/*.py + 86 runs/*.txt + 12 runs/*.err = 121, which agrees with the
+instrument's own counter below. The 12 .err siblings are captured stderr files that stay uncommitted by
+this round's convention, but they do sit in the scanned roots, so they are counted rather than hidden;
+one of them is non-empty (59 bytes, wave27-step2a-witness_seam_kind_census.err).
+take1: planted_into=declare_candidates.txt at_line=31 lines=65
+take1 payload_files=121 payload_roots=2
+take1 B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+take1 arm_a_findings=0 arm_a_rc=0
+take1 arm_b_findings=1 arm_b_rc=1
+take1 payload_secret_face PASS=True
+take1 scan_exit=0
+take1_stdout_bytes=254 take1_stderr_bytes=0
+take1 stdout sha16=9b44e3ae323e18bd
+take2 denominator_measured=23 probes/*.py + 87 runs/*.txt + 12 runs/*.err = 122. The +1 against take 1
+is this carrier, and nothing else: take 2's stderr went to the session scratch dir, not into runs/.
+take2: planted_into=declare_candidates.txt at_line=31 lines=65
+take2 payload_files=122 payload_roots=2
+take2 B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+take2 arm_a_findings=0 arm_a_rc=0
+take2 arm_b_findings=1 arm_b_rc=1
+take2 payload_secret_face PASS=True
+take2 scan_exit=0
+take2_stdout_bytes=254 take2_stderr_bytes=0
+take2 stdout sha16=eea3c9ecda1703cb
+take2_vs_take1 diff measured, not assumed: diff exits 1 with exactly one changed line,
+payload_files 121 -> 122, the only field allowed to move. Every judgment field (arm_a_findings=0,
+arm_b_findings=1, payload_secret_face PASS=True, scan_exit=0) is identical across the takes, so the
+clean arm A reading is not a function of the denominator, and arm B still fires with one more file in
+the tree. Both takes re-ran the shipped instrument unedited; the 12 .err siblings counted above are the
+wave-27 captures and were not added by this step.
+step3b_payload_scan_exit=0
