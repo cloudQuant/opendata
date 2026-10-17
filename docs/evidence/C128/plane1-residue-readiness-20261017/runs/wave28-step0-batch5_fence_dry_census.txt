@@ -1,0 +1,15 @@
+wave-28 step 0 -- pin_rebase face, measured after the residue_axis_census.py arm-F edit.
+argv: $PY docs/evidence/C103/batch5-source-pins/probes/pin_rebase.py   --apply deliberately NOT passed, so this run can only read: it prints matched/stale/missing and refuses to write when nothing is stale. The probe lives under C103; its carrier lands in this wave's root.
+stderr_bytes=0
+interpretation: pin_rebase_exit=1 IS the designed verdict on this argv. matched=31 stale=0 missing=0 means
+there is nothing to re-base, and the probe refuses to re-pin a moving digest rather than writing. exit 1 here
+is the refusal, not a red check: no byte of tests/fixtures/registry_batch5_snapshot.json nor either
+payload-sha256 literal moved. Read the face line, not the code.
+face: repo_root=/Users/yunjinqi/Documents/new_projects/opendata
+face: argv=[]
+face: pin_entries=31
+face: snapshot_payload_sha_before=bcdca191aa39064a8fc7040651c6694a572f5137d9c1d0868916b39ac284924d
+face: candidate_sha256_before=775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e
+face: matched=31 stale=0 missing=0
+verdict: REFUSED - no stale pin to re-base, refusing to re-pin a moving digest
+pin_rebase_exit=1

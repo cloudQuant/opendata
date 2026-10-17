@@ -348,7 +348,8 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   冒充不了接缝调用；包里没有调过的动词**不会被提议**（波 24 那句备忘写的是"`request` / `post`"，这一台打印
   `post` 到底有没有被测到：`post_required=False`）。翻开哪几家、各带多少残差走普查自己的桶算术；每枚翻开后的行
   仍过 `_row`，因为四轴都不依赖假客户端 —— 今天读 `UNBOUND` / `ROW_CLASS_NOT_CONTRACT` 的枚加宽之后还是不可转。
-- `probes/residue_axis_census.py`（374 行、`sha16=45f2cb2d7d3bfbab`）：step 2b 的主仪器。两支都 `convertible=0`
+- `probes/residue_axis_census.py`（波 28 step 0 后 401 行、`sha16=5145178f8a586c04`；入库那一代是 374 行、
+  `45f2cb2d7d3bfbab`）：step 2b 的主仪器。两支都 `convertible=0`
   之后不再按切片决定，把 `350 - 266 = 84` 整个残差与三台已落地仪器交叉，逐枚并列打印
   `status bucket verdict seam mechanism witness_module fake_ok name_in_package ruled_out declared witness_entry`
   加这三台**共同**蕴含的第一份工作（`_action` 按梯子取第一格：`new_provider_package` / `ledger_ruled_out` /
@@ -359,6 +360,13 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   不同：类已存在但没注册 vs 没人写过这个模型），`lookup_shape` 测它们在注册表里**怎么**失败而非断言（本代单值
   `{'unknown_provider_model': 32}`）。这台仪器第一版把两半统称 `rebind_fetcher`，名字轴的读数证明那是"未实现"
   被读成"接错线"；撤回写在 `_action` 的文档串与 §91 里，旧读数不抹。
+  **第二处缺陷是 F 臂自己**：第一版 `arm_f = len(witnessable) == actions["shard_entry_only"]`，而这两侧在
+  同一个循环体里由同一个 `_action` 返回值增补（`actions[action] += 1` 与 `if action == "shard_entry_only":
+  witnessable.append(...)`），所以这条臂**永远不可能红**，随它印出的 `witnessable_today=0` 不是测出来的结论。
+  波 28 step 0 把它改成两面的：把两枚已入库恒等控制**实测**到的 `verdict / ruled_out / name_in_package` 原样喂
+  `_action`，只把"假客户端能不能答"这一根轴强制拨成 True 再拨成 False，要求两侧分别落在
+  `shard_entry_only` 与 `shard_entry_needs_harness`，并要求控制自己真实读到的 `fake_answers_all` 为 True
+  （于是前一支不是反例而是直接测量）。残差读数仍是 0，多出来的是"这台计数器能数到一"。
 - `runs/wave27-step2a-seam-reachable-axes.txt`（19 行 / `1a71df1c34df0c29`）与
   `runs/wave27-step2b-counterfactual-widening.txt`（43 行 / `950bf73b3b0619d2`）：两条分支的面，
   `seam_reachable_axes_face population=7 … convertible=0 witness_only=0 arms=7 arms_passed=7` 与
@@ -375,6 +383,33 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   `residue_axis_census_exit=1`）。红那一份是"这条臂能红"的**唯一**证据：`H_name_test_identity` 的恒等式漏掉
   `NO_PACKAGE_ON_DISK` 那 2 枚（`unbound=32` vs `actions_sum=30`），又把两家本来就没有包的 `empty_blobs` 非空
   判成失败 —— 两条都是臂自己写错，不是行读数错。
+- `runs/wave28-step0-residue-axis-census.txt`（104 行 / `5152c71602d48c46`，`residue_axis_census_exit=0`，
+  stderr 0 字节，`arms=8 arms_passed=8 arms_failed=0`）：F 臂改两面之后的**同代重取**面，头部把与上一代
+  共有面的比对写成一行 `face_lines_old=99 face_lines_new=99 drift=2 drift_offenders=[]`（差的两行就是
+  `F_witnessable_today` 的新旧两条，符号差集，别的 98 条面逐字未动 ⇒ 这一改没重开任何一格）。新那条逐字：
+  `F_witnessable_today count=0 rows=[] counter=0 controls=2 control_actions_on_harness=
+  ['shard_entry_only'] control_actions_off_harness=['shard_entry_needs_harness']
+  control_real_fake_ok=[True, True] PASS=True`。判定面一字未改：`residue=84`、六格动作表
+  `retarget 24 / implement_missing_model 19 / shard_entry_needs_harness 15 / ledger_ruled_out 11 /
+  add_code_carrying_guard 13 / new_provider_package 2`、`witnessable_today=0`、`rows_without_module=75`、
+  `identity_set=5168e1e723999312`。波 27 那四份（成像面 + 三份中间代）留在原地不覆盖，代际按 sha 辨。
+- `runs/wave28-step0-receipt_pin_consistency.txt`（9 行 / `965eb3f9b9324955`，`receipt_pin_consistency_exit=0`）
+  与 `runs/wave28-step0-batch5_fence_dry_census.txt`（15 行 / `600128e34e133c44`，`pin_rebase_exit=1`）：
+  改臂之后的**两个 pin 平面**同代重取。前者 `pin_face slots=19382 stale=0 before_ne_after=0
+  distinct_pinned_paths=536 arms=3 arms_passed=3`；后者 `pin_entries=31 matched=31 stale=0 missing=0` +
+  `verdict: REFUSED - no stale pin to re-base` —— 那枚 1 是设计中的判定而不是红：无过期 pin 时这台拒绝重写
+  正在动的 digest，载档头部把这句话写死了，因为只看退出码分不出"用法错"与"刻意拒绝"。
+  两台合起来才是 §92 那句"改 C128 里的探针不需要重产回执、也不需要 `resign_all_pins.sh`"的证据；
+  第二台住在 `docs/evidence/C103/batch5-source-pins/probes/`，载档按波落在本目录，argv 逐字写在其头部。
+- `runs/wave28-step0-payload-scan.txt`（34 行 / `51c9446d46b0ab1c`）与
+  `runs/wave28-step0-precommit-staged-scan.txt`（19 行 / `5c86f417d8835fa7`）：本步入库前的两臂面与索引面，
+  形状与波 27 那两条一样，母数换代可追：取 1 读 `payload_files=78`，取 2 读 `79`，两份扫描载档都写完之后的
+  现数是 `80`（= 16 `.py` + 52 `.txt` + 12 `.err`）。两臂的四格
+  `arm_a_findings=0 arm_b_findings=1 payload_secret_face PASS=True scan_exit=0` 两次逐字相同，唯一差格是
+  母数自己（`take2_vs_take1_face_fields_identical=False differing=['payload_files']` 是**如实印出**，不是
+  失败：这台把新增的载档自己算进总体）。索引面取 1 扫 6 条非扫描路径、取 2 扫 8 条，
+  `unresolved=0 findings=0 rc=0` 两代相同。两份载档末尾都把**自己取不到的字节**写全了：不只是最后一块，
+  还包括 take 2 之后 README 与本记录各自又补了载体条目 —— 最后那一次复核的逐字读数住在提交说明里。
 - `runs/wave27-step2b-receipt_pin_consistency.txt`（10 行 / `f96636cd09d028cf`，
   `receipt_pin_consistency_exit=0`，stderr 0 字节）：**step 2b 之后**重取的回执 pin 面
   （`pin_face slots=19382 stale=0 before_ne_after=0 distinct_pinned_paths=536 arms=3 arms_passed=3`，

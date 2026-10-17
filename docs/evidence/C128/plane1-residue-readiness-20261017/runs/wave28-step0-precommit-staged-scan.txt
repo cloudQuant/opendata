@@ -1,0 +1,19 @@
+wave-28 step 0 -- the staged index, scanned as working-tree bytes.
+argv: git -c core.quotepath=off diff --cached --name-only -z, then
+      PYTHONPATH=. $PY .../probes/staged_payload_scan.py --paths <that list>
+Self-reference, stated not hidden: take 1 ran while only the six non-scan paths were staged.
+take1 index_paths=6
+take1: payload_scan_files=6 payload_scan_roots=6 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 6 file(s) clean
+take1_stderr_bytes=0
+staged_take1_exit=0
+take2 index_paths=8
+take2: payload_scan_files=8 payload_scan_roots=8 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 8 file(s) clean
+take2_stderr_bytes=0
+staged_take2_exit=0
+take2_vs_take1_clean_fields_identical=True
+Lag stated in full: take 2 scanned README.md and the acceptance record as they stood when it ran, and
+both gained carrier bullets afterwards, so the bytes those two edits added, plus this block's own last
+three lines, are what no take in this file scanned. The last word is taken by the run whose reading
+goes to the commit message.

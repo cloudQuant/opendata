@@ -42,9 +42,14 @@ Arms, all eight of which can fail:
 ``F_witnessable_today``
     ``witnessable_today`` counts rows that need *only* a shard entry and a review right now: bound,
     declared, contract-equal, document-trippable, and on a seam the shipped fake already answers.
-    The arm asserts the count is derivable (it equals the per-row list it prints) -- it does not
-    assert it is non-zero, because wave 27 step 1's yfinance block is exactly the case where a row
-    passes every product axis and still cannot be witnessed through the harness.
+    Two-sided since wave 28: ``_action`` is re-fed each landed control's *measured* verdict,
+    ruled-out and name-in-package axes with the harness axis forced True and then False, and the arm
+    requires ``shard_entry_only`` and ``shard_entry_needs_harness`` respectively, with the control's
+    real ``fake_answers_all`` also True so the first arm is not a counterfactual at all. The first
+    version compared ``len(witnessable)`` to ``actions["shard_entry_only"]``, but both are
+    incremented in the same loop body from the same return value, so that arm could never fail and
+    the published ``witnessable_today=0`` was not a measured finding. The residue reads zero either
+    way; what the control adds is proof that the counter is capable of one.
 ``G_census_coverage``
     no residue row's provider is missing from the reachability census (the map used to fall back to
     a default silently), and ``rows_without_module + rows_with_module == residue``.
@@ -313,10 +318,32 @@ def main() -> int:
     arm_e = not off_verdict and not off_seam
     print(f"E_verdict_enum off_verdict={off_verdict} off_seam={off_seam} PASS={arm_e}")
 
-    arm_f = len(witnessable) == actions["shard_entry_only"]
+    control_actions: set[str] = set()
+    control_actions_no_harness: set[str] = set()
+    control_fake: list[bool] = []
+    for control, row in zip(axes.CONTROLS_POSITIVE, positive, strict=True):
+        provider, _, model = control.partition("::")
+        seam_row = seam_map.get(provider, {})
+        bucket = str(seam_row.get("bucket", "ABSENT_FROM_CENSUS"))
+        name_ok = bool(re.search(rf"\b{re.escape(model)}\b", _package_blob(provider)))
+        verdict = str(row["verdict"])
+        ruled_out = bool(row["ruled_out"])
+        control_fake.append(bool(seam_row.get("fake_answers_all", False)))
+        control_actions.add(_action(verdict, ruled_out, bucket, True, name_ok))
+        control_actions_no_harness.add(_action(verdict, ruled_out, bucket, False, name_ok))
+    arm_f = (
+        len(witnessable) == actions["shard_entry_only"]
+        and len(control_actions) == 1
+        and control_actions == {"shard_entry_only"}
+        and control_actions_no_harness == {"shard_entry_needs_harness"}
+        and all(control_fake)
+    )
     print(
         f"F_witnessable_today count={len(witnessable)} rows={witnessable[:4]} "
-        f"counter={actions['shard_entry_only']} PASS={arm_f}"
+        f"counter={actions['shard_entry_only']} controls={len(positive)} "
+        f"control_actions_on_harness={sorted(control_actions)} "
+        f"control_actions_off_harness={sorted(control_actions_no_harness)} "
+        f"control_real_fake_ok={control_fake} PASS={arm_f}"
     )
 
     arm_g = not absent and sum(no_module.values()) == len(residue) - sum(
