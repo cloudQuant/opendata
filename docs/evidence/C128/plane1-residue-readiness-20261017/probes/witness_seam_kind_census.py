@@ -101,7 +101,10 @@ SEAM_ATTRS = ("http_transport", "get_shared_http_client")
 # Refusals that would mean this experiment is mis-shaped rather than that the leg misses the seam.
 PROBE_FAULT_ERRORS = ("TypeError", "KeyError", "AttributeError", "NameError", "WitnessBlocked")
 LANDED_TOTAL = 350
-LANDED_ACCEPTED = 266
+LANDED_ACCEPTED = 275
+# The generation wave 27 asserted (nasdaq's 9 rows landed at wave-28 step 2), kept so the face line
+# prints the delta instead of asking the reader to remember what moved.
+LANDED_ACCEPTED_PREVIOUS = 266
 LANDED_IDENTITY_SET = "5168e1e723999312"
 DECLARED_EXPECTED = 15
 
@@ -294,7 +297,9 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"A_landed_report_face total={len(judged)} summary_count={summary['identity_count']} "
         f"accepted={accepted} summary_accepted={summary['offline_acceptance_count']} "
-        f"identity_set={identity_set}"
+        f"identity_set={identity_set} previous_accepted={LANDED_ACCEPTED_PREVIOUS} "
+        f"accepted_delta={accepted - LANDED_ACCEPTED_PREVIOUS} "
+        f"identity_set_moved={identity_set != LANDED_IDENTITY_SET}"
     )
     print(f"A_landed_report_face PASS={face_ok}")
 

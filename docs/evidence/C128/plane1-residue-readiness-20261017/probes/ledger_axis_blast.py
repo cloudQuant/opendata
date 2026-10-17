@@ -18,10 +18,13 @@ agreement per provider that exists as a package and handles the rest as its own 
 Arms, all five of which can fail:
 
 ``A_landed_report_face``
-    the judge report still reads 350 identities / ``{INCOMPLETE: 7, OFFLINE_ACCEPTED: 266,
-    UNREVIEWED: 77}`` / ``identity_set[0:16]=5168e1e723999312``. Landed in
-    ``runs/wave27-step0-block-axes.txt``. Any movement reddens this arm and invalidates every
-    number below -- that is the invalidation condition, not a warning.
+    the judge report still reads 350 identities / ``{INCOMPLETE: 7, OFFLINE_ACCEPTED: 275,
+    UNREVIEWED: 68}`` / ``identity_set[0:16]=5168e1e723999312``. Landed in
+    ``runs/wave27-step0-block-axes.txt`` as ``{...266...77}`` and re-based to the wave-28 step-2
+    generation by ``runs/wave28-step3a-landed-face-rebase.txt``; the previous value and the
+    measured per-status delta are printed on ``A_rebase_from_landed`` so the re-base is checkable
+    rather than remembered. Any movement reddens this
+    arm and invalidates every number below -- that is the invalidation condition, not a warning.
 ``B_three_causes_reachable``
     the three ledger readings ``(True, False)``, ``(False, False)``, ``(False, True)`` all occur
     in this population. If one is empty the tally would be made of one cause seen twice.
@@ -63,7 +66,10 @@ import incomplete_row_guard_check as axes  # the shipped four-axis row measurer
 import seam_surface_match as seam  # the shipped report reader
 
 LANDED_TOTAL = 350
-LANDED_STATUSES = {"INCOMPLETE": 7, "OFFLINE_ACCEPTED": 266, "UNREVIEWED": 77}
+LANDED_STATUSES = {"INCOMPLETE": 7, "OFFLINE_ACCEPTED": 275, "UNREVIEWED": 68}
+# The generation this probe was written against, kept so a re-base prints a delta instead of
+# silently replacing the number that wave-27's carriers quote.
+LANDED_STATUSES_PREVIOUS = {"INCOMPLETE": 7, "OFFLINE_ACCEPTED": 266, "UNREVIEWED": 77}
 LANDED_IDENTITY_SET = "5168e1e723999312"
 LANDED_BLOCK = ("yfinance", "DECLARE_AND_WITNESS")
 PROVIDERS_DIR = seam.REPO_ROOT / "opendata" / "data" / "providers"
@@ -96,10 +102,20 @@ def main() -> int:
     identity_set = str(report["inventory"]["expected_identity_set_sha256"])[:16]
     arm_a = len(judged) == LANDED_TOTAL and dict(statuses) == LANDED_STATUSES
     arm_a = arm_a and identity_set == LANDED_IDENTITY_SET
+    rebase_delta = {
+        key: int(statuses.get(key, 0)) - int(LANDED_STATUSES_PREVIOUS.get(key, 0))
+        for key in set(statuses) | set(LANDED_STATUSES_PREVIOUS)
+    }
     print(
         f"A_landed_report_face total={len(judged)} statuses={dict(sorted(statuses.items()))} "
         f"identity_set={identity_set} landed={LANDED_TOTAL} "
         f"{LANDED_STATUSES} {LANDED_IDENTITY_SET} PASS={arm_a}"
+    )
+    print(
+        f"A_rebase_from_landed previous={dict(sorted(LANDED_STATUSES_PREVIOUS.items()))} "
+        f"rebase_delta={dict(sorted(rebase_delta.items()))} "
+        f"delta_sums_to_zero={sum(rebase_delta.values()) == 0} "
+        f"identity_set_moved={identity_set != LANDED_IDENTITY_SET}"
     )
 
     residue = sorted(

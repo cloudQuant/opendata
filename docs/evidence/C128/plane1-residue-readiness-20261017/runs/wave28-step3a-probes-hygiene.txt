@@ -1,0 +1,54 @@
+wave-28 step 3a -- instrument hygiene for the four probes this step touches.
+argv: PYTHONPATH= $PY -m ruff check   docs/evidence/C128/plane1-residue-readiness-20261017/probes   (cwd = repo root, no pipes)
+argv: PYTHONPATH= $PY -m ruff format --check docs/evidence/C128/plane1-residue-readiness-20261017/probes   (cwd = repo root, no pipes)
+scope stated: Makefile PY_SELFDEV = opendata scripts tests alembic alembic_data, so this tree is in
+NO gate member's file set. This face is instrument hygiene, same as wave28-step2-probes-lint.txt.
+ruff_check_probes_exit=1
+ruff_check_probes_stdout=E741 Ambiguous variable name: `l`
+   --> docs/evidence/C128/plane1-residue-readiness-20261017/probes/landed_face_rebase.py:228:40
+    |
+226 |         lines.append(
+227 |             f"{label}: accepted_delta={_field(first_out, ACCEPTED_DELTA_RE)} "
+228 |             f"forged_line={next((l for l in forged_out if l.startswith('A_landed')), 'NA')}"
+    |                                        ^
+229 |         )
+230 |     else:
+    |
+
+E741 Ambiguous variable name: `l`
+   --> docs/evidence/C128/plane1-residue-readiness-20261017/probes/landed_face_rebase.py:236:86
+    |
+234 |         )
+235 |     lines.append(
+236 |         f"{label}: aging_lines={len(aging)} all_grant_lines={all('granted=' in l for l in aging)} "
+    |                                                                                      ^
+237 |         f"sample={aging[:1]}"
+238 |     )
+    |
+
+Found 2 errors.
+ruff_format_probes_exit=1
+ruff_format_probes_stdout=Would reformat: docs/evidence/C128/plane1-residue-readiness-20261017/probes/landed_face_rebase.py
+1 file would be reformatted, 21 files already formatted
+probe_py_files=22
+py_compile_four_probes_exit=0
+
+re-take_after_fix -- the block above is the red take and it stays: the two E741 findings and the
+would-reformat line are what this step fixed, and a green-only carrier would hide them.
+fix: two comprehension-variable renames in landed_face_rebase.py (l -> row, l -> text) plus the
+formatter's reflow of the two affected f-string lines; no arm, no counter and no printed reading
+was edited. The probe went 279 -> 278 lines and 12967 bytes, sha16 699c6a641e64d65c -> 5db7f6d97a5083e4.
+behavior neutrality measured by re-run, not asserted: the driver re-taken after the fix prints stdout
+byte-identical to the pre-fix green take (diff exit below, and the re-take itself exits 0 with
+arms=12 arms_passed=12 chain_exit=0).
+diff_take3_stdout_take4_stdout_exit=0
+ruff_check_probes_exit=0
+ruff_check_probes_stdout=All checks passed!
+ruff_format_probes_exit=0
+ruff_format_probes_stdout=22 files already formatted
+probe_py_files=22
+py_compile_landed_face_rebase_exit=0
+denominator_agreement: the 22 in ruff's own count is the glob count of probes/*.py on the line above,
+so neither number is hand-typed; step 2's carrier recorded 21 and this step adds exactly one probe.
+stderr of the driver re-take: 59 bytes, the yfinance delisted warning, verbatim in wave-27 section 91
+instrument-incident item 3; .err siblings are not committed, so that byte count is a worktree property.

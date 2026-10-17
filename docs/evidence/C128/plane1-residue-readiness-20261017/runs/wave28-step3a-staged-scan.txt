@@ -1,0 +1,29 @@
+wave-28 step 3a -- index (staged) face of the payload scan, taken at the moment this commit is built.
+argv: git -c core.quotepath=off diff --cached --name-only -z | xargs -0 $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/staged_payload_scan.py --paths   (cwd = repo root, PY = the gate interpreter)
+precondition: `git diff --name-only` empty => index == worktree, so scanning these paths' worktree bytes is scanning the bytes that get committed.
+take1 population: README.md + 4 probes + 4 step-3a run carriers + 开发验收记录.md (the staged-scan carrier itself is NOT in this set).
+payload_scan_files=10 payload_scan_roots=10 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 10 file(s) clean
+take1_staged_exit=0
+take1_stderr_bytes=0
+why_two_readings: xargs exit 0 AND the payload_scan=PASS line must both be present. This instrument's
+  first red (recorded in precommit-staged-scan.wave25.txt) was STAGED_exit=1 with a 0-byte stdout
+  because xargs appends the file table at the command tail and --paths has to sit in the prefix; an
+  rc alone cannot tell "used wrong" from "scanned and clean", which is what unresolved= counts for.
+take2 population: the same command after this carrier joined the index (11 paths = 10 above + itself).
+take2_worktree_vs_index_files=0
+payload_scan_files=11 payload_scan_roots=11 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 11 file(s) clean
+take2_staged_exit=0
+take2_stderr_bytes=0
+two_arm_face_after_take2: same-generation re-take of payload_secret_scan.py over the probes+runs tree,
+  stdout written to scratch only (writing it into runs/ would move the population again):
+  payload_files=119 payload_roots=2 / arm_a_findings=0 arm_a_rc=0 / payload_secret_face PASS=True / scan_exit=0.
+  119 = 22 probes + 85 run carriers + 12 .err (ls counts each measured after this carrier existed), so the
+  step-3a face moved 118 -> 119 by this file alone -- the same self-counting shape as the take above.
+lag_statement: both takes above scanned this carrier's bytes BEFORE this tail was appended, so lines
+  13-29 are step-3a bytes that neither face saw. The 119 above was counted while this file already
+  existed, so the population is right, but its byte coverage stopped at line 12. They are key=value
+  scan readings with no secret shape; the closing takes over the final index (11 paths) and the final
+  tree (119 files) run after every write of this step and are printed in the commit message body,
+  which is the only carrier that can hold a reading of its own last bytes.

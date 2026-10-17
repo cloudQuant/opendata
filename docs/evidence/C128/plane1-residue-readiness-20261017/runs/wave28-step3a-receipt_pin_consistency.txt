@@ -1,0 +1,10 @@
+wave-28 step 3a -- pin blast re-taken over the generation step 3a ships into (no pinned byte touched by this step).
+argv: PYTHONPATH= $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/receipt_pin_consistency.py   (cwd = repo root, no pipes; 1.774 s wall)
+pin_scope=ALL receipt_files=1375 pin_kinds=contract,fixture,probe,source
+A_clean: slots=19850 stale=0 before_ne_after=0 samples=[] by_kind={'contract': 2820, 'fixture': 2585, 'probe': 7425, 'source': 7020}
+B_forced: slots=19850 stale=1375 targeted_slots=1375 substitute=scripts/quality/iter2_claims_probe_runner.py must_equal_targeted=True
+C_rearm: stale=0 before_ne_after=1 expected=stale=0/before_ne_after=1 PASS=True
+pin_face slots=19850 stale=0 before_ne_after=0 distinct_pinned_paths=558 arms=3 arms_passed=3 arms_failed=0 PASS=True
+receipt_pin_consistency_exit=0
+stderr_bytes=0
+why_this_carrier: step 2 archived the same face at slots=19850 stale=0 with the B arm at 1375; step 3a edits four probe files, so this is the same-generation re-take that proves the probe edits dirtied no receipt pin (A_clean stale=0 before_ne_after=0) while the widening price (1375) is still a cost this wave has not paid.

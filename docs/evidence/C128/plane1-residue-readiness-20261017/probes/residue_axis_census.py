@@ -12,8 +12,9 @@ those three jointly imply.
 Every column is imported, never re-typed: ``readiness_census._readiness/_bucket`` for the pipeline
 bucket, ``incomplete_row_guard_check._row`` for the four axes, and the reachability census's own
 stdout for the seam bucket and the per-provider residual that ``D_bucket_reconciles`` compares
-against. Rows come from the judge report the gate reads, so the population is ``350 - 266`` by
-construction and ``C_population_identity`` prints that arithmetic rather than asserting a constant.
+against. Rows come from the judge report the gate reads, so the population is ``350 - accepted`` by
+construction -- 84 in the generation this probe was written, 75 from wave-28 step 2 on, and
+``C_population_identity`` prints the live arithmetic rather than trusting either number.
 The three group prints are the same population seen three ways: ``1_cross_tab`` keys it by
 (pipeline bucket, axis verdict), ``2_actions`` by the implied action, and ``3_action_by_provider``
 by (action, provider); ``4_action_totals`` prints ``actions`` and ``nested_sum`` so the last two are
