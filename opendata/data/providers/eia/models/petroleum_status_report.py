@@ -231,6 +231,7 @@ class PetroleumStatusReportFetcher(Fetcher[PetroleumStatusReportQuery, tuple[str
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "PetroleumStatusReport"
+    row_model: ClassVar[type[PetroleumStatusReport]] = PetroleumStatusReport
     capability: ClassVar[Capability] = Capability(
         asset_class="energy",
         domain="energy_petroleum_status_report",

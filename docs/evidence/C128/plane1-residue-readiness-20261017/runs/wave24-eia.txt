@@ -1,0 +1,65 @@
+wave24_provider=eia claims_emitted=10 identity_set=5168e1e723999312
+row eia::PetroleumStatusReport phases=5 pass=5 fail=0 blocked=0
+row eia::ShortTermEnergyOutlook phases=5 pass=5 fail=0 blocked=0
+receipt eia::PetroleumStatusReport/implementation exit=0 bytes=380 sha=6416ee29d9cf3302 face=implementation: registered domain=energy_petroleum_status_report row_model=PetroleumStatusReport verified=False transport=offline-only
+receipt eia::PetroleumStatusReport/direct exit=0 bytes=371 sha=70e7c5f95616b42a face=direct: fetcher=PetroleumStatusReportFetcher seam_requests=1 rows=2 row_class=PetroleumStatusReport first_row_sha256=7af257427706514a
+receipt eia::PetroleumStatusReport/service exit=0 bytes=367 sha=cb1119dc993ec241 face=service: query_provider_model executed for real (registry + reviewed domain semantics), rows=2 first_row_sha256=7af257427706514a
+receipt eia::PetroleumStatusReport/contract exit=0 bytes=351 sha=5bb3b824ccc41260 face=contract: PetroleumStatusReport validated 2 produced row(s); strict round-trip and extra-forbid boundaries hold
+receipt eia::PetroleumStatusReport/counterfact exit=0 bytes=1024 sha=2b72248cf54f0b37 face=COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "EIAProviderError", "refusal_code": "EIA_BAD_NUMBER", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "EIAProviderError", "refusal_code": "EIA_BAD_NUMBER", "rejected": [], "status": null}, "reason": "a stock cell written 43O.2 keeps the row's stub path, its table title and both dated columns intact and still parses as CSV, but it is neither a number nor one of EIA's documented undisclosed-value tokens, and value is a required contract column, so PetroleumStatusReportFetcher.transform_data must refuse the table rather than coerce the cell to 0, drop the row silently, or invent a unit for it; untampered control produced 2 row(s) through the same seam"}
+receipt eia::ShortTermEnergyOutlook/implementation exit=0 bytes=384 sha=e588befed72edac4 face=implementation: registered domain=energy_short_term_energy_outlook row_model=ShortTermEnergyOutlook verified=False transport=offline-only
+receipt eia::ShortTermEnergyOutlook/direct exit=0 bytes=374 sha=8f8fea26dd13f22c face=direct: fetcher=ShortTermEnergyOutlookFetcher seam_requests=1 rows=1 row_class=ShortTermEnergyOutlook first_row_sha256=4bc15e5911424875
+receipt eia::ShortTermEnergyOutlook/service exit=0 bytes=368 sha=6a95bd9d0da202ff face=service: query_provider_model executed for real (registry + reviewed domain semantics), rows=1 first_row_sha256=4bc15e5911424875
+receipt eia::ShortTermEnergyOutlook/contract exit=0 bytes=353 sha=6b754f32cfe466bd face=contract: ShortTermEnergyOutlook validated 1 produced row(s); strict round-trip and extra-forbid boundaries hold
+receipt eia::ShortTermEnergyOutlook/counterfact exit=0 bytes=1008 sha=658504bbb39c0639 face=COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "EIAProviderError", "refusal_code": "EIA_BAD_SERIES_ID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "EIAProviderError", "refusal_code": "EIA_BAD_SERIES_ID", "rejected": [], "status": null}, "reason": "answering PET.RWTE.D on a request filtered for PET.RWTC.D leaves the page total, the monthly frequency label and every value well-formed, so series identity is the only thing that can catch it: ShortTermEnergyOutlookFetcher must refuse the row in extract_data and again in transform_data rather than publish another series' observation under the series the caller asked for; untampered control produced 1 row(s) through the same seam"}
+reviews_signed=2 identity_set=5168e1e723999312
+review eia::PetroleumStatusReport decision=ACCEPT reviewer_type=primary_model reviewer_id=iter2-acceptance-reviewer reviewer_role=acceptance_reviewer reviewer_model=qoder-cli-agent claims_sha=864f25ed00351f02 review_sha=9ab2e65b80572bb3
+review eia::ShortTermEnergyOutlook decision=ACCEPT reviewer_type=primary_model reviewer_id=iter2-acceptance-reviewer reviewer_role=acceptance_reviewer reviewer_model=qoder-cli-agent claims_sha=864f25ed00351f02 review_sha=9abc2b52bf023c7a
+--- merge re-take (same argv as the wave) ---
+shards merged=24
+  shard docs/evidence/C101/alpha_vantage/claims.reviewed.json
+  shard docs/evidence/C101/benzinga/claims.reviewed.json
+  shard docs/evidence/C101/bls/claims.reviewed.json
+  shard docs/evidence/C101/cboe/claims.reviewed.json
+  shard docs/evidence/C101/cftc/claims.reviewed.json
+  shard docs/evidence/C101/congress_gov/claims.reviewed.json
+  shard docs/evidence/C101/ecb/claims.reviewed.json
+  shard docs/evidence/C101/econdb/claims.reviewed.json
+  shard docs/evidence/C101/eia/claims.reviewed.json
+  shard docs/evidence/C101/famafrench/claims.reviewed.json
+  shard docs/evidence/C101/federal_reserve/claims.reviewed.json
+  shard docs/evidence/C101/finra/claims.reviewed.json
+  shard docs/evidence/C101/finviz/claims.reviewed.json
+  shard docs/evidence/C101/fmp/claims.reviewed.json
+  shard docs/evidence/C101/fred/claims.reviewed.json
+  shard docs/evidence/C101/government_us/claims.reviewed.json
+  shard docs/evidence/C101/imf/claims.reviewed.json
+  shard docs/evidence/C101/intrinio/claims.reviewed.json
+  shard docs/evidence/C101/multpl/claims.reviewed.json
+  shard docs/evidence/C101/oecd/claims.reviewed.json
+  shard docs/evidence/C101/sec/claims.reviewed.json
+  shard docs/evidence/C101/tiingo/claims.reviewed.json
+  shard docs/evidence/C101/tradier/claims.reviewed.json
+  shard docs/evidence/C101/tradingeconomics/claims.reviewed.json
+claims=1355 identities=271 reviews=264 accepted_identities=264
+wrote docs/evidence/C101/claims.merged.json
+merge_exit=0
+merge_idempotent=True merged_sha_before=7eeb5739ec725f69 merged_sha_after=7eeb5739ec725f69
+--- judge re-take ---
+wrote docs/evidence/C101/judge/claims.merged.report.json and docs/evidence/C101/judge/claims.merged.report.md: 350 identities, 264 offline accepted
+judge_exit=0
+judge_summary={"claim_count": 1355, "identity_count": 350, "offline_acceptance_count": 264, "primary_review_count": 264, "status_counts": {"INCOMPLETE": 7, "OFFLINE_ACCEPTED": 264, "UNREVIEWED": 79}}
+judge_identity_set=5168e1e723999312 invalid_claims=0 claims_sha=7eeb5739ec725f69
+--- readiness census re-take (last three face lines; exit taken without a pipe) ---
+column_census: residue=86 bound=54 columns={'bound': 54, 'declared': 0, 'frozen_module': 0, 'is_domain_contract': 0, 'witness_entry': 0} buckets={'NEED_BINDING': 32, 'NEED_DECLARE': 54} sums_to_residue=True
+buckets_by_provider={"biztoc": {"NEED_BINDING": 1}, "cboe": {"NEED_BINDING": 2}, "deribit": {"NEED_DECLARE": 5}, "econdb": {"NEED_BINDING": 2}, "federal_reserve": {"NEED_DECLARE": 2}, "government_us": {"NEED_DECLARE": 3, "NEED_BINDING": 1}, "intrinio": {"NEED_BINDING": 1}, "nasdaq": {"NEED_DECLARE": 9}, "seeking_alpha": {"NEED_BINDING": 3}, "stockgrid": {"NEED_BINDING": 1}, "tmx": {"NEED_BINDING": 16, "NEED_DECLARE": 8}, "wsj": {"NEED_BINDING": 3}, "yfinance": {"NEED_BINDING": 2, "NEED_DECLARE": 27}}
+identity_set=5168e1e723999312 expected_match=True inventory_keys=['csv_sha256', 'expected_identity_count', 'expected_identity_set_sha256', 'identity_count', 'identity_set_sha256', 'integrity', 'path']
+readiness_arms=3 readiness_passed=3 readiness_failed=0
+census_exit=0
+--- seam surface probe (exit taken without a pipe) ---
+seam_surface_provider=eia fake_methods=['get'] verbs=['get'] missing=[] verdict=WITNESSABLE expected=WITNESSABLE judge_statuses={'OFFLINE_ACCEPTED': 2}
+seam_surface_provider=tmx fake_methods=['get'] verbs=['request'] missing=['request'] verdict=BLOCKED_ON_RUNNER_SURFACE expected=BLOCKED_ON_RUNNER_SURFACE judge_statuses={'UNREVIEWED': 24}
+seam_surface_arms=2 seam_surface_failed=0 identity_set=5168e1e723999312
+seam_exit=0
+--- pre-commit payload scans (this is the last block; the scan carrier itself is not scanned by its own run) ---
+# the faces live in runs/post_batch_payload_scan.txt: the staged scanner over the wave payload roots
+# (argv recorded there) and the shipped two-arm scanner re-run over this generation.

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "EIAProviderError", "refusal_code": "EIA_BAD_SERIES_ID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "EIAProviderError", "refusal_code": "EIA_BAD_SERIES_ID", "rejected": [], "status": null}, "reason": "answering PET.RWTE.D on a request filtered for PET.RWTC.D leaves the page total, the monthly frequency label and every value well-formed, so series identity is the only thing that can catch it: ShortTermEnergyOutlookFetcher must refuse the row in extract_data and again in transform_data rather than publish another series' observation under the series the caller asked for; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

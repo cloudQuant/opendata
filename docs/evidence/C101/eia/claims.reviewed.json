@@ -1,0 +1,838 @@
+{
+  "claims": [
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T07:35:08.431001+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "before_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "path": "opendata/data/models/eia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "before_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "path": "scripts/quality/iter2_witnesses/eia.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "before_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "path": "scripts/quality/iter2_witnesses/eia.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "before_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "path": "opendata/data/providers/eia/provider.py"
+          },
+          {
+            "after_sha256": "d70c59c75b0db3f0519d0b3e5268338bcfebbe5dc4a1d5686a6473ef41ac7060",
+            "before_sha256": "d70c59c75b0db3f0519d0b3e5268338bcfebbe5dc4a1d5686a6473ef41ac7060",
+            "path": "opendata/data/providers/eia/models/petroleum_status_report.py"
+          },
+          {
+            "after_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "before_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "path": "opendata/data/providers/eia/models/_client.py"
+          }
+        ]
+      },
+      "provider": "eia",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "eia::PetroleumStatusReport",
+        "path": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/implementation.json",
+        "sha256": "331f3c628db614bb7afe4f6d4597ffbf099057c15aac2d2a23fbcee83945e265"
+      },
+      "status": "PASS",
+      "upstream_model": "PetroleumStatusReport"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T07:35:09.575819+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "before_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "path": "opendata/data/models/eia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+        "fixture": [
+          {
+            "after_sha256": "0e1427c7f562071e8c0eec4cb55975f5fc7911586f4f95b92764e99ad0cc5757",
+            "before_sha256": "0e1427c7f562071e8c0eec4cb55975f5fc7911586f4f95b92764e99ad0cc5757",
+            "path": "docs/evidence/C101/fixtures/eia/PetroleumStatusReport.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "before_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "path": "scripts/quality/iter2_witnesses/eia.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "before_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "path": "opendata/data/providers/eia/provider.py"
+          },
+          {
+            "after_sha256": "d70c59c75b0db3f0519d0b3e5268338bcfebbe5dc4a1d5686a6473ef41ac7060",
+            "before_sha256": "d70c59c75b0db3f0519d0b3e5268338bcfebbe5dc4a1d5686a6473ef41ac7060",
+            "path": "opendata/data/providers/eia/models/petroleum_status_report.py"
+          },
+          {
+            "after_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "before_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "path": "opendata/data/providers/eia/models/_client.py"
+          }
+        ]
+      },
+      "provider": "eia",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "eia::PetroleumStatusReport",
+        "path": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/direct.json",
+        "sha256": "06243324378e90d3ce550da0f3ee43996bededef4cb5f3eb6c02560fa3626b46"
+      },
+      "status": "PASS",
+      "upstream_model": "PetroleumStatusReport"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T07:35:10.836993+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "before_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "path": "opendata/data/models/eia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+        "fixture": [
+          {
+            "after_sha256": "0e1427c7f562071e8c0eec4cb55975f5fc7911586f4f95b92764e99ad0cc5757",
+            "before_sha256": "0e1427c7f562071e8c0eec4cb55975f5fc7911586f4f95b92764e99ad0cc5757",
+            "path": "docs/evidence/C101/fixtures/eia/PetroleumStatusReport.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "before_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "path": "scripts/quality/iter2_witnesses/eia.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "before_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "path": "opendata/data/providers/eia/provider.py"
+          },
+          {
+            "after_sha256": "d70c59c75b0db3f0519d0b3e5268338bcfebbe5dc4a1d5686a6473ef41ac7060",
+            "before_sha256": "d70c59c75b0db3f0519d0b3e5268338bcfebbe5dc4a1d5686a6473ef41ac7060",
+            "path": "opendata/data/providers/eia/models/petroleum_status_report.py"
+          },
+          {
+            "after_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "before_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "path": "opendata/data/providers/eia/models/_client.py"
+          }
+        ]
+      },
+      "provider": "eia",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "eia::PetroleumStatusReport",
+        "path": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/service.json",
+        "sha256": "3b40bc801c29d30492ea887b96576aded7445d372866484a104e38b730fb5582"
+      },
+      "status": "PASS",
+      "upstream_model": "PetroleumStatusReport"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T07:35:12.030800+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "before_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "path": "opendata/data/models/eia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+        "fixture": [
+          {
+            "after_sha256": "0e1427c7f562071e8c0eec4cb55975f5fc7911586f4f95b92764e99ad0cc5757",
+            "before_sha256": "0e1427c7f562071e8c0eec4cb55975f5fc7911586f4f95b92764e99ad0cc5757",
+            "path": "docs/evidence/C101/fixtures/eia/PetroleumStatusReport.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "before_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "path": "scripts/quality/iter2_witnesses/eia.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "before_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "path": "opendata/data/providers/eia/provider.py"
+          },
+          {
+            "after_sha256": "d70c59c75b0db3f0519d0b3e5268338bcfebbe5dc4a1d5686a6473ef41ac7060",
+            "before_sha256": "d70c59c75b0db3f0519d0b3e5268338bcfebbe5dc4a1d5686a6473ef41ac7060",
+            "path": "opendata/data/providers/eia/models/petroleum_status_report.py"
+          },
+          {
+            "after_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "before_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "path": "opendata/data/providers/eia/models/_client.py"
+          }
+        ]
+      },
+      "provider": "eia",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "eia::PetroleumStatusReport",
+        "path": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/contract.json",
+        "sha256": "407263da9dd4f75416058e6c9786d8b20a3d673f46dc60902dc3b7890703d607"
+      },
+      "status": "PASS",
+      "upstream_model": "PetroleumStatusReport"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T07:35:13.191804+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "before_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "path": "opendata/data/models/eia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+        "fixture": [
+          {
+            "after_sha256": "0e1427c7f562071e8c0eec4cb55975f5fc7911586f4f95b92764e99ad0cc5757",
+            "before_sha256": "0e1427c7f562071e8c0eec4cb55975f5fc7911586f4f95b92764e99ad0cc5757",
+            "path": "docs/evidence/C101/fixtures/eia/PetroleumStatusReport.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "before_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "path": "scripts/quality/iter2_witnesses/eia.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "before_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "path": "opendata/data/providers/eia/provider.py"
+          },
+          {
+            "after_sha256": "d70c59c75b0db3f0519d0b3e5268338bcfebbe5dc4a1d5686a6473ef41ac7060",
+            "before_sha256": "d70c59c75b0db3f0519d0b3e5268338bcfebbe5dc4a1d5686a6473ef41ac7060",
+            "path": "opendata/data/providers/eia/models/petroleum_status_report.py"
+          },
+          {
+            "after_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "before_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "path": "opendata/data/providers/eia/models/_client.py"
+          }
+        ]
+      },
+      "provider": "eia",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "eia::PetroleumStatusReport",
+        "path": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/counterfact.json",
+        "sha256": "1f113d61f330ee2068b95b201c8f02638b0b9b386a41c6bfec4fe5c43202bc29"
+      },
+      "status": "PASS",
+      "upstream_model": "PetroleumStatusReport"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T07:35:14.353984+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "before_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "path": "opendata/data/models/eia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "before_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "path": "scripts/quality/iter2_witnesses/eia.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "before_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "path": "scripts/quality/iter2_witnesses/eia.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "before_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "path": "opendata/data/providers/eia/provider.py"
+          },
+          {
+            "after_sha256": "7aa2f23567fbf9997efa2054d674c80937549c3e16808f697b3b17ab9e19d210",
+            "before_sha256": "7aa2f23567fbf9997efa2054d674c80937549c3e16808f697b3b17ab9e19d210",
+            "path": "opendata/data/providers/eia/models/short_term_energy_outlook.py"
+          },
+          {
+            "after_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "before_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "path": "opendata/data/providers/eia/models/_client.py"
+          }
+        ]
+      },
+      "provider": "eia",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "eia::ShortTermEnergyOutlook",
+        "path": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/implementation.json",
+        "sha256": "b76ec3ba81c9471ce9ae25defacd95153b9917262f96f2710e3089f6968cd4e9"
+      },
+      "status": "PASS",
+      "upstream_model": "ShortTermEnergyOutlook"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T07:35:15.498560+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "before_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "path": "opendata/data/models/eia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+        "fixture": [
+          {
+            "after_sha256": "d869c9f20ed66ed95be863d7545e51a6bc9c472b781d949d81ecb656727dc953",
+            "before_sha256": "d869c9f20ed66ed95be863d7545e51a6bc9c472b781d949d81ecb656727dc953",
+            "path": "docs/evidence/C101/fixtures/eia/ShortTermEnergyOutlook.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "before_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "path": "scripts/quality/iter2_witnesses/eia.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "before_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "path": "opendata/data/providers/eia/provider.py"
+          },
+          {
+            "after_sha256": "7aa2f23567fbf9997efa2054d674c80937549c3e16808f697b3b17ab9e19d210",
+            "before_sha256": "7aa2f23567fbf9997efa2054d674c80937549c3e16808f697b3b17ab9e19d210",
+            "path": "opendata/data/providers/eia/models/short_term_energy_outlook.py"
+          },
+          {
+            "after_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "before_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "path": "opendata/data/providers/eia/models/_client.py"
+          }
+        ]
+      },
+      "provider": "eia",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "eia::ShortTermEnergyOutlook",
+        "path": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/direct.json",
+        "sha256": "0e5763d313dc94e4158119e923fb2e5ee38730c015b224fc150c1254ecc7ebcf"
+      },
+      "status": "PASS",
+      "upstream_model": "ShortTermEnergyOutlook"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T07:35:16.777166+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "before_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "path": "opendata/data/models/eia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+        "fixture": [
+          {
+            "after_sha256": "d869c9f20ed66ed95be863d7545e51a6bc9c472b781d949d81ecb656727dc953",
+            "before_sha256": "d869c9f20ed66ed95be863d7545e51a6bc9c472b781d949d81ecb656727dc953",
+            "path": "docs/evidence/C101/fixtures/eia/ShortTermEnergyOutlook.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "before_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "path": "scripts/quality/iter2_witnesses/eia.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "before_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "path": "opendata/data/providers/eia/provider.py"
+          },
+          {
+            "after_sha256": "7aa2f23567fbf9997efa2054d674c80937549c3e16808f697b3b17ab9e19d210",
+            "before_sha256": "7aa2f23567fbf9997efa2054d674c80937549c3e16808f697b3b17ab9e19d210",
+            "path": "opendata/data/providers/eia/models/short_term_energy_outlook.py"
+          },
+          {
+            "after_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "before_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "path": "opendata/data/providers/eia/models/_client.py"
+          }
+        ]
+      },
+      "provider": "eia",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "eia::ShortTermEnergyOutlook",
+        "path": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/service.json",
+        "sha256": "ad2c7d026a6217893931558cf32cf6466961483a3d287bd5cc2d811d07d42253"
+      },
+      "status": "PASS",
+      "upstream_model": "ShortTermEnergyOutlook"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T07:35:17.935101+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "before_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "path": "opendata/data/models/eia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+        "fixture": [
+          {
+            "after_sha256": "d869c9f20ed66ed95be863d7545e51a6bc9c472b781d949d81ecb656727dc953",
+            "before_sha256": "d869c9f20ed66ed95be863d7545e51a6bc9c472b781d949d81ecb656727dc953",
+            "path": "docs/evidence/C101/fixtures/eia/ShortTermEnergyOutlook.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "before_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "path": "scripts/quality/iter2_witnesses/eia.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "before_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "path": "opendata/data/providers/eia/provider.py"
+          },
+          {
+            "after_sha256": "7aa2f23567fbf9997efa2054d674c80937549c3e16808f697b3b17ab9e19d210",
+            "before_sha256": "7aa2f23567fbf9997efa2054d674c80937549c3e16808f697b3b17ab9e19d210",
+            "path": "opendata/data/providers/eia/models/short_term_energy_outlook.py"
+          },
+          {
+            "after_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "before_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "path": "opendata/data/providers/eia/models/_client.py"
+          }
+        ]
+      },
+      "provider": "eia",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "eia::ShortTermEnergyOutlook",
+        "path": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/contract.json",
+        "sha256": "abc7ac75b32a123e3a684a25358be0230afb8a501ceceef144caa75f1f30961e"
+      },
+      "status": "PASS",
+      "upstream_model": "ShortTermEnergyOutlook"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T07:35:19.127278+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "before_sha256": "e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+            "path": "opendata/data/models/eia.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:e58a069df2ac11271fcaf52822331e1c41c17a4aacb3a9dd5849068166f54634",
+        "fixture": [
+          {
+            "after_sha256": "d869c9f20ed66ed95be863d7545e51a6bc9c472b781d949d81ecb656727dc953",
+            "before_sha256": "d869c9f20ed66ed95be863d7545e51a6bc9c472b781d949d81ecb656727dc953",
+            "path": "docs/evidence/C101/fixtures/eia/ShortTermEnergyOutlook.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "before_sha256": "b12a4ca399c5384bf73fd46f8b383b1621fb133e28cf41c796a8b8a2ec3ec890",
+            "path": "scripts/quality/iter2_witnesses/eia.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "before_sha256": "7bfc8414933493bc25ff5b8be1350e0e0dbdf1e9e4e6f631ef89a1ab0e8c5af5",
+            "path": "opendata/data/providers/eia/provider.py"
+          },
+          {
+            "after_sha256": "7aa2f23567fbf9997efa2054d674c80937549c3e16808f697b3b17ab9e19d210",
+            "before_sha256": "7aa2f23567fbf9997efa2054d674c80937549c3e16808f697b3b17ab9e19d210",
+            "path": "opendata/data/providers/eia/models/short_term_energy_outlook.py"
+          },
+          {
+            "after_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "before_sha256": "f4e94366bfa6923f7c23133451989eab9f2e0379585b6595663607c16ca00ecc",
+            "path": "opendata/data/providers/eia/models/_client.py"
+          }
+        ]
+      },
+      "provider": "eia",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "eia::ShortTermEnergyOutlook",
+        "path": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/counterfact.json",
+        "sha256": "64b9178c54d9278c9fb541127d49b35c30b06a25b0dbbd256f5dec4ed67ab828"
+      },
+      "status": "PASS",
+      "upstream_model": "ShortTermEnergyOutlook"
+    }
+  ],
+  "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
+  "primary_reviews": [
+    {
+      "decision": "ACCEPT",
+      "provider": "eia",
+      "receipt": {
+        "model_identity": "eia::PetroleumStatusReport",
+        "path": "docs/evidence/C101/primary-reviews/eia__PetroleumStatusReport.review.json",
+        "sha256": "9ab2e65b80572bb38f62e6661807edc171c1398df39975f7bcdf262f0b87e43f"
+      },
+      "reviewed_at_utc": "2026-10-17T07:36:31Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "PetroleumStatusReport"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "eia",
+      "receipt": {
+        "model_identity": "eia::ShortTermEnergyOutlook",
+        "path": "docs/evidence/C101/primary-reviews/eia__ShortTermEnergyOutlook.review.json",
+        "sha256": "9abc2b52bf023c7a9159610e8292617024f6b7f52f5a2f4acc5b956b4759a61f"
+      },
+      "reviewed_at_utc": "2026-10-17T07:36:31Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "ShortTermEnergyOutlook"
+    }
+  ],
+  "schema_version": 1
+}

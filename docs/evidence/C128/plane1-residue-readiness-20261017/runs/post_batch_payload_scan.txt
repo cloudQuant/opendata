@@ -1,0 +1,59 @@
+# wave 24 pre-commit payload scans -- see 开发验收记录.md section 86.6
+# generation: after wave24-eia.txt was finalized (65 lines) and after section 86 was written into
+# docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/开发验收记录.md.
+# SELF-REFERENCE LIMIT: this carrier is written after the runs below, so it is not covered by its own
+# scan. It is the only file in the payload set that no scan in this generation read.
+# Interpreter: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python (gate interpreter), cwd = repo root.
+
+--- staged payload scan, pass 2 (final bytes), argv verbatim ---
+# argv: PYTHONPATH=. $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/staged_payload_scan.py --paths \
+#   docs/evidence/C101/claims.merged.json \
+#   docs/evidence/C101/judge \
+#   docs/evidence/C101/eia \
+#   docs/evidence/C101/captures/eia \
+#   docs/evidence/C101/fixtures/eia \
+#   docs/evidence/C101/receipts/eia \
+#   docs/evidence/C101/primary-reviews/eia__PetroleumStatusReport.review.json \
+#   docs/evidence/C101/primary-reviews/eia__ShortTermEnergyOutlook.review.json \
+#   scripts/quality/iter2_witnesses/eia.py \
+#   opendata/data/providers/eia/models/_client.py \
+#   opendata/data/providers/eia/models/petroleum_status_report.py \
+#   opendata/data/providers/eia/models/short_term_energy_outlook.py \
+#   docs/evidence/C128/plane1-residue-readiness-20261017/probes \
+#   docs/evidence/C128/plane1-residue-readiness-20261017/runs \
+#   docs/evidence/C128/README.md \
+#   docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/开发验收记录.md
+payload_scan_files=48 payload_scan_roots=16 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 48 file(s) clean
+staged_scan_exit=0
+# pass 1 (taken before the last three edits to 开发验收记录.md) printed the same face:
+#   payload_scan_files=48 payload_scan_roots=16 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+#   payload_scan=PASS 48 file(s) clean / staged_scan_exit=0
+# Two generations agreeing is the evidence that the record prose added between them is inert.
+# The CJK path in the list is what the new unresolved column proves: it resolved (unresolved=0).
+# Before the fix, a path that resolved to neither file nor directory was dropped silently while
+# payload_scan_roots still counted it, so a short scanned set could print findings=0 and PASS.
+# Control re-take of that gate, same interpreter, two arms:
+#   bad  --paths scripts/quality/iter2_witnesses/eia.py probes/no_such.py
+#          -> payload_scan_files=1 payload_scan_roots=2 payload_scan_unresolved=1 ... FAIL unresolved=1, exit 1
+#   good --paths scripts/quality/iter2_witnesses/eia.py
+#          -> payload_scan_files=1 payload_scan_roots=1 payload_scan_unresolved=0 ... PASS, exit 0
+
+--- shipped two-arm scanner re-take over this generation (no argv; PAYLOAD_DIRS + RUNS_REL) ---
+planted_into=declare_candidates.txt at_line=31 lines=65
+payload_files=11 payload_roots=2
+B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+arm_a_findings=0 arm_a_rc=0
+arm_b_findings=1 arm_b_rc=1
+payload_secret_face PASS=True
+twoarm_scan_exit=0
+# payload_files moved 6 -> 11 as this directory grew (two new probes, three new carriers), so the
+# guard is reading the new carriers too; the planted token is runtime-generated and lives only in a
+# temporary directory, never in the repository.
+
+--- committed-history scan (reads git history only, not the working tree) ---
+# argv: gitleaks detect --source . --config .gitleaks.toml --report-format json --report-path /tmp/hist_leaks.json
+history_commits_scanned=409 history_bytes_scanned=279973178 history_seconds=109
+history_leaks=no leaks found
+history_report_findings=0
+history_scan_exit=0

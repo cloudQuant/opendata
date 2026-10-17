@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "EIAProviderError", "refusal_code": "EIA_BAD_NUMBER", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "EIAProviderError", "refusal_code": "EIA_BAD_NUMBER", "rejected": [], "status": null}, "reason": "a stock cell written 43O.2 keeps the row's stub path, its table title and both dated columns intact and still parses as CSV, but it is neither a number nor one of EIA's documented undisclosed-value tokens, and value is a required contract column, so PetroleumStatusReportFetcher.transform_data must refuse the table rather than coerce the cell to 0, drop the row silently, or invent a unit for it; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

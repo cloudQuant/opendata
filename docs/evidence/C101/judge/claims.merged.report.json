@@ -2,7 +2,7 @@
   "acceptance_rule": "all five phase claims plus an explicit valid primary-model or human ACCEPT receipt; claim PASS alone is candidate only",
   "claims_input": {
     "path": "docs/evidence/C101/claims.merged.json",
-    "sha256": "6896f10abe91446ef2fa16816dda1f56ee8ec86357c88d0b2e2a3c2d45a5b4a7"
+    "sha256": "7eeb5739ec725f69eeb855aafcb7ec822f88e95b77886e53c511f84f745c130f"
   },
   "claims_status_source": "explicit JSON claims only; no directory globbing or markdown status parsing",
   "global_issues": [],
@@ -3915,78 +3915,172 @@
       "upstream_model": "YieldCurve"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "eia::PetroleumStatusReport",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "EIAProviderError",
+              "refusal_code": "EIA_BAD_NUMBER",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "EIAProviderError",
+              "refusal_code": "EIA_BAD_NUMBER",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "a stock cell written 43O.2 keeps the row's stub path, its table title and both dated columns intact and still parses as CSV, but it is neither a number nor one of EIA's documented undisclosed-value tokens, and value is a required contract column, so PetroleumStatusReportFetcher.transform_data must refuse the table rather than coerce the cell to 0, drop the row silently, or invent a unit for it; untampered control produced 2 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "eia",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-eia-PetroleumStatusReport",
       "upstream_model": "PetroleumStatusReport"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "eia::ShortTermEnergyOutlook",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "EIAProviderError",
+              "refusal_code": "EIA_BAD_SERIES_ID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "EIAProviderError",
+              "refusal_code": "EIA_BAD_SERIES_ID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "answering PET.RWTE.D on a request filtered for PET.RWTC.D leaves the page total, the monthly frequency label and every value well-formed, so series identity is the only thing that can catch it: ShortTermEnergyOutlookFetcher must refuse the row in extract_data and again in transform_data rather than publish another series' observation under the series the caller asked for; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "eia",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-eia-ShortTermEnergyOutlook",
       "upstream_model": "ShortTermEnergyOutlook"
     },
@@ -26421,14 +26515,14 @@
   ],
   "schema_version": 1,
   "summary": {
-    "claim_count": 1345,
+    "claim_count": 1355,
     "identity_count": 350,
-    "offline_acceptance_count": 262,
-    "primary_review_count": 262,
+    "offline_acceptance_count": 264,
+    "primary_review_count": 264,
     "status_counts": {
       "INCOMPLETE": 7,
-      "OFFLINE_ACCEPTED": 262,
-      "UNREVIEWED": 81
+      "OFFLINE_ACCEPTED": 264,
+      "UNREVIEWED": 79
     }
   }
 }

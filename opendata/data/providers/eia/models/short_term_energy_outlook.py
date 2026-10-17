@@ -227,6 +227,7 @@ class ShortTermEnergyOutlookFetcher(Fetcher[ShortTermEnergyOutlookQuery, list[di
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "ShortTermEnergyOutlook"
+    row_model: ClassVar[type[ShortTermEnergyOutlook]] = ShortTermEnergyOutlook
     capability: ClassVar[Capability] = Capability(
         asset_class="energy",
         domain="energy_short_term_energy_outlook",
