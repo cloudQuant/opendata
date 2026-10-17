@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchBreakpoints --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FrenchProviderError", "refusal_code": "FRENCH_BREAKPOINT_COLUMN_COUNT", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FrenchProviderError", "refusal_code": "FRENCH_BREAKPOINT_COLUMN_COUNT", "rejected": [], "status": null}, "reason": "the 192602 row publishes the sample count and twenty percentile cells, and parse_breakpoint_table maps field position to percentile by requiring 1 + count_columns + 20 fields; removing the 100th percentile cell keeps the date and the count legitimate but shifts nothing on disk -- it leaves twenty-one fields, so the guard must refuse the row rather than publish nineteen percentiles and let transform_data fill percentile_100 from a value the source never printed for it; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

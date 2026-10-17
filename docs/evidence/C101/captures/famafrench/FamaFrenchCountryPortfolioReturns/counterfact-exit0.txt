@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchCountryPortfolioReturns --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FrenchProviderError", "refusal_code": "FRENCH_DAT_HEADER_MISMATCH", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FrenchProviderError", "refusal_code": "FRENCH_DAT_HEADER_MISMATCH", "rejected": [], "status": null}, "reason": "a .Dat section carries no column names in its rows: the ten values per period are assigned to (sort, portfolio) pairs only after the parser matches the 'Mkt High Low ... Zero' line against _DAT_VALUE_HEADER. Removing that anchor leaves the BE/ME group banner, the date and all ten numbers intact, so parse_dat_returns raises FRENCH_DAT_HEADER_MISMATCH on the first row rather than assuming the published order and mapping the high BE/ME return onto the low E/P cell; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

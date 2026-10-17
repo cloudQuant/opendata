@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchFactors --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FrenchProviderError", "refusal_code": "FRENCH_FACTOR_HEADER_MISSING", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FrenchProviderError", "refusal_code": "FRENCH_FACTOR_HEADER_MISSING", "rejected": [], "status": null}, "reason": "the monthly block is four numbers per period and the only thing that says which is Mkt-RF and which is RF is the header line the archive prints above them; parse_factor_table searches for a line whose first field is empty and whose rest are named, and with that line gone transform_data could not map any key through _FACTOR_FIELDS -- so the guard refuses FRENCH_FACTOR_HEADER_MISSING instead of attaching four period returns to factor names it has to invent; untampered control produced 4 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

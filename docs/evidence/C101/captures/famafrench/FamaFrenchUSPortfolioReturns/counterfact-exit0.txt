@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchUSPortfolioReturns --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FrenchProviderError", "refusal_code": "FRENCH_PORTFOLIO_COLUMN_COUNT", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FrenchProviderError", "refusal_code": "FRENCH_PORTFOLIO_COLUMN_COUNT", "rejected": [], "status": null}, "reason": "the six_portfolio table publishes six value-weighted returns per month under six column names, and parse_portfolio_table checks every row against len(header) + 1 before pairing header to fields; a row printed with five cells keeps a valid date and valid numbers but drops BIG HiBM, so the guard must refuse rather than zip four names onto five values and publish a 192607 SMALL HiBM return taken from the BIG LoBM cell; untampered control produced 24 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

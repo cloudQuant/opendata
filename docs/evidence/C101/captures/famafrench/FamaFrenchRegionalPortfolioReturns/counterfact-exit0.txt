@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchRegionalPortfolioReturns --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FrenchProviderError", "refusal_code": "FRENCH_BAD_NUMERIC_VALUE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FrenchProviderError", "refusal_code": "FRENCH_BAD_NUMERIC_VALUE", "rejected": [], "status": null}, "reason": "the archive documents its own missing-value spelling (-99.99, and -999 for counts) and parse_number accepts only a decimal or exactly those two sentinels; printing the 199007 ME1 BM2 cell as prose 'n/a' keeps the seven-field row and every other value, so the guard has to refuse FRENCH_BAD_NUMERIC_VALUE instead of quietly turning an unpublished developed-market return into a null the caller cannot distinguish from the source's own -99.99; untampered control produced 24 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

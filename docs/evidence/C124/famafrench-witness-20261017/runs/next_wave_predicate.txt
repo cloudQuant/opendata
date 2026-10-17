@@ -1,0 +1,25 @@
+POSITIVE_CONTROL famafrench::FamaFrenchBreakpoints row_model=FamaFrenchBreakpoint witness_configured=True -> both faces must be True for the instrument to be live
+identity_count=350 accepted=256 residue=94
+truth_table bound/row_model/witness -> n (each False is exactly one edit):
+  bound=True row_model=False witness=False             60
+  bound=False row_model=False witness=False            32
+  bound=True row_model=True witness=False              2
+SHARD_ONLY_ROWS=2 ['fred::SeniorLoanOfficerSurvey', 'sec::InsiderTrading']
+per_provider_residue:
+  yfinance               residue=29 NO_WITNESS_MODULE [bound=False row_model=False witness=False]=2 [bound=True row_model=False witness=False]=27
+  tmx                    residue=24 NO_WITNESS_MODULE [bound=False row_model=False witness=False]=16 [bound=True row_model=False witness=False]=8
+  nasdaq                 residue= 9 NO_WITNESS_MODULE [bound=True row_model=False witness=False]=9
+  government_us          residue= 6 NO_WITNESS_MODULE [bound=False row_model=False witness=False]=1 [bound=True row_model=False witness=False]=5
+  deribit                residue= 5 NO_WITNESS_MODULE [bound=True row_model=False witness=False]=5
+  intrinio               residue= 3 witness_rows=35  [bound=False row_model=False witness=False]=1 [bound=True row_model=False witness=False]=2
+  seeking_alpha          residue= 3 NO_WITNESS_MODULE [bound=False row_model=False witness=False]=3
+  wsj                    residue= 3 NO_WITNESS_MODULE [bound=False row_model=False witness=False]=3
+  cboe                   residue= 2 witness_rows=9   [bound=False row_model=False witness=False]=2
+  econdb                 residue= 2 witness_rows=6   [bound=False row_model=False witness=False]=2
+  eia                    residue= 2 NO_WITNESS_MODULE [bound=True row_model=False witness=False]=2
+  federal_reserve        residue= 2 witness_rows=11  [bound=True row_model=False witness=False]=2
+  biztoc                 residue= 1 NO_WITNESS_MODULE [bound=False row_model=False witness=False]=1
+  fred                   residue= 1 witness_rows=35  [bound=True row_model=True witness=False]=1
+  sec                    residue= 1 witness_rows=23  [bound=True row_model=True witness=False]=1
+  stockgrid              residue= 1 NO_WITNESS_MODULE [bound=False row_model=False witness=False]=1
+NEXT_WAVE_BUCKETS_OK=True

@@ -42,6 +42,8 @@ from opendata.data.providers.famafrench._source import (
 if TYPE_CHECKING:
     from datetime import date
 
+    from opendata.data.models.base import ContractModel
+
 _WEIGHTING = Literal["value", "equal"]
 _COUNTRY_MEASURE = Literal["usd", "local", "ratios"]
 _ARCHIVE_FORMAT = Literal["csv", "txt"]
@@ -541,6 +543,7 @@ class FamaFrenchBreakpointsFetcher(Fetcher[BreakpointQuery, list[SourceBreakpoin
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "FamaFrenchBreakpoints"
+    row_model: ClassVar[type[ContractModel]] = FamaFrenchBreakpoint
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="famafrench_breakpoints",
@@ -612,6 +615,7 @@ class FamaFrenchFactorsFetcher(Fetcher[FactorQuery, list[SourceObservation]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "FamaFrenchFactors"
+    row_model: ClassVar[type[ContractModel]] = FamaFrenchFactorObservation
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="famafrench_factors",
@@ -665,6 +669,7 @@ class FamaFrenchUSPortfolioReturnsFetcher(Fetcher[PortfolioQuery, list[SourceObs
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "FamaFrenchUSPortfolioReturns"
+    row_model: ClassVar[type[ContractModel]] = FamaFrenchPortfolioReturn
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="famafrench_us_portfolio_returns",
@@ -717,6 +722,7 @@ class FamaFrenchRegionalPortfolioReturnsFetcher(
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "FamaFrenchRegionalPortfolioReturns"
+    row_model: ClassVar[type[ContractModel]] = FamaFrenchPortfolioReturn
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="famafrench_regional_portfolio_returns",
@@ -773,6 +779,7 @@ class FamaFrenchCountryPortfolioReturnsFetcher(
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "FamaFrenchCountryPortfolioReturns"
+    row_model: ClassVar[type[ContractModel]] = FamaFrenchCountryPortfolioReturn
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="famafrench_country_portfolio_returns",
@@ -848,6 +855,7 @@ class FamaFrenchInternationalIndexReturnsFetcher(
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "FamaFrenchInternationalIndexReturns"
+    row_model: ClassVar[type[ContractModel]] = FamaFrenchInternationalIndexReturn
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="famafrench_international_index_returns",

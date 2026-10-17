@@ -1,0 +1,2740 @@
+{
+  "claims": [
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchBreakpoints --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T02:08:13.118434+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchBreakpoints",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchBreakpoints/implementation.json",
+        "sha256": "3be5506434932ef132b63f4da38845eef55ed5e0db57a73a1e769e63be67594b"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchBreakpoints"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchBreakpoints --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T02:08:13.999081+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "9381e69ccbfafeab99f1a534b08b9407db17587b87987063b05e7296e494e62c",
+            "before_sha256": "9381e69ccbfafeab99f1a534b08b9407db17587b87987063b05e7296e494e62c",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchBreakpoints.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchBreakpoints",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchBreakpoints/direct.json",
+        "sha256": "8d902b3f00abb87520970c545aa4824116fd0e18611cfcedde44747dfb5cbd71"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchBreakpoints"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchBreakpoints --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T02:08:14.976542+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "9381e69ccbfafeab99f1a534b08b9407db17587b87987063b05e7296e494e62c",
+            "before_sha256": "9381e69ccbfafeab99f1a534b08b9407db17587b87987063b05e7296e494e62c",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchBreakpoints.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchBreakpoints",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchBreakpoints/service.json",
+        "sha256": "14f62d983bb9b5509d3306c580383712d65def426c35ab52d0d16d796dadad31"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchBreakpoints"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchBreakpoints --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T02:08:15.865304+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "9381e69ccbfafeab99f1a534b08b9407db17587b87987063b05e7296e494e62c",
+            "before_sha256": "9381e69ccbfafeab99f1a534b08b9407db17587b87987063b05e7296e494e62c",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchBreakpoints.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchBreakpoints",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchBreakpoints/contract.json",
+        "sha256": "1160a5c836188ac57c3a70226387cddfd1fd3cdef95ca9584f3b02cec789fccf"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchBreakpoints"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchBreakpoints --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T02:08:16.702672+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "9381e69ccbfafeab99f1a534b08b9407db17587b87987063b05e7296e494e62c",
+            "before_sha256": "9381e69ccbfafeab99f1a534b08b9407db17587b87987063b05e7296e494e62c",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchBreakpoints.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchBreakpoints",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchBreakpoints/counterfact.json",
+        "sha256": "e27769e85e9c299fb1f8883ed2ff603500545a9b179372b444c3eb966236a955"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchBreakpoints"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchCountryPortfolioReturns --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T02:08:17.564284+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchCountryPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchCountryPortfolioReturns/implementation.json",
+        "sha256": "b806dbb3d80ea8e384105be1c84263de2c3e3819abf47476790dffa67d863925"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchCountryPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchCountryPortfolioReturns --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T02:08:18.425352+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "54a20f91ba40a8a60bb8ff53b9220f9a34c92e37faf0f0bfe0fbe3a6e07813e5",
+            "before_sha256": "54a20f91ba40a8a60bb8ff53b9220f9a34c92e37faf0f0bfe0fbe3a6e07813e5",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchCountryPortfolioReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchCountryPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchCountryPortfolioReturns/direct.json",
+        "sha256": "14e431a3142fdca1aff5cf889f960ffcd26bd8fdce46307ea846183b15ac4c7f"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchCountryPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchCountryPortfolioReturns --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T02:08:19.402531+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "54a20f91ba40a8a60bb8ff53b9220f9a34c92e37faf0f0bfe0fbe3a6e07813e5",
+            "before_sha256": "54a20f91ba40a8a60bb8ff53b9220f9a34c92e37faf0f0bfe0fbe3a6e07813e5",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchCountryPortfolioReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchCountryPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchCountryPortfolioReturns/service.json",
+        "sha256": "30c614f01dff468ee7081d9c8e848459eb2b47d11f0e59ed9f7e6ca0e36f92ea"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchCountryPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchCountryPortfolioReturns --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T02:08:20.293831+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "54a20f91ba40a8a60bb8ff53b9220f9a34c92e37faf0f0bfe0fbe3a6e07813e5",
+            "before_sha256": "54a20f91ba40a8a60bb8ff53b9220f9a34c92e37faf0f0bfe0fbe3a6e07813e5",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchCountryPortfolioReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchCountryPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchCountryPortfolioReturns/contract.json",
+        "sha256": "c52c25975d21c95e9d033a80571a92cc0d3426d163cb0c8a0bba75b90df66938"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchCountryPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchCountryPortfolioReturns --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T02:08:21.143285+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "54a20f91ba40a8a60bb8ff53b9220f9a34c92e37faf0f0bfe0fbe3a6e07813e5",
+            "before_sha256": "54a20f91ba40a8a60bb8ff53b9220f9a34c92e37faf0f0bfe0fbe3a6e07813e5",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchCountryPortfolioReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchCountryPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchCountryPortfolioReturns/counterfact.json",
+        "sha256": "b68b898d9e5507511fd0e0ba3aa80edae5aae9c905c0ef3e7453a2ee206bb553"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchCountryPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchFactors --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T02:08:22.005480+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchFactors",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchFactors/implementation.json",
+        "sha256": "e81938d0903f36568db758433da5bdf07440224c0a1e7407055dcbe0fc2f1f36"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchFactors"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchFactors --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T02:08:22.869413+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "6bd5a34c76fbe17eb9c8deec34fff5002b0111b0f34f88f055f99e91d5bdbe5c",
+            "before_sha256": "6bd5a34c76fbe17eb9c8deec34fff5002b0111b0f34f88f055f99e91d5bdbe5c",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchFactors.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchFactors",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchFactors/direct.json",
+        "sha256": "405a65aa8633210be4bc6eb6fe9b721b6f95c9eeba3ca9ed74c809d0af95ab18"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchFactors"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchFactors --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T02:08:23.847240+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "6bd5a34c76fbe17eb9c8deec34fff5002b0111b0f34f88f055f99e91d5bdbe5c",
+            "before_sha256": "6bd5a34c76fbe17eb9c8deec34fff5002b0111b0f34f88f055f99e91d5bdbe5c",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchFactors.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchFactors",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchFactors/service.json",
+        "sha256": "64307d9e9cad34498158412fa729e4c4a6e55f40b0355b09c139fa6cebfccb88"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchFactors"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchFactors --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T02:08:24.744977+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "6bd5a34c76fbe17eb9c8deec34fff5002b0111b0f34f88f055f99e91d5bdbe5c",
+            "before_sha256": "6bd5a34c76fbe17eb9c8deec34fff5002b0111b0f34f88f055f99e91d5bdbe5c",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchFactors.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchFactors",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchFactors/contract.json",
+        "sha256": "bf0d41bf1545d67666d94027b0611ace49760b3e23fb503c9a44c1b26ce4f0a8"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchFactors"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchFactors --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T02:08:25.579038+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "6bd5a34c76fbe17eb9c8deec34fff5002b0111b0f34f88f055f99e91d5bdbe5c",
+            "before_sha256": "6bd5a34c76fbe17eb9c8deec34fff5002b0111b0f34f88f055f99e91d5bdbe5c",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchFactors.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchFactors",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchFactors/counterfact.json",
+        "sha256": "33ac52d1491f0cbad67e67f41b514fbde56caa5a64453612af19f771300827b7"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchFactors"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchInternationalIndexReturns --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T02:08:26.441330+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchInternationalIndexReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchInternationalIndexReturns/implementation.json",
+        "sha256": "860fcb134fb565c8cc706df104a508f8a1d0ce6618560dd8dc0cb1145594fbba"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchInternationalIndexReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchInternationalIndexReturns --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T02:08:27.306384+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "9838193708dccb8f5c6c3f8fad9179d025284d384c8c485366e37803964cc1c1",
+            "before_sha256": "9838193708dccb8f5c6c3f8fad9179d025284d384c8c485366e37803964cc1c1",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchInternationalIndexReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchInternationalIndexReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchInternationalIndexReturns/direct.json",
+        "sha256": "594e82a6f381ef1fa432b50df3f7e218c504748248c0ccfc1b09b94dad583a5b"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchInternationalIndexReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchInternationalIndexReturns --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T02:08:28.299035+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "9838193708dccb8f5c6c3f8fad9179d025284d384c8c485366e37803964cc1c1",
+            "before_sha256": "9838193708dccb8f5c6c3f8fad9179d025284d384c8c485366e37803964cc1c1",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchInternationalIndexReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchInternationalIndexReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchInternationalIndexReturns/service.json",
+        "sha256": "470b747140c00e8575f29fa5da1edd0a3e998d9d5e7e0a2e70e77ef497d6046d"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchInternationalIndexReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchInternationalIndexReturns --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T02:08:29.183646+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "9838193708dccb8f5c6c3f8fad9179d025284d384c8c485366e37803964cc1c1",
+            "before_sha256": "9838193708dccb8f5c6c3f8fad9179d025284d384c8c485366e37803964cc1c1",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchInternationalIndexReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchInternationalIndexReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchInternationalIndexReturns/contract.json",
+        "sha256": "5435d1829268dd76f6f3741a2f7f9449d65d3947fb586b0e9635978e6bd0ebf3"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchInternationalIndexReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchInternationalIndexReturns --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T02:08:30.016117+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "9838193708dccb8f5c6c3f8fad9179d025284d384c8c485366e37803964cc1c1",
+            "before_sha256": "9838193708dccb8f5c6c3f8fad9179d025284d384c8c485366e37803964cc1c1",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchInternationalIndexReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchInternationalIndexReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchInternationalIndexReturns/counterfact.json",
+        "sha256": "550cfd94a078c38fec4eec2db15546aed9d89ec659b8722e92da52875a0db1bd"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchInternationalIndexReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchRegionalPortfolioReturns --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T02:08:30.893247+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchRegionalPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchRegionalPortfolioReturns/implementation.json",
+        "sha256": "8f8e93b7b84288c5a3b3c5640addec8a53b968920d4cda56c7abe4fc1020ddd1"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchRegionalPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchRegionalPortfolioReturns --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T02:08:31.756444+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "8055b3816c098162959ee1a06c4d2d427f15c8a1a325f65196142c7b1ab25814",
+            "before_sha256": "8055b3816c098162959ee1a06c4d2d427f15c8a1a325f65196142c7b1ab25814",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchRegionalPortfolioReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchRegionalPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchRegionalPortfolioReturns/direct.json",
+        "sha256": "8e88446f9ece0d249239fa510a9042a55ebdfba32ce209767853e63985d8ff2e"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchRegionalPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchRegionalPortfolioReturns --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T02:08:32.747307+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "8055b3816c098162959ee1a06c4d2d427f15c8a1a325f65196142c7b1ab25814",
+            "before_sha256": "8055b3816c098162959ee1a06c4d2d427f15c8a1a325f65196142c7b1ab25814",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchRegionalPortfolioReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchRegionalPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchRegionalPortfolioReturns/service.json",
+        "sha256": "ccf0d88500a2b2cfa0b7209a3dae1898a5d1daa8d2cdd06f9060b7ee8879eea0"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchRegionalPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchRegionalPortfolioReturns --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T02:08:33.633454+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "8055b3816c098162959ee1a06c4d2d427f15c8a1a325f65196142c7b1ab25814",
+            "before_sha256": "8055b3816c098162959ee1a06c4d2d427f15c8a1a325f65196142c7b1ab25814",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchRegionalPortfolioReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchRegionalPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchRegionalPortfolioReturns/contract.json",
+        "sha256": "1937bc122e7868bbd40c8f1d869a1833b9e741eab3a0bc08349901cf58ba9d45"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchRegionalPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchRegionalPortfolioReturns --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T02:08:34.483255+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "8055b3816c098162959ee1a06c4d2d427f15c8a1a325f65196142c7b1ab25814",
+            "before_sha256": "8055b3816c098162959ee1a06c4d2d427f15c8a1a325f65196142c7b1ab25814",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchRegionalPortfolioReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchRegionalPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchRegionalPortfolioReturns/counterfact.json",
+        "sha256": "c539aec6a6e909c7bcc2aff865807b3000a6e0ffdb574e87fba43f31ac3fad05"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchRegionalPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchUSPortfolioReturns --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T02:08:35.363461+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchUSPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchUSPortfolioReturns/implementation.json",
+        "sha256": "5f22016ad6d6305ecd0e6cef479c0e122c08f04b95469a53ba1c78354c2b031b"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchUSPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchUSPortfolioReturns --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T02:08:36.225256+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "bce15956e8ceb1fbdd7bc2692a5b563855972f11553964f177fbaf37645acfdd",
+            "before_sha256": "bce15956e8ceb1fbdd7bc2692a5b563855972f11553964f177fbaf37645acfdd",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchUSPortfolioReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchUSPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchUSPortfolioReturns/direct.json",
+        "sha256": "1d3a0b0d13efbb908116b8f8412a0b69e611d5814023b53cd48a9485f315ce7b"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchUSPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchUSPortfolioReturns --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T02:08:37.219274+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "bce15956e8ceb1fbdd7bc2692a5b563855972f11553964f177fbaf37645acfdd",
+            "before_sha256": "bce15956e8ceb1fbdd7bc2692a5b563855972f11553964f177fbaf37645acfdd",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchUSPortfolioReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchUSPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchUSPortfolioReturns/service.json",
+        "sha256": "0fb2411e3ec6fc719fe1140d65240e1b473d85d0d33aef6d6d10984fd6b795a2"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchUSPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchUSPortfolioReturns --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T02:08:38.100509+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "bce15956e8ceb1fbdd7bc2692a5b563855972f11553964f177fbaf37645acfdd",
+            "before_sha256": "bce15956e8ceb1fbdd7bc2692a5b563855972f11553964f177fbaf37645acfdd",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchUSPortfolioReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchUSPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchUSPortfolioReturns/contract.json",
+        "sha256": "d79fb9ee6982913d71e9f37059548cc7e2c6f8927ce0ea55288de18485761eb8"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchUSPortfolioReturns"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchUSPortfolioReturns --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T02:08:38.940192+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "before_sha256": "c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+            "path": "opendata/data/models/famafrench.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
+        "fixture": [
+          {
+            "after_sha256": "bce15956e8ceb1fbdd7bc2692a5b563855972f11553964f177fbaf37645acfdd",
+            "before_sha256": "bce15956e8ceb1fbdd7bc2692a5b563855972f11553964f177fbaf37645acfdd",
+            "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchUSPortfolioReturns.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "before_sha256": "39bd675457d15934eb5e5caaa310c62f9447c30f2e2a479d8984c7d9b44c856b",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "before_sha256": "a28a572ea7765ed7425cab364ac2538a42f8b6684f831447eb88163df2267e6f",
+            "path": "scripts/quality/iter2_witnesses/famafrench.py"
+          },
+          {
+            "after_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "before_sha256": "997de8d4b5530c85b629c46e6e9a5972628f09c1a50d5d3dc61d3ff8f75c6199",
+            "path": "scripts/quality/iter2_witnesses/_parts/famafrench/official_archive_rows.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "before_sha256": "99466a9f9a44962a857d80ca5b9b2c343e3035f463a2bcb63108c5c928e42a52",
+            "path": "opendata/data/providers/famafrench/provider.py"
+          },
+          {
+            "after_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "before_sha256": "a19f77d0c2b71da6923852adeacfba756c48612f819f4ba02c539dc14870fcb8",
+            "path": "opendata/data/providers/famafrench/_source.py"
+          },
+          {
+            "after_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "before_sha256": "e2bdbfb68103584a9aa8456235fd9029c323c123b5f5473cbd850174015ae25d",
+            "path": "opendata/data/providers/famafrench/datasets.py"
+          },
+          {
+            "after_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "before_sha256": "c2a600d5ab19ad20c12a567189348ac20ad2272d4572db304f15cac51f509dac",
+            "path": "opendata/data/providers/famafrench/models/fetchers.py"
+          }
+        ]
+      },
+      "provider": "famafrench",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "famafrench::FamaFrenchUSPortfolioReturns",
+        "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchUSPortfolioReturns/counterfact.json",
+        "sha256": "a3cac2ef6d33d3e9ca37c93b6e1915ba269243c104efd1a4eb5993fef7082ca8"
+      },
+      "status": "PASS",
+      "upstream_model": "FamaFrenchUSPortfolioReturns"
+    }
+  ],
+  "generated_at_utc": "2026-10-17T02:08:40.497641+00:00",
+  "generated_by": "scripts/quality/iter2_claims_producer.py",
+  "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
+  "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",
+  "primary_reviews": [],
+  "schema_version": 1
+}

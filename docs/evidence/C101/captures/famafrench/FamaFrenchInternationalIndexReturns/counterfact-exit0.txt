@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchInternationalIndexReturns --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FrenchProviderError", "refusal_code": "FRENCH_DAT_TABLE_NOT_FOUND", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FrenchProviderError", "refusal_code": "FRENCH_DAT_TABLE_NOT_FOUND", "rejected": [], "status": null}, "reason": "the same member publishes the dollar return series twice, once for the all-four-data-items-required series and once for the not-reqd series, and the query's all_data_items_required=True selects between those anchors; retagging the section with the other anchor keeps every number and both headers, so parse_dat_returns must find no candidate section and raise FRENCH_DAT_TABLE_NOT_FOUND rather than publish the not-reqd index history under the required-data reading the caller asked for; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---
