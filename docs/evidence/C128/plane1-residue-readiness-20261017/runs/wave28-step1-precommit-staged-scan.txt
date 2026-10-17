@@ -1,0 +1,23 @@
+wave-28 step 1 -- the staged index, scanned as working-tree bytes.
+argv: git -c core.quotepath=off diff --cached --name-only -z, then
+      PYTHONPATH=. $PY .../probes/staged_payload_scan.py --paths <that list>
+Self-reference, stated not hidden: take 1 ran while six of the seven step-1 paths were staged, and the
+acceptance record was the one missing because its wave-28 step-1 section had not been written yet
+(its bytes still equal HEAD, so git has nothing to report -- printed above by the builder, not
+assumed). Take 2 ran after both scan carriers joined the index.
+take1 index_paths=6
+take1: payload_scan_files=6 payload_scan_roots=6 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 6 file(s) clean
+take1_stderr_bytes=0
+staged_take1_exit=0
+take2 index_paths=8
+take2: payload_scan_files=8 payload_scan_roots=8 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 8 file(s) clean
+take2_stderr_bytes=0
+staged_take2_exit=0
+take2_vs_take1_clean_fields_identical=True
+Lag stated in full: both takes scanned README.md as it stood when they ran, and the acceptance
+record only after its step-1 section existed, so the carrier bullets those two edits add, plus
+this block's own last lines, are bytes no take in this file scanned. The last word is taken by the
+run whose reading goes to the commit message.
+carrier_B_final_exit_line=staged_scan_final_exit=0

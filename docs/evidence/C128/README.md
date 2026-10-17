@@ -393,6 +393,65 @@ identity set 未变）—— 那 15 枚只是从 `NEED_DECLARE` 移到 `NEED_SHA
   `retarget 24 / implement_missing_model 19 / shard_entry_needs_harness 15 / ledger_ruled_out 11 /
   add_code_carrying_guard 13 / new_provider_package 2`、`witnessable_today=0`、`rows_without_module=75`、
   `identity_set=5168e1e723999312`。波 27 那四份（成像面 + 三份中间代）留在原地不覆盖，代际按 sha 辨。
+- `probes/retarget_rowclass_counterfactual.py`（355 行、`sha16=f577fecdaa3f17ea`；py_compile / ruff check /
+  ruff format --check / mypy 四道全 0）：波 28 step 1 的**内存反例**定价仪器，对象是上面那张动作表里最大的
+  一格 `retarget 24`，`iter2_claims_probe_runner.py` 与任何模型、判定文件都一个字节不动。它把每枚目标行**自己
+  实测到的面**重新喂给已落地的 `incomplete_row_guard_check._verdict`，只开一把闸（先 `declared`、再
+  `is_contract`），再用已落地的 `residue_axis_census._action` 分类，判定字符串一律从 `axes.VERDICTS` 与
+  `ROW_CLASS_NOT_CONTRACT` 常量取 —— 打印出来的每个 verdict/action 是那台分类器对一根我没碰的轴的读数，
+  不是我打的标签。总体取自同一个 `readiness_census._residue`，臂 A 把恒等集与
+  `runs/wave28-step0-residue-axis-census.txt` 里那 24 枚逐枚对齐。九臂：A 总体对齐；B 惰性重喂（两把闸都不开
+  必须仍读 `ROW_CLASS_NOT_CONTRACT`，否则这台仪器判的已经不是这批行）；C 开 `declared` 与开 `is_contract`
+  两条路线必须给出同一个判定；D 开闸后 24/24 全部离开守卫；E 三枚非目标对照 = 两枚已入库正例
+  （`government_us::CommodityPsdData` / `::CommodityPsdReport`）加一枚负例（`::WeatherBulletinDownload`），
+  要求"闸本来已开 ⇒ 翻动是 no-op"，`vacuous=False`；F 反例判定不许离开枚举；G 落地格与 `_action` 嵌套对账
+  （`shard_entry_only` 由分类器和由 verdict+fake 两条路各数一次，两侧都要等于 2）；H 用
+  `contract_fqn ∈ emitted` 这第二路重推 `is_contract`，不一致集与不可解析集都必须为空；I 是 H 需要的控制臂 ——
+  在**内存 deepcopy** 里把 `deribit::FuturesCurve` 的 `is_contract` 取反，要求"未改的那面不被 flag、伪造的那面
+  被 flag"。这台同样是只读仪器：除自己的臂失败外退出 0，而
+  `empty_emitted_with_ctor_text_in_package` 那一格**只当下界打印**（文本搜索能看见 AST 走查不拥有的构造），
+  不参与任何臂。
+- `runs/wave28-step1-retarget_rowclass_counterfactual.txt`（64 行 / `d6f0fa9a415490ce`，
+  `retarget_rowclass_counterfactual_exit=0`，stderr 0 字节，`arms=9 arms_passed=9 arms_failed=0`）：step 1 的
+  当代面，逐枚 `rowcf …` 24 行 + 九臂 + 一条 `rowclass_counterfactual_face`。头部记了三代字节相同
+  （builder 自己那取 == take4 == take3，35/35/35 行）。读数
+  `cf_verdicts={'DOCUMENT_REACHABLE': 20, 'NO_CODE_SITE': 2, 'QUERY_ONLY': 2}`、
+  `cf_actions={'add_code_carrying_guard': 4, 'shard_entry_needs_harness': 18, 'shard_entry_only': 2}`、
+  `landing_today=2 landing_needing_edit_only=2 identity_set=5168e1e723999312` —— **这一格的价钱是 2 行而不是 24 行**，
+  而那 2 行恰是 `federal_reserve::FomcDocuments` / `::YieldCurve`，已经挂在待裁的 #57 上，并且被
+  `tests/test_federal_reserve_iter2_models.py:382-403`（`test_declared_row_models_are_their_domain_contracts`，
+  assert 在 :399，要求 `row_model is contract_model(domain)`）挡住，所以"给它们加一行声明"这条路本身不成立。
+  其余 22 枚**根本不构造契约类**（`emitted=[]` 而契约存在），第一版 H 臂把这个形状读成"解释不了"是臂自己写错 ——
+  已落地的 `_row_class_face` 只走 fetcher 自己 MRO 内的类与同模块 helper，服务路径造普通 dict 就是这种合法形状。
+  两份红代（take 1 崩在自己的打印句：`raises` / `code_raises` 是 int 却取了 `len()`，崩在总体已算出之后、
+  任何臂打印之前，载档整份丢失；take 2 34 行全印、`arms=8 arms_passed=7`、H 在 22/24 上红）留在
+  `runs/wave28-step1-red-generations.txt`（63 行 / `d1f2d692dfe9d8dc`，`red_take2_exit=1`、stderr 0 字节）旁边，
+  因为一条从未见过红的臂还算不出"它能红"。载档里那句"emitted 集合 == `cf_action=shard_entry_only` 集合"由
+  builder 从这次 stdout 的逐枚行现推（还跟 `shapes` 那格的 2 交叉），不等就**拒绝落盘**，所以它是测出来的等式，
+  不是散文里的断言。复算配方：仓库根执行
+  `$PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/retarget_rowclass_counterfactual.py`
+  （门禁解释器，无管道，`PYTHONPATH` 有意不设 —— 兄弟模块靠脚本目录进 `sys.path`，这台没有测它、也不声称测了）。
+  作废条件与"重基线而非放宽"：这批一旦有行落地，`population_residue` 与 `targeted` 都会移动，届时按新总体重取；
+  不许动的是 B 臂（不开闸必须仍读 `ROW_CLASS_NOT_CONTRACT`）、E 臂（`vacuous=False`，两枚正例仍要在
+  `DOCUMENT_REACHABLE` / `DOCUMENT_TRIPPED`）、F 臂（判定不许离开六值枚举）、I 臂（伪造一次必须被 flag、未改必须不被
+  flag）；`landing_needing_edit_only` **允许**长大，但只能靠 G 臂两条路各数一次相等的 `shard_entry_only` 长大。
+- `runs/wave28-step1-receipt_pin_consistency.txt`（14 行 / `50689a02b8aa8a94`，`receipt_pin_consistency_exit=0`，
+  stderr 0 字节）与 `runs/wave28-step1-batch5_fence_dry_census.txt`（18 行 / `0c5f9fb70d1277d6`，
+  `pin_rebase_exit=1` = 设计中的拒绝而不是红）：step 1 那两个 pin 平面的**同代**重取。前者读
+  `pin_face slots=19382 stale=0 before_ne_after=0 distinct_pinned_paths=536 arms=3 arms_passed=3`，后者读
+  `pin_entries=31 matched=31 stale=0 missing=0` + `verdict: REFUSED - no stale pin to re-base`。新仪器只读不写，
+  两面都该读"无差分"，这一条就是它没被钉字节改动的证据；哪天 `stale>0`，说明有人把反例做成了真改动，那时要
+  重产补签，而不是重跑反例。
+- `runs/wave28-step1-payload-scan.txt`（35 行 / `68c2df076c407aba`）与
+  `runs/wave28-step1-precommit-staged-scan.txt`（23 行 / `b701699afc582a77`）：本步入库前的两臂面与索引面。
+  母数换代可追：step 0 收在 80（16 `.py` + 52 `.txt` + 12 `.err`）→ 本步 take 1 读 85（+1 探针 +4 载档）→
+  take 2 读 86 → 两份扫描载档写完现数 87（= 17 `.py` + 58 `.txt` + 12 `.err`，两份扫描载档各算一份）。
+  两臂四格逐字相同、唯一差格是母数自己，臂 B 仍往一次性副本种运行时生成的 token
+  （`B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31`）。索引面取 1 只扫到 6 条：缺的那一条是
+  本记录自己 —— §93 那时还不存在、字节仍等于 HEAD，builder 把这条**印出来**（`not_in_diff_cached=[记录]`、
+  `bytes_equal_HEAD=True`）而不是默认七条齐全；取 2 扫 8 条，`unresolved=0 findings=0 rc=0` 两代相同。两份载档
+  末尾同样写全了自己取不到的字节：README 与本记录在 take 2 之后才补上这些条目，最后一次复核的逐字读数住在
+  提交说明里。
 - `runs/wave28-step0-receipt_pin_consistency.txt`（9 行 / `965eb3f9b9324955`，`receipt_pin_consistency_exit=0`）
   与 `runs/wave28-step0-batch5_fence_dry_census.txt`（15 行 / `600128e34e133c44`，`pin_rebase_exit=1`）：
   改臂之后的**两个 pin 平面**同代重取。前者 `pin_face slots=19382 stale=0 before_ne_after=0
@@ -503,9 +562,11 @@ stderr 0 字节），而它的 B 臂在内存里把 runner 摘要换成占位值
 `D_verbs_are_measured` 把 `new_verbs` 钉成"表面 ∪ 实测调用点"，所以凭猜测给假客户端加一个 `post`
 会让这一臂变红而不是让数字变大。
 
-本目录 16 台仪器（`ls probes/*.py` 现数）都只做普查：除自己的臂失败外退出 0，绝不改动任何被判定的面。波 23 起
+本目录 17 台仪器（`ls probes/*.py` 现数）都只做普查：除自己的臂失败外退出 0，绝不改动任何被判定的面。波 23 起
 （readiness、declare、payload 两臂扫描、seam 表面），波 24 收编 staged 扫描那一列，波 25 加两台正交轴
 （可达性普查、后响应守卫）与一台入库前 pin 闸门，波 26 加四轴逐枚测量器，波 27 step 0 加台账轴拆分、射程
-与那条运输规则的差分三台加 seam 种类普查，step 2 再加三支（乙支 7 枚定价、甲支加宽反例、整残差成像）。
-新仪器同样只打印屏幕与臂，不判定任何行；两处例外都不落盘：pin 闸门的 C 臂在**内存里**造一枚假 slot，
-step 2b 的甲支在**内存里**加宽假客户端。
+与那条运输规则的差分三台加 seam 种类普查，step 2 再加三支（乙支 7 枚定价、甲支加宽反例、整残差成像），
+波 28 step 1 再加一台 `retarget_rowclass_counterfactual.py`（把已落地的守卫与分类器在内存里逐枚开闸，给
+`retarget 24` 那一格定价；它经 `census._run` 起已落地的普查取接缝总体，见该文件 :152）。
+新仪器同样只打印屏幕与臂，不判定任何行；三处例外都不落盘：pin 闸门的 C 臂在**内存里**造一枚假 slot，
+step 2b 的甲支在**内存里**加宽假客户端，step 1 的 I 臂在**内存 deepcopy 里**把一枚行的 `is_contract` 取反。

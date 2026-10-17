@@ -1,0 +1,35 @@
+wave-28 step 1 -- pre-commit secret face for the retarget counterfactual instrument.
+argv: PYTHONPATH=. $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/payload_secret_scan.py   (cwd = repo root, no pipes)
+Self-reference stated: take 1 ran before either wave-28 step-1 scan carrier was on disk, take 2 ran
+with this file on disk but before its own take-2 line existed.
+take1 denominator_before=85 denominator_after_write=85
+take1: planted_into=declare_candidates.txt at_line=31 lines=65
+payload_files=85 payload_roots=2
+B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+arm_a_findings=0 arm_a_rc=0
+arm_b_findings=1 arm_b_rc=1
+payload_secret_face PASS=True
+scan_exit=0
+take1_stderr_bytes=0
+take1_exit=0
+take1_payload_files=85
+take1_payload_roots=2
+take1_arm_a_findings=0
+take1_arm_b_findings=1
+take1_scan_exit=0
+take2 denominator_before=86
+take2: planted_into=declare_candidates.txt at_line=31 lines=65
+payload_files=86 payload_roots=2
+B_PLANTED_FOUND rule=generic-api-key at=declare_candidates.txt:31
+arm_a_findings=0 arm_a_rc=0
+arm_b_findings=1 arm_b_rc=1
+payload_secret_face PASS=True
+scan_exit=0
+take2_stderr_bytes=0
+take2_exit=0
+take2_vs_take1_face_fields_identical=False differing=['payload_files']
+Arm B plants a runtime-generated token into a throwaway copy of runs/declare_candidates.txt
+line 31, so repo bytes never change and arm_b_findings=1 is what keeps arm_a_findings=0 from
+being a mute counter. The denominator moved because step 1 added one probe and four carriers to
+these two roots; that is the only field allowed to differ between the takes. The take-2 line
+appended after this run is the only byte of this carrier no take in this file scanned.
