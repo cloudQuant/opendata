@@ -1,0 +1,565 @@
+wave 26 step 0 -- the second and third axes, and the batch that did not survive them
+==========================================================================================
+
+Repo root: /Users/yunjinqi/Documents/new_projects/opendata (branch dev, HEAD b4cfe982)
+Interpreter: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python (the gate interpreter)
+cwd for every command below: the repo root. No command is piped; each exit code is the run's own.
+Recorded 2026-10-17 while plane 1 sat at 266/350 with 84 residue rows, identity_set[0:16]=5168e1e723999312.
+
+What this carrier decides
+-------------------------
+Section 87.8 armed wave 26 on a judge status class -- "the 7 ``INCOMPLETE`` identities" -- and
+predicted plane 1 266 -> 273. A count of a status class is not a work list. Four questions have to
+be answered per row before a provider file is edited, and the run that armed the batch answered only
+the first three. The answer, measured below: **zero of the seven rows is convertible by a witness
+wave**, and the two rows that passed the guard axis fail a fourth axis that had never been written
+down as a per-row column.
+
+The four axes
+-------------
+``bound``            ``ProviderRegistry.resolve_model`` returns a fetcher for the identity.
+``ruled_out``        the provider's own ``NOT_DECL*`` ledger dict carries the identity (the ledger
+                     is spelled ``NOT_DECLARABLE`` in cboe and intrinio and ``NOT_DECLARED`` in
+                     econdb, so the attribute *prefix* is matched, never one hardcoded name).
+``guard``            this row's own fetcher class holds a refusal that a fixture-document tamper can
+                     trip: either a code-carrying raise in ``transform_data`` (the engine hands that
+                     method the decoded payload, pasted verbatim below) or one in ``extract_data`` on a
+                     line *after* that function's governed-client call.
+``row_class``        the class the bound fetcher constructs must **be** ``contract_model(domain)``.
+                     Without this the first three axes price a declaration that the service leg then
+                     refuses.
+
+The engine leg that makes ``transform_data`` reachable, read from product code
+------------------------------------------------------------------------------
+``opendata/data/protocol.py`` lines 312-317, inside the synchronous ``fetch`` pipeline (declared at
+``:282``). The async entry ``_fetch_async`` (``:399``) makes the same pair of calls on both of its
+legs -- ``:477`` then ``:486`` for a sync fetcher run in the bounded pool, ``extract_data_async`` at
+``:540`` then ``:559`` for a native async fetcher -- so every phase the witness recorder drives lands
+on one of these:
+
+ 312|                 params = self.transform_query(**kwargs)
+ 313|                 validate_scope_grants(capture_request_scopes())
+ 314|                 raw = self.extract_data(params, context)
+ 315|                 return self.transform_data(raw, params)
+ 316|         finally:
+ 317|             instance_lock.release()
+
+So ``extract_data`` and ``transform_data`` are both called by the engine on every fetch, in that
+order, with the same ``params`` object -- which is why a raise reachable from either of them is a
+guard a tamper can trip, and why "the class exists and the fetcher runs" is not yet a claim that the
+row is declarable.
+
+Provenance of every block below
+-------------------------------
+probe (3 drafts; the shipped one is draft 3)
+    docs/evidence/C128/plane1-residue-readiness-20261017/probes/incomplete_row_guard_check.py  94ebdba8adb9ea33 bytes=28168 lines=606
+    ruff format --check clean, ruff check clean, py_compile 0, no line over the pyproject line-length
+    of 100 (the first two drafts each had an E501 in the module docstring and ruff format does not
+    reflow docstrings, so both were rewrapped by hand).
+draft 1 (kept at /tmp/wave26_step0.draft1.py)
+    d52e52be5fefa50c bytes=10742 lines=244
+draft 1 stdout  ec24cf280d0d4d82 bytes=7298 lines=35
+draft 2 stdout  44e576f1e83416bf bytes=7410 lines=36   (its source was overwritten in place by draft
+    3, so only the capture survives; the defect it shows is quoted in full below)
+final stdout    4e1a8fa25ec96075 bytes=11293 lines=57
+final stderr    0 bytes, exit 0
+argv, all three runs identical:
+    PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python \
+        docs/evidence/C128/plane1-residue-readiness-20261017/probes/incomplete_row_guard_check.py > <capture> 2> <capture>
+
+The two defects the drafts caught in my own instrument
+------------------------------------------------------
+(1) Draft 1 gated ``DOCUMENT_REACHABLE`` on ``transform_data`` alone and its positive control read
+    False on a row the judge had already accepted in wave 25: ``government_us::CommodityPsdReport``
+    refuses in ``extract_data`` *after* ``_client.get_bytes`` (the magic-byte and content-type checks
+    at ``commodity_psd_report.py:104``), which a tampered document reaches. The failed arm is kept
+    verbatim below; it refuted my expectation, not the row.
+(2) Draft 2 added the transport-order relation and matched it by *attribute name* only, so
+    ``get``/``get_text`` matched a BeautifulSoup tag's attribute lookup. Its own capture -- verbatim
+    below -- shows the cost: four ``transform_data`` guards of ``fomc_documents.py`` print
+    ``after_transport=True``, i.e. they read as sitting behind a transport call that never happens
+    there. Which call that was is measured, not asserted: arm E of ``docs/evidence/C128/plane1-residue-readiness-20261017/probes/transport_matcher_delta.py`` walks the same rows'
+    ``transform_data`` sites and prints both rules' matched receiver, and it reads 15 sites,
+    ``strict_counts={True: 0, False: 15}`` against ``loose_counts={True: 4, False: 11}``,
+    ``flipped=4`` -- the strict side is ``no_transport_call@0`` in that function and the loose side
+    lands on ``anchor.get`` at ``:111``, the ``href`` lookup on a soup tag. That line is *earlier*
+    than all four raise sites, which is why the two guards above it read True too; an earlier landing
+    of this carrier named ``anchor.get_text`` at ``:134``, which is a real second match in the same
+    function but not the one that produced the reading (corrected below). Draft 3 requires both the
+    verb and a receiver that the *module itself* binds the client to (an import of a ``_client``
+    module, or a name assigned from ``get_shared_http_client``) and prints ``client_names`` per row.
+
+Correction inside this carrier's own generation (three typed sentences replaced by readings)
+---------------------------------------------------------------------------------------------
+This carrier was rebuilt after it first landed, because three of its own sentences were typed rather
+than read. They are named here rather than quietly overwritten:
+
+* "``_engine/http_json.py:1462``" -- no such file exists in this repo. The engine leg is now pasted
+  verbatim from ``opendata/data/protocol.py:312-317`` in the section above it.
+* "``client_call_at`` is the line the loose matcher invented" -- draft 2 never printed that field. The
+  field it printed is ``after_transport``, and its four false readings are now quoted from its
+  capture instead of retyped. The line the loose rule actually landed on is recovered by arm E of
+  ``docs/evidence/C128/plane1-residue-readiness-20261017/probes/transport_matcher_delta.py`` rather than argued: ``anchor.get`` at ``:111``.
+* "the loose matcher invented ``anchor.get_text`` at ``:134``" -- right module, wrong verb and
+  wrong line. ``docs/evidence/C128/plane1-residue-readiness-20261017/probes/transport_matcher_delta.py`` arm E reads ``loose_matched=anchor.get@111`` on all four flips, and 111 is
+  above the two raise sites that a ``:134`` story cannot explain (``:113``, ``:127``). ``get_text`` at
+  ``:134`` is a second match in the same function, not the one that produced the reading.
+* "the same 10 ``extract_data`` sites read ``after_counts={True: 6, False: 4}`` under the loose
+  matcher" -- that number was written, not measured. Draft 2 had no arm E at all (its face line reads
+  ``arms=4 arms_passed=4``), so the reading is recovered by ``docs/evidence/C128/plane1-residue-readiness-20261017/probes/transport_matcher_delta.py``, an instrument that
+  re-implements only the predicate which differed and imports the site enumeration itself from the
+  shipped probe. Its measured answer is ``loose={True: 7, False: 3}`` against
+  ``strict={True: 3, False: 7}``: the same 10 sites, 4 flips, all four inside the two
+  ``government_us`` PSD modules. The
+  federal_reserve false positives were ``transform_data`` sites and therefore never entered this
+  population, which is why draft 2 judged those two rows ``DOCUMENT_REACHABLE`` while the shipped
+  probe judges them ``ROW_CLASS_NOT_CONTRACT`` -- a different axis, for a different reason.
+
+The stricter rule can only lose a client call, never invent one, so ``DOCUMENT_TRIPPED`` is a floor.
+
+Draft 1, verbatim stdout -- the refuted face is the first two arm lines and the face line
+-----------------------------------------------------------------------------------------
+row cboe::FuturesCurve status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} package_screen={'transform_data': 2, 'extract_data': 10, 'other': 39}
+    ruled_out_detail=NOT_DECLARABLE:The reviewed official All Access docs do not establish the fixed model resolve_error=LookupError:unknown provider model: cboe/FuturesCurve
+row cboe::IndexSnapshots status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} package_screen={'transform_data': 2, 'extract_data': 10, 'other': 39}
+    ruled_out_detail=NOT_DECLARABLE:No official endpoint/response mapping for the fixed regional snapshot  resolve_error=LookupError:unknown provider model: cboe/IndexSnapshots
+row econdb::CountryProfile status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} package_screen={'transform_data': 10, 'extract_data': 1, 'other': 21}
+    ruled_out_detail=NOT_DECLARED:The current documented v1 API exposes individual indicator series but  resolve_error=LookupError:unknown provider model: econdb/CountryProfile
+row econdb::ExportDestinations status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} package_screen={'transform_data': 10, 'extract_data': 1, 'other': 21}
+    ruled_out_detail=NOT_DECLARED:The current documented bilateral container-volume endpoint reports shi resolve_error=LookupError:unknown provider model: econdb/ExportDestinations
+row federal_reserve::FomcDocuments status=INCOMPLETE bound=True ruled_out=False witness_entry=False declared=False fetcher=FederalReserveFomcDocumentsFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 5, 'extract_data': 1, 'other': 0} package_screen={'transform_data': 54, 'extract_data': 9, 'other': 140}
+    site opendata/data/providers/federal_reserve/models/fomc_documents.py:95 FederalReserveFomcDocumentsFetcher.extract_data bucket=extract_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_QUERY
+    site opendata/data/providers/federal_reserve/models/fomc_documents.py:107 FederalReserveFomcDocumentsFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_FOMC_HTML
+    site opendata/data/providers/federal_reserve/models/fomc_documents.py:113 FederalReserveFomcDocumentsFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_FOMC_LINK
+    site opendata/data/providers/federal_reserve/models/fomc_documents.py:136 FederalReserveFomcDocumentsFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_FOMC_TITLE
+    site opendata/data/providers/federal_reserve/models/fomc_documents.py:152 FederalReserveFomcDocumentsFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_TOO_MANY_RECORDS
+    site opendata/data/providers/federal_reserve/models/fomc_documents.py:127 FederalReserveFomcDocumentsFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_FOMC_DOCUMENT_DATE
+    files=['opendata/data/providers/federal_reserve/models/fomc_documents.py', 'opendata/data/protocol.py'] resolve_error=-
+row federal_reserve::YieldCurve status=INCOMPLETE bound=True ruled_out=False witness_entry=False declared=False fetcher=FederalReserveYieldCurveFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 9, 'extract_data': 1, 'other': 0} package_screen={'transform_data': 54, 'extract_data': 9, 'other': 140}
+    site opendata/data/providers/federal_reserve/models/yield_curve.py:104 FederalReserveYieldCurveFetcher.extract_data bucket=extract_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_QUERY
+    site opendata/data/providers/federal_reserve/models/yield_curve.py:114 FederalReserveYieldCurveFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_CSV
+    site opendata/data/providers/federal_reserve/models/yield_curve.py:120 FederalReserveYieldCurveFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_CSV_PREAMBLE
+    site opendata/data/providers/federal_reserve/models/yield_curve.py:123 FederalReserveYieldCurveFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_CSV_HEADER
+    site opendata/data/providers/federal_reserve/models/yield_curve.py:118 FederalReserveYieldCurveFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_CSV
+    site opendata/data/providers/federal_reserve/models/yield_curve.py:132 FederalReserveYieldCurveFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_CSV_ROW
+    site opendata/data/providers/federal_reserve/models/yield_curve.py:139 FederalReserveYieldCurveFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_DATE
+    site opendata/data/providers/federal_reserve/models/yield_curve.py:141 FederalReserveYieldCurveFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_UNSORTED_CSV
+    site opendata/data/providers/federal_reserve/models/yield_curve.py:137 FederalReserveYieldCurveFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_BAD_DATE
+    site opendata/data/providers/federal_reserve/models/yield_curve.py:164 FederalReserveYieldCurveFetcher.transform_data bucket=transform_data error=FederalReserveSourceError code=FEDERAL_RESERVE_TOO_MANY_RECORDS
+    files=['opendata/data/providers/federal_reserve/models/yield_curve.py', 'opendata/data/protocol.py'] resolve_error=-
+row intrinio::OptionsSnapshots status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} package_screen={'transform_data': 7, 'extract_data': 19, 'other': 80}
+    ruled_out_detail=NOT_DECLARABLE:flow.preflight_lookup + shape.columnar: the JSON response publishes a  resolve_error=LookupError:unknown provider model: intrinio/OptionsSnapshots
+A_landed_positive government_us::CommodityPsdData verdict=DOCUMENT_REACHABLE judge_status=OFFLINE_ACCEPTED counts={'extract_data': 5, 'transform_data': 1, 'other': 2} PASS=True
+A_landed_positive government_us::CommodityPsdReport verdict=DOCUMENT_ADJACENT judge_status=OFFLINE_ACCEPTED counts={'extract_data': 3} PASS=False
+B_landed_negative government_us::WeatherBulletinDownload verdict=NO_SITE counts={} PASS=True
+C_class_scoped government_us::WeatherBulletinDownload class_td=0 package_td=4 PASS=True
+second_axis_face incomplete=7 verdicts={'DOCUMENT_REACHABLE': 2, 'UNBOUND': 5} convertible=2 convertible_rows=['federal_reserve::FomcDocuments', 'federal_reserve::YieldCurve'] movable=True verdict_enum_violations=[] arms=3 arms_passed=2 arms_failed=1 identity_set=5168e1e723999312
+
+Draft 2, verbatim stdout (36 lines; the four false positives are the ``fomc_documents.py`` trippable
+lines, all ``after_transport=True`` -- which call made them read that way is arm E of the section
+below, not this one, because draft 2 printed no transport line. Its source was overwritten by draft 3,
+so this capture is the only surviving face of that generation)
+-----------------------------------------------------------------------------------------------
+row cboe::FuturesCurve status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=0 code_raises=0 package_screen={'transform_data': 2, 'extract_data': 10, 'other': 39}
+    ruled_out_detail=NOT_DECLARABLE:The reviewed official All Access docs do not establish the fixed model resolve_error=LookupError:unknown provider model: cboe/FuturesCurve
+row cboe::IndexSnapshots status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=0 code_raises=0 package_screen={'transform_data': 2, 'extract_data': 10, 'other': 39}
+    ruled_out_detail=NOT_DECLARABLE:No official endpoint/response mapping for the fixed regional snapshot  resolve_error=LookupError:unknown provider model: cboe/IndexSnapshots
+row econdb::CountryProfile status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=0 code_raises=0 package_screen={'transform_data': 10, 'extract_data': 1, 'other': 21}
+    ruled_out_detail=NOT_DECLARED:The current documented v1 API exposes individual indicator series but  resolve_error=LookupError:unknown provider model: econdb/CountryProfile
+row econdb::ExportDestinations status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=0 code_raises=0 package_screen={'transform_data': 10, 'extract_data': 1, 'other': 21}
+    ruled_out_detail=NOT_DECLARED:The current documented bilateral container-volume endpoint reports shi resolve_error=LookupError:unknown provider model: econdb/ExportDestinations
+row federal_reserve::FomcDocuments status=INCOMPLETE bound=True ruled_out=False witness_entry=False declared=False fetcher=FederalReserveFomcDocumentsFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 5, 'extract_data': 1, 'other': 0} raises=13 code_raises=6 package_screen={'transform_data': 54, 'extract_data': 9, 'other': 140}
+    trippable opendata/data/providers/federal_reserve/models/fomc_documents.py:107 transform_data FEDERAL_RESERVE_BAD_FOMC_HTML after_transport=False test=not isinstance(raw, str) or not raw
+    trippable opendata/data/providers/federal_reserve/models/fomc_documents.py:113 transform_data FEDERAL_RESERVE_BAD_FOMC_LINK after_transport=True test=not isinstance(href, str)
+    trippable opendata/data/providers/federal_reserve/models/fomc_documents.py:136 transform_data FEDERAL_RESERVE_BAD_FOMC_TITLE after_transport=True test=not title
+    trippable opendata/data/providers/federal_reserve/models/fomc_documents.py:152 transform_data FEDERAL_RESERVE_TOO_MANY_RECORDS after_transport=True test=len(rows) > params.max_records
+    trippable opendata/data/providers/federal_reserve/models/fomc_documents.py:127 transform_data FEDERAL_RESERVE_BAD_FOMC_DOCUMENT_DATE after_transport=True test=<unconditional>
+    domain=federal_reserve_fomc_documents canonical=FomcDocuments files=['opendata/data/providers/federal_reserve/models/fomc_documents.py', 'opendata/data/protocol.py']
+row federal_reserve::YieldCurve status=INCOMPLETE bound=True ruled_out=False witness_entry=False declared=False fetcher=FederalReserveYieldCurveFetcher verdict=DOCUMENT_REACHABLE class_counts={'transform_data': 9, 'extract_data': 1, 'other': 0} raises=17 code_raises=10 package_screen={'transform_data': 54, 'extract_data': 9, 'other': 140}
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:114 transform_data FEDERAL_RESERVE_BAD_CSV after_transport=False test=not isinstance(raw, bytes)
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:120 transform_data FEDERAL_RESERVE_BAD_CSV_PREAMBLE after_transport=False test=len(rows) <= 5 or tuple((row[0] if row else '' for row in 
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:123 transform_data FEDERAL_RESERVE_BAD_CSV_HEADER after_transport=False test=header != _HEADER
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:118 transform_data FEDERAL_RESERVE_BAD_CSV after_transport=False test=<unconditional>
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:132 transform_data FEDERAL_RESERVE_BAD_CSV_ROW after_transport=False test=len(source_row) != len(_HEADER)
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:139 transform_data FEDERAL_RESERVE_BAD_DATE after_transport=False test=observation_date.isoformat() != date_text
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:141 transform_data FEDERAL_RESERVE_UNSORTED_CSV after_transport=False test=last_date is not None and observation_date <= last_date
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:137 transform_data FEDERAL_RESERVE_BAD_DATE after_transport=False test=<unconditional>
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:164 transform_data FEDERAL_RESERVE_TOO_MANY_RECORDS after_transport=False test=len(records) > params.max_records
+    domain=federal_reserve_yield_curve canonical=YieldCurve files=['opendata/data/providers/federal_reserve/models/yield_curve.py', 'opendata/data/protocol.py']
+row intrinio::OptionsSnapshots status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=0 code_raises=0 package_screen={'transform_data': 7, 'extract_data': 19, 'other': 80}
+    ruled_out_detail=NOT_DECLARABLE:flow.preflight_lookup + shape.columnar: the JSON response publishes a  resolve_error=LookupError:unknown provider model: intrinio/OptionsSnapshots
+A_landed_positive government_us::CommodityPsdData verdict=DOCUMENT_REACHABLE judge_status=OFFLINE_ACCEPTED counts={'extract_data': 5, 'transform_data': 1, 'other': 2} raises=16 code_raises=8 PASS=True
+A_landed_positive government_us::CommodityPsdReport verdict=DOCUMENT_TRIPPED judge_status=OFFLINE_ACCEPTED counts={'extract_data': 3} raises=10 code_raises=3 PASS=True
+B_landed_negative government_us::WeatherBulletinDownload verdict=NO_CODE_SITE class_counts={} raises=8 code_raises=0 PASS=True
+row government_us::WeatherBulletinDownload status=UNREVIEWED bound=True ruled_out=True witness_entry=False declared=False fetcher=WeatherBulletinDownloadFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=8 code_raises=0 package_screen={'transform_data': 4, 'extract_data': 13, 'other': 10}
+    domain=government_us_weather_bulletin_download canonical=WeatherBulletinDownload files=['opendata/data/providers/government_us/models/weather_bulletin_download.py', 'opendata/data/protocol.py']
+C_class_scoped government_us::WeatherBulletinDownload class_td=0 package_td=4 PASS=True
+D_bucket_reconciliation rows_checked=10 divergent=0 divergent_rows=[] PASS=True
+second_axis_face incomplete=7 verdicts={'DOCUMENT_REACHABLE': 2, 'UNBOUND': 5} convertible=2 convertible_rows=['federal_reserve::FomcDocuments', 'federal_reserve::YieldCurve'] movable=True verdict_enum_violations=[] arms=4 arms_passed=4 arms_failed=0 identity_set=5168e1e723999312
+
+The loose-vs-strict transport predicate, measured by a separate instrument
+--------------------------------------------------------------------------
+``docs/evidence/C128/plane1-residue-readiness-20261017/probes/transport_matcher_delta.py`` re-implements only draft 2's predicate (verb match, receiver unchecked) and imports the
+site enumeration, the row population and every other helper from the shipped probe, so the two
+readings differ by exactly one rule. Arm A first proves the instrument reproduces the landed arm E
+face (10 sites, ``{True: 3, False: 7}``); arm C is the differential -- a contrast arm that cannot
+differ measures nothing -- arm D the direction check that the loose rule can only add sites, and arm E
+the same pair of rules over the population's 15 ``transform_data`` sites, which is where draft 2's
+four false positives actually sat (``strict_counts={True: 0, False: 15}`` against
+``loose_counts={True: 4, False: 11}``, every strict line reading ``no_transport_call@0``).
+ruff format --check clean, ruff check clean, mypy 0 errors in this file.
+
+    argv:   PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python \
+                docs/evidence/C128/plane1-residue-readiness-20261017/probes/transport_matcher_delta.py > /tmp/wave26_transport_delta.out 2> /tmp/wave26_transport_delta.err
+    exit 0 (``$?`` read off this run), stderr 0 bytes
+    source  c90fcffbeafcad76 bytes=9050 lines=209
+    capture 9f61e0692da0a006 bytes=2299 lines=14
+
+What the capture's eight flip lines say, parsed rather than restated
+----------------------------------------------------------------------
+flips=8 extract_data_flips=4 transform_data_flips=4 strict_extract_data_all_client_bindings=True strict_transform_data_all_empty=True loose_all_non_client=True loose_matched_lines=3 credential_shape_hits_in_capture=0 credential_shape_hits_in_those_source_lines=1
+  government_us::CommodityPsdData opendata/data/providers/government_us/models/commodity_psd_data.py:115 strict=_client.get_json@152 loose_invented=os.environ.get('...','...').strip@113
+  government_us::CommodityPsdData opendata/data/providers/government_us/models/commodity_psd_data.py:132 strict=_client.get_json@152 loose_invented=os.environ.get('...','...').strip@113
+  government_us::CommodityPsdData opendata/data/providers/government_us/models/commodity_psd_data.py:134 strict=_client.get_json@152 loose_invented=os.environ.get('...','...').strip@113
+  government_us::CommodityPsdReport opendata/data/providers/government_us/models/commodity_psd_report.py:89 strict=_client.get_bytes@94 loose_invented=REPORT_FILES.get@87
+  federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:113 strict=no_transport_call@0 loose_invented=anchor.get@111
+  federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:127 strict=no_transport_call@0 loose_invented=anchor.get@111
+  federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:136 strict=no_transport_call@0 loose_invented=anchor.get@111
+  federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:152 strict=no_transport_call@0 loose_invented=anchor.get@111
+
+The two ``credential_shape_hits`` counters are one regex run on both sides of the instrument's own
+redaction: the capture reads none because the instrument replaced every string constant in a matched
+receiver with an ellipsis, while the three provider lines it landed on read one between them. The
+builder raises rather than writing this section if either number moves, so the first count is a
+redaction that fires and not a screen that never matches.
+
+The two gate lines are per method, because the two methods have different strict sides. In
+``extract_data`` the strict rule lands on a real governed-client call (``_client.get_json`` /
+``_client.get_bytes``) and the argument is only about ordering. In ``transform_data`` the strict rule
+finds no call at all, so the builder requires ``no_transport_call@0`` on every one of those four
+flips: a claim that "these guards cannot be behind a transport call in this module" has to be gated
+on the strict side being empty, not on the loose side being wrong.
+
+A_arm_e_reproduced sites=10 after_counts={True: 3, False: 7} matches_landed_face=True PASS=True
+B_loose_draft2_rule sites=10 after_counts={True: 7, False: 3} same_site_population=True PASS=True
+  flip government_us::CommodityPsdData opendata/data/providers/government_us/models/commodity_psd_data.py:115 strict_after=False strict_matched=_client.get_json@152 loose_after=True loose_matched=os.environ.get('...','...').strip@113
+  flip government_us::CommodityPsdData opendata/data/providers/government_us/models/commodity_psd_data.py:132 strict_after=False strict_matched=_client.get_json@152 loose_after=True loose_matched=os.environ.get('...','...').strip@113
+  flip government_us::CommodityPsdData opendata/data/providers/government_us/models/commodity_psd_data.py:134 strict_after=False strict_matched=_client.get_json@152 loose_after=True loose_matched=os.environ.get('...','...').strip@113
+  flip government_us::CommodityPsdReport opendata/data/providers/government_us/models/commodity_psd_report.py:89 strict_after=False strict_matched=_client.get_bytes@94 loose_after=True loose_matched=REPORT_FILES.get@87
+C_differential flipped=4 PASS=True
+D_loose_is_superset_of_strict PASS=True
+E_transform_data_sites sites=15 strict_counts={True: 0, False: 15} loose_counts={True: 4, False: 11} flipped=4 same_site_population=True PASS=True
+  flip federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:113 strict_after=False strict_matched=no_transport_call@0 loose_after=True loose_matched=anchor.get@111
+  flip federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:127 strict_after=False strict_matched=no_transport_call@0 loose_after=True loose_matched=anchor.get@111
+  flip federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:136 strict_after=False strict_matched=no_transport_call@0 loose_after=True loose_matched=anchor.get@111
+  flip federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:152 strict_after=False strict_matched=no_transport_call@0 loose_after=True loose_matched=anchor.get@111
+transport_matcher_delta strict={True: 3, False: 7} loose={True: 7, False: 3} net_flips=4 extract_data_sites=10 transform_data_flips=4
+
+Draft 3 -- the shipped face, verbatim stdout (57 lines, exit 0, stderr empty)
+==============================================================================
+row cboe::FuturesCurve status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=0 code_raises=0 package_screen={'transform_data': 2, 'extract_data': 10, 'other': 39}
+    ruled_out_detail=NOT_DECLARABLE:The reviewed official All Access docs do not establish the fixed model resolve_error=LookupError:unknown provider model: cboe/FuturesCurve
+row cboe::IndexSnapshots status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=0 code_raises=0 package_screen={'transform_data': 2, 'extract_data': 10, 'other': 39}
+    ruled_out_detail=NOT_DECLARABLE:No official endpoint/response mapping for the fixed regional snapshot  resolve_error=LookupError:unknown provider model: cboe/IndexSnapshots
+row econdb::CountryProfile status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=0 code_raises=0 package_screen={'transform_data': 10, 'extract_data': 1, 'other': 21}
+    ruled_out_detail=NOT_DECLARED:The current documented v1 API exposes individual indicator series but  resolve_error=LookupError:unknown provider model: econdb/CountryProfile
+row econdb::ExportDestinations status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=0 code_raises=0 package_screen={'transform_data': 10, 'extract_data': 1, 'other': 21}
+    ruled_out_detail=NOT_DECLARED:The current documented bilateral container-volume endpoint reports shi resolve_error=LookupError:unknown provider model: econdb/ExportDestinations
+row federal_reserve::FomcDocuments status=INCOMPLETE bound=True ruled_out=False witness_entry=False declared=False fetcher=FederalReserveFomcDocumentsFetcher verdict=ROW_CLASS_NOT_CONTRACT class_counts={'transform_data': 5, 'extract_data': 1, 'other': 0} raises=13 code_raises=6 package_screen={'transform_data': 54, 'extract_data': 9, 'other': 140}
+    doc_site federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:95 extract_data FEDERAL_RESERVE_BAD_QUERY client_call_at=0 raise_after_client=False test=type(params) is not FomcDocumentsQuery
+    doc_site federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:107 transform_data FEDERAL_RESERVE_BAD_FOMC_HTML client_call_at=0 raise_after_client=False test=not isinstance(raw, str) or not raw
+    doc_site federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:113 transform_data FEDERAL_RESERVE_BAD_FOMC_LINK client_call_at=0 raise_after_client=False test=not isinstance(href, str)
+    doc_site federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:136 transform_data FEDERAL_RESERVE_BAD_FOMC_TITLE client_call_at=0 raise_after_client=False test=not title
+    doc_site federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:152 transform_data FEDERAL_RESERVE_TOO_MANY_RECORDS client_call_at=0 raise_after_client=False test=len(rows) > params.max_records
+    doc_site federal_reserve::FomcDocuments opendata/data/providers/federal_reserve/models/fomc_documents.py:127 transform_data FEDERAL_RESERVE_BAD_FOMC_DOCUMENT_DATE client_call_at=0 raise_after_client=False test=<unconditional>
+    trippable opendata/data/providers/federal_reserve/models/fomc_documents.py:107 transform_data FEDERAL_RESERVE_BAD_FOMC_HTML
+    trippable opendata/data/providers/federal_reserve/models/fomc_documents.py:113 transform_data FEDERAL_RESERVE_BAD_FOMC_LINK
+    trippable opendata/data/providers/federal_reserve/models/fomc_documents.py:136 transform_data FEDERAL_RESERVE_BAD_FOMC_TITLE
+    trippable opendata/data/providers/federal_reserve/models/fomc_documents.py:152 transform_data FEDERAL_RESERVE_TOO_MANY_RECORDS
+    trippable opendata/data/providers/federal_reserve/models/fomc_documents.py:127 transform_data FEDERAL_RESERVE_BAD_FOMC_DOCUMENT_DATE
+    domain=federal_reserve_fomc_documents canonical=FomcDocuments client_names=[] files=['opendata/data/providers/federal_reserve/models/fomc_documents.py', 'opendata/data/protocol.py']
+    row_class federal_reserve::FomcDocuments contract=FederalReserveFomcDocument is_contract=False look_alike=True declared_is_contract=False emitted=['opendata.data.models.federal_reserve_macro.FederalReserveFomcDocument']
+row federal_reserve::YieldCurve status=INCOMPLETE bound=True ruled_out=False witness_entry=False declared=False fetcher=FederalReserveYieldCurveFetcher verdict=ROW_CLASS_NOT_CONTRACT class_counts={'transform_data': 9, 'extract_data': 1, 'other': 0} raises=17 code_raises=10 package_screen={'transform_data': 54, 'extract_data': 9, 'other': 140}
+    doc_site federal_reserve::YieldCurve opendata/data/providers/federal_reserve/models/yield_curve.py:104 extract_data FEDERAL_RESERVE_BAD_QUERY client_call_at=0 raise_after_client=False test=type(params) is not YieldCurveQuery
+    doc_site federal_reserve::YieldCurve opendata/data/providers/federal_reserve/models/yield_curve.py:114 transform_data FEDERAL_RESERVE_BAD_CSV client_call_at=0 raise_after_client=False test=not isinstance(raw, bytes)
+    doc_site federal_reserve::YieldCurve opendata/data/providers/federal_reserve/models/yield_curve.py:120 transform_data FEDERAL_RESERVE_BAD_CSV_PREAMBLE client_call_at=0 raise_after_client=False test=len(rows) <= 5 or tuple((row[0] if row else '' for row in 
+    doc_site federal_reserve::YieldCurve opendata/data/providers/federal_reserve/models/yield_curve.py:123 transform_data FEDERAL_RESERVE_BAD_CSV_HEADER client_call_at=0 raise_after_client=False test=header != _HEADER
+    doc_site federal_reserve::YieldCurve opendata/data/providers/federal_reserve/models/yield_curve.py:118 transform_data FEDERAL_RESERVE_BAD_CSV client_call_at=0 raise_after_client=False test=<unconditional>
+    doc_site federal_reserve::YieldCurve opendata/data/providers/federal_reserve/models/yield_curve.py:132 transform_data FEDERAL_RESERVE_BAD_CSV_ROW client_call_at=0 raise_after_client=False test=len(source_row) != len(_HEADER)
+    doc_site federal_reserve::YieldCurve opendata/data/providers/federal_reserve/models/yield_curve.py:139 transform_data FEDERAL_RESERVE_BAD_DATE client_call_at=0 raise_after_client=False test=observation_date.isoformat() != date_text
+    doc_site federal_reserve::YieldCurve opendata/data/providers/federal_reserve/models/yield_curve.py:141 transform_data FEDERAL_RESERVE_UNSORTED_CSV client_call_at=0 raise_after_client=False test=last_date is not None and observation_date <= last_date
+    doc_site federal_reserve::YieldCurve opendata/data/providers/federal_reserve/models/yield_curve.py:137 transform_data FEDERAL_RESERVE_BAD_DATE client_call_at=0 raise_after_client=False test=<unconditional>
+    doc_site federal_reserve::YieldCurve opendata/data/providers/federal_reserve/models/yield_curve.py:164 transform_data FEDERAL_RESERVE_TOO_MANY_RECORDS client_call_at=0 raise_after_client=False test=len(records) > params.max_records
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:114 transform_data FEDERAL_RESERVE_BAD_CSV
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:120 transform_data FEDERAL_RESERVE_BAD_CSV_PREAMBLE
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:123 transform_data FEDERAL_RESERVE_BAD_CSV_HEADER
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:118 transform_data FEDERAL_RESERVE_BAD_CSV
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:132 transform_data FEDERAL_RESERVE_BAD_CSV_ROW
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:139 transform_data FEDERAL_RESERVE_BAD_DATE
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:141 transform_data FEDERAL_RESERVE_UNSORTED_CSV
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:137 transform_data FEDERAL_RESERVE_BAD_DATE
+    trippable opendata/data/providers/federal_reserve/models/yield_curve.py:164 transform_data FEDERAL_RESERVE_TOO_MANY_RECORDS
+    domain=federal_reserve_yield_curve canonical=YieldCurve client_names=[] files=['opendata/data/providers/federal_reserve/models/yield_curve.py', 'opendata/data/protocol.py']
+    row_class federal_reserve::YieldCurve contract=FederalReserveYieldCurveObservation is_contract=False look_alike=False declared_is_contract=False emitted=['opendata.data.models.federal_reserve_macro.FederalReserveYieldCurve']
+row intrinio::OptionsSnapshots status=INCOMPLETE bound=False ruled_out=True witness_entry=False declared=False fetcher=- verdict=UNBOUND class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=0 code_raises=0 package_screen={'transform_data': 7, 'extract_data': 19, 'other': 80}
+    ruled_out_detail=NOT_DECLARABLE:flow.preflight_lookup + shape.columnar: the JSON response publishes a  resolve_error=LookupError:unknown provider model: intrinio/OptionsSnapshots
+A_landed_positive government_us::CommodityPsdData verdict=DOCUMENT_REACHABLE judge_status=OFFLINE_ACCEPTED counts={'extract_data': 5, 'transform_data': 1, 'other': 2} raises=16 code_raises=8 PASS=True
+A_landed_positive government_us::CommodityPsdReport verdict=DOCUMENT_TRIPPED judge_status=OFFLINE_ACCEPTED counts={'extract_data': 3} raises=10 code_raises=3 PASS=True
+B_landed_negative government_us::WeatherBulletinDownload verdict=NO_CODE_SITE class_counts={} raises=8 code_raises=0 PASS=True
+row government_us::WeatherBulletinDownload status=UNREVIEWED bound=True ruled_out=True witness_entry=False declared=False fetcher=WeatherBulletinDownloadFetcher verdict=NO_CODE_SITE class_counts={'transform_data': 0, 'extract_data': 0, 'other': 0} raises=8 code_raises=0 package_screen={'transform_data': 4, 'extract_data': 13, 'other': 10}
+    domain=government_us_weather_bulletin_download canonical=WeatherBulletinDownload client_names=['_client'] files=['opendata/data/providers/government_us/models/weather_bulletin_download.py', 'opendata/data/protocol.py']
+    row_class government_us::WeatherBulletinDownload contract=WeatherBulletinDownload is_contract=True look_alike=False declared_is_contract=False emitted=['opendata.data.models.government_us.WeatherBulletinDownload']
+C_class_scoped government_us::WeatherBulletinDownload class_td=0 package_td=4 PASS=True
+D_bucket_reconciliation rows_checked=10 divergent=0 divergent_rows=[] PASS=True
+E_transport_predicate_discriminates extract_data_sites=10 after_counts={True: 3, False: 7} readings_seen=[False, True] PASS=True
+F_row_class_identity accepted_sampled=7 declaring=7 declaration_not_contract=0 bad=[] self_read=match macro_fomc_twin_read=look_alike_name macro_curve_twin_read=no PASS=True
+second_axis_face incomplete=7 verdicts={'ROW_CLASS_NOT_CONTRACT': 2, 'UNBOUND': 5} convertible=0 convertible_rows=[] movable=True verdict_enum_violations=[] arms=6 arms_passed=6 arms_failed=0 identity_set=5168e1e723999312
+
+First axis, re-run so the argv is this carrier's own reading (seam_surface_match prints two built-in
+controls and then the three requested arms, which is why eia and tmx appear twice and the face line
+counts five arms; exit 0, stderr 0 bytes)
+    PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python \
+        docs/evidence/C128/plane1-residue-readiness-20261017/probes/seam_surface_match.py \
+        --arm eia:WITNESSABLE --arm tmx:BLOCKED_ON_RUNNER_SURFACE \
+        --arm federal_reserve:WITNESSABLE > /tmp/seam_fr2.out
+seam_surface_provider=eia fake_methods=['get'] verbs=['get'] missing=[] verdict=WITNESSABLE expected=WITNESSABLE judge_statuses={'OFFLINE_ACCEPTED': 2}
+seam_surface_provider=tmx fake_methods=['get'] verbs=['request'] missing=['request'] verdict=BLOCKED_ON_RUNNER_SURFACE expected=BLOCKED_ON_RUNNER_SURFACE judge_statuses={'UNREVIEWED': 24}
+seam_surface_provider=eia fake_methods=['get'] verbs=['get'] missing=[] verdict=WITNESSABLE expected=WITNESSABLE judge_statuses={'OFFLINE_ACCEPTED': 2}
+seam_surface_provider=tmx fake_methods=['get'] verbs=['request'] missing=['request'] verdict=BLOCKED_ON_RUNNER_SURFACE expected=BLOCKED_ON_RUNNER_SURFACE judge_statuses={'UNREVIEWED': 24}
+seam_surface_provider=federal_reserve fake_methods=['get'] verbs=['get'] missing=[] verdict=WITNESSABLE expected=WITNESSABLE judge_statuses={'OFFLINE_ACCEPTED': 11, 'INCOMPLETE': 2}
+seam_surface_arms=5 seam_surface_failed=0 identity_set=5168e1e723999312
+capture digest c0bc8c8ff727cea6 bytes=934 lines=6
+
+The fourth axis, and the three frozen faces that disagree with each other
+-------------------------------------------------------------------------
+The two federal_reserve rows pass ``bound``, pass ``ruled_out`` (no ``NOT_DECL*`` entry) and pass
+``guard`` (5 and 9 code-carrying raises in their own ``transform_data``). They fail ``row_class``:
+
+  14| from opendata.data.models.federal_reserve_macro import FederalReserveFomcDocument
+  13| from opendata.data.models.federal_reserve_macro import FederalReserveYieldCurve
+
+while ``domains.yaml`` declares for these two domains
+{
+ "binding": "opendata.data.providers.federal_reserve.models.fomc_documents:FederalReserveFomcDocumentsFetcher",
+ "canonical_ids_declared": true,
+ "contract": "FederalReserveFomcDocument",
+ "domain": "federal_reserve_fomc_documents",
+ "model": "FomcDocuments",
+ "scenario_present": true,
+ "source": "federal_reserve",
+ "verified": false
+}
+{
+ "binding": "opendata.data.providers.federal_reserve.models.yield_curve:FederalReserveYieldCurveFetcher",
+ "canonical_ids_declared": true,
+ "contract": "FederalReserveYieldCurveObservation",
+ "domain": "federal_reserve_yield_curve",
+ "model": "YieldCurve",
+ "scenario_present": true,
+ "source": "federal_reserve",
+ "verified": false
+}
+(the strings above are read out of tests/fixtures/registry_batch5_snapshot.json, which is the
+snapshot four test files load; its ``contract`` field names the clean-room classes and its
+``binding`` field names the macro fetchers, i.e. the frozen registry face itself records the
+mismatch)
+
+and while the sibling frozen test asserts the macro classes as the row type of these identities:
+
+ 322| _MODELS = {
+ 323|     "YieldCurve": (FederalReserveYieldCurve, "www.federalreserve.gov"),
+ 324|     "PrimaryDealerFails": (
+ 382| def test_declared_row_models_are_their_domain_contracts() -> None:
+ 383|     """Guard the face the governed service actually revalidates rows against.
+ 384| 
+ 385|     ``provider_model_query._serialize_contract_row`` compares every row with
+ 386|     ``contract_model(domain)`` rather than with the fetcher's own class, so a bound fetcher that
+ 387|     builds a look-alike contract passes its direct leg and refuses on the service leg. The
+ 388|     primary-dealer rows did exactly that, and the fake ``DomainSpec`` injected by the sibling
+ 389|     test below could not see it.
+ 390|     """
+ 391|     declaring = [
+ 392|         fetcher
+ 393|         for fetcher in PROVIDER.fetchers
+ 394|         if getattr(type(fetcher), "row_model", None) is not None
+ 395|     ]
+ 396|     assert declaring, "no bound federal_reserve fetcher declares a row model"
+ 397|     for fetcher in declaring:
+ 398|         contract_type = contract_model(fetcher.capability.domain)
+ 399|         assert type(fetcher).row_model is contract_type, (
+ 400|             f"{fetcher.canonical_model} builds "
+ 401|             f"{type(fetcher).row_model.__module__}.{type(fetcher).row_model.__name__} while "
+ 402|             f"{fetcher.capability.domain} declares {contract_type.__name__}"
+
+and while the binding that puts the macro fetchers behind these identities was *introduced* later,
+by commit b15717b6, which deleted the clean-room bindings (git show b15717b6 -- provider.py, the
+binding lines only):
+
+-            "SvenssonYieldCurveFetcher",
++            "FederalReserveSvenssonYieldCurveFetcher",
++            "opendata.data.providers.federal_reserve.models.yield_curve",
++            "FederalReserveYieldCurveFetcher",
+-            "opendata.data.providers.federal_reserve.models.clean_documents",
+-            "YieldCurveFetcher",
+-            "opendata.data.providers.federal_reserve.models.clean_documents",
+-            "FomcDocumentsFetcher",
++            "opendata.data.providers.federal_reserve.models.fomc_documents",
++            "FederalReserveFomcDocumentsFetcher",
++                "Federal Reserve FOMC Documents（federal_reserve_fomc_documents 域，"
+
+The service leg, quoted from the product code rather than from the test's own docstring --
+``opendata/services/provider_model_query.py``: 210 resolves the domain contract, 318 pushes every
+row through it, 327 refuses on **class identity** (``type(row) is not contract_type``) before any
+field is looked at, so a look-alike that revalidates field-for-field still refuses:
+
+ 208|     try:
+ 209|         spec = require_domain_semantics(domain)
+ 210|         contract_type = contract_model(domain)
+ 211|     except Exception:
+ 212|         raise ProviderModelQueryUnavailableError from None
+ 316|     if isinstance(rows, (str, bytes, bytearray, Mapping)) or not isinstance(rows, Sequence):
+ 317|         raise ProviderModelQueryOutputError from None
+ 318|     serialized = [_serialize_contract_row(row, contract_type) for row in rows]
+ 319|     return serialized, pagination
+ 320| 
+ 322| def _serialize_contract_row(
+ 323|     row: object,
+ 324|     contract_type: type[ContractModel],
+ 325| ) -> dict[str, object]:
+ 326|     """Revalidate even model_construct rows before lossless JSON-mode dumping."""
+ 327|     if type(row) is not contract_type:
+ 328|         raise ProviderModelQueryOutputError from None
+
+So the three faces cannot all be satisfied at once:
+* ``opendata/data/models/federal_reserve_clean_documents.py`` (10 and 25) holds the two classes the
+  domain contracts resolve to by identity, and ``models/clean_documents.py`` (324, 956) holds a
+  tested, contract-conforming fetcher for each identity that commit b15717b6 un-bound.
+* ``opendata/data/models/federal_reserve_macro.py`` (262, 356) holds the classes the bound fetchers
+  construct, and ``tests/test_federal_reserve_iter2_models.py`` pins those as the row type.
+* ``provider_model_query._serialize_contract_row`` -- excerpted above from the product code, and
+  independently described by the sibling test's own docstring -- compares every row with
+  ``contract_model(domain)`` **by identity**, so a wave that declared ``row_model =
+  contract_model(domain)`` over macro-built rows would pass the direct leg and refuse on the service
+  leg, which is one of the five phases the judge scores.
+
+Field-face difference, derived by this builder from the four class bodies on disk (AST `AnnAssign`
+names, not typed prose) -- the YieldCurve pair carries the same three field names under two different
+classes, the FomcDocuments pair shares only ``url``:
+
+    macro.FomcDocument                 opendata/data/models/federal_reserve_macro.py:356 fields=['year', 'document_date', 'title', 'document_type', 'format', 'url', 'meeting_range']
+    clean.FomcDocument                 opendata/data/models/federal_reserve_clean_documents.py:10 fields=['date', 'doc_type', 'doc_format', 'url', 'release_date']
+    macro.YieldCurve                   opendata/data/models/federal_reserve_macro.py:262 fields=['date', 'maturity', 'rate']
+    clean.YieldCurveObservation        opendata/data/models/federal_reserve_clean_documents.py:25 fields=['date', 'maturity', 'rate']
+    fomc_pair_shared_fields=['url']
+    yield_curve_pair_shared_fields=['date', 'maturity', 'rate']
+
+So YieldCurve is a class *identity* edit and FomcDocuments is a *published field face* change; the
+second one is a product decision on a frozen row, not a witness wave.
+
+Ruling for wave 26
+------------------
+0 of 7 rows converts in a witness wave. Wave 26 therefore lands no plane-1 row, and plane 1 stays
+at 266/350. Both federal_reserve rows are moved from "waiting for a witness" to the
+frozen-judge-vs-new-architecture adjudication already open as task #9/#10, with the three faces
+above named. The five UNBOUND rows stay where the provider ledgers put them: they need upstream
+protocol evidence (implementation), not a fixture.
+
+Where the cheapest remaining batch actually is, measured at this generation
+---------------------------------------------------------------------------
+The same round re-ran the shipped declaration pricer (argv in the recipe below). That capture's own
+last line reads ``declare_arms=2 declare_passed=2 declare_failed=0``. An earlier landing of this
+carrier refused to claim an exit code for it because that first invocation never recorded ``$?``;
+the recipe re-run at the end of this carrier retired the hedge by running the command again --
+``declare_rerun_exit=0``, stderr 0 bytes, capture byte-identical to the digest quoted below -- not by
+asserting. Its two face lines, plus the four rows this carrier is about:
+
+   2| B_flags_discriminate: needs_declare=52 counts={'contract_in_module': 50, 'emits': 29, 'witness_entry': 0} movable={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_in_module_true=50 PASS=True
+   3| declare_face_by_provider={"deribit": {"NEEDS_RETARGET": 5}, "federal_reserve": {"NEEDS_IMPORT": 1, "NEEDS_IMPORT_AND_RETARGET": 1}, "government_us": {"DECLARE_AND_WITNESS": 1}, "nasdaq": {"NEEDS_RETARGET": 9}, "tmx": {"NEEDS_RETARGET": 7, "DECLARE_AND_WITNESS": 1}, "yfinance": {"DECLARE_AND_WITNESS": 26, "NEEDS_RETARGET": 1}}
+   9| row federal_reserve::FomcDocuments by_name=True output_model=False flags={'contract_in_module': False, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.federal_reserve_clean_documents fetcher=FederalReserveFomcDocumentsFetcher canonical=FomcDocuments contract=FederalReserveFomcDocument
+  10| row federal_reserve::YieldCurve by_name=False output_model=False flags={'contract_in_module': False, 'emits': False, 'witness_entry': False} contract_module=opendata.data.models.federal_reserve_clean_documents fetcher=FederalReserveYieldCurveFetcher canonical=YieldCurve contract=FederalReserveYieldCurveObservation
+  11| row government_us::WeatherBulletinDownload by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.government_us fetcher=WeatherBulletinDownloadFetcher canonical=WeatherBulletinDownload contract=WeatherBulletinDownload
+  25| row tmx::EquitySearch by_name=True output_model=False flags={'contract_in_module': True, 'emits': True, 'witness_entry': False} contract_module=opendata.data.models.tmx fetcher=EquitySearchFetcher canonical=EquitySearch contract=TmxEquitySearch
+    by_provider[deribit:NEEDS_RETARGET=5, federal_reserve:NEEDS_IMPORT=1, federal_reserve:NEEDS_IMPORT_AND_RETARGET=1, government_us:DECLARE_AND_WITNESS=1, nasdaq:NEEDS_RETARGET=9, tmx:DECLARE_AND_WITNESS=1, tmx:NEEDS_RETARGET=7, yfinance:DECLARE_AND_WITNESS=26, yfinance:NEEDS_RETARGET=1]
+    DECLARE_AND_WITNESS=28 other_tags=24 needs_declare=52 reconcile=28+24==52
+    declare capture 7b009c9374472c4d bytes=15469 lines=56
+
+Three readings come out of that face, and they change the next predicate:
+
+* The NEED_DECLARE population is **not** "one CONFIG entry each". The reconcile line above is computed
+  by this builder from the JSON it quotes, and it raises rather than printing if
+  ``DECLARE_AND_WITNESS`` plus the other tags fails to sum to ``needs_declare``. Every
+  ``DECLARE_AND_WITNESS`` row sits in three providers, named with their counts on the ``by_provider``
+  line above; the rest are ``NEEDS_RETARGET`` / ``NEEDS_IMPORT`` /
+  ``NEEDS_IMPORT_AND_RETARGET`` -- i.e. they are *retarget* work, not CONFIG entries.
+* The two federal_reserve rows read ``contract_in_module=False`` there -- the same verdict the fourth
+  axis reached here, from an instrument written two waves before this probe existed. Two independent
+  instruments, one defect.
+* Of that block, government_us::WeatherBulletinDownload was already priced ``NO_CODE_SITE`` by wave 25
+  (``raises=8 code_raises=0``) and tmx::EquitySearch sits behind
+  ``BLOCKED_ON_RUNNER_SURFACE`` (``verbs=['request']`` against a ``get``-only fake), which is the
+  shared-runner widening that re-signs every shard.
+
+That leaves the **yfinance DECLARE_AND_WITNESS block** as the only batch neither wave 25 nor this round
+has priced on axes 3 and 4.
+**No convertibility is claimed for that block in this carrier.** Its provider screen reads
+``seam_verbs=[] seam_reachable=False`` (the package makes no shared-client call at all, so its witness
+would ride the engine ``transport`` leg -- the mechanism §87.8 recorded tiingo and econdb being
+accepted through), and this probe iterates only the judge's ``INCOMPLETE`` class, so the work is
+widening the probe's row population -- not editing a provider file.
+
+Re-armed predicate for the next round, with its void condition
+--------------------------------------------------------------
+A residue row is wave-convertible only when all four columns read ``bound=True``,
+``ruled_out=False``, a document-trippable guard **and** ``row_class is_contract=True`` (or
+``declared_is_contract=True``). The population to run them over next is the yfinance
+``DECLARE_AND_WITNESS`` block priced above, not a judge status class. Void condition: any edit to the two fetcher modules, to
+``models/federal_reserve_*.py``, to ``provider.py`` or to ``domains.yaml`` -- rerun this probe, its
+face line is ``second_axis_face`` and ``identity_set`` must stay 5168e1e723999312 while
+``verdicts`` may move. Failure reading: a row that reads ``DOCUMENT_*`` *and*
+``ROW_CLASS_NOT_CONTRACT`` in the same run is an instrument bug (the ladder ranks row_class first),
+and an accepted row that reads ``declaration_not_contract`` fails arm F rather than being explained
+away.
+
+What the face does NOT claim
+----------------------------
+* It is a ranking instrument. Only a producer run judges a row.
+* ``client_names=[]`` for both federal_reserve rows is correct, not a missing import: those fetchers
+  fetch through module helpers (``fomc_documents.py:100`` calls ``get_text(url, ctx.timeout)`` from
+  ``_iter2_client``), which the receiver rule does not treat as a client call. The strict reading can
+  therefore under-claim ``DOCUMENT_TRIPPED``; it cannot over-claim it, and neither row's verdict
+  depended on the relation (both are ``transform_data`` rows).
+* The shipped census's "nine raise sites" for ``weather_bulletin_download.py`` and this probe's
+  class-scoped ``raises=8`` are different populations: the census counts the whole module including
+  its module-level URL helper, this probe counts the fetcher class in the MRO.
+* ``emitted`` lists the ContractModel classes the fetcher's own class body or its module helpers
+  construct. A fetcher that builds rows through a base-class helper outside ``opendata.*`` would read
+  ``emitted=[]`` and so ``is_contract=False`` -- conservative, and the sample in arm F (7 accepted
+  rows, 7 declaring, 0 divergent) is what says the classifier is not systematically blind.
+* ``arm F``'s accepted sample is a stride-40 slice of ``sorted(OFFLINE_ACCEPTED identities)``, i.e.
+  7 of 266 rows chosen by a named key, not a claim about all 266.
+
+Re-computation recipe (every number above comes from these four commands, plus the AST read of the
+four twin class bodies, which is printed inline rather than as a fifth command, plus the product-code
+and fixture excerpts -- those are pasted by path from the working tree, so opening the named file at
+the named line number is the whole recipe)
+--------------------------------------------------------------------------
+    cd /Users/yunjinqi/Documents/new_projects/opendata
+    PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C128/plane1-residue-readiness-20261017/probes/incomplete_row_guard_check.py
+    PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C128/plane1-residue-readiness-20261017/probes/transport_matcher_delta.py
+    PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python \
+        docs/evidence/C128/plane1-residue-readiness-20261017/probes/declare_candidates.py
+    PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python \
+        docs/evidence/C128/plane1-residue-readiness-20261017/probes/seam_surface_match.py \
+        --arm eia:WITNESSABLE --arm tmx:BLOCKED_ON_RUNNER_SURFACE --arm federal_reserve:WITNESSABLE
+declare_candidates is quoted here because it is the shipped instrument that first printed the
+``contract_in_module=False`` column these two rows sit in; its own face is in
+runs/declare_candidates.post-batch.txt.
+
+The same four commands, re-run while building this generation, one after another, unpiped. Each exit
+code is read off disk (``$?`` redirected to a file by the run itself) and each capture is compared
+byte-for-byte with the one this carrier quotes -- a re-run that lands different bytes is a different
+reading, not a confirmation:
+  incomplete_row_guard_check: exit=0 stderr_bytes=0 reproduces_quoted_capture=True 4e1a8fa25ec96075 bytes=11293 lines=57
+  transport_matcher_delta: exit=0 stderr_bytes=0 reproduces_quoted_capture=True 9f61e0692da0a006 bytes=2299 lines=14
+  declare_candidates: exit=0 stderr_bytes=0 reproduces_quoted_capture=True 7b009c9374472c4d bytes=15469 lines=56
+  seam_surface_match: exit=0 stderr_bytes=0 reproduces_quoted_capture=True c0bc8c8ff727cea6 bytes=934 lines=6

@@ -41,6 +41,24 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
 "3 枚 / 267"的预测被实测推翻，改成 2 枚 / 266 并就地更正（错的数字留在记录里）。为了让下一波不必再靠
 手 grep 撞同一个坑，本波新增两台正交轴的仪器（可达性 vs 可见证性），见下。叙述在 §87。
 
+**波 26 一枚也没落地：它在 step 0 就被自己的仪器解散了**（`docs/evidence/C129/` 依旧不存在）。§87.8 的
+谓词是按"7 枚 `INCOMPLETE`"这个**判定状态类**武装下一波的，并预测 plane 1 `266 → 273`。一个状态类的枚数
+不是工作清单。`probes/incomplete_row_guard_check.py` 把转正条件拆成**四条互相独立的轴**逐枚测
+（`bound` / `ruled_out` / `guard` / 本轮新写的 `row_class`），实测 **0 / 7 枚**可由 witness 波转正：
+5 枚 `UNBOUND` 各自被本家 `NOT_DECL*` 台账带着（缺的是上游协议证据 = 实现工作，不是 fixture），
+2 枚 `ROW_CLASS_NOT_CONTRACT` —— `federal_reserve::FomcDocuments` 与 `::YieldCurve` 前三轴全过
+（5、9 条本类 `transform_data` 带码 `raise`），但它 bound 的 fetcher 构造的是
+`models/federal_reserve_macro.py` 里的替身类，而 `contract_model(domain)` 解析到的是
+`models/federal_reserve_clean_documents.py` 那两个同名/异名类；服务腿
+`opendata/services/provider_model_query.py:327` 先比**类身份**再看字段，直取腿过、服务腿拒，而服务腿是
+判分五相之一。plane 1 停在 **266/350**，`identity_set` 未动；那两枚移交 task #9/#10 的"冻结判定 vs 新架构"
+裁决，三面冲突（`domains.yaml` + `registry_batch5_snapshot` 的 `contract` 字段 /
+`tests/test_federal_reserve_iter2_models.py:322-346,382-402` / `b15717b6` 引入的 binding）逐字钉在载体里。
+同一份载体还实测出下一波的候选总体：`needs_declare=52` 里只有 28 枚读 `DECLARE_AND_WITNESS`，其余 24 枚
+是 retarget/import 工作，而 28 枚里 government_us 那一枚已被波 25 判 `NO_CODE_SITE`、tmx 那一枚堵在
+`BLOCKED_ON_RUNNER_SURFACE` —— 剩下的 yfinance 那一块是本波**没有**测第三、四轴的，载体里没有为它主张
+任何可转正性。谓词由此从"一个状态类"换成"这块总体"。叙述在 §88。
+
 ## 载体
 
 - `probes/readiness_census.py`、`probes/declare_candidates.py`：两台仪器，各自带正控制与可动性闸。
@@ -67,6 +85,29 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
   `f"{spec.error_prefix}_SHAPE_INVALID"` 组合码都要能解析，否则 `absent` 会把"解析器不知道"读成"码不存在"）。
   三臂含栽码反证：`C_planted_negative` 要求一个全树不存在的码读成 `absent`，否则 A 臂的 `absent=0`
   是不可反证的零。
+- `probes/incomplete_row_guard_check.py`（606 行、`sha16=94ebdba8adb9ea33`）：波 26 的 step 0 仪器，把
+  "这一枚能不能靠一波 witness 转正"拆成**四条独立轴**逐枚打印：`bound`（注册表解析得到 fetcher）、
+  `ruled_out`（本家 `NOT_DECL*` 台账带着它 —— cboe/intrinio 拼 `NOT_DECLARABLE`、econdb 拼
+  `NOT_DECLARED`，所以按属性名**前缀**匹配，不硬编码一个名字）、`guard`（篡改文档撞得到本类带的码）、
+  `row_class`（bound fetcher 造的类必须**就是** `contract_model(domain)`，不是长得像）。判定枚举六值
+  `DOCUMENT_REACHABLE / DOCUMENT_TRIPPED / ROW_CLASS_NOT_CONTRACT / QUERY_ONLY / NO_CODE_SITE / UNBOUND`，
+  梯子里 `row_class` 排在 `guard` 之前。六臂里两臂是为了修仪器自己才加的：`E_transport_predicate_discriminates`
+  要求运输谓词两值都能读出（同一批 10 个 `extract_data` 站点，改成"动词 **AND** 该模块自己绑给 client
+  的接收者"读 `after_counts={True: 3, False: 7}`；按属性名松匹配那一代读成什么，由
+  `probes/transport_matcher_delta.py` 现测，不在这条臂里凭记忆写数），
+  `F_row_class_identity` 三面要求同名替身读 `look_alike_name`、异名替身读 `no`、自己读 `match`，
+  否则"分类器看不见"会被读成"这行不是替身"。
+- `probes/transport_matcher_delta.py`（209 行、`sha16=c90fcffbeafcad76`）：**只替换那条不一致的规则**的
+  差分仪器。它 import 已入库探针的站点枚举、行总体与所有 helper，只把 `_transport_line` 换成 draft 2 的
+  松规则（动词命中即算，接收者不查），所以两代读数只差一条规则。臂 A 先自证能复算已入库面
+  （10 站点 `{True: 3, False: 7}`），臂 B 给松规则的面 `{True: 7, False: 3}`，臂 C 是差值 `flipped=4`，
+  臂 D 是方向检查（松规则只会加站点），臂 E 把同一对规则搬到总体的 15 个 `transform_data` 站点上
+  （draft 2 那四条假阳性真正所在的位置：strict `{True: 0, False: 15}` vs loose `{True: 4, False: 11}`）。
+  八条 flip 逐行打印两代**实际匹配到的接收者**，从 AST 现取：
+  strict 侧 `_client.get_json` / `_client.get_bytes`，loose 侧 `os.environ.get(...).strip` 与
+  `REPORT_FILES.get`。接收者里的字符串常量一律替换成 `'...'` —— 那几个 provider 行的原文形状会被
+  gitleaks 记到**本载体**头上；构建器用同一条正则两侧对测（捕获面 0 命中、被替换的那两行源码 1 命中），
+  任一移动就抛而不是写进载体。
 - `probes/receipt_pin_consistency.py`：入库前的**过期 pin 闸门**（波 25 第二版，181 行，
   `sha16=954fa541f9d511e4`）。它把"某波改了共享文件之后，早先产出的 receipt 还在钉旧字节"这件事从
   gate member 2 手里抢到波内：逐 slot 用工作树字节重算 `after_sha256`。三臂 —— A 主张 `stale=0`；
@@ -113,6 +154,26 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
   那 18 行 stdout 用 awk 切片重算，行号漂移不会让配方变哑）。中间是逐家 `guard_provider=…` 面与三臂，
   末尾 `--- pre-fix readings ---` 块逐字留了解析器四代 + 分块一代的原始 stdout（各带 `/tmp` 路径、
   mtime、字节数、shasum16），因为那些临时文件不可久存。
+- `runs/wave26-step0-second-axis.txt`（565 行、`sha16=64a7c7bd96d7f94b`）：波 26 step 0 只读载体，也是
+  本目录里唯一**没有落地任何一行**的波次载体。三代探针 stdout 并置且各自带现算 digest：draft 1 那代
+  被推翻的臂（`A_landed_positive government_us::CommodityPsdReport verdict=DOCUMENT_ADJACENT … PASS=False`，
+  它错在只认 `transform_data`，而这一枚在 `extract_data` 的 `_client.get_bytes` **之后**拒绝）、
+  draft 2 那代四条假阳性（其面里只有 `after_transport=True`，draft 2 **没有**打印过传输行号；
+  到底是哪个调用让它们读成 True 由 `transport_matcher_delta.py` 臂 E 现测：
+  `loose_matched=anchor.get@111`、strict 侧 `no_transport_call@0`）、draft 3 入库面
+  逐字 57 行（`shasum -a 256` 取管道外的 stdin 现算，`lines=` 用 `splitlines()` 与 `wc -l` 同定义）。
+  裁决与三面冲突写在正文里，服务腿是**产品代码**摘录（`provider_model_query.py:208-212 / 316-320 / 322-328`）
+  而不是测试 docstring 的转述；第一轴的"引擎必然把解码载荷交给 `transform_data`"也改成产品代码逐字摘录
+  （`opendata/data/protocol.py:312-317`，并注明异步入口 `_fetch_async` 的两条腿 `:477→:486`、
+  `extract_data_async :540→:559` 是同一对调用 —— 先前写的 `_engine/http_json.py:1462` 是本仓没有的文件，
+  已按实路径重指）；两对替身类的字段面由载档构建器直接从四个类体 AST 里取
+  （`fomc_pair_shared_fields=['url']`、`yield_curve_pair_shared_fields=['date', 'maturity', 'rate']`），
+  不是手抄。下一波候选总体也在同一份载体里实测：`needs_declare=52` 中只有 28 枚读
+  `DECLARE_AND_WITNESS`，且 `reconcile=28+24==52` 是构建器算的（不满足就抛，不打印）。
+  末尾"复算配方"四条命令均可直接执行，且**本代已按顺序重跑过一遍**：每条的 `exit` 由运行自己重定向到
+  文件、载档读盘（四条全 0、stderr 全 0 字节），四个捕获与载档所钉逐字节相同
+  （`4e1a8fa25ec96075`、`9f61e0692da0a006`、`7b009c9374472c4d`、`c0bc8c8ff727cea6`）。同一轮还把它自己
+  先前写的那句"declare 那次没记 `$?`，所以不主张退出码"撤了 —— 撤的办法是重跑一次拿到退出码，不是改口。
 - `runs/declare_candidates.post-batch.txt`（61 行、54 条 `row `）：**波 24 那一代**的定价面，与波前面
   `runs/declare_candidates.txt`（58 枚）不同代，别把两者混比；波 25 之后总体已是 52 枚，当代读数在
   `runs/wave25-step0-reachability.txt` block ⑥（波前 54）与 `runs/wave25-government_us.txt` 的波后
@@ -126,7 +187,9 @@ plane 1 `260 → 262/350`，残留 `90 → 88`（`UNREVIEWED 83 → 81`、`INCOM
   在含载档自己的字节上读到同一不变式 `65 / 24 / 0 / 0`；两臂控制 `payload_files=17`（当时 `probes/` 7 个
   `.py` + `runs/` 10 个 `.txt`）`arm_a_findings=0 arm_b_findings=1 payload_secret_face PASS=True`。
   这台只收那两个根，所以总体是**代际敏感**的：pin 闸门落地后重跑读 `payload_files=20`（8 + 12），
-  这份 README 与 precommit 载档定稿后再读是 `21`（8 + 13），其余四行逐字不变。
+  这份 README 与 precommit 载档定稿后再读是 `21`（8 + 13），其余四行逐字不变；波 26 的 step 0 探针与载体
+  落盘后目录里是 10 个 `.py` + 14 个 `.txt`（`probes/__pycache__/` 的 `.pyc` 不在后缀总体内），当代读数
+  以入库前那次扫描自己打印的 `payload_files` 为准，不在这里替它填数。
   取 4 跑过但故意不写进来（载档不能扫自己最后一行）。
 - `runs/precommit-staged-scan.wave25.txt`：**提交那一刻**的入库面，人群换成索引本身 ——
   `git -c core.quotepath=off diff --cached --name-only -z | xargs -0 … staged_payload_scan.py --paths`
@@ -171,6 +234,14 @@ cd /tmp/c128_base && PYTHONPATH=. <门禁解释器> docs/evidence/C128/plane1-re
 在仓库根执行）。这两台都是**当代**仪器：在当前工作树重跑应当复现入库面；一旦下一波改了模型或码站点，
 A 臂的 `td/ed/other/engine` 计数与 `absent` 都可能移动，届时要按"重基线而非放宽"处理 ——
 `absent` 必须仍为 0 且 `C_planted_negative` 必须仍读成 `absent`，否则这台仪器自己就哑了。
+
+波 26 那台的四条命令**逐字抄在** `runs/wave26-step0-second-axis.txt` 末尾"复算配方"里，第一条已在本机重跑
+并重读到同一 `sha16=4e1a8fa25ec96075`（无管道，`$?` 直接取，stderr 0 字节）。它也是当代仪器：只要不动
+`provider.py` / `domains.yaml` / 那两个 `models/federal_reserve_*.py`，重跑应当复现 `verdicts=` 那一行的
+`{'ROW_CLASS_NOT_CONTRACT': 2, 'UNBOUND': 5}` 与 `convertible=0`；`identity_set` 必须仍是
+`5168e1e723999312`，而 `verdicts` **允许**移动 —— 一旦某枚的 `row_class` 转成 `is_contract=True`，
+就是那两枚之一的裁决被实施了，届时按"重基线而非放宽"处理：判定枚举六值不许增删，`F_row_class_identity`
+的三面（`match` / `look_alike_name` / `no`）不许有任何一面变成不可达，否则这台仪器的第四轴自己就哑了。
 第三台当代仪器是 `receipt_pin_consistency.py`，argv 抄在 `runs/wave25-receipt-pins.txt` 头部两条
 （`--providers <本波分片>` 与全树各一次，都是仓库根执行）。它是**每一波入库前该跑的那一台**：
 `arms_failed>0` 说明本波把某个共享文件的 pin 弄旧了，补产补签再提交；`C_rearm PASS=False` 是仪器坏了；
