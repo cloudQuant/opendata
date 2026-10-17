@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "GovernmentUSProviderError", "refusal_code": "NWS_BAD_PRODUCT_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "GovernmentUSProviderError", "refusal_code": "NWS_BAD_PRODUCT_ROW", "rejected": [], "status": null}, "reason": "a product object with no issuanceTime still carries a legitimate id, office and bulletin text, but issuance_time is a required contract column and the mapping cannot invent one, so WeatherBulletinFetcher.transform_data must refuse the product rather than publish an undated bulletin; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

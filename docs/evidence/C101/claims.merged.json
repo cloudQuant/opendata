@@ -89996,6 +89996,856 @@
       "upstream_model": "YieldCurve"
     },
     {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T06:55:01.417937+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "before_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "path": "opendata/data/models/government_us.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "before_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "path": "scripts/quality/iter2_witnesses/government_us.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "before_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "path": "scripts/quality/iter2_witnesses/government_us.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "before_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "path": "opendata/data/providers/government_us/registration.py"
+          },
+          {
+            "after_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "before_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "path": "opendata/data/providers/government_us/provider.py"
+          },
+          {
+            "after_sha256": "5ad6732b95cde3e815481fd7d3784e0136f4503d18b82eb62a414be39749455c",
+            "before_sha256": "5ad6732b95cde3e815481fd7d3784e0136f4503d18b82eb62a414be39749455c",
+            "path": "opendata/data/providers/government_us/models/treasury_auctions.py"
+          },
+          {
+            "after_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "before_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "path": "opendata/data/providers/government_us/models/_client.py"
+          }
+        ]
+      },
+      "provider": "government_us",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "government_us::TreasuryAuctions",
+        "path": "docs/evidence/C101/receipts/government_us/TreasuryAuctions/implementation.json",
+        "sha256": "69d42e58eda9c1847f140fc9e8c2492ea120138cb2fb87fde826acc49fef77d8"
+      },
+      "status": "PASS",
+      "upstream_model": "TreasuryAuctions"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T06:55:02.357290+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "before_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "path": "opendata/data/models/government_us.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+        "fixture": [
+          {
+            "after_sha256": "e4927c270bc003fe50c94209b7a4af4a1188158e6deb4cb9886dc0db1c308a3f",
+            "before_sha256": "e4927c270bc003fe50c94209b7a4af4a1188158e6deb4cb9886dc0db1c308a3f",
+            "path": "docs/evidence/C101/fixtures/government_us/TreasuryAuctions.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "before_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "path": "scripts/quality/iter2_witnesses/government_us.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "before_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "path": "opendata/data/providers/government_us/registration.py"
+          },
+          {
+            "after_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "before_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "path": "opendata/data/providers/government_us/provider.py"
+          },
+          {
+            "after_sha256": "5ad6732b95cde3e815481fd7d3784e0136f4503d18b82eb62a414be39749455c",
+            "before_sha256": "5ad6732b95cde3e815481fd7d3784e0136f4503d18b82eb62a414be39749455c",
+            "path": "opendata/data/providers/government_us/models/treasury_auctions.py"
+          },
+          {
+            "after_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "before_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "path": "opendata/data/providers/government_us/models/_client.py"
+          }
+        ]
+      },
+      "provider": "government_us",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "government_us::TreasuryAuctions",
+        "path": "docs/evidence/C101/receipts/government_us/TreasuryAuctions/direct.json",
+        "sha256": "dd87489254fc13603c0836e09a26a0791756dfc6a042115a663cd70b69f36701"
+      },
+      "status": "PASS",
+      "upstream_model": "TreasuryAuctions"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T06:55:03.561586+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "before_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "path": "opendata/data/models/government_us.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+        "fixture": [
+          {
+            "after_sha256": "e4927c270bc003fe50c94209b7a4af4a1188158e6deb4cb9886dc0db1c308a3f",
+            "before_sha256": "e4927c270bc003fe50c94209b7a4af4a1188158e6deb4cb9886dc0db1c308a3f",
+            "path": "docs/evidence/C101/fixtures/government_us/TreasuryAuctions.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "before_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "path": "scripts/quality/iter2_witnesses/government_us.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "before_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "path": "opendata/data/providers/government_us/registration.py"
+          },
+          {
+            "after_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "before_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "path": "opendata/data/providers/government_us/provider.py"
+          },
+          {
+            "after_sha256": "5ad6732b95cde3e815481fd7d3784e0136f4503d18b82eb62a414be39749455c",
+            "before_sha256": "5ad6732b95cde3e815481fd7d3784e0136f4503d18b82eb62a414be39749455c",
+            "path": "opendata/data/providers/government_us/models/treasury_auctions.py"
+          },
+          {
+            "after_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "before_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "path": "opendata/data/providers/government_us/models/_client.py"
+          }
+        ]
+      },
+      "provider": "government_us",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "government_us::TreasuryAuctions",
+        "path": "docs/evidence/C101/receipts/government_us/TreasuryAuctions/service.json",
+        "sha256": "801dd0e383cabb92d7474b787f39f06ace1a5ec70e923e5bd64894fdcad97b22"
+      },
+      "status": "PASS",
+      "upstream_model": "TreasuryAuctions"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T06:55:04.553598+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "before_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "path": "opendata/data/models/government_us.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+        "fixture": [
+          {
+            "after_sha256": "e4927c270bc003fe50c94209b7a4af4a1188158e6deb4cb9886dc0db1c308a3f",
+            "before_sha256": "e4927c270bc003fe50c94209b7a4af4a1188158e6deb4cb9886dc0db1c308a3f",
+            "path": "docs/evidence/C101/fixtures/government_us/TreasuryAuctions.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "before_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "path": "scripts/quality/iter2_witnesses/government_us.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "before_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "path": "opendata/data/providers/government_us/registration.py"
+          },
+          {
+            "after_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "before_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "path": "opendata/data/providers/government_us/provider.py"
+          },
+          {
+            "after_sha256": "5ad6732b95cde3e815481fd7d3784e0136f4503d18b82eb62a414be39749455c",
+            "before_sha256": "5ad6732b95cde3e815481fd7d3784e0136f4503d18b82eb62a414be39749455c",
+            "path": "opendata/data/providers/government_us/models/treasury_auctions.py"
+          },
+          {
+            "after_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "before_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "path": "opendata/data/providers/government_us/models/_client.py"
+          }
+        ]
+      },
+      "provider": "government_us",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "government_us::TreasuryAuctions",
+        "path": "docs/evidence/C101/receipts/government_us/TreasuryAuctions/contract.json",
+        "sha256": "8540e0ad114f881af54ee9346fec72f891d2b1d3597a7b57ae7d42472de2770a"
+      },
+      "status": "PASS",
+      "upstream_model": "TreasuryAuctions"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T06:55:05.576984+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "before_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "path": "opendata/data/models/government_us.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+        "fixture": [
+          {
+            "after_sha256": "e4927c270bc003fe50c94209b7a4af4a1188158e6deb4cb9886dc0db1c308a3f",
+            "before_sha256": "e4927c270bc003fe50c94209b7a4af4a1188158e6deb4cb9886dc0db1c308a3f",
+            "path": "docs/evidence/C101/fixtures/government_us/TreasuryAuctions.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "before_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "path": "scripts/quality/iter2_witnesses/government_us.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "before_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "path": "opendata/data/providers/government_us/registration.py"
+          },
+          {
+            "after_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "before_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "path": "opendata/data/providers/government_us/provider.py"
+          },
+          {
+            "after_sha256": "5ad6732b95cde3e815481fd7d3784e0136f4503d18b82eb62a414be39749455c",
+            "before_sha256": "5ad6732b95cde3e815481fd7d3784e0136f4503d18b82eb62a414be39749455c",
+            "path": "opendata/data/providers/government_us/models/treasury_auctions.py"
+          },
+          {
+            "after_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "before_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "path": "opendata/data/providers/government_us/models/_client.py"
+          }
+        ]
+      },
+      "provider": "government_us",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "government_us::TreasuryAuctions",
+        "path": "docs/evidence/C101/receipts/government_us/TreasuryAuctions/counterfact.json",
+        "sha256": "440a5d0bd81eb44399af8de0be54230d623b2a743d3c41e882f65e35ad6ac370"
+      },
+      "status": "PASS",
+      "upstream_model": "TreasuryAuctions"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T06:55:06.572111+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "before_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "path": "opendata/data/models/government_us.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+        "fixture": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "before_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "path": "scripts/quality/iter2_witnesses/government_us.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "before_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "path": "scripts/quality/iter2_witnesses/government_us.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "before_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "path": "opendata/data/providers/government_us/registration.py"
+          },
+          {
+            "after_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "before_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "path": "opendata/data/providers/government_us/provider.py"
+          },
+          {
+            "after_sha256": "a3ec9a1ab8e4bb81f39b6e643f2360a1ecf1976aecd5c17c044a188c582f5f5e",
+            "before_sha256": "a3ec9a1ab8e4bb81f39b6e643f2360a1ecf1976aecd5c17c044a188c582f5f5e",
+            "path": "opendata/data/providers/government_us/models/weather_bulletin.py"
+          },
+          {
+            "after_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "before_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "path": "opendata/data/providers/government_us/models/_client.py"
+          }
+        ]
+      },
+      "provider": "government_us",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "government_us::WeatherBulletin",
+        "path": "docs/evidence/C101/receipts/government_us/WeatherBulletin/implementation.json",
+        "sha256": "3858b8d45df042b0249623df2b12bb8372d7a546f7f4a7fda1c07157a868a2b4"
+      },
+      "status": "PASS",
+      "upstream_model": "WeatherBulletin"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T06:55:07.584639+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "before_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "path": "opendata/data/models/government_us.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+        "fixture": [
+          {
+            "after_sha256": "462e483d6c741b2876db551f6793a9bffe701145e350e4ffa596c15cd38f1ffe",
+            "before_sha256": "462e483d6c741b2876db551f6793a9bffe701145e350e4ffa596c15cd38f1ffe",
+            "path": "docs/evidence/C101/fixtures/government_us/WeatherBulletin.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "before_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "path": "scripts/quality/iter2_witnesses/government_us.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "before_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "path": "opendata/data/providers/government_us/registration.py"
+          },
+          {
+            "after_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "before_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "path": "opendata/data/providers/government_us/provider.py"
+          },
+          {
+            "after_sha256": "a3ec9a1ab8e4bb81f39b6e643f2360a1ecf1976aecd5c17c044a188c582f5f5e",
+            "before_sha256": "a3ec9a1ab8e4bb81f39b6e643f2360a1ecf1976aecd5c17c044a188c582f5f5e",
+            "path": "opendata/data/providers/government_us/models/weather_bulletin.py"
+          },
+          {
+            "after_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "before_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "path": "opendata/data/providers/government_us/models/_client.py"
+          }
+        ]
+      },
+      "provider": "government_us",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "government_us::WeatherBulletin",
+        "path": "docs/evidence/C101/receipts/government_us/WeatherBulletin/direct.json",
+        "sha256": "f0e78bb5da7da48e38400a1b03e8202894cf11725cbda0e8380361456ef2e493"
+      },
+      "status": "PASS",
+      "upstream_model": "WeatherBulletin"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T06:55:08.767842+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "before_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "path": "opendata/data/models/government_us.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+        "fixture": [
+          {
+            "after_sha256": "462e483d6c741b2876db551f6793a9bffe701145e350e4ffa596c15cd38f1ffe",
+            "before_sha256": "462e483d6c741b2876db551f6793a9bffe701145e350e4ffa596c15cd38f1ffe",
+            "path": "docs/evidence/C101/fixtures/government_us/WeatherBulletin.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "before_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "path": "scripts/quality/iter2_witnesses/government_us.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "before_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "path": "opendata/data/providers/government_us/registration.py"
+          },
+          {
+            "after_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "before_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "path": "opendata/data/providers/government_us/provider.py"
+          },
+          {
+            "after_sha256": "a3ec9a1ab8e4bb81f39b6e643f2360a1ecf1976aecd5c17c044a188c582f5f5e",
+            "before_sha256": "a3ec9a1ab8e4bb81f39b6e643f2360a1ecf1976aecd5c17c044a188c582f5f5e",
+            "path": "opendata/data/providers/government_us/models/weather_bulletin.py"
+          },
+          {
+            "after_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "before_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "path": "opendata/data/providers/government_us/models/_client.py"
+          }
+        ]
+      },
+      "provider": "government_us",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "government_us::WeatherBulletin",
+        "path": "docs/evidence/C101/receipts/government_us/WeatherBulletin/service.json",
+        "sha256": "fb5eb3ab2caa0d68a9db4537f41e46b9ef92bf88535d79b5ff8c75329f0a3965"
+      },
+      "status": "PASS",
+      "upstream_model": "WeatherBulletin"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T06:55:09.781120+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "before_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "path": "opendata/data/models/government_us.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+        "fixture": [
+          {
+            "after_sha256": "462e483d6c741b2876db551f6793a9bffe701145e350e4ffa596c15cd38f1ffe",
+            "before_sha256": "462e483d6c741b2876db551f6793a9bffe701145e350e4ffa596c15cd38f1ffe",
+            "path": "docs/evidence/C101/fixtures/government_us/WeatherBulletin.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "before_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "path": "scripts/quality/iter2_witnesses/government_us.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "before_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "path": "opendata/data/providers/government_us/registration.py"
+          },
+          {
+            "after_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "before_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "path": "opendata/data/providers/government_us/provider.py"
+          },
+          {
+            "after_sha256": "a3ec9a1ab8e4bb81f39b6e643f2360a1ecf1976aecd5c17c044a188c582f5f5e",
+            "before_sha256": "a3ec9a1ab8e4bb81f39b6e643f2360a1ecf1976aecd5c17c044a188c582f5f5e",
+            "path": "opendata/data/providers/government_us/models/weather_bulletin.py"
+          },
+          {
+            "after_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "before_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "path": "opendata/data/providers/government_us/models/_client.py"
+          }
+        ]
+      },
+      "provider": "government_us",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "government_us::WeatherBulletin",
+        "path": "docs/evidence/C101/receipts/government_us/WeatherBulletin/contract.json",
+        "sha256": "b1d9964c5f564e34693e4c1b044d89ec88b28275326b89da657f741651b6fd8e"
+      },
+      "status": "PASS",
+      "upstream_model": "WeatherBulletin"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T06:55:10.780181+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "before_sha256": "f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+            "path": "opendata/data/models/government_us.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:f9c460932df3a28d51511a98e9859808cd4be5d1b822321a9742325b0f1a5761",
+        "fixture": [
+          {
+            "after_sha256": "462e483d6c741b2876db551f6793a9bffe701145e350e4ffa596c15cd38f1ffe",
+            "before_sha256": "462e483d6c741b2876db551f6793a9bffe701145e350e4ffa596c15cd38f1ffe",
+            "path": "docs/evidence/C101/fixtures/government_us/WeatherBulletin.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "before_sha256": "3adb2856b2da5587576f63d6cc0417ce938e1f86b20079310a0244855936662e",
+            "path": "scripts/quality/iter2_witnesses/government_us.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "before_sha256": "c6768148eb09e539826aecf313ec296f4fa10f69fb01bf969e7638170298d15e",
+            "path": "opendata/data/providers/government_us/registration.py"
+          },
+          {
+            "after_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "before_sha256": "e3e7cb3c6191264cf8f99015936802a5fcb2739b38d852cf76207a87aa38ab96",
+            "path": "opendata/data/providers/government_us/provider.py"
+          },
+          {
+            "after_sha256": "a3ec9a1ab8e4bb81f39b6e643f2360a1ecf1976aecd5c17c044a188c582f5f5e",
+            "before_sha256": "a3ec9a1ab8e4bb81f39b6e643f2360a1ecf1976aecd5c17c044a188c582f5f5e",
+            "path": "opendata/data/providers/government_us/models/weather_bulletin.py"
+          },
+          {
+            "after_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "before_sha256": "7542870df9bb13961ce07a46babdbb20865c5b2a3369c5d54f0eda96800d9fd5",
+            "path": "opendata/data/providers/government_us/models/_client.py"
+          }
+        ]
+      },
+      "provider": "government_us",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "government_us::WeatherBulletin",
+        "path": "docs/evidence/C101/receipts/government_us/WeatherBulletin/counterfact.json",
+        "sha256": "52a50a3dd1f84de2ff4a2e22f2428c820ea94102e1b76261a5bb9ce7021dca8a"
+      },
+      "status": "PASS",
+      "upstream_model": "WeatherBulletin"
+    },
+    {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model AvailableIndicators --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
       "executed_at_utc": "2026-10-17T03:20:47.673737+00:00",
@@ -135014,6 +135864,36 @@
       "reviewer_role": "acceptance_reviewer",
       "reviewer_type": "primary_model",
       "upstream_model": "YieldCurve"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "government_us",
+      "receipt": {
+        "model_identity": "government_us::TreasuryAuctions",
+        "path": "docs/evidence/C101/primary-reviews/government_us__TreasuryAuctions.review.json",
+        "sha256": "15b589097265f26ef73aaae4d2f5e2b02e5d9f0badc301ffeb9b51ac1b849824"
+      },
+      "reviewed_at_utc": "2026-10-17T06:55:54Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "TreasuryAuctions"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "government_us",
+      "receipt": {
+        "model_identity": "government_us::WeatherBulletin",
+        "path": "docs/evidence/C101/primary-reviews/government_us__WeatherBulletin.review.json",
+        "sha256": "20fb9649cd408cd5e86dfcdcea9ead59d0264eb1c483805c4b1c46276d55819c"
+      },
+      "reviewed_at_utc": "2026-10-17T06:55:54Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "WeatherBulletin"
     },
     {
       "decision": "ACCEPT",

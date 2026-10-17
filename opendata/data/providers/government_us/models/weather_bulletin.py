@@ -44,6 +44,7 @@ class WeatherBulletinFetcher(Fetcher[WeatherBulletinQuery, dict[str, Any]]):
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "WeatherBulletin"
+    row_model: ClassVar[type[WeatherBulletin]] = WeatherBulletin
     capability: ClassVar[Capability] = Capability(
         asset_class="weather",
         domain="government_us_weather_bulletin",

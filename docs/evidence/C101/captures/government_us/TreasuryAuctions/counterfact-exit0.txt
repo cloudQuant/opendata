@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "GovernmentUSProviderError", "refusal_code": "TREASURY_AUCTION_CUSIP_MISMATCH", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "GovernmentUSProviderError", "refusal_code": "TREASURY_AUCTION_CUSIP_MISMATCH", "rejected": [], "status": null}, "reason": "serving a row for 91282CJL7 under a request filtered for 91282CJL6 keeps the page well-formed, in size and typed-clean, but answers a security the caller did not ask for, so TreasuryAuctionsFetcher.transform_data must refuse the row rather than publish another instrument's auction result under the requested CUSIP; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

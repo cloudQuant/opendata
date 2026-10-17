@@ -60,6 +60,7 @@ class TreasuryAuctionsFetcher(Fetcher[TreasuryAuctionsQuery, list[dict[str, Any]
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "TreasuryAuctions"
+    row_model: ClassVar[type[TreasuryAuction]] = TreasuryAuction
     capability: ClassVar[Capability] = Capability(
         asset_class="fixed_income",
         domain="government_us_treasury_auctions",
