@@ -145,7 +145,11 @@ step-4 §7.7 撤过的那条"collected 涨是 mover"错误读法，本波不再�
 `landed_bytes_face.txt:16` `J_intermediate_generation ... is_head=False is_today=False` 指名它属于
 哪一代。
 
-## 3. 反例与控制臂（六台仪器、54 臂，全部 `arms_passed=arms`）
+## 3. 反例与控制臂（下表 7 行、8 台仪器、60 臂，全部 `arms_passed=arms`）
+
+下表逐行臂数相加 `4+10+11+6+8+15+3+3=60`（最后一行是两台共用一行的 3+3），这个和是把表里的格子
+现加出来的，不是沿用小节标题里原来那枚"54"——那枚只数到了前六行，属于我先前的一处自相矛盾，
+按 step-4 §7 的规矩原文留档在这里并当场改正。凭证预扫那台不在这 60 臂里，见下一段与 §3.5。
 
 | 仪器 | 臂 | 载档 | 收口行 |
 | --- | --- | --- | --- |
@@ -157,7 +161,8 @@ step-4 §7.7 撤过的那条"collected 涨是 mover"错误读法，本波不再�
 | `plane2_dev_done_axis_census.py`（C131，出厂） | 15 | `plane2_dev_done_axis_census.txt` | `:143 arms=15 arms_passed=15`，`exit=0` |
 | `readiness_census.py` / `receipt_pin_consistency.py`（C128，出厂） | 3 + 3 | 同名载档 | `readiness_census.txt:11`、`receipt_pin_consistency.txt:8` |
 
-`probes/staged_payload_scan.py` 的臂在 §3.5 单列（它在提交前跑，取面时刻与本文件不同代）。
+`probes/staged_payload_scan.py` 的臂在 §3.5 单列：它跑两趟，index 那趟早于本文件定稿，head 那趟
+晚于第一枚提交，所以任何一趟的取面时刻都与本文件不同代。
 
 ### 3.1 被消耗的对照控制臂：`consumed_control_rearm.py`（4 臂）
 
@@ -224,15 +229,23 @@ missing_model_rows=19 rows_in_declaring_provider=0 PASS=True`。与 step-0 的 1
 出厂 `.gitleaks.toml` 里大半是放行表文本，所以一次绿 `findings=0` 有两种成因。这台仪器把同一份暂存
 载荷扫三遍（出厂配置 / 剥掉全部放行表 / 内置规则集），再往同一棵树的一份副本里种一枚运行时生成的假
 key，要求同一套 argv 从 0 变 1；假字面量本身绝不打印（`G_planted_literal_not_carried`）。
-它在提交前跑，取面时刻早于本文件，所以：
+它跑两趟（index 模式在提交前、head 模式在提交后），取面时刻都早于或晚于本文件，所以：
 
 - `runs/wave31-step5-staged_payload_scan.txt` 是 index 模式面。**本节不转录它的 `count=`**，
   因为那一格的总体是"写本文件之前"的暂存区；读者按该载档 `A_staged_roster` 那行原样读。
   本波有意留在工作树、不进 index 的只有 `runs/chain_stdout.log`（`.gitignore:61 *.log`，
   `git check-ignore -v` 实测命中该行）。
 - commit 之后重跑 `--source head`（总体取自 `git diff-tree … HEAD`、字节取自 `git show HEAD:`），
-  写 `committed_payload_scan.txt`，那把才是含本文件与全部载档的收口面；它按 step-3/step-4 的既有
-  处置归档在**下一枚**提交里（一台仪器扫不到自己之后落盘的字节）。
+  写 `runs/wave31-step5-committed_payload_scan.txt`，那把才是含本文件与全部载档的收口面；它按
+  step-3/step-4 的既有处置归档在**下一枚**提交里（一台仪器扫不到自己之后落盘的字节）。
+  已执行：`committed_payload_scan_exit=0`，`A_committed_roster count=112`（`:14`）与
+  `git diff-tree --no-commit-id --name-only -r a70fb295f | wc -l` 实测的 112 枚对上，
+  `B_blobs_from_HEAD copied=112 of=112`（`:15`），`C/D/E findings=0`（`:16-18`），
+  `F_planted_control findings=1`（`:19`），`I` 臂仍读 `in_roster=False` 且
+  `head=worktree=022bd5186aa69c81`（`:22`），收口 `arms=10 arms_passed=10 all_pass=True`（`:23`）。
+  这一趟的总体是 `a70fb295f` 的字节，所以它扫到了上一趟扫不到的两样东西：它自己的载档
+  `staged_payload_scan.txt`，与改过之后的 `face.md`；两者都读 0。而它自己的落盘字节又落到下一枚提交，
+  这个递归是仪器定义的边界，不是缺陷：任何一趟的 `count=` 只能等于"该趟之前的那一代 payload"。
 - step-4 §7.12/§7.13 的两条教训都已编成门：`D_strip_actually_changed_config`（配置真被改过，否则
   "allowlist-free"是空话）与 `A_roster_nonempty_and_covers_code`（空总体上的相等是空真）。
   本波另加 `I_restored_carrier_clean_and_absent`：被还原的 C131 step-0 载档必须是 HEAD 字节且
@@ -484,7 +497,7 @@ docs/evidence/C101/<provider>/claims.json` → recorder 覆写该 provider 全�
 - `probes/c131_carrier_restore.py` —— 11 臂还原与无损面（§4.6），可重跑
 - `probes/staged_payload_scan.py` —— 凭证预扫，index 与 `--source head` 两种总体（§3.5）
 - `artifacts/superseded_receipts/` —— 8 枚无主早代 tmx receipt（§7.8），逐枚摘要见该节表列
-- `runs/`（35 把 `wave31-step5-` 前缀的载档，前缀在下列名字里一律省略；枚数由 `ls *.txt` 与
+- `runs/`（36 把 `wave31-step5-` 前缀的载档，前缀在下列名字里一律省略；枚数由 `ls *.txt` 与
   名表逐名对差实测，不是我锚 prose 的）：
 
   链路当代绿面：`producer`、`recorder`、`merge_take1`、`merge_take2`、`judge`、`judge_retake`、
@@ -493,7 +506,7 @@ docs/evidence/C101/<provider>/claims.json` → recorder 覆写该 provider 全�
   `receipt_pin_consistency`、`plane2_dev_done_axis_census`、`batch5_fence_dry_census`、`ruff_check`、
   `ruff_format`、`mypy`、`bandit`、`pytest_tmx_and_pin_planes`、`pytest_collect_denominator`、
   `landed_bytes_face`、`c131_carrier_restore`、`c131_plane2_face_aged_by_this_chain`、
-  `staged_payload_scan`。
+  `staged_payload_scan`、`committed_payload_scan`（27 把）。
 
   被取代的守卫代/旧常量代红面（不覆盖、不删）：`producer_take1_withdrawn_guard`、
   `recorder_take1_withdrawn_guard`、`merge_take1_withdrawn_guard`、`judge_take1_withdrawn_guard`、
@@ -515,7 +528,9 @@ docs/evidence/C101/<provider>/claims.json` → recorder 覆写该 provider 全�
   print(f"carriers={len(carriers)} with_exit={len(with_exit)} without_exit={len(carriers)-len(with_exit)}")
   ```
 
-  实测 `carriers=35 with_exit=30 without_exit=5`，不含退出行的正是下面这 5 把——
+  同一把尺跑过两代总体：index 模式那趟之后实测 `carriers=35 with_exit=30 without_exit=5`；
+  `--source head` 的收口载档落盘后复跑同一段代码实测 `carriers=36 with_exit=31 without_exit=5`。
+  不含退出行的两代都是同样这 5 把——
   `incomplete_row_guard_check_take1_withdrawn_guard`、`judge_take1_withdrawn_guard`、
   `merge_take1_withdrawn_guard`、`residue_axis_census_take1_consumed_control`、
   `residue_axis_census_take1_withdrawn_guard`。这 5 把是 shell 直接重定向的原始 stdout，
@@ -527,4 +542,7 @@ docs/evidence/C101/<provider>/claims.json` → recorder 覆写该 provider 全�
   非 0 退出实测 1 把：`batch5_fence_dry_census_exit=1`（设计内拒绝，§3.3）。
 
 **不提交**（有意留在工作树）：`runs/chain_stdout.log` —— 被 `.gitignore:61` 的 `*.log` 覆盖
-（`git check-ignore -v` 命中该行），它是链路的控制台回声，其内容逐腿都在上面 35 把载档里。
+（`git check-ignore -v` 命中该行），它是链路的控制台回声。两趟扫描的 `A–I` 读数与收口行都在载档里，
+但它另有一类行是载档没有的：`run_gitleaks()` 打到 stdout 的 4 行 `SCAN …`（含命中的规则 id 与
+gitleaks 自己的 stderr 尾行，见 §3.5 表下那条说明）。所以"回声 ⊂ 载档"这句对这台仪器不成立，
+本节只在 §3.5 引用它的规则 id，并标明那条不可复算。
