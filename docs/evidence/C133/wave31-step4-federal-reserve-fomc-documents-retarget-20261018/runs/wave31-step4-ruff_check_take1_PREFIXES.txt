@@ -1,0 +1,119 @@
+wave-31 step 4 -- ruff over the witness module, its shard part, the landed fetcher and the rebased handoff test
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m ruff check scripts/quality/iter2_witnesses/federal_reserve.py scripts/quality/iter2_witnesses/_parts/federal_reserve/rows_a.py opendata/data/providers/federal_reserve/models/fomc_documents.py tests/test_federal_reserve_iter2_models.py   (cwd = repo root, no pipes, PYTHONPATH=not set)
+stderr_bytes=0
+D205 1 blank line required between summary line and description
+  --> scripts/quality/iter2_witnesses/_parts/federal_reserve/rows_a.py:1:1
+   |
+ 1 | / """Wave 8 shard: offline witnesses for the seven federal_reserve rows that read workbook, CSV or
+ 2 | | SOMA JSON carriers.
+ 3 | |
+ 4 | | The base module withheld these rows because of the *body* its seam could hand over: the probe's
+ 5 | | engine path answers with ``HttpResponse(200, document)``, whose :attr:`~HttpResponse.payload` is
+ 6 | | always ``None``, and every one of these three declarations is delimited
+ 7 | | (``DecoderSpec(kind="csv")`` for H.6, H.15 and the FEDS wide table), so a delimited declaration
+ 8 | | answered :attr:`payload` with ``FEDERAL_RESERVE_PAYLOAD_MISSING`` -- the fixture's missing bytes,
+ 9 | | not a contract refusal. Wave 8's ``client_seam`` capability closes exactly that: the engine's own
+10 | | production transport (:func:`opendata.data.providers._engine.http_json._http_get_json`) resolves
+11 | | ``get_shared_http_client`` from :mod:`opendata.data.http_client` *inside the request method*, so
+12 | | patching that one module attribute routes the real transport through the fixture, and a delimited
+13 | | declaration gets a genuine ``response.content``. The declared seam is therefore
+14 | | ``opendata.data.http_client`` for the three engine rows and
+15 | | ``opendata.data.providers.federal_reserve._iter2_client`` for the four hand-written rows, which
+16 | | read the same attribute at module level. Nothing here replaces a fetch stage: the shipped decoders,
+17 | | value transforms, row models and refusal sites are the code under test, and no leg can open a
+18 | | socket (the runner blocks sockets by construction).
+19 | |
+20 | | Every ``expected_*`` face below was read off the *contract*, not off a run:
+21 | |
+22 | | * ``TreasuryRates`` -- the frozen H.15 row model
+23 | |   (:mod:`opendata.data.models.federal_reserve_clean_rates`) makes every tenor a
+24 | |   ``float | None`` and the declaration spells the published missing-data token ``ND`` as a
+25 | |   ``null_sentinel``, so the only thing that can reach a tenor cell is decimal text. The tamper
+26 | |   rewrites one data row's ``RIFLGFCY10_N.B`` cell to non-numeric text; the engine builds the row
+27 | |   model, pydantic refuses the field, and the shipped attribution is
+28 | |   ``FEDERAL_RESERVE_SHAPE_INVALID`` with ``rejected=(column name,)`` -- the contract field name
+29 | |   ``year_10``, which is what this entry declares. (``http_json.py:790-796``.)
+30 | | * ``MoneyMeasures`` -- ``m1``/``m2`` are declared ``required=True, nullable=False`` precisely
+31 | |   because the contract makes them non-nullable floats and no sentinel is declarable on them, so a
+32 | |   corrupt ``M2_N.M`` cell must be refused as ``rejected=('m2',)`` rather than nulled.
+33 | | * ``SvenssonYieldCurve`` -- all 99 series fields of the reviewed row are ``float | None`` and the
+34 | |   sentinel list spells only the four published texts, so any other text in a ``SVENY10`` cell is
+35 | |   outside the documented shape and refuses as ``rejected=('sveny10',)``.
+36 | | * ``CentralBankHoldings``, ``InflationExpectations``, ``TotalFactorProductivity`` -- these refuse
+37 | |   through this provider's own typed, code-bearing error ``FederalReserveSourceError`` (a
+38 | |   ``ProviderEngineError`` subclass with a ``status`` face), which is code-only: the numeric guards
+39 | |   :func:`parse_decimal` / :func:`parse_float` deliberately do not attribute a column, so all
+40 | |   three attribution faces stay empty, exactly as branch B requires.
+41 | | * ``YieldCurve`` -- the same code-only shape, and the row wave 28 retargeted onto its own contract:
+42 | |   :file:`models/yield_curve.py` now builds the class ``domains.yaml`` names for the domain,
+43 | |   ``FederalReserveYieldCurveObservation``, whose ``rate`` is a ``float | None`` reachable only
+44 | |   through the published ``ND`` token or a blank cell, so prose in a ``RIFLGFCY10_N.B`` cell refuses
+45 | |   as ``FEDERAL_RESERVE_BAD_NUMERIC_VALUE`` and names no column.
+46 | |
+47 | | All eight assigned rows are witnessed here. ``FomcDocuments`` was the row wave 8 withheld on the
+48 | | provider's look-alike contract defect: ``models/fomc_documents.py`` built
+49 | | ``opendata.data.models.federal_reserve_macro.FederalReserveFomcDocument`` while
+50 | | ``contract_model('federal_reserve_fomc_documents')`` resolves to
+51 | | ``opendata.data.models.federal_reserve_clean_documents.FederalReserveFomcDocument`` -- same name,
+52 | | different module, different fields -- so declaring either class as ``row_model`` either tripped
+53 | | ``tests/test_federal_reserve_iter2_models.py:392-413`` or hid the defect. Wave 31 step 4 settled the
+54 | | published face (ruling #68: the five fields ``domains.yaml`` declares, not the macro class's seven)
+55 | | and retargeted the reader onto it, which is what lets this entry exist. Its rows are therefore
+56 | | ``date``/``doc_type``/``doc_format``/``url`` plus a ``release_date`` this index page does not state;
+57 | | the year, title and meeting heading the look-alike carried are classification input, not output.
+58 | | Faces: ``docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/``.
+59 | |
+60 | | ``YieldCurve`` was the second row withheld this way and no longer is. The wording above used to call
+61 | | it a same-name pair like ``FomcDocuments``; the instrument measured the opposite -- the look-alike
+62 | | ``federal_reserve_macro.FederalReserveYieldCurve`` and the contract
+63 | | ``federal_reserve_clean_documents.FederalReserveYieldCurveObservation`` differ in name
+64 | | (``names_equal=False``) and agree only on their field face (``field_face_equal=True``, ``date`` /
+65 | | ``maturity`` / ``rate`` in both). Retargeting the reader to the declared contract is what let the
+66 | | frozen guard ``tests/test_federal_reserve_iter2_models.py:392-413`` hold for it, and the guard's
+67 | | discriminating power was shown by forging the look-alike back into ``row_model`` in memory: the
+68 | | check goes false and restores true. See
+69 | | ``docs/evidence/C128/plane1-residue-readiness-20261017/probes/fed_h15_official_shape_price.py``.
+70 | |
+71 | | Witnesses run exclusively through the offline seam. No leg touches the network and no
+72 | | ``OPENDATA_ALLOW_LIVE_E2E`` path is enabled.
+73 | | """
+   | |___^
+74 |
+75 |   from __future__ import annotations
+   |
+help: Insert single blank line
+
+PERF401 Use `list.extend` to create a transformed list
+   --> scripts/quality/iter2_witnesses/_parts/federal_reserve/rows_a.py:252:9
+    |
+250 |     cells = [timestamp]
+251 |     for index in range(len(SVENSSON_SERIES_KEYS)):
+252 |         cells.append("" if index in blanks else f"{2.0 + index / 100:.4f}")
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+253 |     return ",".join(cells)
+    |
+help: Replace for loop with list.extend
+
+E501 Line too long (102 > 100)
+   --> scripts/quality/iter2_witnesses/_parts/federal_reserve/rows_a.py:429:101
+    |
+428 | def _fed_fomc_documents_envelope() -> dict[str, Any]:
+429 |     """The FOMC index page the bound reader parses to ``date``/``doc_type``/``doc_format``/``url``."""
+    |                                                                                                     ^^
+430 |     return {
+431 |         "responses": [
+    |
+
+E501 Line too long (101 > 100)
+   --> scripts/quality/iter2_witnesses/_parts/federal_reserve/rows_a.py:691:101
+    |
+689 |             "the retargeted index reader keeps only official ``/monetarypolicy/`` links whose URL "
+690 |             "carries an 8-digit date, spells the contract's ``date`` field from it and drops any "
+691 |             "link whose day does not exist, so a statement URL published as FOMC20241340 (month 13, "
+    |                                                                                                     ^
+692 |             "day 40) is not a meeting the Board held and must refuse as "
+693 |             "FEDERAL_RESERVE_BAD_FOMC_DOCUMENT_DATE rather than publish a document row with an "
+    |
+
+Found 4 errors.
+ruff_check_exit=1

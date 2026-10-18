@@ -1,0 +1,14 @@
+wave-31 step 4 -- the retarget priced against the two frozen federal_reserve tests, in memory
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/probes/fomc_retarget_cost_face.py
+   (cwd = repo root, no pipes, PYTHONPATH=.; imports tests/ on sys.path; nothing on disk is
+    patched, and _MODELS is restored in a finally block)
+stderr_bytes=0
+A_guard_today=test_declared_row_models_are_their_domain_contracts row=federal_reserve::FomcDocuments exit_ok=True declaring_models=12 this_row_declaring=False failure_line=- failure_lineno=0 PASS=True
+B_guard_macro=shipped_row_model=None forged_look_alike_predicate=False emitted=builtins.list PASS=True
+C_guard_contract=forged_contract_predicate value=True contract=opendata.data.models.federal_reserve_clean_documents.FederalReserveFomcDocument PASS=True
+D_handoff_control=test_integration_handoff_semantics_reference_typed_contract_fields models_entry=opendata.data.models.federal_reserve_macro.FederalReserveFomcDocument exit_ok=True restored_after_swap=True failure_line=- failure_lineno=0 PASS=True
+E_handoff_after_swap=entry_moved_to=contract_class exit_ok=False failure_line=assert set(semantic_fields) <= contract_fields failure_lineno=388 PASS=True
+F_staleness_attributed=published=['date', 'doc_format', 'doc_type', 'url'] contract_fields=['date', 'doc_format', 'doc_type', 'release_date', 'url'] published_missing_from_contract=[] handoff_entry_names=['document_date', 'document_type', 'format', 'url'] stale_in_handoff=['document_date', 'document_type', 'format'] handoff_file_tracked_rc=1 PASS=True
+COST_RULING=handoff_test_red_after_retarget=True guard_test_red_after_retarget=False reading=the handoff entry is a C100 historical artifact whose semantic field names are the look-alike's; the shipped domain publishes the contract's
+retarget_cost_face=arms=6 arms_passed=6 gates={'A_guard_today': True, 'B_guard_macro': True, 'C_guard_contract': True, 'D_handoff_control': True, 'E_handoff_after_swap': True, 'F_staleness_attributed': True} all_pass=True
+fomc_retarget_cost_face_exit=0

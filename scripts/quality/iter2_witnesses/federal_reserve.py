@@ -31,16 +31,16 @@ provider's two ``service`` claims were reporting. The New York Fed primary-deale
 the engine's ``HttpGet`` seam. Their refusals are this provider's own sanitized source codes,
 which the probe reads as ``ProviderEngineError`` faces because ``FederalReserveSourceError`` now
 carries that family beside the ``ValueError`` it has always been; both are code-only, so neither
-entry declares attributed detail. The seven further bound rows are witnessed by this provider's
+entry declares attributed detail. The eight further bound rows are witnessed by this provider's
 shard :file:`_parts/federal_reserve/rows_a.py`: ``TreasuryRates``, ``MoneyMeasures`` and
 ``SvenssonYieldCurve`` through the ``opendata.data.http_client`` seam and ``CentralBankHoldings``,
-``InflationExpectations``, ``TotalFactorProductivity`` and -- since wave 28 retargeted its reader
-onto the class its own domain declares -- ``YieldCurve`` through the ``_iter2_client`` seam, for
-the body-shape reason the paragraph above records. Only ``FomcDocuments`` stays unwitnessed: it
-reads an HTML index, and its fetcher still builds a look-alike of the contract its domain declares,
-so naming either class as ``row_model`` either trips
-``tests/test_federal_reserve_iter2_models.py:392-413`` or hides the defect -- the ruling its shard
-header records.
+``InflationExpectations``, ``TotalFactorProductivity``, ``YieldCurve`` and ``FomcDocuments`` through
+the ``_iter2_client`` seam -- the last two because a wave retargeted their readers onto the class
+their own domain declares (wave 28 for the H.15 long table, wave 31 for the FOMC HTML index), for
+the body-shape reason the paragraph above records. ``FomcDocuments`` is the one row here served an
+``text/html`` carrier rather than a JSON or CSV body: the index reader keeps only the official
+``/monetarypolicy/`` links whose URL spells an 8-digit document date, so its tamper corrupts that
+date rather than a cell, and its refusal is ``FEDERAL_RESERVE_BAD_FOMC_DOCUMENT_DATE``.
 
 Witnesses run exclusively through the offline seam (the engine's ``transport`` / the fetchers'
 ``http_transport``) served by ``FixedResponseTransport``. No leg touches the network and no

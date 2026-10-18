@@ -1,0 +1,13 @@
+wave-31 step 4 -- FomcDocuments published-field ruling, measured before the retarget
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/probes/fomc_documents_retarget_prevalidation.py
+   (cwd = repo root, no pipes, PYTHONPATH=.; no shipped file is written by this probe)
+stderr_bytes=0
+A_contract_face=federal_reserve_fomc_documents resolver=opendata.data.models.federal_reserve_clean_documents.FederalReserveFomcDocument contract_fields=5 contract_required=4 time_field=date natural_key=('date', 'doc_type', 'doc_format', 'url') filter_dims=('doc_type', 'doc_format') semantic_missing=[] PASS=True
+B_emitted_face=FomcDocuments fetcher=opendata.data.providers.federal_reserve.models.fomc_documents.FederalReserveFomcDocumentsFetcher rows=1 emitted=opendata.data.models.federal_reserve_macro.FederalReserveFomcDocument emitted_fields=7 classifier_is_contract=False classifier_look_alike=True classifier_emitted=['opendata.data.models.federal_reserve_macro.FederalReserveFomcDocument'] PASS=True
+C_verdict_prediction=now=ROW_CLASS_NOT_CONTRACT sim_after_retarget=DOCUMENT_REACHABLE now_trippable=False sim_trippable=True readings_differ=True flipped_keys=declared,is_contract,declared_is_contract PASS=True
+D_guard_arms=shipped_declares_nothing=True forged_macro_holds=False forged_contract_holds=True guard_declaring_fetchers=12 this_row_in_declaring=False PASS=True
+E_row_buildability=built=FederalReserveFomcDocument unset_required=[] dropped_by_retarget=['document_date', 'document_type', 'format', 'meeting_range', 'title', 'year'] added_by_retarget=['date', 'doc_format', 'doc_type', 'release_date'] shared=['url'] contract_extra_policy=forbid macro_only_field_reaccepted=REFUSED PASS=True
+F_population=report_rows=350 judged=350 incomplete=24 accepted=289 this_row_status=INCOMPLETE PASS=True
+RULING=published_face=5_contract_fields emitted_face=7 verdict_move=ROW_CLASS_NOT_CONTRACT -> DOCUMENT_REACHABLE reason=the_service_serializes_against(contract_model(domain))
+rearm_face=arms=6 arms_passed=6 gates={'A_contract_face': True, 'B_emitted_face': True, 'C_verdict_prediction': True, 'D_guard_arms': True, 'E_row_buildability': True, 'F_population': True} all_pass=True
+fomc_documents_retarget_prevalidation_exit=0

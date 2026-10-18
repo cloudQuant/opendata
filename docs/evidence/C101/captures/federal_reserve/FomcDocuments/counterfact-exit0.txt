@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FomcDocuments --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "FederalReserveSourceError", "refusal_code": "FEDERAL_RESERVE_BAD_FOMC_DOCUMENT_DATE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "FederalReserveSourceError", "refusal_code": "FEDERAL_RESERVE_BAD_FOMC_DOCUMENT_DATE", "rejected": [], "status": null}, "reason": "the retargeted index reader keeps only official ``/monetarypolicy/`` links whose URL carries an 8-digit date, spells the contract's ``date`` field from it and drops any link whose day does not exist, so a statement URL published as FOMC20241340 (month 13, day 40) is not a meeting the Board held and must refuse as FEDERAL_RESERVE_BAD_FOMC_DOCUMENT_DATE rather than publish a document row with an invented date; the guard attributes no column, so all three detail faces stay empty; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

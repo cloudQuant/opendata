@@ -1,0 +1,28 @@
+wave-31 step 4 -- mypy over the witness module, the landed fetcher and the handoff test
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m mypy scripts/quality/iter2_witnesses/federal_reserve.py opendata/data/providers/federal_reserve/models/fomc_documents.py tests/test_federal_reserve_iter2_models.py   (cwd = repo root, no pipes, PYTHONPATH=not set)
+stderr_bytes=0
+tests/test_federal_reserve_iter2_models.py:169: error: Invalid index type "type[Any]" for "dict[ModelMetaclass, str]"; expected type "ModelMetaclass"  [index]
+tests/test_federal_reserve_iter2_models.py:184: error: Argument "temporal_kind" to "DomainSpec" has incompatible type "str"; expected "Literal['series', 'snapshot', 'event', 'document'] | None"  [arg-type]
+tests/test_federal_reserve_iter2_models.py:241: error: Function is missing a type annotation for one or more parameters  [no-untyped-def]
+tests/test_federal_reserve_iter2_models.py:419: error: "type[Fetcher[Any, Any]]" has no attribute "row_model"  [attr-defined]
+tests/test_federal_reserve_iter2_models.py:421: error: "type[Fetcher[Any, Any]]" has no attribute "row_model"  [attr-defined]
+tests/test_federal_reserve_iter2_models.py:498: error: Argument 1 to "len" has incompatible type "object"; expected "Sized"  [arg-type]
+tests/test_federal_reserve_iter2_models.py:499: error: Value of type "object" is not indexable  [index]
+tests/test_federal_reserve_iter2_models.py:585: error: Value of type "object" is not indexable  [index]
+tests/test_federal_reserve_iter2_models.py:598: error: Incompatible types in assignment (expression has type "FederalReserveInflationExpectationsFetcher", variable has type "FederalReserveYieldCurveFetcher")  [assignment]
+tests/test_federal_reserve_iter2_models.py:602: error: Incompatible types in assignment (expression has type "FederalReserveTotalFactorProductivityFetcher", variable has type "FederalReserveYieldCurveFetcher")  [assignment]
+tests/test_federal_reserve_iter2_models.py:673: error: Argument 1 to "normalize_primary_dealer_records" has incompatible type "tuple[str]"; expected "tuple[RawPrimaryDealerRecord, ...]"  [arg-type]
+tests/test_federal_reserve_iter2_models.py:676: error: Unused "type: ignore" comment  [unused-ignore]
+tests/test_federal_reserve_iter2_models.py:679: error: Incompatible types in assignment (expression has type "CentralBankHoldingsQuery", variable has type "PrimaryDealerQuery")  [assignment]
+tests/test_federal_reserve_iter2_models.py:681: error: Argument 2 to "transform_data" of "FederalReserveCentralBankHoldingsFetcher" has incompatible type "PrimaryDealerQuery"; expected "CentralBankHoldingsQuery"  [arg-type]
+tests/test_federal_reserve_iter2_models.py:683: error: Incompatible types in assignment (expression has type "FederalReserveFomcDocumentsFetcher", variable has type "FederalReserveCentralBankHoldingsFetcher")  [assignment]
+tests/test_federal_reserve_iter2_models.py:684: error: Incompatible types in assignment (expression has type "CentralBankHoldingsQuery", variable has type "PrimaryDealerQuery")  [assignment]
+tests/test_federal_reserve_iter2_models.py:687: error: Argument 2 to "transform_data" of "FederalReserveCentralBankHoldingsFetcher" has incompatible type "PrimaryDealerQuery"; expected "CentralBankHoldingsQuery"  [arg-type]
+tests/test_federal_reserve_iter2_models.py:698: error: Function is missing a type annotation for one or more parameters  [no-untyped-def]
+tests/test_federal_reserve_iter2_models.py:751: error: Function is missing a type annotation for one or more parameters  [no-untyped-def]
+tests/test_federal_reserve_iter2_models.py:825: error: "append" of "list" does not return a value (it only ever returns None)  [func-returns-value]
+tests/test_federal_reserve_iter2_models.py:872: error: Argument "category" to "fetch_primary_dealer_series" has incompatible type "str"; expected "Literal['fails', 'position']"  [arg-type]
+tests/test_federal_reserve_iter2_models.py:873: error: Unused "type: ignore" comment  [unused-ignore]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor.*']
+Found 22 errors in 1 file (checked 3 source files)
+mypy_exit=1

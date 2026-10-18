@@ -1,5 +1,4 @@
-"""Wave 8 shard: offline witnesses for the seven federal_reserve rows that read workbook, CSV or
-SOMA JSON carriers.
+"""Wave 8 shard: the eight federal_reserve rows that read workbook, CSV, SOMA JSON or HTML carriers.
 
 The base module withheld these rows because of the *body* its seam could hand over: the probe's
 engine path answers with ``HttpResponse(200, document)``, whose :attr:`~HttpResponse.payload` is
@@ -44,16 +43,18 @@ Every ``expected_*`` face below was read off the *contract*, not off a run:
   through the published ``ND`` token or a blank cell, so prose in a ``RIFLGFCY10_N.B`` cell refuses
   as ``FEDERAL_RESERVE_BAD_NUMERIC_VALUE`` and names no column.
 
-One of the eight assigned rows is NOT witnessed here, and the reason is the provider's look-alike
-contract defect rather than a missing fixture, so per the wave rules the contract, the domain yaml
-and the fetcher's row construction stay untouched:
-
-* ``FomcDocuments`` -- ``opendata/data/providers/federal_reserve/models/fomc_documents.py:14``
-  builds ``opendata.data.models.federal_reserve_macro.FederalReserveFomcDocument`` while
-  ``contract_model('federal_reserve_fomc_documents')`` resolves to
-  ``opendata.data.models.federal_reserve_clean_documents.FederalReserveFomcDocument``: same name,
-  different module, different fields. Declaring either class as ``row_model`` either trips
-  ``tests/test_federal_reserve_iter2_models.py:392-413`` or hides the defect.
+All eight assigned rows are witnessed here. ``FomcDocuments`` was the row wave 8 withheld on the
+provider's look-alike contract defect: ``models/fomc_documents.py`` built
+``opendata.data.models.federal_reserve_macro.FederalReserveFomcDocument`` while
+``contract_model('federal_reserve_fomc_documents')`` resolves to
+``opendata.data.models.federal_reserve_clean_documents.FederalReserveFomcDocument`` -- same name,
+different module, different fields -- so declaring either class as ``row_model`` either tripped
+``tests/test_federal_reserve_iter2_models.py:392-413`` or hid the defect. Wave 31 step 4 settled the
+published face (ruling #68: the five fields ``domains.yaml`` declares, not the macro class's seven)
+and retargeted the reader onto it, which is what lets this entry exist. Its rows are therefore
+``date``/``doc_type``/``doc_format``/``url`` plus a ``release_date`` this index page does not state;
+the year, title and meeting heading the look-alike carried are classification input, not output.
+Faces: ``docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/``.
 
 ``YieldCurve`` was the second row withheld this way and no longer is. The wording above used to call
 it a same-name pair like ``FomcDocuments``; the instrument measured the opposite -- the look-alike
@@ -246,8 +247,10 @@ def _money_measures_first_row(m2: str) -> str:
 def _svensson_row(timestamp: str, *, blanks: tuple[int, ...] = ()) -> str:
     """One FEDS wide-table row: the ``Date`` cell plus one cell per published series token."""
     cells = [timestamp]
-    for index in range(len(SVENSSON_SERIES_KEYS)):
-        cells.append("" if index in blanks else f"{2.0 + index / 100:.4f}")
+    cells.extend(
+        "" if index in blanks else f"{2.0 + index / 100:.4f}"
+        for index in range(len(SVENSSON_SERIES_KEYS))
+    )
     return ",".join(cells)
 
 
@@ -402,6 +405,43 @@ def _fed_central_bank_holdings_envelope() -> dict[str, Any]:
             }
         ]
     }
+
+
+#: The official statement-anchor shape and the document date it publishes. Line 2 of the index slice
+#: below is this anchor, so the tamper rewrites the cell the reader's date guard parses.
+_FOMC_STATEMENT_ANCHOR: Final[str] = (
+    '<a href="/monetarypolicy/files/FOMC{date}statement.pdf">Statement for New Release</a>'
+)
+_FOMC_DOCUMENT_DATE: Final[str] = "20240612"
+#: A slice of the Board's published meeting index: one heading, two date-addressable document links,
+#: and one year page whose ``fomchistorical2024`` token carries no 8-digit document date, so the
+#: reader's date filter has to drop it.
+_FOMC_INDEX_LINES: Final[tuple[str, ...]] = (
+    "<html>",
+    "<h5>June 11-12 Meeting - 2024</h5>",
+    _FOMC_STATEMENT_ANCHOR.format(date=_FOMC_DOCUMENT_DATE),
+    '<a href="/monetarypolicy/files/FOMC20240612minutes.pdf">Minutes</a>',
+    '<a href="/monetarypolicy/fomchistorical2024.htm">2024 meeting archive</a>',
+    "</html>",
+)
+
+
+def _fed_fomc_documents_envelope() -> dict[str, Any]:
+    """The FOMC index page the bound reader parses into ``date``/``doc_type``/``doc_format``."""
+    return {
+        "responses": [
+            {
+                "url_contains": "fomccalendars.htm",
+                "content_type": "text/html",
+                "body": list(_FOMC_INDEX_LINES),
+            }
+        ]
+    }
+
+
+def _fomc_statement_link(document_date: str) -> str:
+    """The statement anchor with its official URL's 8-digit document date replaced."""
+    return _FOMC_STATEMENT_ANCHOR.format(date=document_date)
 
 
 _HTTP_CLIENT_SEAM: Final[dict[str, Any]] = {
@@ -629,6 +669,33 @@ MODELS: Final[dict[str, dict[str, Any]]] = {
         ),
         "source_files": [
             "opendata/data/providers/federal_reserve/models/yield_curve.py",
+            _ITER2_CLIENT,
+            _ITER2_COMMON,
+        ],
+        "contract_files": [_CLEAN_DOCUMENTS, _DOMAINS],
+    },
+    "FomcDocuments": {
+        "client_seam": _ITER2_CLIENT_SEAM,
+        "fixture_document": _fed_fomc_documents_envelope,
+        "query": {"year": 2024},
+        "tamper": {
+            "op": "set",
+            "path": ["responses", 0, "body", 2],
+            "value": _fomc_statement_link("20241340"),
+            "column": "date",
+        },
+        "refusal_class": "FederalReserveSourceError",
+        "refusal_code": "FEDERAL_RESERVE_BAD_FOMC_DOCUMENT_DATE",
+        "tamper_reason": (
+            "the retargeted index reader keeps only official ``/monetarypolicy/`` links whose URL "
+            "carries an 8-digit date, spells the contract's ``date`` field from it and drops any "
+            "link whose day does not exist, so a statement URL published as FOMC20241340 "
+            "(month 13, day 40) is not a meeting the Board held and must refuse as "
+            "FEDERAL_RESERVE_BAD_FOMC_DOCUMENT_DATE rather than publish a document row with an "
+            "invented date; the guard attributes no column, so all three detail faces stay empty"
+        ),
+        "source_files": [
+            "opendata/data/providers/federal_reserve/models/fomc_documents.py",
             _ITER2_CLIENT,
             _ITER2_COMMON,
         ],

@@ -4,14 +4,16 @@ from __future__ import annotations
 
 import re
 from datetime import date
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
 from pydantic import Field, StrictInt
 
 from opendata.data.capability import Capability
-from opendata.data.models.federal_reserve_macro import FederalReserveFomcDocument
+from opendata.data.models.federal_reserve_clean_documents import (
+    FederalReserveFomcDocument,
+)
 from opendata.data.protocol import FetchContext, Fetcher
 from opendata.data.providers.federal_reserve._iter2_client import (
     FederalReserveSourceError,
@@ -20,6 +22,9 @@ from opendata.data.providers.federal_reserve._iter2_client import (
 from opendata.data.providers.federal_reserve.models._iter2_common import (
     FederalReserveDateQuery,
 )
+
+if TYPE_CHECKING:
+    from opendata.data.models.base import ContractModel
 
 _FED_HOST = "www.federalreserve.gov"
 _CALENDAR_URL = "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
@@ -62,15 +67,6 @@ def _document_type(title: str, url: str) -> str:
     return "other_fomc_document"
 
 
-def _meeting_range(anchor: object) -> str | None:
-    """Carry the nearest official meeting heading when the index exposes one."""
-    heading = anchor.find_previous(["h4", "h5", "h6"])  # type: ignore[attr-defined]
-    if heading is None:
-        return None
-    text = " ".join(heading.get_text(" ", strip=True).split())
-    return text or None
-
-
 class FederalReserveFomcDocumentsFetcher(Fetcher[FomcDocumentsQuery, str]):
     """Enumerate date-addressable FOMC links from the Board's official index pages."""
 
@@ -84,6 +80,12 @@ class FederalReserveFomcDocumentsFetcher(Fetcher[FomcDocumentsQuery, str]):
         source="federal_reserve",
         verified=False,
     )
+    #: The contract ``domains.yaml`` declares for this domain — the governed query service
+    #: serializes rows against it, so :meth:`transform_data` has to build exactly this class.
+    #: ``federal_reserve_macro`` publishes a same-named 7-field look-alike; the five fields here are
+    #: the published face (``date``/``doc_type``/``doc_format``/``url`` plus an optional
+    #: ``release_date``) and the index page states no release date, so it stays unset.
+    row_model: ClassVar[type[ContractModel]] = FederalReserveFomcDocument
 
     def transform_query(self, **kwargs: object) -> FomcDocumentsQuery:
         """Validate year and optional inclusive document-date bounds."""
@@ -140,17 +142,14 @@ class FederalReserveFomcDocumentsFetcher(Fetcher[FomcDocumentsQuery, str]):
                 document_format = "html"
             normalized_url = parsed_url._replace(fragment="").geturl()
             rows[normalized_url] = FederalReserveFomcDocument(
-                year=params.year,
-                document_date=document_date,
-                title=title,
-                document_type=_document_type(title, normalized_url),
-                format=document_format,
+                date=document_date,
+                doc_type=_document_type(title, normalized_url),
+                doc_format=document_format,
                 url=normalized_url,
-                meeting_range=_meeting_range(anchor),
             )
             if len(rows) > params.max_records:
                 raise FederalReserveSourceError("FEDERAL_RESERVE_TOO_MANY_RECORDS")
-        return tuple(sorted(rows.values(), key=lambda item: (item.document_date, item.url)))
+        return tuple(sorted(rows.values(), key=lambda item: (item.date, item.url)))
 
 
 __all__ = ["FederalReserveFomcDocumentsFetcher", "FomcDocumentsQuery"]

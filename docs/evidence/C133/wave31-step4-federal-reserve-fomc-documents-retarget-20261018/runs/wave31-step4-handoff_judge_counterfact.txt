@@ -1,0 +1,19 @@
+wave-31 step 4 -- the re-based handoff judge priced by forging each failure it must have: look-alike restored, semantic drift, population pin, retired comparison, restore
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/probes/handoff_judge_counterfact.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+wave-31 step 4 -- the re-based handoff judge, priced by forging each failure it must have
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/probes/handoff_judge_counterfact.py
+   (cwd = repo root, no pipes, PYTHONPATH=.; the shipped test function is called, never
+    copied; _MODELS and require_domain_semantics are restored in a finally block)
+stderr_bytes=0
+A_shipped_green=test_integration_handoff_semantics_reference_typed_contract_fields exit_ok=True failure_line=- failure_lineno=0 PASS=True
+B_look_alike_reddens=row_model_forged_back_to=federal_reserve_macro exit_ok=False failure_line=assert contracts_by_name[shipped.__name__] is shipped, domain failure_lineno=391 PASS=True
+C_semantic_drift_reddens=tampered_time_field_on=federal_reserve_fomc_documents control_untampered_exit_ok=True control_domains_looped=7 drift_domains_looped=7 domains_in_handoff=7 table_entries=7 exit_ok=False failure_line=assert set(semantic_fields) <= set(shipped.model_fields), domain failure_lineno=398 PASS=True
+D_population_pinned=models_table_entry_deleted=FomcDocuments exit_ok=False failure_line=assert set(handoff["domains"]) == { failure_lineno=382 PASS=True
+E_retired_comparison_recorded=handoff_names=['document_date', 'document_type', 'format', 'url'] missing_on_shipped_contract=['document_date', 'document_type', 'format'] missing_on_look_alike=[] reading=the retired check was green only while the table imported the look-alike, so a green there measured the defect and not the contract PASS=True
+F_restored_green=swap_undone=True exit_ok=True failure_line=- failure_lineno=0 PASS=True
+JUDGE_RULING=live_faces_priced=imported_class_is_resolved_contract+shipped_semantics_are_contract_fields retired_face=handoff_spellings_vs_resolved_class all_arms_pass=True
+handoff_judge_counterfact=arms=6 arms_passed=6 gates={'A_shipped_green': True, 'B_look_alike_reddens': True, 'C_semantic_drift_reddens': True, 'D_population_pinned': True, 'E_retired_comparison_recorded': True, 'F_restored_green': True} all_pass=True
+handoff_judge_counterfact_exit=0
+carrier_written bytes=2182 path=docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/runs/wave31-step4-handoff_judge_counterfact.txt
+handoff_judge_counterfact_exit=0

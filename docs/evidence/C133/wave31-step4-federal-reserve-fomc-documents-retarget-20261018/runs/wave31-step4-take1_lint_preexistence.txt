@@ -1,0 +1,16 @@
+wave-31 step 4 -- take-1's four ruff findings attributed to HEAD versus introduced by this wave, by running the shipped ruff over scripts/quality/iter2_witnesses/_parts/federal_reserve/rows_a.py as git-show bytes and as worktree bytes
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/probes/take1_lint_preexistence.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+commands_run: argv-list git show HEAD:<target> (bytes handed to stdin in-process), then argv-list /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m ruff check --output-format concise --stdin-filename scripts/quality/iter2_witnesses/_parts/federal_reserve/rows_a.py -; no shell pipeline is used
+A_head_findings codes={'D205': 1, 'PERF401': 1} hits=['D205@1:1', 'PERF401@250:9']
+B_forged B1_token_run_comment chars=120 E501_delta=0 hits=['D205@1:1', 'PERF401@250:9']
+B_forged B2_long_string_statement chars=116 E501_delta=1 hits=['D205@1:1', 'PERF401@250:9', 'E501@638:101']
+B_reading=B2 is the shape take-1 charged, so arm A's E501 zero is a real zero; B1 shows a different overlong shape is exempted, which is why a control must match the charged shape
+C_take1_face codes={'D205': 1, 'E501': 2, 'PERF401': 1}
+D_attribution take1_minus_head={'E501': 2} head_minus_take1={} reading=the E501 pair is this wave's own text; D205 and PERF401 predate it
+E_after_state worktree_codes={} hits=[] head_lines=637 worktree_lines=704
+F_green_carrier first_line='wave-31 step 4 -- ruff over the witness module, its shard '
+G_self_lint bytes=11122 codes={} hits=[] reading=the same channel that charges the wave must charge this probe
+PREEXISTENCE_RULING head_pre_existing=2 introduced_by_this_wave=2 cleared_here=4 take1_total=4 worktree_now=0 detector=ruff check over git-show bytes (same rule config, same stdin-filename path)
+preexistence_face=arms=12 arms_passed=12 gates={'A_head_carries_two_of_four': True, 'B2_detector_live_on_the_charged_shape': True, 'B1_other_shape_exemption_recorded': True, 'C_take1_has_four_findings': True, 'D_introduced_by_wave_is_exactly_two_E501': True, 'E_nothing_fixed_was_invented_by_this_wave': True, 'F_worktree_cleared_every_code': True, 'G_shipped_green_carrier_agrees': True, 'H_head_and_worktree_are_different_bytes': True, 'G_probe_itself_rule_clean': True, 'I_git_show_retired_zero': True, 'J_every_parse_agrees_with_ruffs_own_count': True} all_pass=True
+take1_lint_preexistence_exit=0

@@ -14,8 +14,9 @@ from typing import Any
 import pytest
 from openpyxl import Workbook
 
-from opendata.data.domains import DomainSpec, contract_model
+from opendata.data.domains import DomainSpec, contract_model, require_domain_semantics
 from opendata.data.models.federal_reserve_clean_documents import (
+    FederalReserveFomcDocument,
     FederalReserveYieldCurveObservation,
 )
 from opendata.data.models.federal_reserve_clean_nyfed import (
@@ -24,7 +25,6 @@ from opendata.data.models.federal_reserve_clean_nyfed import (
 )
 from opendata.data.models.federal_reserve_macro import (
     FederalReserveCentralBankHolding,
-    FederalReserveFomcDocument,
     FederalReserveInflationExpectations,
     FederalReserveTotalFactorProductivity,
 )
@@ -174,7 +174,7 @@ def _domain_spec(domain: str, model_type: type[Any]) -> DomainSpec:
         "CentralBankHoldings": ("date", ("date", "security_type", "cusip")),
         "InflationExpectations": ("date", ("date",)),
         "TotalFactorProductivity": ("period", ("period", "vintage_date")),
-        "FomcDocuments": ("document_date", ("url",)),
+        "FomcDocuments": ("date", ("date", "doc_type", "doc_format", "url")),
     }[model_name]
     temporal = "document" if model_type is FederalReserveFomcDocument else "series"
     return DomainSpec(
@@ -348,6 +348,22 @@ _MODELS = {
 
 
 def test_integration_handoff_semantics_reference_typed_contract_fields() -> None:
+    """Read the handoff for its domain population, then price every face off the shipped registry.
+
+    The C100 artifact recorded what each leg emitted when the handoff was written, so its class
+    names and its semantic-field spellings both go stale when a leg is retargeted (wave 28 for the
+    H.15 reader, wave 31 for the FOMC index). Neither is recoverable as a resolution key here, and
+    the reason the FOMC row hid for six waves is the second one: ``federal_reserve_macro`` and
+    ``federal_reserve_clean_documents`` publish the *same* class name
+    ``FederalReserveFomcDocument``, so a name that is present in this module's table can still be
+    the wrong class. What is priced now is the live pair the governed service revalidates against:
+    the class this table imports for a domain must BE ``contract_model(domain)``, and the shipped
+    domain's own ``time_field`` / ``natural_key`` / ``filter_dims`` must be fields of it. The
+    comparison this test used to make -- the handoff's spellings against the class its name resolved
+    to -- is retired, because while the look-alike stood it was only satisfiable by importing the
+    look-alike. Counterfacts for both live checks are in
+    ``docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/probes/``.
+    """
     handoff_path = (
         Path(__file__).resolve().parents[1] / "docs/evidence/C100/federal-reserve/integration.json"
     )
@@ -369,24 +385,18 @@ def test_integration_handoff_semantics_reference_typed_contract_fields() -> None
         if fetcher.canonical_model in _MODELS
     }
     for domain, entry in handoff["domains"].items():
-        spec = DomainSpec.model_validate(entry)
-        name = spec.contract
-        if name not in contracts_by_name:
-            # The C100 handoff names the class the leg emitted when the handoff was written; wave
-            # 28 retargeted the H.15 leg to the class domains.yaml declares. Resolve a stale name
-            # through the shipped registry so a real drift still reddens the field check below.
-            shipped = contract_model(domain)
-            assert shipped.__name__ in contracts_by_name, domain
-            name = shipped.__name__
-        contract = contracts_by_name[name]
-        contract_fields = set(contract.model_fields)
+        DomainSpec.model_validate(entry)
+        shipped = contract_model(domain)
+        assert shipped.__name__ in contracts_by_name, domain
+        assert contracts_by_name[shipped.__name__] is shipped, domain
+        semantics = require_domain_semantics(domain)
         semantic_fields = (
-            (() if spec.time_field is None else (spec.time_field,))
-            + spec.natural_key
-            + spec.filter_dims
+            (() if semantics.time_field is None else (semantics.time_field,))
+            + semantics.natural_key
+            + semantics.filter_dims
         )
-        assert set(semantic_fields) <= contract_fields
-        assert not (set(spec.filter_dims) & query_only_fields)
+        assert set(semantic_fields) <= set(shipped.model_fields), domain
+        assert not (set(semantics.filter_dims) & query_only_fields), domain
 
 
 def test_declared_row_models_are_their_domain_contracts() -> None:
@@ -518,7 +528,7 @@ def test_provider_model_query_injects_identity_and_serializes_typed_rows(
     elif model == "TotalFactorProductivity":
         assert row["period"] == "2024:Q1" and row["vintage_date"] == "2026-10-01"
     else:
-        assert row["document_type"] == "statement" and row["format"] == "pdf"
+        assert row["doc_type"] == "statement" and row["doc_format"] == "pdf"
 
 
 def test_tfp_source_vintage_survives_service_identity_injection_and_serialization(

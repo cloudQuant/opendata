@@ -1,0 +1,20 @@
+wave-31 step 4 -- the four landed files and one untouched control, priced by disk bytes, by git show HEAD bytes, and by the after_sha256 the producer wrote into the shard
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/probes/landed_bytes_face.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+LAND opendata/data/providers/federal_reserve/models/fomc_documents.py disk=3a03c7d4f79a33be head=5e82b0586d336098 head_exit=0 bytes=6790 pinned=3a03c7d4f79a33be pin_matches_disk=True moved=True
+LAND scripts/quality/iter2_witnesses/_parts/federal_reserve/rows_a.py disk=e9c4edc8405c7306 head=09c56380b9de5764 head_exit=0 bytes=32748 pinned=e9c4edc8405c7306 pin_matches_disk=True moved=True
+LAND scripts/quality/iter2_witnesses/federal_reserve.py disk=be380dd643f747de head=a6f85520279d113b head_exit=0 bytes=18170 pinned=be380dd643f747de pin_matches_disk=True moved=True
+LAND tests/test_federal_reserve_iter2_models.py disk=52218ac2ad608800 head=501b927b5b92e69d head_exit=0 bytes=32991 pinned=NONE pin_matches_disk=False moved=True
+LAND scripts/quality/iter2_claims_producer.py disk=e2fdc57e0b30ee48 head=e2fdc57e0b30ee48 head_exit=0 bytes=18475 pinned=NONE pin_matches_disk=False moved=False
+A_landed_bytes landed=4 denominator_pinned_paths=47 shard=docs/evidence/C101/federal_reserve/claims.json pin_groups=['source', 'contract', 'fixture', 'probe']
+B_all_four_moved count=4 files=['opendata/data/providers/federal_reserve/models/fomc_documents.py', 'scripts/quality/iter2_witnesses/_parts/federal_reserve/rows_a.py', 'scripts/quality/iter2_witnesses/federal_reserve.py', 'tests/test_federal_reserve_iter2_models.py'] reading=every landed file is its own byte change; none is HEAD's bytes
+C_pin_membership pinned=['opendata/data/providers/federal_reserve/models/fomc_documents.py', 'scripts/quality/iter2_witnesses/_parts/federal_reserve/rows_a.py', 'scripts/quality/iter2_witnesses/federal_reserve.py'] unpinned=['tests/test_federal_reserve_iter2_models.py'] reading=an unpinned landed file owes the shard no re-sign; the pinned ones do
+D_pinned_agree_with_disk agreed=3 of=3 disk={fomc_documents.py:3a03c7d4f79a33be, rows_a.py:e9c4edc8405c7306, federal_reserve.py:be380dd643f747de}
+E_denominator this_probe=47 drift_carrier=47 carrier_stale_files=0
+F_carrier_agreement pre_landing_pinned=378e1b9a619078d9 pre_landing_disk=e9c4edc8405c7306 today_disk=e9c4edc8405c7306 rerun_stale_files=0 reading=the shard part has not been edited since the producer pinned it
+G_self_lint bytes=12452 codes={} hits=[] parser_agrees=True
+H_control_untouched scripts/quality/iter2_claims_producer.py disk=e2fdc57e0b30ee48 head=e2fdc57e0b30ee48 moved=False reading=the moved-predicate reads False for a file this wave did not edit
+I_head_plane_self_consistent pinned_at_head=2 of=4 agree=2 head_pins={rows_a.py:09c56380b9de5764, federal_reserve.py:a6f85520279d113b} unpinned_at_head=['fomc_documents.py', 'test_federal_reserve_iter2_models.py'] reading=for every landed file HEAD pins, that pin is HEAD's own bytes; the fetcher is absent from HEAD's pin set because HEAD's shard held no entry for this row
+J_intermediate_generation named_by_pre_landing_carrier=378e1b9a619078d9 is_head=False is_today=False reading=that digest belongs to neither, because the pre-landing drift carrier read a worktree claims document this wave's own first run had already rewritten
+bytes_face=arms=10 arms_passed=10 gates={'A_every_git_show_returned_zero': True, 'B_all_four_moved': True, 'C_pin_membership_printed': True, 'D_pinned_agree_with_disk': True, 'E_denominator_agrees_with_drift_carrier': True, 'F_shard_part_agrees_with_both_carriers': True, 'G_probe_itself_rule_clean': True, 'H_control_untouched_file': True, 'I_head_plane_self_consistent': True, 'J_intermediate_generation_named': True} all_pass=True
+landed_bytes_face_exit=0
