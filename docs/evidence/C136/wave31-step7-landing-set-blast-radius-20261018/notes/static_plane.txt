@@ -1,0 +1,86 @@
+# C136 step-7 A2 static plane, re-taken against the FINAL probe bytes
+# target: docs/evidence/C136/wave31-step7-landing-set-blast-radius-20261018/probes/landing_set_blast_radius.py
+# probe_sha256=7650cc665cc78f545067ed803ba59492d33a30735f34744800d4aae5df2c96d2 probe_bytes=30911 probe_lines=615
+# interpreter: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python (Python 3.13.5) = the gate interpreter
+# versions: ruff 0.15.20 / bandit 1.9.4 / mypy 2.3.1
+# superseding: notes/static_plane.txt (previous generation, written before arm G existed) -- that generation's
+# bandit count is left described in the defect note at the bottom rather than edited away.
+
+[1] ruff check (shipped pyproject rules, line-length 100)
+command: python -m ruff check probes/landing_set_blast_radius.py
+output: All checks passed!
+findings=0 violations=[]
+ruff_check_exit=0
+
+[2] ruff format --check
+command: python -m ruff format --check probes/landing_set_blast_radius.py
+output: 1 file already formatted
+already_formatted=True
+ruff_format_check_exit=0
+
+[3] bandit with the SHIPPED config, argv taken from the repo's own gate
+argv cite: scripts/quality/a2_check.py:456
+           [sys.executable, "-m", "bandit", "-c", "bandit.yaml", "-f", "json", "-q", *files]
+command: python -m bandit -c bandit.yaml -f json -q probes/landing_set_blast_radius.py
+stdout_bytes=817  stderr_bytes=0
+findings=0 rules=[]
+bandit_exit=0
+bandit_stdout_sha256=0573fd1dee85914f6285e70e761ee873ef0844448ac12cd18242fd96338a410f
+
+[4] liveness of that zero -- two arms, both run on COPIES under /tmp, neither copy enters this bundle
+Arm A: delete the line-local `# nosec B603 B607` from line 168 (the new _exists_at_parent helper's own
+       subprocess.run) and re-scan.  This is the exemption the FINAL bytes added, so it is the one whose
+       liveness has to be re-witnessed, not the one witnessed in the previous generation.
+  command: python -m bandit -c bandit.yaml -f json -q /tmp/w31s7_arms/armA_nosec_stripped.py
+  stdout_bytes=2953 findings=2 rules=B603,B607  bandit_A_exit=1
+  bandit_stdout_sha256=8dc704de95f53a8ae2c2af0a5e4237783c4c242ad61dc2a9f2d30ac7742b8da4
+  delta_rules_vs_base=[B603, B607]  moved=True
+Arm B: plant `shell=True` into the same argv position of the _git helper and re-scan.
+  command: python -m bandit -c bandit.yaml -f json -q /tmp/w31s7_arms/armB_shell_planted.py
+  stdout_bytes=1987 findings=1 rules=B602  bandit_B_exit=1
+  bandit_stdout_sha256=146f1ea62e1a0a5e97d54e19fbb19b82269063b43efec796f09f0ad61df6e3de
+  delta_rules_vs_base=[B602]  moved=True
+  Note on the smaller B delta than the previous generation (there B602+B607+B404): this time the plant rides
+  on a line that still carries its own `# nosec B607` and B404 fires on an import line that was not touched.
+  What an arm has to prove is that it can be non-zero, not that it must be non-zero in N rules.
+
+Reading: [3]'s 0 and [4]'s 2/1 are the same scanner on the same config, so the 0 is a measurement rather than
+a report of "bandit did not run".  Exemptions stay line-local (`# nosec B<id>  # reason`); `bandit.yaml`
+carries no `skips:` added by this step, and none of the three scans used any path exclusion.
+
+[5] parser contract (why [3]-[4] print counts, not rc)
+Every bandit run above is parsed by: read stdout -> json.loads -> require isinstance(payload["results"], list)
+-> len(results).  Unparseable stdout or a missing results list prints PARSE_FAILED and is never reported as
+findings=0.  This mirrors the shipped gate's own fail-closed docstring at scripts/quality/a2_check.py:445-450,
+which exists because the first version merged stderr into stdout and passed whenever bandit said anything.
+
+[6] defect note carried from the previous generation (kept, not silently regenerated)
+The first writer of this file spliced `"-f json"` into the command as ONE argv element.  bandit rejected it
+(exit 2, empty stdout) and the count-printing parser reported `findings=0` for a run that had analysed nothing
+-- exactly the shape of defect [5] guards against.  That run's 0 is why the shipped-config scan above is
+reported with stdout_bytes=817 and a sha256 of its own: an empty stdout would now read as FAILED, not as 0.
+
+static_plane_face ruff_check=0 ruff_format=clean bandit_base=0 bandit_armA=2 bandit_armB=1 arms_moved=True
+static_plane_exit=0
+
+## 7. second instrument: probes/landing_target_radius.py (added after take5, for the vacuous-zero repair)
+# target sha256=779506ac1174ea2da7dc89826d3edfd79f8e699805c759628d331d6a16f73ca5 bytes=9938
+[7.1] ruff check         -> All checks passed!   findings=0   ruff2_check_exit=0
+[7.2] ruff format --check -> 1 file already formatted   ruff2_format_exit=0
+        (this file needed two passes: `ruff format` rewrapped 4 E501 lines that ruff check had flagged,
+         and the pass order is recorded because check-before-format reads as a red that format then erases.)
+[7.3] bandit, shipped config, argv as in [3]
+      stdout_bytes=814  stderr_bytes=0  findings=0  rules=[]  bandit2_exit=0
+      bandit_stdout_sha256 from this run: reported by the A2 slice carrier (same config, same file).
+      Liveness arm (a copy under /tmp, never committed): insert `import subprocess` + a
+      `subprocess.run(cmd, shell=True)` helper above the first def, re-scan the copy ->
+      findings=2 rules=[B404, B602]  bandit2_arm_exit=1  moved=True
+      So [7.3]'s zero is a reading on a file that contains no subprocess call at all, and the arm shows the
+      rule set is awake on this exact path shape.
+[7.4] runtime: probe ran 7/7 arms PASS on these bytes; run_exit=0 (see runs/landing_target_radius.txt :53).
+      wall_clock=8.98 real / 8.00 user; the instrument spawns no git children (it reads claims.merged.json,
+      the pin census in-process, and globs the working tree).  Against the first instrument's 12.51 real
+      (runs/landing_set_blast_radius.take5_final_bytes.txt:5, which does spawn 75 git ls-tree children in arm G)
+      that is 3.53s less -- direction is explained by the git children, the split is not attributed further.
+static_plane2_face ruff2=0 format2=clean bandit2=0 bandit2_arm=2 arms_moved=True run2=PASS
+static_plane2_exit=0

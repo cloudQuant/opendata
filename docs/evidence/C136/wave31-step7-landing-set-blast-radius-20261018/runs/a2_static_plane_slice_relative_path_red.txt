@@ -1,0 +1,81 @@
+# A2 slice, RED take -- my first invocation checked nothing and I nearly read that as green.
+# cwd: docs/evidence/C136/wave31-step7-landing-set-blast-radius-20261018
+# command: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python <repo>/scripts/quality/a2_check.py --files probes/landing_set_blast_radius.py
+# a2_exit=1
+# Why it is kept beside the final take instead of being deleted: the path was real relative to my cwd, but the
+#   resolver anchors explicit paths at REPO_ROOT (scripts/quality/a2_check.py:488  `if not (REPO_ROOT / name).is_file():
+#   return "not present in the working tree"`).  So 0 of 1 requested paths became A2 candidates: NO ruff, NO mypy,
+#   NO bandit ran on this probe in this take.  The only plane line printed was the pre-existing gitleaks red, so
+#   the log looks superficially like "everything else passed".  Reading: the lines `NOTHING CHECKED: 0 of 1
+#   requested paths are A2 candidates` (below) is the load-bearing one, and a gate that runs nothing is not a pass.
+# attribution of this take's 25 gitleaks files: all under docs/evidence/C100/**/inputs/pristine/akshare/, 0 under C136.
+# Exit reading for this carrier itself: a2_static_plane_slice_relative_path_red_exit=1 (the gate's own rc, echoed
+#   by the harness that wrote this file; the gate prints its summary to stderr and stdout is block-buffered, so
+#   the FAIL lines below appear before the `ok` plane lines of a run -- 2>&1 ordering, not gate ordering.)
+
+FAIL: A2 gate failed on: immutable evidence secret scan
+NOT CHECKED (explicitly requested, 1 path(s)):
+  probes/landing_set_blast_radius.py  -  not present in the working tree
+
+NOTHING CHECKED: 0 of 1 requested paths are A2 candidates (see NOT CHECKED above).
+Static-tool execution partition: 0 file(s), 0 verified immutable snapshot(s) excluded.
+Historical Ruff findings: 149323 (NOT GREEN; historical evidence only).
+FAIL pinned Gitleaks file scan
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m9:03PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 22.8ms[0m
+[90m9:03PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m9:03PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.9ms[0m
+[90m9:03PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m9:03PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 4.91ms[0m
+[90m9:03PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/option/option_em.py returned 1: [90m9:03PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.78ms[0m
+[90m9:03PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/stock/cons.py returned 1: [90m9:03PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 43.7ms[0m
+[90m9:03PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m9:04PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 21.9ms[0m
+[90m9:04PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m9:04PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.7ms[0m
+[90m9:04PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m9:04PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 4.99ms[0m
+[90m9:04PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/option/option_em.py returned 1: [90m9:04PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.55ms[0m
+[90m9:04PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/stock/cons.py returned 1: [90m9:04PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 43.6ms[0m
+[90m9:04PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m9:04PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 22.1ms[0m
+[90m9:04PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m9:04PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.7ms[0m
+[90m9:04PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m9:04PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 5.11ms[0m
+[90m9:04PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/option/option_em.py returned 1: [90m9:04PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.75ms[0m
+[90m9:04PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/stock/cons.py returned 1: [90m9:04PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 48.2ms[0m
+[90m9:04PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m9:05PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 22.1ms[0m
+[90m9:05PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m9:05PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.8ms[0m
+[90m9:05PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m9:05PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 5.02ms[0m
+[90m9:05PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/option/option_em.py returned 1: [90m9:05PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.52ms[0m
+[90m9:05PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/stock/cons.py returned 1: [90m9:05PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 44.3ms[0m
+[90m9:05PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m9:06PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 21.8ms[0m
+[90m9:06PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m9:06PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.2ms[0m
+[90m9:06PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m9:06PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 5.28ms[0m
+[90m9:06PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/option/option_em.py returned 1: [90m9:06PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.87ms[0m
+[90m9:06PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/stock/cons.py returned 1: [90m9:06PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 44.1ms[0m
+[90m9:06PM[0m [33mWRN[0m [1mleaks found: 1[0m
+skip static tools (all resolved A2 files are verified immutable evidence)
+real 220.45
+user 189.10
+sys 56.09
+
+# The gate prints no exit field of its own, so this carrier signs its rc on the last line (same
+# convention as C135's runs/a2_static_plane_final.txt :86).
+a2_static_plane_slice_relative_path_red_exit=1

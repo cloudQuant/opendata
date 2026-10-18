@@ -1,0 +1,56 @@
+# Re-run reproducibility + wrote-nothing witness for the SECOND instrument, taken at staging time.
+# Why this carrier exists: face.md prices option D off landing_target_radius.txt :28/:32.  A face is only worth
+#   the number if the probe still returns that number on the bytes being committed, and if running it did not
+#   touch the tree (this bundle claims "no product code edited, no re-sign started").
+# command: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C136/wave31-step7-landing-set-blast-radius-20261018/probes/landing_target_radius.py   (cwd = repo root; the carrier's own :3 is the same command with <repo> spelled out)
+# probe bytes at this run: sha256=779506ac1174ea2da7dc89826d3edfd79f8e699805c759628d331d6a16f73ca5
+#   bytes=9938  (equals the digest recorded in landing_target_radius.txt:4)
+# arm face line this run: landing_target_radius_face arms=7 arms_passed=7 arms_failed=0 failed=[] PASS=True
+#   parsed by field name, not position.  The first writer of THIS carrier indexed split()[2] expecting arms_passed,
+#   landed on arms_failed=0, and signed the identical green run as rerun_reproducible=0 / exit=1; that red reading
+#   is quoted here instead of filed as its own take -- this path was created minutes earlier in the same turn.
+# identity/counts this run: identity_set=5168e1e723999312 accepted/claims/pinned=('291', '1455', '589')
+# verbatim-vs-carrier: carrier body = its lines 27..53 (header is 26 lines), compared
+#   line-by-line after newline strip, so a reworded arm prints as a diff instead of silently re-signing the face.
+#   body_lines_carrier=27 body_lines_rerun=27 verbatim_identical=True
+#   carrier_body_sha16=8bab37b81cf8521c rerun_stdout_sha16=8bab37b81cf8521c
+# wrote-nothing witness: repo-wide `git status --porcelain=v1 -uall` captured before and after the run;
+#   porcelain_equal=True symmetric_difference=[]
+#   (the whole-tree porcelain is read only to diff against itself in the same turn; no count from it is cited
+#    by the face, and no whole-tree gate ran)
+# wall_clock=9.03 real for this run (landing_target_radius.txt:5 recorded 8.98 real for the archived run)
+# judging rule: rerun_reproducible = verbatim_identical AND porcelain_equal AND arms_passed=7 AND arms_failed=0
+#   AND failed=[] AND the body's own last line is landing_target_radius_exit=0 AND run.returncode=0.
+rerun_face run_exit=0 arms_passed=7 arms_failed=0 failed=[] \
+  verbatim_identical=1 porcelain_equal=1 carrier_body_sha16=8bab37b81cf8521c \
+  rerun_stdout_sha16=8bab37b81cf8521c wall_clock=9.03 rerun_reproducible=1
+
+population: accepted=291 accepted_claims=1455 pinned_paths=589 identity_set=5168e1e723999312
+  provider=yfinance files_globbed=12 pinned=0 max_radius=0 sum_radius=0 top=[]
+  provider=fmp files_globbed=26 pinned=23 max_radius=69 sum_radius=826 top=[('opendata/data/providers/fmp/models/_client.py', 69), ('opendata/data/providers/fmp/provider.py', 69), ('opendata/data/providers/fmp/registration.py', 69)]
+A_population_non_empty yfinance=12 fmp=26 PASS=True
+B_pin_reconciliation mismatched={} PASS=True
+C_local_target_is_free provider=yfinance pinned=0 max=0 PASS=True
+D_control_is_not_free provider=fmp pinned=23 max=69 expected_max=69 expected_max_from_face=G_radius:max_partial_rows PASS=True
+E_engine_price_list paths=3 max=26 PASS=True
+  engine path=opendata/data/providers/_engine/http_json.py accepted_rows_pinning=26
+  engine path=opendata/data/providers/_engine/decoders.py accepted_rows_pinning=3
+  engine path=opendata/data/providers/_engine/row_expansion.py accepted_rows_pinning=3
+F_row_level_membership rows=12 expected=12 providers=['yfinance'] without_witness_module=12 labels={'add_code_carrying_guard': 11, 'retarget_fetcher_output': 1} PASS=True
+  row yfinance::BalanceSheet status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE action=add_code_carrying_guard
+  row yfinance::CashFlowStatement status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE action=add_code_carrying_guard
+  row yfinance::EquityActive status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE action=add_code_carrying_guard
+  row yfinance::EquityAggressiveSmallCaps status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE action=add_code_carrying_guard
+  row yfinance::EquityGainers status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE action=add_code_carrying_guard
+  row yfinance::EquityLosers status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE action=add_code_carrying_guard
+  row yfinance::EquityScreener status=UNREVIEWED bucket=NEED_DECLARE verdict=QUERY_ONLY action=add_code_carrying_guard
+  row yfinance::EquityUndervaluedGrowth status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE action=add_code_carrying_guard
+  row yfinance::EquityUndervaluedLargeCaps status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE action=add_code_carrying_guard
+  row yfinance::GrowthTechEquities status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE action=add_code_carrying_guard
+  row yfinance::IncomeStatement status=UNREVIEWED bucket=NEED_DECLARE verdict=NO_CODE_SITE action=add_code_carrying_guard
+  row yfinance::KeyMetrics status=UNREVIEWED bucket=NEED_DECLARE verdict=ROW_CLASS_NOT_CONTRACT action=retarget_fetcher_output
+G_generation_untouched accepted=291 claims=1455 PASS=True
+landing_target_radius_face arms=7 arms_passed=7 arms_failed=0 failed=[] PASS=True
+landing_target_radius_exit=0
+
+second_probe_rerun_verbatim_exit=0

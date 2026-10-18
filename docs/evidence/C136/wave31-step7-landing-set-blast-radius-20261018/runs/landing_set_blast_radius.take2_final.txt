@@ -1,0 +1,40 @@
+# take2 (FINAL) -- landing_set_blast_radius.py
+# command: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python probes/landing_set_blast_radius.py
+# Arm set: A tree-wide path set reconciles with step 6's published four; B per-provider pin closure;
+# C git precedent walk over feat(witness) commits carrying a plane-1 delta (newest landing hands its
+#   count to this run's judge: endpoint_after=291 == judge_accepted=291; 3 chain breaks are printed,
+#   not gated, because the population excludes non-landing commit types); D provider-local tamper;
+#   E tree-wide tamper; F price class derived from the census's own per-row fields.
+# Exit reading is the last line of this file.
+population: inventory=350 accepted=291 residue=59 status_counts={'INCOMPLETE': 22, 'OFFLINE_ACCEPTED': 291, 'UNREVIEWED': 37} identity_set=5168e1e723999312 accepted_claims=1455
+A_tree_wide derived=['opendata/data/domains.yaml', 'opendata/data/providers/catalog.py', 'scripts/quality/iter2_claims_fixtures.py', 'scripts/quality/iter2_claims_probe_runner.py'] expected=['opendata/data/domains.yaml', 'opendata/data/providers/catalog.py', 'scripts/quality/iter2_claims_fixtures.py', 'scripts/quality/iter2_claims_probe_runner.py'] step6=['opendata/data/domains.yaml', 'opendata/data/providers/catalog.py', 'scripts/quality/iter2_claims_fixtures.py', 'scripts/quality/iter2_claims_probe_runner.py'] step6_line_found=True PASS=True
+B_closure providers_residue=10 with_local_closure=5 no_landed_sibling=['biztoc', 'seeking_alpha', 'stockgrid', 'wsj', 'yfinance'] closure_leaks_tree_wide={} PASS=True
+  closure provider=cboe accepted_rows=9 local_paths=21 shared_paths=4 max_local_rows=26 top=[('opendata/data/providers/_engine/http_json.py', 26), ('opendata/data/models/congress_cboe_iter2.py', 12), ('opendata/data/providers/cboe/provider.py', 9)]
+  closure provider=econdb accepted_rows=6 local_paths=14 shared_paths=4 max_local_rows=6 top=[('opendata/data/models/econdb.py', 6), ('opendata/data/providers/econdb/provider.py', 6), ('opendata/data/providers/econdb/registration.py', 6)]
+  closure provider=government_us accepted_rows=5 local_paths=15 shared_paths=4 max_local_rows=5 top=[('opendata/data/models/government_us.py', 5), ('opendata/data/providers/government_us/models/_client.py', 5), ('opendata/data/providers/government_us/provider.py', 5)]
+  closure provider=intrinio accepted_rows=37 local_paths=60 shared_paths=4 max_local_rows=37 top=[('opendata/data/providers/intrinio/provider.py', 37), ('scripts/quality/iter2_witnesses/_parts/intrinio/financials.py', 37), ('scripts/quality/iter2_witnesses/_parts/intrinio/market.py', 37)]
+  closure provider=tmx accepted_rows=8 local_paths=13 shared_paths=4 max_local_rows=8 top=[('opendata/data/models/tmx.py', 8), ('opendata/data/providers/tmx/models/client.py', 8), ('opendata/data/providers/tmx/models/fetchers.py', 8)]
+C_precedent feat_witness_commits=31 no_delta_skipped=6 with_plane1_delta=25 tree_wide_free=22 tree_wide_priced=3 rows_landed_free=86 rows_landed_priced=179 rows_total=265 newest_landing=a70fb295f endpoint_after=291 judge_accepted=291 chain_breaks_outside_population=3 breaks=[('94b0b14c9', 153, 68), ('7f728b65f', 256, 257), ('a70fb295f', 289, 290)] PASS=True
+  precedent sha=94b0b14c9 delta=130 product_files=10 tree_wide_touches=['scripts/quality/iter2_claims_probe_runner.py']
+  precedent sha=6a90cba29 delta=44 product_files=35 tree_wide_touches=['scripts/quality/iter2_claims_probe_runner.py']
+  precedent sha=40c6f3152 delta=10 product_files=5 tree_wide_touches=[]
+  precedent sha=6d01b9a49 delta=9 product_files=2 tree_wide_touches=[]
+  precedent sha=d78edd285 delta=9 product_files=10 tree_wide_touches=[]
+  precedent sha=0c06cc7a5 delta=8 product_files=1 tree_wide_touches=[]
+  precedent sha=1aaef4d23 delta=8 product_files=5 tree_wide_touches=[]
+  precedent sha=a36c9aa4d delta=6 product_files=3 tree_wide_touches=[]
+  priced sha=6a90cba29 delta=44 wide=['scripts/quality/iter2_claims_probe_runner.py'] local=['opendata/data/providers/alpha_vantage/client.py', 'opendata/data/providers/alpha_vantage/models/equity_historical.py', 'opendata/data/providers/alpha_vantage/models/etf_historical.py', 'opendata/data/providers/alpha_vantage/models/historical_eps.py']
+  priced sha=94b0b14c9 delta=130 wide=['scripts/quality/iter2_claims_probe_runner.py'] local=['opendata/data/models/fmp_disclosures.py', 'opendata/data/providers/fmp/models/iter2_disclosures.py', 'opendata/data/providers/fmp/models/iter2_market.py', 'scripts/quality/iter2_witnesses/_parts/fmp/rows_b.py']
+  priced sha=9c2c9a355 delta=5 wide=['scripts/quality/iter2_claims_probe_runner.py'] local=['opendata/data/providers/deribit/models/fetchers.py', 'scripts/quality/iter2_witnesses/deribit.py']
+actions: labels=6 rows=59 {"add_code_carrying_guard": 11, "implement_missing_model": 19, "ledger_ruled_out": 11, "new_provider_package": 2, "retarget_fetcher_output": 1, "shard_entry_needs_harness": 15}
+D_local_tamper path=scripts/quality/iter2_witnesses/fmp.py slots=414 stale_rows=69 expected_rows=69 tree=291 sample=['fmp::AnalystEstimates', 'fmp::AvailableIndices', 'fmp::BalanceSheet'] PASS=True
+E_tree_wide_tamper path=opendata/data/domains.yaml slots=1455 expected_slots=1455 stale_rows=291 tree=291 PASS=True
+F_pricing partition=59 residue=59 wide_unproven=[] empty_classes=[] contradictions=[] PASS=True
+  price class=new_model_key_step6 rows=19 key_path=opendata/data/domains.yaml in_tree_wide=True providers=[('tmx', 16), ('yfinance', 2), ('government_us', 1)]
+  price class=provider_local rows=23 key_path=none in_tree_wide=n/a providers=[('yfinance', 12), ('seeking_alpha', 3), ('wsj', 3), ('cboe', 2), ('econdb', 2), ('intrinio', 1)]
+  price class=wide_catalog rows=2 key_path=opendata/data/providers/catalog.py in_tree_wide=True providers=[('biztoc', 1), ('stockgrid', 1)]
+  price class=wide_harness rows=15 key_path=scripts/quality/iter2_claims_probe_runner.py in_tree_wide=True providers=[('yfinance', 15)]
+domains_key_predicate provider_snake_key_absent_rows=19 accepted_counterexamples=67 (so the predicate prices the tmx precedent of step 6, not a necessity for every row)
+price_face residue=59 rows_behind_a_tree_wide_premise=17 rows_new_model_needing_key=19 rows_landable_provider_local=23 precedent_commits_free=22 precedent_rows_free=86 precedent_commits_priced=3 precedent_rows_priced=179
+landing_set_face arms=6 arms_passed=6 arms_failed=0 identity_set=5168e1e723999312 PASS=True
+landing_set_blast_radius_exit=0
