@@ -1,0 +1,145 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/tmx/CompanyFilings/direct-exit0.txt",
+    "sha256": "ee5b7d27af0ff3f74a970f980b3b455b4d9ffcbe918e19c48198c6faeb2cccad",
+    "size_bytes": 352,
+    "stdout_excerpt": "direct: fetcher=CompanyFilingsFetcher seam_requests=1 rows=1 row_class=TmxCompanyFiling first_row_sha256=4e41a1713c1f50c5\nVERDICT=PASS\n"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyFilings --phase direct --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-18T01:31:38.322568+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "76de40c07a612577c430a159c1ae25c012b3a7dae96951209f699d53f3166f85",
+          "before_sha256": "76de40c07a612577c430a159c1ae25c012b3a7dae96951209f699d53f3166f85",
+          "path": "opendata/data/models/tmx.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:76de40c07a612577c430a159c1ae25c012b3a7dae96951209f699d53f3166f85",
+      "fixture": [
+        {
+          "after_sha256": "e823afa6c0d993c37ada8215652fbe3f420bdcdc13abac03d41c6979f64ca3df",
+          "before_sha256": "e823afa6c0d993c37ada8215652fbe3f420bdcdc13abac03d41c6979f64ca3df",
+          "path": "docs/evidence/C101/fixtures/tmx/CompanyFilings.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+          "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "5311773e92c4eace725fffc7e993f12dae330130600b66fbc9be41a9354704ba",
+          "before_sha256": "5311773e92c4eace725fffc7e993f12dae330130600b66fbc9be41a9354704ba",
+          "path": "scripts/quality/iter2_witnesses/tmx.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "4841687267fb3e4063938ad62df940cd8bc51f342f03628752edba454df18279",
+          "before_sha256": "4841687267fb3e4063938ad62df940cd8bc51f342f03628752edba454df18279",
+          "path": "opendata/data/providers/tmx/provider.py"
+        },
+        {
+          "after_sha256": "50ca1c466a16fd6a7fa691c860f5690d86e896556f56e0930d75070dfa8bc611",
+          "before_sha256": "50ca1c466a16fd6a7fa691c860f5690d86e896556f56e0930d75070dfa8bc611",
+          "path": "opendata/data/providers/tmx/models/fetchers.py"
+        },
+        {
+          "after_sha256": "462cc550398d728f8143d087fd3a60b95f4c0980ae3a3302ee9ce8257792d681",
+          "before_sha256": "462cc550398d728f8143d087fd3a60b95f4c0980ae3a3302ee9ce8257792d681",
+          "path": "opendata/data/providers/tmx/models/client.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "tmx::CompanyFilings",
+  "phase": "direct",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "76de40c07a612577c430a159c1ae25c012b3a7dae96951209f699d53f3166f85",
+        "before_sha256": "76de40c07a612577c430a159c1ae25c012b3a7dae96951209f699d53f3166f85",
+        "path": "opendata/data/models/tmx.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:76de40c07a612577c430a159c1ae25c012b3a7dae96951209f699d53f3166f85",
+    "fixture": [
+      {
+        "after_sha256": "e823afa6c0d993c37ada8215652fbe3f420bdcdc13abac03d41c6979f64ca3df",
+        "before_sha256": "e823afa6c0d993c37ada8215652fbe3f420bdcdc13abac03d41c6979f64ca3df",
+        "path": "docs/evidence/C101/fixtures/tmx/CompanyFilings.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+        "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "5311773e92c4eace725fffc7e993f12dae330130600b66fbc9be41a9354704ba",
+        "before_sha256": "5311773e92c4eace725fffc7e993f12dae330130600b66fbc9be41a9354704ba",
+        "path": "scripts/quality/iter2_witnesses/tmx.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "4841687267fb3e4063938ad62df940cd8bc51f342f03628752edba454df18279",
+        "before_sha256": "4841687267fb3e4063938ad62df940cd8bc51f342f03628752edba454df18279",
+        "path": "opendata/data/providers/tmx/provider.py"
+      },
+      {
+        "after_sha256": "50ca1c466a16fd6a7fa691c860f5690d86e896556f56e0930d75070dfa8bc611",
+        "before_sha256": "50ca1c466a16fd6a7fa691c860f5690d86e896556f56e0930d75070dfa8bc611",
+        "path": "opendata/data/providers/tmx/models/fetchers.py"
+      },
+      {
+        "after_sha256": "462cc550398d728f8143d087fd3a60b95f4c0980ae3a3302ee9ce8257792d681",
+        "before_sha256": "462cc550398d728f8143d087fd3a60b95f4c0980ae3a3302ee9ce8257792d681",
+        "path": "opendata/data/providers/tmx/models/client.py"
+      }
+    ]
+  },
+  "provider": "tmx",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-tmx-CompanyFilings",
+  "upstream_model": "CompanyFilings"
+}

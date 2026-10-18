@@ -101,11 +101,11 @@ SEAM_ATTRS = ("http_transport", "get_shared_http_client")
 # Refusals that would mean this experiment is mis-shaped rather than that the leg misses the seam.
 PROBE_FAULT_ERRORS = ("TypeError", "KeyError", "AttributeError", "NameError", "WitnessBlocked")
 LANDED_TOTAL = 350
-LANDED_ACCEPTED = 281
-# The generation before wave-29 landed deribit's 5 rows (nasdaq's 9 landed at wave-28 step 2 and
-# ``federal_reserve::YieldCurve`` at step 4), kept so the face line prints the delta instead of
-# asking the reader to remember what moved.
-LANDED_ACCEPTED_PREVIOUS = 276
+LANDED_ACCEPTED = 285
+# The generation before wave-30 landed tmx's 4 rows (deribit's 5 landed at wave-29 and nasdaq's 9 at
+# wave-28 step 2), kept so the face line prints the delta instead of asking the reader to remember
+# what moved.
+LANDED_ACCEPTED_PREVIOUS = 281
 LANDED_IDENTITY_SET = "5168e1e723999312"
 DECLARED_EXPECTED = 15
 

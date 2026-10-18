@@ -106,6 +106,16 @@ federal_reserve produce→sign→merge→judge 重落一代，六台只读面同
   `iter2_claims_probe_runner._FakeSharedClient` 的公开 callable 取交集，判 `WITNESSABLE` /
   `BLOCKED_ON_RUNNER_SURFACE`；两臂各被要求能与对方不同（eia `verbs=['get']` + 2 枚 accepted，
   tmx `verbs=['request']` + 24 枚 UNREVIEWED）。
+  **波 30 把这台的期望追平了，上面那半句就此成为历史读数**：tmx 的 4 枚落地之后它在同一台仪器上读
+  `verbs=['request'] missing=[] verdict=WITNESSABLE judge_statuses={'INCOMPLETE': 20,
+  'OFFLINE_ACCEPTED': 4}`，旧期望 `BLOCKED_ON_RUNNER_SURFACE` 对着 285/350 报告跑出的红读数逐字留在
+  `docs/evidence/C130/plane1-action-map-rebase-20261018/runs/wave30-step0a-seam_surface_match.txt`
+  （4 行 / `4fa7f30f2cc7910d`，`seam_surface_arms=2 seam_surface_failed=1 rc=1`）。
+  这台现 234 行 / 11085 字节 / `14cf90d13bf461b0`，臂面是 `seam_surface_arms=3 flipped_by_widening=
+  ['bls','finra','tmx'] control=eia seam_surface_failed=0`：三个判定各有载主，`BLOCKED_ON_RUNNER_SURFACE`
+  只能在**加宽前**的表面（`frozenset({"get"})`）上演示，被翻过来的 provider 名单由
+  `_transport_verbs(p) - pre` 现算而不是点名（点名就是又钉一枚落地面常量），名单为空与对照为空
+  都走 `PASS=False` 非零。逐代读数在 C130 的 `face.md` §4。
 - `probes/staged_payload_scan.py`：`--paths` 指定的工作树字节拷进临时树后用 shipped `.gitleaks.toml`
   扫（`detect --no-git`），补上 `payload_secret_scan.py` 不收 `.json` 的那半边。`payload_scan_unresolved`
   这一列是本轮加的：原先"路径解析不到"会被静默跳过、集合缩小而照打 `findings=0`，现在逐条打印路径并
@@ -114,7 +124,11 @@ federal_reserve produce→sign→merge→judge 重落一代，六台只读面同
   普查（`seam_census_units=35`：32 家 + `_engine` + 两家无包），逐单位打印
   `bucket / mechanism / models_verbs / package_verbs / witness_module / client_seam / rows / accepted /
   residual`，用来把"哪条腿能把行跑起来"和"这行值多少钱"分成两条轴分别测。它自己不带臂，
-  可反证性由 `seam_surface_match.py` 的五臂面（`seam_surface_arms=5 seam_surface_failed=0`）与
+  可反证性由 `seam_surface_match.py` 的五臂面（`seam_surface_arms=5 seam_surface_failed=0`；
+  **这一面从波 24/25 起换过三代**：本波之前它读 `seam_surface_arms=2 seam_surface_failed=1`，
+  因为其中一枚臂的期望还钉着旧落地面，红读数逐字留在 C130 `wave30-step0a-seam_surface_match.txt`；
+  追平之后读 `seam_surface_arms=3 flipped_by_widening=['bls','finra','tmx'] control=eia
+  seam_surface_failed=0`，载档 C130 `wave30-step4a`）与
   两块对照（把 yfinance 武装成 `WITNESSABLE` 必须红、把 government_us 武装成
   `NO_SEAM_VERBS_MEASURED` 必须红）提供。
 - `probes/post_response_guard_census.py`：波 25 的第二轴仪器，也是本目录里唯一**因为推翻了自己上一条
@@ -150,7 +164,10 @@ federal_reserve produce→sign→merge→judge 重落一代，六台只读面同
   "根本没有台账"`(False, True)` 三种组合，否则第二轴又退回一个不能区分的布尔。换 `--provider` 跑一家
   **有** `specs.py` 的包只能出现前两种，这一臂就会红 —— 那是预期读数，不是臂坏了。
 - `probes/ledger_axis_blast.py`（波 28 step 3a 后 222 行、`f2a4bfd8a151491a`；step 4 追平后 223 行、11549 字节、
-  `495b95a057f8c92a`；写成的那一代是 206 行、`4568cf22c27db38a`）：把拆开的那条台账轴指到**整个残差**
+  `495b95a057f8c92a`；写成的那一代是 206 行、`4568cf22c27db38a`；**波 30 再追平一代落地面后
+  229 行 / 12076 字节 / `64baf65db0ca7103`**，`LANDED_STATUSES` 走 `{8,281,61} → {28,285,37}`，旧值留在
+  `LANDED_STATUSES_PREVIOUS` 供驱动锻造反例；追平前对着 285/350 报告的红读数 `arms=5 arms_passed=4
+  arms_failed=1` 逐字留在 C130 `wave30-step6b-*.txt`）：把拆开的那条台账轴指到**整个残差**
   （判定报告里状态不是 `OFFLINE_ACCEPTED` 的行 —— nasdaq 落地那一代是 84 枚 = `INCOMPLETE` 7 +
   `UNREVIEWED` 77，波 28 step 4 现测 74 枚 = 6 + 68），量这条缺陷的射程，
   而不只是 yfinance 那一桶。行读数仍由 `incomplete_row_guard_check._row` 原样给出；磁盘普查
@@ -326,7 +343,10 @@ federal_reserve produce→sign→merge→judge 重落一代，六台只读面同
   20089 字节、`a8d7ef6a7d4ada09`；写成那一代是 411
   行、`88870a6f957d9dba`；同样只追平 `LANDED_ACCEPTED` 并把旧值留在 `LANDED_ACCEPTED_PREVIOUS`，面末追加
   `previous_accepted=275 accepted_delta=1 identity_set_moved=False`；step 3a 那代这一格是
-  `previous_accepted=266 accepted_delta=9`）与
+  `previous_accepted=266 accepted_delta=9`。**波 30 当代是 417 行 / 20093 字节 / `665b35b18a0afb00`，
+  `LANDED_ACCEPTED 281 → 285`，面末读 `previous_accepted=281 accepted_delta=4 identity_set_moved=False`，
+  七臂 7/7 绿（载档 C130 `runs/wave30-step6f-witness_seam_kind_census-finalgen.txt`，40 行 /
+  `001c3c101b6ab4e9`）；上面那两格 275/1 与 266/9 是各自那一代的面末读数，逐字保留**）与
   `runs/wave27-step1-seam-kinds.txt`（44 行 / `624ddf9ea0a7ebee`）：波 27 step 1 的新仪器与它的七臂面。
   它否证了 §89.5 谓词后半"见证腿取引擎 `transport`"：臂 A 四枚**已入库**、无 `client_seam` 的行逐枚读
   `rows>0 transport_calls=1`（引擎 seam 本身活的），臂 B 对 `yfinance::EquityQuote` 读
@@ -548,7 +568,14 @@ federal_reserve produce→sign→merge→judge 重落一代，六台只读面同
   自己的落地否证 —— 走的是已入库的 `shared_http_client` 接缝。
 - 波 28 step 3a（把两台波 27 仪器里那条**钉住上一代落地面**的常量追平，被判定量一个没动）：
   `probes/landed_face_rebase.py`（278 行、`5db7f6d97a5083e4`；step 4 换代后 282 行、13196 字节、
-  `86844e72941374b5`）与它的载档
+  `86844e72941374b5`；**波 30 换代后 285 行 / 13494 字节 / `594b39052edf1479`，`EXPECTED_ACCEPTED=285`、
+  `EXPECTED_DELTA={INCOMPLETE:20, OFFLINE_ACCEPTED:4, UNREVIEWED:-24}`，`CARRIER` 改指
+  `runs/wave30-step6e-landed-face-rebase.txt`（24 行 / 3760 字节 / `dd66625f257e9516`，绿 12/12）；
+  追平前的红代 `arms=12 arms_passed=8 arms_failed=4 chain_exit=1` 两份都留着——stdout 在 C130
+  `wave30-step6a-*.txt`、驱动写盘的 24 行在 C130 `wave30-step6c-*.txt`。改 `CARRIER` 这件事本身就是
+  本波的一条缺陷记录：这台驱动写盘是**整体重写**，常量还指着波 29 那份已提交载档时跑的那一趟把
+  `runs/wave29-step2d-landed-face-rebase.txt` 覆盖了，处理顺序（复制红代 → 单路径 `git checkout HEAD --`
+  复原到 `76c67441c9c8c41c` → 再改名常量）逐字记在 C130 `face.md` §5.1**）与它的载档
   `runs/wave28-step3a-landed-face-rebase.txt`（62 行 / `sha16=70edc11b36ef2102`；第 24 行是本次运行的
   `chain_exit=0`，其后是四次取的账）。
   它 import 那两台 subject 并在**同一进程里各跑三遍**同一份报告字节：出库常量 → 把常量锻造回波 27
@@ -698,7 +725,11 @@ federal_reserve produce→sign→merge→judge 重落一代，六台只读面同
     `86844e72941374b5`、`receipt_drift_counterfact.py` 225 行 / `56556b389eb6a5e2`（step 4g 重排后 223 行 /
     `5bfdb04d9ac027d0`；那一代没有重跑它，见本节末 4g 条目）、
     `w28s2_shard_faces.py` 143 行 / `0841716818c8f6de`（最后一台只换散文里那处指向漂移反例的引用，一个计数器
-    没动）。驱动载档 `runs/wave28-step4b-landed-face-rebase.txt`（28 行 / 4538 字节 / `27df9dd6b7379d2e`）读
+    没动）。**这五格里前三台的字节在此之后又各换了两代**：波 29 那一次（`9c2c9a35`，
+    `git show --stat` 数出的恰好是 `landed_face_rebase.py` / `ledger_axis_blast.py` /
+    `witness_seam_kind_census.py` 三台）为 deribit 5 枚追平，本波（波 30）又为 tmx 4 枚追平这三台，
+    并把 `seam_surface_match.py` 的期望一起换掉——它上一次改动还是 `b4cfe982` 那批。
+    当代 sha16 一律看本 README"载体"一节里各条的末格；本节这五个 sha16 逐字保留，是波 28 step 4 那一代的读数。驱动载档 `runs/wave28-step4b-landed-face-rebase.txt`（28 行 / 4538 字节 / `27df9dd6b7379d2e`）读
     `subjects=2 arms=12 arms_passed=12 arms_failed=0 PASS=True` / `chain_exit=0`，形状与 step 3a 同：
     每台 subject 在同一进程里跑三遍（出厂常量 → 锻造回 step 3 那一代 → 复原），锻造那一遍两台**各只红一臂**
     `forged_failed_arms=['A_landed_report_face']`、`exits first=0 forged=1 restored=0`，而被报告决定的计数器

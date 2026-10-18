@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityQuote --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROW", "rejected": [], "status": null}, "reason": "quoting the price leaves every other cell of the snapshot well-formed, and last_price is the contract column of TmxEquityQuote that TMX publishes as a JSON number: the quote mapper must refuse the snapshot rather than coerce a numeric string into a float it never parsed, because _number reads the TMX numeric fields as numbers only and a coerced last_price would silently carry a percent and a market cap derived from a cell whose type the source never published; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

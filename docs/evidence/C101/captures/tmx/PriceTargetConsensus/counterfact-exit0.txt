@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model PriceTargetConsensus --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROW", "rejected": [], "status": null}, "reason": "the rating block is where this contract lives: buy_ratings, sell_ratings and hold_ratings are the three columns of TmxPriceTargetConsensus that only exist inside consensusAnalysts, so flattening that object to a label string leaves the price targets and totalAnalysts untouched and makes the three counts unreadable -- the consensus mapper must refuse rather than publish a row whose rating split is three nulls a consumer cannot tell apart from zero analyst coverage; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

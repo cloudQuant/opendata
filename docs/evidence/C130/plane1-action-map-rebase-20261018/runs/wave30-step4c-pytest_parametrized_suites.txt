@@ -1,0 +1,151 @@
+........................................................................ [ 41%]
+........................................................................ [ 82%]
+......................F.F......                                          [100%]
+=================================== FAILURES ===================================
+________ test_catalog_contains_34_sources_and_only_66_fetcher_bindings _________
+
+    def test_catalog_contains_34_sources_and_only_66_fetcher_bindings() -> None:
+        """The frozen catalog denominator, split into the two populations that make it up.
+    
+        66 bindings are 48 hand-written fetchers plus 18 declarative engine models. The split is counted
+        apart and the sum is still frozen, because the two kinds of source work grow for different
+        reasons: a new hand-written fetcher is one provider's own module, while a declaration adds a
+        binding *and* a generated fetcher, and an engine model that registered without a binding
+        would be invisible to the runtime while still showing up in the spec census. Which binding is
+        engine-driven is read the way the runtime reads it -- a fetcher carrying ``model_spec`` -- not
+        from a hand-maintained id list, so the count cannot be kept green by editing a list.
+    
+        How the 66 is built, since a frozen sum hides a retraction: 46 at the wave-1 baseline, +4 from
+        the cboe declarations, -2 for the oecd rows that shipped as hand-written fetchers first and had
+        their declarations withdrawn, +2 for the federal_reserve CSV rows, +1 for the third
+        federal_reserve row declared through ``ModelSpec.row_expansion``, +3 for the three intrinio
+        declarations, and +1 for intrinio's fourth row (``CalendarIpo``), also declared through
+        ``ModelSpec.row_expansion``, +2 for the two federal_reserve rows this round
+        (``FederalFundsRate`` and ``SOFR``) and +1 for intrinio's ``InsiderTrading``; this
+        wave adds +1 for federal_reserve's ``OvernightBankFundingRate`` and +3 for the three
+        packages it registers at once (``benzinga_price_target``, ``tiingo_crypto_historical``,
+        ``econdb_available_indicators``). A withdrawn
+        declaration is counted out rather than left to register, so the assert freezes the population
+        the runtime can actually route. The
+        hand-written leg rose from 44 to 48 with four Finviz bindings, while the declared leg went
+        9 -> 10 -> 11 -> 14 -> 18:
+        intrinio's third
+        candidate row (``HistoricalDividends``) is no longer withheld -- its spec keeps it in
+        ``providers/intrinio/specs.py`` as ``HISTORICAL_DIVIDENDS`` with an empty ``NOT_DECLARABLE`` --
+        and its fourth row adds the binding plus the fetcher the engine generates for each of them.
+        """
+        providers = list_providers()
+        bindings = [
+            (provider.source, binding)
+            for provider in providers
+            for binding in provider.fetcher_bindings
+        ]
+    
+        assert len(providers) == 34
+        assert {provider.source for provider in providers} == EXPECTED_SOURCES
+        # Re-pinned after 360c61d (32-provider implementation surface): 14 sources moved from
+        # reserved to implemented, and the binding census grew 66 -> 342 with that wave plus the
+        # iter2 declarative/engine rows (live split: 325 hand-written facade fetchers + 17 engine).
+        assert {provider.source for provider in providers if provider.is_implemented} == {
+            "akshare",
+            "alpha_vantage",
+            "benzinga",
+            "bls",
+            "cboe",
+            "cftc",
+            "congress_gov",
+            "deribit",
+            "ecb",
+            "econdb",
+            "eia",
+            "famafrench",
+            "federal_reserve",
+            "finra",
+            "finviz",
+            "fmp",
+            "fred",
+            "government_us",
+            "imf",
+            "intrinio",
+            "multpl",
+            "nasdaq",
+            "oecd",
+            "sec",
+            "ths",
+            "tiingo",
+            "tmx",
+            "tradier",
+            "tradingeconomics",
+            "yfinance",
+        }
+        declared_ids = {f"{source}::{spec.model}" for source, spec in engine_declared_models()}
+        engine_bindings = [
+            (source, binding)
+            for source, binding in bindings
+            if binding.canonical_model_ids
+            and isinstance(getattr(binding.load(source), "model_spec", None), ModelSpec)
+        ]
+        engine_ids = {
+            f"{source}::{binding.canonical_model_ids[0]}" for source, binding in engine_bindings
+        }
+        assert engine_ids == declared_ids, "an engine binding's canonical id is the model it generates"
+>       assert len(bindings) == 342
+E       AssertionError: assert 351 == 342
+E        +  where 351 = len([('ecb', LazyFetcherBinding(module='opendata.data.providers.ecb.models.cpi', class_name='EcbCpiFetcher', canonical_mod...me='EcbBalanceOfPaymentsFetcher', canonical_model_ids=('BalanceOfPayments',), scenario='保留ECB十七维与原月季度期间的国际收支研究')), ...])
+
+tests/test_provider_catalog.py:170: AssertionError
+_____ test_registration_and_legacy_fetchers_project_the_same_capabilities ______
+
+    def test_registration_and_legacy_fetchers_project_the_same_capabilities() -> None:
+        """The registry's capability set, rebuilt from the two populations separately.
+    
+        ``expected_counts`` freezes the hand-written fetchers each provider's compatibility facade
+        publishes. A facade whose source also carries engine declarations answers ``FETCHERS`` with both
+        kinds, so the two are split on the same marker the runtime uses (a fetcher carrying
+        ``model_spec``) before either count is read, and the split sources are printed as a census. That
+        census measures empty today: oecd's two retracted ledger rows left its facade hand-written only,
+        and the ten registered declarations sit in sources with no hand-written fetcher at all. Folding
+        the kinds together would double-count a declaration's identity and turn the disjointness assert
+        below into a tautology: an identity shared between the hand-written leg and the declared leg is
+        the sign that a declaration replaced a fetcher, which is a different claim from the one this
+        test makes.
+        """
+        registry = ProviderRegistry()
+        registered = register_providers(registry)
+        source_fetchers = []
+        mixed_facades: list[str] = []
+        expected_counts = {
+            # Re-pinned after 360c61d: hand-written facade FETCHERS grew additively for fred
+            # (7->39), imf (3->11), yfinance (1->28) and fmp (2->69); the other five are unchanged.
+            "akshare": 10,
+            "ecb": 6,
+            "fred": 39,
+            "imf": 11,
+            "oecd": 2,
+            "ths": 11,
+            "yfinance": 28,
+            "bls": 2,
+            "fmp": 69,
+        }
+    
+        for source, count in expected_counts.items():
+            registration = importlib.import_module(f"opendata.data.providers.{source}.registration")
+            package = importlib.import_module(f"opendata.data.providers.{source}")
+            provider = get_provider(source)
+            fetchers = registration.FETCHERS
+            hand_written = tuple(
+                fetcher
+                for fetcher in fetchers
+                if not isinstance(getattr(fetcher, "model_spec", None), ModelSpec)
+            )
+            declared_here = len(fetchers) - len(hand_written)
+>           assert len(hand_written) == count, source
+E           AssertionError: oecd
+E           assert 11 == 2
+E            +  where 11 = len((<opendata.data.providers.oecd.models.cpi.OecdCpiFetcher object at 0x13d154e10>, <opendata.data.providers.oecd.models....r object at 0x13fa7cc30>, <opendata.data.providers.oecd.models.iter2.OecdGdpNominalFetcher object at 0x13fa7cd60>, ...))
+
+tests/test_provider_catalog.py:291: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_provider_catalog.py::test_catalog_contains_34_sources_and_only_66_fetcher_bindings
+FAILED tests/test_provider_catalog.py::test_registration_and_legacy_fetchers_project_the_same_capabilities
+2 failed, 173 passed in 1.51s

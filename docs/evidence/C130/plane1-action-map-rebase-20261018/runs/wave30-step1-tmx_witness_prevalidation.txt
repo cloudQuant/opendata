@@ -1,0 +1,31 @@
+materialized: fixtures=4 root=/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/w30-tmx-preval-ohhuspq_
+phase: tmx::EquityQuote::implementation exit=0 VERDICT=PASS
+phase: tmx::EquityQuote::direct exit=0 VERDICT=PASS
+phase: tmx::EquityQuote::service exit=0 VERDICT=PASS
+phase: tmx::EquityQuote::contract exit=0 VERDICT=PASS
+phase: tmx::EquityQuote::counterfact exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::implementation exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::direct exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::service exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::contract exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::counterfact exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::implementation exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::direct exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::service exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::contract exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::counterfact exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::implementation exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::direct exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::service exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::contract exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::counterfact exit=0 VERDICT=PASS
+PHASE_TALLY passed=20 failed=0 blocked=0 total=20
+CONTROL_FOUR_SERVED EquityQuote:rows=1 emitted=['TmxEquityQuote'] is_contract=True methods=['POST'] | EquityInfo:rows=1 emitted=['TmxEquityInfo'] is_contract=True methods=['POST'] | CompanyFilings:rows=1 emitted=['TmxCompanyFiling'] is_contract=True methods=['POST'] | PriceTargetConsensus:rows=1 emitted=['TmxPriceTargetConsensus'] is_contract=True methods=['POST']
+CONTROL_VERB_GUARD refused: TmxProviderError TMX_TRANSPORT_ERROR
+CONTROL_ROUTE_GUARD refused: TmxProviderError TMX_TRANSPORT_ERROR
+CONTROL_SEAM_VERB_DETAIL refused: client seam fixture entries matched url='https://app-money.tmx.com/graphql' but declare method=['GET'], and the source asked POST
+CONTROL_SEAM_ROUTE_DETAIL refused: client seam fixture covers no response for url='https://app-money.tmx.com/graphql'
+CONTROL_ROOT_ALIAS_GUARD refused: TmxProviderError code=TMX_BAD_ENVELOPE TMX_BAD_ENVELOPE status=200
+CONTROL_TAMPER_BITES EquityQuote:control=1 declared=TMX_BAD_ROW observed=TMX_BAD_ROW match=True | EquityInfo:control=1 declared=TMX_BAD_ROW observed=TMX_BAD_ROW match=True | CompanyFilings:control=1 declared=TMX_BAD_ROWS observed=TMX_BAD_ROWS match=True | PriceTargetConsensus:control=1 declared=TMX_BAD_ROW observed=TMX_BAD_ROW match=True
+CONTROL_VALUE_NOT_PRESENCE served: rows=1 last_price=121.44 seam_calls=1
+PREVALIDATION_DONE phase_failures_or_blocked=0

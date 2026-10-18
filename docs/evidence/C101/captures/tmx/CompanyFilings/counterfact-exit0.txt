@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyFilings --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROWS", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROWS", "rejected": [], "status": null}, "reason": "both records are individually well-formed, so nothing about either filing is wrong and only their count disagrees with the request: the caller asked for limit 1, filing_date is a required column of TmxCompanyFiling whose row the caller did not ask for, and the filings mapper must refuse the over-long reply rather than truncate it, because silently dropping the tail is indistinguishable from the source having no more filings to publish; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,5 @@
+pin_scope=ALL receipt_files=1425 pin_kinds=contract,fixture,probe,source
+A_clean: slots=20411 stale=0 before_ne_after=0 samples=[] by_kind={'contract': 2920, 'fixture': 2656, 'probe': 7580, 'source': 7255}
+B_forced: slots=20411 stale=1425 targeted_slots=1425 substitute=scripts/quality/iter2_claims_probe_runner.py must_equal_targeted=True
+C_rearm: stale=0 before_ne_after=1 expected=stale=0/before_ne_after=1 PASS=True
+pin_face slots=20411 stale=0 before_ne_after=0 distinct_pinned_paths=581 arms=3 arms_passed=3 arms_failed=0 PASS=True

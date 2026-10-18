@@ -1,0 +1,101 @@
+波 30 步骤 8a 索引面（pre-commit staged payload scan）：扫的是**将要成为历史的那一份清单**
+======================================================================================
+
+作用对象是 index，不是工作树：`make secret-check` 走的 `gitleaks detect --source .` 读提交历史，
+所以「已 stage、尚未提交」正是凭据形状还便宜可修的那一刻，而那一刻没有任何出厂闸门看得见。
+本目录用的走器是 `docs/evidence/C128/plane1-residue-readiness-20261017/probes/staged_payload_scan.py`
+（127 行 / 4890 字节 / `sha16=f5402c4e39098d93`）。三个数现测于写档之前，并与波 28 载档
+`wave28-step4g-staged-scan.txt:6` 记录的同一组数**逐字相等** —— 这就是「本步一个字节没改」的证法，
+不是我的口头断言。
+
+argv 逐字（从工具结果里抄，不补写）：
+
+    git -c core.quotepath=off diff --cached --name-only -z | xargs -0 /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C128/plane1-residue-readiness-20261017/probes/staged_payload_scan.py --paths > /tmp/w30s8.stage1.out 2> /tmp/w30s8.stage1.err
+
+`--paths` 留在 argv 前缀里、只能让 xargs 往尾部追加文件清单；把它挪到尾部会让走器收到空清单并把
+stdout 留空，那是一条「干净的 0」而不是读数。`-c core.quotepath=off` 同理：少了它，非 ASCII 路径会被
+引用成八进制串而无法解析，清单会静默少一枚而仍印 `findings=0`。本波 94 枚路径现测全部 ASCII
+（`git diff --cached --name-only | LC_ALL=C grep -c '[^ -~]'` 读 **0**），所以这一格今天不构成风险；
+它留在 argv 里是因为上一条读数来自一枚坏谓词（见本节末「仪器自曝」）。
+
+take 1（在写本载档之前，index 里就是此刻要提交的那 92 枚）stdout 逐字：
+
+    payload_scan_files=92 payload_scan_roots=92 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+    payload_scan=PASS 92 file(s) clean
+
+take1_stdout_bytes=147 take1_stderr_bytes=0 staged_scan_take1_exit=0
+
+本代面（写档时现读 `git show :docs/evidence/C101/judge/claims.merged.report.json`，六个读数取自
+**staged blob 而不是工作树副本**，因为本载档要证明的是将要成为历史的那一份字节）：
+`offline_acceptance_count=285`，`status_counts={'INCOMPLETE': 28, 'OFFLINE_ACCEPTED': 285, 'UNREVIEWED': 37}`，
+`claim_count=1565`，`primary_review_count=285`，`identity_count=350`（`inventory.identity_count=350`，
+`inventory.expected_identity_count=350`），`integrity=PINNED_EXACT_SET`，
+`identity_set_sha256[0:16]=5168e1e723999312` = `expected_identity_set_sha256[0:16]`，
+`global_issues=0 invalid_claims=0`，`len(models)=350`。
+第一版我把这九个名字当顶层键读，全部读回 `ABSENT` —— 计数器住在 `summary` 与 `inventory` 两个子对象里，
+只有 `global_issues`/`invalid_claims` 在顶层，且它们是**列表**：波 28 载档里那两格写的 0 是长度，不是值。
+哨兵用 `ABSENT` 而不是 0，是为了让这种错读自己喊出来；换成默认 0 就会把一次键名写错读成一次绿。
+
+清单构成（92 枚，按目录分桶现数，相加等于母数）：`c101=53 c128_probes=4 c128_runs=1 c128_readme=1
+c130_probes=2 c130_runs=28 c130_face=1 product=2 = 92`；按 diff 状态另一刀：`83 枚新增 + 9 枚修改 = 92`。
+那 9 枚修改逐字是 `C101/claims.merged.json`、`C101/judge/claims.merged.report.json`、
+`C101/judge/claims.merged.report.md`、`C128/README.md`、C128 的 4 枚探针、
+`opendata/data/providers/tmx/models/fetchers.py`。**本文件不在 take 1 的 92 枚里**：它跑时本文件还不存在。
+
+按约定不进提交的：63 枚 `.err` 捕获兄弟与 `runs/.step4f.rcs` 一枚（点开头、不是任何仪器的输出，
+是本波某条命令的重定向残留）。这一格由 `git ls-files --others --exclude-standard docs/evidence/C128
+docs/evidence/C130` 现读 = 64，并按后缀分桶 `63 .err + 1 .rcs`；同一条清单里 `.txt`/`.md`/`.py`/`.json`
+的命中数是 **0**，即精选没有漏下任何一份该提交的载档 —— 这一格是本波唯一一次「未跟踪面」的核对。
+
+反例面：一条 `findings=0` 只有在这个屏幕**能咬**的时候才是读数。
+`probes/payload_scan_falsification.py`（208 行 / 8908 字节 / `sha16=1edac3d7bdbedfc6`，
+载档 `runs/wave30-step8b-payload-scan-falsification.txt` 11 行 / 1135 字节 / `sha16=1a2c189714b22714`）
+把本波 staged 清单的前 3 枚字节抄进 mktemp 树、种进一枚由 LCG 生成的假凭据，三臂读数逐字：
+
+    A_planted_high_entropy_token_reports: kind=plant scanned=4 findings=1 rules=['github-pat'] gitleaks_rc=1 expected=>=1 -> True
+    B_clean_copy_stays_clean: kind=clean scanned=3 findings=0 rules=[] gitleaks_rc=0 expected=0 -> True
+    C_assembled_literal_stays_quiet: kind=assembled scanned=4 findings=0 rules=[] gitleaks_rc=0 expected=0 -> True
+    falsification_face arms=3 arms_passed=3 arms_failed=0 PASS=True
+
+臂 A 报 1 枚、规则是 `github-pat`，`gitleaks_rc=1` 在出厂语义里就是「检出凭据」而非崩溃；所以本屏幕
+对这一对的强度是**一枚规则咬住**，不是两枚 —— 我种的第二行（`AKIA` 形状 + 16 字符体）在默认规则集下
+没有单独成一条 finding，这一格写出来是因为它是边界的实测位置，不是为了把屏幕说得更强。臂 C 读 0 是
+`.gitleaks.toml:128-129` 记着的那条边界：base64 不是载体（gitleaks 8.30.1 会先解一层），拼接才是。
+载档里既不印种下去的字面量，探针源码里也没有连续的凭据形状字面量（`ghp_[A-Za-z0-9]{36}` 与
+`AKIA[A-Za-z0-9]{16}` 两个模式在两份文件上现读都是 False），凭据卫生由此格而不是由散文保证。
+
+lag_statement：一份载档永远扫不到它接下来要追加的那几行，所以本文件的 take 1 只覆盖「take 1 之前已在
+index 里」的字节；把本文件 stage 之后重取记为 take 2；覆盖**即将提交的最终字节**的那一次（take 3）由本次
+提交说明逐字携带，本文件内不写它自己的读数。
+
+take 2（本波第 8b 步那两枚新文件 stage 之后、本载档尚未 stage；此刻 index 是 94 枚）stdout 逐字：
+
+    payload_scan_files=94 payload_scan_roots=94 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+    payload_scan=PASS 94 file(s) clean
+
+take2_stdout_bytes=147 take2_stderr_bytes=0 staged_scan_take2_exit=0
+
+`diff /tmp/w30s8.stage1.out /tmp/w30s8.stage2.out` 退出 **1**，报 `1,2c1,2`：动的只有两格计数器
+（`payload_scan_files`/`payload_scan_roots` 与 `PASS N file(s) clean` 里的 N，92 → 94），三条 0
+（`unresolved` / `findings` / `rc`）与第二行除 N 之外逐字相同，stdout 仍是 147 字节。这条 diff 是本载档
+存在的理由：它证明「多出来两枚文件」读出来的是母数，不是判定 —— 若 `findings` 跟着母数一起动，
+那说明 stage 进来的那两枚是 finding 而不是文档。
+
+仪器自曝（本步我写坏两次，都留在记录里而不是抹掉）：
+
+1. 非 ASCII 谓词读假：`grep -v '^[\x20-\x7E]*$'` 在 BSD grep 下把 92 枚路径**全部**报成非 ASCII
+   （`\xNN` 不是 BRE 转义）。换成 `LC_ALL=C grep -c '[^ -~]'` 才读出 0。若我照第一版写档，
+   本文件会指控自己清单里的 92 枚文件名。
+2. 新探针的 `REPO_ROOT` 少数一层 parent：`parents[4]` 指到 `docs/` 而不是仓库根，于是
+   `--config docs/.gitleaks.toml` 不存在，gitleaks 以 rc=1 退出且不写报告，而我的 `_scan` 把
+   「没有报告」返回成 `[]` —— 臂 B/C 因此各读一条**假的 0 并自称绿**。修法是两处：`parents[5]`，
+   加上「无报告 = `None` = 该臂直接 False 并打印 `stderr` 尾部」，再在 `main` 里加一条前提检查
+   （`config_exists` 与 `hosts` 任一不成立就 `premise_broken=1 / PASS=False / falsification_exit=1`，
+   一臂都不跑）。同一条错误还顺带解释了第 1 格里 `hosts=0`：路径是相对仓库根拼的，根错了整份清单
+   就解析不到文件，而旧代码只把它印成一个 0。
+3. 第一版反例种的是 40 个相同字符，`findings=0`。原因不在规则正则而在出厂的熵检查：那串字符熵为
+   0.0000，远低于 `github-pat` 需要的门。所以第二版把每个体的熵**打印出来**
+   （`ghp=4.7255 akia=4.0000 flat40=0.0000`），并把臂 A 的期望写成 `>=1` 而不是我一开始想写的 `==2`。
+
+追加本段之后的字节由 take 3 扫描，take 3 的读数住在提交说明里（不在本文件内，写进来就又是下一格 lag）。
+`staged_scan_final_take=commit_message`

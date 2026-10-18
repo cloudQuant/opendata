@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityInfo --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROW", "rejected": [], "status": null}, "reason": "employees is the one profile column of TmxEquityInfo typed StrictInt, so quoting it breaks exactly that cell while the description, address and share counts stay whole: the profile mapper must refuse rather than publish a company whose headcount is a string, because the contract row is what a consumer sums across companies and a text headcount either fails their arithmetic later or reads as a null the fixture never produced; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

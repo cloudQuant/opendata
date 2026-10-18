@@ -18,11 +18,13 @@ agreement per provider that exists as a package and handles the rest as its own 
 Arms, all five of which can fail:
 
 ``A_landed_report_face``
-    the judge report still reads 350 identities / ``{INCOMPLETE: 8, OFFLINE_ACCEPTED: 281,
-    UNREVIEWED: 61}`` / ``identity_set[0:16]=5168e1e723999312``. Landed in
-    ``runs/wave27-step0-block-axes.txt`` as ``{...266...77}`` and re-based three times since: to
-    ``{7, 275, 68}`` by step 3, to ``{6, 276, 68}`` by step 4's ``federal_reserve::YieldCurve``, and
-    to this face by wave 29's deribit 5 rows. The previous value and the measured per-status delta
+    the judge report still reads 350 identities / ``{INCOMPLETE: 28, OFFLINE_ACCEPTED: 285,
+    UNREVIEWED: 37}`` / ``identity_set[0:16]=5168e1e723999312``. Landed in
+    ``runs/wave27-step0-block-axes.txt`` as ``{...266...77}`` and re-based four times since: to
+    ``{7, 275, 68}`` by step 3, to ``{6, 276, 68}`` by step 4's ``federal_reserve::YieldCurve``, to
+    ``{8, 281, 61}`` by wave 29's deribit 5 rows, and to this face by wave 30's tmx 4 rows (24 of
+    tmx's rows left UNREVIEWED: 4 accepted, 20 turned INCOMPLETE by the five BLOCKED claims the
+    producer recorded for each). The previous value and the measured per-status delta
     are printed on ``A_rebase_from_landed`` so the re-base is checkable rather than remembered. Any
     movement reddens this arm and invalidates every number below -- that is the invalidation
     condition, not a warning.
@@ -67,13 +69,14 @@ import incomplete_row_guard_check as axes  # the shipped four-axis row measurer
 import seam_surface_match as seam  # the shipped report reader
 
 LANDED_TOTAL = 350
-LANDED_STATUSES = {"INCOMPLETE": 8, "OFFLINE_ACCEPTED": 281, "UNREVIEWED": 61}
-# The generation this probe asserted before wave-29 landed deribit's 5 rows. Kept so a re-base
-# prints a delta instead of silently replacing the number step 4 quoted: the 5 deribit rows left
-# UNREVIEWED, and government_us::TreasuryPrices/WeatherBulletinDownload left UNREVIEWED too but
-# landed in INCOMPLETE, because the re-produce recorded five BLOCKED claims for each where the
-# committed shard had none at all.
-LANDED_STATUSES_PREVIOUS = {"INCOMPLETE": 6, "OFFLINE_ACCEPTED": 276, "UNREVIEWED": 68}
+LANDED_STATUSES = {"INCOMPLETE": 28, "OFFLINE_ACCEPTED": 285, "UNREVIEWED": 37}
+# The generation this probe asserted before wave-30 landed tmx's 4 rows. Kept so a re-base prints a
+# delta instead of silently replacing the number the previous wave quoted: 4 of tmx's rows left
+# UNREVIEWED for OFFLINE_ACCEPTED (the four with a ``row_model`` declaration and a witness entry),
+# and the other 20 left UNREVIEWED for INCOMPLETE without landing anything, because this wave's
+# producer recorded five BLOCKED claims for each of them where the committed shard had none at all.
+# That is why the bucket sum moves by 24 while the accepted count moves by 4.
+LANDED_STATUSES_PREVIOUS = {"INCOMPLETE": 8, "OFFLINE_ACCEPTED": 281, "UNREVIEWED": 61}
 LANDED_IDENTITY_SET = "5168e1e723999312"
 LANDED_BLOCK = ("yfinance", "DECLARE_AND_WITNESS")
 PROVIDERS_DIR = seam.REPO_ROOT / "opendata" / "data" / "providers"

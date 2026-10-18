@@ -290,6 +290,7 @@ class EquityQuoteFetcher(_TypedFetcher[EquityQuoteQuery]):
     """Fetch the public TMX quote snapshot for one symbol."""
 
     canonical_model: ClassVar[str | None] = "EquityQuote"
+    row_model: ClassVar[type[TmxEquityQuote]] = TmxEquityQuote
     capability: ClassVar[Capability] = _capability("tmx_equity_quote", "snapshot", "EquityQuote")
 
     def transform_query(self, **kwargs: object) -> EquityQuoteQuery:
@@ -343,6 +344,7 @@ class EquityInfoFetcher(_TypedFetcher[EquityInfoQuery]):
     """Fetch public company profile fields from the TMX quote operation."""
 
     canonical_model: ClassVar[str | None] = "EquityInfo"
+    row_model: ClassVar[type[TmxEquityInfo]] = TmxEquityInfo
     capability: ClassVar[Capability] = _capability("tmx_equity_info", "snapshot", "EquityInfo")
 
     def transform_query(self, **kwargs: object) -> EquityInfoQuery:
@@ -392,6 +394,7 @@ class CompanyFilingsFetcher(_TypedFetcher[CompanyFilingsQuery]):
     """Fetch and map bounded company filing rows."""
 
     canonical_model: ClassVar[str | None] = "CompanyFilings"
+    row_model: ClassVar[type[TmxCompanyFiling]] = TmxCompanyFiling
     capability: ClassVar[Capability] = _capability(
         "tmx_company_filings", "document", "CompanyFilings"
     )
@@ -548,6 +551,7 @@ class PriceTargetConsensusFetcher(_TypedFetcher[PriceTargetConsensusQuery]):
     """Fetch analyst target and consensus fields for one company."""
 
     canonical_model: ClassVar[str | None] = "PriceTargetConsensus"
+    row_model: ClassVar[type[TmxPriceTargetConsensus]] = TmxPriceTargetConsensus
     capability: ClassVar[Capability] = _capability(
         "tmx_price_target_consensus", "snapshot", "PriceTargetConsensus"
     )

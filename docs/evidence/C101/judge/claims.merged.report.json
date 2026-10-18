@@ -2,7 +2,7 @@
   "acceptance_rule": "all five phase claims plus an explicit valid primary-model or human ACCEPT receipt; claim PASS alone is candidate only",
   "claims_input": {
     "path": "docs/evidence/C101/claims.merged.json",
-    "sha256": "73c7701a6931d02c203704869f2ab82a66bd934e5c2e5d2a77b43cdceddfc8b3"
+    "sha256": "39090adeb9628bd77b221883f5f9ecad35a4b511f5a593756165d2be7d7b5a0a"
   },
   "claims_status_source": "explicit JSON claims only; no directory globbing or markdown status parsing",
   "global_issues": [],
@@ -24768,25 +24768,114 @@
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::AvailableIndices",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -24800,31 +24889,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-AvailableIndices",
       "upstream_model": "AvailableIndices"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::BondPrices",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -24838,31 +25016,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-BondPrices",
       "upstream_model": "BondPrices"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::CalendarEarnings",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -24876,69 +25143,205 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-CalendarEarnings",
       "upstream_model": "CalendarEarnings"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "tmx::CompanyFilings",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CompanyFilings/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROWS",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROWS",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "both records are individually well-formed, so nothing about either filing is wrong and only their count disagrees with the request: the caller asked for limit 1, filing_date is a required column of TmxCompanyFiling whose row the caller did not ask for, and the filings mapper must refuse the over-long reply rather than truncate it, because silently dropping the tail is indistinguishable from the source having no more filings to publish; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CompanyFilings/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CompanyFilings/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CompanyFilings/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CompanyFilings/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-CompanyFilings",
       "upstream_model": "CompanyFilings"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::CompanyNews",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -24952,31 +25355,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-CompanyNews",
       "upstream_model": "CompanyNews"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::EquityHistorical",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -24990,107 +25482,290 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-EquityHistorical",
       "upstream_model": "EquityHistorical"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "tmx::EquityInfo",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityInfo/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "employees is the one profile column of TmxEquityInfo typed StrictInt, so quoting it breaks exactly that cell while the description, address and share counts stay whole: the profile mapper must refuse rather than publish a company whose headcount is a string, because the contract row is what a consumer sums across companies and a text headcount either fails their arithmetic later or reads as a null the fixture never produced; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityInfo/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityInfo/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityInfo/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityInfo/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-EquityInfo",
       "upstream_model": "EquityInfo"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "tmx::EquityQuote",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityQuote/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "quoting the price leaves every other cell of the snapshot well-formed, and last_price is the contract column of TmxEquityQuote that TMX publishes as a JSON number: the quote mapper must refuse the snapshot rather than coerce a numeric string into a float it never parsed, because _number reads the TMX numeric fields as numbers only and a coerced last_price would silently carry a percent and a market cap derived from a cell whose type the source never published; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityQuote/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityQuote/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityQuote/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityQuote/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-EquityQuote",
       "upstream_model": "EquityQuote"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::EquitySearch",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25104,31 +25779,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-EquitySearch",
       "upstream_model": "EquitySearch"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::EtfSearch",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25142,31 +25906,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-EtfSearch",
       "upstream_model": "EtfSearch"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::EtfHoldings",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25180,31 +26033,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-EtfHoldings",
       "upstream_model": "EtfHoldings"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::EtfSectors",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25218,31 +26160,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-EtfSectors",
       "upstream_model": "EtfSectors"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::EtfCountries",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25256,31 +26287,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-EtfCountries",
       "upstream_model": "EtfCountries"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::EtfHistorical",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25294,31 +26414,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-EtfHistorical",
       "upstream_model": "EtfHistorical"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::EtfInfo",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25332,31 +26541,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-EtfInfo",
       "upstream_model": "EtfInfo"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::EquityGainers",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25370,31 +26668,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-EquityGainers",
       "upstream_model": "EquityGainers"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::HistoricalDividends",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25408,31 +26795,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-HistoricalDividends",
       "upstream_model": "HistoricalDividends"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::IndexConstituents",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25446,31 +26922,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-IndexConstituents",
       "upstream_model": "IndexConstituents"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::IndexSectors",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25484,31 +27049,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-IndexSectors",
       "upstream_model": "IndexSectors"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::IndexSnapshots",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25522,31 +27176,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-IndexSnapshots",
       "upstream_model": "IndexSnapshots"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::InsiderTrading",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25560,31 +27303,120 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-InsiderTrading",
       "upstream_model": "InsiderTrading"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::OptionsChains",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25598,69 +27430,205 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-OptionsChains",
       "upstream_model": "OptionsChains"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "tmx::PriceTargetConsensus",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/PriceTargetConsensus/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the rating block is where this contract lives: buy_ratings, sell_ratings and hold_ratings are the three columns of TmxPriceTargetConsensus that only exist inside consensusAnalysts, so flattening that object to a label string leaves the price targets and totalAnalysts untouched and makes the three counts unreadable -- the consensus mapper must refuse rather than publish a row whose rating split is three nulls a consumer cannot tell apart from zero analyst coverage; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/PriceTargetConsensus/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/PriceTargetConsensus/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/PriceTargetConsensus/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/PriceTargetConsensus/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-PriceTargetConsensus",
       "upstream_model": "PriceTargetConsensus"
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "tmx::TreasuryPrices",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -25674,7 +27642,7 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "tmx",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-tmx-TreasuryPrices",
       "upstream_model": "TreasuryPrices"
     },
@@ -27411,14 +29379,14 @@
   ],
   "schema_version": 1,
   "summary": {
-    "claim_count": 1445,
+    "claim_count": 1565,
     "identity_count": 350,
-    "offline_acceptance_count": 281,
-    "primary_review_count": 281,
+    "offline_acceptance_count": 285,
+    "primary_review_count": 285,
     "status_counts": {
-      "INCOMPLETE": 8,
-      "OFFLINE_ACCEPTED": 281,
-      "UNREVIEWED": 61
+      "INCOMPLETE": 28,
+      "OFFLINE_ACCEPTED": 285,
+      "UNREVIEWED": 37
     }
   }
 }

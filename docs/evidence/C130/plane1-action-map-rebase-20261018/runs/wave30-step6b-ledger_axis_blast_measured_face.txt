@@ -1,0 +1,19 @@
+A_landed_report_face total=350 statuses={'INCOMPLETE': 28, 'OFFLINE_ACCEPTED': 285, 'UNREVIEWED': 37} identity_set=5168e1e723999312 landed=350 {'INCOMPLETE': 8, 'OFFLINE_ACCEPTED': 281, 'UNREVIEWED': 61} 5168e1e723999312 PASS=False
+A_rebase_from_landed previous={'INCOMPLETE': 6, 'OFFLINE_ACCEPTED': 276, 'UNREVIEWED': 68} rebase_delta={'INCOMPLETE': 22, 'OFFLINE_ACCEPTED': 9, 'UNREVIEWED': -31} delta_sums_to_zero=True identity_set_moved=False
+residue_population=65 statuses={'INCOMPLETE': 28, 'UNREVIEWED': 37}
+  provider=biztoc rows=1 bound_true=0 ledger_refusal=0 ledger_silent=0 no_ledger_module=1 both=0
+  provider=cboe rows=2 bound_true=0 ledger_refusal=2 ledger_silent=0 no_ledger_module=0 both=0
+  provider=econdb rows=2 bound_true=0 ledger_refusal=2 ledger_silent=0 no_ledger_module=0 both=0
+  provider=federal_reserve rows=1 bound_true=1 ledger_refusal=0 ledger_silent=1 no_ledger_module=0 both=0
+  provider=government_us rows=2 bound_true=1 ledger_refusal=0 ledger_silent=0 no_ledger_module=2 both=0
+  provider=intrinio rows=1 bound_true=0 ledger_refusal=1 ledger_silent=0 no_ledger_module=0 both=0
+  provider=seeking_alpha rows=3 bound_true=0 ledger_refusal=3 ledger_silent=0 no_ledger_module=0 both=0
+  provider=stockgrid rows=1 bound_true=0 ledger_refusal=0 ledger_silent=0 no_ledger_module=1 both=0
+  provider=tmx rows=20 bound_true=4 ledger_refusal=0 ledger_silent=0 no_ledger_module=20 both=0
+  provider=wsj rows=3 bound_true=0 ledger_refusal=3 ledger_silent=0 no_ledger_module=0 both=0
+  provider=yfinance rows=29 bound_true=27 ledger_refusal=0 ledger_silent=0 no_ledger_module=29 both=0
+B_three_causes_reachable reads={(False, False): 1, (False, True): 53, (True, False): 11} PASS=True
+C_conflation_identity old_predicate_ruled_out=64 new_ruled_out=11 no_ledger=53 cause_3_both_set=0 overstated_by=53 PASS=True
+D_cause_matches_disk providers=32 specs_absent=18 sorted_absent=['akshare', 'bls', 'cftc', 'deribit', 'ecb', 'eia', 'famafrench', 'finra', 'finviz', 'fmp', 'fred', 'government_us', 'imf', 'nasdaq', 'ths', 'tmx', 'tradier', 'yfinance'] read_absent=['biztoc', 'government_us', 'stockgrid', 'tmx', 'yfinance'] providers_with_residue_rows=11 off_census=['biztoc', 'stockgrid'] off_census_bound_rows=0 uniform_per_package=True package_names_are_bounded=True PASS=True
+E_pricer_block_inside provider=yfinance tag=DECLARE_AND_WITNESS block=11 in_residue=11 block_bound_true=11 all_no_ledger_module=True PASS=True
+ledger_blast_face residue=65 bound_true=33 ledger_refusal=11 ledger_silent=1 no_ledger_module=53 no_ledger_module_and_bound=32 pre_split_overstatement=53 arms=5 arms_passed=4 arms_failed=1 identity_set=5168e1e723999312

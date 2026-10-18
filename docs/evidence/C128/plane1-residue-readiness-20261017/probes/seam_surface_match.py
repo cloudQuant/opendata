@@ -13,8 +13,8 @@ acceptance rule forbids:
 
 * arm A is the positive control. It must read WITNESSABLE, and the judge report must show rows of
   that provider accepted -- otherwise "the seam answers this verb" is unfalsified.
-* arm B is the claim under test: every verb each un-witnessed provider's transport module calls on
-  the shared client, intersected with the fake's public surface.
+* arm B is the claim under test: every verb each arm's provider transport module calls on the shared
+  client, intersected with the fake's public surface.
 
 There are three verdicts, not two. An empty verb set means the collection found no call on the
 shared client at all, so the surface question was never posed -- it does *not* mean the seam
@@ -22,6 +22,20 @@ answers this provider's transport. Providers that own their transport (a lazy SD
 injected ``http_transport`` for the engine leg) read NO_SEAM_VERBS_MEASURED and need a different
 witness mechanism; collapsing that into WITNESSABLE would make the arm unsatisfiable-by-failure and
 turn a reachability claim into the verbal judgment the acceptance rule forbids.
+
+Wave 30 re-based the second arm instead of deleting its expectation, and paid for the third verdict.
+tmx used to be the face that proved the blockage: its transport calls ``request``, a verb the fake
+answered only after wave 29 widened it. Run against the 285/350 report the probe now prints
+``verbs=['request'] missing=[] verdict=WITNESSABLE`` for tmx, and the stale constant exited 1 (that
+red reading is archived as the C130 carrier ``wave30-step0a-seam_surface_match.txt``), so the old
+expectation was a landed-face value baked into an arm. Keeping the branch alive is a separate
+problem: a census of all 32 providers in the report finds no live module that calls a verb outside
+``get``/``request``, so no real provider carries that verdict any more and it can only be shown on
+the surface as it was *before* wave 29. The forged arms read every provider's verb set against both
+surfaces -- which rows reach outside ``get`` is derived, not named here -- and carry a ``get``-only
+accepted provider beside them as the arm that must not flip. deribit is the live
+NO_SEAM_VERBS_MEASURED carrier: it owns its transport, is accepted for its rows, and so shows that
+the verdict is a different mechanism, not a blockage.
 
 Prints one line per provider plus the face line the narrative quotes, and exits non-zero when an
 arm reads opposite to its expected verdict.
@@ -42,8 +56,27 @@ sys.path.insert(0, str(REPO_ROOT / "scripts" / "quality"))
 import iter2_claims_probe_runner as runner  # noqa: E402  # the shipped fake is the measure
 
 JUDGE_REPORT = REPO_ROOT / "docs/evidence/C101/judge/claims.merged.report.json"
-PROVIDERS = (("eia", "WITNESSABLE"), ("tmx", "BLOCKED_ON_RUNNER_SURFACE"))
+PROVIDERS = (
+    ("eia", "WITNESSABLE"),
+    ("tmx", "WITNESSABLE"),
+    ("deribit", "NO_SEAM_VERBS_MEASURED"),
+)
 VERDICTS = ("WITNESSABLE", "BLOCKED_ON_RUNNER_SURFACE", "NO_SEAM_VERBS_MEASURED")
+
+#: The fake's public surface as it was before wave 29 widened it to answer ``request``. No live
+#: provider reads a verb outside the shipped surface any more, so this is the only carrier left for
+#: the BLOCKED verdict -- the forged arms below measure real verb sets against it, and which
+#: providers those are gets derived from the same read rather than named here.
+PRE_WIDENING_SURFACE = frozenset({"get"})
+
+
+def _verdict(verbs: set[str], surface: set[str]) -> str:
+    """The shipped three-valued ladder, read against whichever surface the arm supplies."""
+    if not verbs:
+        return "NO_SEAM_VERBS_MEASURED"
+    if verbs - surface:
+        return "BLOCKED_ON_RUNNER_SURFACE"
+    return "WITNESSABLE"
 
 
 def _fake_surface() -> set[str]:
@@ -141,12 +174,7 @@ def main(argv: list[str] | None = None) -> int:
     for provider, expected in arms:
         verbs = _transport_verbs(provider)
         missing = sorted(verbs - surface)
-        if not verbs:
-            verdict = "NO_SEAM_VERBS_MEASURED"
-        elif missing:
-            verdict = "BLOCKED_ON_RUNNER_SURFACE"
-        else:
-            verdict = "WITNESSABLE"
+        verdict = _verdict(verbs, surface)
         face = accepted.get(provider, {})
         print(
             f"seam_surface_provider={provider} fake_methods={sorted(surface)} "
@@ -158,10 +186,48 @@ def main(argv: list[str] | None = None) -> int:
         if expected == "WITNESSABLE" and not face.get("OFFLINE_ACCEPTED"):
             # An arm may not be satisfied by a phrase: the positive control has to show rows.
             failures += 1
+
+    # The BLOCKED branch has to stay capable of differing, so it is measured -- not asserted -- on
+    # the pre-wave-29 surface. Which providers that branch applies to is derived from the same verb
+    # read (no landed name list), and a get-only provider is carried beside them as the arm that
+    # must not flip: without it "the surface changed" and "this provider changed" are the same face.
+    pre = set(PRE_WIDENING_SURFACE)
+    verb_sets = {p: _transport_verbs(p) for p in sorted(accepted)}
+    flipped = [p for p, verbs in verb_sets.items() if verbs and verbs - pre]
+    control = next((p for p, _ in arms if _transport_verbs(p) <= pre), "")
+    forged = 0
+    if not flipped:
+        # No live provider would have been blocked by the old surface, so this generation cannot
+        # show the BLOCKED branch. Say so and refuse rather than let the forged arm read vacuous.
+        forged += 1
+        print("seam_surface_prewidening flipped=NONE PASS=False")
+    for provider in flipped:
+        verbs = verb_sets[provider]
+        live_v, pre_v = _verdict(verbs, surface), _verdict(verbs, pre)
+        ok = live_v == "WITNESSABLE" and pre_v == "BLOCKED_ON_RUNNER_SURFACE"
+        forged += 0 if ok else 1
+        print(
+            f"seam_surface_prewidening provider={provider} verbs={sorted(verbs)} "
+            f"live={live_v} pre_widening={pre_v} "
+            f"expected=BLOCKED_ON_RUNNER_SURFACE PASS={ok}"
+        )
+    if control:
+        control_verbs = _transport_verbs(control)
+        ok = _verdict(control_verbs, pre) == "WITNESSABLE"
+        forged += 0 if ok else 1
+        print(
+            f"seam_surface_prewidening provider={control} verbs={sorted(control_verbs)} "
+            f"live={_verdict(control_verbs, surface)} pre_widening={_verdict(control_verbs, pre)} "
+            f"expected=WITNESSABLE PASS={ok}"
+        )
+    else:
+        forged += 1
+        print("seam_surface_prewidening control=NONE PASS=False")
     print(
-        f"seam_surface_arms={len(arms)} seam_surface_failed={failures} identity_set={identity_set}"
+        f"seam_surface_arms={len(arms)} flipped_by_widening={flipped} control={control} "
+        f"seam_surface_failed={failures + forged} identity_set={identity_set}"
     )
-    return 1 if failures else 0
+    return 1 if (failures + forged) else 0
 
 
 if __name__ == "__main__":

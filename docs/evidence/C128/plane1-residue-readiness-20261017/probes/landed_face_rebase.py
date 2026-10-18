@@ -1,10 +1,13 @@
 """Re-base the landed-face constants, and show the re-based arm can still go red.
 
-Wave-28 step 4 landed one row -- ``federal_reserve::YieldCurve``, after its reader was retargeted
-onto the class ``opendata/data/domains.yaml`` declares -- so the landed plane-1 face moved
-``275 -> 276`` accepted and ``7 -> 6`` INCOMPLETE (the row's claims were BLOCKED, so UNREVIEWED
-held at 68) while the identity set stayed ``5168e1e723999312``. Two wave-27
-instruments assert that face (``ledger_axis_blast.A_landed_report_face``,
+Wave-30 step 2 landed four rows -- tmx's ``EquityQuote``/``EquityInfo``/``CompanyFilings``/
+``PriceTargetConsensus``, each given a ``row_model`` declaration plus an entry in this repo's first
+tmx witness module -- so the landed plane-1 face moved ``281 -> 285`` accepted,
+``61 -> 37`` UNREVIEWED and ``8 -> 28`` INCOMPLETE while the identity set stayed
+``5168e1e723999312``. The bucket sum moves by more than the accepted count because tmx's other 20
+rows also left UNREVIEWED: the producer recorded five BLOCKED claims for each of them, which is a
+status, not a missing shard. Two earlier instruments assert that face
+(``ledger_axis_blast.A_landed_report_face``,
 ``witness_seam_kind_census.A_landed_report_face``) and both read ``arms_failed=1`` for it until
 their constants moved. Re-basing an expected value is only safe if the arm still discriminates, so
 this driver calls each probe's ``main()`` three times in one process over the same report bytes:
@@ -35,8 +38,9 @@ Arms, six per subject, all of which can fail:
     so ``granted=`` is the one field that legitimately ages inside a single process. Comparing whole
     stdout would have read that aging as a broken re-base.
 ``F_delta_matches_the_committed_face``
-    the delta the re-based probe prints is exactly the step-4 move (one row out of INCOMPLETE and
-    into OFFLINE_ACCEPTED, summing to zero) and the forged run still *reports* the real accepted
+    the delta the re-based probe prints is exactly the move this wave made against the
+    ``*_PREVIOUS`` face (four rows out of UNREVIEWED into OFFLINE_ACCEPTED, twenty more out of
+    UNREVIEWED into INCOMPLETE, summing to zero). The forged run still *reports* the real accepted
     count while asserting the old one, which is what tells a reader which side was wrong.
 
 The previous value is taken from each probe module's own ``*_PREVIOUS`` constant, so this driver
@@ -67,10 +71,10 @@ PROBE_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROBE_DIR))
 
 RUNS = PROBE_DIR.parent / "runs"
-CARRIER = RUNS / "wave29-step2d-landed-face-rebase.txt"
+CARRIER = RUNS / "wave30-step6e-landed-face-rebase.txt"
 
-EXPECTED_ACCEPTED = 281
-EXPECTED_DELTA = {"INCOMPLETE": 2, "OFFLINE_ACCEPTED": 5, "UNREVIEWED": -7}
+EXPECTED_ACCEPTED = 285
+EXPECTED_DELTA = {"INCOMPLETE": 20, "OFFLINE_ACCEPTED": 4, "UNREVIEWED": -24}
 SUBJECTS = (
     {
         "module": "ledger_axis_blast",
@@ -250,13 +254,12 @@ def main(argv: list[str] | None = None) -> int:
     """Run each probe three times and gate the shipped/forged/restored comparison."""
     argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0]).parse_args(argv)
     lines: list[str] = [
-        "wave-28 step 4b -- landed-face re-base, with the forged arm that proves it still bites.",
+        "wave-30 step 6 -- landed-face re-base, with the forged arm that proves it still bites.",
         "argv: PYTHONPATH= $PY docs/evidence/C128/plane1-residue-readiness-20261017/probes/"
         "landed_face_rebase.py",
         "runs: each subject probe's main() called three times here over the same report bytes -- "
-        "shipped landed constant, then that constant forged back to the wave-28 step-3 "
-        "generation, then restored. No product file is written; the only file this probe writes is "
-        "its carrier.",
+        "shipped landed constant, then that constant forged back to the wave-29 generation, then "
+        "restored. No product file is written; the only file this probe writes is its carrier.",
         "self-reference: the two subject probes were edited before run 1, so their line/sha pins "
         "move with this step and are re-pinned in docs/evidence/C128/README.md.",
     ]
