@@ -133,7 +133,7 @@ def run_phases() -> int:
     passed = failed = blocked = 0
     for model in MODELS:
         for phase in PHASES:
-            completed = subprocess.run(  # noqa: S603  # nosec B603, B607  # argv is the shipped runner
+            completed = subprocess.run(  # noqa: S603  # nosec B603  # argv is the shipped runner
                 [
                     sys.executable,
                     str(REPO_ROOT / RUNNER_REL),
@@ -177,7 +177,7 @@ def _entry(model: str) -> dict[str, Any]:
 
 def _serve(
     model: str, document: dict[str, Any], *, query: dict[str, Any] | None = None
-) -> tuple[list[Any], Any, type]:
+) -> tuple[list[Any], Any, type[Any]]:
     """Run the shipped direct leg on one document, whatever it produces.
 
     ``query`` replaces the entry's own kwargs *inside the entry object* -- the shipped direct leg
@@ -186,10 +186,13 @@ def _serve(
     entry = _entry(model)
     if query is not None:
         entry["query"] = query
-    return runner._run_direct_with_seam("tmx", model, entry, document)
+    served: tuple[list[Any], Any, type[Any]] = runner._run_direct_with_seam(
+        "tmx", model, entry, document
+    )
+    return served
 
 
-def _fetcher_class(model: str) -> type:
+def _fetcher_class(model: str) -> type[Any]:
     """Resolve the fetcher class by the ``canonical_model`` it publishes, not by a typed map."""
     from opendata.data.providers.tmx.models import fetchers as tmx_fetchers
 
@@ -275,12 +278,12 @@ def declare_arm() -> None:
         saved = cls.row_model
         document = _entry(model)["fixture_document"]()
         try:
-            del cls.row_model  # type: ignore[attr-defined]
+            del cls.row_model
             refused = _refuse(model, document)
         except Exception as exc:  # a delete that fails is itself the finding
             refused = f"ARM_ERROR {type(exc).__name__}:{exc}"
         finally:
-            cls.row_model = saved  # type: ignore[attr-defined]
+            cls.row_model = saved
         restored = cls.__dict__.get("row_model") is saved
         served_rows, _, _ = _serve(model, document)
         face.append(

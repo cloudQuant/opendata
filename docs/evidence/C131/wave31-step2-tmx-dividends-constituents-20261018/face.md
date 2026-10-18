@@ -38,6 +38,12 @@ producer → recorder → merge → judge，探针一律 `import` 自带判定�
   `iter2_claims_fixtures`，没有任何测试枚举它。没有消失的样本。
 - 静态面：`ruff_check_exit=0`、`ruff_format_exit=0`（4 files already formatted）、`mypy_exit=0`、
   `bandit_exit=0`。
+- **本波自建探针的静态面原先不是 0**。把 back-fill 闸门的文件名单从手抄两枚改成 `probes/*.py` 的
+  glob 之后，第一次跑就在**已提交的探针**上报红：`mypy_probes_exit=1`（4 个错误，全在
+  `tmx_two_rows_prevalidation.py`）与 `bandit_probes_exit=1`（2 枚 B404 + 1 条失效的 `nosec B607`），
+  取档 `runs/wave31-step2-backfill_gates_take2_dry_widened_legs_red.txt:19,62`。修完之后五枚探针
+  ruff/format/mypy/bandit 全 0，且行为不变由重跑比对证明（§7.15）。这一格只关于本波自建仪器；工厂
+  自己的静态面是上面那行，两格不互相担保。
 - batch5 围栏 dry：`matched=31 stale=0 missing=0`，`verdict: REFUSED - no stale pin to re-base`
   （`runs/wave31-step2-batch5_fence_dry_census.txt:9-10`，`exit=1` 是这条 argv 的设计拒绝，不是红旗）。
 
@@ -194,6 +200,47 @@ residue 与 accepted 之和离开 350，或身份集不再是 `5168e1e723999312`
     `runs/wave31-step2-backfill_gates_take1_bandit_red.txt`，绿色的 `backfill_gates.txt` 也一并记下
     "这一腿是自加的、工厂不覆盖本目录"，免得一个 0 被读成工厂的判定。
 
+11. **back-fill 那把闸的文件清单是我手抄的两枚，于是它一直在闸自己对象之外**。
+    `w31s2_backfill_gates.py` 的静态四腿写死 `NEW_PROBE = committed_payload_scan.py` 加它自己，
+    `mypy_backfill_probes_exit=0`（载档里那句 "2 files" 就是证据）。把清单改成
+    `PROBE_FILES = sorted(PROBES.glob("*.py"))` 之后，同一批命令在**同一批已提交的探针**上第一次跑就
+    报红：`mypy_probes_exit=1`（红取档 `:19`），4 个错误全在
+    `probes/tmx_two_rows_prevalidation.py`（`:189` no-any-return、`:260/:275/:467` attr-defined），
+    `bandit_probes_exit=1`（同一档 `:62`），2 枚 B404（`post_commit_history_gate.py:30`、
+    `w31s2_run_chain.py:28`——后者是**跑整条验收链路的驱动**，从没被 bandit 看过一眼），外加
+    `[tester] WARNING nosec encountered (B607), but no failed test on file …:136`，即 §7.10 那一族的
+    镜像：一条**已经失效**的豁免。红色取档留在
+    `runs/wave31-step2-backfill_gates_take2_dry_widened_legs_red.txt`。教训跟"仪器要闸自己"是同一句：
+    **清单必须是派生出来的**，因为手抄的清单只会在我记得加文件的那天才是完整的。
+
+12. **静态腿的退出码被我丢掉了**：循环里写的是 `text, _code = cmd(...)`，复合判定
+    `ok = child_code == 0 and in_process == 0 and drift["exit"] == 0` 只看筛子与 pin-drift。也就是说
+    §7.11 那四个 mypy 错误和两枚 B404 就算写进载档，也不会让 `backfill_chain_exit` 动一格——红取档
+    里那个 `backfill_chain_exit=1`（`:67`）来自 index-empty 分支自己赋的 `child_code=in_process=1`，
+    与静态腿无关。一次"绿色的 back-fill 闸门"里可以同时躺着 4 个类型错误。现在四腿的 exit 收进
+    `static_codes`，载档多打一行 `static_legs_failed=<n> [...]` 并并入 `ok`。
+
+13. **`two_forms_agree=True` 那一次比的是我自己赋的两个常量**。新加的 index-empty 分支给
+    `child_code = in_process = 1` 之后，那行仍然无条件打印——两个 1 相等，于是它在一个**筛子根本没
+    跑**的取档上宣称"两种形态一致"（红取档 `:66`）。改成只在 else 分支打印，NOT_RUN 分支打印
+    `two_forms_agree=NOT_MEASURED`。
+
+14. **写装载档之后的那行打印能崩掉判定通道**。`carrier.relative_to(REPO)` 在 `--out` 指向仓外
+    （我做红灯复算时用的 `/tmp/...`）时抛 `ValueError`：`write_text` 已经落盘、`backfill_chain_exit=1`
+    已经打进正文，然后进程死在展示行上。那一次的 `dry_take_exit=1` 其实是 traceback 给的，不是判定
+    给的——方向和 §7.7 相反，同一个错误模式的两面。改成 `is_relative_to` 分支，展示用绝对路径兜底。
+
+15. **`type: ignore` 按住的其实是我自己写错的注解**。`_fetcher_class` 与 `_serve` 的返回标注是裸
+    `type`，mypy 因此认为这个类没有任何属性，我用两条 `# type: ignore[attr-defined]` 把 `.row_model`
+    的读写压下去。把注解改成 `type[Any]`（探针按 `canonical_model` 反查类，本来就没有静态类型可写）
+    之后 mypy 立刻报 `Unused "type: ignore" comment` ×2——**陈旧抑制就是注解错误的显影**。删掉两条
+    ignore、并给 `_serve` 的返回值加一个带类型局部变量（那句 `no-any-return` 要的是"我承认这个形状"）
+    之后 `mypy_probes_exit=0`（5 files）。行为不变的证明不是这句话，而是把探针重跑一遍逐行比对：我
+    先手工 `diff` 预核过一次，旧载档从 `materialized:` 起 53 行、新 stdout 52 行，唯一的差额是链路
+    驱动追加的 `two_rows_prevalidation_exit=0`——所以新腿把那一行**按名字排除并打印出来**（不静默丢），
+    再加一条控制臂：从旧的一侧少比一行时必须读"不同"。正式复算的取档文件名是
+    `runs/wave31-step2-backfill_gates_take2.txt`，`preval_inertness` 那一段在它正文里。
+
 ## 8. 载档清单（每条自带 argv 与 `<name>_exit=<digit>`）
 
 `docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/runs/`：
@@ -205,21 +252,28 @@ residue 与 accepted 之和离开 350，或身份集不再是 `5168e1e723999312`
 `ruff_check.txt`, `ruff_format.txt`, `mypy.txt`, `bandit.txt`,
 `pytest_tmx_and_pin_planes.txt` —— 共 18 枚由链路驱动写出的载档，外加 §2 的 rerun 与本条 prevalidation。
 
-探针：`probes/tmx_two_rows_prevalidation.py`（ruff/format/py_compile 全绿）、
-`probes/w31s2_run_chain.py`（链路驱动，逐条命令自带 argv 与 exit）、
-`probes/committed_payload_scan.py`（§8.1 的复扫驱动，import 自带筛子而不是重写谓词；它的红色第一次
-取档在 `runs/…committed_payload_scan_run1_misparse.txt`，见 §7.7）。
+探针 5 枚（`probes/` 下 `*.py` 的全部，由 take2 驱动 glob 得出，不是我抄的名单）：
+`tmx_two_rows_prevalidation.py`（本步按 §7.15 改过注解与两条陈旧 ignore；它的"全绿"原先只有
+ruff/format/py_compile 三把，mypy 从没跑过它——§7.11）、
+`w31s2_run_chain.py`（链路驱动，逐条命令自带 argv 与 exit；§7.11 那枚从没被 bandit 看过的就是它）、
+`committed_payload_scan.py`（§8.1 的复扫驱动，import 自带筛子而不是重写谓词；它的红色第一次
+取档在 `runs/…committed_payload_scan_run1_misparse.txt`，见 §7.7）、
+`w31s2_backfill_gates.py`（本步的复合闸，take2 那一次的对象就是它自己）、
+`post_commit_history_gate.py`（§8.2 的历史面驱动）。
 
 凭据三把与反例臂（本面写完后执行，读数在 §8.1）：提交前索引面 staged payload scan、提交后
 `make secret-check` 复测、提交后对本提交 87 枚路径的复扫。
 
-`runs/` 里 `.txt` 载档共 29 枚（`ls runs/*.txt | wc -l` 实测）：上列 20 枚由链路驱动写出（18 枚链路
-命令 + §2 的 rerun + 本条 prevalidation），另 9 枚是 back-fill 与凭据面——
+`runs/` 里 `.txt` 载档本面写作时实测 **32 枚**（`ls runs/*.txt | wc -l`）：上列 20 枚由链路驱动写出
+（18 枚链路命令 + §2 的 rerun + 本条 prevalidation），另 12 枚是 back-fill 与凭据面——
 `precommit_staged_scan.txt`、`precommit_staged_scan_final.txt`、`payload_scan_falsification.txt`、
 `post_commit_secret_check.txt`、`committed_payload_scan_run1_misparse.txt`（§7.7 的假红）、
 `committed_payload_scan_92def7e16.txt`（§8.1 的绿色复扫，逐字转录）、
 `committed_payload_scan_92def7e16_rerun_after_face_edit.txt`（同 argv 在 back-fill 之后的红色重取）、
-`backfill_gates.txt`、`backfill_gates_take1_bandit_red.txt`（§7.10 的红旗取）。
+`backfill_gates.txt`、`backfill_gates_take1_bandit_red.txt`（§7.10 的红旗取）、
+`committed_payload_scan_a8d7b2122.txt` 与 `post_commit_secret_check_a8d7b2122.txt`（§8.2 的两把收口
+面）、`backfill_gates_take2_dry_widened_legs_red.txt`（§7.11–14 那一次红灯复算，写它时 `--out` 指的
+是 `/tmp`，搬进 `runs/` 前后 `cmp` 与原件逐字节相同）。take2 的正式复算落盘后这里是 33 枚。
 `prevalidation_face.txt.err`（0 字节）按既定裁定不入提交，留在工作树。
 
 ## 8.1 凭据：提交前索引面 → 反例臂 → 提交后历史面 → 提交后复扫本提交
@@ -256,3 +310,40 @@ back-fill 那一提交自己也要过同样的闸，读数在 `runs/wave31-step2
 back-fill 没有 stale 判定器要读的任何一枚摘要，plane 1 那 288 不因为补文档而动。
 它的出厂闸与复扫只能在该提交之后取，因此落在下一个提交里（本仓一贯的滞后一枚：一份载档不在记录它
 自己的输入里，由下一提交的历史面收口）。
+
+## 8.2 back-fill 提交 `a8d7b2122` 的两把收口面
+
+本提交 = `a8d7b2122`（9 个文件，父提交 `92def7e16`；清单由 `git diff-tree` 现取，1 枚 `face.md` +
+2 枚探针 `committed_payload_scan.py`、`w31s2_backfill_gates.py` + 6 枚 back-fill/凭据载档）。仍然
+**只提交到本地，无 push 授权**。
+
+| 哪一把 | 对象 | 实测读数 | 载档 |
+|---|---|---|---|
+| 索引面复扫（字节闸在后） | `git diff-tree` 现取的这 9 枚路径 | `commit_paths=9 head_commit=a8d7b2122`，`worktree_drift_vs_commit=0 byte_identical=True`，控制臂 `CONTROL_drift_vs_parent=9 expected=9 bites=True`，两取都 `payload_scan_files=9 payload_scan_unresolved=0 findings=0 rc=0`，`chain_committed_payload_scan_exit=0` | `runs/wave31-step2-committed_payload_scan_a8d7b2122.txt` |
+| 历史面（出厂闸） | `gitleaks detect --source .`，读整条历史 | `428 commits scanned.` / `no leaks found`，`info_lines=3 info_lines_matching_no_leaks_found=1`，`commits_scanned=428 rev_list_count_head=428 agreement=True`，`commits_scanned_previous_face=427`→`commits_scanned_delta=1 rev_list_span_prev_to_head=1 delta_matches_span=True`，`secret_scan_check_exit=0`、`chain_post_commit_secret_check_exit=0` | `runs/wave31-step2-post_commit_secret_check_a8d7b2122.txt`（驱动 `probes/post_commit_history_gate.py`） |
+
+历史面那一把为什么不能只抄一句 `no leaks found`：空历史或部分历史同样打印这句话，所以
+`commits_scanned` 必须与另一件工具（`git rev-list --count HEAD`）独立数出来的 428 相等；而它对上一代
+历史面的增量必须等于两枚载档之间的提交数（实测 1 = 1，用的正是从上一份载档的
+`head_commit_at_scan=` 字段反解出来的 `92def7e16`，不是我另抄的 sha）。这两条与"恰好一行
+`no leaks found`"一起进 `gate_agreement`，三项任一不成立即 `chain_post_commit_secret_check_exit=1`。
+驱动把载档写到进程的最后一步、`write_text` 一次落盘，中途崩就没有半成品文件（§7.6 那一族的复发预防）。
+
+9 与 8 的差同 §8.1 里 86 与 87 的差是同一件事：记录复扫的那份载档不可能出现在复扫的输入里。复扫对象
+是**提交自带的字节**，而这次它自带 9 枚、其中 1 枚是复扫载档自己 → 该载档由上面第一行的 9 枚之一
+（第二枚凭据载档）与下一提交的历史面覆盖。
+
+本波下一个提交（take2 与本轮 face 修订）自己的谓据，写在这里以便它被反驳而不是被相信：
+
+* `committed_payload_scan.py --commit <下一提交>` 必须在**提交之后、该提交任何一枚路径再次被编辑之前**
+  读 `worktree_drift_vs_commit=0`。谁先动了 `face.md` 或 take2 载档，它就读 `≥1` 并打印
+  `screen_NOT_RUN` —— 那是设计（§8.1 的时间窗），不是故障，也不许改成忽略漂移。
+* `post_commit_history_gate.py --prev-carrier runs/wave31-step2-post_commit_secret_check_a8d7b2122.txt`
+  应读 `commits_scanned=429`、`delta=1=rev_list_span_prev_to_head`；若 span 与 delta 不等，红的是这一枚
+  提交的归属，不是 gitleaks。
+* `w31s2_backfill_gates.py --out runs/wave31-step2-backfill_gates_take2.txt` 的 `pin_drift` 腿必须读
+  `stale_files=0` 且 `identity_set=5168e1e723999312`。它现在还把 `static_legs_failed`、
+  `preval_inertness_exit` 一起并入 `backfill_chain_exit`（§7.12），所以这一枚 0 比上一代那枚 0 覆盖得
+  多；plane 1 的 288 与残留 62 不因文档与仪器而动的这句话，由 take2 载档里那一腿的 `drifted_rows=[]`
+  承担，不是由本面承担。
+

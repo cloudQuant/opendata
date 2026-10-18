@@ -1,0 +1,67 @@
+wave-31 step 2 -- back-fill gates (static + pin drift + index-plane screen over the paths this commit is about to add)
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/w31s2_backfill_gates.py --out /tmp/w31s2_take2_dry_index_empty.txt   (cwd = repo root)
+probe_files_gated=5 [committed_payload_scan.py, post_commit_history_gate.py, tmx_two_rows_prevalidation.py, w31s2_backfill_gates.py, w31s2_run_chain.py] (globbed from probes/, not listed by hand)
+pin_drift (taken by the chain driver's own pin_drift_face, written beside the cited rerun carrier instead of over it):
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/w31s2_run_chain.py --stage pin-drift
+pin_drift_exit=0
+  claims_document generated_at_utc=2026-10-18T04:56:36.587304+00:00 identity_set=5168e1e723999312 claims=120
+  pinned_files=16 stale_files=0 rows_total=24 rows_with_pins=7 rows_without_pins=['AvailableIndices', 'BondPrices', 'CalendarEarnings', 'CompanyNews', 'EquityGainers', 'EquitySearch', 'EtfCountries', 'EtfHistorical', 'EtfHoldings', 'EtfInfo', 'EtfSearch', 'EtfSectors', 'IndexSectors', 'IndexSnapshots', 'InsiderTrading', 'OptionsChains', 'TreasuryPrices'] drifted_rows=[] this_steps_rows=['HistoricalDividends', 'IndexConstituents']
+ruff_check_probes: All checks passed!
+ruff_check_probes_exit=0
+ruff_format_probes: 5 files already formatted
+ruff_format_probes_exit=0
+mypy_probes: docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/tmx_two_rows_prevalidation.py:189: error: Returning Any from function declared to return "tuple[list[Any], Any, type]"  [no-any-return]
+docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/tmx_two_rows_prevalidation.py:260: error: "type" has no attribute "capability"  [attr-defined]
+docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/tmx_two_rows_prevalidation.py:275: error: "type" has no attribute "row_model"  [attr-defined]
+docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/tmx_two_rows_prevalidation.py:467: error: "type" has no attribute "row_model"  [attr-defined]
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+Found 4 errors in 1 file (checked 5 source files)
+mypy_probes_exit=1
+bandit_probes: Run started:2026-10-18 05:34:36.754981+00:00
+
+Test results:
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/post_commit_history_gate.py:30:0
+29	import shutil
+30	import subprocess
+31	import sys
+
+--------------------------------------------------
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/w31s2_run_chain.py:28:0
+27	import shutil
+28	import subprocess
+29	import sys
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 1253
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 11
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 2
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 2
+Files skipped (0):
+[tester]	WARNING	nosec encountered (B607), but no failed test on file /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/tmx_two_rows_prevalidation.py:136
+bandit_probes_exit=1
+scope note: the factory's bandit plane is PY_BANDIT = opendata scripts alembic alembic_data, so docs/evidence sits outside it by design and this leg is self-imposed. B404 is exempted the way 34 shipped modules do it -- on the line that earns it, with a reason -- because bandit.yaml carries no global skips.
+staged_paths=0
+staged_scan=NOT_RUN reason=index empty (nothing staged to scan)
+two_forms_agree=True (child argv exit vs in-process main() return)
+backfill_chain_exit=1

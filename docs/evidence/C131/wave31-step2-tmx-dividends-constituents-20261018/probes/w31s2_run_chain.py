@@ -25,7 +25,7 @@ import hashlib
 import json
 import os
 import shutil
-import subprocess
+import subprocess  # nosec B404  # the chain's shipped commands, list argv, shell never enabled
 import sys
 import tempfile
 from pathlib import Path
