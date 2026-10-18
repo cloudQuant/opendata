@@ -1,0 +1,24 @@
+wave-31 step 2 -- back-fill gates (static + pin drift + index-plane screen over the paths this commit is about to add)
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/w31s2_backfill_gates.py   (cwd = repo root)
+pin_drift (taken by the chain driver's own pin_drift_face, written beside the cited rerun carrier instead of over it):
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/w31s2_run_chain.py --stage pin-drift
+pin_drift_exit=0
+  claims_document generated_at_utc=2026-10-18T04:56:36.587304+00:00 identity_set=5168e1e723999312 claims=120
+  pinned_files=16 stale_files=0 rows_total=24 rows_with_pins=7 rows_without_pins=['AvailableIndices', 'BondPrices', 'CalendarEarnings', 'CompanyNews', 'EquityGainers', 'EquitySearch', 'EtfCountries', 'EtfHistorical', 'EtfHoldings', 'EtfInfo', 'EtfSearch', 'EtfSectors', 'IndexSectors', 'IndexSnapshots', 'InsiderTrading', 'OptionsChains', 'TreasuryPrices'] drifted_rows=[] this_steps_rows=['HistoricalDividends', 'IndexConstituents']
+ruff_check_new_probe: All checks passed!
+ruff_check_new_probe_exit=0
+ruff_format_new_probe: 4 files already formatted
+ruff_format_new_probe_exit=0
+mypy_backfill_probes: pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+Success: no issues found in 2 source files
+mypy_backfill_probes_exit=0
+bandit_backfill_probes: 
+bandit_backfill_probes_exit=0
+scope note: the factory's bandit plane is PY_BANDIT = opendata scripts alembic alembic_data, so docs/evidence sits outside it by design and this leg is self-imposed. B404 is exempted the way 34 shipped modules do it -- on the line that earns it, with a reason -- because bandit.yaml carries no global skips.
+staged_paths=7
+staged_scan_child_form: payload_scan_files=7 payload_scan_roots=7 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 7 file(s) clean
+staged_scan_child_form_exit=0
+staged_scan_in_process_exit=0 :: payload_scan_files=7 payload_scan_roots=7 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0 | payload_scan=PASS 7 file(s) clean
+two_forms_agree=True (child argv exit vs in-process main() return)
+backfill_chain_exit=0

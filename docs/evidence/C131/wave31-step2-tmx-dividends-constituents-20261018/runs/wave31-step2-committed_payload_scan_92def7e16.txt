@@ -1,0 +1,30 @@
+wave-31 step 2 -- 复扫本提交（92def7e16）自带 87 枚路径：绿色那一份的逐字转录
+taken 2026-10-18T05:14Z, i.e. immediately after the commit and before any of those 87 paths was
+edited again.
+
+THIS FACE IS NOT RE-TAKABLE ANYMORE, and the reason is a finding about the instrument rather than
+about the payload: the byte gate compares the working tree with the commit, and the back-fill edits
+`face.md`, which is one of the 87. Re-running the same argv now prints
+`worktree_drift_vs_commit=1` and `DRIFT .../wave31-step2-tmx-dividends-constituents-20261018/face.md`
+and refuses to run the screen -- that red re-take is kept beside this file as
+`wave31-step2-committed_payload_scan_92def7e16_rerun_after_face_edit.txt`, and it is the gate doing
+its job, not a regression. So: the red take prices the gate; the green text below prices the commit's
+own bytes, and it can only ever be reproduced from a checkout pinned at 92def7e16.
+
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/committed_payload_scan.py --commit 92def7e16
+(cwd = repo root, single process, no pipes, no xargs; verbatim stdout follows)
+
+wave-31 step 2 -- index-plane screen re-taken over commit 92def7e16's own payload
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/committed_payload_scan.py --commit 92def7e16
+   (cwd = repo root, single process, no pipes, no xargs)
+screen_shipped_at=docs/evidence/C128/plane1-residue-readiness-20261017/probes/staged_payload_scan.py
+commit_paths=87 head_commit=92def7e16
+worktree_drift_vs_commit=0 byte_identical=True
+CONTROL_drift_vs_parent=87 expected=87 bites=True (git's own comparison, so this instrument cannot silently match nothing)
+take1_exit=0 bytes=147
+payload_scan_files=87 payload_scan_roots=87 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 87 file(s) clean
+take2_exit=0 bytes=147
+payload_scan_files=87 payload_scan_roots=87 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 87 file(s) clean
+chain_committed_payload_scan_exit=0

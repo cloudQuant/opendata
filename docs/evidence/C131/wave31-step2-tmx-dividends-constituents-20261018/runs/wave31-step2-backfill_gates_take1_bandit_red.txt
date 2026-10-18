@@ -1,0 +1,54 @@
+wave-31 step 2 -- back-fill gates (static + pin drift + index-plane screen over the paths this commit is about to add)
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/w31s2_backfill_gates.py   (cwd = repo root)
+pin_drift (taken by the chain driver's own pin_drift_face, written beside the cited rerun carrier instead of over it):
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/w31s2_run_chain.py --stage pin-drift
+pin_drift_exit=0
+  claims_document generated_at_utc=2026-10-18T04:56:36.587304+00:00 identity_set=5168e1e723999312 claims=120
+  pinned_files=16 stale_files=0 rows_total=24 rows_with_pins=7 rows_without_pins=['AvailableIndices', 'BondPrices', 'CalendarEarnings', 'CompanyNews', 'EquityGainers', 'EquitySearch', 'EtfCountries', 'EtfHistorical', 'EtfHoldings', 'EtfInfo', 'EtfSearch', 'EtfSectors', 'IndexSectors', 'IndexSnapshots', 'InsiderTrading', 'OptionsChains', 'TreasuryPrices'] drifted_rows=[] this_steps_rows=['HistoricalDividends', 'IndexConstituents']
+ruff_check_new_probe: All checks passed!
+ruff_check_new_probe_exit=0
+note: ruff and bandit are invoked the way the Makefile's own lint members invoke them; the exit line is the reading, not this probe's opinion
+ruff_format_new_probe: 4 files already formatted
+ruff_format_new_probe_exit=0
+mypy_new_probe: pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+Success: no issues found in 1 source file
+mypy_new_probe_exit=0
+bandit_new_probe: Run started:2026-10-18 05:20:55.133586+00:00
+
+Test results:
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/committed_payload_scan.py:33:0
+32	import shutil
+33	import subprocess
+34	import sys
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 120
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 1
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 1
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 1
+Files skipped (0):
+bandit_new_probe_exit=1
+staged_paths=7
+staged_scan_child_form: payload_scan_files=7 payload_scan_roots=7 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 7 file(s) clean
+staged_scan_child_form_exit=0
+staged_scan_in_process_exit=0 :: payload_scan_files=7 payload_scan_roots=7 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0 | payload_scan=PASS 7 file(s) clean
+two_forms_agree=True (child argv exit vs in-process main() return)
+backfill_chain_exit=0

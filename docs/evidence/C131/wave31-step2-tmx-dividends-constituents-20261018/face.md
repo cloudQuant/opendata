@@ -91,7 +91,8 @@ stderr 0 字节）：
   `CONTROL_CONSTITUENT_KEY_NOT_POLICED`：把第二枚成员覆写成第一枚的 `symbol`，两行照发——这条臂就是
   本波自己那条"自然键 = 存在性而非唯一性"的范围声明，`natural_key` 说的是存储身份，mapper 不强制它。
 
-提交前的索引面凭据筛与提交后的出厂闸复测见 §8 之后补的两把（本面写完后执行）。
+提交前的索引面凭据筛、提交后的出厂闸（历史面）复测、以及提交后对本提交 87 枚路径的复扫，见 §8.1
+（三把加一把反例臂都已落档，本面写完后执行）。
 
 ## 4. 两枚判定器伪影（发布，不动判定器）
 
@@ -165,6 +166,34 @@ residue 与 accepted 之和离开 350，或身份集不再是 `5168e1e723999312`
    属性，应走 `runner.witnesses.model_entry`）；驱动初版把 `contract_version`（一个不带 path 的裸摘要
    字符串）当成 dict 型 pin 组来走，`TypeError` 直接崩在写载档之前——所以那一次 runs/ 里没有半成品文件。
 
+7. **一把我自己写的字节闸造出了 87 条假发现**。§8.1 的复扫第一版要证明"扫描读的工作树字节就是提交
+   里的字节"，用的是 `git hash-object --batch-check --stdin-paths` 再按 `<oid> <path>` 解析。这个
+   flag 在这台 git 上根本不存在：命令死在 usage，stdout 是空的，于是 `on_disk` 是空字典，87 枚路径
+   全部报 MISMATCH，`worktree_vs_commit_blob=0/87` —— 而我那一次直接调用绕过了会检查退出码的
+   `_git` helper。它没写成假绿，它写成了假红，但同一个失败模式（子进程的退出码不进读数）两个方向都
+   能咬。改法：字节比较交回 git 自己（`git diff --name-only <commit>`，经 `_git`，非零即抛），并加
+   一条必须能不同的控制臂——同一把尺子量父提交时必须报出这 87 枚漂移。红色那一份留在档：
+   `runs/wave31-step2-committed_payload_scan_run1_misparse.txt`。
+
+8. **我把唯一一份绿色复扫覆盖掉了**。改完文件名规则之后我重跑了那条 argv，目的是确认改名生效——它
+   确实生效了，但它写的是同一个路径，于是把 05:14 那一份（87 枚、`findings=0`、控制臂咬住）压成了
+   红色重取。差别在于：红色那一份是**真的**（工作树确实动了 `face.md`），可绿色那一份从此不可重取。
+   现在它按逐字转录存回 `…_92def7e16.txt`，文件头自己声明它不可重取、以及能从哪儿复现（pin 在
+   `92def7e16` 的检出）。教训不是"别重跑"，而是**驱动的输出路径必须由输入参数决定**——我一开始
+   写死常量名，才让第二次取数有东西可覆盖；改成带 sha 的文件名之后这个撞车在结构上不可能发生。
+9. **一条我自己拼错的复合命令把已 staged 的探针从工作树移走了**。本意只是给红色取档改名，我在同一条
+   命令尾部带了 `mv probes/committed_payload_scan.py /tmp/…`。它没丢：文件已在 index 里，
+   `git show :<path>` 写回来再 `cmp` 与工作树副本，7133 字节逐字相同。暴露它的是同一行 `ls`——所以
+   **改名类命令要把"动了哪些路径"打印出来**，别只看退出码。
+10. **bandit 在新探针上是红的，红的不是产品码**。`bandit -c bandit.yaml` 报 B404（`import
+    subprocess`，Low/High-confidence）并 `exit=1`；查 `Makefile` 才看清工厂的 bandit 平面是
+    `PY_BANDIT := opendata scripts alembic alembic_data`，`docs/evidence` 按设计不在里面，所以我这条
+    是自己给自己加的闸。修法按仓库惯例：34 个已发布模块都在**挣得豁免的那一行**上写
+    `# nosec B404  # <reason>`（bandit.yaml 明确不设全局 skips）。加上之后
+    `bandit_backfill_probes_exit=0`。红色那一次留在
+    `runs/wave31-step2-backfill_gates_take1_bandit_red.txt`，绿色的 `backfill_gates.txt` 也一并记下
+    "这一腿是自加的、工厂不覆盖本目录"，免得一个 0 被读成工厂的判定。
+
 ## 8. 载档清单（每条自带 argv 与 `<name>_exit=<digit>`）
 
 `docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/runs/`：
@@ -177,7 +206,53 @@ residue 与 accepted 之和离开 350，或身份集不再是 `5168e1e723999312`
 `pytest_tmx_and_pin_planes.txt` —— 共 18 枚由链路驱动写出的载档，外加 §2 的 rerun 与本条 prevalidation。
 
 探针：`probes/tmx_two_rows_prevalidation.py`（ruff/format/py_compile 全绿）、
-`probes/w31s2_run_chain.py`（链路驱动，逐条命令自带 argv 与 exit）。
+`probes/w31s2_run_chain.py`（链路驱动，逐条命令自带 argv 与 exit）、
+`probes/committed_payload_scan.py`（§8.1 的复扫驱动，import 自带筛子而不是重写谓词；它的红色第一次
+取档在 `runs/…committed_payload_scan_run1_misparse.txt`，见 §7.7）。
 
-凭据两把（本面写完后执行，结果补进 §8.1）：提交前索引面 staged payload scan、提交后
-`make secret-check` 复测。
+凭据三把与反例臂（本面写完后执行，读数在 §8.1）：提交前索引面 staged payload scan、提交后
+`make secret-check` 复测、提交后对本提交 87 枚路径的复扫。
+
+`runs/` 里 `.txt` 载档共 29 枚（`ls runs/*.txt | wc -l` 实测）：上列 20 枚由链路驱动写出（18 枚链路
+命令 + §2 的 rerun + 本条 prevalidation），另 9 枚是 back-fill 与凭据面——
+`precommit_staged_scan.txt`、`precommit_staged_scan_final.txt`、`payload_scan_falsification.txt`、
+`post_commit_secret_check.txt`、`committed_payload_scan_run1_misparse.txt`（§7.7 的假红）、
+`committed_payload_scan_92def7e16.txt`（§8.1 的绿色复扫，逐字转录）、
+`committed_payload_scan_92def7e16_rerun_after_face_edit.txt`（同 argv 在 back-fill 之后的红色重取）、
+`backfill_gates.txt`、`backfill_gates_take1_bandit_red.txt`（§7.10 的红旗取）。
+`prevalidation_face.txt.err`（0 字节）按既定裁定不入提交，留在工作树。
+
+## 8.1 凭据：提交前索引面 → 反例臂 → 提交后历史面 → 提交后复扫本提交
+
+本步提交 = `92def7e16`（87 个文件，父提交 `1b158436c`）。只提交到本地：**无 push 授权**。
+
+| 哪一把 | 它扫的对象 | 读数 | 载档 |
+|---|---|---|---|
+| 提交前索引面 | 当时 staged 的 86 枚路径的工作树字节 | `payload_scan_files=86 unresolved=0 findings=0 rc=0`，`staged_payload_scan_final_exit=0` | `runs/wave31-step2-precommit_staged_scan_final.txt:6,8`；同一 argv 在把这两枚凭据载档 add 进 index 之前还取过一遍：84 枚、`findings=0`（`runs/wave31-step2-precommit_staged_scan.txt:6,8`） |
+| 反例臂：它会不会咬 | 从当时 staged 集取前 3 枚路径复制进 mktemp 树（仓库树不写） | 植入臂 `scanned=4 findings=1 rules=['github-pat'] gitleaks_rc=1`；干净臂 `findings=0`；拼接字面量臂 `findings=0`；合计 `arms=3 arms_passed=3 arms_failed=0 PASS=True` | `runs/wave31-step2-payload_scan_falsification.txt:9-12` |
+| 提交后历史面（出厂闸） | `gitleaks detect --source . --config .gitleaks.toml --redact`，读 git 历史 | `427 commits scanned.` / `no leaks found`，`secret_scan_check_exit=0`；`git rev-list --count HEAD=427` 与之一致 | `runs/wave31-step2-post_commit_secret_check.txt` |
+| 提交后复扫 | 本提交自带的 87 枚路径，清单由 `git diff-tree` 现取，不是我抄的 | `commit_paths=87`，`worktree_drift_vs_commit=0 byte_identical=True`，控制臂 `CONTROL_drift_vs_parent=87 expected=87 bites=True`，两取都 `payload_scan_files=87 payload_scan_findings=0 payload_scan_rc=0`，`chain_committed_payload_scan_exit=0` | `runs/wave31-step2-committed_payload_scan_92def7e16.txt`（绿色那一份的逐字转录，文件头写明它已不可重取；同 argv 在 back-fill 之后的红色重取在 `runs/wave31-step2-committed_payload_scan_92def7e16_rerun_after_face_edit.txt`，读 `worktree_drift_vs_commit=1` 与 `DRIFT …/face.md` 后拒绝跑筛子） |
+
+为什么还要第四把：索引面那一把只能给它当时看见的 86 枚定价——一份筛子不可能把记录它自己的载档放进
+输入，86 与 87 的差就是这么来的（那份载档第 4 行自己声明了这点）。复扫把清单的来源换成提交本身，
+87 枚于是全都有面对象；而"扫描读的是工作树字节"这句话由 `worktree_drift_vs_commit=0` 担保，再由
+控制臂担保这个 0 不是空对空（同一把尺子在父提交上必须量出这 87 枚的漂移，实测正是 87）。
+
+两把历史面/复扫面之间的分工：出厂闸证明**整个历史**里没有可读的凭据形态，复扫证明**这一提交的每一
+枚字节的当前版本**在同一规则集下干净。前者的对象是历史，后者的对象是工作树==提交的那 87 份字节。
+
+复扫的时间窗（本步实测出来的，不是设计时想到的）：那道字节闸拿工作树与提交比，所以复扫只有在**提交
+之后、且该提交里任何一枚路径被再次编辑之前**才成立。back-fill 改了 `face.md`（87 枚之一），于是同
+一条 argv 之后永远只能读红。文件名里带 sha 就是这个意思：每一次复扫写自己那一份，谁也不覆盖谁。
+
+植入的字面量在任何载档里都不出现（LCG 现算，只打印规则 id 与命中数）；载档只打印 env 变量的**名字**。
+
+back-fill 那一提交自己也要过同样的闸，读数在 `runs/wave31-step2-backfill_gates.txt`：
+`staged_paths=7` 的两形复算（子进程 argv 与在进程内直调 `main()`）都是
+`payload_scan_files=7 findings=0 rc=0`、`two_forms_agree=True`；静态面
+`ruff_check_new_probe_exit=0`、`ruff_format_new_probe_exit=0`、`mypy_backfill_probes_exit=0`（2 files）、
+`bandit_backfill_probes_exit=0`；pin-drift 那一行由链路驱动自己的 `pin_drift_face()` 现取（import，
+不重写），读 `pinned_files=16 stale_files=0 identity_set=5168e1e723999312 drifted_rows=[]` ——
+back-fill 没有 stale 判定器要读的任何一枚摘要，plane 1 那 288 不因为补文档而动。
+它的出厂闸与复扫只能在该提交之后取，因此落在下一个提交里（本仓一贯的滞后一枚：一份载档不在记录它
+自己的输入里，由下一提交的历史面收口）。
