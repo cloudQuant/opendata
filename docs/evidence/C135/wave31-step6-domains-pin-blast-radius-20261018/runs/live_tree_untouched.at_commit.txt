@@ -1,0 +1,23 @@
+# At-commit non-write witness (generation 2 of the untouched face; live_tree_untouched.txt stays as the mid-step take).
+# command: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python <this witness>   (run from repo root, stdout redirected here, exit taken from the run itself)
+# why a second take: the commit-time index differs from the mid-step one (take5/take6 carriers plus the S10/S11 re-cites landed between them), so "the tree was not written" is re-measured against HEAD at the moment of the commit.
+# first take of THIS witness was defective and is not what is recorded below: it stripped the first three porcelain columns before testing for a "?? " marker, so the marker was gone, untracked paths counted as tracked modifications, and its two counters were equal by construction (6 and 6). The shipped version keeps the XY code intact and prints the code census, so 0 is a reading.
+# digests are HEAD blob bytes for the seven shared premises; equality against worktree bytes is printed per file.
+044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca  opendata/data/domains.yaml
+7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0  opendata/data/providers/catalog.py
+76de40c07a612577c430a159c1ae25c012b3a7dae96951209f699d53f3166f85  opendata/data/models/tmx.py
+b8effc33a88d9e84a20a64dd8b1ca71d47814dafcea145744dda40cf8a29bbcf  docs/evidence/C101/claims.merged.json
+8d53e395b43e56e1cdf04e6f9d9901cfcd0c54bb2c807443212ed6b2e08a4a4e  scripts/quality/iter2_model_evidence.py
+e2fdc57e0b30ee480012a4579c1acac93dd05c5731b4a070c73555ad67590b64  scripts/quality/iter2_claims_producer.py
+f0fdc863033b9c6f8f285d28ae4e6de1794b29029080208af1a9655f214dedd4  scripts/quality/iter2_witnesses/tmx.py
+shared_premises=7 all_head_eq_worktree=True
+porcelain_codes={'A ': 23, '??': 277} porcelain_lines=300
+staged_total=23 staged_outside_bundle=0 list=[]
+tracked_modifications_outside_evidence=0
+untracked_outside_docs_evidence=6 list=['DISCLAIMER.md', 'LICENSE-REVIEW.md', 'LICENSE-SCOPE-DRAFT.md', 'LICENSE-SOURCE-AVAILABLE-DRAFT.md', 'quality-source-repairs/', 'uv.lock']
+bundle_untracked_at_commit=1 list=['docs/evidence/C135/wave31-step6-domains-pin-blast-radius-20261018/runs/staged_payload_credential_scan.take6_final_index.txt']
+staged_payload_credential_scan.take5_cover_final_index.txt bytes=2181 has_planted_prefix=False
+staged_payload_credential_scan.take6_final_index.txt bytes=2712 has_planted_prefix=False
+identity_count=350 identity_set_sha256=5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65
+at_commit_untouched_face PASS=True
+live_tree_untouched_at_commit_exit=0

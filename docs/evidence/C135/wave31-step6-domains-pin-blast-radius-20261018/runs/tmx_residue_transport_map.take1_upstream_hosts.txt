@@ -1,0 +1,25 @@
+witness_seam host=app-money.tmx.com attr=get_shared_http_client witness=scripts/quality/iter2_witnesses/tmx.py
+population: provider=tmx inventory_rows=24 accepted=8 residue=16
+domain_keys: total=338 provider_keys=8
+population_join: csv=24 judge=24 set_equal=True shape_files=['providers/tmx/openbb_tmx/__init__.py']
+upstream_source helpers file=utils/helpers.py functions=20 module_level_hosts=[]
+upstream_source gql file=utils/gql.py functions=1 module_level_hosts=[]
+fetcher_dict_parse: entries=24 inventory_rows=24 unmapped=[] models_dir=True
+-- landed rows (calibration set) --
+Traceback (most recent call last):
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C135/wave31-step6-domains-pin-blast-radius-20261018/probes/tmx_residue_transport_map.py", line 258, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C135/wave31-step6-domains-pin-blast-radius-20261018/probes/tmx_residue_transport_map.py", line 216, in main
+    landed_items = [classify(m) for m in sorted(accepted)]
+                    ~~~~~~~~^^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C135/wave31-step6-domains-pin-blast-radius-20261018/probes/tmx_residue_transport_map.py", line 201, in classify
+    closure = _closure(set(roots), funcs)
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C135/wave31-step6-domains-pin-blast-radius-20261018/probes/tmx_residue_transport_map.py", line 120, in _closure
+    for call in re.findall(r"\b([a-z_][\w]*)\s*\(", body):
+                ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/re/__init__.py", line 278, in findall
+    return _compile(pattern, flags).findall(string)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+TypeError: expected string or bytes-like object, got 'set'
+tmx_residue_transport_map_exit=1

@@ -1,0 +1,20 @@
+note: --evidence-root must sit inside the repo (producer calls evidence_root.relative_to(REPO_ROOT) at iter2_claims_producer.py:76), so the scratch root is a bundle-local directory, deleted after the timing run
+shard=multpl producer_exit=0 elapsed_seconds=8 legs=5 pass_legs=5 blocked_legs=0
+0 
+  tail: denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=318/350; provider rows covered=1 of provider inventory rows=1, of which bound now=1/318 resolvable; claims emitted=5 (5 PASS, 0 FAIL, 0 BLOCKED) = 1 row(s) x 5 phases; phases actually executed as subprocesses=5
+  tail: wrote docs/evidence/C135/wave31-step6-domains-pin-blast-radius-20261018/scratch/multpl/claims.json
+shard=tradingeconomics producer_exit=0 elapsed_seconds=8 legs=5 pass_legs=5 blocked_legs=0
+0 
+  tail: denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=318/350; provider rows covered=1 of provider inventory rows=1, of which bound now=1/318 resolvable; claims emitted=5 (5 PASS, 0 FAIL, 0 BLOCKED) = 1 row(s) x 5 phases; phases actually executed as subprocesses=5
+  tail: wrote docs/evidence/C135/wave31-step6-domains-pin-blast-radius-20261018/scratch/tradingeconomics/claims.json
+shard=finra producer_exit=0 elapsed_seconds=13 legs=10 pass_legs=10 blocked_legs=0
+0 
+  tail: denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=318/350; provider rows covered=2 of provider inventory rows=2, of which bound now=2/318 resolvable; claims emitted=10 (10 PASS, 0 FAIL, 0 BLOCKED) = 2 row(s) x 5 phases; phases actually executed as subprocesses=10
+  tail: wrote docs/evidence/C135/wave31-step6-domains-pin-blast-radius-20261018/scratch/finra/claims.json
+shard=tmx producer_exit=0 elapsed_seconds=46 legs=120 pass_legs=40 blocked_legs=80 
+  tail: denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=318/350; provider rows covered=24 of provider inventory rows=24, of which bound now=8/318 resolvable; claims emitted=120 (40 PASS, 0 FAIL, 80 BLOCKED) = 24 row(s) x 5 phases; phases actually executed as subprocesses=120
+  tail: wrote docs/evidence/C135/wave31-step6-domains-pin-blast-radius-20261018/scratch/tmx/claims.json
+live_digests_after_timing:
+b8effc33a88d9e84a20a64dd8b1ca71d47814dafcea145744dda40cf8a29bbcf  docs/evidence/C101/claims.merged.json
+044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca  opendata/data/domains.yaml
+shards_timed=4 producer_exits_zero=4 producer_timing_exit=0

@@ -1,0 +1,24 @@
+population: inventory=350 claims=1565 reviews=291 status_counts={'INCOMPLETE': 22, 'OFFLINE_ACCEPTED': 291, 'UNREVIEWED': 37}
+accepted: judge_offline_acceptance_count=291 derived_rows=291 derived_claims=1455 rows_x5=1455
+census: accepted_claims=1455 slots=20744 distinct_paths=589
+shared_path slots=1746 rows=291 path=scripts/quality/iter2_claims_fixtures.py
+shared_path slots=1746 rows=291 path=scripts/quality/iter2_claims_probe_runner.py
+shared_path slots=1455 rows=291 path=opendata/data/domains.yaml
+shared_path slots=1455 rows=291 path=opendata/data/providers/catalog.py
+shared_path slots=414 rows=69 path=scripts/quality/iter2_witnesses/_parts/fmp/rows_a.py
+shared_path slots=414 rows=69 path=scripts/quality/iter2_witnesses/_parts/fmp/rows_b.py
+shared_path slots=414 rows=69 path=scripts/quality/iter2_witnesses/_parts/fmp/rows_c.py
+shared_path slots=414 rows=69 path=scripts/quality/iter2_witnesses/_parts/fmp/rows_d.py
+target=opendata/data/domains.yaml rows=291 slots=1455
+control=opendata/data/models/tmx.py rows=8 slots=40
+tree_wide_paths(rows=291): count=4 list=[('scripts/quality/iter2_claims_fixtures.py', 1746, 291), ('scripts/quality/iter2_claims_probe_runner.py', 1746, 291), ('opendata/data/domains.yaml', 1455, 291), ('opendata/data/providers/catalog.py', 1455, 291)]
+target_slot_positions: {'contract_pin_2': 1425, 'contract_pin_3': 30}
+control_slot_positions: {'contract_pin_1': 40}
+A_clean: claims=1455 stale_slots=0 stale_rows=0 PASS=True
+simulated: target_digest=6572339b25d8dc4c control_digest=c2bd082bf2a50e43 candidate_block_parses=True artifact_sha256=6572339b25d8dc4c domains_total=339
+D_rearm: claim=alpha_vantage::EquityHistorical:contract target_slots_in_claim=1 rewrote=1 stale=True issues=['contract_pin_2_current_hash_drift'] PASS=True
+B_tree: claims_walked=1455 stale_rows=291 expected_rows=291 accepted=291 stale_slots=1455 expected_slots=1455 issue_names=['contract_pin_2_current_hash_drift', 'contract_pin_3_current_hash_drift'] expected_issues=['contract_pin_2_current_hash_drift', 'contract_pin_3_current_hash_drift'] PASS=True
+C_specific: claims_walked=40 stale_rows=8 expected_rows=8 stale_slots=40 expected_slots=40 tree_rows=291 issue_names=['contract_pin_1_current_hash_drift'] sample=['tmx::CompanyFilings', 'tmx::EquityHistorical', 'tmx::EquityInfo'] PASS=True
+blast_radius target=opendata/data/domains.yaml fraction_of_accepted_rows_staled=1.0000 target_rows=291 of=291 target_slots=1455 of_total=20744
+blast_radius_face arms=4 arms_passed=4 arms_failed=0 PASS=True
+domains_pin_blast_radius_exit=0
