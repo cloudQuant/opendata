@@ -1,0 +1,33 @@
+wave-31 step 2 -- back-fill gates (static + pin drift + index-plane screen over the paths this commit is about to add)
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/w31s2_backfill_gates.py --out wave31-step2-backfill_gates_take3.txt   (cwd = repo root)
+probe_files_gated=5 [committed_payload_scan.py, post_commit_history_gate.py, tmx_two_rows_prevalidation.py, w31s2_backfill_gates.py, w31s2_run_chain.py] (globbed from probes/, not listed by hand)
+pin_drift (taken by the chain driver's own pin_drift_face, written beside the cited rerun carrier instead of over it):
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/w31s2_run_chain.py --stage pin-drift
+pin_drift_exit=0
+  claims_document generated_at_utc=2026-10-18T04:56:36.587304+00:00 identity_set=5168e1e723999312 claims=120
+  pinned_files=16 stale_files=0 rows_total=24 rows_with_pins=7 rows_without_pins=['AvailableIndices', 'BondPrices', 'CalendarEarnings', 'CompanyNews', 'EquityGainers', 'EquitySearch', 'EtfCountries', 'EtfHistorical', 'EtfHoldings', 'EtfInfo', 'EtfSearch', 'EtfSectors', 'IndexSectors', 'IndexSnapshots', 'InsiderTrading', 'OptionsChains', 'TreasuryPrices'] drifted_rows=[] this_steps_rows=['HistoricalDividends', 'IndexConstituents']
+ruff_check_probes: All checks passed!
+ruff_check_probes_exit=0
+ruff_format_probes: 5 files already formatted
+ruff_format_probes_exit=0
+mypy_probes: pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+Success: no issues found in 5 source files
+mypy_probes_exit=0
+bandit_probes: 
+bandit_probes_exit=0
+scope note: the factory's bandit plane is PY_BANDIT = opendata scripts alembic alembic_data, so docs/evidence sits outside it by design and this leg is self-imposed. B404 is exempted the way 34 shipped modules do it -- on the line that earns it, with a reason -- because bandit.yaml carries no global skips.
+preval_inertness: the probe edited by this step, run again and compared line for line
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/tmx_two_rows_prevalidation.py   (cwd = repo root, PYTHONPATH=.)
+probe_exit=0 stderr_bytes=0
+old_body_lines=52 new_body_lines=52 lines_below=1 excluded=[two_rows_prevalidation_exit=0]
+identical=True first_difference=none
+CONTROL_drop_one_line_from_old_side_differs=True
+preval_inertness_exit=0
+staged_paths=3
+staged_scan_child_form: payload_scan_files=3 payload_scan_roots=3 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 3 file(s) clean
+staged_scan_child_form_exit=0
+staged_scan_in_process_exit=0 :: payload_scan_files=3 payload_scan_roots=3 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0 | payload_scan=PASS 3 file(s) clean
+two_forms_agree=True (child argv exit vs in-process main() return)
+static_legs_failed=0 [none] (folded into the verdict: a leg whose exit is discarded cannot open this gate)
+backfill_chain_exit=0

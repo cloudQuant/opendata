@@ -347,3 +347,67 @@ back-fill 没有 stale 判定器要读的任何一枚摘要，plane 1 那 288 �
   多；plane 1 的 288 与残留 62 不因文档与仪器而动的这句话，由 take2 载档里那一腿的 `drifted_rows=[]`
   承担，不是由本面承担。
 
+## 8.3 提交 `dca897854` 的两把收口面，与 §8.2 三条谓据的对账
+
+本提交 = `dca897854`（9 个文件：`face.md` + 4 枚探针 + 4 枚载档，父提交 `a8d7b2122`）。仍然**无 push
+授权**。§8.2 把三条谓据写成"必须读什么"，现在逐条对账——它们都成立，而且成立的方式是被读出来的：
+
+| §8.2 的那条 | 实测 | 载档 |
+|---|---|---|
+| 复扫必须在该提交之后、任何一枚路径再被编辑之前读 `worktree_drift_vs_commit=0` | `commit_paths=9 head_commit=dca897854`，`worktree_drift_vs_commit=0 byte_identical=True`，控制臂 `CONTROL_drift_vs_parent=9 expected=9 bites=True`，两取都 `payload_scan_files=9 payload_scan_unresolved=0 findings=0 rc=0`，`chain_committed_payload_scan_exit=0` | `runs/wave31-step2-committed_payload_scan_dca897854.txt` |
+| 历史面应读 `commits_scanned=429`、`delta=1=span` | `429 commits scanned.` / `no leaks found`，`commits_scanned=429 rev_list_count_head=429 agreement=True`，`commits_scanned_previous_face=428`，`commits_scanned_delta=1 rev_list_span_prev_to_head=1 delta_matches_span=True`，`secret_scan_check_exit=0`、`chain_post_commit_secret_check_exit=0` | `runs/wave31-step2-post_commit_secret_check_dca897854.txt` |
+| take2 的 pin-drift 腿必须读 `stale_files=0` 且身份集不变 | `pin_drift_exit=0`、`pinned_files=16 stale_files=0 rows_with_pins=7 drifted_rows=[]`、`identity_set=5168e1e723999312`、`claims=120`；同一载档另有 `static_legs_failed=0 [none]`、`preval_inertness_exit=0`（`old_body_lines=52 new_body_lines=52 identical=True`、`lines_below=1 excluded=[two_rows_prevalidation_exit=0]`、`CONTROL_drop_one_line_from_old_side_differs=True`）、`staged_paths=8` 两形都 `findings=0 rc=0`、`backfill_chain_exit=0` | `runs/wave31-step2-backfill_gates_take2.txt` |
+
+8 与 9 的差还是 §8.1 那件事：take2 的 staged 那一腿只能给它当时看见的 8 枚定价，第 9 枚正是记录这次
+定价的载档自己；上面第一行那把复扫把清单来源换成提交本身，于是 9 枚全都有面对象，而它成立的条件
+（工作树==提交）由 `byte_identical=True` 担保。
+
+一条"空读数"的处置记在这里，免得下一个读者把它当成被吞掉的输出：take2 里
+`bandit_probes: ` 那一行正文是空的，因为 `bandit -q` 在无问题时**什么都不打印**。我用同一条 argv
+直接重跑并重定向到文件核对过，`0` 字节；这一腿的判定是它的退出码 `bandit_probes_exit=0`，不是正文。
+`runs/` 里 `.txt` 载档本面写作时实测 35 枚（`ls runs/*.txt | wc -l`），take3 那次复算落盘后是 36 枚。
+
+本面到此只闭合了前两条。第三条我当时写成了 `w31s2_backfill_gates.py --out
+runs/wave31-step2-backfill_gates_take3.txt`，**这条 argv 本身是错的**，而且只在被照抄的那一刻才显形：
+驱动用的是 `carrier = RUNS / args.out`（`probes/w31s2_backfill_gates.py:240`），`--out` 要的是 `runs/`
+**里面**的文件名；带 `runs/` 前缀的串会被二次拼成 `runs/runs/…`，那一层目录不存在，于是 `write_text`
+在四条腿全部跑完之后抛 `FileNotFoundError`——**四腿全绿、一枚载档都没落下**。这与 §7.14 同族而方向相
+反：那里是载档已经写完、判定通道死在它后面的展示行；这里是判定全部跑完、死在落盘那一步，于是"绿"没有
+任何可被引用的对象。控制臂在 `/tmp` 里按同形复现：`runs/x.txt` → `FileNotFoundError: [Errno 2] No such
+file or directory: '…/runs/runs/x.txt'`，`x.txt` → 写入 10 字节。take3 是用裸名取的，所以它有载档。
+
+## 8.4 第 3 枚 back-fill 自取的 take3，与"发布的谓据也要被复算"
+
+`a8d7b2122` → `dca897854` → 本枚，step 2 的 back-fill 序列到这里第 3 枚，仍然**无 push 授权**。take3 的
+读数逐条在 `runs/wave31-step2-backfill_gates_take3.txt`（3204 字节），行号是那份载档自己的：
+
+| 腿 | 实测 |
+|---|---|
+| pin-drift | `:6-8` `pin_drift_exit=0`、`identity_set=5168e1e723999312 claims=120`、`pinned_files=16 stale_files=0 rows_with_pins=7 drifted_rows=[] this_steps_rows=['HistoricalDividends', 'IndexConstituents']` |
+| 静态四把 | `:3` `probe_files_gated=5`（glob 得出，不是我抄的）；`:10/:12/:16/:17` 四把 exit 全 0，`:11` `5 files already formatted`、`:14` `Success: no issues found in 5 source files`；`:16` 正文空是 `bandit -q` 无问题时不打印（§8.3 末） |
+| 探针惰性 | `:21-25` `probe_exit=0 stderr_bytes=0`、`old_body_lines=52 new_body_lines=52 identical=True`、`lines_below=1 excluded=[two_rows_prevalidation_exit=0]`、`CONTROL_drop_one_line_from_old_side_differs=True`、`preval_inertness_exit=0` |
+| 索引面筛子 | `:26-31` `staged_paths=3`，两形都 `payload_scan_files=3 payload_scan_roots=3 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0`，`two_forms_agree=True` |
+| 判定 | `:32 static_legs_failed=0 [none]`、`:33 backfill_chain_exit=0` |
+
+`staged_paths=3` 与本枚实际入存的 5 枚路径之差是两件事叠出来的：take3 自己（它跑时还不存在），以及
+take3 之后为 face.md 最终字节再取的那一遍。同一 argv 会以 `--out wave31-step2-backfill_gates_take4.txt`
+再落一次盘，好让筛子给**带 §8.4 的** face.md 定价——take3 定价的是它还没有 §8.4 的那一份字节。take4 的
+读数不属于本面：本面若再为它改一次字，就又落后一代，与上面同形。处置与 §8.2 的 9-vs-8、§8.3 的 3-vs-4
+相同：交给下一枚提交里那把清单来源为提交本身的复扫，本枚的 5 枚路径届时全都有面对象，且成立条件由
+`worktree_drift_vs_commit=0 byte_identical=True` 担保。
+
+下一枚提交要面对的三条（谓据按 §8.4 的更正版写，`--out` 一律裸名）：
+
+1. `committed_payload_scan.py --commit <本枚 sha>` 应读 `commit_paths=5`、`worktree_drift_vs_commit=0
+   byte_identical=True`，控制臂 `CONTROL_drift_vs_parent=5 expected=5 bites=True`；
+2. `post_commit_history_gate.py --prev-carrier
+   runs/wave31-step2-post_commit_secret_check_dca897854.txt` 应读 `commits_scanned=430`、
+   `commits_scanned_delta=1 rev_list_span_prev_to_head=1 delta_matches_span=True`（前值 429 与 `:22-25`
+   在 `runs/wave31-step2-post_commit_secret_check_dca897854.txt`）；
+3. `w31s2_backfill_gates.py --out wave31-step2-backfill_gates_take5.txt` 应读 `staged_paths` 等于那一枚
+   当时的暂存集、`backfill_chain_exit=0`。
+
+`runs/` 里 `.txt` 载档在本面写作时实测 **36 枚**（`ls runs/*.txt | wc -l`，take3 已在内）。take4、take5
+落盘后的数由读它们的那一枚面实测，不在这里预填。
+
+
