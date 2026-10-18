@@ -1,0 +1,33 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "quoteSummary": {
+          "error": null,
+          "result": [
+            {
+              "financialData": {
+                "currentPrice": 246.38,
+                "numberOfAnalystOpinions": 41,
+                "recommendationMean": 1.8,
+                "targetHighPrice": 305.0,
+                "targetLowPrice": 190.0,
+                "targetMeanPrice": 258.4,
+                "targetMedianPrice": 255.0
+              }
+            }
+          ]
+        }
+      },
+      "url_contains": "v10/finance/quoteSummary/AAPL?corsDomain=finance.yahoo.com&crumb=fixture-crumb&formatted=false&modules=financialData&symbol=AAPL"
+    }
+  ]
+}

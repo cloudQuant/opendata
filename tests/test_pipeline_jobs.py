@@ -1752,7 +1752,7 @@ class TestPartitionMaintenanceJob:
         snapshot_bytes = snapshot_path.read_bytes()
         assert (
             sha256(snapshot_bytes).hexdigest()
-            == "bcdca191aa39064a8fc7040651c6694a572f5137d9c1d0868916b39ac284924d"
+            == "85a6cb90377357ff9b4f0e7ecb7bc287e34d64453e6ec64ae1176799aa82f412"
         )
         snapshot = json.loads(snapshot_bytes)
         counts = snapshot["counts"]

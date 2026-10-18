@@ -1,0 +1,27 @@
+# carrier for recorder_federal_reserve
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/federal_reserve/claims.json --output docs/evidence/C101/federal_reserve/claims.reviewed.json --provider federal_reserve --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over federal_reserve's regenerated shard
+# started_utc: 2026-10-18T17:11:15+00:00
+# exit: 0
+# stdout_chars: 879 stderr_chars: 0
+
+re-signing: dropped 13 earlier review(s) for the addressed identities
+REVIEW_SIGNED: federal_reserve::CentralBankHoldings
+REVIEW_SIGNED: federal_reserve::FederalFundsRate
+REVIEW_SIGNED: federal_reserve::FomcDocuments
+REVIEW_SIGNED: federal_reserve::InflationExpectations
+REVIEW_SIGNED: federal_reserve::MoneyMeasures
+REVIEW_SIGNED: federal_reserve::OvernightBankFundingRate
+REVIEW_SIGNED: federal_reserve::PrimaryDealerFails
+REVIEW_SIGNED: federal_reserve::PrimaryDealerPositioning
+REVIEW_SIGNED: federal_reserve::SOFR
+REVIEW_SIGNED: federal_reserve::SvenssonYieldCurve
+REVIEW_SIGNED: federal_reserve::TotalFactorProductivity
+REVIEW_SIGNED: federal_reserve::TreasuryRates
+REVIEW_SIGNED: federal_reserve::YieldCurve
+recorder_exit=0 signed=13 refused=0 reviews_total=13 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/federal_reserve/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_federal_reserve_exit=0

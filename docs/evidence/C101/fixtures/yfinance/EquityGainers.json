@@ -1,0 +1,60 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "finance": {
+          "error": null,
+          "result": [
+            {
+              "offset": 0,
+              "quotes": [
+                {
+                  "chgb": 41.6,
+                  "country": "United States",
+                  "currency": "USD",
+                  "dayvolume": 9800000,
+                  "exchDisp": "NMS",
+                  "exchange": "NMS",
+                  "industry": "Software",
+                  "lastmkttrade": 1760000000,
+                  "name": "Upstart Holdings",
+                  "percentchange": 41.6,
+                  "price": 29.8,
+                  "sector": "Technology",
+                  "symbol": "UPST"
+                },
+                {
+                  "chgb": 33.2,
+                  "country": "United States",
+                  "currency": "USD",
+                  "dayvolume": 4100000,
+                  "exchDisp": "NYQ",
+                  "exchange": "NYQ",
+                  "industry": "Software",
+                  "lastmkttrade": 1760000000,
+                  "name": "Quantum-Bound Holding",
+                  "percentchange": 33.2,
+                  "price": 24.1,
+                  "sector": "Technology",
+                  "symbol": "QUBH"
+                }
+              ],
+              "size": 2,
+              "total": 2
+            }
+          ]
+        }
+      },
+      "method": "POST",
+      "url_contains": "v1/finance/screener?corsDomain=finance.yahoo.com&crumb=fixture-crumb&formatted=false&lang=en-US&region=US"
+    }
+  ]
+}

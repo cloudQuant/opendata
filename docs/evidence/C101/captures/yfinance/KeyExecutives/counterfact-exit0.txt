@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model KeyExecutives --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_EXECUTIVES_REQUIRED_FIELD_MISSING", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_EXECUTIVES_REQUIRED_FIELD_MISSING", "rejected": [], "status": null}, "reason": "deleting one officer's title leaves the envelope well-formed everywhere else the product reads it -- the crumb, the quoteSummary module nesting the SDK flattens, the returned-symbol check, the list-of-mappings shape check all still pass -- and only the identity field YfinanceKeyExecutiveObservation maps through _executive_required_text disappears: the fetcher must refuse rather than publish a nameless executive drawn from the source's own officer list; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

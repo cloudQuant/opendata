@@ -1,0 +1,83 @@
+argv:
+  /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_provider_domains.py \
+    tests/test_alert_matrix.py tests/test_pipeline_jobs.py \
+    tests/test_alert_matrix_model_domains.py -o addopts= -p no:cacheprovider -q
+  (cwd = /Users/yunjinqi/Documents/new_projects/opendata, branch dev, HEAD f2b0e5eb8)
+  -o addopts= is mandatory: the repo addopts carry --cov, which rewrites .coverage.
+  .coverage on disk stays dated Oct 16 22:40 -- untouched by every run recorded here.
+instrument: tests/fixtures/registry_batch5_snapshot.json (31 source_hashes_sha256 entries), judged by
+  tests/test_provider_domains.py::_batch5_identity_snapshot (outer stamp BATCH5_SNAPSHOT_SHA256 at
+  line 1355, per-file digests at line 1368), tests/test_alert_matrix.py::_registry_snapshot:39,
+  tests/test_alert_matrix_model_domains.py::_registry_snapshot:56, and
+  tests/test_pipeline_jobs.py::TestPartitionMaintenanceJob::test_the_registered_census_reaches_the_ods_layer
+  (same outer digest hard-coded inline at line 1755).
+
+== BEFORE (red, reproduced) ==
+7 failed, 110 passed in 1.11s
+All seven abort inside the pin loop; every traceback ends at
+  AssertionError: opendata/data/providers/yfinance/models/iter2.py
+  expected c8bfdd339c8d0834706f6dd25d2eb172dc7944d15b2a05e091b24d5491d6adc1
+  actual   c5b083cb1547bea764cb10387665550ed21ae96a687c41206dc9f8c7c7d1154e
+(the loop is dict-ordered, so it stops at the first stale entry; market_iter2.py is stale too and is
+only revealed by the full-table recompute below.)
+caused by this wave -- 7 node ids:
+  tests/test_provider_domains.py::test_production_domains_preserve_v1_legacy_entries_and_explicit_semantics
+  tests/test_provider_domains.py::test_declared_domain_contracts_match_exact_registered_provider_models
+  tests/test_provider_domains.py::test_exact_domain_identity_assertion_rejects_removed_and_added_domains
+  tests/test_provider_domains.py::test_public_exports_match_reviewed_batch5_counts_and_types
+  tests/test_alert_matrix.py::TestCollection::test_every_leg_is_measured_or_counted_never_dropped
+  tests/test_alert_matrix.py::TestCollection::test_a_leg_with_no_field_mapping_is_the_measured_majority
+  tests/test_alert_matrix_model_domains.py::test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tables
+pre-existing (catalog / authority / first_model_bindings) -- 0 node ids:
+  not reproduced. The briefed split was "6 caused by this wave + 4 pre-existing"; the measured split
+  over these four modules is 7 + 0. Every one of the seven tracebacks terminates at line 1368/39/56,
+  i.e. inside the source_hashes_sha256 loop, so none of them is a catalogue or binding failure. The
+  briefing's two iter2.py digests (6c032755d60f...4d766b446) also did not reproduce: the working tree
+  holds c5b083cb1547...7d1154e. Numbers were not forced into agreement.
+
+== DELTA TABLE (re-based entries only) ==
+path	                                                old sha256	                                      new sha256	                                      git diff HEAD (added/deleted)
+opendata/data/providers/yfinance/models/iter2.py	      c8bfdd339c8d0834706f6dd25d2eb172dc7944d15b2a05e091b24d5491d6adc1  c5b083cb1547bea764cb10387665550ed21ae96a687c41206dc9f8c7c7d1154e  6 added / 3 deleted
+opendata/data/providers/yfinance/models/market_iter2.py ac37fd81642352e00024cbf92e09dff9f44ab42fc42b90a89d610bf5a4a0a229  5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4  8 added / 3 deleted
+outer stamp BATCH5_SNAPSHOT_SHA256 (tests/test_provider_domains.py:1355 and the identical literal in
+tests/test_pipeline_jobs.py:1755): bcdca191aa39064a8fc7040651c6694a572f5137d9c1d0868916b39ac284924d
+  -> 85a6cb90377357ff9b4f0e7ecb7bc287e34d64453e6ec64ae1176799aa82f412
+  (recomputed exactly as the consumers compute it: hashlib.sha256(<fixture file bytes>).hexdigest();
+   the two consumers are the only places the literal appears in tests/ -- grep bcdca191aa39064a)
+third file this wave changed but NOT pinned: opendata/data/providers/yfinance/models/stock_daily.py
+  (6 added / 2 deleted). It is absent from source_hashes_sha256, so it is deliberately left out of
+  this re-pin; recording it is the reason the delta is 2 and not 3.
+counts: entries changed = 2, entries left untouched = 29, pin table size = 31.
+  proof: git diff --numstat -- tests/fixtures/registry_batch5_snapshot.json => 2 added / 2 deleted,
+  i.e. exactly the two digest lines; a bulk regeneration would have rewritten far more. After the
+  edit, recomputing all 31 digests from disk reports stale=0.
+my writes: tests/fixtures/registry_batch5_snapshot.json (2/2), tests/test_provider_domains.py (1/1),
+  tests/test_pipeline_jobs.py (1/1). opendata/**, scripts/quality/** and every docs/evidence bundle
+  except this bundle's own probe and these two carriers are untouched.
+
+== COUNTERFACT (live, on the shipped consumer) ==
+script /tmp/w32_snapshot_counterfact.py imports tests.test_provider_domains and calls the shipped
+_batch5_identity_snapshot(); it patches pathlib.Path.read_bytes so ONE pinned file returns forged
+bytes in memory (one extra line appended), writing nothing:
+  literal_matches_fixture=True pinned_entries=31
+  CF_baseline                  reading=PASS                                     PASS=True
+  CF1_forged_pinned_bytes      AssertionError[opendata/.../yfinance/models/iter2.py]  bit=True
+  CF2_restored                 reading=PASS                                     PASS=True
+  CF3_forged_unpinned_bytes    reading=PASS still_passes=True   (stock_daily.py is not in the pinned
+                                set, so forging it must NOT trip the arm: the assertion is two-sided,
+                                it fires on pinned bytes and stays silent on unpinned ones)
+  snapshot_counterfact_PASS=True   counterfact_exit=0
+outer-stamp counterfact, byte-level, on the real test binary (fixture appended with one newline, then
+restored byte-exactly; restored digest verified equal to 85a6cb90...):
+  forged_digest c31a0202b4184592bf518d3af0414bd7b7eb3933da23737b3aaf5a11ecef5243
+  FAILED tests/test_provider_domains.py::test_public_exports_match_reviewed_batch5_counts_and_types
+      test_provider_domains.py:1363: assert 'c31a0202b418...f5a11ecef5243' == '85a6cb90...76799aa82f412'
+  FAILED tests/test_pipeline_jobs.py::TestPartitionMaintenanceJob::test_the_registered_census_reaches_the_ods_layer
+      test_pipeline_jobs.py:1753: same assert
+  2 failed, 70 deselected  ->  after restore: 2 passed, 70 deselected
+So the stamp is falsifiable in both directions it claims to test: the file-by-file digest loop and the
+payload digest over the fixture.
+
+== AFTER ==
+117 passed, 0 failed in 1.00s  (was 7 failed / 110 passed; total 117 both times, nothing deselected)
+residual failures: none, so nothing left to attribute.

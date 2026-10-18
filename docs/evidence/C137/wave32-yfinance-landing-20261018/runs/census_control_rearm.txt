@@ -1,0 +1,20 @@
+# carrier for w32_census_control_rearm.py (wave-32 probe re-run after the witness lint fix and the yfinance re-sign, so this carrier describes the final pinned bytes)
+# argv: PYTHONPATH=/Users/yunjinqi/Documents/new_projects/opendata /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C137/wave32-yfinance-landing-20261018/probes/w32_census_control_rearm.py
+# started_utc: 2026-10-18T18:57:30+00:00  ended_utc: 2026-10-18T18:57:37+00:00  wrapper_exit=0 (equals the trailing w32_census_control_rearm_exit)
+# cwd=/Users/yunjinqi/Documents/new_projects/opendata branch=dev head=f2b0e5eb8
+---- stdout+stderr ----
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C137/wave32-yfinance-landing-20261018/probes/w32_census_control_rearm.py   (cwd=/Users/yunjinqi/Documents/new_projects/opendata, PYTHONPATH=/Users/yunjinqi/Documents/new_projects/opendata, nothing under version control written)
+shipped_census residue_axis_census_face residue=33 actions={'implement_missing_model': 19, 'ledger_ruled_out': 11, 'new_provider_package': 2, 'shard_entry_needs_harness': 1} witnessable_today=0 rows_without_module=8 cross_distinct=2 identity_set=5168e1e723999312 arms=8 arms_passed=7 arms_failed=1
+shipped_census_arm_b B_landed_negative yfinance::BalanceSheet verdict=DOCUMENT_REACHABLE is_residue=False PASS=False exit=1
+A_red_attributed failed_arms=['B_landed_negative'] judged_status=OFFLINE_ACCEPTED verdict=DOCUMENT_REACHABLE trippable=True in_residue=False other_shipped_arms_green=7 PASS=True
+B_population_search searched=33 of=33 verdicts={'DOCUMENT_REACHABLE': 1, 'UNBOUND': 32} candidates=[] PASS=True
+C_harness_inert patched_paths=['/Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/yfinance/models/iter2.py'] fields_compared=25 identical=True verdict=DOCUMENT_REACHABLE PASS=True
+D_forged_control verdict=NO_CODE_SITE counts={} raises=7 code_raises=0 trippable_n=0 live_verdict=DOCUMENT_REACHABLE differing_keys=['code_raises', 'counts', 'doc_sites', 'raises', 'shipped_sites', 'trippable', 'verdict'] outside_site_axes=[] only_site_axes_moved=True declared_same=True row_class_same=True PASS=True
+E_two_sided forged=yfinance::BalanceSheet#w32-in-memory-forged-copy holds=True refuses_if_consumed_by_landing=True refuses_if_verdict_tripped=True PASS=True
+F_unconsumable judged_identities=350 forged_in_report=False consumed_control_in_report=True consumed_status=OFFLINE_ACCEPTED PASS=True
+G_blind_spot census_cross_tab={('NEED_BINDING', 'UNBOUND'): 32, ('PRODUCIBLE_NOW', 'DOCUMENT_REACHABLE'): 1} producible_now_rows=['yfinance::KeyMetrics'] key_metrics=UNREVIEWED/DOCUMENT_REACHABLE bucket=PRODUCIBLE_NOW action=shard_entry_needs_harness installed_yfinance=0.2.66 sdk_valuation_surface=ABSENT census_reads='AST sites + registry + claims shard + seam surface, never the SDK' PASS=True
+rearm_face consumed_control=yfinance::BalanceSheet rearmed_control=yfinance::BalanceSheet#w32-in-memory-forged-copy forged_verdict=NO_CODE_SITE byte_source=git_show_HEAD_in_memory paths=1 shipped_census_arms=8
+w32_census_control_rearm_face arms=7 arms_passed=7 arms_failed=0 PASS=True
+w32_census_control_rearm_exit=0
+
+w32_census_control_rearm_exit=0

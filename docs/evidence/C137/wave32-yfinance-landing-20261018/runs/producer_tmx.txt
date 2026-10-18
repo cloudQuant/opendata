@@ -1,0 +1,135 @@
+# carrier for producer_tmx
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider tmx --output docs/evidence/C101/tmx/claims.json
+# note: five-phase producer for tmx
+# started_utc: 2026-10-18T17:33:26+00:00
+# exit: 0
+# stdout_chars: 17040 stderr_chars: 0
+
+== provider tmx: 24 inventory row(s) of 350 total ==
+AvailableIndices implementation <not run> exit=- status=BLOCKED reason=no model witness
+AvailableIndices direct         <not run> exit=- status=BLOCKED reason=no model witness
+AvailableIndices service        <not run> exit=- status=BLOCKED reason=no model witness
+AvailableIndices contract       <not run> exit=- status=BLOCKED reason=no model witness
+AvailableIndices counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+BondPrices implementation <not run> exit=- status=BLOCKED reason=no model witness
+BondPrices direct         <not run> exit=- status=BLOCKED reason=no model witness
+BondPrices service        <not run> exit=- status=BLOCKED reason=no model witness
+BondPrices contract       <not run> exit=- status=BLOCKED reason=no model witness
+BondPrices counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+CalendarEarnings implementation <not run> exit=- status=BLOCKED reason=no model witness
+CalendarEarnings direct         <not run> exit=- status=BLOCKED reason=no model witness
+CalendarEarnings service        <not run> exit=- status=BLOCKED reason=no model witness
+CalendarEarnings contract       <not run> exit=- status=BLOCKED reason=no model witness
+CalendarEarnings counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+CompanyFilings implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyFilings --phase implementation --evidence-root docs/evidence/C101
+CompanyFilings direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyFilings --phase direct --evidence-root docs/evidence/C101
+CompanyFilings service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyFilings --phase service --evidence-root docs/evidence/C101
+CompanyFilings contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyFilings --phase contract --evidence-root docs/evidence/C101
+CompanyFilings counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyFilings --phase counterfact --evidence-root docs/evidence/C101
+CompanyNews implementation <not run> exit=- status=BLOCKED reason=no model witness
+CompanyNews direct         <not run> exit=- status=BLOCKED reason=no model witness
+CompanyNews service        <not run> exit=- status=BLOCKED reason=no model witness
+CompanyNews contract       <not run> exit=- status=BLOCKED reason=no model witness
+CompanyNews counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+EquityHistorical implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityHistorical --phase implementation --evidence-root docs/evidence/C101
+EquityHistorical direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityHistorical --phase direct --evidence-root docs/evidence/C101
+EquityHistorical service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityHistorical --phase service --evidence-root docs/evidence/C101
+EquityHistorical contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityHistorical --phase contract --evidence-root docs/evidence/C101
+EquityHistorical counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101
+EquityInfo implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityInfo --phase implementation --evidence-root docs/evidence/C101
+EquityInfo direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityInfo --phase direct --evidence-root docs/evidence/C101
+EquityInfo service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityInfo --phase service --evidence-root docs/evidence/C101
+EquityInfo contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityInfo --phase contract --evidence-root docs/evidence/C101
+EquityInfo counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityInfo --phase counterfact --evidence-root docs/evidence/C101
+EquityQuote implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityQuote --phase implementation --evidence-root docs/evidence/C101
+EquityQuote direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityQuote --phase direct --evidence-root docs/evidence/C101
+EquityQuote service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityQuote --phase service --evidence-root docs/evidence/C101
+EquityQuote contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityQuote --phase contract --evidence-root docs/evidence/C101
+EquityQuote counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityQuote --phase counterfact --evidence-root docs/evidence/C101
+EquitySearch implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquitySearch --phase implementation --evidence-root docs/evidence/C101
+EquitySearch direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquitySearch --phase direct --evidence-root docs/evidence/C101
+EquitySearch service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquitySearch --phase service --evidence-root docs/evidence/C101
+EquitySearch contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquitySearch --phase contract --evidence-root docs/evidence/C101
+EquitySearch counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquitySearch --phase counterfact --evidence-root docs/evidence/C101
+EtfSearch implementation <not run> exit=- status=BLOCKED reason=no model witness
+EtfSearch direct         <not run> exit=- status=BLOCKED reason=no model witness
+EtfSearch service        <not run> exit=- status=BLOCKED reason=no model witness
+EtfSearch contract       <not run> exit=- status=BLOCKED reason=no model witness
+EtfSearch counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+EtfHoldings implementation <not run> exit=- status=BLOCKED reason=no model witness
+EtfHoldings direct         <not run> exit=- status=BLOCKED reason=no model witness
+EtfHoldings service        <not run> exit=- status=BLOCKED reason=no model witness
+EtfHoldings contract       <not run> exit=- status=BLOCKED reason=no model witness
+EtfHoldings counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+EtfSectors implementation <not run> exit=- status=BLOCKED reason=no model witness
+EtfSectors direct         <not run> exit=- status=BLOCKED reason=no model witness
+EtfSectors service        <not run> exit=- status=BLOCKED reason=no model witness
+EtfSectors contract       <not run> exit=- status=BLOCKED reason=no model witness
+EtfSectors counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+EtfCountries implementation <not run> exit=- status=BLOCKED reason=no model witness
+EtfCountries direct         <not run> exit=- status=BLOCKED reason=no model witness
+EtfCountries service        <not run> exit=- status=BLOCKED reason=no model witness
+EtfCountries contract       <not run> exit=- status=BLOCKED reason=no model witness
+EtfCountries counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+EtfHistorical implementation <not run> exit=- status=BLOCKED reason=no model witness
+EtfHistorical direct         <not run> exit=- status=BLOCKED reason=no model witness
+EtfHistorical service        <not run> exit=- status=BLOCKED reason=no model witness
+EtfHistorical contract       <not run> exit=- status=BLOCKED reason=no model witness
+EtfHistorical counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+EtfInfo implementation <not run> exit=- status=BLOCKED reason=no model witness
+EtfInfo direct         <not run> exit=- status=BLOCKED reason=no model witness
+EtfInfo service        <not run> exit=- status=BLOCKED reason=no model witness
+EtfInfo contract       <not run> exit=- status=BLOCKED reason=no model witness
+EtfInfo counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+EquityGainers implementation <not run> exit=- status=BLOCKED reason=no model witness
+EquityGainers direct         <not run> exit=- status=BLOCKED reason=no model witness
+EquityGainers service        <not run> exit=- status=BLOCKED reason=no model witness
+EquityGainers contract       <not run> exit=- status=BLOCKED reason=no model witness
+EquityGainers counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+HistoricalDividends implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model HistoricalDividends --phase implementation --evidence-root docs/evidence/C101
+HistoricalDividends direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model HistoricalDividends --phase direct --evidence-root docs/evidence/C101
+HistoricalDividends service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model HistoricalDividends --phase service --evidence-root docs/evidence/C101
+HistoricalDividends contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model HistoricalDividends --phase contract --evidence-root docs/evidence/C101
+HistoricalDividends counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model HistoricalDividends --phase counterfact --evidence-root docs/evidence/C101
+IndexConstituents implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexConstituents --phase implementation --evidence-root docs/evidence/C101
+IndexConstituents direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexConstituents --phase direct --evidence-root docs/evidence/C101
+IndexConstituents service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexConstituents --phase service --evidence-root docs/evidence/C101
+IndexConstituents contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexConstituents --phase contract --evidence-root docs/evidence/C101
+IndexConstituents counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexConstituents --phase counterfact --evidence-root docs/evidence/C101
+IndexSectors implementation <not run> exit=- status=BLOCKED reason=no model witness
+IndexSectors direct         <not run> exit=- status=BLOCKED reason=no model witness
+IndexSectors service        <not run> exit=- status=BLOCKED reason=no model witness
+IndexSectors contract       <not run> exit=- status=BLOCKED reason=no model witness
+IndexSectors counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+IndexSnapshots implementation <not run> exit=- status=BLOCKED reason=no model witness
+IndexSnapshots direct         <not run> exit=- status=BLOCKED reason=no model witness
+IndexSnapshots service        <not run> exit=- status=BLOCKED reason=no model witness
+IndexSnapshots contract       <not run> exit=- status=BLOCKED reason=no model witness
+IndexSnapshots counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+InsiderTrading implementation <not run> exit=- status=BLOCKED reason=no model witness
+InsiderTrading direct         <not run> exit=- status=BLOCKED reason=no model witness
+InsiderTrading service        <not run> exit=- status=BLOCKED reason=no model witness
+InsiderTrading contract       <not run> exit=- status=BLOCKED reason=no model witness
+InsiderTrading counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+OptionsChains implementation <not run> exit=- status=BLOCKED reason=no model witness
+OptionsChains direct         <not run> exit=- status=BLOCKED reason=no model witness
+OptionsChains service        <not run> exit=- status=BLOCKED reason=no model witness
+OptionsChains contract       <not run> exit=- status=BLOCKED reason=no model witness
+OptionsChains counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+PriceTargetConsensus implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model PriceTargetConsensus --phase implementation --evidence-root docs/evidence/C101
+PriceTargetConsensus direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model PriceTargetConsensus --phase direct --evidence-root docs/evidence/C101
+PriceTargetConsensus service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model PriceTargetConsensus --phase service --evidence-root docs/evidence/C101
+PriceTargetConsensus contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model PriceTargetConsensus --phase contract --evidence-root docs/evidence/C101
+PriceTargetConsensus counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model PriceTargetConsensus --phase counterfact --evidence-root docs/evidence/C101
+TreasuryPrices implementation <not run> exit=- status=BLOCKED reason=no model witness
+TreasuryPrices direct         <not run> exit=- status=BLOCKED reason=no model witness
+TreasuryPrices service        <not run> exit=- status=BLOCKED reason=no model witness
+TreasuryPrices contract       <not run> exit=- status=BLOCKED reason=no model witness
+TreasuryPrices counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=318/350; provider rows covered=24 of provider inventory rows=24, of which bound now=8/318 resolvable; claims emitted=120 (40 PASS, 0 FAIL, 80 BLOCKED) = 24 row(s) x 5 phases; phases actually executed as subprocesses=120
+wrote docs/evidence/C101/tmx/claims.json
+
+---- stderr ----
+
+
+chain_producer_tmx_exit=0

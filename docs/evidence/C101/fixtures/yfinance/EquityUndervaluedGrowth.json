@@ -1,0 +1,68 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "finance": {
+          "error": null,
+          "result": [
+            {
+              "count": 3,
+              "quotes": [
+                {
+                  "currency": "USD",
+                  "dayVolume": 231800,
+                  "eodVolume": 214500,
+                  "epsGrowth": 32.6,
+                  "exchange": "NYQ",
+                  "intradayMarketCap": 1754000000,
+                  "pegRatio": 0.58,
+                  "quoteType": "EQUITY",
+                  "regularMarketPrice": 41.28,
+                  "symbol": "HELE",
+                  "trailingPE": 9.4
+                },
+                {
+                  "currency": "USD",
+                  "dayVolume": 140200,
+                  "eodVolume": 128400,
+                  "epsGrowth": 27.9,
+                  "exchange": "NYQ",
+                  "intradayMarketCap": 3412000000,
+                  "pegRatio": 0.74,
+                  "quoteType": "EQUITY",
+                  "regularMarketPrice": 57.11,
+                  "symbol": "CBU",
+                  "trailingPE": 11.2
+                },
+                {
+                  "currency": "USD",
+                  "dayVolume": 101700,
+                  "eodVolume": 96300,
+                  "epsGrowth": 25.4,
+                  "exchange": "NMS",
+                  "intradayMarketCap": 5990000000,
+                  "pegRatio": 0.91,
+                  "quoteType": "EQUITY",
+                  "regularMarketPrice": 168.9,
+                  "symbol": "PSMT",
+                  "trailingPE": 14.6
+                }
+              ],
+              "total": 3
+            }
+          ]
+        }
+      },
+      "method": "POST",
+      "url_contains": "v1/finance/screener?corsDomain=finance.yahoo.com&crumb=fixture-crumb&formatted=false&lang=en-US&region=US"
+    }
+  ]
+}

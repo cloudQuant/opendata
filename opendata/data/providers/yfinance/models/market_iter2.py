@@ -1207,6 +1207,7 @@ class YfinanceScreenerFetcher(Fetcher[YfinanceScreenerQuery, dict[str, object]])
     domain: ClassVar[str]
     sort_field: ClassVar[str]
     query_type: ClassVar[type[YfinanceScreenerQuery]] = YfinanceScreenerQuery
+    row_model: ClassVar[type[YfinanceScreenerObservation]] = YfinanceScreenerObservation
     none_means_all: ClassVar[bool] = False
 
     def __init_subclass__(cls, **kwargs: object) -> None:
@@ -1242,14 +1243,14 @@ class YfinanceScreenerFetcher(Fetcher[YfinanceScreenerQuery, dict[str, object]])
 
     def transform_data(self, raw: dict[str, object], params: YfinanceScreenerQuery) -> FetchResult:
         _validated_query(params, self.query_type)
+        if not isinstance(raw, Mapping) or not isinstance(raw.get("quotes"), list):
+            raise YfinanceProviderError("YFINANCE_SCREEN_SHAPE_INVALID")
         return _screen_rows(raw, self.screener_id, 0)
 
 
 def _screen_rows(
-    raw: object, screener_id: str, offset: int
+    raw: Mapping[str, object], screener_id: str, offset: int
 ) -> tuple[YfinanceScreenerObservation, ...]:
-    if not isinstance(raw, Mapping) or not isinstance(raw.get("quotes"), list):
-        raise YfinanceProviderError("YFINANCE_SCREEN_SHAPE_INVALID")
     quotes = raw["quotes"]
     if any(not isinstance(item, Mapping) for item in quotes):
         raise YfinanceProviderError("YFINANCE_SCREEN_SHAPE_INVALID")
@@ -1346,6 +1347,7 @@ class YfinanceEquityScreenerFetcher(Fetcher[YfinanceCustomScreenerQuery, dict[st
 
     async_mode = "bounded_thread"
     canonical_model = "EquityScreener"
+    row_model: ClassVar[type[YfinanceScreenerObservation]] = YfinanceScreenerObservation
     capability = Capability(
         asset_class="equity",
         domain="yfinance_equity_screener",
@@ -1382,6 +1384,8 @@ class YfinanceEquityScreenerFetcher(Fetcher[YfinanceCustomScreenerQuery, dict[st
     ) -> FetchResult:
         """Validate screen rows and retain the upstream quote payloads."""
         _validated_query(params, YfinanceCustomScreenerQuery)
+        if not isinstance(raw, Mapping) or not isinstance(raw.get("quotes"), list):
+            raise YfinanceProviderError("YFINANCE_SCREEN_SHAPE_INVALID")
         return _screen_rows(raw, "EquityScreener", 0)
 
 
@@ -1528,6 +1532,7 @@ class YfinanceKeyMetricsFetcher(Fetcher[YfinanceKeyMetricsQuery, KeyMetricsRaw])
 
     async_mode = "bounded_thread"
     canonical_model = "KeyMetrics"
+    row_model: ClassVar[type[YfinanceKeyMetricObservation]] = YfinanceKeyMetricObservation
     capability = Capability(
         asset_class="equity",
         domain="yfinance_key_metrics",

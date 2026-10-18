@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityQuote --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_REQUEST_FAILED", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_REQUEST_FAILED", "rejected": [], "status": null}, "reason": "an empty chart result keeps the envelope well-formed at every layer the SDK reads before prices -- the crumb, the URL, the meta block it stops parsing at the missing first result -- and only the daily bar series the FastInfo quote snapshot is computed from disappears: last_price and every averaged field of YfinanceEquityQuote derive from that series, and YfinanceEquityQuoteFetcher must refuse the snapshot through require_fast_info's stable code rather than publish a payload whose prices the source never returned; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

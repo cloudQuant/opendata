@@ -1,0 +1,45 @@
+# carrier for producer_government_us
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider government_us --output docs/evidence/C101/government_us/claims.json
+# note: five-phase producer for government_us
+# started_utc: 2026-10-18T17:22:59+00:00
+# exit: 0
+# stdout_chars: 7430 stderr_chars: 0
+
+== provider government_us: 6 inventory row(s) of 350 total ==
+CommodityPsdData implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdData --phase implementation --evidence-root docs/evidence/C101
+CommodityPsdData direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdData --phase direct --evidence-root docs/evidence/C101
+CommodityPsdData service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdData --phase service --evidence-root docs/evidence/C101
+CommodityPsdData contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdData --phase contract --evidence-root docs/evidence/C101
+CommodityPsdData counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdData --phase counterfact --evidence-root docs/evidence/C101
+CommodityPsdReport implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdReport --phase implementation --evidence-root docs/evidence/C101
+CommodityPsdReport direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdReport --phase direct --evidence-root docs/evidence/C101
+CommodityPsdReport service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdReport --phase service --evidence-root docs/evidence/C101
+CommodityPsdReport contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdReport --phase contract --evidence-root docs/evidence/C101
+CommodityPsdReport counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdReport --phase counterfact --evidence-root docs/evidence/C101
+TreasuryAuctions implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase implementation --evidence-root docs/evidence/C101
+TreasuryAuctions direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase direct --evidence-root docs/evidence/C101
+TreasuryAuctions service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase service --evidence-root docs/evidence/C101
+TreasuryAuctions contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase contract --evidence-root docs/evidence/C101
+TreasuryAuctions counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase counterfact --evidence-root docs/evidence/C101
+TreasuryPrices implementation <not run> exit=- status=BLOCKED reason=no model witness
+TreasuryPrices direct         <not run> exit=- status=BLOCKED reason=no model witness
+TreasuryPrices service        <not run> exit=- status=BLOCKED reason=no model witness
+TreasuryPrices contract       <not run> exit=- status=BLOCKED reason=no model witness
+TreasuryPrices counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+WeatherBulletin implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase implementation --evidence-root docs/evidence/C101
+WeatherBulletin direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase direct --evidence-root docs/evidence/C101
+WeatherBulletin service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase service --evidence-root docs/evidence/C101
+WeatherBulletin contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase contract --evidence-root docs/evidence/C101
+WeatherBulletin counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase counterfact --evidence-root docs/evidence/C101
+WeatherBulletinDownload implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletinDownload --phase implementation --evidence-root docs/evidence/C101
+WeatherBulletinDownload direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletinDownload --phase direct --evidence-root docs/evidence/C101
+WeatherBulletinDownload service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletinDownload --phase service --evidence-root docs/evidence/C101
+WeatherBulletinDownload contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletinDownload --phase contract --evidence-root docs/evidence/C101
+WeatherBulletinDownload counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletinDownload --phase counterfact --evidence-root docs/evidence/C101
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=318/350; provider rows covered=6 of provider inventory rows=6, of which bound now=5/318 resolvable; claims emitted=30 (25 PASS, 0 FAIL, 5 BLOCKED) = 6 row(s) x 5 phases; phases actually executed as subprocesses=30
+wrote docs/evidence/C101/government_us/claims.json
+
+---- stderr ----
+
+
+chain_producer_government_us_exit=0

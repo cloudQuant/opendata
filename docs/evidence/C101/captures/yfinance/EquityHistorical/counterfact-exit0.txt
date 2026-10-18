@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_EMPTY_RESPONSE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_EMPTY_RESPONSE", "rejected": [], "status": null}, "reason": "an empty chart result keeps the envelope well-formed for the crumb, the tz probe and the URL the SDK built from the query window, and only the bar series the contract rows are computed from disappears: PriceHistory takes its fail branch and returns the empty frame, and _history_rows must refuse it with YfinanceProviderError/YFINANCE_EMPTY_RESPONSE rather than publish bars the source never returned; untampered control produced 7 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

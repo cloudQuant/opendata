@@ -1,0 +1,225 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/yfinance/EquityUndervaluedLargeCaps/service-exit0.txt",
+    "sha256": "6a91770a11098f48e09bc09a33b01fffa90778626a37a094a5cea39f05458855",
+    "size_bytes": 377,
+    "stdout_excerpt": "service: query_provider_model executed for real (registry + reviewed domain semantics), rows=3 first_row_sha256=019d0d45950a3c31\nVERDICT=PASS\n"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityUndervaluedLargeCaps --phase service --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-18T19:09:51.062848+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "7f7091ebbe366457446a31d8c12068d8b0a2f5dc96d48be1abce60554e68009c",
+          "before_sha256": "7f7091ebbe366457446a31d8c12068d8b0a2f5dc96d48be1abce60554e68009c",
+          "path": "opendata/data/models/yfinance_iter2.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:7f7091ebbe366457446a31d8c12068d8b0a2f5dc96d48be1abce60554e68009c",
+      "fixture": [
+        {
+          "after_sha256": "f63ccfc31e9e9446b2225ef21059351a307b7470f9be81dae23cf17c1ad1d694",
+          "before_sha256": "f63ccfc31e9e9446b2225ef21059351a307b7470f9be81dae23cf17c1ad1d694",
+          "path": "docs/evidence/C101/fixtures/yfinance/EquityUndervaluedLargeCaps.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "ae9eb4e404f689a7ff9b38be4af3331957f8205bdd2173cf4c78582c3ef4a3d7",
+          "before_sha256": "ae9eb4e404f689a7ff9b38be4af3331957f8205bdd2173cf4c78582c3ef4a3d7",
+          "path": "scripts/quality/iter2_witnesses/yfinance.py"
+        },
+        {
+          "after_sha256": "b7fe96680a423f50906d1fd0148693913cec6008133b00753c97cbb6128cd4a2",
+          "before_sha256": "b7fe96680a423f50906d1fd0148693913cec6008133b00753c97cbb6128cd4a2",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_a.py"
+        },
+        {
+          "after_sha256": "933ac136015b237620a0b00bb7e120b90f51f9956d55194698fdba613a02cbcb",
+          "before_sha256": "933ac136015b237620a0b00bb7e120b90f51f9956d55194698fdba613a02cbcb",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_b.py"
+        },
+        {
+          "after_sha256": "9f58d90cf6450f8e1ddcc3ba88119579e3ade93633b1a6c29a505ccbc48849fa",
+          "before_sha256": "9f58d90cf6450f8e1ddcc3ba88119579e3ade93633b1a6c29a505ccbc48849fa",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_c.py"
+        },
+        {
+          "after_sha256": "577755ea168de5f7f1ea78c5217e4d74992b4d62b7dabf757921d4d9bb92df99",
+          "before_sha256": "577755ea168de5f7f1ea78c5217e4d74992b4d62b7dabf757921d4d9bb92df99",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_d.py"
+        },
+        {
+          "after_sha256": "7fc3d8edb37462b207deac19733585878ca02bf6e27f7cfbcdf1a1b10409c553",
+          "before_sha256": "7fc3d8edb37462b207deac19733585878ca02bf6e27f7cfbcdf1a1b10409c553",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_e.py"
+        },
+        {
+          "after_sha256": "f91aa258ee665ee44c109ba8574eaa2a5bdfe3d1db3c013da0dbc617c56ec8be",
+          "before_sha256": "f91aa258ee665ee44c109ba8574eaa2a5bdfe3d1db3c013da0dbc617c56ec8be",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_f.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "8dec9d21bf768bc4e221695ea236dec48b8358c5882507d38b13eb469b4a54da",
+          "before_sha256": "8dec9d21bf768bc4e221695ea236dec48b8358c5882507d38b13eb469b4a54da",
+          "path": "opendata/data/providers/yfinance/provider.py"
+        },
+        {
+          "after_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+          "before_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+          "path": "opendata/data/providers/yfinance/models/market_iter2.py"
+        },
+        {
+          "after_sha256": "00e37fe7317c102be85911ba068d1a17e83d60a7e548bba9aac21e6fcf9c3f53",
+          "before_sha256": "00e37fe7317c102be85911ba068d1a17e83d60a7e548bba9aac21e6fcf9c3f53",
+          "path": "opendata/data/providers/yfinance/models/_sdk.py"
+        },
+        {
+          "after_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+          "before_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+          "path": "opendata/data/providers/yfinance/models/_session.py"
+        },
+        {
+          "after_sha256": "90d31d8926b2e36d3d2b23c5ff140157ffe24d1cce4cf8cfd11a6278a566ea35",
+          "before_sha256": "90d31d8926b2e36d3d2b23c5ff140157ffe24d1cce4cf8cfd11a6278a566ea35",
+          "path": "opendata/data/providers/yfinance/models/stock_daily.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "yfinance::EquityUndervaluedLargeCaps",
+  "phase": "service",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "7f7091ebbe366457446a31d8c12068d8b0a2f5dc96d48be1abce60554e68009c",
+        "before_sha256": "7f7091ebbe366457446a31d8c12068d8b0a2f5dc96d48be1abce60554e68009c",
+        "path": "opendata/data/models/yfinance_iter2.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:7f7091ebbe366457446a31d8c12068d8b0a2f5dc96d48be1abce60554e68009c",
+    "fixture": [
+      {
+        "after_sha256": "f63ccfc31e9e9446b2225ef21059351a307b7470f9be81dae23cf17c1ad1d694",
+        "before_sha256": "f63ccfc31e9e9446b2225ef21059351a307b7470f9be81dae23cf17c1ad1d694",
+        "path": "docs/evidence/C101/fixtures/yfinance/EquityUndervaluedLargeCaps.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "ae9eb4e404f689a7ff9b38be4af3331957f8205bdd2173cf4c78582c3ef4a3d7",
+        "before_sha256": "ae9eb4e404f689a7ff9b38be4af3331957f8205bdd2173cf4c78582c3ef4a3d7",
+        "path": "scripts/quality/iter2_witnesses/yfinance.py"
+      },
+      {
+        "after_sha256": "b7fe96680a423f50906d1fd0148693913cec6008133b00753c97cbb6128cd4a2",
+        "before_sha256": "b7fe96680a423f50906d1fd0148693913cec6008133b00753c97cbb6128cd4a2",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_a.py"
+      },
+      {
+        "after_sha256": "933ac136015b237620a0b00bb7e120b90f51f9956d55194698fdba613a02cbcb",
+        "before_sha256": "933ac136015b237620a0b00bb7e120b90f51f9956d55194698fdba613a02cbcb",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_b.py"
+      },
+      {
+        "after_sha256": "9f58d90cf6450f8e1ddcc3ba88119579e3ade93633b1a6c29a505ccbc48849fa",
+        "before_sha256": "9f58d90cf6450f8e1ddcc3ba88119579e3ade93633b1a6c29a505ccbc48849fa",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_c.py"
+      },
+      {
+        "after_sha256": "577755ea168de5f7f1ea78c5217e4d74992b4d62b7dabf757921d4d9bb92df99",
+        "before_sha256": "577755ea168de5f7f1ea78c5217e4d74992b4d62b7dabf757921d4d9bb92df99",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_d.py"
+      },
+      {
+        "after_sha256": "7fc3d8edb37462b207deac19733585878ca02bf6e27f7cfbcdf1a1b10409c553",
+        "before_sha256": "7fc3d8edb37462b207deac19733585878ca02bf6e27f7cfbcdf1a1b10409c553",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_e.py"
+      },
+      {
+        "after_sha256": "f91aa258ee665ee44c109ba8574eaa2a5bdfe3d1db3c013da0dbc617c56ec8be",
+        "before_sha256": "f91aa258ee665ee44c109ba8574eaa2a5bdfe3d1db3c013da0dbc617c56ec8be",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_f.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "8dec9d21bf768bc4e221695ea236dec48b8358c5882507d38b13eb469b4a54da",
+        "before_sha256": "8dec9d21bf768bc4e221695ea236dec48b8358c5882507d38b13eb469b4a54da",
+        "path": "opendata/data/providers/yfinance/provider.py"
+      },
+      {
+        "after_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+        "before_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+        "path": "opendata/data/providers/yfinance/models/market_iter2.py"
+      },
+      {
+        "after_sha256": "00e37fe7317c102be85911ba068d1a17e83d60a7e548bba9aac21e6fcf9c3f53",
+        "before_sha256": "00e37fe7317c102be85911ba068d1a17e83d60a7e548bba9aac21e6fcf9c3f53",
+        "path": "opendata/data/providers/yfinance/models/_sdk.py"
+      },
+      {
+        "after_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+        "before_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+        "path": "opendata/data/providers/yfinance/models/_session.py"
+      },
+      {
+        "after_sha256": "90d31d8926b2e36d3d2b23c5ff140157ffe24d1cce4cf8cfd11a6278a566ea35",
+        "before_sha256": "90d31d8926b2e36d3d2b23c5ff140157ffe24d1cce4cf8cfd11a6278a566ea35",
+        "path": "opendata/data/providers/yfinance/models/stock_daily.py"
+      }
+    ]
+  },
+  "provider": "yfinance",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-yfinance-EquityUndervaluedLargeCaps",
+  "upstream_model": "EquityUndervaluedLargeCaps"
+}

@@ -1,0 +1,20 @@
+# carrier for recorder_government_us
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/government_us/claims.json --output docs/evidence/C101/government_us/claims.reviewed.json --provider government_us --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over government_us's regenerated shard
+# started_utc: 2026-10-18T17:23:27+00:00
+# exit: 0
+# stdout_chars: 1361 stderr_chars: 0
+
+re-signing: dropped 5 earlier review(s) for the addressed identities
+REVIEW_SIGNED: government_us::CommodityPsdData
+REVIEW_SIGNED: government_us::CommodityPsdReport
+REVIEW_SIGNED: government_us::TreasuryAuctions
+REVIEW_SIGNED: government_us::WeatherBulletin
+REVIEW_SIGNED: government_us::WeatherBulletinDownload
+REVIEW_REFUSED: government_us::TreasuryPrices:implementation:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; direct:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; service:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; contract:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; counterfact:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,counterfact_receipt_path_invalid,fixture_pins_missing,probe_pins_missing,source_pins_missing
+recorder_exit=0 signed=5 refused=1 reviews_total=5 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/government_us/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_government_us_exit=0

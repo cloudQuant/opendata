@@ -1,0 +1,60 @@
+# carrier for w32_landing_radius.py (wave-32 landing radius and attribution)
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C137/wave32-yfinance-landing-20261018/probes/w32_landing_radius.py []
+# judge argv (disk): /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_model_evidence.py --inventory docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv --claims docs/evidence/C101/claims.merged.json --output <bundle>/runs/judge.txt
+# pre-chain judge argv is the same with --claims <HEAD copy under /tmp>; nothing pinned is written
+A_pin_table_head rows_pinning_probe_runner=291/1565 slots=1746 rows_pinning_fixtures=291 fixtures_slots=1746 disk_rows_pinning_probe_runner=317/1695 disk_slots=1902
+wrote /tmp/w32_landing_radius/judge.head.json and /tmp/w32_landing_radius/judge.head.md: 350 identities, 0 offline accepted
+A_pre_chain_judged accepted=0/350 statuses={'STALE': 291, 'UNREVIEWED': 37, 'INCOMPLETE': 22} claims=1565 identity_set=5168e1e723999312 judge_exit=0
+wrote /tmp/w32_landing_radius/judge.disk.json and /tmp/w32_landing_radius/judge.disk.md: 350 identities, 317 offline accepted
+B_post_chain accepted=317/350 statuses={'OFFLINE_ACCEPTED': 317, 'UNREVIEWED': 11, 'INCOMPLETE': 22} claims=1695 identity_set=5168e1e723999312 judge_exit=0
+C_drift head_unsimulated stale_rows=291 slots=3524 issues=['fixture_pin_1_current_hash_drift', 'fixture_pin_2_current_hash_drift', 'probe_pin_1_current_hash_drift', 'probe_pin_2_current_hash_drift']
+C_drift disk_unsimulated stale_rows=0 issues=[]
+C_counterfact forged_probe_digest stale_rows=317/350 slots=1902 partial_control=_sdk.py rows=26 sample=['alpha_vantage::EquityHistorical', 'alpha_vantage::EtfHistorical', 'alpha_vantage::HistoricalEps']
+D_provider_delta_providers=32 rows_sum 350|350 accepted 0 -> 317 movers=28 regressions=[] inventory_labels=True
+provider_row provider=alpha_vantage rows=3 accepted 0 -> 3 delta=+3
+provider_row provider=benzinga rows=4 accepted 0 -> 4 delta=+4
+provider_row provider=biztoc rows=1 accepted 0 -> 0 delta=+0
+provider_row provider=bls rows=2 accepted 0 -> 2 delta=+2
+provider_row provider=cboe rows=11 accepted 0 -> 9 delta=+9
+provider_row provider=cftc rows=2 accepted 0 -> 2 delta=+2
+provider_row provider=congress_gov rows=8 accepted 0 -> 8 delta=+8
+provider_row provider=deribit rows=5 accepted 0 -> 5 delta=+5
+provider_row provider=ecb rows=3 accepted 0 -> 3 delta=+3
+provider_row provider=econdb rows=8 accepted 0 -> 6 delta=+6
+provider_row provider=eia rows=2 accepted 0 -> 2 delta=+2
+provider_row provider=famafrench rows=6 accepted 0 -> 6 delta=+6
+provider_row provider=federal_reserve rows=13 accepted 0 -> 13 delta=+13
+provider_row provider=finra rows=2 accepted 0 -> 2 delta=+2
+provider_row provider=finviz rows=7 accepted 0 -> 7 delta=+7
+provider_row provider=fmp rows=69 accepted 0 -> 69 delta=+69
+provider_row provider=fred rows=36 accepted 0 -> 36 delta=+36
+provider_row provider=government_us rows=6 accepted 0 -> 5 delta=+5
+provider_row provider=imf rows=8 accepted 0 -> 8 delta=+8
+provider_row provider=intrinio rows=38 accepted 0 -> 37 delta=+37
+provider_row provider=multpl rows=1 accepted 0 -> 1 delta=+1
+provider_row provider=nasdaq rows=9 accepted 0 -> 9 delta=+9
+provider_row provider=oecd rows=9 accepted 0 -> 9 delta=+9
+provider_row provider=sec rows=24 accepted 0 -> 24 delta=+24
+provider_row provider=seeking_alpha rows=3 accepted 0 -> 0 delta=+0
+provider_row provider=stockgrid rows=1 accepted 0 -> 0 delta=+0
+provider_row provider=tiingo rows=7 accepted 0 -> 7 delta=+7
+provider_row provider=tmx rows=24 accepted 0 -> 8 delta=+8
+provider_row provider=tradier rows=5 accepted 0 -> 5 delta=+5
+provider_row provider=tradingeconomics rows=1 accepted 0 -> 1 delta=+1
+provider_row provider=wsj rows=3 accepted 0 -> 0 delta=+0
+provider_row provider=yfinance rows=29 accepted 0 -> 26 delta=+26
+D_provider_delta_summary providers=32 inventory_rows=350 rows_sum=350 accepted 0 -> 317 movers=28 regressions=[] mover_deltas={'alpha_vantage': 3, 'benzinga': 4, 'bls': 2, 'cboe': 9, 'cftc': 2, 'congress_gov': 8, 'deribit': 5, 'ecb': 3, 'econdb': 6, 'eia': 2, 'famafrench': 6, 'federal_reserve': 13, 'finra': 2, 'finviz': 7, 'fmp': 69, 'fred': 36, 'government_us': 5, 'imf': 8, 'intrinio': 37, 'multpl': 1, 'nasdaq': 9, 'oecd': 9, 'sec': 24, 'tiingo': 7, 'tmx': 8, 'tradier': 5, 'tradingeconomics': 1, 'yfinance': 26} green=True
+D2_landed_report file=claims.merged.report.json providers=32 accepted 291 -> 317 movers=['yfinance'] regressions=[] yfinance 0 -> 26 green=True
+D3_control_forged row=alpha_vantage::EquityHistorical status OFFLINE_ACCEPTED -> UNREVIEWED (in memory only) regressions=['alpha_vantage:3->2'] accepted 317 -> 316 expected_after=317 face_bites=True
+D3_recheck_real_data accepted 0 -> 317 movers=28 regressions=[] green=True identical_to_real_face=True
+E_seam_kinds accepted_rows=317 kinds={'shared_http_client': 162, 'engine_transport': 129, 'governed_sdk_session': 26} governed_sdk_session_rows=26 rows_without_witness_entry=0 sample=[]
+F_census_rerun exit=1 residue_axis_census_face residue=33 actions={'implement_missing_model': 19, 'ledger_ruled_out': 11, 'new_provider_package': 2, 'shard_entry_needs_harness': 1} witnessable_today=0 rows_without_module=8 cross_distinct=2 identity_set=5168e1e723999312 arms=8 arms_passed=7 arms_failed=1 failing_arms=['B_landed_negative_PASS=False']
+F_census_without_pythonpath exit=1 error=none
+F_census_previous_generation file=landing_set_blast_radius.take5_final_bytes.txt population: inventory=350 accepted=291 residue=59 status_counts={'INCOMPLETE': 22, 'OFFLINE_ACCEPTED': 291, 'UNREVIEWED': 37} identity_set=5168e1e723999312 accepted_claims=1455
+G_carriers population=docs/evidence/C137/wave32-yfinance-landing-20261018/runs/*.txt files=75 walked=74 standing=73 with_exit_line=73 self_carrier_excluded=['w32_landing_radius.txt'] superseded=['snapshot_repin.txt'] missing_exit_line=['snapshot_repin.txt'] standing_missing=[]
+G_carriers_chain producer_carriers=28 recorder_carriers=28 chain_members=28 chain_exit_readings=59 chain_exit_nonzero=[] negative_readings=[] nonzero_members_empty=True merge_idempotent=True stable_shas=['8b2daed6eae5', '8b2daed6eae5', '8b2daed6eae5', '8b2daed6eae5']
+G_repin_take2 exists=True passed=117 failed=0 exit=0 summary=repin_take2_argv_modules=4 pytest_summary="117 passed in 0.99s"
+H_keymetrics sdk=0.2.66 class_has_get_valuation_measures=False package_files_naming_the_surface=0 (grep exit=1) census_bucket_for_the_row=PRODUCIBLE_NOW/DOCUMENT_REACHABLE -> instrument blind spot
+landing_radius_face arms=11 arms_passed=11 arms_failed=0 failed=[] pre_chain_accepted=0 post_chain_accepted=317 radius_rows=291->317 census_residue=59->33 identity_set=5168e1e723999312 PASS=True
+w32_landing_radius_exit=0
+w32_landing_radius_take3_final_exit=0

@@ -1,0 +1,129 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "quoteSummary": {
+          "error": null,
+          "result": [
+            {
+              "assetProfile": {
+                "address": {
+                  "city": "Cupertino",
+                  "country": "United States",
+                  "state": "CA"
+                },
+                "companyOfficers": [
+                  {
+                    "age": 63,
+                    "exercisedValue": {
+                      "fmt": "0",
+                      "raw": 0
+                    },
+                    "fiscalYear": 2025,
+                    "maxAge": 86400,
+                    "name": "Timothy D. Cook",
+                    "title": "Chief Executive Officer, Director",
+                    "totalPay": {
+                      "fmt": "16.76M",
+                      "raw": 16757564
+                    },
+                    "unexercisedValue": {
+                      "fmt": "0",
+                      "raw": 0
+                    },
+                    "yearBorn": 1961
+                  },
+                  {
+                    "age": 52,
+                    "exercisedValue": {
+                      "fmt": "1.2M",
+                      "raw": 1200000
+                    },
+                    "fiscalYear": 2025,
+                    "maxAge": 86400,
+                    "name": "Kevan Parsia",
+                    "title": "Senior Vice President, Chief Financial Officer, Principal Accounting Officer",
+                    "totalPay": {
+                      "fmt": "5.05M",
+                      "raw": 5054934
+                    },
+                    "unexercisedValue": {
+                      "fmt": "3.4M",
+                      "raw": 3400000
+                    },
+                    "yearBorn": 1972
+                  }
+                ],
+                "industry": "Consumer Electronics",
+                "longBusinessSummary": "Apple Inc. designs, manufactures and markets smartphones.",
+                "numberOfEmployees": {
+                  "fmt": "164k",
+                  "raw": 164000
+                },
+                "sector": "Technology",
+                "website": "https://www.apple.com"
+              },
+              "quoteType": {
+                "currency": "USD",
+                "exchange": "NMS",
+                "longName": "Apple Inc.",
+                "quoteType": "EQUITY",
+                "shortName": "Apple Inc.",
+                "symbol": "AAPL"
+              }
+            }
+          ]
+        }
+      },
+      "url_contains": "v10/finance/quoteSummary"
+    },
+    {
+      "body": {
+        "quoteResponse": {
+          "error": null,
+          "result": [
+            {
+              "currency": "USD",
+              "exchange": "NMS",
+              "floatShares": 18580000000,
+              "heldPercentInsiders": 0.0782,
+              "heldPercentInstitutions": 0.6125,
+              "impliedSharesOutstanding": 18650000000,
+              "quoteType": "EQUITY",
+              "regularMarketPrice": 246.38,
+              "regularMarketVolume": 51000000,
+              "sharesOutstanding": 18650000000,
+              "sharesPercentSharesOut": 0.0056,
+              "sharesShort": 105000000,
+              "sharesShortPreviousMonthDate": 1751328000,
+              "sharesShortPriorMonth": 102000000,
+              "shortPercentOfFloat": 0.0071,
+              "shortRatio": 1.4,
+              "symbol": "AAPL"
+            }
+          ]
+        }
+      },
+      "url_contains": "v7/finance/quote"
+    },
+    {
+      "body": {
+        "timeseries": {
+          "error": null,
+          "result": [
+            {}
+          ]
+        }
+      },
+      "url_contains": "fundamentals-timeseries"
+    }
+  ]
+}

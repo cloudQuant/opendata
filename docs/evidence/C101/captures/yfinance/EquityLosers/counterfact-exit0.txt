@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityLosers --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "the day-losers screen publishes the losers by the same quotes list the gainers screen uses, so a wire-shape regression that serialises this row's quotes page into a symbol string destroys exactly the negative percentchange payloads this row is ordered by; the page reaches this repo only through require_screen, so it is the list check at _sdk.py:435 that refuses with YFINANCE_SCREEN_SHAPE_INVALID before an empty-or-string loser stream can become rows the source never quoted; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

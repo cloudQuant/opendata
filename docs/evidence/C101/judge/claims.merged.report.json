@@ -2,7 +2,7 @@
   "acceptance_rule": "all five phase claims plus an explicit valid primary-model or human ACCEPT receipt; claim PASS alone is candidate only",
   "claims_input": {
     "path": "docs/evidence/C101/claims.merged.json",
-    "sha256": "b8effc33a88d9e84a20a64dd8b1ca71d47814dafcea145744dda40cf8a29bbcf"
+    "sha256": "c5f94a26ac8454575564e31b804ec0b084160ae60df6881bba1ab652eb55503f"
   },
   "claims_status_source": "explicit JSON claims only; no directory globbing or markdown status parsing",
   "global_issues": [],
@@ -28061,648 +28061,1447 @@
       "upstream_model": "AvailableIndices"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::BalanceSheet",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/BalanceSheet/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "a real upstream defect -- Yahoo publishing the timeseries envelope with an empty result list for a symbol whose statement feed is being rebuilt -- reaches this row's frame as an EMPTY DataFrame, and the site that fires is _statement_observations' frame.empty branch at opendata/data/providers/yfinance/models/iter2.py:237, which refuses with YfinanceProviderError/YFINANCE_EMPTY_RESPONSE rather than publish periods the source never returned. Measured on this row's own document (the tampered body really read): 12 rows -> 0 rows, refusal code YFINANCE_EMPTY_RESPONSE at iter2.py:237. NOT iter2.py:299: the isinstance(raw, pd.DataFrame) guard never fires, because Financials._fetch_time_series collapses every wire defect into pd.DataFrame() and require_statement_frame never hands back None or a non-frame (measured over result:[], a non-JSON body, a body with no timeseries key, result:[{}], a blank item label and a duplicated asOfDate -- a DataFrame every time). WHY THE TWO LEGS CANNOT SHARE A PROCESS: YfData is a process singleton and its URL-keyed cache_get lru (maxsize=64) replays the control response for the tampered leg (measured cache_info hits=1 misses=1, tampered leg calls and returned the control's 12 rows), because the leg's url is fixed by symbol, the fundamentals-timeseries selector, and the two epoch window bounds (lower bound pinned, upper bound the day-ceiling of utcnow, so day-stable) -- identical for both legs, with no date field in YfinanceStatementQuery to move the way rows_w32_a moved a chart window into the future. The runner closes that hole structurally instead of special-casing this row: the counterfact phase runs its tampered leg in a fresh child process and refuses when that leg itself puts no request through the carrier built from the tampered document. Measured on this row, the isolated leg reports seam_requests=2 with outcome=refusal and this code; the same leg forced back into the control's process reports seam_requests=0 and the phase exits 1 with FAIL reason=the tampered leg made 0 request(s) through the offline carrier, so the control leg's answer served it and the tamper was never read; untampered control produced 12 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/BalanceSheet/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/BalanceSheet/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/BalanceSheet/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/BalanceSheet/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-BalanceSheet",
       "upstream_model": "BalanceSheet"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::CashFlowStatement",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CashFlowStatement/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "a real upstream defect -- Yahoo publishing the timeseries envelope with an empty result list for a symbol whose statement feed is being rebuilt -- reaches this row's frame as an EMPTY DataFrame, and the site that fires is _statement_observations' frame.empty branch at opendata/data/providers/yfinance/models/iter2.py:237, which refuses with YfinanceProviderError/YFINANCE_EMPTY_RESPONSE rather than publish periods the source never returned. Measured on this row's own document (the tampered body really read): 12 rows -> 0 rows, refusal code YFINANCE_EMPTY_RESPONSE at iter2.py:237. NOT iter2.py:299: the isinstance(raw, pd.DataFrame) guard never fires, because Financials._fetch_time_series collapses every wire defect into pd.DataFrame() and require_statement_frame never hands back None or a non-frame (measured over result:[], a non-JSON body, a body with no timeseries key, result:[{}], a blank item label and a duplicated asOfDate -- a DataFrame every time). WHY THE TWO LEGS CANNOT SHARE A PROCESS: YfData is a process singleton and its URL-keyed cache_get lru (maxsize=64) replays the control response for the tampered leg (measured cache_info hits=1 misses=1, tampered leg calls and returned the control's 12 rows), because the leg's url is fixed by symbol, the fundamentals-timeseries selector, and the two epoch window bounds (lower bound pinned, upper bound the day-ceiling of utcnow, so day-stable) -- identical for both legs, with no date field in YfinanceStatementQuery to move the way rows_w32_a moved a chart window into the future. The runner closes that hole structurally instead of special-casing this row: the counterfact phase runs its tampered leg in a fresh child process and refuses when that leg itself puts no request through the carrier built from the tampered document. Measured on this row, the isolated leg reports seam_requests=2 with outcome=refusal and this code; the same leg forced back into the control's process reports seam_requests=0 and the phase exits 1 with FAIL reason=the tampered leg made 0 request(s) through the offline carrier, so the control leg's answer served it and the tamper was never read; untampered control produced 12 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CashFlowStatement/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CashFlowStatement/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CashFlowStatement/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CashFlowStatement/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-CashFlowStatement",
       "upstream_model": "CashFlowStatement"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::CompanyNews",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CompanyNews/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_NEWS_DATE_MISSING",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_NEWS_DATE_MISSING",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the ncp stream still answers with a well-formed article list -- the POST URL, the crumb, the item count and every other field the SDK copies into raw_payload_json are untouched -- and only the first article's providerPublishTime is gone, so the observation the yfinance_company_news domain keys on published_at_utc has no timestamp to key on: YfinanceCompanyNewsFetcher must refuse the stream rather than publish an undated news row; untampered control produced 3 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CompanyNews/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CompanyNews/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CompanyNews/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CompanyNews/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-CompanyNews",
       "upstream_model": "CompanyNews"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::CryptoHistorical",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CryptoHistorical/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCryptoHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CryptoHistorical/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CryptoHistorical/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CryptoHistorical/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CryptoHistorical/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-CryptoHistorical",
       "upstream_model": "CryptoHistorical"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::CurrencyHistorical",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CurrencyHistorical/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCurrencyHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CurrencyHistorical/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CurrencyHistorical/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CurrencyHistorical/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/CurrencyHistorical/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-CurrencyHistorical",
       "upstream_model": "CurrencyHistorical"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::EquityActive",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityActive/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the most-active screen sorts on dayvolume inside each quote mapping, so when this row's result page arrives with quotes as a flattened symbol string the activity ranks the row exists to report are gone; the SDK hands that page to require_screen, whose list check at _sdk.py:435 fails closed with YFINANCE_SCREEN_SHAPE_INVALID rather than let a string masquerade as the ranked quote list -- the same-code transform_data guard at market_iter2.py:1247 is a backstop this tamper never reaches; untampered control produced 2 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityActive/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityActive/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityActive/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityActive/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-EquityActive",
       "upstream_model": "EquityActive"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::EquityAggressiveSmallCaps",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityAggressiveSmallCaps/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "this screen defaults to every source row, so one row of the returned array is the smallest real defect the fetch can meet: a row the endpoint published as a bare ticker string instead of a quote object still leaves the array length, total and count intact, and it survives require_screen's list check at _sdk.py:435 -- the refusal measured on this row is the very next arm, the per-row Mapping check at _sdk.py:437, which raises YFINANCE_SCREEN_SHAPE_INVALID because _screen_rows would otherwise have no Mapping to keep as raw_payload_json and no symbol to read; untampered control produced 3 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityAggressiveSmallCaps/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityAggressiveSmallCaps/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityAggressiveSmallCaps/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityAggressiveSmallCaps/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-EquityAggressiveSmallCaps",
       "upstream_model": "EquityAggressiveSmallCaps"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::EquityGainers",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityGainers/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "a real upstream defect on this row's document is Yahoo's day_gainers screen answer changing the result page's quotes field from per-quote mappings into a comma-joined symbol string: every priced column the row keeps (percentchange, dayvolume, last trade) lives inside those quote mappings, and the SDK unwraps exactly that page and hands it to require_screen, whose list check at _sdk.py:435 refuses the string with YFINANCE_SCREEN_SHAPE_INVALID rather than let YfinanceEquityGainersFetcher publish gainers whose quote payload the source never returned as structure; untampered control produced 2 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityGainers/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityGainers/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityGainers/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityGainers/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-EquityGainers",
       "upstream_model": "EquityGainers"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::EquityHistorical",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityHistorical/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "an empty chart result keeps the envelope well-formed for the crumb, the tz probe and the URL the SDK built from the query window, and only the bar series the contract rows are computed from disappears: PriceHistory takes its fail branch and returns the empty frame, and _history_rows must refuse it with YfinanceProviderError/YFINANCE_EMPTY_RESPONSE rather than publish bars the source never returned; untampered control produced 7 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityHistorical/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityHistorical/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityHistorical/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityHistorical/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-EquityHistorical",
       "upstream_model": "EquityHistorical"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::EquityInfo",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityInfo/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_REQUEST_FAILED",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_REQUEST_FAILED",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "a quoteSummary leg that answers with a bare array instead of the object envelope keeps every URL, cookie and crumb leg intact, but the SDK's own envelope merge inside _fetch_info fails on the missing mapping surface and require_info must translate that parse-time break through its typed YfinanceProviderError/YFINANCE_REQUEST_FAILED rather than publish the complementary-probe-only snapshot the empty-result variant would leave behind (that variant is measured not to refuse: 0.2.66's trailingPegRatio probe injects a null key that keeps the mapping truthy, so the product genuinely accepts it); untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityInfo/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityInfo/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityInfo/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityInfo/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-EquityInfo",
       "upstream_model": "EquityInfo"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::EquityLosers",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityLosers/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the day-losers screen publishes the losers by the same quotes list the gainers screen uses, so a wire-shape regression that serialises this row's quotes page into a symbol string destroys exactly the negative percentchange payloads this row is ordered by; the page reaches this repo only through require_screen, so it is the list check at _sdk.py:435 that refuses with YFINANCE_SCREEN_SHAPE_INVALID before an empty-or-string loser stream can become rows the source never quoted; untampered control produced 2 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityLosers/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityLosers/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityLosers/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityLosers/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-EquityLosers",
       "upstream_model": "EquityLosers"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::EquityQuote",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityQuote/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_REQUEST_FAILED",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_REQUEST_FAILED",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "an empty chart result keeps the envelope well-formed at every layer the SDK reads before prices -- the crumb, the URL, the meta block it stops parsing at the missing first result -- and only the daily bar series the FastInfo quote snapshot is computed from disappears: last_price and every averaged field of YfinanceEquityQuote derive from that series, and YfinanceEquityQuoteFetcher must refuse the snapshot through require_fast_info's stable code rather than publish a payload whose prices the source never returned; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityQuote/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityQuote/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityQuote/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityQuote/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-EquityQuote",
       "upstream_model": "EquityQuote"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::EquityScreener",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityScreener/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the custom EquityQuery screen answers the user's typed filters with the same quotes-list contract as the predefined screens, so a defect that returns this row's matched quotes as a comma-joined string invalidates the filter semantics the result claims to honour; require_screen receives the unwrapped page before YfinanceEquityScreenerFetcher does, and its list check at _sdk.py:435 is the site that refuses with YFINANCE_SCREEN_SHAPE_INVALID rather than publish rows whose filter matches the source never structurally returned; untampered control produced 2 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityScreener/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityScreener/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityScreener/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityScreener/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-EquityScreener",
       "upstream_model": "EquityScreener"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::EquityUndervaluedGrowth",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedGrowth/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the undervalued-growth screen is answered by Yahoo's screener endpoint, and the only thing this repo maps rows from is the row array inside finance.result[0].quotes -- dropping that key keeps the envelope valid at every layer the SDK reads (status, the result list, total/count) while the rows YfinanceEquityUndervaluedGrowthFetcher publishes disappear, so the refusal is the arm that actually sees it: require_screen's own list check at _sdk.py:435 raises YFINANCE_SCREEN_SHAPE_INVALID on the page the SDK just unwrapped, before _fetch_screen_pages or transform_data can turn an absent array into an empty list the source never said was empty; untampered control produced 3 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedGrowth/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedGrowth/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedGrowth/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedGrowth/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-EquityUndervaluedGrowth",
       "upstream_model": "EquityUndervaluedGrowth"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::EquityUndervaluedLargeCaps",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedLargeCaps/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "a screen result whose rows arrive as a symbol-keyed object rather than the ordered array the endpoint documented is exactly the upstream re-shape this provider refuses: the object is a Mapping and JSON-valid, so nothing before the row-array check notices, and YfinanceEquityUndervaluedLargeCapsFetcher would otherwise iterate dict keys as quotes and lose every row's ordinal; the list check that fires is require_screen's at _sdk.py:435, measured on this row's tampered leg, raising YFINANCE_SCREEN_SHAPE_INVALID and not the same-code transform_data backstop at market_iter2.py:1247 that a document tamper never reaches; untampered control produced 3 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedLargeCaps/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedLargeCaps/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedLargeCaps/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedLargeCaps/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-EquityUndervaluedLargeCaps",
       "upstream_model": "EquityUndervaluedLargeCaps"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::EtfHistorical",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EtfHistorical/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "an empty chart result keeps the envelope well-formed for the crumb, the tz probe and the URL the SDK built from the query window, and only the bar series the contract rows are computed from disappears: PriceHistory takes its fail branch and returns the empty frame, and _history_rows must refuse it with YfinanceProviderError/YFINANCE_EMPTY_RESPONSE rather than publish bars the source never returned; untampered control produced 7 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EtfHistorical/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EtfHistorical/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EtfHistorical/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EtfHistorical/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-EtfHistorical",
       "upstream_model": "EtfHistorical"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::EtfInfo",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EtfInfo/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_REQUEST_FAILED",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_REQUEST_FAILED",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "a result object with none of the sections FundsData parses still matches the crumb and the URL, but the SDK's own data['quoteType'] lookup takes the KeyError branch that raises YFDataException('No Fund data found.') before any section is cached, and require_fund_sections must surface that transport-shaped refusal through its declared stable code rather than publish a payload of empty sections; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EtfInfo/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EtfInfo/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EtfInfo/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/EtfInfo/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-EtfInfo",
       "upstream_model": "EtfInfo"
     },
@@ -28745,230 +29544,512 @@
       "upstream_model": "FuturesCurve"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::FuturesHistorical",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/FuturesHistorical/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceFuturesHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/FuturesHistorical/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/FuturesHistorical/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/FuturesHistorical/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/FuturesHistorical/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-FuturesHistorical",
       "upstream_model": "FuturesHistorical"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::GrowthTechEquities",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/GrowthTechEquities/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the growth-technology screen filters on sector and revenue-growth fields a quote object carries, and a null row is what the endpoint returns when one quote fails server-side enrichment: the array stays a list of the documented length, so require_screen's list check at _sdk.py:435 passes and only its per-row Mapping arm at _sdk.py:437 can catch it -- measured on this row's tampered leg -- and it refuses with YFINANCE_SCREEN_SHAPE_INVALID instead of letting a null row through to symbol extraction or a silent gap in the ordinal sequence; untampered control produced 3 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/GrowthTechEquities/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/GrowthTechEquities/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/GrowthTechEquities/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/GrowthTechEquities/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-GrowthTechEquities",
       "upstream_model": "GrowthTechEquities"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::HistoricalDividends",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/HistoricalDividends/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_OR_DUPLICATE_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_OR_DUPLICATE_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the period=max actions leg still returns its full OHLCV series, so the SDK parses the chart, merges the (now empty) event map and hands back a price frame -- and only the Dividends column every record of this domain is built from is gone. Ticker.dividends becomes an empty Series, which is byte-for-byte what a symbol that never paid returns, so YfinanceHistoricalDividendsFetcher must refuse on YFINANCE_EMPTY_OR_DUPLICATE_RESPONSE rather than let an absent event map be read as a complete no-dividend history; untampered control produced 2 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/HistoricalDividends/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/HistoricalDividends/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/HistoricalDividends/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/HistoricalDividends/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-HistoricalDividends",
       "upstream_model": "HistoricalDividends"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::IncomeStatement",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/IncomeStatement/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "a real upstream defect -- Yahoo publishing the timeseries envelope with an empty result list for a symbol whose statement feed is being rebuilt -- reaches this row's frame as an EMPTY DataFrame, and the site that fires is _statement_observations' frame.empty branch at opendata/data/providers/yfinance/models/iter2.py:237, which refuses with YfinanceProviderError/YFINANCE_EMPTY_RESPONSE rather than publish periods the source never returned. Measured on this row's own document (the tampered body really read): 12 rows -> 0 rows, refusal code YFINANCE_EMPTY_RESPONSE at iter2.py:237. NOT iter2.py:299: the isinstance(raw, pd.DataFrame) guard never fires, because Financials._fetch_time_series collapses every wire defect into pd.DataFrame() and require_statement_frame never hands back None or a non-frame (measured over result:[], a non-JSON body, a body with no timeseries key, result:[{}], a blank item label and a duplicated asOfDate -- a DataFrame every time). WHY THE TWO LEGS CANNOT SHARE A PROCESS: YfData is a process singleton and its URL-keyed cache_get lru (maxsize=64) replays the control response for the tampered leg (measured cache_info hits=1 misses=1, tampered leg calls and returned the control's 12 rows), because the leg's url is fixed by symbol, the fundamentals-timeseries selector, and the two epoch window bounds (lower bound pinned, upper bound the day-ceiling of utcnow, so day-stable) -- identical for both legs, with no date field in YfinanceStatementQuery to move the way rows_w32_a moved a chart window into the future. The runner closes that hole structurally instead of special-casing this row: the counterfact phase runs its tampered leg in a fresh child process and refuses when that leg itself puts no request through the carrier built from the tampered document. Measured on this row, the isolated leg reports seam_requests=2 with outcome=refusal and this code; the same leg forced back into the control's process reports seam_requests=0 and the phase exits 1 with FAIL reason=the tampered leg made 0 request(s) through the offline carrier, so the control leg's answer served it and the tamper was never read; untampered control produced 12 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/IncomeStatement/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/IncomeStatement/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/IncomeStatement/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/IncomeStatement/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-IncomeStatement",
       "upstream_model": "IncomeStatement"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::IndexHistorical",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/IndexHistorical/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EMPTY_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "an empty chart result keeps the envelope well-formed for the crumb, the tz probe and the URL the SDK built from the query window, and only the bar series the contract rows are computed from disappears: PriceHistory takes its fail branch and returns the empty frame, and _history_rows must refuse it with YfinanceProviderError/YFINANCE_EMPTY_RESPONSE rather than publish bars the source never returned; untampered control produced 7 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/IndexHistorical/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/IndexHistorical/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/IndexHistorical/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/IndexHistorical/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-IndexHistorical",
       "upstream_model": "IndexHistorical"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::KeyExecutives",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/KeyExecutives/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EXECUTIVES_REQUIRED_FIELD_MISSING",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_EXECUTIVES_REQUIRED_FIELD_MISSING",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "deleting one officer's title leaves the envelope well-formed everywhere else the product reads it -- the crumb, the quoteSummary module nesting the SDK flattens, the returned-symbol check, the list-of-mappings shape check all still pass -- and only the identity field YfinanceKeyExecutiveObservation maps through _executive_required_text disappears: the fetcher must refuse rather than publish a nameless executive drawn from the source's own officer list; untampered control produced 2 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/KeyExecutives/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/KeyExecutives/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/KeyExecutives/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/KeyExecutives/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-KeyExecutives",
       "upstream_model": "KeyExecutives"
     },
@@ -29011,130 +30092,271 @@
       "upstream_model": "KeyMetrics"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::OptionsChains",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/OptionsChains/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_OPTIONS_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_OPTIONS_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "emptying the dated snapshot's options array leaves the expiration list leg, the crumb, the requested date's epoch and the underlying quote block intact, so the SDK still finds the expiration and returns a namedtuple -- but with calls and puts as None rather than frames: require_options_chain's DataFrame guard and YfinanceOptionsChainsFetcher.transform_data's contractSymbol/strike column guard are both downstream of that leg, and the row must refuse rather than publish an option chain the source never returned for the expiration it was asked about; untampered control produced 8 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/OptionsChains/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/OptionsChains/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/OptionsChains/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/OptionsChains/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-OptionsChains",
       "upstream_model": "OptionsChains"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::PriceTargetConsensus",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/PriceTargetConsensus/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_PRICE_TARGET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_PRICE_TARGET_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "dropping targetMedianPrice leaves the financialData module intact at every layer before it -- the crumb, the modules=financialData request the SDK builds, the result[0]['financialData'] the Analysis scraper indexes, and the four surviving renamed keys current/low/high/mean -- and removes exactly the field the consensus row is about: require_price_targets' required-key guard sees a summary without 'median' and YfinancePriceTargetConsensus.target_median cannot be drawn from a source that stopped publishing it; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/PriceTargetConsensus/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/PriceTargetConsensus/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/PriceTargetConsensus/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/PriceTargetConsensus/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-PriceTargetConsensus",
       "upstream_model": "PriceTargetConsensus"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "yfinance::ShareStatistics",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/ShareStatistics/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SHARE_STATISTICS_MISSING",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "YfinanceProviderError",
+              "refusal_code": "YFINANCE_SHARE_STATISTICS_MISSING",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "an empty quoteResponse result keeps the company profile the other leg publishes -- the SDK still flattens assetProfile and quoteType, require_info still gets a non-empty mapping and the symbol still matches -- while every field of ShareStatisticsFetcher.SHARE_FIELDS lives on that one complementary leg, so the share-count and short-interest snapshot the row exists to publish is gone and _fetch_one must refuse through its own stable code instead of emitting an observation whose payload carries no share statistics; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/ShareStatistics/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/ShareStatistics/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/ShareStatistics/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/yfinance/ShareStatistics/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-yfinance-ShareStatistics",
       "upstream_model": "ShareStatistics"
     }
   ],
   "schema_version": 1,
   "summary": {
-    "claim_count": 1565,
+    "claim_count": 1695,
     "identity_count": 350,
-    "offline_acceptance_count": 291,
-    "primary_review_count": 291,
+    "offline_acceptance_count": 317,
+    "primary_review_count": 317,
     "status_counts": {
       "INCOMPLETE": 22,
-      "OFFLINE_ACCEPTED": 291,
-      "UNREVIEWED": 37
+      "OFFLINE_ACCEPTED": 317,
+      "UNREVIEWED": 11
     }
   }
 }

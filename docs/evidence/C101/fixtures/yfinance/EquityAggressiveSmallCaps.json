@@ -1,0 +1,62 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "finance": {
+          "error": null,
+          "result": [
+            {
+              "count": 3,
+              "quotes": [
+                {
+                  "currency": "USD",
+                  "dayVolume": 274100,
+                  "eodVolume": 268400,
+                  "epsGrowth": 11.4,
+                  "exchange": "NMS",
+                  "intradayMarketCap": 1318000000,
+                  "quoteType": "EQUITY",
+                  "regularMarketPrice": 62.75,
+                  "symbol": "SMPL"
+                },
+                {
+                  "currency": "USD",
+                  "dayVolume": 1516000,
+                  "eodVolume": 1402000,
+                  "epsGrowth": 8.2,
+                  "exchange": "NMS",
+                  "intradayMarketCap": 812000000,
+                  "quoteType": "EQUITY",
+                  "regularMarketPrice": 5.94,
+                  "symbol": "CWH"
+                },
+                {
+                  "currency": "USD",
+                  "dayVolume": 195600,
+                  "eodVolume": 187300,
+                  "epsGrowth": 13.9,
+                  "exchange": "NYQ",
+                  "intradayMarketCap": 1104000000,
+                  "quoteType": "EQUITY",
+                  "regularMarketPrice": 30.06,
+                  "symbol": "EVTC"
+                }
+              ],
+              "total": 3
+            }
+          ]
+        }
+      },
+      "method": "POST",
+      "url_contains": "v1/finance/screener?corsDomain=finance.yahoo.com&crumb=fixture-crumb&formatted=false&lang=en-US&region=US"
+    }
+  ]
+}

@@ -281,12 +281,16 @@ class YfinanceStockDailyFetcher(Fetcher[StockDailyOverseasQuery, YfinanceHistory
 class YfinanceProviderError(RuntimeError):
     """Stable failures of the yfinance provider adapter."""
 
-    def __init__(self, code: str) -> None:
+    def __init__(self, code: str, *, status: int | None = None) -> None:
         """Store the stable failure code (and use it as the message).
 
         Args:
             code: One of the provider's stable codes, for example
                 ``YFINANCE_SDK_MISSING``.
+            status: The response status the refusal was reached from, when the
+                failure came off a response. ``None`` for shape failures,
+                which have no status to attribute.
         """
         self.code = code
-        super().__init__(code)
+        self.status = status
+        super().__init__(code + ("" if status is None else f" status={status}"))

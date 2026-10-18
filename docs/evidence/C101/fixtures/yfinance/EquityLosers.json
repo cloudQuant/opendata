@@ -1,0 +1,60 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "finance": {
+          "error": null,
+          "result": [
+            {
+              "offset": 0,
+              "quotes": [
+                {
+                  "chgb": -28.4,
+                  "country": "United States",
+                  "currency": "USD",
+                  "dayvolume": 7600000,
+                  "exchDisp": "NYQ",
+                  "exchange": "NYQ",
+                  "industry": "Software",
+                  "lastmkttrade": 1760000000,
+                  "name": "Kinderpain Energy",
+                  "percentchange": -28.4,
+                  "price": 27.6,
+                  "sector": "Technology",
+                  "symbol": "KND"
+                },
+                {
+                  "chgb": -19.9,
+                  "country": "United States",
+                  "currency": "USD",
+                  "dayvolume": 2900000,
+                  "exchDisp": "NMS",
+                  "exchange": "NMS",
+                  "industry": "Software",
+                  "lastmkttrade": 1760000000,
+                  "name": "Snowline Devices",
+                  "percentchange": -19.9,
+                  "price": 22.9,
+                  "sector": "Technology",
+                  "symbol": "SONW"
+                }
+              ],
+              "size": 2,
+              "total": 2
+            }
+          ]
+        }
+      },
+      "method": "POST",
+      "url_contains": "v1/finance/screener?corsDomain=finance.yahoo.com&crumb=fixture-crumb&formatted=false&lang=en-US&region=US"
+    }
+  ]
+}

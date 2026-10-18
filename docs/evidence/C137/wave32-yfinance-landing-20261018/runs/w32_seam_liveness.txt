@@ -1,0 +1,40 @@
+# carrier for w32_seam_liveness.py (wave-32 probe re-run after the witness lint fix and the yfinance re-sign, so this carrier describes the final pinned bytes)
+# argv: PYTHONPATH=/Users/yunjinqi/Documents/new_projects/opendata /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C137/wave32-yfinance-landing-20261018/probes/w32_seam_liveness.py
+# started_utc: 2026-10-18T18:56:31+00:00  ended_utc: 2026-10-18T18:57:02+00:00  wrapper_exit=0 (equals the trailing w32_seam_liveness_exit)
+# cwd=/Users/yunjinqi/Documents/new_projects/opendata branch=dev head=f2b0e5eb8
+---- stdout+stderr ----
+# carrier for w32_seam_liveness.py (wave-32 seam liveness)
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C137/wave32-yfinance-landing-20261018/probes/w32_seam_liveness.py []
+# judge argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_model_evidence.py --inventory docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv --claims docs/evidence/C101/claims.merged.json --output /tmp/w32_seam_liveness/judge.json
+# every arm is read off a process or off disk in this run; nothing here is copied
+# legs argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider <p> --model <m> --phase <phase> --evidence-root /tmp/w32_seam_liveness/evidence_root  (scratch; C101 is never a write target here)
+scratch_root root=/tmp/w32_seam_liveness/evidence_root fixtures_copied=4 rows=['nasdaq::EquitySearch', 'yfinance::BalanceSheet', 'yfinance::EquityHistorical', 'yfinance::EquityScreener'] digests_match=True outside_repo=True
+scratch_fixture row=nasdaq::EquitySearch source=docs/evidence/C101/fixtures/nasdaq/EquitySearch.json source_sha=2c6a657de0fede68 target_sha=2c6a657de0fede68
+scratch_fixture row=yfinance::BalanceSheet source=docs/evidence/C101/fixtures/yfinance/BalanceSheet.json source_sha=46e64dda979ddf1b target_sha=46e64dda979ddf1b
+scratch_fixture row=yfinance::EquityHistorical source=docs/evidence/C101/fixtures/yfinance/EquityHistorical.json source_sha=2b317e05e9caf00d target_sha=2b317e05e9caf00d
+scratch_fixture row=yfinance::EquityScreener source=docs/evidence/C101/fixtures/yfinance/EquityScreener.json source_sha=f066af4ae302b7f4 target_sha=f066af4ae302b7f4
+c101_witness_before files=3179 porcelain_lines=1461 porcelain_sha=54d5a439ce941f45 newer_than_marker=0 git_rc=0 find_rc=0
+wrote /tmp/w32_seam_liveness/judge.json and /tmp/w32_seam_liveness/judge.md: 350 identities, 317 offline accepted
+generation judge_exit=0 identities=350/350 accepted=317 claims=1695 required_phases=5 identity_set=5168e1e723999312 identity_projection=5168e1e723999312 claims_file_identity=5168e1e723999312 statuses={'OFFLINE_ACCEPTED': 317, 'UNREVIEWED': 11, 'INCOMPLETE': 22}
+phases row=yfinance::EquityHistorical runs=5 passes=5 verdicts=implementation:PASS,direct:PASS,service:PASS,contract:PASS,counterfact:PASS evidence_root=/tmp/w32_seam_liveness/evidence_root
+phases row=yfinance::EquityScreener runs=5 passes=5 verdicts=implementation:PASS,direct:PASS,service:PASS,contract:PASS,counterfact:PASS evidence_root=/tmp/w32_seam_liveness/evidence_root
+seam_face row=yfinance::EquityHistorical kind=governed_sdk_session attr=governed_yfinance_session fake=iter2_claims_probe_runner._FakeSdkSession mro1=Session evidence_root=/tmp/w32_seam_liveness/evidence_root requests=2 invocations=1 invoked_sdk=builtins.module rows=7 row_class=YfinanceHistoricalBar guard=passes
+seam_face row=yfinance::EquityScreener kind=governed_sdk_session attr=governed_yfinance_session fake=iter2_claims_probe_runner._FakeSdkSession mro1=Session evidence_root=/tmp/w32_seam_liveness/evidence_root requests=2 invocations=1 invoked_sdk=builtins.module rows=2 row_class=YfinanceScreenerObservation guard=passes
+guard_forge never_asked_direct=refused(the fetch completed without ever calling the dec...)
+guard_forge asked_but_never_invoked_the_attr=refused(the fetch completed without ever invoking the pa...)
+guard_forge tampered_leg_masked_by_cache=refused(the tampered leg completed without ever calling ...)
+guard_face refusals=3/3 honest_leg_guard=passes evidence_root=/tmp/w32_seam_liveness/evidence_root child_exit=0
+hole_shared_process row=yfinance::BalanceSheet exit=1 verdict=VERDICT=FAIL reason=the tampered leg made 0 request(s) through the offline carrier, so the control leg's answer served it and the tamper was never read (leg outcome='failure' reason='the tampered leg completed without ever calling the declared offline client seam, so an answer recorded before it served that leg and the tampered document was never read') tampered_requests=0 tampered_rows=None yfd_lru=CacheInfo(hits=1, misses=1, maxsize=64, currsize=1) evidence_root=/tmp/w32_seam_liveness/evidence_root
+closure_child_isolation row=yfinance::BalanceSheet control_rows=12 tampered_requests=2 tampered_outcome=refusal refusal_code=YFINANCE_EMPTY_RESPONSE evidence_root=/tmp/w32_seam_liveness/evidence_root
+gate_reads_requests refused=True evidence_root=/tmp/w32_seam_liveness/evidence_root reason=the tampered leg made 0 request(s) through the offline carrier, so the control leg's answer served it and the tamper was
+negative_control row=nasdaq::EquitySearch runs=5 passes=5 verdicts=implementation:PASS,direct:PASS,service:PASS,contract:PASS,counterfact:PASS evidence_root=/tmp/w32_seam_liveness/evidence_root
+other_kind row=nasdaq::EquitySearch kind=shared_http_client carrier=iter2_claims_probe_runner._FakeSharedClient has_invoked_face=False requests=1 rows=1 row_class=NasdaqEquitySearch evidence_root=/tmp/w32_seam_liveness/evidence_root
+other_kind_payload direct_identical=True service_identical=True direct_sha=3897d57648932d7b service_sha=d2b0933b6572e7bb
+other_kind_vs_head records=5/5 changed_paths=['executed_at_utc', 'pins.fixture.0.after_sha256', 'pins.fixture.0.before_sha256', 'pins.fixture.1.after_sha256', 'pins.fixture.1.before_sha256', 'pins.probe.0.after_sha256', 'pins.probe.0.before_sha256', 'pins.probe.1.after_sha256', 'pins.probe.1.before_sha256', 'receipt.sha256'] unexpected=[]
+c101_witness_after files=3179 porcelain_lines=1461 porcelain_sha=54d5a439ce941f45 newer_than_marker=0 newer_sample=[] git_rc=0 find_rc=0
+c101_untouched before_sha=54d5a439ce941f45 after_sha=54d5a439ce941f45 symdiff=[] files_equal=True c101_files_newer_than_marker=0 scratch_files_newer_than_marker=0 scratch_new_sample=[]
+leg_roots legs=11 distinct=['/tmp/w32_seam_liveness/evidence_root'] c101_root_seen=False scratch_root_seen=11
+seam_liveness_face arms=10 arms_passed=10 arms_failed=0 failed=[] rows_probed=5 phase_runs=17 phase_passes=15 identity_set=5168e1e723999312 PASS=True
+w32_seam_liveness_exit=0
+
+w32_seam_liveness_exit=0

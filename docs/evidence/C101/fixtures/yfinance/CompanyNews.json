@@ -1,0 +1,75 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "data": {
+          "tickerStream": {
+            "stream": [
+              {
+                "ad": [],
+                "content": {
+                  "canonicalUrl": "https://finance.yahoo.com/news/fixture-0",
+                  "provider": {
+                    "displayName": "Fixture Wire"
+                  },
+                  "providerPublishTime": 1792350512,
+                  "summary": "Hand-authored offline fixture body; never published by the source.",
+                  "title": "Fixture headline 0"
+                },
+                "contentType": {
+                  "originatingWebUrl": "https://finance.yahoo.com",
+                  "version": "v1"
+                },
+                "id": "fixture-news-0"
+              },
+              {
+                "ad": [],
+                "content": {
+                  "canonicalUrl": "https://finance.yahoo.com/news/fixture-1",
+                  "provider": {
+                    "displayName": "Fixture Wire"
+                  },
+                  "providerPublishTime": 1792346912,
+                  "summary": "Hand-authored offline fixture body; never published by the source.",
+                  "title": "Fixture headline 1"
+                },
+                "contentType": {
+                  "originatingWebUrl": "https://finance.yahoo.com",
+                  "version": "v1"
+                },
+                "id": "fixture-news-1"
+              },
+              {
+                "ad": [],
+                "content": {
+                  "canonicalUrl": "https://finance.yahoo.com/news/fixture-2",
+                  "provider": {
+                    "displayName": "Fixture Wire"
+                  },
+                  "providerPublishTime": 1792343312,
+                  "summary": "Hand-authored offline fixture body; never published by the source.",
+                  "title": "Fixture headline 2"
+                },
+                "contentType": {
+                  "originatingWebUrl": "https://finance.yahoo.com",
+                  "version": "v1"
+                },
+                "id": "fixture-news-2"
+              }
+            ]
+          }
+        }
+      },
+      "method": "POST",
+      "url_contains": "xhr/ncp?queryRef=latestNews&serviceKey=ncp_fin"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EtfInfo --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_REQUEST_FAILED", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_REQUEST_FAILED", "rejected": [], "status": null}, "reason": "a result object with none of the sections FundsData parses still matches the crumb and the URL, but the SDK's own data['quoteType'] lookup takes the KeyError branch that raises YFDataException('No Fund data found.') before any section is cached, and require_fund_sections must surface that transport-shaped refusal through its declared stable code rather than publish a payload of empty sections; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

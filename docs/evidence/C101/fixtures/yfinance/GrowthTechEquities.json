@@ -1,0 +1,65 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "finance": {
+          "error": null,
+          "result": [
+            {
+              "count": 3,
+              "quotes": [
+                {
+                  "currency": "USD",
+                  "dayVolume": 2913000,
+                  "eodVolume": 2841000,
+                  "epsGrowth": 41.2,
+                  "exchange": "NMS",
+                  "quarterlyRevenueGrowth": 27.4,
+                  "quoteType": "EQUITY",
+                  "regularMarketPrice": 168.22,
+                  "sector": "Technology",
+                  "symbol": "ZS"
+                },
+                {
+                  "currency": "USD",
+                  "dayVolume": 6604000,
+                  "eodVolume": 6420000,
+                  "epsGrowth": 33.5,
+                  "exchange": "NYQ",
+                  "quarterlyRevenueGrowth": 28.9,
+                  "quoteType": "EQUITY",
+                  "regularMarketPrice": 74.15,
+                  "sector": "Technology",
+                  "symbol": "NET"
+                },
+                {
+                  "currency": "USD",
+                  "dayVolume": 3208000,
+                  "eodVolume": 3115000,
+                  "epsGrowth": 29.8,
+                  "exchange": "NMS",
+                  "quarterlyRevenueGrowth": 26.1,
+                  "quoteType": "EQUITY",
+                  "regularMarketPrice": 92.48,
+                  "sector": "Technology",
+                  "symbol": "DDOG"
+                }
+              ],
+              "total": 3
+            }
+          ]
+        }
+      },
+      "method": "POST",
+      "url_contains": "v1/finance/screener?corsDomain=finance.yahoo.com&crumb=fixture-crumb&formatted=false&lang=en-US&region=US"
+    }
+  ]
+}

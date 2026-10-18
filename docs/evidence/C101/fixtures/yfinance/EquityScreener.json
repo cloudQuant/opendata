@@ -1,0 +1,60 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "finance": {
+          "error": null,
+          "result": [
+            {
+              "offset": 0,
+              "quotes": [
+                {
+                  "chgb": 0.9,
+                  "country": "United States",
+                  "currency": "USD",
+                  "dayvolume": 52000000,
+                  "exchDisp": "NMS",
+                  "exchange": "NMS",
+                  "industry": "Software",
+                  "lastmkttrade": 1760000000,
+                  "name": "Apple Inc.",
+                  "percentchange": 0.9,
+                  "price": 72.0,
+                  "sector": "Technology",
+                  "symbol": "AAPL"
+                },
+                {
+                  "chgb": 1.3,
+                  "country": "United States",
+                  "currency": "USD",
+                  "dayvolume": 27000000,
+                  "exchDisp": "NMS",
+                  "exchange": "NMS",
+                  "industry": "Software",
+                  "lastmkttrade": 1760000000,
+                  "name": "Microsoft Corporation",
+                  "percentchange": 1.3,
+                  "price": 47.0,
+                  "sector": "Technology",
+                  "symbol": "MSFT"
+                }
+              ],
+              "size": 2,
+              "total": 2
+            }
+          ]
+        }
+      },
+      "method": "POST",
+      "url_contains": "v1/finance/screener?corsDomain=finance.yahoo.com&crumb=fixture-crumb&formatted=false&lang=en-US&region=US"
+    }
+  ]
+}

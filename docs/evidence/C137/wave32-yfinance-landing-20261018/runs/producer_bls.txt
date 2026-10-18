@@ -1,0 +1,25 @@
+# carrier for producer_bls
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider bls --output docs/evidence/C101/bls/claims.json
+# note: five-phase producer for bls
+# started_utc: 2026-10-18T17:05:27+00:00
+# exit: 0
+# stdout_chars: 2772 stderr_chars: 0
+
+== provider bls: 2 inventory row(s) of 350 total ==
+BlsSearch implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSearch --phase implementation --evidence-root docs/evidence/C101
+BlsSearch direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSearch --phase direct --evidence-root docs/evidence/C101
+BlsSearch service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSearch --phase service --evidence-root docs/evidence/C101
+BlsSearch contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSearch --phase contract --evidence-root docs/evidence/C101
+BlsSearch counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSearch --phase counterfact --evidence-root docs/evidence/C101
+BlsSeries implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSeries --phase implementation --evidence-root docs/evidence/C101
+BlsSeries direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSeries --phase direct --evidence-root docs/evidence/C101
+BlsSeries service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSeries --phase service --evidence-root docs/evidence/C101
+BlsSeries contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSeries --phase contract --evidence-root docs/evidence/C101
+BlsSeries counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider bls --model BlsSeries --phase counterfact --evidence-root docs/evidence/C101
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=318/350; provider rows covered=2 of provider inventory rows=2, of which bound now=2/318 resolvable; claims emitted=10 (10 PASS, 0 FAIL, 0 BLOCKED) = 2 row(s) x 5 phases; phases actually executed as subprocesses=10
+wrote docs/evidence/C101/bls/claims.json
+
+---- stderr ----
+
+
+chain_producer_bls_exit=0

@@ -1,0 +1,25 @@
+# carrier for recorder_cboe
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/cboe/claims.json --output docs/evidence/C101/cboe/claims.reviewed.json --provider cboe --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over cboe's regenerated shard
+# started_utc: 2026-10-18T17:06:37+00:00
+# exit: 0
+# stdout_chars: 2300 stderr_chars: 0
+
+re-signing: dropped 9 earlier review(s) for the addressed identities
+REVIEW_SIGNED: cboe::AvailableIndices
+REVIEW_SIGNED: cboe::EquityHistorical
+REVIEW_SIGNED: cboe::EquityQuote
+REVIEW_SIGNED: cboe::EquitySearch
+REVIEW_SIGNED: cboe::EtfHistorical
+REVIEW_SIGNED: cboe::IndexConstituents
+REVIEW_SIGNED: cboe::IndexHistorical
+REVIEW_SIGNED: cboe::IndexSearch
+REVIEW_SIGNED: cboe::OptionsChains
+REVIEW_REFUSED: cboe::FuturesCurve:implementation:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; direct:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; service:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; contract:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; counterfact:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,counterfact_receipt_path_invalid,fixture_pins_missing,probe_pins_missing,source_pins_missing
+REVIEW_REFUSED: cboe::IndexSnapshots:implementation:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; direct:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; service:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; contract:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; counterfact:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,counterfact_receipt_path_invalid,fixture_pins_missing,probe_pins_missing,source_pins_missing
+recorder_exit=0 signed=9 refused=2 reviews_total=9 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/cboe/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_cboe_exit=0

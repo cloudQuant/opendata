@@ -20,6 +20,20 @@ Usage:
     python scripts/quality/iter2_claims_probe_runner.py \
         --provider benzinga --model PriceTarget --phase direct \
         --evidence-root docs/evidence/C101
+
+The ``counterfact`` phase runs its two legs apart: the untampered control in this process (it is
+the first fetch here, so nothing can have cached an answer for it yet) and the tampered one in a
+fresh child of the same interpreter, re-entered through ``--tampered-leg-child`` with the tampered
+document on stdin. That isolation is what makes the counterfact a counterfact: a third-party SDK
+that caches by URL in its own process can otherwise hand the tampered leg the *control's* answer
+without ever asking the fake, so the tamper is never read and the refusal being reported was not
+caused by it. Measured on yfinance 0.2.66 (``YfData`` is a process singleton, ``YfData.cache_get``
+is ``@lru_cache(maxsize=64)`` keyed on ``(self, url, params, timeout)`` and a statement leg's url
+is fixed by symbol/type/period1 plus a day-ceiled period2): control 2 seam calls / 12 rows,
+tampered leg in the same process 0 seam calls / the control's 12 rows, ``cache_get.cache_info() ==
+CacheInfo(hits=1, misses=1)``. Clearing that lru by hand is not the fix -- enumerating every cache
+a provider's SDK owns is not decidable -- so the leg is isolated instead, and its own request count
+through the fake is asserted (see :func:`_tampered_leg_report`).
 """
 
 from __future__ import annotations
@@ -32,10 +46,11 @@ import importlib
 import json
 import os
 import socket
+import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Any, Final, Literal
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -68,6 +83,21 @@ from opendata.data.request_budget import (  # noqa: E402
 from opendata.services import provider_model_query  # noqa: E402
 
 PHASES = ("implementation", "direct", "service", "contract", "counterfact")
+
+#: The leg name the counterfact phase gives its tampered run. Every leg that asks the offline
+#: carrier an answer records its requests under the same reading; this one additionally has to show
+#: that the answer it got was *its own*, which is the reading a shared-process leg cannot give.
+TAMPERED_LEG: Final = "tampered"
+
+#: Re-entry flag: this process runs nothing but the counterfact phase's tampered leg and prints one
+#: ``TAMPERED_LEG_JSON=<report>`` line instead of a verdict. Spawned by :func:`_spawn_tampered_leg`.
+TAMPERED_LEG_CHILD_FLAG: Final = "--tampered-leg-child"
+
+#: The one stdout line the parent of an isolated tampered leg reads back.
+TAMPERED_LEG_MARKER: Final = "TAMPERED_LEG_JSON="
+
+#: A child that never answers is a harness fault, not a pass: bound it and refuse loudly.
+_TAMPERED_LEG_CHILD_TIMEOUT: Final = 300.0
 
 
 class WitnessFailure(AssertionError):  # noqa: N818  # verdict vocabulary, not a retry error
@@ -333,6 +363,65 @@ class _FakeSharedClient:
         raise WitnessFailure(f"client seam fixture covers no response for url={url!r}")
 
 
+#: Seam kind for a call site that consumes the patched attribute as ``with attr(x) as session:``
+#: (yfinance's ``_sdk.governed_yfinance_session(sdk)``, measured at ``_sdk.py:78``). The landed
+#: ``shared_http_client`` kind patches a 0-positional factory whose result is used as ``.get``; a
+#: witness may not reuse it for a one-positional context-manager site -- the old lambda swallows
+#: the positional and hands the product a bare client, which is the silent passthrough that
+#: ``docs/evidence/C128/.../yfinance_shard_entry_price.py`` arm F prices. This kind substitutes a
+#: fake that (i) records every invocation of the patched attribute together with the SDK object it
+#: received and (ii) is itself the session the SDK talks to, so both enforceability arms below --
+#: "attr never invoked" and "fake never asked" -- are read off what the fetch actually did.
+SDK_SESSION_SEAM_KIND: Final = "governed_sdk_session"
+
+
+def _build_sdk_session_fake(responses: list[dict[str, Any]]) -> Any:  # noqa: ANN401  # dynamic curl subclass
+    """Build the fake governed-yfinance-session for ``SDK_SESSION_SEAM_KIND``.
+
+    ``yfinance.data.YfData._set_session`` refuses any object that is not a ``curl_cffi`` session,
+    so the fake is a real ``curl_cffi.requests.Session`` subclass with the send verbs replaced --
+    the SDK's own request construction, crumb/cookie orchestration and JSON parsing all run on it,
+    and only the wire is fake. Responses are matched against the *effective* URL (the request URL
+    plus its encoded ``params``), because a yfinance chart leg is discriminated by parameters,
+    not by path.
+    """
+    try:
+        from curl_cffi import requests as curl_requests
+    except ImportError as exc:  # the optional SDK generation is itself governed offline
+        raise WitnessBlocked(
+            f"governed_sdk_session seam needs curl_cffi for the session type: {exc}"
+        ) from None
+
+    class _FakeSdkSession(curl_requests.Session, _FakeSharedClient):  # type: ignore[misc]
+        def __init__(self) -> None:
+            curl_requests.Session.__init__(self, impersonate="chrome", trust_env=False)
+            _FakeSharedClient.__init__(self, responses)
+            self.invoked: list[Any] = []  # the SDK object handed to the seam
+
+        def __enter__(self) -> Any:  # noqa: ANN401  # ``with attr(sdk) as session`` bind point
+            return self
+
+        def __exit__(self, *_exc: object) -> Literal[False]:
+            return False
+
+        def _answer(self, method: str, url: str, kwargs: dict[str, Any]) -> Any:  # noqa: ANN401
+            params = kwargs.get("params")
+            effective = url
+            if isinstance(params, dict) and params:
+                from urllib.parse import urlencode
+
+                effective = f"{url}?{urlencode(sorted(params.items()), doseq=True)}"
+            return self._respond(method, effective, json_body=kwargs.get("json"))
+
+        def get(self, url: str, **kwargs: Any) -> Any:  # noqa: ANN401  # curl-shaped **kwargs
+            return self._answer("GET", str(url), kwargs)
+
+        def post(self, url: str, **kwargs: Any) -> Any:  # noqa: ANN401
+            return self._answer("POST", str(url), kwargs)
+
+    return _FakeSdkSession()
+
+
 @contextlib.contextmanager
 def _client_seam(entry: dict, document: Any) -> Iterator[_FakeSharedClient]:  # noqa: ANN401
     """Patch the named provider modules to the fake client, then restore them.
@@ -347,7 +436,15 @@ def _client_seam(entry: dict, document: Any) -> Iterator[_FakeSharedClient]:  # 
         raise WitnessBlocked(
             "client seam fixture must be an envelope {'responses': [...]} with at least one entry"
         )
-    client = _FakeSharedClient([spec for spec in responses if isinstance(spec, dict)])
+    kind = seam.get("kind", "shared_http_client")
+    if kind == SDK_SESSION_SEAM_KIND:
+        client: Any = _build_sdk_session_fake(  # _FakeSdkSession or _FakeSharedClient
+            [spec for spec in responses if isinstance(spec, dict)]
+        )
+    elif kind == "shared_http_client":
+        client = _FakeSharedClient([spec for spec in responses if isinstance(spec, dict)])
+    else:
+        raise WitnessBlocked(f"client seam kind {kind!r} is not served by this runner")
     attr = seam["attr"]
     restored: list[tuple[Any, str, Any]] = []  # module objects
     for name in seam["modules"]:
@@ -355,7 +452,21 @@ def _client_seam(entry: dict, document: Any) -> Iterator[_FakeSharedClient]:  # 
         if not hasattr(module, attr):
             raise WitnessBlocked(f"client seam module {name!r} publishes no {attr!r} to patch")
         restored.append((module, attr, getattr(module, attr)))
-        setattr(module, attr, lambda _c=client: _c)
+        if kind == SDK_SESSION_SEAM_KIND:
+            # The product site is ``with attr(sdk) as session:`` -- exactly one positional. A
+            # second positional or a keyword would mean the witness misdeclared the call shape.
+            def substitute(_sdk_arg: Any, _c: Any = client) -> Any:  # noqa: ANN401
+                if len(_c.invoked) and _c.invoked[-1] is not _sdk_arg:
+                    raise WitnessFailure(
+                        "the governed session seam was re-invoked with a different SDK object; "
+                        "the witness fake does not survive that call shape"
+                    )
+                _c.invoked.append(_sdk_arg)
+                return _c
+
+            setattr(module, attr, substitute)
+        else:
+            setattr(module, attr, lambda _c=client: _c)
     try:
         yield client
     finally:
@@ -363,11 +474,37 @@ def _client_seam(entry: dict, document: Any) -> Iterator[_FakeSharedClient]:  # 
             setattr(module, attr_name, original)
 
 
-def _seam_guard(client: _FakeSharedClient) -> None:
+def _no_request_failure(leg: str, surface: str) -> WitnessFailure:
+    """The refusal for a leg that answered without asking the offline carrier anything.
+
+    For an ordinary leg an empty request log means the seam was mis-declared. For the tampered leg
+    it means something worse: the leg completed on an answer recorded before it -- a cache the
+    harness cannot enumerate -- so the tampered bytes were never read and whatever the leg did next
+    was not caused by the tamper. Both readings refuse; only the second one names the masking.
+    """
+    if leg != TAMPERED_LEG:
+        return WitnessFailure(f"the fetch completed without ever calling the declared {surface}")
+    return WitnessFailure(
+        f"the tampered leg completed without ever calling the declared {surface}, so an answer "
+        "recorded before it served that leg and the tampered document was never read"
+    )
+
+
+def _seam_guard(client: _FakeSharedClient, *, leg: str = "direct") -> None:
     """A fetch that never asked the fake anything is not an offline witness."""
     if not client.calls:
+        raise _no_request_failure(leg, "offline client seam")
+    # The second enforceability arm, for the seam kinds that can measure it: a context-manager
+    # fake also refuses when the patched attribute was never invoked at the product call site.
+    invoked = getattr(client, "invoked", None)
+    if invoked is not None and not invoked:
+        if leg == TAMPERED_LEG:
+            raise WitnessFailure(
+                "the tampered leg never invoked the patched governed session attribute, so an "
+                "answer recorded before it served that leg and the tampered document was never read"
+            )
         raise WitnessFailure(
-            "the fetch completed without ever calling the declared offline client seam"
+            "the fetch completed without ever invoking the patched governed session attribute"
         )
 
 
@@ -376,10 +513,15 @@ def _run_direct(
     model: str,
     entry: dict,
     document: Any,  # noqa: ANN401  # fixture JSON
+    *,
+    leg: str = "direct",
+    handle: list[Any] | None = None,  # the carrier, handed back even when the leg refuses
 ) -> tuple[list, Any, Any]:  # rows and transport are dynamic by nature
     """Fetch through the offline seam on a fresh fetcher instance; return rows."""
     fetcher_type = _resolve_fetcher_type(provider, model)
     transport = FixedResponseTransport(HttpResponse(200, copy.deepcopy(document)))
+    if handle is not None:
+        handle.append(transport)
     probe_class = type(
         f"Probed{fetcher_type.__name__}", (fetcher_type,), {"http_transport": transport}
     )
@@ -387,7 +529,7 @@ def _run_direct(
     ctx = _grant_context(provider, model, entry["hosts"], sends=_carrier_sends(entry, document))
     rows = list(instance.fetch(ctx=ctx, **entry["query"]))
     if not transport.calls:
-        raise WitnessFailure("the fetch completed without ever calling the offline transport seam")
+        raise _no_request_failure(leg, "offline transport seam")
     if not rows:
         raise WitnessFailure("the offline fetch produced zero rows")
     for row in rows:
@@ -401,6 +543,9 @@ def _run_direct_with_seam(
     model: str,
     entry: dict,
     document: Any,  # noqa: ANN401  # fixture JSON
+    *,
+    leg: str = "direct",
+    handle: list[Any] | None = None,  # the carrier, handed back even when the leg refuses
 ) -> tuple[list, Any, Any]:  # rows and transport are dynamic by nature
     """Run :func:`_run_direct`, or the declared client seam instead of the engine one.
 
@@ -409,15 +554,21 @@ def _run_direct_with_seam(
     exactly the refusal that kept those rows unwitnessed. The seam substitutes the governed client
     for the modules the witness names, so the parsing, normalization and refusal code that ships
     is still the code under test.
+
+    ``handle`` exists because a leg that *refuses* still has to be measured: the caller cannot read
+    the carrier's request log off a return value that never came back, and the tampered leg's
+    request count is exactly the reading that catches an SDK cache replaying another leg's answer.
     """
     if "client_seam" not in entry:
-        return _run_direct(provider, model, entry, document)
+        return _run_direct(provider, model, entry, document, leg=leg, handle=handle)
     fetcher_type = _resolve_fetcher_type(provider, model)
     instance = fetcher_type()
     ctx = _grant_context(provider, model, entry["hosts"], sends=_carrier_sends(entry, document))
     with _client_seam(entry, document) as client:
+        if handle is not None:
+            handle.append(client)
         rows = list(instance.fetch(ctx=ctx, **entry["query"]))
-        _seam_guard(client)
+        _seam_guard(client, leg=leg)
     if not rows:
         raise WitnessFailure("the offline fetch produced zero rows")
     for row in rows:
@@ -677,6 +828,125 @@ def _guard_against_copied_refusal(entry: dict, expected: dict) -> None:
                 )
 
 
+def _carrier_requests(handle: list[Any]) -> int:  # transport or fake client
+    """How many requests the leg actually put through its offline carrier."""
+    if not handle:
+        return 0
+    return len(getattr(handle[0], "calls", ()))
+
+
+def _run_tampered_leg(provider: str, model: str, entry: dict, tampered: Any) -> dict[str, Any]:  # noqa: ANN401  # tampered fixture JSON
+    """Run one leg against the tampered document and report what the carrier saw.
+
+    This is the whole of what an isolated tampered leg can tell its parent, and the parent verdicts
+    on it: the outcome (refusal / rows / harness failure / blocked), the refusal face the shipped
+    code produced, and -- the part no shared-process leg could prove -- the number of requests the
+    tampered document itself got through the fake.
+    """
+    handle: list[Any] = []  # the carrier the leg answered through
+    report: dict[str, Any]
+    try:
+        rows, _, _ = _run_direct_with_seam(
+            provider, model, entry, tampered, leg=TAMPERED_LEG, handle=handle
+        )
+    except (WitnessFailure, WitnessBlocked) as exc:
+        # A harness-level refusal is not a provider refusal: it must never be read as the
+        # tamper biting, whichever side of the process boundary the leg ran on.
+        report = {
+            "outcome": "blocked" if isinstance(exc, WitnessBlocked) else "failure",
+            "reason": str(exc),
+        }
+    except Exception as exc:  # the refusal under test is whatever the provider ships
+        try:
+            observed = _refusal_shape(exc, provider, entry["refusal_code"])
+        except WitnessFailure as shape_failure:
+            report = {"outcome": "failure", "reason": str(shape_failure)}
+        else:
+            report = {"outcome": "refusal", "observed": observed}
+    else:
+        report = {"outcome": "rows", "rows": len(rows)}
+    report["seam_requests"] = _carrier_requests(handle)
+    return report
+
+
+def _tampered_leg_child_main(provider: str, model: str, entry: dict) -> int:
+    """Serve the parent's isolated tampered leg: read the document on stdin, report on stdout."""
+    tampered = json.loads(sys.stdin.read())
+    try:
+        report = _run_tampered_leg(provider, model, entry, tampered)
+    except Exception as exc:  # a leg that cannot even be reported is still a loud refusal
+        report = {"outcome": "crash", "reason": f"{type(exc).__name__}: {exc}", "seam_requests": 0}
+    try:
+        payload = json.dumps(report, sort_keys=True)
+    except (TypeError, ValueError) as exc:
+        # The face has to travel as the values the shipped code raised, so no lossy fallback:
+        # a refusal face this runner cannot transport is reported instead of guessed at.
+        payload = json.dumps(
+            {
+                "outcome": "failure",
+                "reason": f"the tampered leg's refusal face is not transportable: {exc}",
+                "seam_requests": report.get("seam_requests", 0),
+            },
+            sort_keys=True,
+        )
+    print(TAMPERED_LEG_MARKER + payload)
+    return 0
+
+
+def _spawn_tampered_leg(provider: str, model: str, entry: dict, tampered: Any) -> dict[str, Any]:  # noqa: ANN401  # tampered fixture JSON
+    """Run the tampered leg in a process nothing has cached in, and read its report back.
+
+    The child is this same file with :data:`TAMPERED_LEG_CHILD_FLAG`, under the same interpreter,
+    the same credential environment ``main`` populated and the same socket block, so the seam, the
+    fetcher and the refusal path it runs are the shipped ones -- only the accumulated process state
+    differs, which is the point.
+    """
+    if "evidence_root_arg" not in entry:
+        raise WitnessBlocked(
+            "the counterfact phase isolates its tampered leg in a child, which needs the "
+            "evidence root main() resolved; call the phase through main()"
+        )
+    argv = [
+        sys.executable,
+        str(Path(__file__).resolve()),
+        "--provider",
+        provider,
+        "--model",
+        model,
+        "--phase",
+        "counterfact",
+        "--evidence-root",
+        str(entry["evidence_root_arg"]),
+        TAMPERED_LEG_CHILD_FLAG,
+    ]
+    try:
+        result = subprocess.run(  # noqa: S603  # nosec B603  # sys.executable and this file's own path
+            argv,
+            input=json.dumps(tampered),
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            shell=False,
+            check=False,
+            timeout=_TAMPERED_LEG_CHILD_TIMEOUT,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise WitnessFailure(
+            f"the isolated tampered leg did not finish within {exc.timeout:.0f}s"
+        ) from None
+    for line in (result.stdout or "").splitlines():
+        if line.startswith(TAMPERED_LEG_MARKER):
+            report = json.loads(line[len(TAMPERED_LEG_MARKER) :])
+            if not isinstance(report, dict) or "seam_requests" not in report:
+                raise WitnessFailure(f"the isolated tampered leg reported {report!r}")
+            return report
+    detail = (result.stderr or result.stdout or "").strip().splitlines()
+    tail = " | ".join(detail[-3:]) if detail else "no output"
+    raise WitnessFailure(
+        f"the isolated tampered leg reported nothing (exit={result.returncode}): {tail}"
+    )
+
+
 def witness_counterfact(provider: str, model: str, entry: dict) -> None:
     """Tamper the fixture and require the declared typed refusal, with an untampered control."""
     rows, _, _ = _run_direct_with_seam(provider, model, entry, entry["document"])
@@ -691,16 +961,30 @@ def witness_counterfact(provider: str, model: str, entry: dict) -> None:
         "invalid": list(entry.get("expected_invalid", [])),
     }
     _guard_against_copied_refusal(entry, expected)
-    try:
-        _run_direct_with_seam(provider, model, entry, tampered)
-    except (WitnessFailure, WitnessBlocked):
-        raise
-    except Exception as exc:  # the refusal under test is whatever the provider ships
-        observed = _refusal_shape(exc, provider, entry["refusal_code"])
-    else:
+    report = _spawn_tampered_leg(provider, model, entry, tampered)
+    # The invariant, read off the tampered leg itself: it must put at least one request through the
+    # carrier built from *its own* document. A leg that answered without asking anything was served
+    # by an answer recorded before it, so the tamper never reached the product and any refusal after
+    # it is not the tamper's. This is the counter assertion the shared-process phase could not make.
+    seam_requests = int(report.get("seam_requests", 0))
+    if seam_requests < 1:
         raise WitnessFailure(
-            "counterfact did not bite: the tampered fixture still produced rows"
-        ) from None
+            f"the tampered leg made {seam_requests} request(s) through the offline carrier, so the "
+            f"control leg's answer served it and the tamper was never read "
+            f"(leg outcome={report.get('outcome')!r} reason={report.get('reason', '')!r})"
+        )
+    outcome = report.get("outcome")
+    if outcome == "blocked":
+        raise WitnessBlocked(str(report.get("reason")))
+    if outcome in ("failure", "crash"):
+        raise WitnessFailure(str(report.get("reason")))
+    if outcome == "rows":
+        raise WitnessFailure(
+            f"counterfact did not bite: the tampered fixture still produced {report['rows']} row(s)"
+        )
+    if outcome != "refusal":
+        raise WitnessFailure(f"the isolated tampered leg reported an unknown outcome {outcome!r}")
+    observed = report["observed"]
     if observed != expected:
         raise WitnessFailure(f"refusal disagreement: expected {expected} observed {observed}")
     print(
@@ -723,6 +1007,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--model", required=True)
     parser.add_argument("--phase", required=True, choices=PHASES)
     parser.add_argument("--evidence-root", required=True)
+    parser.add_argument(
+        TAMPERED_LEG_CHILD_FLAG,
+        action="store_true",
+        help=(
+            "internal: run only the counterfact phase's tampered leg, reading the tampered "
+            "document on stdin and printing TAMPERED_LEG_JSON=<report> (spawned by this runner)"
+        ),
+    )
     args = parser.parse_args(argv)
     _block_real_sockets()  # every phase is offline by construction, not by convention
 
@@ -745,6 +1037,9 @@ def main(argv: list[str] | None = None) -> int:
 
     evidence_root = REPO_ROOT / args.evidence_root
     entry["hosts"] = config["allowed_hosts"]
+    # What the isolated tampered leg has to be re-entered with; a path is not picklable-friendly
+    # context for a child, and the child resolves it the same way this process does.
+    entry["evidence_root_arg"] = args.evidence_root
     for name, value in config.get("credential_env", {}).items():
         if not os.environ.get(name):
             os.environ[name] = value  # fixture token, never sent anywhere real
@@ -752,6 +1047,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.phase != "implementation":
             entry["document"] = _fixture_document(evidence_root, args.provider, args.model)
+        if args.tampered_leg_child:
+            return _tampered_leg_child_main(args.provider, args.model, entry)
         runner = {
             "implementation": witness_implementation,
             "direct": witness_direct,

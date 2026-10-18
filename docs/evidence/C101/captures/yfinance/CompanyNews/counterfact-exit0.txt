@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CompanyNews --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_NEWS_DATE_MISSING", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_NEWS_DATE_MISSING", "rejected": [], "status": null}, "reason": "the ncp stream still answers with a well-formed article list -- the POST URL, the crumb, the item count and every other field the SDK copies into raw_payload_json are untouched -- and only the first article's providerPublishTime is gone, so the observation the yfinance_company_news domain keys on published_at_utc has no timestamp to key on: YfinanceCompanyNewsFetcher must refuse the stream rather than publish an undated news row; untampered control produced 3 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

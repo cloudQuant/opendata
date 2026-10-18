@@ -228,13 +228,11 @@ def _is_missing_scalar(value: object) -> bool:
 
 
 def _statement_observations(
-    frame: object,
+    frame: pd.DataFrame,
     params: YfinanceStatementQuery,
     statement_type: StatementType,
 ) -> tuple[YfinanceFinancialStatementObservation, ...]:
     """Transpose the SDK's item-by-period frame into source-native long rows."""
-    if not isinstance(frame, pd.DataFrame):
-        raise YfinanceProviderError("YFINANCE_STATEMENT_SHAPE_INVALID")
     if frame.empty or frame.index.empty or frame.columns.empty:
         raise YfinanceProviderError("YFINANCE_EMPTY_RESPONSE")
     if frame.columns.has_duplicates or frame.index.has_duplicates:
@@ -275,6 +273,9 @@ class YfinanceStatementFetcher(Fetcher[YfinanceStatementQuery, pd.DataFrame | No
     statement_type: ClassVar[StatementType]
     canonical_model: ClassVar[str]
     query_type: ClassVar[type[YfinanceStatementQuery]] = YfinanceStatementQuery
+    row_model: ClassVar[type[YfinanceFinancialStatementObservation]] = (
+        YfinanceFinancialStatementObservation
+    )
 
     def transform_query(self, **kwargs: object) -> YfinanceStatementQuery:
         """Validate symbol, bounded limit, and annual or quarterly period."""
@@ -298,6 +299,8 @@ class YfinanceStatementFetcher(Fetcher[YfinanceStatementQuery, pd.DataFrame | No
     ) -> FetchResult:
         """Preserve the SDK's original item labels and fiscal period dates."""
         query = _validated_query(params, self.query_type)
+        if not isinstance(raw, pd.DataFrame):
+            raise YfinanceProviderError("YFINANCE_STATEMENT_SHAPE_INVALID")
         return _statement_observations(raw, query, self.statement_type)
 
 

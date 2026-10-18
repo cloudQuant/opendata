@@ -1,0 +1,60 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "finance": {
+          "error": null,
+          "result": [
+            {
+              "offset": 0,
+              "quotes": [
+                {
+                  "chgb": 2.7,
+                  "country": "United States",
+                  "currency": "USD",
+                  "dayvolume": 41000000,
+                  "exchDisp": "NMS",
+                  "exchange": "NMS",
+                  "industry": "Software",
+                  "lastmkttrade": 1760000000,
+                  "name": "NVIDIA Corporation",
+                  "percentchange": 2.7,
+                  "price": 61.0,
+                  "sector": "Technology",
+                  "symbol": "NVDA"
+                },
+                {
+                  "chgb": -1.4,
+                  "country": "United States",
+                  "currency": "USD",
+                  "dayvolume": 33500000,
+                  "exchDisp": "NMS",
+                  "exchange": "NMS",
+                  "industry": "Software",
+                  "lastmkttrade": 1760000000,
+                  "name": "Tesla, Inc.",
+                  "percentchange": -1.4,
+                  "price": 53.5,
+                  "sector": "Technology",
+                  "symbol": "TSLA"
+                }
+              ],
+              "size": 2,
+              "total": 2
+            }
+          ]
+        }
+      },
+      "method": "POST",
+      "url_contains": "v1/finance/screener?corsDomain=finance.yahoo.com&crumb=fixture-crumb&formatted=false&lang=en-US&region=US"
+    }
+  ]
+}

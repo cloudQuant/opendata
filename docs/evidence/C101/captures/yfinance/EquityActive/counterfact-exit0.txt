@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityActive --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "YfinanceProviderError", "refusal_code": "YFINANCE_SCREEN_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "the most-active screen sorts on dayvolume inside each quote mapping, so when this row's result page arrives with quotes as a flattened symbol string the activity ranks the row exists to report are gone; the SDK hands that page to require_screen, whose list check at _sdk.py:435 fails closed with YFINANCE_SCREEN_SHAPE_INVALID rather than let a string masquerade as the ranked quote list -- the same-code transform_data guard at market_iter2.py:1247 is a backstop this tamper never reaches; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

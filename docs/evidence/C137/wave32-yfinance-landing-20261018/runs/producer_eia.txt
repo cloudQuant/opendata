@@ -1,0 +1,25 @@
+# carrier for producer_eia
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider eia --output docs/evidence/C101/eia/claims.json
+# note: five-phase producer for eia
+# started_utc: 2026-10-18T17:08:56+00:00
+# exit: 0
+# stdout_chars: 3022 stderr_chars: 0
+
+== provider eia: 2 inventory row(s) of 350 total ==
+PetroleumStatusReport implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase implementation --evidence-root docs/evidence/C101
+PetroleumStatusReport direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase direct --evidence-root docs/evidence/C101
+PetroleumStatusReport service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase service --evidence-root docs/evidence/C101
+PetroleumStatusReport contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase contract --evidence-root docs/evidence/C101
+PetroleumStatusReport counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase counterfact --evidence-root docs/evidence/C101
+ShortTermEnergyOutlook implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase implementation --evidence-root docs/evidence/C101
+ShortTermEnergyOutlook direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase direct --evidence-root docs/evidence/C101
+ShortTermEnergyOutlook service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase service --evidence-root docs/evidence/C101
+ShortTermEnergyOutlook contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase contract --evidence-root docs/evidence/C101
+ShortTermEnergyOutlook counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase counterfact --evidence-root docs/evidence/C101
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=318/350; provider rows covered=2 of provider inventory rows=2, of which bound now=2/318 resolvable; claims emitted=10 (10 PASS, 0 FAIL, 0 BLOCKED) = 2 row(s) x 5 phases; phases actually executed as subprocesses=10
+wrote docs/evidence/C101/eia/claims.json
+
+---- stderr ----
+
+
+chain_producer_eia_exit=0

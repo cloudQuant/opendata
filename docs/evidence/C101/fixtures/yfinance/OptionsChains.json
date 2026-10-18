@@ -1,0 +1,213 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "optionChain": {
+          "error": null,
+          "result": [
+            {
+              "expirationDates": [
+                1795046400
+              ],
+              "options": [
+                {
+                  "calls": [
+                    {
+                      "ask": 10.5,
+                      "bid": 8.5,
+                      "change": 0.25,
+                      "contractSize": "regular",
+                      "contractSymbol": "AAPL261218C245000",
+                      "currency": "USD",
+                      "impliedVolatility": 0.27,
+                      "inTheMoney": true,
+                      "lastPrice": 9.5,
+                      "lastTradeDate": 1794960000,
+                      "openInterest": 5400,
+                      "percentChange": 2.5,
+                      "strike": 245.0,
+                      "volume": 120
+                    },
+                    {
+                      "ask": 9.75,
+                      "bid": 7.75,
+                      "change": 0.25,
+                      "contractSize": "regular",
+                      "contractSymbol": "AAPL261219C247500",
+                      "currency": "USD",
+                      "impliedVolatility": 0.28,
+                      "inTheMoney": false,
+                      "lastPrice": 8.75,
+                      "lastTradeDate": 1794873600,
+                      "openInterest": 5417,
+                      "percentChange": 2.5,
+                      "strike": 247.5,
+                      "volume": 121
+                    },
+                    {
+                      "ask": 9.0,
+                      "bid": 7.0,
+                      "change": 0.25,
+                      "contractSize": "regular",
+                      "contractSymbol": "AAPL261220C250000",
+                      "currency": "USD",
+                      "impliedVolatility": 0.29000000000000004,
+                      "inTheMoney": false,
+                      "lastPrice": 8.0,
+                      "lastTradeDate": 1794787200,
+                      "openInterest": 5434,
+                      "percentChange": 2.5,
+                      "strike": 250.0,
+                      "volume": 122
+                    },
+                    {
+                      "ask": 8.25,
+                      "bid": 6.25,
+                      "change": 0.25,
+                      "contractSize": "regular",
+                      "contractSymbol": "AAPL261221C252500",
+                      "currency": "USD",
+                      "impliedVolatility": 0.30000000000000004,
+                      "inTheMoney": false,
+                      "lastPrice": 7.25,
+                      "lastTradeDate": 1794700800,
+                      "openInterest": 5451,
+                      "percentChange": 2.5,
+                      "strike": 252.5,
+                      "volume": 123
+                    }
+                  ],
+                  "expirationDate": 1795046400,
+                  "puts": [
+                    {
+                      "ask": 10.5,
+                      "bid": 8.5,
+                      "change": 0.25,
+                      "contractSize": "regular",
+                      "contractSymbol": "AAPL261218P245000",
+                      "currency": "USD",
+                      "impliedVolatility": 0.27,
+                      "inTheMoney": false,
+                      "lastPrice": 10.75,
+                      "lastTradeDate": 1794960000,
+                      "openInterest": 5400,
+                      "percentChange": 2.5,
+                      "strike": 245.0,
+                      "volume": 120
+                    },
+                    {
+                      "ask": 9.75,
+                      "bid": 7.75,
+                      "change": 0.25,
+                      "contractSize": "regular",
+                      "contractSymbol": "AAPL261219P247500",
+                      "currency": "USD",
+                      "impliedVolatility": 0.28,
+                      "inTheMoney": true,
+                      "lastPrice": 10.0,
+                      "lastTradeDate": 1794873600,
+                      "openInterest": 5417,
+                      "percentChange": 2.5,
+                      "strike": 247.5,
+                      "volume": 121
+                    },
+                    {
+                      "ask": 9.0,
+                      "bid": 7.0,
+                      "change": 0.25,
+                      "contractSize": "regular",
+                      "contractSymbol": "AAPL261220P250000",
+                      "currency": "USD",
+                      "impliedVolatility": 0.29000000000000004,
+                      "inTheMoney": true,
+                      "lastPrice": 9.25,
+                      "lastTradeDate": 1794787200,
+                      "openInterest": 5434,
+                      "percentChange": 2.5,
+                      "strike": 250.0,
+                      "volume": 122
+                    },
+                    {
+                      "ask": 8.25,
+                      "bid": 6.25,
+                      "change": 0.25,
+                      "contractSize": "regular",
+                      "contractSymbol": "AAPL261221P252500",
+                      "currency": "USD",
+                      "impliedVolatility": 0.30000000000000004,
+                      "inTheMoney": true,
+                      "lastPrice": 8.5,
+                      "lastTradeDate": 1794700800,
+                      "openInterest": 5451,
+                      "percentChange": 2.5,
+                      "strike": 252.5,
+                      "volume": 123
+                    }
+                  ],
+                  "size": 100,
+                  "strangle": 5000,
+                  "strikes": [
+                    245.0,
+                    247.5,
+                    250.0,
+                    252.5,
+                    255.0,
+                    257.5
+                  ]
+                }
+              ],
+              "quote": {
+                "currency": "USD",
+                "exchange": "NMS",
+                "language": "en_US",
+                "quoteType": "EQUITY",
+                "region": "US",
+                "regularMarketPrice": 246.38,
+                "regularMarketTime": 1792454400,
+                "symbol": "AAPL",
+                "type": "equity",
+                "underlyingSymbol": "AAPL"
+              }
+            }
+          ]
+        }
+      },
+      "url_contains": "v7/finance/options/AAPL?date=1795046400"
+    },
+    {
+      "body": {
+        "optionChain": {
+          "error": null,
+          "result": [
+            {
+              "expirationDates": [
+                1795046400
+              ],
+              "quote": {
+                "currency": "USD",
+                "exchange": "NMS",
+                "language": "en_US",
+                "quoteType": "EQUITY",
+                "region": "US",
+                "regularMarketPrice": 246.38,
+                "regularMarketTime": 1792454400,
+                "symbol": "AAPL",
+                "type": "equity",
+                "underlyingSymbol": "AAPL"
+              }
+            }
+          ]
+        }
+      },
+      "url_contains": "v7/finance/options/AAPL"
+    }
+  ]
+}

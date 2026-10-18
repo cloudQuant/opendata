@@ -1,0 +1,65 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "finance": {
+          "error": null,
+          "result": [
+            {
+              "count": 3,
+              "quotes": [
+                {
+                  "currency": "USD",
+                  "dayVolume": 1802000,
+                  "eodVolume": 1734000,
+                  "exchange": "NYQ",
+                  "intradayMarketCap": 11420000000,
+                  "pegRatio": 0.66,
+                  "quoteType": "EQUITY",
+                  "regularMarketPrice": 57.62,
+                  "symbol": "VOYA",
+                  "trailingPE": 8.1
+                },
+                {
+                  "currency": "USD",
+                  "dayVolume": 964000,
+                  "eodVolume": 921000,
+                  "exchange": "NYQ",
+                  "intradayMarketCap": 12980000000,
+                  "pegRatio": 0.83,
+                  "quoteType": "EQUITY",
+                  "regularMarketPrice": 106.34,
+                  "symbol": "KMX",
+                  "trailingPE": 12.7
+                },
+                {
+                  "currency": "USD",
+                  "dayVolume": 361500,
+                  "eodVolume": 348000,
+                  "exchange": "NYQ",
+                  "intradayMarketCap": 16450000000,
+                  "pegRatio": 0.97,
+                  "quoteType": "EQUITY",
+                  "regularMarketPrice": 352.4,
+                  "symbol": "PH",
+                  "trailingPE": 18.2
+                }
+              ],
+              "total": 3
+            }
+          ]
+        }
+      },
+      "method": "POST",
+      "url_contains": "v1/finance/screener?corsDomain=finance.yahoo.com&crumb=fixture-crumb&formatted=false&lang=en-US&region=US"
+    }
+  ]
+}

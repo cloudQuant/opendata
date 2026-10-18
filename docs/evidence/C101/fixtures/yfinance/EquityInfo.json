@@ -1,0 +1,82 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "quoteSummary": {
+          "error": null,
+          "result": [
+            {
+              "assetProfile": {
+                "address": {
+                  "city": "Cupertino",
+                  "state": "CA"
+                },
+                "employees": 164000,
+                "longBusinessSummary": "Designs and sells smartphones and computers."
+              },
+              "defaultKeyStatistics": {
+                "trailingEps": {
+                  "fmt": "6.58",
+                  "raw": 6.58
+                }
+              },
+              "financialData": {
+                "totalRevenue": {
+                  "fmt": "391B",
+                  "raw": 391000000000
+                }
+              },
+              "quoteType": {
+                "currency": "USD",
+                "exchange": "NMS",
+                "longName": "Apple Inc.",
+                "quoteType": "EQUITY",
+                "symbol": "AAPL"
+              },
+              "summaryDetail": {
+                "dayHigh": {
+                  "fmt": "247.90",
+                  "raw": 247.9
+                },
+                "fiftyTwoWeekHigh": {
+                  "fmt": "256.72",
+                  "raw": 256.72
+                },
+                "previousClose": 246.61
+              }
+            }
+          ]
+        }
+      },
+      "url_contains": "v10/finance/quoteSummary"
+    },
+    {
+      "body": {
+        "quoteResponse": {
+          "error": null,
+          "result": []
+        }
+      },
+      "url_contains": "v7/finance/quote"
+    },
+    {
+      "body": {
+        "timeseries": {
+          "error": null,
+          "result": [
+            {}
+          ]
+        }
+      },
+      "url_contains": "fundamentals-timeseries"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# carrier for snapshot_repin_take2 (re-take of snapshot_repin.txt, which carries no exit reading)
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_provider_domains.py tests/test_alert_matrix.py tests/test_alert_matrix_model_domains.py tests/test_pipeline_jobs.py -o addopts= -p no:cacheprovider -q
+# started_utc: 2026-10-18T18:23:30+00:00
+# cwd=/Users/yunjinqi/Documents/new_projects/opendata branch=dev head=f2b0e5eb8
+# note: -o addopts= is mandatory (repo addopts carry --cov, which rewrites .coverage); -p no:cacheprovider keeps the run stateless
+# scope: the four modules the post-re-pin registry snapshot is judged by -- the population w32_landing_radius.py's carriers_signed arm stands behind
+........................................................................ [ 61%]
+.............................................                            [100%]
+117 passed in 0.99s
+# ended_utc: 2026-10-18T18:23:34+00:00
+repin_take2_argv_modules=4 pytest_summary="117 passed in 0.99s"
+passed=117 failed=0
+expected_state=117 passed / 0 failed after the re-pin (superseded carrier's AFTER block said the same; its BEFORE block was 7 failed / 110 passed)
+snapshot_repin_take2_exit=0

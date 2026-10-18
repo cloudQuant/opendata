@@ -54,7 +54,10 @@ _REQUIRED_ENTRY_KEYS: Final = (
 #: engine's ``http_transport`` seam declare ``client_seam`` and are witnessed by patching that named
 #: module attribute in the probe process. The declaration is the claim: a witness that named no
 #: module could silently run the real governed client.
-_CLIENT_SEAM_KINDS: Final = ("shared_http_client",)
+#: ``governed_sdk_session`` is the same claim for the other consumption shape: an attribute called
+#: as ``with attr(sdk) as session:`` (yfinance's ``_sdk.py``), where a seam that swallowed the
+#: positional and returned a bare client would pass the product's own call through untouched.
+_CLIENT_SEAM_KINDS: Final = ("shared_http_client", "governed_sdk_session")
 _CLIENT_SEAM_KEYS: Final = ("kind", "modules", "attr")
 
 

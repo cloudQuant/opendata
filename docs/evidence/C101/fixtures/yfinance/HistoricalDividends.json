@@ -1,0 +1,377 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "chart": {
+          "error": null,
+          "result": [
+            {
+              "events": {},
+              "indicators": {
+                "adjclose": [
+                  {
+                    "adjclose": [
+                      60.0,
+                      60.1631,
+                      60.3245,
+                      60.4826
+                    ]
+                  }
+                ],
+                "quote": [
+                  {
+                    "close": [
+                      60.0,
+                      60.1631,
+                      60.3245,
+                      60.4826
+                    ],
+                    "high": [
+                      60.6,
+                      60.7647,
+                      60.9277,
+                      61.0874
+                    ],
+                    "low": [
+                      59.4,
+                      59.5615,
+                      59.7213,
+                      59.8778
+                    ],
+                    "open": [
+                      59.7,
+                      59.8623,
+                      60.0229,
+                      60.1802
+                    ],
+                    "volume": [
+                      50000000,
+                      50000001,
+                      50000002,
+                      50000003
+                    ]
+                  }
+                ]
+              },
+              "meta": {
+                "chartPreviousClose": 60.3245,
+                "currency": "USD",
+                "currentTradingPeriod": {
+                  "post": {
+                    "end": 1792365019,
+                    "start": 1792350619
+                  },
+                  "pre": {
+                    "end": 1792329019,
+                    "start": 1792314619
+                  },
+                  "regular": {
+                    "end": 1792350619,
+                    "start": 1792329019
+                  }
+                },
+                "dataGranularity": "1d",
+                "exchangeName": "NMS",
+                "exchangeTimezoneAbbreviation": "EST",
+                "exchangeTimezoneName": "America/New_York",
+                "fiftyTwoWeekHigh": 60.4826,
+                "fiftyTwoWeekLow": 60.0,
+                "firstTradeDate": 1476731419,
+                "fullExchangeName": "NasdaqGS",
+                "instrumentType": "EQUITY",
+                "marketCap": 3700000000000,
+                "previousClose": 60.3245,
+                "regularMarketPrice": 60.4826,
+                "regularMarketTime": 1792350619,
+                "regularMarketVolume": 51000000,
+                "symbol": "KO",
+                "tradingPeriods": {
+                  "post": [],
+                  "pre": []
+                },
+                "validIntervals": [
+                  "1m",
+                  "5m",
+                  "60m",
+                  "1h",
+                  "1d"
+                ],
+                "validRanges": [
+                  "1d",
+                  "5d",
+                  "1mo",
+                  "3mo",
+                  "6mo",
+                  "1y",
+                  "2y",
+                  "5y",
+                  "10y",
+                  "max"
+                ]
+              },
+              "timestamp": [
+                1792091419,
+                1792177819,
+                1792264219,
+                1792350619
+              ]
+            }
+          ]
+        }
+      },
+      "url_contains": "chart/KO?crumb=fixture-crumb&interval=1d&range=1d"
+    },
+    {
+      "body": {
+        "chart": {
+          "error": null,
+          "result": [
+            {
+              "events": {
+                "dividends": {
+                  "1791659419": {
+                    "amount": 0.45,
+                    "date": 1791659419
+                  },
+                  "1792091419": {
+                    "amount": 0.46,
+                    "date": 1792091419
+                  }
+                }
+              },
+              "indicators": {
+                "adjclose": [
+                  {
+                    "adjclose": [
+                      60.0,
+                      60.1631,
+                      60.3245,
+                      60.4826,
+                      60.6359,
+                      60.7829,
+                      60.922,
+                      61.052,
+                      61.1716,
+                      61.2798,
+                      61.3754,
+                      61.4578,
+                      61.5263,
+                      61.5804,
+                      61.6199,
+                      61.6445,
+                      61.6544,
+                      61.6498,
+                      61.6312,
+                      61.5991
+                    ]
+                  }
+                ],
+                "quote": [
+                  {
+                    "close": [
+                      60.0,
+                      60.1631,
+                      60.3245,
+                      60.4826,
+                      60.6359,
+                      60.7829,
+                      60.922,
+                      61.052,
+                      61.1716,
+                      61.2798,
+                      61.3754,
+                      61.4578,
+                      61.5263,
+                      61.5804,
+                      61.6199,
+                      61.6445,
+                      61.6544,
+                      61.6498,
+                      61.6312,
+                      61.5991
+                    ],
+                    "high": [
+                      60.6,
+                      60.7647,
+                      60.9277,
+                      61.0874,
+                      61.2423,
+                      61.3907,
+                      61.5312,
+                      61.6625,
+                      61.7833,
+                      61.8926,
+                      61.9892,
+                      62.0724,
+                      62.1416,
+                      62.1962,
+                      62.2361,
+                      62.2609,
+                      62.2709,
+                      62.2663,
+                      62.2475,
+                      62.2151
+                    ],
+                    "low": [
+                      59.4,
+                      59.5615,
+                      59.7213,
+                      59.8778,
+                      60.0295,
+                      60.1751,
+                      60.3128,
+                      60.4415,
+                      60.5599,
+                      60.667,
+                      60.7616,
+                      60.8432,
+                      60.911,
+                      60.9646,
+                      61.0037,
+                      61.0281,
+                      61.0379,
+                      61.0333,
+                      61.0149,
+                      60.9831
+                    ],
+                    "open": [
+                      59.7,
+                      59.8623,
+                      60.0229,
+                      60.1802,
+                      60.3327,
+                      60.479,
+                      60.6174,
+                      60.7467,
+                      60.8657,
+                      60.9734,
+                      61.0685,
+                      61.1505,
+                      61.2187,
+                      61.2725,
+                      61.3118,
+                      61.3363,
+                      61.3461,
+                      61.3416,
+                      61.323,
+                      61.2911
+                    ],
+                    "volume": [
+                      50000000,
+                      50000001,
+                      50000002,
+                      50000003,
+                      50000004,
+                      50000005,
+                      50000006,
+                      50000007,
+                      50000008,
+                      50000009,
+                      50000010,
+                      50000011,
+                      50000012,
+                      50000013,
+                      50000014,
+                      50000015,
+                      50000016,
+                      50000017,
+                      50000018,
+                      50000019
+                    ]
+                  }
+                ]
+              },
+              "meta": {
+                "chartPreviousClose": 61.6312,
+                "currency": "USD",
+                "currentTradingPeriod": {
+                  "post": {
+                    "end": 1792365019,
+                    "start": 1792350619
+                  },
+                  "pre": {
+                    "end": 1792329019,
+                    "start": 1792314619
+                  },
+                  "regular": {
+                    "end": 1792350619,
+                    "start": 1792329019
+                  }
+                },
+                "dataGranularity": "1d",
+                "exchangeName": "NMS",
+                "exchangeTimezoneAbbreviation": "EST",
+                "exchangeTimezoneName": "America/New_York",
+                "fiftyTwoWeekHigh": 61.6544,
+                "fiftyTwoWeekLow": 60.0,
+                "firstTradeDate": 1475349019,
+                "fullExchangeName": "NasdaqGS",
+                "instrumentType": "EQUITY",
+                "marketCap": 3700000000000,
+                "previousClose": 61.6312,
+                "regularMarketPrice": 61.5991,
+                "regularMarketTime": 1792350619,
+                "regularMarketVolume": 51000000,
+                "symbol": "KO",
+                "tradingPeriods": {
+                  "post": [],
+                  "pre": []
+                },
+                "validIntervals": [
+                  "1m",
+                  "5m",
+                  "60m",
+                  "1h",
+                  "1d"
+                ],
+                "validRanges": [
+                  "1d",
+                  "5d",
+                  "1mo",
+                  "3mo",
+                  "6mo",
+                  "1y",
+                  "2y",
+                  "5y",
+                  "10y",
+                  "max"
+                ]
+              },
+              "timestamp": [
+                1790709019,
+                1790795419,
+                1790881819,
+                1790968219,
+                1791054619,
+                1791141019,
+                1791227419,
+                1791313819,
+                1791400219,
+                1791486619,
+                1791573019,
+                1791659419,
+                1791745819,
+                1791832219,
+                1791918619,
+                1792005019,
+                1792091419,
+                1792177819,
+                1792264219,
+                1792350619
+              ]
+            }
+          ]
+        }
+      },
+      "url_contains": "chart/KO?crumb=fixture-crumb&events=div%2Csplits%2CcapitalGains&includePrePost=True&interval=1d&period1="
+    }
+  ]
+}
