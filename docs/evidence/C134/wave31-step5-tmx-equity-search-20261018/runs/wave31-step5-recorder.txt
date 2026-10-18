@@ -1,0 +1,14 @@
+wave-31 step 5 -- primary reviews over the 8 tmx rows whose five claims all PASS in the regenerated shard (the roster is read off those claims, not typed here)
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/tmx/claims.json --output docs/evidence/C101/tmx/claims.reviewed.json --identity tmx::CompanyFilings --identity tmx::EquityHistorical --identity tmx::EquityInfo --identity tmx::EquityQuote --identity tmx::EquitySearch --identity tmx::HistoricalDividends --identity tmx::IndexConstituents --identity tmx::PriceTargetConsensus --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+re-signing: dropped 8 earlier review(s) for the addressed identities
+REVIEW_SIGNED: tmx::CompanyFilings
+REVIEW_SIGNED: tmx::EquityHistorical
+REVIEW_SIGNED: tmx::EquityInfo
+REVIEW_SIGNED: tmx::EquityQuote
+REVIEW_SIGNED: tmx::EquitySearch
+REVIEW_SIGNED: tmx::HistoricalDividends
+REVIEW_SIGNED: tmx::IndexConstituents
+REVIEW_SIGNED: tmx::PriceTargetConsensus
+recorder_exit=0 signed=8 refused=0 reviews_total=8 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/tmx/claims.reviewed.json
+recorder_exit=0

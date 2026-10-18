@@ -1,0 +1,142 @@
+wave-31 step 0 -- what does plane 2 read, and along which axis?
+argv: PYTHONPATH= /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-plane2-face-20261018/probes/plane2_dev_done_axis_census.py
+repo_root=/Users/yunjinqi/Documents/new_projects/opendata judge=scripts/quality/ac2_case_probe.py report=docs/evidence/C101/judge/claims.merged.report.json carrier_of_action_map=docs/evidence/C130/plane1-action-map-rebase-20261018/runs/wave30-step5a-residue_axis_census_finalgen.txt
+0_ac2_10_verbatim (the repo's own reading, unedited):
+0  contract_test_files=test_cboe_engine_provider.py,test_congress_gov_engine_provider.py,test_ecb_reference_registration.py,test_engine_contract_fixture_arms.py,test_engine_null_sentinel.py,test_engine_row_expansion_spec.py,test_engine_row_filters.py,test_engine_row_order.py,test_engine_serialised_param_spec.py,test_engine_value_map_and_composite_path.py,test_engine_value_transform.py,test_federal_reserve_domains.py,test_federal_reserve_obfr_spec.py,test_federal_reserve_rate_specs.py,test_intrinio_engine_provider.py,test_intrinio_insider_trading_spec.py,test_intrinio_not_declarable.py,test_model_capability_census.py,test_oecd_engine_provider.py,test_provider_catalog.py,test_provider_engine_contract.py,test_provider_engine_decoders.py,test_provider_federal_reserve.py,test_provider_model_contracts.py,test_sec_engine_provider.py
+0  contract_test_functions=606
+0  dev_done=17
+0  dev_done_label=5
+0  e2e_marker_declared=True
+0  engine_declared_rows=17
+0  gate_live_confirmation=True
+0  in_progress=13
+0  label_without_witness=0
+0  label_without_witness_ids=-
+0  ledger_rows=350
+0  live_verification_run=0
+0  not_run=332
+0  obb2_task_ids=350
+0  state=gap reason=failed: all 350 are DEV_DONE with an executed witness; no row left at NOT_RUN
+A_declared_population count=17 of=350 providers=6 histogram={'cboe': 3, 'econdb': 1, 'federal_reserve': 6, 'intrinio': 5, 'tiingo': 1, 'tradingeconomics': 1}
+A  declared cboe::AvailableIndices
+A  declared cboe::IndexConstituents
+A  declared cboe::IndexSearch
+A  declared econdb::AvailableIndicators
+A  declared federal_reserve::FederalFundsRate
+A  declared federal_reserve::MoneyMeasures
+A  declared federal_reserve::OvernightBankFundingRate
+A  declared federal_reserve::SOFR
+A  declared federal_reserve::SvenssonYieldCurve
+A  declared federal_reserve::TreasuryRates
+A  declared intrinio::CalendarIpo
+A  declared intrinio::CurrencyPairs
+A  declared intrinio::EquitySearch
+A  declared intrinio::HistoricalDividends
+A  declared intrinio::InsiderTrading
+A  declared tiingo::CryptoHistorical
+A  declared tradingeconomics::EconomicCalendar
+B_face_relation suite_keys=202 model_shaped=25 case_label_keys=177 positive=21 refusal=21 both=21
+B  declared=17 declared_without_face=0 [] model_shaped_not_declared=['probe::DecoderCsv', 'probe::DecoderPipe', 'probe::DecoderTsv', 'probe::DecoderZip', 'probe::ProbeCursorRows', 'probe::ProbeOffsetPath', 'probe::ProbePagedTotal', 'probe::ProbeStaticHeaders']
+B  model_shaped_without_both_faces=['probe::DecoderCsv', 'probe::DecoderPipe', 'probe::DecoderTsv', 'probe::DecoderZip'] identity model_shaped=25 = declared 17 + probe_rows 8
+C_cross_plane_join identities=350 accepted=291 residue=59 declared=17 2x2={'accepted_declared': 17, 'accepted_not_declared': 274, 'residue_declared': 0, 'residue_not_declared': 59} declared_outside_identity_set=0  status_counts={'INCOMPLETE': 22, 'OFFLINE_ACCEPTED': 291, 'UNREVIEWED': 37} identity_set=5168e1e723999312
+C  provider alpha_vantage rows=3 accepted=3 declared=0
+C  provider benzinga rows=4 accepted=4 declared=0
+C  provider biztoc rows=1 accepted=0 declared=0
+C  provider bls rows=2 accepted=2 declared=0
+C  provider cboe rows=11 accepted=9 declared=3
+C  provider cftc rows=2 accepted=2 declared=0
+C  provider congress_gov rows=8 accepted=8 declared=0
+C  provider deribit rows=5 accepted=5 declared=0
+C  provider ecb rows=3 accepted=3 declared=0
+C  provider econdb rows=8 accepted=6 declared=1
+C  provider eia rows=2 accepted=2 declared=0
+C  provider famafrench rows=6 accepted=6 declared=0
+C  provider federal_reserve rows=13 accepted=13 declared=6
+C  provider finra rows=2 accepted=2 declared=0
+C  provider finviz rows=7 accepted=7 declared=0
+C  provider fmp rows=69 accepted=69 declared=0
+C  provider fred rows=36 accepted=36 declared=0
+C  provider government_us rows=6 accepted=5 declared=0
+C  provider imf rows=8 accepted=8 declared=0
+C  provider intrinio rows=38 accepted=37 declared=5
+C  provider multpl rows=1 accepted=1 declared=0
+C  provider nasdaq rows=9 accepted=9 declared=0
+C  provider oecd rows=9 accepted=9 declared=0
+C  provider sec rows=24 accepted=24 declared=0
+C  provider seeking_alpha rows=3 accepted=0 declared=0
+C  provider stockgrid rows=1 accepted=0 declared=0
+C  provider tiingo rows=7 accepted=7 declared=1
+C  provider tmx rows=24 accepted=8 declared=0
+C  provider tradier rows=5 accepted=5 declared=0
+C  provider tradingeconomics rows=1 accepted=1 declared=1
+C  provider wsj rows=3 accepted=0 declared=0
+C  provider yfinance rows=29 accepted=0 declared=0
+D_ledger_reconcile rows=350 status_histogram={'DEV_DONE': 5, 'IN_PROGRESS': 13, 'NOT_RUN': 332} witnessed=17 label_without_witness=0 declared=17 declared_and_labelled=5 declared_not_labelled=12
+D  declared_but_unlabelled econdb::AvailableIndicators status=NOT_RUN task=OBB2-econdb-AvailableIndicators
+D  declared_but_unlabelled federal_reserve::FederalFundsRate status=NOT_RUN task=OBB2-federal_reserve-FederalFundsRate
+D  declared_but_unlabelled federal_reserve::OvernightBankFundingRate status=NOT_RUN task=OBB2-federal_reserve-OvernightBankFundingRate
+D  declared_but_unlabelled federal_reserve::SOFR status=NOT_RUN task=OBB2-federal_reserve-SOFR
+D  declared_but_unlabelled federal_reserve::SvenssonYieldCurve status=NOT_RUN task=OBB2-federal_reserve-SvenssonYieldCurve
+D  declared_but_unlabelled intrinio::CalendarIpo status=NOT_RUN task=OBB2-intrinio-CalendarIpo
+D  declared_but_unlabelled intrinio::CurrencyPairs status=NOT_RUN task=OBB2-intrinio-CurrencyPairs
+D  declared_but_unlabelled intrinio::EquitySearch status=NOT_RUN task=OBB2-intrinio-EquitySearch
+D  declared_but_unlabelled intrinio::HistoricalDividends status=NOT_RUN task=OBB2-intrinio-HistoricalDividends
+D  declared_but_unlabelled intrinio::InsiderTrading status=NOT_RUN task=OBB2-intrinio-InsiderTrading
+D  declared_but_unlabelled tiingo::CryptoHistorical status=NOT_RUN task=OBB2-tiingo-CryptoHistorical
+D  declared_but_unlabelled tradingeconomics::EconomicCalendar status=NOT_RUN task=OBB2-tradingeconomics-EconomicCalendar
+D  labelled_not_declared=[] witnessed_task_ids_not_labelled=12
+D2_label_exposition labelled=5 unlabelled=12 columns_compared=27 value_set_differing=13 uniform_split=0 []
+D2  col=task_id labelled_only=['OBB2-cboe-AvailableIndices', 'OBB2-cboe-IndexConstituents', 'OBB2-cboe-IndexSearch', 'OBB2-federal_reserve-MoneyMeasures', 'OBB2-federal_reserve-TreasuryRates'] unlabelled_only=['OBB2-econdb-AvailableIndicators', 'OBB2-federal_reserve-FederalFundsRate', 'OBB2-federal_reserve-OvernightBankFundingRate', 'OBB2-federal_reserve-SOFR', 'OBB2-federal_reserve-SvenssonYieldCurve', 'OBB2-intrinio-CalendarIpo', 'OBB2-intrinio-CurrencyPairs', 'OBB2-intrinio-EquitySearch', 'OBB2-intrinio-HistoricalDividends', 'OBB2-intrinio-InsiderTrading', 'OBB2-tiingo-CryptoHistorical', 'OBB2-tradingeconomics-EconomicCalendar']
+D2  col=provider labelled_only=['cboe'] unlabelled_only=['econdb', 'intrinio', 'tiingo', 'tradingeconomics']
+D2  col=upstream_model labelled_only=['AvailableIndices', 'IndexConstituents', 'IndexSearch', 'MoneyMeasures', 'TreasuryRates'] unlabelled_only=['AvailableIndicators', 'CalendarIpo', 'CryptoHistorical', 'CurrencyPairs', 'EconomicCalendar', 'EquitySearch', 'FederalFundsRate', 'HistoricalDividends', 'InsiderTrading', 'OvernightBankFundingRate', 'SOFR', 'SvenssonYieldCurve']
+D2  col=batch labelled_only=['P2'] unlabelled_only=[]
+D2  col=upstream_shape_file labelled_only=['providers/cboe/openbb_cboe/__init__.py'] unlabelled_only=['providers/econdb/openbb_econdb/__init__.py', 'providers/intrinio/openbb_intrinio/__init__.py', 'providers/tiingo/openbb_tiingo/__init__.py', 'providers/tradingeconomics/openbb_tradingeconomics/__init__.py']
+D2  col=upstream_shape_line labelled_only=['27', '32', '35', '49', '56'] unlabelled_only=['17', '22', '26', '46', '50', '53', '54', '74', '78', '82', '95', '99']
+D2  col=upstream_shape_sha256 labelled_only=['46ea531ed3cbd29b20974d1811a09890c70fc1c71cb1973346c63f24bc57fc7b'] unlabelled_only=['14daac45be8cf5d75b0c0750f9b27f303f5889eb8e622d0f9368592361f1a2bd', '258939bedb1f1415be67043b972bb858229e568f961e9e9177e8c4b2feebdaed', '338b239c044fa6a54dcbb4e9ef63f152c1eea2e5817e511436b4d0e79063be63', 'da2938817dacb112cb27faaa721a7515f439a45cf50687e92ee111b0f60530fe']
+D2  col=phase labelled_only=['2D'] unlabelled_only=['2C']
+D2  col=contract_family_candidate labelled_only=['AvailableIndices', 'IndexConstituents', 'IndexSearch', 'MoneyMeasures', 'TreasuryRates'] unlabelled_only=['AvailableIndicators', 'CalendarIpo', 'CryptoHistorical', 'CurrencyPairs', 'EconomicCalendar', 'EquitySearch', 'FederalFundsRate', 'HistoricalDividends', 'InsiderTrading', 'OvernightBankFundingRate', 'SOFR', 'SvenssonYieldCurve']
+D2  col=rights_review_task_id labelled_only=['RIGHTS2-cboe'] unlabelled_only=['RIGHTS2-econdb', 'RIGHTS2-intrinio', 'RIGHTS2-tiingo', 'RIGHTS2-tradingeconomics']
+D2  col=credential_fields labelled_only=[] unlabelled_only=['api_key', 'token']
+D2  col=key_decision_status labelled_only=[] unlabelled_only=['PENDING_DECISION']
+D2  col=access_decision_ref labelled_only=['ACCESS2-cboe'] unlabelled_only=['ACCESS2-econdb', 'ACCESS2-intrinio', 'ACCESS2-tiingo', 'ACCESS2-tradingeconomics']
+E_action_map parsed_rows=65 implement_missing_model=19 expected=19 carrier_face=residue_axis_census_face residue=65 actions={'add_code_carrying_guard': 13, 'implement_missing_model': 19, 'ledger_ruled
+E  row government_us::TreasuryPrices status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::AvailableIndices status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::BondPrices status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::CalendarEarnings status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::CompanyNews status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EquityGainers status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EtfCountries status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EtfHistorical status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EtfHoldings status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EtfInfo status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EtfSearch status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EtfSectors status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::IndexSectors status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::IndexSnapshots status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::InsiderTrading status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::OptionsChains status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::TreasuryPrices status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row yfinance::AvailableIndices status=UNREVIEWED verdict=UNBOUND seam=SEAM_NEVER_USED module=False provider_declared_today=0
+E  row yfinance::FuturesCurve status=UNREVIEWED verdict=UNBOUND seam=SEAM_NEVER_USED module=False provider_declared_today=0
+E  by_provider={'government_us': 1, 'tmx': 16, 'yfinance': 2} rows_in_a_provider_that_already_declares_something=0 of=19
+F1_drop_declaration victim=cboe::AvailableIndices witnessed 17 -> 16 expected=16 -> True
+F2_zero_refusal_face victim=cboe::AvailableIndices witnessed 17 -> 16 expected=16 -> True
+F3_forge_dev_done_label victim=alpha_vantage::EquityHistorical task=OBB2-alpha_vantage-EquityHistorical label_without_witness 0 -> 1 expected=1 -> True
+F5_forge_explanatory_column labelled=5 differing 13 -> 13 uniform 0 -> 1 ['credential_fields'] columns_compared=27 expected=['credential_fields'] -> True
+F4_restore caches_identical=True witnessed_after=17 baseline=17 -> True
+G_floor contract_test_files=25 functions_in_them=606 suite_executed_for_faces=1(tests/test_provider_model_contracts.py) live_verification_run=0 engine_declared_rows_in_ledger=17
+G  floor: AC2-10 counts a witness only through engine_declared_keys, so a hand-written fetcher passing its own provider suite reads NOT_RUN here; and a live upstream leg needs the exact OPENDATA_ALLOW_LIVE_E2E token, which this wave does not set.
+X_gate every_declaration_has_both_faces -> True
+X_gate dev_done_is_the_declared_both_face_set -> True
+X_gate ledger_rows_are_350 -> True
+X_gate no_dev_done_label_without_witness -> True
+X_gate declaration_splits_labelled_and_unlabelled -> True
+X_gate accepted_plus_residue_is_the_identity_set -> True
+X_gate every_declaration_is_one_of_the_350 -> True
+X_gate action_map_carrier_still_the_wave30_final_generation -> True
+X_gate junit_key_split_is_exact -> True
+X_gate no_ledger_column_explains_the_dev_done_label -> True
+plane2_axis_census_face arms=15 arms_passed=15 arms_failed=0 declared=17 dev_done=17 dev_done_label=5 label_without_witness=0 accepted_declared=17 label_columns_differing=13 label_uniform_split=0 missing_model_rows=19 rows_in_declaring_provider=0 PASS=True
+plane2_axis_census_exit=0
+carrier_written bytes=14079 lines=141

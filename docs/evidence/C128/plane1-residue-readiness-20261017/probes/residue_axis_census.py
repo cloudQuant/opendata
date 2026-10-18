@@ -31,7 +31,10 @@ written, which is why the earlier ``rebind_fetcher`` label for them was wrong.
 Arms, all eight of which can fail:
 
 ``A_landed_positive`` / ``B_landed_negative``
-    the wave-25 controls still read trippable and non-trippable through the imported measurer.
+    the wave-25 controls still read trippable and non-trippable through the imported measurer, and
+    the negative one must still be a member of this census's own ``residue`` -- wave-31 step 5
+    consumed its control by getting it accepted, and an accepted row reads non-trippable while
+    visiting no bucket here.
 ``C_population_identity``
     ``len(residue) == report_rows - accepted == nested_sum`` and the identity set matches the landed
     face.
@@ -276,8 +279,12 @@ def main() -> int:
     print(f"A_landed_positive controls={len(positive)} PASS={arm_a}")
 
     negative = axes._row(axes.CONTROL_NEGATIVE, judged.get(axes.CONTROL_NEGATIVE, "?"))
-    arm_b = negative["verdict"] not in axes.TRIPPABLE
-    print(f"B_landed_negative {axes.CONTROL_NEGATIVE} verdict={negative['verdict']} PASS={arm_b}")
+    neg_is_residue = axes.CONTROL_NEGATIVE in residue
+    arm_b = negative["verdict"] not in axes.TRIPPABLE and neg_is_residue
+    print(
+        f"B_landed_negative {axes.CONTROL_NEGATIVE} verdict={negative['verdict']} "
+        f"is_residue={neg_is_residue} PASS={arm_b}"
+    )
 
     arm_c = (
         len(residue)

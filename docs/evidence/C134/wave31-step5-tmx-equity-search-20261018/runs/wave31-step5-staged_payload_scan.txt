@@ -1,0 +1,24 @@
+wave-31 step 5 -- credential pre-scan over the staged index payload: shipped config, every allowlist table removed, and the built-in ruleset, plus a runtime-planted fake key that must move the count from 0 to 1
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C134/wave31-step5-tmx-equity-search-20261018/probes/staged_payload_scan.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+TOOL gitleaks=/opt/homebrew/bin/gitleaks version=8.30.1 repo_config_present=True
+CODE fetchers.py index=7b072d074d8d53ba worktree=7b072d074d8d53ba index_exit=0 same=True
+CODE tmx.py index=f0fdc863033b9c6f worktree=f0fdc863033b9c6f index_exit=0 same=True
+CODE incomplete_row_guard_check.py index=b2a69d4d729057f2 worktree=b2a69d4d729057f2 index_exit=0 same=True
+CODE residue_axis_census.py index=66c255e4bba1e565 worktree=66c255e4bba1e565 index_exit=0 same=True
+CODE w31s5_run_chain.py index=a01998a341356f22 worktree=a01998a341356f22 index_exit=0 same=True
+CODE consumed_control_rearm.py index=2bf86996bb0c494e worktree=2bf86996bb0c494e index_exit=0 same=True
+CODE landed_bytes_face.py index=cca02f68769acd67 worktree=cca02f68769acd67 index_exit=0 same=True
+CODE c131_carrier_restore.py index=b9c6e39267bbff2b worktree=b9c6e39267bbff2b index_exit=0 same=True
+CODE staged_payload_scan.py index=5662c4a76b20ce7b worktree=5662c4a76b20ce7b index_exit=0 same=True
+A_staged_roster count=111 covers_code=True missing=[]
+B_blobs_from_index copied=111 of=111 reading=the scan read index bytes, so a worktree-only edit cannot hide behind it
+C_scan_shipped findings=0 exit=0 config=.gitleaks.toml (as shipped, allowlists active)
+D_scan_allowlist_free findings=0 exit=0 raw_lines=185 stripped_lines=15 lines_dropped=167 rules_kept=2 config_actually_changed=True
+E_scan_builtin findings=0 exit=0
+F_planted_control findings=1 files=['POSITIVE_CONTROL.txt'] reading=the argv that reads 0 over the payload must read 1 once a fake key is planted
+G_planted_literal_not_printed leaked=False reading=no line of this carrier can carry the planted token
+H_self_lint codes={} n_codes=0 bytes=13930
+I_restored_carrier_absent_from_payload in_roster=False head=022bd5186aa69c81 head_exit=0 worktree=022bd5186aa69c81 worktree_is_head=True reading=C131 step 0's carrier was aged by the plane-2 leg and put back, so it owes this commit no bytes and the scan's roster must not contain it
+prescan_face=arms=10 arms_passed=10 gates={'A_roster_nonempty_and_covers_code': True, 'B_copied_equals_staged': True, 'C_shipped_clean': True, 'D_strip_actually_changed_config': True, 'D_allowlist_free_clean': True, 'E_builtin_clean': True, 'F_control_bit': True, 'G_literal_not_carried': True, 'H_probe_itself_rule_clean': True, 'I_restored_carrier_clean_and_absent': True} all_pass=True
+staged_payload_scan_exit=0

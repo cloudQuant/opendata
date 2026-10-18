@@ -215,6 +215,7 @@ class EquitySearchFetcher(_TypedFetcher[EquitySearchQuery]):
     """Search TMX Money companies by keyword."""
 
     canonical_model: ClassVar[str | None] = "EquitySearch"
+    row_model: ClassVar[type[TmxEquitySearch]] = TmxEquitySearch
     capability: ClassVar[Capability] = _capability("tmx_equity_search", "snapshot", "EquitySearch")
 
     def transform_query(self, **kwargs: object) -> EquitySearchQuery:

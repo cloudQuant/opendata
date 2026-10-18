@@ -1,0 +1,11 @@
+wave-31 step 5 -- plane-1 judge over the 350 pinned identities
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_model_evidence.py --inventory docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv --claims docs/evidence/C101/claims.merged.json --output docs/evidence/C101/judge/claims.merged.report.json   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+wrote docs/evidence/C101/judge/claims.merged.report.json and docs/evidence/C101/judge/claims.merged.report.md: 350 identities, 291 offline accepted
+post_chain_retake identity_set=5168e1e723999312 identity_count=350 offline_acceptance_count=291 claim_count=1565 primary_review_count=291 status_counts={'INCOMPLETE': 22, 'OFFLINE_ACCEPTED': 291, 'UNREVIEWED': 37}
+post_chain_retake tmx_INCOMPLETE=16 ['AvailableIndices', 'BondPrices', 'CalendarEarnings', 'CompanyNews', 'EquityGainers', 'EtfCountries', 'EtfHistorical', 'EtfHoldings', 'EtfInfo', 'EtfSearch', 'EtfSectors', 'IndexSectors', 'IndexSnapshots', 'InsiderTrading', 'OptionsChains', 'TreasuryPrices']
+post_chain_retake tmx_OFFLINE_ACCEPTED=8 ['CompanyFilings', 'EquityHistorical', 'EquityInfo', 'EquityQuote', 'EquitySearch', 'HistoricalDividends', 'IndexConstituents', 'PriceTargetConsensus']
+post_chain_retake tmx_rows_total=24
+post_chain_retake this_steps_row_accepted=True
+post_chain_retake this_steps_row_judged=OFFLINE_ACCEPTED
+judge_exit=0

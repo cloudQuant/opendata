@@ -1,0 +1,18 @@
+wave-31 step 5 -- the two landed files and one untouched control, priced by disk bytes, by git show HEAD bytes, and by the after_sha256 the producer wrote into the shard
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C134/wave31-step5-tmx-equity-search-20261018/probes/landed_bytes_face.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+LAND opendata/data/providers/tmx/models/fetchers.py disk=7b072d074d8d53ba head=efa3e5bb4cf80d3e head_exit=0 bytes=24956 pinned=7b072d074d8d53ba pin_matches_disk=True moved=True
+LAND scripts/quality/iter2_witnesses/tmx.py disk=f0fdc863033b9c6f head=bb0ffb640c4a751d head_exit=0 bytes=30650 pinned=f0fdc863033b9c6f pin_matches_disk=True moved=True
+LAND scripts/quality/iter2_claims_producer.py disk=e2fdc57e0b30ee48 head=e2fdc57e0b30ee48 head_exit=0 bytes=18475 pinned=NONE pin_matches_disk=False moved=False
+A_landed_bytes landed=2 denominator_pinned_paths=17 shard=docs/evidence/C101/tmx/claims.json pin_groups=['source', 'contract', 'fixture', 'probe']
+B_all_landed_moved count=2 files=['opendata/data/providers/tmx/models/fetchers.py', 'scripts/quality/iter2_witnesses/tmx.py'] reading=every landed file is its own byte change; none is HEAD's bytes
+C_pin_membership pinned=['opendata/data/providers/tmx/models/fetchers.py', 'scripts/quality/iter2_witnesses/tmx.py'] unpinned=[] reading=an unpinned landed file owes the shard no re-sign; the pinned ones do
+D_pinned_agree_with_disk agreed=2 of=2 disk={fetchers.py:7b072d074d8d53ba, tmx.py:f0fdc863033b9c6f}
+E_denominator this_probe=17 drift_carrier=17 carrier_stale_files=0
+F_carrier_agreement pre_production_pinned_fetchers=ebf50c4dff294794 pre_production_disk_fetchers=7b072d074d8d53ba today_disk=7b072d074d8d53ba rerun_stale_files=0 reading=the fetchers file has not been edited since the producer pinned it
+G_self_lint bytes=12266 codes={} n_codes=0
+H_control_untouched scripts/quality/iter2_claims_producer.py disk=e2fdc57e0b30ee48 head=e2fdc57e0b30ee48 moved=False reading=the moved-predicate reads False for a file this wave did not edit
+I_head_plane_self_consistent pinned_at_head=2 of=2 agree=2 head_pins={fetchers.py:efa3e5bb4cf80d3e, tmx.py:bb0ffb640c4a751d} unpinned_at_head=[] reading=for every landed file HEAD's shard pins, that pin is HEAD's own bytes, so a clean clone needs no re-sign before this wave's edits are applied
+J_intermediate_generation named_by_pre_production_carrier=ebf50c4dff294794 is_head=False is_today=False reading=that digest is the withdrawn-guard generation: the shard on disk when this chain started was produced from the draft landing this wave reverted
+bytes_face=arms=10 arms_passed=10 gates={'A_every_git_show_returned_zero': True, 'B_all_landed_moved': True, 'C_pin_membership_printed': True, 'D_pinned_agree_with_disk': True, 'E_denominator_agrees_with_drift_carrier': True, 'F_carrier_agreement': True, 'G_probe_itself_rule_clean': True, 'H_control_untouched_file': True, 'I_head_plane_self_consistent': True, 'J_intermediate_generation_named': True} all_pass=True
+landed_bytes_face_exit=0

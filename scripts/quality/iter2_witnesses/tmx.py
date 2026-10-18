@@ -358,6 +358,24 @@ def _price_target_consensus_document() -> dict[str, Any]:
     return _document("getCompanyAnalysts", _analysts_payload())
 
 
+def _equity_search_payload() -> list[dict[str, object]]:
+    """Two company rows as TMX's ``findTmxCompaniesByKeywords`` publishes them."""
+    return [
+        {"symbol": "SHOP", "name": "Shopify Inc.", "exchange": "TOR", "instrumentType": "EQUITY"},
+        {
+            "symbol": "SAP",
+            "name": "SAP SE",
+            "exchange": "TOR",
+            "instrumentType": "EQUITY",
+        },
+    ]
+
+
+def _equity_search_document() -> dict[str, Any]:
+    """The company-search reply shaped as TMX's GraphQL envelope."""
+    return _document("findTmxCompaniesByKeywords", _equity_search_payload())
+
+
 CONFIG: Final[dict[str, Any]] = {
     "registration_module": "opendata.data.providers.tmx.provider",
     "allowed_hosts": [_GQL_HOST],
@@ -545,6 +563,43 @@ CONFIG: Final[dict[str, Any]] = {
                 "two rows, so the mapper must refuse a null-keyed member -- a row a consumer "
                 "cannot address -- and de-duplication stays the storage layer's job, not a guard "
                 "this witness could claim"
+            ),
+            "source_files": [
+                "opendata/data/providers/tmx/models/fetchers.py",
+                *_SOURCE_FILES,
+            ],
+            "contract_files": _CONTRACT_FILES,
+        },
+        "EquitySearch": {
+            "fixture_document": _equity_search_document,
+            "client_seam": _SEAM,
+            "query": {"keywords": "shopify"},
+            "tamper": {
+                "op": "drop",
+                "path": [
+                    "responses",
+                    0,
+                    "body",
+                    "data",
+                    "findTmxCompaniesByKeywords",
+                    0,
+                    "symbol",
+                ],
+            },
+            "refusal_class": "TmxProviderError",
+            "refusal_code": "TMX_BAD_ROW",
+            "tamper_reason": (
+                "the search operation selects four columns and _TmxEquitySearchSourceRow declares "
+                "all four without defaults, so removing one key from one row is the tamper that "
+                "prices this mapper's own screen: it refuses TMX_BAD_ROW from _equity_search_rows "
+                "while the second row still validates, so the refusal is about one cell. The cell "
+                "chosen is symbol, and the same probe shows why that is a schema claim rather than "
+                "a natural-key claim: setting symbol to null SERVES two rows (the published "
+                "TmxEquitySearch contract leaves it optional), so this witness prices the reply's "
+                "column set, not the addressability of a hit. A list-shape tamper was this entry's "
+                "first draft and is withdrawn rather than kept as a second arm: client.list_rows "
+                "already refuses a non-list payload with TMX_BAD_ROWS, so that tamper would prove "
+                "the client layer's screen while being read as the mapper's"
             ),
             "source_files": [
                 "opendata/data/providers/tmx/models/fetchers.py",

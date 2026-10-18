@@ -65,9 +65,12 @@ Arms, all six of which can fail:
     ``transform_data`` and so read an accepted row as un-witnessable; that face is kept in
     ``runs/wave26-step0-second-axis.txt`` instead of being edited out.
 ``B_landed_negative``
-    ``CONTROL_NEGATIVE`` must read neither document-trippable verdict. It named
-    ``government_us::WeatherBulletinDownload`` until wave-31 step 3 landed that row; the constant's
-    own comment carries why, and the re-take is ``tmx::EquitySearch``.
+    ``CONTROL_NEGATIVE`` must read neither document-trippable verdict *nor* ``OFFLINE_ACCEPTED``:
+    a control the judge has already accepted is not residue, and the census this arm feeds visits
+    only residue, so the verdict alone cannot certify it. It named
+    ``government_us::WeatherBulletinDownload`` until wave-31 step 3 landed that row, then
+    ``tmx::EquitySearch`` until wave-31 step 5 landed that one; each constant's own comment carries
+    why, and the re-take is ``yfinance::BalanceSheet``.
 ``C_class_scoped``
     for the same control, the class-scoped strict count must be 0 while the provider-package
     screen is > 0, so a per-row ``td`` cannot be the provider screen copied onto a row.
@@ -130,25 +133,31 @@ VERDICTS = (
 )
 TRIPPABLE = ("DOCUMENT_REACHABLE", "DOCUMENT_TRIPPED")
 CONTROLS_POSITIVE = ("government_us::CommodityPsdData", "government_us::CommodityPsdReport")
-# Re-based by wave-31 step 3. The negative control was ``government_us::WeatherBulletinDownload``
-# from the day this probe was written, and wave-31 step 3 landed that row by giving its fetcher the
-# post-response guard it had never had, so the control's own verdict moved into ``TRIPPABLE``. That
-# red is not asserted on trust: it is measured in this generation, over the classifier exactly as it
-# stands, by wave-31 step 3's ``probes/consumed_control_rearm.py`` (evidence root
-# ``docs/evidence/C132/wave31-step3-government-us-weather-bulletin-download-20261018``). Line 6 of
-# its carrier reads the OLD label as ``DOCUMENT_TRIPPED`` with ``old_arm_b_would_pass=False`` and
-# line 7 reads the NEW label as ``NO_CODE_SITE``, so both sides come from one process rather than
-# from a before/after pair across a classifier that also moved. The arm working is the reason for
-# the move, not a bug to suppress: a consumed control has to be re-pointed at a row that still reads
-# non-trippable. Of the 24 ``INCOMPLETE`` rows only two are bound -- ``NO_CODE_SITE`` 1,
-# ``ROW_CLASS_NOT_CONTRACT`` 1 and ``UNBOUND`` 22, the histogram at
-# ``runs/wave31-step3-incomplete_row_guard_check.txt:77`` of this same root -- and of the two bound
-# rows only ``tmx::EquitySearch`` has a class-scoped ``transform_data`` count of 0, so it is the one
-# re-point that keeps arm C's class-versus-package comparison alive. ``FomcDocuments`` would have
-# passed arm B while blanking arm C, and any of the 22 unbound rows would have made arm B vacuous,
-# since an unbound row cannot be tripped by anything. The next landing that consumes this control
+# Re-based by wave-31 step 5 (and, before that, by wave-31 step 3). The negative control was
+# ``government_us::WeatherBulletinDownload`` from the day this probe was written until wave-31 step 3
+# landed it, then ``tmx::EquitySearch`` until wave-31 step 5 landed that row too -- by declaring
+# ``row_model`` and adding a witness entry, with NO inline raise: this wave's first draft added a
+# list-shape guard to ``EquitySearchFetcher.transform_data`` and measured it as dead code, because
+# ``client.list_rows`` already refuses a non-list payload with ``TMX_BAD_ROWS`` before the mapper
+# runs. The landing that consumed the control therefore did not move its verdict at all: the row
+# reads ``NO_CODE_SITE`` today exactly as it did before, and what left is the residue population --
+# it is now ``OFFLINE_ACCEPTED``. That is the finding this comment records, and arm B had to change
+# because of it: as literally written (``verdict not in TRIPPABLE``) it stays green on a control that
+# is no longer residue, so it would certify a row the census never visits. Arm B now also refuses an
+# ``OFFLINE_ACCEPTED`` label, and wave-31 step 5's ``probes/consumed_control_rearm.py`` (evidence root
+# ``docs/evidence/C134/wave31-step5-tmx-equity-search-20261018``) falsifies that clause rather than
+# asserting it: it feeds the consumed label through the same predicate and must read it as refused.
+# The re-point itself is measured over this generation's 59-row residue (INCOMPLETE 22, all
+# ``UNBOUND`` with ``convertible=0``, plus UNREVIEWED 37). Non-trippable and bound there are ten
+# ``NO_CODE_SITE`` rows, ``yfinance::EquityScreener`` (``QUERY_ONLY``) and
+# ``yfinance::KeyMetrics`` (``ROW_CLASS_NOT_CONTRACT``); ``KeyMetrics`` would pass arm B while
+# blanking arm C because its class already holds three ``transform_data`` raises, and the residue's
+# 22 ``UNBOUND`` ``INCOMPLETE`` rows -- 16 of them in tmx -- would make arm B vacuous, since an
+# unbound row cannot be tripped by anything. So the control stays on a bound ``NO_CODE_SITE`` row, the
+# lexicographically first of the ten, and arm C survives because the yfinance package screen reports
+# 30 ``transform_data`` sites against that class's 0. The next landing that consumes this control
 # should re-base it the same way and keep the delta in its own face.
-CONTROL_NEGATIVE = "tmx::EquitySearch"
+CONTROL_NEGATIVE = "yfinance::BalanceSheet"
 TRANSPORT_ATTRS = ("get_bytes", "get_json", "get_text", "download", "request", "post", "get")
 CLIENT_MODULE_SEGMENT = "_client"
 SEAM_FACTORY = "get_shared_http_client"
@@ -547,11 +556,14 @@ def main() -> int:
     neg = _row(CONTROL_NEGATIVE, judged.get(CONTROL_NEGATIVE, "?"))
     neg_provider = CONTROL_NEGATIVE.partition("::")[0]
     screen = screens.setdefault(neg_provider, _provider_screen(neg_provider))
-    arm_b = neg["verdict"] not in TRIPPABLE
+    neg_verdict_ok = neg["verdict"] not in TRIPPABLE
+    neg_is_residue = judged.get(CONTROL_NEGATIVE) != "OFFLINE_ACCEPTED"
+    arm_b = neg_verdict_ok and neg_is_residue
     print(
         f"B_landed_negative {CONTROL_NEGATIVE} verdict={neg['verdict']} "
         f"class_counts={neg.get('counts')} raises={neg.get('raises')} "
-        f"code_raises={neg.get('code_raises')} PASS={arm_b}"
+        f"code_raises={neg.get('code_raises')} judge_status={judged.get(CONTROL_NEGATIVE)} "
+        f"verdict_ok={neg_verdict_ok} is_residue={neg_is_residue} PASS={arm_b}"
     )
     _print_row(neg, screen)
 

@@ -1,0 +1,14 @@
+wave-31 step 5 -- the re-arm face: the old control consumed by acceptance while its verdict never moved, the new control re-based onto yfinance::BalanceSheet, the withdrawn guard proved dead code, and the tamper proved to bite against a set-null control that serves
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C134/wave31-step5-tmx-equity-search-20261018/probes/consumed_control_rearm.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C134/wave31-step5-tmx-equity-search-20261018/probes/consumed_control_rearm.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+instrument=docs/evidence/C128/plane1-residue-readiness-20261017/probes/incomplete_row_guard_check.py exists=True
+POPULATION report_rows=350 judged=350 summary={'claim_count': 1565, 'identity_count': 350, 'offline_acceptance_count': 291, 'primary_review_count': 291, 'status_counts': {'INCOMPLETE': 22, 'OFFLINE_ACCEPTED': 291, 'UNREVIEWED': 37}} status_counts={'INCOMPLETE': 22, 'OFFLINE_ACCEPTED': 291, 'UNREVIEWED': 37} identity_set=5168e1e723999312 old_in_residue=False new_in_residue=True
+A_consumed_control tmx::EquitySearch verdict=NO_CODE_SITE judge_status=OFFLINE_ACCEPTED class_counts={} code_raises=0 raises=7 verdict_only_arm_b=True membership_arm_b=False new_clause_refuses_old_label=True PASS=True
+B_rearmed_control yfinance::BalanceSheet verdict=NO_CODE_SITE bound=True judge_status=UNREVIEWED class_td=0 package_td=30 in_residue=True PASS=True
+C_no_dead_code inline_raise_lines=[] via_mapper=(TmxProviderError,TMX_BAD_ROWS,opendata.data.providers.tmx.models.client) via_client=(TmxProviderError,TMX_BAD_ROWS) PASS=True
+D_tamper_bites declared=(TmxProviderError,TMX_BAD_ROW) op=drop drop_symbol=('TmxProviderError', 'TMX_BAD_ROW', 'opendata.data.providers.tmx.models.fetchers') set_null_symbol=('SERVED', 'rows=2', '') pristine_after=('SERVED', 'rows=2', '') PASS=True
+CONTROLS_DIFF old=tmx::EquitySearch:NO_CODE_SITE/OFFLINE_ACCEPTED new=yfinance::BalanceSheet:NO_CODE_SITE/UNREVIEWED verdict_moved=False
+rearm_face arms=4 arms_passed=4 gates={'instrument_on_disk': True, 'population_identity': True, 'identity_set_is_pin': True, 'labels_differ': True, 'old_label_absent_from_residue': True, 'new_label_present_in_residue': True, 'old_verdict_in_enum': True, 'new_verdict_in_enum': True, 'control_constant_is_new_label': True} all_pass=True
+consumed_control_rearm_exit=0
+consumed_control_rearm_exit=0
