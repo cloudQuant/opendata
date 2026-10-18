@@ -18,6 +18,10 @@ NWS_DOWNLOAD_HOSTS = frozenset(
     {"api.weather.gov", "weather.gov", "www.weather.gov", "forecast.weather.gov"}
 )
 MAX_DOCUMENTS = 10
+#: The media types the fetcher's own ``Accept`` header asks NWS for. ``_client.get_bytes`` strips
+#: parameters and lowercases, and an archive that announces nothing arrives as the empty type, so
+#: that is the fourth member rather than a permissive hole.
+DOCUMENT_MEDIA_TYPES = frozenset({"application/octet-stream", "application/pdf", "text/plain", ""})
 
 
 class WeatherBulletinDownloadQuery(QueryParams):
@@ -89,6 +93,7 @@ class WeatherBulletinDownloadFetcher(
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "WeatherBulletinDownload"
+    row_model: ClassVar[type[WeatherBulletinDownload]] = WeatherBulletinDownload
     capability: ClassVar[Capability] = Capability(
         asset_class="weather",
         domain="government_us_weather_bulletin_download",
@@ -106,7 +111,12 @@ class WeatherBulletinDownloadFetcher(
     def extract_data(
         self, params: WeatherBulletinDownloadQuery, ctx: FetchContext
     ) -> list[tuple[bytes, str, str]]:
-        """Retrieve each fixed official URL once; redirects are rejected."""
+        """Retrieve each fixed official URL once; redirects are rejected.
+
+        A zero-length answer is not a bulletin and an interstitial page is not one either, so both
+        are refused here, before any of the bytes reach ``transform_data`` to be base64-encoded into
+        a ``content`` column that would look well-formed either way.
+        """
         urls = params.urls
         if not _is_validated_urls(urls):
             raise ValueError("NWS URLs must be validated before fetching")
@@ -121,6 +131,10 @@ class WeatherBulletinDownloadFetcher(
                 allowed_hosts=NWS_DOWNLOAD_HOSTS,
                 maximum_bytes=_client.DOCUMENT_RESPONSE_LIMIT,
             )
+            if not body:
+                raise _client.GovernmentUSProviderError("NWS_DOCUMENT_EMPTY_BODY")
+            if content_type not in DOCUMENT_MEDIA_TYPES:
+                raise _client.GovernmentUSProviderError("NWS_DOCUMENT_BAD_CONTENT_TYPE")
             results.append((body, content_type or "application/octet-stream", url))
         return results
 

@@ -2,7 +2,7 @@
 
 GovernmentUS owns its transport: every leg of the fetchers witnessed here goes through
 :mod:`opendata.data.providers.government_us.models._client` -- :func:`get_json` for the JSON pages,
-:func:`get_bytes` for the circular -- and each of those reads the module attribute
+:func:`get_bytes` for the two document rows -- and each of those reads the module attribute
 ``get_shared_http_client`` on call. Each witness therefore installs the repository's fake governed
 client at that one attribute
 (:mod:`iter2_claims_probe_runner._client_seam`), so the seam hands the shipped fetcher the bytes a
@@ -11,41 +11,77 @@ whole process -- and the URL allowlist, the HTML/bad-JSON guards, the page-size 
 checks in ``array_rows`` and the row contracts under test are the shipped ones.
 
 The two rows that came first here are transcribed character for character from the two receipt
-fixtures this provider's evidence root retains (``docs/evidence/C100/gov-finra/fixtures/``:
+fixtures kept beside this provider's history (``docs/evidence/C100/gov-finra/fixtures/``:
 ``treasury_auctions.json``, 446 bytes, sha256 ``67a7d1fc94aa6fb2``; ``nws_bulletin.json``,
-332 bytes, sha256 ``b8a46ff9062a2620``). They are **hand-authored fixture bodies, not live
+332 bytes, sha256 ``b8a46ff9062a2620``) -- a root ``.gitignore`` covers, so these bodies are inline
+here and are never read from there. They are **hand-authored fixture bodies, not live
 captures** -- the bulletin id still carries its ``TEST-`` marker -- so they prove the mapping, the
 JSON:API unwrap and the gates, not that FiscalData or the NWS API holds these values today. Each is
 published as the source publishes it: FiscalData's ``data`` array plus its ``meta.total-count``
 string, and one NWS JSON-LD Product object with both ``id`` and ``@id`` present.
 
-The two PSD bodies are synthetic in the same way and carry no retained fixture behind them, because
-this provider's evidence root holds none for FAS. They are shaped as FAS publishes: the data row and
-its four lookup pages are bare JSON arrays (the shape ``array_rows`` accepts without a ``data``
-envelope), country/region/commodity/attribute resolved by exactly one row each, and the circular is
-a byte string whose first six bytes are the PDF magic, carried through the seam as ``body_b64``
-because ``get_bytes`` hands back bytes, not text. They prove the lookup resolution, the
-region-versus-country projection, the typed ``value`` guard and the magic-byte gate -- not any USDA
-number.
+The two PSD bodies are synthetic in the same way, and they transcribe neither of the two FAS
+receipts that root does hold on this machine: ``usda_psd.json`` (1,237 bytes, sha256
+``55db6e5c6e8e2911``) keeps its lookups and its data rows as keys of one merged object and codes
+them in a stub namespace (``CommodityCode`` 1, ``CountryCode`` ``BR``) rather than the mutually
+consistent numeric codes this witness carries, and ``usda_report.pdf`` is a 51-byte magic-only
+stub (sha256 ``904636248025ad20``). Both bodies here follow the shape the fetcher reads off the
+wire: the data row and its four lookup pages are bare JSON arrays (the shape ``array_rows``
+accepts without a ``data`` envelope), country/region/commodity/attribute resolved by exactly one
+row each, and the circular is a byte string whose first six bytes are the PDF magic, carried
+through the seam as ``body_b64`` because ``get_bytes`` hands back bytes, not text. They prove
+the lookup resolution, the region-versus-country projection, the typed ``value`` guard and the
+magic-byte gate -- not any USDA number. An earlier revision of this paragraph asserted that the
+evidence root holds no FAS receipt at all, which the two filenames above refute; the claim that
+survives is the narrower one, that these bodies are not transcriptions of them.
+
+The bulletin document is carried as ``body_b64`` for the same reason the circular is:
+``get_bytes`` returns bytes. Its payload is a transcription, byte for byte, of the third NWS
+receipt the machine holds -- ``docs/evidence/C100/gov-finra/fixtures/nws_document.txt``, 33
+bytes, sha256 ``e81fd18a79047014``, measured equal to the ``productText`` of
+``nws_bulletin.json`` above (``TEST`` marker included) and, once base64-encoded, equal to the
+literal ``tests/test_government_us_iter2.py:551`` asserts this fetcher returns. That fixture root
+is gitignored (``.gitignore``'s ``/docs/evidence/C100/**`` rule), and the provider test opens it on
+lines 59, 258 and 522 with no skip marker anywhere in the file, so seven of its nine tests --
+including the download test just cited -- do not run from a clean clone. This module reads nothing
+at all: the 33 bytes are inline as ``_BULLETIN_TEXT_BYTES``, so the landed row rests on the clone
+even where the provider's own suite does not. The census is the wave's
+``probes/c100_fixture_dependency_census.py``. The URL this document is served under is not a
+receipt: the query carries one official ``api.weather.gov`` product URL composed from that fixture
+id, and ``text/plain`` is the type the fetcher's own ``Accept`` header asks for. So the row proves
+the media-type gate and the base64 document mapping over bytes this file carries, and -- like the
+four rows ahead of it, and for the same reason -- it does not prove what the NWS archive serves
+today.
 
 The refusals are the provider's own stable codes (``GovernmentUSProviderError``, which carries
-``code`` and ``status``). All four are deliberately code-only, and all four carry ``status=None``
+``code`` and ``status``). All five are deliberately code-only, and all five carry ``status=None``
 because each is a post-response judgement about a body the source did serve: a row whose ``cusip``
 is not the cusip that was filtered for, a product with no ``issuanceTime`` at all, a ``Value`` cell
-that is neither a number nor null, and a circular whose first bytes are a gateway page's doctype
-opener. None of the four reaches a contract column the witness could attribute a cell to, so no cell
-is pinned.
+that is neither a number nor null, a circular whose first bytes are a gateway page's doctype opener,
+and a bulletin document announced as ``text/html``. None of the five reaches a contract column the
+witness could attribute a cell to, so no cell is pinned.
 
-What this module does not cover: ``WeatherBulletinDownload`` declares no ``row_model`` and has no
-post-response guard at all. Measured against ``models/weather_bulletin_download.py``, its nine
-``raise`` sites (:33, :36, :51, :54, :63, :70, :75, :77, :112) are all bare ``ValueError`` with an
-``NWS_*`` message, and every one of them is a query/URL-shape refusal that fires before transport.
-The shipped counterfact mechanism tampers the *fixture document* (``tamper.path`` always starts at
-``responses``), so no tamper can reach a refusal that the query itself must trip; a witness for that
-row would need a query-tamper op the runner does not have. ``TreasuryPrices`` is reserved and binds
-no fetcher at all. Page truncation (``TREASURY_AUCTION_BAD_PAGE``,
-``TREASURY_AUCTION_PAGE_REQUIRED``) is unexercised because one declared page of one row cannot reach
-either bound.
+What this module does not cover: ``TreasuryPrices`` is reserved and binds no fetcher at all. Page
+truncation (``TREASURY_AUCTION_BAD_PAGE``, ``TREASURY_AUCTION_PAGE_REQUIRED``) is unexercised
+because one declared page of one row cannot reach either bound. ``NWS_DOCUMENT_EMPTY_BODY``
+(``models/weather_bulletin_download.py:134-135``) is the download row's other post-response
+guard and is not the tamper published here because the runner takes exactly one ``tamper`` per
+row (``entry["tamper"]`` is a single dict with a single ``path``), and the content-type guard is
+the one that prices the failure an archive actually produces; the empty-body arm is measured in
+the wave's prevalidation probe instead.
+
+Correction on the record: an earlier revision of this docstring also excluded
+``WeatherBulletinDownload``, stating that it declared no ``row_model`` and had no post-response
+guard at all, that all of its ``raise`` sites were bare ``ValueError`` with an ``NWS_*`` message
+fired before transport, and that the shipped counterfact could therefore never reach it. That
+was a faithful reading of the module as it stood then and is not a reading of the module as it
+stands: the row was landed by wave-31 step 3, which declared the fetcher's
+``row_model`` as ``WeatherBulletinDownload`` (``models/weather_bulletin_download.py:96``) and added
+the two guards at :135 and :137, both after the governed ``get_bytes`` call at :125. The claim that
+survived is the one about the mechanism, not the one about the row: the query-shape refusals (:37,
+:40, :55, :58, :67, :74, :79, :81, and the pre-transport URL narrowing at :122) are still bare
+``ValueError`` and still fire before any seam is consulted, so a ``tamper.path`` that starts at
+``responses`` cannot reach any of them, and none of them is witnessed.
 
 Correction on the record: an earlier revision of this docstring also excluded the two PSD rows,
 reasoning that they refuse with ``USDA_FAS_API_KEY_MISSING_OR_INVALID`` before any transport, so a
@@ -248,6 +284,28 @@ def _report_document() -> dict[str, Any]:
     }
 
 
+#: The document this row downloads: the same retained bulletin text the ``WeatherBulletin`` row
+#: witnesses, served here as the bytes behind the product's own URL rather than as a JSON-LD object.
+_BULLETIN_TEXT_BYTES: Final[bytes] = _NWS_BODY["productText"].encode("utf-8")
+
+#: The URL shape the query validator accepts for this host: HTTPS, an allowlisted host, no query
+#: string and no fragment. The path carries the product id the retained fixture publishes.
+_BULLETIN_DOC_URL: Final[str] = f"/products/{_NWS_BODY['id']}/text"
+
+
+def _download_document() -> dict[str, Any]:
+    """The document bytes the offline seam answers the bulletin download request with."""
+    return {
+        "responses": [
+            {
+                "url_contains": _BULLETIN_DOC_URL,
+                "content_type": "text/plain",
+                "body_b64": base64.b64encode(_BULLETIN_TEXT_BYTES).decode("ascii"),
+            }
+        ]
+    }
+
+
 CONFIG: Final[dict[str, Any]] = {
     "registration_module": "opendata.data.providers.government_us.registration",
     "allowed_hosts": [
@@ -354,6 +412,32 @@ CONFIG: Final[dict[str, Any]] = {
             ),
             "source_files": [
                 "opendata/data/providers/government_us/models/commodity_psd_report.py",
+                *_SOURCE_FILES,
+            ],
+            "contract_files": _CONTRACT_FILES,
+        },
+        "WeatherBulletinDownload": {
+            "fixture_document": _download_document,
+            "client_seam": _SEAM,
+            "query": {"urls": f"https://api.weather.gov{_BULLETIN_DOC_URL}"},
+            "tamper": {
+                "op": "set",
+                "path": ["responses", 0, "content_type"],
+                "value": "text/html",
+            },
+            "refusal_class": "GovernmentUSProviderError",
+            "refusal_code": "NWS_DOCUMENT_BAD_CONTENT_TYPE",
+            "tamper_reason": (
+                "the tampered answer keeps the same URL, the same byte length and a body that "
+                "base64-encodes into a perfectly well-shaped content string, but it announces "
+                "text/html, which is what an interstitial or gateway page announces and is none of "
+                "the three media types this fetcher's own Accept header asked for. The published "
+                "row would carry that announced type verbatim in data_format.media_type, so "
+                "WeatherBulletinDownloadFetcher.extract_data must refuse the answer rather than "
+                "ship a document the contract claims is HTML"
+            ),
+            "source_files": [
+                "opendata/data/providers/government_us/models/weather_bulletin_download.py",
                 *_SOURCE_FILES,
             ],
             "contract_files": _CONTRACT_FILES,

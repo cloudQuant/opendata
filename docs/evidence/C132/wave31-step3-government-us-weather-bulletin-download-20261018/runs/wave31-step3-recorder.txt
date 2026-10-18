@@ -1,0 +1,11 @@
+wave-31 step 3 -- primary reviews over the five witnessed government_us rows in the regenerated shard
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/government_us/claims.json --output docs/evidence/C101/government_us/claims.reviewed.json --identity government_us::CommodityPsdData --identity government_us::CommodityPsdReport --identity government_us::TreasuryAuctions --identity government_us::WeatherBulletin --identity government_us::WeatherBulletinDownload --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+re-signing: dropped 5 earlier review(s) for the addressed identities
+REVIEW_SIGNED: government_us::CommodityPsdData
+REVIEW_SIGNED: government_us::CommodityPsdReport
+REVIEW_SIGNED: government_us::TreasuryAuctions
+REVIEW_SIGNED: government_us::WeatherBulletin
+REVIEW_SIGNED: government_us::WeatherBulletinDownload
+recorder_exit=0 signed=5 refused=0 reviews_total=5 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/government_us/claims.reviewed.json
+recorder_exit=0

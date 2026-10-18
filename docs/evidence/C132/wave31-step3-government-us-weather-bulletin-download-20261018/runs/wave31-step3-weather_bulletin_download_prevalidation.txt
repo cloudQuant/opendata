@@ -1,0 +1,49 @@
+wave-31 step 3 -- 25 phase legs under a scratch root, plus the five-served, declaration-removed (both shipped readers), media-type-membership, empty-body, multi-url-loop, query-pre-transport, one-cell, tamper-bites, doc-cites and static-versus-runtime arms
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C132/wave31-step3-government-us-weather-bulletin-download-20261018/probes/weather_bulletin_download_prevalidation.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+CREDENTIAL_ENV declared_names=['USDA_FAS_API_KEY'] was_unset=['USDA_FAS_API_KEY'] already_set=[] values_printed=no
+materialized: fixtures=5 root=/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/w31s3-gov-preval-iuecv8v4
+phase: government_us::TreasuryAuctions::implementation exit=0 VERDICT=PASS
+phase: government_us::TreasuryAuctions::direct exit=0 VERDICT=PASS
+phase: government_us::TreasuryAuctions::service exit=0 VERDICT=PASS
+phase: government_us::TreasuryAuctions::contract exit=0 VERDICT=PASS
+phase: government_us::TreasuryAuctions::counterfact exit=0 VERDICT=PASS
+phase: government_us::WeatherBulletin::implementation exit=0 VERDICT=PASS
+phase: government_us::WeatherBulletin::direct exit=0 VERDICT=PASS
+phase: government_us::WeatherBulletin::service exit=0 VERDICT=PASS
+phase: government_us::WeatherBulletin::contract exit=0 VERDICT=PASS
+phase: government_us::WeatherBulletin::counterfact exit=0 VERDICT=PASS
+phase: government_us::CommodityPsdData::implementation exit=0 VERDICT=PASS
+phase: government_us::CommodityPsdData::direct exit=0 VERDICT=PASS
+phase: government_us::CommodityPsdData::service exit=0 VERDICT=PASS
+phase: government_us::CommodityPsdData::contract exit=0 VERDICT=PASS
+phase: government_us::CommodityPsdData::counterfact exit=0 VERDICT=PASS
+phase: government_us::CommodityPsdReport::implementation exit=0 VERDICT=PASS
+phase: government_us::CommodityPsdReport::direct exit=0 VERDICT=PASS
+phase: government_us::CommodityPsdReport::service exit=0 VERDICT=PASS
+phase: government_us::CommodityPsdReport::contract exit=0 VERDICT=PASS
+phase: government_us::CommodityPsdReport::counterfact exit=0 VERDICT=PASS
+phase: government_us::WeatherBulletinDownload::implementation exit=0 VERDICT=PASS
+phase: government_us::WeatherBulletinDownload::direct exit=0 VERDICT=PASS
+phase: government_us::WeatherBulletinDownload::service exit=0 VERDICT=PASS
+phase: government_us::WeatherBulletinDownload::contract exit=0 VERDICT=PASS
+phase: government_us::WeatherBulletinDownload::counterfact exit=0 VERDICT=PASS
+PHASE_TALLY passed=25 failed=0 blocked=0 total=25
+CONTROL_FIVE_SERVED TreasuryAuctions:rows=1 emitted=['TreasuryAuction'] contract=TreasuryAuction runtime_identity=True calls=1 methods=['GET'] | WeatherBulletin:rows=1 emitted=['WeatherBulletin'] contract=WeatherBulletin runtime_identity=True calls=1 methods=['GET'] | CommodityPsdData:rows=1 emitted=['CommodityPsdData'] contract=CommodityPsdData runtime_identity=True calls=5 methods=['GET'] | CommodityPsdReport:rows=1 emitted=['CommodityPsdReport'] contract=CommodityPsdReport runtime_identity=True calls=1 methods=['GET'] | WeatherBulletinDownload:rows=1 emitted=['WeatherBulletinDownload'] contract=WeatherBulletinDownload runtime_identity=True calls=1 methods=['GET']
+CONTROL_DECLARE_REMOVED WeatherBulletinDownload:implementation=WitnessFailure: the bound fetcher publishes no typed contract row model direct=AttributeError: type object 'WeatherBulletinDownloadFetcher' has no attribute 'row_model' site=iter2_claims_probe_runner.py:424:_run_direct_with_seam restored_is_saved=True with_rows=1 row_class=WeatherBulletinDownload
+CONTROL_MEDIA_TYPES declared_members=['', 'application/octet-stream', 'application/pdf', 'text/plain'] declared_content_type='text/plain' empty_announcement_note=coerced_by_fetcher served=['', 'application/octet-stream', 'application/pdf', 'text/plain', 'Text/Plain; charset=utf-8'] refused=['application/json', 'text/html'] '': served=1 published='application/octet-stream' bytes=33 calls=1 | 'application/octet-stream': served=1 published='application/octet-stream' bytes=33 calls=1 | 'application/pdf': served=1 published='application/pdf' bytes=33 calls=1 | 'text/plain': served=1 published='text/plain' bytes=33 calls=1 | 'Text/Plain; charset=utf-8': served=1 published='text/plain' bytes=33 calls=1 | 'text/html': refused=[GovernmentUSProviderError code=NWS_DOCUMENT_BAD_CONTENT_TYPE msg=NWS_DOCUMENT_BAD_CONTENT_TYPE site=weather_bulletin_download.py:137:extract_data] calls=1 | 'application/json': refused=[GovernmentUSProviderError code=NWS_DOCUMENT_BAD_CONTENT_TYPE msg=NWS_DOCUMENT_BAD_CONTENT_TYPE site=weather_bulletin_download.py:137:extract_data] calls=1
+CONTROL_EMPTY_BODY control_rows=1 control_bytes=33 control_calls=1 guard_line=135 empty_answer=refused=GovernmentUSProviderError code=NWS_DOCUMENT_EMPTY_BODY msg=NWS_DOCUMENT_EMPTY_BODY site=weather_bulletin_download.py:135:extract_data calls=1 mechanism_note=one_tamper_slot_per_row
+CONTROL_MULTI_URL_LOOP urls=2 served=2 seam_calls=2 carrier_answerable=2 sends_granted=3 order=['https://api.weather.gov/products/TEST-20261012T1200Z/text', 'https://api.weather.gov/products/SECOND-20261012T1200Z/text'] second_bytes=21
+CONTROL_QUERY_PRE_TRANSPORT query_arms=5 foreign_host: ValidationError code=None msg=1 validation error for WeatherBulletinDownloadQuery
+  Value error, NWS site=weather_bulletin_download.py:109:transform_query seam_calls=0 | blank_url: ValidationError code=None msg=1 validation error for WeatherBulletinDownloadQuery
+  Value error, NWS site=weather_bulletin_download.py:109:transform_query seam_calls=0 | repeated: ValidationError code=None msg=1 validation error for WeatherBulletinDownloadQuery
+  Value error, NWS site=weather_bulletin_download.py:109:transform_query seam_calls=0 | eleven_urls: ValidationError code=None msg=1 validation error for WeatherBulletinDownloadQuery
+  Value error, NWS site=weather_bulletin_download.py:109:transform_query seam_calls=0 | date_instead: ValidationError code=None msg=1 validation error for WeatherBulletinDownloadQuery
+  Value error, NWS site=weather_bulletin_download.py:109:transform_query seam_calls=0
+CONTROL_TAMPER_ONE_CELL TreasuryAuctions:changed_cells=1 paths=['responses/0/body/data/0/cusip'] | WeatherBulletin:changed_cells=1 paths=['responses/0/body/issuanceTime'] | CommodityPsdData:changed_cells=1 paths=['responses/4/body/0/Value'] | CommodityPsdReport:changed_cells=1 paths=['responses/0/body_b64'] | WeatherBulletinDownload:changed_cells=1 paths=['responses/0/content_type']
+CONTROL_TAMPER_BITES TreasuryAuctions:control=1 declared=TREASURY_AUCTION_CUSIP_MISMATCH observed=GovernmentUSProviderError code=TREASURY_AUCTION_CUSIP_MISMATCH msg=TREASURY_AUCTION_CUSIP_MISMATCH site=treasury_auctions.py:142:transform_data seam_calls=1 match=True | WeatherBulletin:control=1 declared=NWS_BAD_PRODUCT_ROW observed=GovernmentUSProviderError code=NWS_BAD_PRODUCT_ROW msg=NWS_BAD_PRODUCT_ROW site=weather_bulletin.py:93:transform_data seam_calls=1 match=True | CommodityPsdData:control=1 declared=USDA_BAD_COMMODITY_ROW observed=GovernmentUSProviderError code=USDA_BAD_COMMODITY_ROW msg=USDA_BAD_COMMODITY_ROW site=commodity_psd_data.py:186:transform_data seam_calls=5 match=True | CommodityPsdReport:control=1 declared=USDA_REPORT_NOT_PDF observed=GovernmentUSProviderError code=USDA_REPORT_NOT_PDF msg=USDA_REPORT_NOT_PDF site=commodity_psd_report.py:104:extract_data seam_calls=1 match=True | WeatherBulletinDownload:control=1 declared=NWS_DOCUMENT_BAD_CONTENT_TYPE observed=GovernmentUSProviderError code=NWS_DOCUMENT_BAD_CONTENT_TYPE msg=NWS_DOCUMENT_BAD_CONTENT_TYPE site=weather_bulletin_download.py:137:extract_data seam_calls=1 match=True
+CONTROL_DOC_CITES fetcher_lines=157 raise_sites_total=11 bare_valueerror=[37, 40, 55, 58, 67, 74, 79, 81, 122] code_carrying=[(135, 'NWS_DOCUMENT_EMPTY_BODY'), (137, 'NWS_DOCUMENT_BAD_CONTENT_TYPE')] row_model_line=96 get_bytes_line=125 cited=[37, 40, 55, 58, 67, 74, 79, 81, 96, 122, 125, 134, 135, 137] dangling=[] documented_but_uncited=[]
+STATIC_VERSUS_RUNTIME WeatherBulletinDownload:verdict=DOCUMENT_TRIPPED declared=True is_contract=True counts={'extract_data': 2} raises=10 code_raises=2 trippable=2 doc_site_line=137 undocked=ROW_CLASS_NOT_CONTRACT
+PREVALIDATION_CHECKS arms=20 failed=0 failed_names=[]
+PREVALIDATION_DONE phase_failures_or_blocked=0 arm_failures=0
+weather_bulletin_download_prevalidation_exit=0

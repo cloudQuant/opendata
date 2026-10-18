@@ -1,0 +1,24 @@
+wave-31 step 3 -- which tests read the gitignored receipt root, and whether the witness's
+inline bytes are the bytes those receipts hold. The finding this carrier prices is a
+reproducibility floor on the provider's own suite, not on the witness: the witness opens
+nothing, so the landed row stands on a clone while seven of the nine provider tests do not.
+Repaired elsewhere; recorded here.
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C132/wave31-step3-government-us-weather-bulletin-download-20261018/probes/c100_fixture_dependency_census.py
+  (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+test_file=tests/test_government_us_iter2.py test_functions=9 dependent_on_ignored_root=7 in_file_helpers_reading_it=['_fixture'] clean=2
+DEPENDS test_commodity_psd_data_maps_manual_official_api_shape
+DEPENDS test_commodity_psd_report_preserves_pdf_bytes
+DEPENDS test_provider_model_service_injects_identity_and_serializes_typed_rows
+DEPENDS test_treasury_auction_service_serializes_match_and_rejects_foreign_cusip
+DEPENDS test_treasury_auctions_maps_manual_fiscaldata_page
+DEPENDS test_weather_bulletin_download_preserves_media_type_and_rejects_foreign_url
+DEPENDS test_weather_bulletin_maps_noaa_product_and_rejects_missing_text
+clean    test_treasury_prices_identity_is_unbound_until_source_is_implemented
+clean    test_unverified_usda_report_categories_keep_selectors_and_fail_closed
+check_ignore_exit=0 rule=.gitignore:249:/docs/evidence/C100/**	docs/evidence/C100/gov-finra/fixtures/nws_document.txt skip_markers_in_test_file=0
+CONTROL_NOT_IGNORED exit=1 rule=<none> expected=exit=1/<none> so_the_ignore_rule_is_specific=True
+CONTROL_BYTE_IDENTITY inline_sha16=e81fd18a79047014 fixture_sha16=e81fd18a79047014 test_literal_sha16=e81fd18a79047014 bytes=33 all_equal=True
+CONTROL_WITNESS_READS file=scripts/quality/iter2_witnesses/government_us.py read_calls=0 names_the_ignored_root_in_prose=True
+gates {'population_nonempty': True, 'root_is_ignored': True, 'rule_is_specific': True, 'byte_identity_holds': True, 'witness_is_inline_only': True} findings=[]
+c100_fixture_dependency_census_exit=0

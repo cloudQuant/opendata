@@ -1,0 +1,11 @@
+wave-31 step 3 -- the C128 negative control that this wave consumed, re-armed: the shipped classifier is imported and run over BOTH labels in one process, so the readings must differ
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C132/wave31-step3-government-us-weather-bulletin-download-20261018/probes/consumed_control_rearm.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+instrument=docs/evidence/C128/plane1-residue-readiness-20261017/probes/incomplete_row_guard_check.py exists=True
+POPULATION report_rows=350 judged=350 incomplete=24 old_in=True new_in=True
+A_consumed_control government_us::WeatherBulletinDownload verdict=DOCUMENT_TRIPPED judge_status=OFFLINE_ACCEPTED counts={'extract_data': 2} raises=10 code_raises=2 trippable_now=True old_arm_b_would_pass=False PASS=True
+B_rearmed_control tmx::EquitySearch verdict=NO_CODE_SITE class_td=0 package_td=6 trippable=False PASS=True
+C_attributable government_us::WeatherBulletinDownload verdict=DOCUMENT_TRIPPED code_raises=2 extract_sites=2 guard_raise_lines=[135, 137] judge_status=OFFLINE_ACCEPTED PASS=True
+CONTROLS_DIFF old=government_us::WeatherBulletinDownload:DOCUMENT_TRIPPED new=tmx::EquitySearch:NO_CODE_SITE readings_differ=True
+rearm_face arms=3 arms_passed=3 gates={'instrument_on_disk': True, 'population_identity': True, 'labels_differ': True, 'readings_differ': True, 'old_verdict_in_enum': True, 'new_verdict_in_enum': True} all_pass=True
+consumed_control_rearm_exit=0
