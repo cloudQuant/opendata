@@ -1,0 +1,56 @@
+wave-31 step 2 -- 35 phase legs under a scratch evidence root, plus the seven-served, declaration-removed, pagination-terminal-and-live, sequence-exhausted, seen-disjunct, page-sites, window-bound, key, key-not-policed, nullable-column, one-cell and tamper-bites arms
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/tmx_two_rows_prevalidation.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+materialized: fixtures=7 root=/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/w31s2-tmx-preval-uy4syt4j
+phase: tmx::EquityQuote::implementation exit=0 VERDICT=PASS
+phase: tmx::EquityQuote::direct exit=0 VERDICT=PASS
+phase: tmx::EquityQuote::service exit=0 VERDICT=PASS
+phase: tmx::EquityQuote::contract exit=0 VERDICT=PASS
+phase: tmx::EquityQuote::counterfact exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::implementation exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::direct exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::service exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::contract exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::counterfact exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::implementation exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::direct exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::service exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::contract exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::counterfact exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::implementation exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::direct exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::service exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::contract exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::counterfact exit=0 VERDICT=PASS
+phase: tmx::EquityHistorical::implementation exit=0 VERDICT=PASS
+phase: tmx::EquityHistorical::direct exit=0 VERDICT=PASS
+phase: tmx::EquityHistorical::service exit=0 VERDICT=PASS
+phase: tmx::EquityHistorical::contract exit=0 VERDICT=PASS
+phase: tmx::EquityHistorical::counterfact exit=0 VERDICT=PASS
+phase: tmx::HistoricalDividends::implementation exit=0 VERDICT=PASS
+phase: tmx::HistoricalDividends::direct exit=0 VERDICT=PASS
+phase: tmx::HistoricalDividends::service exit=0 VERDICT=PASS
+phase: tmx::HistoricalDividends::contract exit=0 VERDICT=PASS
+phase: tmx::HistoricalDividends::counterfact exit=0 VERDICT=PASS
+phase: tmx::IndexConstituents::implementation exit=0 VERDICT=PASS
+phase: tmx::IndexConstituents::direct exit=0 VERDICT=PASS
+phase: tmx::IndexConstituents::service exit=0 VERDICT=PASS
+phase: tmx::IndexConstituents::contract exit=0 VERDICT=PASS
+phase: tmx::IndexConstituents::counterfact exit=0 VERDICT=PASS
+PHASE_TALLY passed=35 failed=0 blocked=0 total=35
+CONTROL_SEVEN_SERVED EquityQuote:rows=1 emitted=['TmxEquityQuote'] contract=TmxEquityQuote runtime_identity=True calls=1 methods=['POST'] | EquityInfo:rows=1 emitted=['TmxEquityInfo'] contract=TmxEquityInfo runtime_identity=True calls=1 methods=['POST'] | CompanyFilings:rows=1 emitted=['TmxCompanyFiling'] contract=TmxCompanyFiling runtime_identity=True calls=1 methods=['POST'] | PriceTargetConsensus:rows=1 emitted=['TmxPriceTargetConsensus'] contract=TmxPriceTargetConsensus runtime_identity=True calls=1 methods=['POST'] | EquityHistorical:rows=1 emitted=['TmxEquityHistorical'] contract=TmxEquityHistorical runtime_identity=True calls=1 methods=['POST'] | HistoricalDividends:rows=2 emitted=['TmxHistoricalDividend'] contract=TmxHistoricalDividend runtime_identity=True calls=1 methods=['POST'] | IndexConstituents:rows=2 emitted=['TmxIndexConstituent'] contract=TmxIndexConstituent runtime_identity=True calls=1 methods=['POST']
+CONTROL_DECLARE_REMOVED HistoricalDividends:without=AttributeError code=None msg=type object 'HistoricalDividendsFetcher' has no attribute 'row_model' site=iter2_claims_probe_runner.py:424:_run_direct_with_seam restored_is_saved=True with_rows=2 row_class=TmxHistoricalDividend | IndexConstituents:without=AttributeError code=None msg=type object 'IndexConstituentsFetcher' has no attribute 'row_model' site=iter2_claims_probe_runner.py:424:_run_direct_with_seam restored_is_saved=True with_rows=2 row_class=TmxIndexConstituent
+CONTROL_DIVIDEND_PAGE_TERMINAL control_rows=2 seam_calls=1 carrier_answerable=1 sends_granted=3 default_floor=3 budget_is_carrier=False
+CONTROL_DIVIDEND_PAGINATION_LIVE pages=4 served=8 seam_calls=4 carrier_answerable=4 sends_granted=4 exdates=['2026-06-14', '2026-09-14', '2026-06-14', '2026-09-14', '2026-06-14', '2026-09-14', '2026-06-14', '2026-09-14']
+CONTROL_DIVIDEND_SEQUENCE_EXHAUSTED carrier_pages=1 refusal=TmxProviderError code=TMX_TRANSPORT_ERROR msg=TMX_TRANSPORT_ERROR site=client.py:153:graphql
+CONTROL_DIVIDEND_SEEN_DISJUNCT refusal=TmxProviderError code=TMX_BAD_PAGE msg=TMX_BAD_PAGE site=fetchers.py:485:extract_data second_page_number=1 asked_page=2 note=page_number_ne_page_fires_first
+CONTROL_DIVIDEND_PAGE_SITES page_number_two: TmxProviderError code=TMX_BAD_PAGE msg=TMX_BAD_PAGE site=fetchers.py:485:extract_data | has_next_page_string: TmxProviderError code=TMX_BAD_PAGE msg=TMX_BAD_PAGE site=fetchers.py:487:extract_data | non_terminal_page: TmxProviderError code=TMX_BAD_PAGE msg=TMX_BAD_PAGE site=fetchers.py:485:extract_data | ex_date_not_a_date: TmxProviderError code=TMX_BAD_ROW msg=TMX_BAD_ROW site=fetchers.py:190:_row distinct_frames=3 frames=['fetchers.py:190:_row', 'fetchers.py:485:extract_data', 'fetchers.py:487:extract_data']
+CONTROL_DIVIDEND_WINDOW_BOUND page_records=2 exdates=2026-06-14 2026-09-14 unbounded[-..-] served=2 dates=['2026-06-14', '2026-09-14'] amounts=[0.08, 0.1] seam_calls=1 | end_at_first[-..2026-06-14] served=1 dates=['2026-06-14'] amounts=[0.08] seam_calls=1 | start_at_last[2026-09-14..-] served=1 dates=['2026-09-14'] amounts=[0.1] seam_calls=1 | end_before_first[-..2026-01-01] refused=WitnessFailure code=None msg=the offline fetch produced zero rows site=iter2_claims_probe_runner.py:422:_run_direct_with_seam
+CONTROL_CONSTITUENT_KEY control_members=['LUN.TO', 'SHOP'] served=['LUN.TO', 'SHOP'] null_first=TmxProviderError code=TMX_BAD_ROW msg=TMX_BAD_ROW site=fetchers.py:190:_row null_second=TmxProviderError code=TMX_BAD_ROW msg=TMX_BAD_ROW site=fetchers.py:190:_row quoted_weight=TmxProviderError code=TMX_BAD_ROW msg=TMX_BAD_ROW site=fetchers.py:190:_row declared_code=TMX_BAD_ROW
+CONTROL_CONSTITUENT_KEY_NOT_POLICED members=['SHOP', 'LUN.TO'] second_set_to=SHOP served=2 symbols=['SHOP', 'SHOP'] cells=[[('exchange', 'TOR'), ('market_value', 158632000000.0), ('name', 'Shopify Inc.'), ('symbol', 'SHOP'), ('weight', 24.7)], [('exchange', 'TOR'), ('market_value', 158632000000.0), ('name', 'Restaurant Brands International Limited'), ('symbol', 'SHOP'), ('weight', 3.14)]] refused=False note=natural_key_is_a_storage_identity_not_a_mapper_guard
+CONTROL_CONSTITUENT_NULLABLE_COLUMNS source_column_absent=served=2 symbols=['LUN.TO', 'SHOP'] cells=[[('exchange', 'TOR'), ('market_value', 158632000000.0), ('name', None), ('symbol', 'SHOP'), ('weight', 24.7)], [('exchange', 'TOR'), ('market_value', 158632000000.0), ('name', 'Restaurant Brands International Limited'), ('symbol', 'LUN.TO'), ('weight', 3.14)]] refused=False contract_optional=['name', 'exchange', 'market_value', 'weight'] contract_required=['symbol']
+CONTROL_TAMPER_ONE_CELL EquityQuote:changed_cells=1 paths=['responses/0/body/data/getQuoteBySymbol/price'] | EquityInfo:changed_cells=1 paths=['responses/0/body/data/getQuoteBySymbol/employees'] | CompanyFilings:changed_cells=1 paths=['responses/0/body/data/filings[length 1->2]'] | PriceTargetConsensus:changed_cells=1 paths=['responses/0/body/data/getCompanyAnalysts/consensusAnalysts'] | EquityHistorical:changed_cells=1 paths=['responses/0/body/data/getCompanyPriceHistory[length 1->2]'] | HistoricalDividends:changed_cells=1 paths=['responses/0/body/data/dividendHistory/dividends/0/exDate'] | IndexConstituents:changed_cells=1 paths=['responses/0/body/data/constituents/0/symbol']
+CONTROL_TAMPER_BITES EquityQuote:control=1 declared=TMX_BAD_ROW observed=TmxProviderError code=TMX_BAD_ROW msg=TMX_BAD_ROW site=fetchers.py:190:_row match=True | EquityInfo:control=1 declared=TMX_BAD_ROW observed=TmxProviderError code=TMX_BAD_ROW msg=TMX_BAD_ROW site=fetchers.py:190:_row match=True | CompanyFilings:control=1 declared=TMX_BAD_ROWS observed=TmxProviderError code=TMX_BAD_ROWS msg=TMX_BAD_ROWS site=fetchers.py:448:transform_data match=True | PriceTargetConsensus:control=1 declared=TMX_BAD_ROW observed=TmxProviderError code=TMX_BAD_ROW msg=TMX_BAD_ROW site=fetchers.py:593:transform_data match=True | EquityHistorical:control=1 declared=TMX_BAD_ROWS observed=TmxProviderError code=TMX_BAD_ROWS msg=TMX_BAD_ROWS site=fetchers.py:277:transform_data match=True | HistoricalDividends:control=2 declared=TMX_BAD_ROW observed=TmxProviderError code=TMX_BAD_ROW msg=TMX_BAD_ROW site=fetchers.py:190:_row match=True | IndexConstituents:control=2 declared=TMX_BAD_ROW observed=TmxProviderError code=TMX_BAD_ROW msg=TMX_BAD_ROW site=fetchers.py:190:_row match=True
+STATIC_VERSUS_RUNTIME HistoricalDividends:verdict=QUERY_ONLY declared=True is_contract=False counts={'extract_data': 6} raises=13 code_raises=6 trippable=0 undocked=ROW_CLASS_NOT_CONTRACT | IndexConstituents:verdict=NO_CODE_SITE declared=True is_contract=False counts={} raises=7 code_raises=0 trippable=0 undocked=ROW_CLASS_NOT_CONTRACT
+PREVALIDATION_DONE phase_failures_or_blocked=0
+two_rows_prevalidation_exit=0

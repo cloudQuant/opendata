@@ -1,0 +1,8 @@
+wave-31 step 2 -- 索引面（pre-commit staged payload scan）：扫的是将要成为历史的那一份清单
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C128/plane1-residue-readiness-20261017/probes/staged_payload_scan.py --paths <84 枚 staged 路径尾部追加>
+argv_paths_after_flag=84 non_ascii_staged_paths=0
+（单进程直调，不经 xargs/管道，所以 exit 是这条命令自己的；stderr_bytes=0）
+
+payload_scan_files=84 payload_scan_roots=84 payload_scan_unresolved=0 payload_scan_findings=0 payload_scan_rc=0
+payload_scan=PASS 84 file(s) clean
+staged_payload_scan_exit=0

@@ -1,0 +1,34 @@
+{
+  "responses": [
+    {
+      "body": {
+        "data": {
+          "dividendHistory": {
+            "dividends": [
+              {
+                "amount": 0.08,
+                "currency": "CAD",
+                "declarationDate": "2026-05-20",
+                "exDate": "2026-06-14",
+                "payableDate": "2026-06-28",
+                "recordDate": "2026-06-15"
+              },
+              {
+                "amount": 0.1,
+                "currency": "CAD",
+                "declarationDate": "2026-08-19",
+                "exDate": "2026-09-14",
+                "payableDate": "2026-09-30",
+                "recordDate": "2026-09-15"
+              }
+            ],
+            "hasNextPage": false,
+            "pageNumber": 1
+          }
+        }
+      },
+      "method": "POST",
+      "url_contains": "app-money.tmx.com/graphql"
+    }
+  ]
+}

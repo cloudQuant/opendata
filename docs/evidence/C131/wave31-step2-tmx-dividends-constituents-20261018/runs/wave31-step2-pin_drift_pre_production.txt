@@ -1,0 +1,12 @@
+wave-31 step 2 -- tmx shard pins read straight out of docs/evidence/C101/tmx/claims.json before any command in this chain ran, compared with the sha256 of the same bytes on disk, row by row; stale_files is the re-sign tax the two-row landing charges. This argv is re-runnable and writes beside this file, and after the chain has run it reads stale_files=0 and drifted_rows=[] -- which is the agreement this chain was asked to bring about. The two rows this step lands are listed separately because a row with no claims yet has no pin to stale, and printing it as drifted would be a label rather than a measurement
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C131/wave31-step2-tmx-dividends-constituents-20261018/probes/w31s2_run_chain.py --stage pin-drift   (cwd = repo root, no pipes, PYTHONPATH=not set)
+stderr_bytes=0
+claims_document generated_at_utc=2026-10-18T03:40:40.690738+00:00 identity_set=5168e1e723999312 claims=120
+STALE opendata/data/providers/tmx/models/fetchers.py pinned=6968b9ccdf10e1d4 disk=efa3e5bb4cf80d3e
+STALE scripts/quality/iter2_witnesses/tmx.py pinned=7b976e79887012e6 disk=bb0ffb640c4a751d
+pinned_files=14 stale_files=2 rows_total=24 rows_with_pins=5 drifted_rows=['CompanyFilings', 'EquityHistorical', 'EquityInfo', 'EquityQuote', 'PriceTargetConsensus'] newly_landed_rows_not_yet_pinned=['HistoricalDividends', 'IndexConstituents']
+pre_chain identity_set=5168e1e723999312 identity_count=350 offline_acceptance_count=286 claim_count=1565 primary_review_count=286 status_counts={'INCOMPLETE': 27, 'OFFLINE_ACCEPTED': 286, 'UNREVIEWED': 37}
+pre_chain tmx_INCOMPLETE=19 ['AvailableIndices', 'BondPrices', 'CalendarEarnings', 'CompanyNews', 'EquityGainers', 'EquitySearch', 'EtfCountries', 'EtfHistorical', 'EtfHoldings', 'EtfInfo', 'EtfSearch', 'EtfSectors', 'HistoricalDividends', 'IndexConstituents', 'IndexSectors', 'IndexSnapshots', 'InsiderTrading', 'OptionsChains', 'TreasuryPrices']
+pre_chain tmx_offline_accepted=5
+pre_chain this_steps_two_rows_accepted=[]
+pin_drift_pre_production_exit=0

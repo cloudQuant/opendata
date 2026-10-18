@@ -453,6 +453,7 @@ class HistoricalDividendsFetcher(_TypedFetcher[HistoricalDividendsQuery]):
     """Fetch dividend history using explicit bounded source pagination."""
 
     canonical_model: ClassVar[str | None] = "HistoricalDividends"
+    row_model: ClassVar[type[TmxHistoricalDividend]] = TmxHistoricalDividend
     capability: ClassVar[Capability] = _capability(
         "tmx_historical_dividends", "event", "HistoricalDividends"
     )
@@ -523,6 +524,7 @@ class IndexConstituentsFetcher(_TypedFetcher[IndexConstituentsQuery]):
     """Fetch and map the member rows for one TMX index."""
 
     canonical_model: ClassVar[str | None] = "IndexConstituents"
+    row_model: ClassVar[type[TmxIndexConstituent]] = TmxIndexConstituent
     capability: ClassVar[Capability] = _capability(
         "tmx_index_constituents", "snapshot", "IndexConstituents"
     )

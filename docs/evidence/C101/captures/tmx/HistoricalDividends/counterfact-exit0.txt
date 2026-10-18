@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model HistoricalDividends --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROW", "rejected": [], "status": null}, "reason": "ex_dividend_date is the column every dividend row is filed under, the time_field the domain declares, and the second of the four columns its natural key names. transform_data compares it against the requested window: a value carrying a time is exactly what _iso_date refuses on purpose, because it parses calendar dates only. The dividend mapper must refuse the record rather than truncate the cell -- a date invented out of a timestamp moves which dividends the window keeps, and no other column of either record is touched by the tamper; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---
