@@ -1,0 +1,123 @@
+wave-31 step 0 -- what does plane 2 read, and along which axis?
+argv: PYTHONPATH= /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C131/wave31-plane2-face-20261018/probes/plane2_dev_done_axis_census.py
+repo_root=/Users/yunjinqi/Documents/new_projects/opendata judge=scripts/quality/ac2_case_probe.py report=docs/evidence/C101/judge/claims.merged.report.json carrier_of_action_map=docs/evidence/C130/plane1-action-map-rebase-20261018/runs/wave30-step5a-residue_axis_census_finalgen.txt
+0_ac2_10_verbatim (the repo's own reading, unedited):
+0  contract_test_files=test_cboe_engine_provider.py,test_congress_gov_engine_provider.py,test_ecb_reference_registration.py,test_engine_contract_fixture_arms.py,test_engine_null_sentinel.py,test_engine_row_expansion_spec.py,test_engine_row_filters.py,test_engine_row_order.py,test_engine_serialised_param_spec.py,test_engine_value_map_and_composite_path.py,test_engine_value_transform.py,test_federal_reserve_domains.py,test_federal_reserve_obfr_spec.py,test_federal_reserve_rate_specs.py,test_intrinio_engine_provider.py,test_intrinio_insider_trading_spec.py,test_intrinio_not_declarable.py,test_model_capability_census.py,test_oecd_engine_provider.py,test_provider_catalog.py,test_provider_engine_contract.py,test_provider_engine_decoders.py,test_provider_federal_reserve.py,test_provider_model_contracts.py,test_sec_engine_provider.py
+0  contract_test_functions=606
+0  dev_done=17
+0  dev_done_label=5
+0  e2e_marker_declared=True
+0  engine_declared_rows=17
+0  gate_live_confirmation=True
+0  in_progress=13
+0  label_without_witness=0
+0  label_without_witness_ids=-
+0  ledger_rows=350
+0  live_verification_run=0
+0  not_run=332
+0  obb2_task_ids=350
+0  state=gap reason=failed: all 350 are DEV_DONE with an executed witness; no row left at NOT_RUN
+A_declared_population count=17 of=350 providers=6 histogram={'cboe': 3, 'econdb': 1, 'federal_reserve': 6, 'intrinio': 5, 'tiingo': 1, 'tradingeconomics': 1}
+A  declared cboe::AvailableIndices
+A  declared cboe::IndexConstituents
+A  declared cboe::IndexSearch
+A  declared econdb::AvailableIndicators
+A  declared federal_reserve::FederalFundsRate
+A  declared federal_reserve::MoneyMeasures
+A  declared federal_reserve::OvernightBankFundingRate
+A  declared federal_reserve::SOFR
+A  declared federal_reserve::SvenssonYieldCurve
+A  declared federal_reserve::TreasuryRates
+A  declared intrinio::CalendarIpo
+A  declared intrinio::CurrencyPairs
+A  declared intrinio::EquitySearch
+A  declared intrinio::HistoricalDividends
+A  declared intrinio::InsiderTrading
+A  declared tiingo::CryptoHistorical
+A  declared tradingeconomics::EconomicCalendar
+B_face_relation suite_keys=202 positive=21 refusal=21 both=21 declared_without_face=0 face_not_declared=185
+B  declared∩both=17 face_keys_outside_declaration=['400-QUERY_REJECTED-cboe::AvailableIndices', '400-QUERY_REJECTED-cboe::IndexConstituents', '400-QUERY_REJECTED-cboe::IndexSearch', '400-QUERY_REJECTED-econdb::AvailableIndicators', '400-QUERY_REJECTED-federal_reserve::FederalFundsRate', '400-QUERY_REJECTED-federal_reserve::MoneyMeasures', '400-QUERY_REJECTED-federal_reserve::OvernightBankFundingRate', '400-QUERY_REJECTED-federal_reserve::SOFR', '400-QUERY_REJECTED-federal_reserve::SvenssonYieldCurve', '400-QUERY_REJECTED-federal_reserve::TreasuryRates', '400-QUERY_REJECTED-intrinio::CalendarIpo', '400-QUERY_REJECTED-intrinio::CurrencyPairs', '400-QUERY_REJECTED-intrinio::EquitySearch', '400-QUERY_REJECTED-intrinio::HistoricalDividends', '400-QUERY_REJECTED-intrinio::InsiderTrading', '400-QUERY_REJECTED-probe::ProbeCursorRows', '400-QUERY_REJECTED-probe::ProbeOffsetPath', '400-QUERY_REJECTED-probe::ProbePagedTotal', '400-QUERY_REJECTED-probe::ProbeStaticHeaders', '400-QUERY_REJECTED-tiingo::CryptoHistorical', '400-QUERY_REJECTED-tradingeconomics::EconomicCalendar', '401-CREDENTIAL_REJECTED-cboe::AvailableIndices', '401-CREDENTIAL_REJECTED-cboe::IndexConstituents', '401-CREDENTIAL_REJECTED-cboe::IndexSearch', '401-CREDENTIAL_REJECTED-econdb::AvailableIndicators', '401-CREDENTIAL_REJECTED-federal_reserve::FederalFundsRate', '401-CREDENTIAL_REJECTED-federal_reserve::MoneyMeasures', '401-CREDENTIAL_REJECTED-federal_reserve::OvernightBankFundingRate', '401-CREDENTIAL_REJECTED-federal_reserve::SOFR', '401-CREDENTIAL_REJECTED-federal_reserve::SvenssonYieldCurve', '401-CREDENTIAL_REJECTED-federal_reserve::TreasuryRates', '401-CREDENTIAL_REJECTED-intrinio::CalendarIpo', '401-CREDENTIAL_REJECTED-intrinio::CurrencyPairs', '401-CREDENTIAL_REJECTED-intrinio::EquitySearch', '401-CREDENTIAL_REJECTED-intrinio::HistoricalDividends', '401-CREDENTIAL_REJECTED-intrinio::InsiderTrading', '401-CREDENTIAL_REJECTED-probe::ProbeCursorRows', '401-CREDENTIAL_REJECTED-probe::ProbeOffsetPath', '401-CREDENTIAL_REJECTED-probe::ProbePagedTotal', '401-CREDENTIAL_REJECTED-probe::ProbeStaticHeaders', '401-CREDENTIAL_REJECTED-tiingo::CryptoHistorical', '401-CREDENTIAL_REJECTED-tradingeconomics::EconomicCalendar', '403-CREDENTIAL_REJECTED-cboe::AvailableIndices', '403-CREDENTIAL_REJECTED-cboe::IndexConstituents', '403-CREDENTIAL_REJECTED-cboe::IndexSearch', '403-CREDENTIAL_REJECTED-econdb::AvailableIndicators', '403-CREDENTIAL_REJECTED-federal_reserve::FederalFundsRate', '403-CREDENTIAL_REJECTED-federal_reserve::MoneyMeasures', '403-CREDENTIAL_REJECTED-federal_reserve::OvernightBankFundingRate', '403-CREDENTIAL_REJECTED-federal_reserve::SOFR', '403-CREDENTIAL_REJECTED-federal_reserve::SvenssonYieldCurve', '403-CREDENTIAL_REJECTED-federal_reserve::TreasuryRates', '403-CREDENTIAL_REJECTED-intrinio::CalendarIpo', '403-CREDENTIAL_REJECTED-intrinio::CurrencyPairs', '403-CREDENTIAL_REJECTED-intrinio::EquitySearch', '403-CREDENTIAL_REJECTED-intrinio::HistoricalDividends', '403-CREDENTIAL_REJECTED-intrinio::InsiderTrading', '403-CREDENTIAL_REJECTED-probe::ProbeCursorRows', '403-CREDENTIAL_REJECTED-probe::ProbeOffsetPath', '403-CREDENTIAL_REJECTED-probe::ProbePagedTotal', '403-CREDENTIAL_REJECTED-probe::ProbeStaticHeaders', '403-CREDENTIAL_REJECTED-tiingo::CryptoHistorical', '403-CREDENTIAL_REJECTED-tradingeconomics::EconomicCalendar', '404-RESOURCE_MISSING-cboe::AvailableIndices', '404-RESOURCE_MISSING-cboe::IndexConstituents', '404-RESOURCE_MISSING-cboe::IndexSearch', '404-RESOURCE_MISSING-econdb::AvailableIndicators', '404-RESOURCE_MISSING-federal_reserve::FederalFundsRate', '404-RESOURCE_MISSING-federal_reserve::MoneyMeasures', '404-RESOURCE_MISSING-federal_reserve::OvernightBankFundingRate', '404-RESOURCE_MISSING-federal_reserve::SOFR', '404-RESOURCE_MISSING-federal_reserve::SvenssonYieldCurve', '404-RESOURCE_MISSING-federal_reserve::TreasuryRates', '404-RESOURCE_MISSING-intrinio::CalendarIpo', '404-RESOURCE_MISSING-intrinio::CurrencyPairs', '404-RESOURCE_MISSING-intrinio::EquitySearch', '404-RESOURCE_MISSING-intrinio::HistoricalDividends', '404-RESOURCE_MISSING-intrinio::InsiderTrading', '404-RESOURCE_MISSING-probe::ProbeCursorRows', '404-RESOURCE_MISSING-probe::ProbeOffsetPath', '404-RESOURCE_MISSING-probe::ProbePagedTotal', '404-RESOURCE_MISSING-probe::ProbeStaticHeaders', '404-RESOURCE_MISSING-tiingo::CryptoHistorical', '404-RESOURCE_MISSING-tradingeconomics::EconomicCalendar', '418-HTTP_ERROR-cboe::AvailableIndices', '418-HTTP_ERROR-cboe::IndexConstituents', '418-HTTP_ERROR-cboe::IndexSearch', '418-HTTP_ERROR-econdb::AvailableIndicators', '418-HTTP_ERROR-federal_reserve::FederalFundsRate', '418-HTTP_ERROR-federal_reserve::MoneyMeasures', '418-HTTP_ERROR-federal_reserve::OvernightBankFundingRate', '418-HTTP_ERROR-federal_reserve::SOFR', '418-HTTP_ERROR-federal_reserve::SvenssonYieldCurve', '418-HTTP_ERROR-federal_reserve::TreasuryRates', '418-HTTP_ERROR-intrinio::CalendarIpo', '418-HTTP_ERROR-intrinio::CurrencyPairs', '418-HTTP_ERROR-intrinio::EquitySearch', '418-HTTP_ERROR-intrinio::HistoricalDividends', '418-HTTP_ERROR-intrinio::InsiderTrading', '418-HTTP_ERROR-probe::ProbeCursorRows', '418-HTTP_ERROR-probe::ProbeOffsetPath', '418-HTTP_ERROR-probe::ProbePagedTotal', '418-HTTP_ERROR-probe::ProbeStaticHeaders', '418-HTTP_ERROR-tiingo::CryptoHistorical', '418-HTTP_ERROR-tradingeconomics::EconomicCalendar', '429-RATE_LIMITED-cboe::AvailableIndices', '429-RATE_LIMITED-cboe::IndexConstituents', '429-RATE_LIMITED-cboe::IndexSearch', '429-RATE_LIMITED-econdb::AvailableIndicators', '429-RATE_LIMITED-federal_reserve::FederalFundsRate', '429-RATE_LIMITED-federal_reserve::MoneyMeasures', '429-RATE_LIMITED-federal_reserve::OvernightBankFundingRate', '429-RATE_LIMITED-federal_reserve::SOFR', '429-RATE_LIMITED-federal_reserve::SvenssonYieldCurve', '429-RATE_LIMITED-federal_reserve::TreasuryRates', '429-RATE_LIMITED-intrinio::CalendarIpo', '429-RATE_LIMITED-intrinio::CurrencyPairs', '429-RATE_LIMITED-intrinio::EquitySearch', '429-RATE_LIMITED-intrinio::HistoricalDividends', '429-RATE_LIMITED-intrinio::InsiderTrading', '429-RATE_LIMITED-probe::ProbeCursorRows', '429-RATE_LIMITED-probe::ProbeOffsetPath', '429-RATE_LIMITED-probe::ProbePagedTotal', '429-RATE_LIMITED-probe::ProbeStaticHeaders', '429-RATE_LIMITED-tiingo::CryptoHistorical', '429-RATE_LIMITED-tradingeconomics::EconomicCalendar', '500-UPSTREAM_UNAVAILABLE-cboe::AvailableIndices', '500-UPSTREAM_UNAVAILABLE-cboe::IndexConstituents', '500-UPSTREAM_UNAVAILABLE-cboe::IndexSearch', '500-UPSTREAM_UNAVAILABLE-econdb::AvailableIndicators', '500-UPSTREAM_UNAVAILABLE-federal_reserve::FederalFundsRate', '500-UPSTREAM_UNAVAILABLE-federal_reserve::MoneyMeasures', '500-UPSTREAM_UNAVAILABLE-federal_reserve::OvernightBankFundingRate', '500-UPSTREAM_UNAVAILABLE-federal_reserve::SOFR', '500-UPSTREAM_UNAVAILABLE-federal_reserve::SvenssonYieldCurve', '500-UPSTREAM_UNAVAILABLE-federal_reserve::TreasuryRates', '500-UPSTREAM_UNAVAILABLE-intrinio::CalendarIpo', '500-UPSTREAM_UNAVAILABLE-intrinio::CurrencyPairs', '500-UPSTREAM_UNAVAILABLE-intrinio::EquitySearch', '500-UPSTREAM_UNAVAILABLE-intrinio::HistoricalDividends', '500-UPSTREAM_UNAVAILABLE-intrinio::InsiderTrading', '500-UPSTREAM_UNAVAILABLE-probe::ProbeCursorRows', '500-UPSTREAM_UNAVAILABLE-probe::ProbeOffsetPath', '500-UPSTREAM_UNAVAILABLE-probe::ProbePagedTotal', '500-UPSTREAM_UNAVAILABLE-probe::ProbeStaticHeaders', '500-UPSTREAM_UNAVAILABLE-tiingo::CryptoHistorical', '500-UPSTREAM_UNAVAILABLE-tradingeconomics::EconomicCalendar', 'csv', 'face0', 'face1', 'face10', 'face11', 'face12', 'face13', 'face14', 'face15', 'face16', 'face17', 'face18', 'face19', 'face2', 'face20', 'face21', 'face22', 'face23', 'face24', 'face25', 'face3', 'face4', 'face5', 'face6', 'face7', 'face8', 'face9', 'json', 'probe::DecoderCsv', 'probe::DecoderPipe', 'probe::DecoderTsv', 'probe::DecoderZip', 'probe::ProbeCursorRows', 'probe::ProbeOffsetPath', 'probe::ProbePagedTotal', 'probe::ProbeStaticHeaders', 'tsv', 'zip_csv'] (probe declarations, not source rows)
+C_cross_plane_join identities=350 accepted=285 residue=65 declared=17 2x2={'accepted_declared': 17, 'accepted_not_declared': 268, 'residue_declared': 0, 'residue_not_declared': 65} declared_outside_identity_set=0  status_counts={'INCOMPLETE': 28, 'OFFLINE_ACCEPTED': 285, 'UNREVIEWED': 37} identity_set=5168e1e723999312
+C  provider alpha_vantage rows=3 accepted=3 declared=0
+C  provider benzinga rows=4 accepted=4 declared=0
+C  provider biztoc rows=1 accepted=0 declared=0
+C  provider bls rows=2 accepted=2 declared=0
+C  provider cboe rows=11 accepted=9 declared=3
+C  provider cftc rows=2 accepted=2 declared=0
+C  provider congress_gov rows=8 accepted=8 declared=0
+C  provider deribit rows=5 accepted=5 declared=0
+C  provider ecb rows=3 accepted=3 declared=0
+C  provider econdb rows=8 accepted=6 declared=1
+C  provider eia rows=2 accepted=2 declared=0
+C  provider famafrench rows=6 accepted=6 declared=0
+C  provider federal_reserve rows=13 accepted=12 declared=6
+C  provider finra rows=2 accepted=2 declared=0
+C  provider finviz rows=7 accepted=7 declared=0
+C  provider fmp rows=69 accepted=69 declared=0
+C  provider fred rows=36 accepted=36 declared=0
+C  provider government_us rows=6 accepted=4 declared=0
+C  provider imf rows=8 accepted=8 declared=0
+C  provider intrinio rows=38 accepted=37 declared=5
+C  provider multpl rows=1 accepted=1 declared=0
+C  provider nasdaq rows=9 accepted=9 declared=0
+C  provider oecd rows=9 accepted=9 declared=0
+C  provider sec rows=24 accepted=24 declared=0
+C  provider seeking_alpha rows=3 accepted=0 declared=0
+C  provider stockgrid rows=1 accepted=0 declared=0
+C  provider tiingo rows=7 accepted=7 declared=1
+C  provider tmx rows=24 accepted=4 declared=0
+C  provider tradier rows=5 accepted=5 declared=0
+C  provider tradingeconomics rows=1 accepted=1 declared=1
+C  provider wsj rows=3 accepted=0 declared=0
+C  provider yfinance rows=29 accepted=0 declared=0
+D_ledger_reconcile rows=350 status_histogram={'DEV_DONE': 5, 'IN_PROGRESS': 13, 'NOT_RUN': 332} witnessed=17 label_without_witness=0 declared=17 declared_and_labelled=5 declared_not_labelled=12
+D  declared_but_unlabelled econdb::AvailableIndicators status=NOT_RUN task=OBB2-econdb-AvailableIndicators
+D  declared_but_unlabelled federal_reserve::FederalFundsRate status=NOT_RUN task=OBB2-federal_reserve-FederalFundsRate
+D  declared_but_unlabelled federal_reserve::OvernightBankFundingRate status=NOT_RUN task=OBB2-federal_reserve-OvernightBankFundingRate
+D  declared_but_unlabelled federal_reserve::SOFR status=NOT_RUN task=OBB2-federal_reserve-SOFR
+D  declared_but_unlabelled federal_reserve::SvenssonYieldCurve status=NOT_RUN task=OBB2-federal_reserve-SvenssonYieldCurve
+D  declared_but_unlabelled intrinio::CalendarIpo status=NOT_RUN task=OBB2-intrinio-CalendarIpo
+D  declared_but_unlabelled intrinio::CurrencyPairs status=NOT_RUN task=OBB2-intrinio-CurrencyPairs
+D  declared_but_unlabelled intrinio::EquitySearch status=NOT_RUN task=OBB2-intrinio-EquitySearch
+D  declared_but_unlabelled intrinio::HistoricalDividends status=NOT_RUN task=OBB2-intrinio-HistoricalDividends
+D  declared_but_unlabelled intrinio::InsiderTrading status=NOT_RUN task=OBB2-intrinio-InsiderTrading
+D  declared_but_unlabelled tiingo::CryptoHistorical status=NOT_RUN task=OBB2-tiingo-CryptoHistorical
+D  declared_but_unlabelled tradingeconomics::EconomicCalendar status=NOT_RUN task=OBB2-tradingeconomics-EconomicCalendar
+D  labelled_not_declared=[] witnessed_task_ids_not_labelled=12
+E_action_map parsed_rows=65 implement_missing_model=19 expected=19 carrier_face=residue_axis_census_face residue=65 actions={'add_code_carrying_guard': 13, 'implement_missing_model': 19, 'ledger_ruled
+E  row government_us::TreasuryPrices status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::AvailableIndices status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::BondPrices status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::CalendarEarnings status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::CompanyNews status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EquityGainers status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EtfCountries status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EtfHistorical status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EtfHoldings status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EtfInfo status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EtfSearch status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::EtfSectors status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::IndexSectors status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::IndexSnapshots status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::InsiderTrading status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::OptionsChains status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row tmx::TreasuryPrices status=INCOMPLETE verdict=UNBOUND seam=SEAM_REACHABLE module=True provider_declared_today=0
+E  row yfinance::AvailableIndices status=UNREVIEWED verdict=UNBOUND seam=SEAM_NEVER_USED module=False provider_declared_today=0
+E  row yfinance::FuturesCurve status=UNREVIEWED verdict=UNBOUND seam=SEAM_NEVER_USED module=False provider_declared_today=0
+E  by_provider={'government_us': 1, 'tmx': 16, 'yfinance': 2} rows_in_a_provider_that_already_declares_something=0 of=19
+F1_drop_declaration victim=cboe::AvailableIndices witnessed 17 -> 16 expected=16 -> True
+F2_zero_refusal_face victim=cboe::AvailableIndices witnessed 17 -> 16 expected=16 -> True
+F3_forge_dev_done_label victim=alpha_vantage::EquityHistorical task=OBB2-alpha_vantage-EquityHistorical label_without_witness 0 -> 1 expected=1 -> True
+F4_restore caches_identical=True witnessed_after=17 baseline=17 -> True
+G_floor contract_test_files=25 functions_in_them=606 suite_executed_for_faces=1(tests/test_provider_model_contracts.py) live_verification_run=0 engine_declared_rows_in_ledger=17
+G  floor: AC2-10 counts a witness only through engine_declared_keys, so a hand-written fetcher passing its own provider suite reads NOT_RUN here; and a live upstream leg needs the exact OPENDATA_ALLOW_LIVE_E2E token, which this wave does not set.
+X_gate every_declaration_has_both_faces -> True
+X_gate dev_done_is_the_declared_both_face_set -> True
+X_gate ledger_rows_are_350 -> True
+X_gate no_dev_done_label_without_witness -> True
+X_gate declaration_splits_labelled_and_unlabelled -> True
+X_gate accepted_plus_residue_is_the_identity_set -> True
+X_gate every_declaration_is_one_of_the_350 -> True
+X_gate action_map_carrier_still_the_wave30_final_generation -> True
+plane2_axis_census_face arms=12 arms_passed=12 arms_failed=0 declared=17 dev_done=17 dev_done_label=5 label_without_witness=0 accepted_declared=17 missing_model_rows=19 rows_in_declaring_provider=0 PASS=True
+plane2_axis_census_exit=0
