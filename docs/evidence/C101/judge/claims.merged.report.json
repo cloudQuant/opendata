@@ -2,7 +2,7 @@
   "acceptance_rule": "all five phase claims plus an explicit valid primary-model or human ACCEPT receipt; claim PASS alone is candidate only",
   "claims_input": {
     "path": "docs/evidence/C101/claims.merged.json",
-    "sha256": "c5f94a26ac8454575564e31b804ec0b084160ae60df6881bba1ab652eb55503f"
+    "sha256": "a1fd576b2e4a0279686616a18b0d5de825972beddbb5d98a480785c8503e2bc0"
   },
   "claims_status_source": "explicit JSON claims only; no directory globbing or markdown status parsing",
   "global_issues": [],
@@ -16000,129 +16000,87 @@
       "upstream_model": "TreasuryAuctions"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "government_us::TreasuryPrices",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/TreasuryPrices/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "GovernmentUSProviderError",
+              "refusal_code": "TREASURY_PRICE_BAD_VALUE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "GovernmentUSProviderError",
+              "refusal_code": "TREASURY_PRICE_BAD_VALUE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the tampered line keeps the requested CUSIP, the security type, both date cells and the eight-column shape, and is the same length as the row it replaces, but its bid cell reads 99.985500x, which is neither a number nor empty. bid is typed float | None on the reserved contract, so TreasuryPricesFetcher.transform_data must refuse the listing rather than coerce the cell to 0, drop the security silently, or ship a string in a numeric price column; untampered control produced 1 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/TreasuryPrices/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/TreasuryPrices/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/TreasuryPrices/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/government_us/TreasuryPrices/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "government_us",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-government_us-TreasuryPrices",
       "upstream_model": "TreasuryPrices"
     },
@@ -24683,383 +24641,257 @@
       "upstream_model": "TrailingDividendYield"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::AvailableIndices",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/AvailableIndices/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the row set is the document's indices object, one row per symbol, and the currency cell is derived from this same name string by tmx's own rule \"USD\" if \"(USD)\" in name_en else \"CAD\" (models/available_indices.py:99-102), reimplemented as the name type-test whose raise is at opendata/data/providers/tmx/models/fetchers_w33_etf_loaders.py:926 — that screen is where the traceback ends, with TMX_BAD_ROW, before _contract_row is ever reached. A numeric name means the mapper cannot state the currency at all, so it must refuse the directory rather than publish a symbol whose currency was invented; the other two index entries, the sectors lists and the groups map are untouched by the tamper; untampered control produced 3 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/AvailableIndices/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/AvailableIndices/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/AvailableIndices/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/AvailableIndices/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-AvailableIndices",
       "upstream_model": "AvailableIndices"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::BondPrices",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/BondPrices/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the issuer screen runs on raw records before any row exists (_bond_raw_predicate at opendata/data/providers/tmx/models/fetchers_w33_etf_loaders.py:758, the issuer.str.contains shape tmx uses at models/bond_prices.py:193), so the record index the tamper breaks is the first *surviving* one — index 1 of the listing, whose coupon is published as text. coupon_rate of TmxBondPrices carries the _number validator, and the same record's isin, yield, prices and dates stay intact. The traceback ends at _contract_row in that module at :238 (through _bond_prices_rows at :816). Scale note, said plainly instead of implied: this mapper publishes couponRate as the source number and does NOT copy upstream's /100 percent normalization (models/bond_prices.py:120-127), because no evidence in this repo fixes the listing's scale — the fixture therefore carries the source-scale value 1.75; untampered control produced 60 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/BondPrices/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/BondPrices/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/BondPrices/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/BondPrices/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-BondPrices",
       "upstream_model": "BondPrices"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::CalendarEarnings",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CalendarEarnings/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the refusal is raised by CalendarEarningsFetcher.transform_data in opendata/data/providers/tmx/models/fetchers_w33_graphql.py, at the if \"report_date\" in source_row guard -- the site this leg's traceback actually ends in. getEnhancedEarningsForDate selects seven columns and publishes no date, so the mapper stamps report_date from the one-date request: report_date is the time_field and the second natural_key column of tmx_calendar_earnings. The tamper adds report_date to the first record, which is the source asserting a date of its own; without the guard every other cell of that record still validates and the leg returns two rows, because projection puts the requested date in each one and the source's date is silently discarded. The refusal is about which date the reply asserts, and no list_rows, envelope or count check can see it: both records are well-formed and the reply is two rows for a two-company day; untampered control produced 2 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CalendarEarnings/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CalendarEarnings/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CalendarEarnings/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CalendarEarnings/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-CalendarEarnings",
       "upstream_model": "CalendarEarnings"
     },
@@ -25149,129 +24981,87 @@
       "upstream_model": "CompanyFilings"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::CompanyNews",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CompanyNews/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the refusal is raised by CompanyNewsFetcher.transform_data in opendata/data/providers/tmx/models/fetchers_w33_graphql.py, at the isinstance(newsid, str) guard on the article id -- the site this leg's traceback ends in. tmx_company_news files its natural_key as url + date and the selection publishes no url: the mapper forms https://money.tmx.com/quote/<SYMBOL>/news/<newsid>, the address TMX's own UI uses (OpenBB openbb_tmx/models/company_news.py:113). Setting newsid to null is the tamper that shows the guard is load-bearing rather than decorative: format would happily render .../news/None, headline, datetime, source and summary all stay valid, and the leg would return two frozen contract rows whose keys name an article that does not exist. Nothing else on the path can catch it -- list_rows sees two well-formed dicts and the reply length equals the limit the request published; untampered control produced 2 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CompanyNews/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CompanyNews/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CompanyNews/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/CompanyNews/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-CompanyNews",
       "upstream_model": "CompanyNews"
     },
@@ -25616,891 +25406,597 @@
       "upstream_model": "EquitySearch"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::EtfSearch",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfSearch/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the keyword screen is upstream's five-column one (tmx models/etf_search.py:233-237) and two records match, so the tamper lands on a return cell of the first hit only: return_1m of TmxEtfSearch carries the _number validator of opendata/data/models/tmx.py, which refuses a JSON string on purpose. The traceback ends at _contract_row in opendata/data/providers/tmx/models/fetchers_w33_etf_loaders.py:238 — the search mapper must refuse the hit rather than publish a fund whose one-month return is text, because the other 33 columns of that row would still validate and the result frame would look clean; untampered control produced 3 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfSearch/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfSearch/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfSearch/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfSearch/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-EtfSearch",
       "upstream_model": "EtfSearch"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::EtfHoldings",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfHoldings/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the holdings list travels inside the same directory record (tmx models/etf_holdings.py:112), which is why the scoping note's per-ETF-page caveat did not reproduce and why the query symbol here is lowercase: _normalize_symbol at opendata/data/providers/tmx/models/fetchers_w33_etf_loaders.py:241 is the shipped normalization from tmx models/etf_sectors.py:68 and the leg still found the record. weight is a required-by-validator column of TmxEtfHoldings whose _number validator refuses text; quoting the first holding's weighting leaves its share count, market value, currency and the other two holdings whole. The traceback ends at _contract_row in the same module at :238 (through _etf_holdings_rows at :583); untampered control produced 3 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfHoldings/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfHoldings/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfHoldings/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfHoldings/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-EtfHoldings",
       "upstream_model": "EtfHoldings"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::EtfSectors",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfSectors/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the row is one entry of the ETF record's own sectors list, mapped name->sector and percent->weight exactly as tmx models/etf_sectors.py:74 renames them, and weight is the one required non-null column of TmxEtfSectors (its _number validator). Quoting that one percent leaves the sector label, the second member and the echoed symbol intact. The traceback ends at _contract_row in opendata/data/providers/tmx/models/fetchers_w33_etf_loaders.py:238 (reached through _etf_breakdown_rows at :558) — a weight a consumer cannot sum is not a weight; untampered control produced 2 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfSectors/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfSectors/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfSectors/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfSectors/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-EtfSectors",
       "upstream_model": "EtfSectors"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::EtfCountries",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfCountries/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "country is the required StrictStr column of TmxEtfCountries, read from the regions list's name cell the way tmx models/etf_countries.py:78 renames it; putting a JSON number there breaks one cell and leaves both weights and the second region whole, so the refusal prices the label and not the arithmetic. The traceback ends at _contract_row in opendata/data/providers/tmx/models/fetchers_w33_etf_loaders.py:238 (through _etf_breakdown_rows at :558) — a numeric country name would be published as a row whose key a consumer cannot join on; untampered control produced 2 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfCountries/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfCountries/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfCountries/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfCountries/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-EtfCountries",
       "upstream_model": "EtfCountries"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::EtfHistorical",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfHistorical/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROWS",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROWS",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the refusal is raised by EtfHistoricalFetcher.transform_data in opendata/data/providers/tmx/models/fetchers_w33_graphql.py, at the len(source_rows) > _history_limit(params) guard -- the site this leg's traceback actually ends in, not a helper the tamper never reaches. A one-day window is published to the source as limit 1, so the added bar is a session the caller never asked for: both records carry all eleven selected columns and each of them maps, so nothing about either row is wrong and only their count disagrees with the request. date is the required column TmxEtfHistorical files each row under and the time_field the tmx_etf_historical domain declares, and the mapper must refuse the over-long reply rather than return it, because a consumer that asked for one day and received two cannot tell an over-delivering source from a window it mis-stated -- the ruling this provider already makes for EquityHistorical and for CompanyFilings; untampered control produced 1 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfHistorical/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfHistorical/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfHistorical/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfHistorical/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-EtfHistorical",
       "upstream_model": "EtfHistorical"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::EtfInfo",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfInfo/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the profile row is built for exactly one directory record, and avg_volume is one of the two StrictInt columns of TmxEtfInfo: quoting avgdailyvolume breaks that cell while every price, return and ratio in the same record stays whole, so the refusal is about one column. The traceback ends at _contract_row in opendata/data/providers/tmx/models/fetchers_w33_etf_loaders.py:238 (TmxProviderError TMX_BAD_ROW, raised from the model_validate at :236) — the profile mapper must refuse rather than coerce a text volume into an int it never parsed, because a consumer that averages volumes across ETFs would either crash later or read a null the directory never published; untampered control produced 1 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfInfo/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfInfo/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfInfo/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EtfInfo/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-EtfInfo",
       "upstream_model": "EtfInfo"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::EquityGainers",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityGainers/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROWS",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROWS",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the refusal is raised by EquityGainersFetcher.transform_data in opendata/data/providers/tmx/models/fetchers_w33_graphql.py, at the payload.get(\"stockListId\") != _stock_list_id(params.category) echo guard -- the site this leg's traceback ends in. getStockListSymbolsWithQuote publishes the list id it answered under, and this row asks for TOP_PRICE_PERFORMER, so re-naming the reply TOP_VOLUME is a reply for the most-active list dressed as the top-movers screen. Every cell of both listItems stays present and typed, list_rows accepts the two records, the count is unbounded for this operation and the contract has no list column, so nothing but the echo separates the wrong-screen refusal from a served row: the shipped precedent is the dividend pager refusing a pageNumber that disagrees with the page it asked for (models/fetchers.py, HistoricalDividendsFetcher.extract_data); untampered control produced 2 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityGainers/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityGainers/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityGainers/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/EquityGainers/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-EquityGainers",
       "upstream_model": "EquityGainers"
     },
@@ -26675,129 +26171,87 @@
       "upstream_model": "IndexConstituents"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::IndexSectors",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/IndexSectors/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the domain declares only sector and weight for this row -- no symbol column, unlike TmxEtfSectors -- so the only cells a sector entry can break are those two, and the mapper reads them as name/weight straight from the index document (tmx models/index_sectors.py:84-87). weight is the required float of TmxIndexSectors and its _number validator refuses text; the sector label, the other two members and their weights are intact. The traceback ends at _contract_row in opendata/data/providers/tmx/models/fetchers_w33_etf_loaders.py:238 (through _index_sectors_rows at :952); untampered control produced 3 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/IndexSectors/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/IndexSectors/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/IndexSectors/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/IndexSectors/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-IndexSectors",
       "upstream_model": "IndexSectors"
     },
@@ -26929,129 +26383,87 @@
       "upstream_model": "IndexSnapshots"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::InsiderTrading",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/InsiderTrading/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the refusal is raised by InsiderTradingFetcher.transform_data in opendata/data/providers/tmx/models/fetchers_w33_graphql.py, at the if not isinstance(transactions, list) guard inside the buy/sell flatten -- the site this leg's traceback ends in. The operation publishes each period as one object with exactly two direction arrays, and the mapper takes the direction from the array a record sat in because no cell names it, so a period whose buy array is gone is a reply that cannot be read as transactions at all. Dropping it is the tamper that reaches that guard: the second period and the activitySummary both stay intact, so the count, list_rows and the envelope check all pass, and without the guard the flatten would iterate None and the caller would get a bare TypeError carrying neither a code nor a field attribution; untampered control produced 4 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/InsiderTrading/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/InsiderTrading/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/InsiderTrading/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/InsiderTrading/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-InsiderTrading",
       "upstream_model": "InsiderTrading"
     },
@@ -27268,129 +26680,87 @@
       "upstream_model": "PriceTargetConsensus"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "tmx::TreasuryPrices",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/TreasuryPrices/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "TmxProviderError",
+              "refusal_code": "TMX_BAD_ROW",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the government-issuer predicate is tmx's own issuer.str.contains(govt_type) (models/treasury_prices.py:144, reimplemented at opendata/data/providers/tmx/models/fetchers_w33_etf_loaders.py:768), so the federal selection starts at record 0 of the listing and the tamper breaks that record's maturity cell. maturity_date of TmxTreasuryPrices is parsed by the contract's _iso_date, and this mapper parses the raw cell itself, at the _exact_date raise (fetchers_w33_etf_loaders.py:264), so the traceback ends there: 28/01/2027 is a date the debt row cannot be filed under, and neither the coupon, the yield nor the bid/offer/eod_price/call_date/security_type/cusip/isin cells are touched by the tamper (those seven are read under the contract's own names because the provider's alias table at models/treasury_prices.py:62-73 leaves them alone -- their raw spelling is not independently evidenced); untampered control produced 20 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/TreasuryPrices/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/TreasuryPrices/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/TreasuryPrices/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/tmx/TreasuryPrices/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "tmx",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-tmx-TreasuryPrices",
       "upstream_model": "TreasuryPrices"
     },
@@ -30351,11 +29721,11 @@
   "summary": {
     "claim_count": 1695,
     "identity_count": 350,
-    "offline_acceptance_count": 317,
-    "primary_review_count": 317,
+    "offline_acceptance_count": 332,
+    "primary_review_count": 332,
     "status_counts": {
-      "INCOMPLETE": 22,
-      "OFFLINE_ACCEPTED": 317,
+      "INCOMPLETE": 7,
+      "OFFLINE_ACCEPTED": 332,
       "UNREVIEWED": 11
     }
   }

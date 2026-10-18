@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfCountries --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROW", "rejected": [], "status": null}, "reason": "country is the required StrictStr column of TmxEtfCountries, read from the regions list's name cell the way tmx models/etf_countries.py:78 renames it; putting a JSON number there breaks one cell and leaves both weights and the second region whole, so the refusal prices the label and not the arithmetic. The traceback ends at _contract_row in opendata/data/providers/tmx/models/fetchers_w33_etf_loaders.py:238 (through _etf_breakdown_rows at :558) \u2014 a numeric country name would be published as a row whose key a consumer cannot join on; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

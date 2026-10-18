@@ -1,0 +1,62 @@
+{
+  "responses": [
+    {
+      "body": {
+        "groups": {
+          "COMPOSITE": [
+            "CUX"
+          ],
+          "ESG": [
+            "QDF"
+          ],
+          "SECTOR": [
+            "SPT"
+          ]
+        },
+        "indices": {
+          "CUX": {
+            "name_en": "S&P/TSX Composite Index",
+            "overview_en": "<p>The benchmark for Canadian large caps.</p>",
+            "quotedmarketvalue": {
+              "total": 2400000000000.0
+            },
+            "sectors": [
+              {
+                "name": "Financials",
+                "weight": 32.4
+              },
+              {
+                "name": "Industrials",
+                "weight": 17.1
+              },
+              {
+                "name": "Technology",
+                "weight": 14.8
+              }
+            ]
+          },
+          "QDF": {
+            "name_en": "S&P/TSX Growth Income Index",
+            "sectors": [
+              {
+                "name": "Financials",
+                "weight": 41.0
+              }
+            ]
+          },
+          "SPT": {
+            "name_en": "S&P/TSX Capped Energy Index (USD)",
+            "sectors": [
+              {
+                "name": "Energy",
+                "weight": 100.0
+              }
+            ]
+          }
+        }
+      },
+      "method": "GET",
+      "url_contains": "tmxinfoservices.com/files/indices/sptsx-indices.json"
+    }
+  ]
+}

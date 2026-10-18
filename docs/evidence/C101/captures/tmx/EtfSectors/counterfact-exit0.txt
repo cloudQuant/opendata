@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfSectors --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROW", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "TmxProviderError", "refusal_code": "TMX_BAD_ROW", "rejected": [], "status": null}, "reason": "the row is one entry of the ETF record's own sectors list, mapped name->sector and percent->weight exactly as tmx models/etf_sectors.py:74 renames them, and weight is the one required non-null column of TmxEtfSectors (its _number validator). Quoting that one percent leaves the sector label, the second member and the echoed symbol intact. The traceback ends at _contract_row in opendata/data/providers/tmx/models/fetchers_w33_etf_loaders.py:238 (reached through _etf_breakdown_rows at :558) \u2014 a weight a consumer cannot sum is not a weight; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -1,0 +1,17 @@
+# carrier for recorder_alpha_vantage
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/alpha_vantage/claims.json --output docs/evidence/C101/alpha_vantage/claims.reviewed.json --provider alpha_vantage --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over alpha_vantage's regenerated shard
+# started_utc: 2026-10-18T20:56:25+00:00
+# exit: 0
+# stdout_chars: 364 stderr_chars: 0
+
+re-signing: dropped 3 earlier review(s) for the addressed identities
+REVIEW_SIGNED: alpha_vantage::EquityHistorical
+REVIEW_SIGNED: alpha_vantage::EtfHistorical
+REVIEW_SIGNED: alpha_vantage::HistoricalEps
+recorder_exit=0 signed=3 refused=0 reviews_total=3 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/alpha_vantage/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_alpha_vantage_exit=0

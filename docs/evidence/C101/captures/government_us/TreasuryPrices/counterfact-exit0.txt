@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryPrices --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "GovernmentUSProviderError", "refusal_code": "TREASURY_PRICE_BAD_VALUE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "GovernmentUSProviderError", "refusal_code": "TREASURY_PRICE_BAD_VALUE", "rejected": [], "status": null}, "reason": "the tampered line keeps the requested CUSIP, the security type, both date cells and the eight-column shape, and is the same length as the row it replaces, but its bid cell reads 99.985500x, which is neither a number nor empty. bid is typed float | None on the reserved contract, so TreasuryPricesFetcher.transform_data must refuse the listing rather than coerce the cell to 0, drop the security silently, or ship a string in a numeric price column; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -114,6 +114,60 @@ _OPERATIONS: Final[dict[str, tuple[str, str]]] = {
           }
         }""",
     ),
+    # Wave-33 GraphQL family.  Each entry is declared the same way as the seven above: the
+    # operation name the envelope posts, the root field TMX publishes the reply under (an alias
+    # where the upstream selection aliases), and the selection that publishes the columns the
+    # fetcher maps.  Upstream documents: OpenBB ``openbb_tmx/utils/gql.py`` --
+    # ``getEnhancedEarningsForDate`` at ``:304`` (payload ``:321``, one ``date`` variable),
+    # ``getNewsAndEvents`` at ``:176`` (payload ``:204``, ``symbol``/``page``/``limit``/``locale``
+    # all required, reply aliased to ``news`` and ``events``), ``getStockListSymbolsWithQuote`` at
+    # ``:393`` (payload ``:425``, ``stockListId`` required and ``locale`` optional, reply aliased to
+    # ``stockList`` and published as one object whose ``listItems`` carries the rows) and
+    # ``getCompanyInsidersActivities`` at ``:430`` (payload ``:464``, ``symbol`` optional, reply
+    # published under the operation's own name as one object of two sections).
+    "getEnhancedEarningsForDate": (
+        "getEnhancedEarningsForDate",
+        """query getEnhancedEarningsForDate($date: String!) {
+          getEnhancedEarningsForDate(date: $date) {
+            symbol companyName announceTime estimatedEps actualEps
+            epsSurprisePercent epsSurpriseDollar
+          }
+        }""",
+    ),
+    "getNewsAndEvents": (
+        "news",
+        """query getNewsAndEvents($symbol: String!, $page: Int!, $limit: Int!, $locale: String!) {
+          news: getNewsForSymbol(symbol: $symbol, page: $page, limit: $limit, locale: $locale) {
+            headline datetime source newsid summary
+          }
+          events: getUpComingEventsForSymbol(symbol: $symbol, locale: $locale) {
+            title date status type
+          }
+        }""",
+    ),
+    "getStockListSymbolsWithQuote": (
+        "stockList",
+        """query getStockListSymbolsWithQuote($stockListId: String!, $locale: String) {
+          stockList: getStockListSymbolsWithQuote(stockListId: $stockListId, locale: $locale) {
+            stockListId name description longDescription metricTitle
+            listItems { symbol longName rank metric price priceChange percentChange volume }
+            totalPriceChange totalPercentChange createdAt updatedAt
+          }
+        }""",
+    ),
+    "getCompanyInsidersActivities": (
+        "getCompanyInsidersActivities",
+        """query getCompanyInsidersActivities($symbol: String) {
+          getCompanyInsidersActivities(symbol: $symbol) {
+            insiderActivities {
+              periodkey
+              buy { name trades shares sharesHeld tradeValue }
+              sell { name trades shares sharesHeld tradeValue }
+            }
+            activitySummary { periodkey buyShares soldShares netActivity totalShares }
+          }
+        }""",
+    ),
 }
 
 

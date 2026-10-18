@@ -1,0 +1,38 @@
+# carrier for recorder_tmx
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/tmx/claims.json --output docs/evidence/C101/tmx/claims.reviewed.json --provider tmx --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over tmx's regenerated shard
+# started_utc: 2026-10-18T21:27:42+00:00
+# exit: 0
+# stdout_chars: 2727 stderr_chars: 0
+
+re-signing: dropped 8 earlier review(s) for the addressed identities
+REVIEW_SIGNED: tmx::AvailableIndices
+REVIEW_SIGNED: tmx::BondPrices
+REVIEW_SIGNED: tmx::CalendarEarnings
+REVIEW_SIGNED: tmx::CompanyFilings
+REVIEW_SIGNED: tmx::CompanyNews
+REVIEW_SIGNED: tmx::EquityGainers
+REVIEW_SIGNED: tmx::EquityHistorical
+REVIEW_SIGNED: tmx::EquityInfo
+REVIEW_SIGNED: tmx::EquityQuote
+REVIEW_SIGNED: tmx::EquitySearch
+REVIEW_SIGNED: tmx::EtfCountries
+REVIEW_SIGNED: tmx::EtfHistorical
+REVIEW_SIGNED: tmx::EtfHoldings
+REVIEW_SIGNED: tmx::EtfInfo
+REVIEW_SIGNED: tmx::EtfSearch
+REVIEW_SIGNED: tmx::EtfSectors
+REVIEW_SIGNED: tmx::HistoricalDividends
+REVIEW_SIGNED: tmx::IndexConstituents
+REVIEW_SIGNED: tmx::IndexSectors
+REVIEW_SIGNED: tmx::InsiderTrading
+REVIEW_SIGNED: tmx::PriceTargetConsensus
+REVIEW_SIGNED: tmx::TreasuryPrices
+REVIEW_REFUSED: tmx::IndexSnapshots:implementation:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; direct:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; service:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; contract:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; counterfact:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,counterfact_receipt_path_invalid,fixture_pins_missing,probe_pins_missing,source_pins_missing
+REVIEW_REFUSED: tmx::OptionsChains:implementation:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; direct:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; service:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; contract:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; counterfact:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,counterfact_receipt_path_invalid,fixture_pins_missing,probe_pins_missing,source_pins_missing
+recorder_exit=0 signed=22 refused=2 reviews_total=22 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/tmx/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_tmx_exit=0

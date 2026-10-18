@@ -1,0 +1,30 @@
+# carrier for producer_ecb
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider ecb --output docs/evidence/C101/ecb/claims.json
+# note: five-phase producer for ecb
+# started_utc: 2026-10-18T20:59:25+00:00
+# exit: 0
+# stdout_chars: 4168 stderr_chars: 0
+
+== provider ecb: 3 inventory row(s) of 350 total ==
+BalanceOfPayments implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase implementation --evidence-root docs/evidence/C101
+BalanceOfPayments direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase direct --evidence-root docs/evidence/C101
+BalanceOfPayments service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase service --evidence-root docs/evidence/C101
+BalanceOfPayments contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase contract --evidence-root docs/evidence/C101
+BalanceOfPayments counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase counterfact --evidence-root docs/evidence/C101
+CurrencyReferenceRates implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase implementation --evidence-root docs/evidence/C101
+CurrencyReferenceRates direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase direct --evidence-root docs/evidence/C101
+CurrencyReferenceRates service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase service --evidence-root docs/evidence/C101
+CurrencyReferenceRates contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase contract --evidence-root docs/evidence/C101
+CurrencyReferenceRates counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase counterfact --evidence-root docs/evidence/C101
+YieldCurve implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase implementation --evidence-root docs/evidence/C101
+YieldCurve direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase direct --evidence-root docs/evidence/C101
+YieldCurve service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase service --evidence-root docs/evidence/C101
+YieldCurve contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase contract --evidence-root docs/evidence/C101
+YieldCurve counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase counterfact --evidence-root docs/evidence/C101
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=333/350; provider rows covered=3 of provider inventory rows=3, of which bound now=3/333 resolvable; claims emitted=15 (15 PASS, 0 FAIL, 0 BLOCKED) = 3 row(s) x 5 phases; phases actually executed as subprocesses=15
+wrote docs/evidence/C101/ecb/claims.json
+
+---- stderr ----
+
+
+chain_producer_ecb_exit=0

@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquityHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T17:34:11.553599+00:00",
+      "executed_at_utc": "2026-10-18T21:27:43.557603+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -93,7 +93,7 @@
       "receipt": {
         "model_identity": "tradier::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tradier/EquityHistorical/implementation.json",
-        "sha256": "a746f25307dfc8a6df4d160513cb3b32a492d24e548e9e2372aeb5e5fd7bf56c"
+        "sha256": "2afccc511067c071b8f588738613d86b76463d5f6de6235870105d2514e88475"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -101,7 +101,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquityHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T17:34:12.410195+00:00",
+      "executed_at_utc": "2026-10-18T21:27:44.420179+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -113,8 +113,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -181,7 +181,7 @@
       "receipt": {
         "model_identity": "tradier::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tradier/EquityHistorical/direct.json",
-        "sha256": "b89c1181bbc486eac9abbe6d8723bf78fc2dde943f3f0951ddad51634fca7134"
+        "sha256": "d7d3b3f951814b2d00b26378e5b44c1e8d89f8d1363a73bab7b3273d06eb55b2"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -189,7 +189,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquityHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T17:34:13.436343+00:00",
+      "executed_at_utc": "2026-10-18T21:27:45.467175+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -201,8 +201,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -269,7 +269,7 @@
       "receipt": {
         "model_identity": "tradier::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tradier/EquityHistorical/service.json",
-        "sha256": "787c0aa052b6ce364100fba5c501c45a79ef4df536f934ad7eeeec33994ebf7f"
+        "sha256": "81aa9ad9dc8f81527adc6d3696ce0d56348e38c50af72165c54d66a045df5250"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -277,7 +277,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquityHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T17:34:14.268932+00:00",
+      "executed_at_utc": "2026-10-18T21:27:46.302160+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -289,8 +289,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -357,7 +357,7 @@
       "receipt": {
         "model_identity": "tradier::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tradier/EquityHistorical/contract.json",
-        "sha256": "f4e66e46a3f57b27d9f3e2e7892141ee5a105392300c6df2b22d12355fe8d3a6"
+        "sha256": "1d194573052736e4c94939b94b212f71e8dd180551ba4192a856cce7053cbd88"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -365,7 +365,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T17:34:16.058441+00:00",
+      "executed_at_utc": "2026-10-18T21:27:48.101797+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -377,8 +377,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -445,7 +445,7 @@
       "receipt": {
         "model_identity": "tradier::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tradier/EquityHistorical/counterfact.json",
-        "sha256": "1a9a662a273fc5e687505330f427f4001e50cad6b3ac66c0e3502d4fef24ff42"
+        "sha256": "ead464451832c3a2280b4ee19019ac68f6abfdfd75d892170e859edcae3b48d5"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -453,7 +453,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EtfHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T17:34:16.932820+00:00",
+      "executed_at_utc": "2026-10-18T21:27:48.991683+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -465,8 +465,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -543,7 +543,7 @@
       "receipt": {
         "model_identity": "tradier::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tradier/EtfHistorical/implementation.json",
-        "sha256": "234c4e715fbfbdc994332d0af9f13d35807e6e0d61e2dfff51b8e37808332e35"
+        "sha256": "2afa64ab04f16b982661cc9e7b7afeccb8038b1dbc089169b095557ec83dcd7e"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -551,7 +551,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EtfHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T17:34:17.766517+00:00",
+      "executed_at_utc": "2026-10-18T21:27:49.834289+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -563,8 +563,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -631,7 +631,7 @@
       "receipt": {
         "model_identity": "tradier::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tradier/EtfHistorical/direct.json",
-        "sha256": "3eff0b66f48a19736d8771b6e5a265adcc61926ef985f4e5deb66244f90fa55a"
+        "sha256": "b238f534d2f1f4f34c4df6158315fc0cbee34ca2b1af0d6b082a6af3b5a9e4cd"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -639,7 +639,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EtfHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T17:34:18.783525+00:00",
+      "executed_at_utc": "2026-10-18T21:27:50.872642+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -651,8 +651,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -719,7 +719,7 @@
       "receipt": {
         "model_identity": "tradier::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tradier/EtfHistorical/service.json",
-        "sha256": "3da9fb5e5aa0d604e4d9ec8d69fa68ec1deab25bd4233be8d0e4f5f6c12f2fc9"
+        "sha256": "7990e8be92c4439ef834f4348dd04de4e7ab456ea0ad1262361202842b26ac5e"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -727,7 +727,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EtfHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T17:34:19.645847+00:00",
+      "executed_at_utc": "2026-10-18T21:27:51.732123+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -739,8 +739,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -807,7 +807,7 @@
       "receipt": {
         "model_identity": "tradier::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tradier/EtfHistorical/contract.json",
-        "sha256": "495d5f20e595f2b829a731873c1bdf03804da049bf9d7cfb762345457c778319"
+        "sha256": "6d297d9ca36b8b8f940b24c83706b90af46635c0d6f6ee1aca63b4803af5947c"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -815,7 +815,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EtfHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T17:34:21.397285+00:00",
+      "executed_at_utc": "2026-10-18T21:27:53.485897+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -827,8 +827,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -895,7 +895,7 @@
       "receipt": {
         "model_identity": "tradier::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tradier/EtfHistorical/counterfact.json",
-        "sha256": "2bb648d922b54ffcd3a9a172133bdf2f192d2c66d5ca63459a3c811fb23c411d"
+        "sha256": "44344e26c3e60c7c85b6dfc1d471789c3218004385c9efade2ed648b27cb11f1"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -903,7 +903,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquityQuote --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T17:34:22.241784+00:00",
+      "executed_at_utc": "2026-10-18T21:27:54.333630+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -915,8 +915,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -993,7 +993,7 @@
       "receipt": {
         "model_identity": "tradier::EquityQuote",
         "path": "docs/evidence/C101/receipts/tradier/EquityQuote/implementation.json",
-        "sha256": "de17c1a091353d66113ceb1ec26ef8ba6dc76afb88643835d0caee9415363568"
+        "sha256": "3a40fbf6084973e2be1ffb8050350b1268f8c9c88e92577218ff7bd5ebd35f75"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -1001,7 +1001,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquityQuote --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T17:34:23.098186+00:00",
+      "executed_at_utc": "2026-10-18T21:27:55.206672+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1013,8 +1013,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1081,7 +1081,7 @@
       "receipt": {
         "model_identity": "tradier::EquityQuote",
         "path": "docs/evidence/C101/receipts/tradier/EquityQuote/direct.json",
-        "sha256": "55f851e63b6bc16467ceb95f21a4d21c659bd53d31c4167a52a3cd244984af44"
+        "sha256": "92e66b084ff48cd246c9c1841ef8e8635dd723660ee279b3de705794064c0d61"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -1089,7 +1089,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquityQuote --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T17:34:24.097397+00:00",
+      "executed_at_utc": "2026-10-18T21:27:56.248679+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1101,8 +1101,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1169,7 +1169,7 @@
       "receipt": {
         "model_identity": "tradier::EquityQuote",
         "path": "docs/evidence/C101/receipts/tradier/EquityQuote/service.json",
-        "sha256": "ad1965f500459729d27941a5d924b5f7a32641f46416c916c6d9da693467c5c9"
+        "sha256": "b4502bc68cc9b9267716ee26053995f13b2d6e4951354a642959c9f68e90f76d"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -1177,7 +1177,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquityQuote --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T17:34:24.929680+00:00",
+      "executed_at_utc": "2026-10-18T21:27:57.095853+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1189,8 +1189,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1257,7 +1257,7 @@
       "receipt": {
         "model_identity": "tradier::EquityQuote",
         "path": "docs/evidence/C101/receipts/tradier/EquityQuote/contract.json",
-        "sha256": "e3646ee387ebf8fc8c214aaf2215c41ea39609cb2c4076e75f0182206d7e34b4"
+        "sha256": "1435f0d2691269cd597df160df959bcdf0b4c6ceec2805ec560880e5f760ca8b"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -1265,7 +1265,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquityQuote --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T17:34:26.720764+00:00",
+      "executed_at_utc": "2026-10-18T21:27:58.886525+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1277,8 +1277,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1345,7 +1345,7 @@
       "receipt": {
         "model_identity": "tradier::EquityQuote",
         "path": "docs/evidence/C101/receipts/tradier/EquityQuote/counterfact.json",
-        "sha256": "1487c1149a37cc572f13927c3ff2ae243f1a8af64449fe14c417192a8578f257"
+        "sha256": "4e7d54e3145c8aea0028d805cd69d7c10a1748c155928c0908cc3f7bc8e335a4"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -1353,7 +1353,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquitySearch --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T17:34:27.602906+00:00",
+      "executed_at_utc": "2026-10-18T21:27:59.782612+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1365,8 +1365,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1438,7 +1438,7 @@
       "receipt": {
         "model_identity": "tradier::EquitySearch",
         "path": "docs/evidence/C101/receipts/tradier/EquitySearch/implementation.json",
-        "sha256": "1d5971fbf7fa4496866b93f4fdfe60874ad68d4add5b73dd33902e48a6e7fc14"
+        "sha256": "7da14b483640db5a75ee8215cdb91e4db09be50778fa23d95fc0a589f05e5c24"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -1446,7 +1446,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquitySearch --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T17:34:28.424345+00:00",
+      "executed_at_utc": "2026-10-18T21:28:00.613553+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1458,8 +1458,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1521,7 +1521,7 @@
       "receipt": {
         "model_identity": "tradier::EquitySearch",
         "path": "docs/evidence/C101/receipts/tradier/EquitySearch/direct.json",
-        "sha256": "a62294ec765ca4cb337c2dffea9247b02ce11f52cef312d5b31edfc03c178594"
+        "sha256": "b1080536612d7f6fb03f59f17489f64f15f47e77ab4c78e27b261554e81ae47c"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -1529,7 +1529,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquitySearch --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T17:34:29.427427+00:00",
+      "executed_at_utc": "2026-10-18T21:28:01.649921+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1541,8 +1541,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1604,7 +1604,7 @@
       "receipt": {
         "model_identity": "tradier::EquitySearch",
         "path": "docs/evidence/C101/receipts/tradier/EquitySearch/service.json",
-        "sha256": "d46015f425df9dad71d65c21b7f752851794db430dd27fb59b6e3699b6e7d6ed"
+        "sha256": "de008ddb9f18492020b3a914a19a3f52fc21687bf830ca310709a91d09f61187"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -1612,7 +1612,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquitySearch --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T17:34:30.278826+00:00",
+      "executed_at_utc": "2026-10-18T21:28:02.519996+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1624,8 +1624,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1687,7 +1687,7 @@
       "receipt": {
         "model_identity": "tradier::EquitySearch",
         "path": "docs/evidence/C101/receipts/tradier/EquitySearch/contract.json",
-        "sha256": "766504427bea25334e4d8b19a8e324decc53cda564db04d8763a8bc15a446902"
+        "sha256": "d3b6157e0431badaedb15db4e1c16a4aece1b1df98ba7c4d20634ddbf299a366"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -1695,7 +1695,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model EquitySearch --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T17:34:32.018334+00:00",
+      "executed_at_utc": "2026-10-18T21:28:04.272982+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1707,8 +1707,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1770,7 +1770,7 @@
       "receipt": {
         "model_identity": "tradier::EquitySearch",
         "path": "docs/evidence/C101/receipts/tradier/EquitySearch/counterfact.json",
-        "sha256": "272ddd3ef3759c9b450f1e059de41885626b04cd1a7f5902f199f868839d453c"
+        "sha256": "b76755ed1b72bbcdc8e3abc751763994f7bdc962bb38d4851d7999db5a4da0fc"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -1778,7 +1778,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model OptionsChains --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T17:34:32.862666+00:00",
+      "executed_at_utc": "2026-10-18T21:28:05.111254+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1790,8 +1790,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1868,7 +1868,7 @@
       "receipt": {
         "model_identity": "tradier::OptionsChains",
         "path": "docs/evidence/C101/receipts/tradier/OptionsChains/implementation.json",
-        "sha256": "2de953d8480a5175241b12d063644e5827e41438726d9f4db7aeb012a4ac4d6f"
+        "sha256": "8fd6b2ee2c48c2562ce1943c421322235b72fc07c5c5f5364d4d3ee8e3589f30"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -1876,7 +1876,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model OptionsChains --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T17:34:33.707768+00:00",
+      "executed_at_utc": "2026-10-18T21:28:05.974432+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1888,8 +1888,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1956,7 +1956,7 @@
       "receipt": {
         "model_identity": "tradier::OptionsChains",
         "path": "docs/evidence/C101/receipts/tradier/OptionsChains/direct.json",
-        "sha256": "b2265ca7113e7a4d73a3e8d9fbf6e4d94201388d94a8aa667dcce27672fdb532"
+        "sha256": "fe439cbde321dd689331980990b61190638a93b8ba6b2ff963cbf3bb2ec7a8c4"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -1964,7 +1964,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model OptionsChains --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T17:34:34.729197+00:00",
+      "executed_at_utc": "2026-10-18T21:28:07.016831+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1976,8 +1976,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2044,7 +2044,7 @@
       "receipt": {
         "model_identity": "tradier::OptionsChains",
         "path": "docs/evidence/C101/receipts/tradier/OptionsChains/service.json",
-        "sha256": "a94ac77de1eca45081cfbd6a6cbc0278392e24c3ff74db099a2fad0e50f92894"
+        "sha256": "681c00f71140ce7cdc412f49e4e97f0af459ac56181848904f15b23df89baf48"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -2052,7 +2052,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model OptionsChains --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T17:34:35.553151+00:00",
+      "executed_at_utc": "2026-10-18T21:28:07.849340+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2064,8 +2064,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2132,7 +2132,7 @@
       "receipt": {
         "model_identity": "tradier::OptionsChains",
         "path": "docs/evidence/C101/receipts/tradier/OptionsChains/contract.json",
-        "sha256": "c260e7581fb0ae017587301cfe7e6b9847e1fa7c2e15fb8e7e8737e0c8f5c547"
+        "sha256": "20021b39cec83f4bdbc394762aae6b2ce62c0b3c93a184b6f2bea9171e90cc1b"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -2140,7 +2140,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradier --model OptionsChains --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T17:34:37.339682+00:00",
+      "executed_at_utc": "2026-10-18T21:28:09.657900+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2152,8 +2152,8 @@
             "path": "opendata/data/models/tradier.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2220,7 +2220,7 @@
       "receipt": {
         "model_identity": "tradier::OptionsChains",
         "path": "docs/evidence/C101/receipts/tradier/OptionsChains/counterfact.json",
-        "sha256": "83a15afb214ddc8ec13e13036ebff0c790c263fd6bf427001b96986cdb95bcce"
+        "sha256": "81c97f73c46fec0e876d5ed20775df21373751940780d47ecb02e5afda29944e"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -2234,9 +2234,9 @@
       "receipt": {
         "model_identity": "tradier::EquityHistorical",
         "path": "docs/evidence/C101/primary-reviews/tradier__EquityHistorical.review.json",
-        "sha256": "a7c1879f5a542666319d7de9ffe1299812820b5ea2dd5064ba28c784da7c756f"
+        "sha256": "0b02a85d694efac512d8c6a59ed7cbc0df7a1da09c5607e98548b493e0c78bfa"
       },
-      "reviewed_at_utc": "2026-10-18T17:34:39Z",
+      "reviewed_at_utc": "2026-10-18T21:28:11Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -2249,9 +2249,9 @@
       "receipt": {
         "model_identity": "tradier::EquityQuote",
         "path": "docs/evidence/C101/primary-reviews/tradier__EquityQuote.review.json",
-        "sha256": "fe5e342ee70af5ea976f9daa786d38405bb16599107522919c1d76903b67eab5"
+        "sha256": "dfb1ff33c8549707e93740392612ef1e1cb3889ff886a96ea666466f24f07b86"
       },
-      "reviewed_at_utc": "2026-10-18T17:34:39Z",
+      "reviewed_at_utc": "2026-10-18T21:28:11Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -2264,9 +2264,9 @@
       "receipt": {
         "model_identity": "tradier::EquitySearch",
         "path": "docs/evidence/C101/primary-reviews/tradier__EquitySearch.review.json",
-        "sha256": "bd29f5f18dbb14ce756af3a3e44f01e4a50ef7c434072d30bc01c233a260ae06"
+        "sha256": "1cde094d678146d15cdacc0b0d86acd14dcf0dfbded14c7f14ad8f19960c8aef"
       },
-      "reviewed_at_utc": "2026-10-18T17:34:39Z",
+      "reviewed_at_utc": "2026-10-18T21:28:11Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -2279,9 +2279,9 @@
       "receipt": {
         "model_identity": "tradier::EtfHistorical",
         "path": "docs/evidence/C101/primary-reviews/tradier__EtfHistorical.review.json",
-        "sha256": "c5d60877a7d18eb51e521f8020731bcc16db56bc42d8f74262e03d77ae206c66"
+        "sha256": "17a0f23425077686b20a26731e3cad4b3ca32c026d3f0afb644476b92a6d72e7"
       },
-      "reviewed_at_utc": "2026-10-18T17:34:39Z",
+      "reviewed_at_utc": "2026-10-18T21:28:11Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -2294,9 +2294,9 @@
       "receipt": {
         "model_identity": "tradier::OptionsChains",
         "path": "docs/evidence/C101/primary-reviews/tradier__OptionsChains.review.json",
-        "sha256": "7ee0426ac58604cb7d17a4421a443679918c0732b4319a3381790f37cc76ac67"
+        "sha256": "219dc704ddafc9dc2b104cb4b16e1ff6b18205a33a54dd21b2656e9426d70040"
       },
-      "reviewed_at_utc": "2026-10-18T17:34:39Z",
+      "reviewed_at_utc": "2026-10-18T21:28:11Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

@@ -1,0 +1,21 @@
+# carrier for recorder_tiingo
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/tiingo/claims.json --output docs/evidence/C101/tiingo/claims.reviewed.json --provider tiingo --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over tiingo's regenerated shard
+# started_utc: 2026-10-18T21:25:22+00:00
+# exit: 0
+# stdout_chars: 494 stderr_chars: 0
+
+re-signing: dropped 7 earlier review(s) for the addressed identities
+REVIEW_SIGNED: tiingo::CompanyNews
+REVIEW_SIGNED: tiingo::CryptoHistorical
+REVIEW_SIGNED: tiingo::CurrencyHistorical
+REVIEW_SIGNED: tiingo::EquityHistorical
+REVIEW_SIGNED: tiingo::EtfHistorical
+REVIEW_SIGNED: tiingo::TrailingDividendYield
+REVIEW_SIGNED: tiingo::WorldNews
+recorder_exit=0 signed=7 refused=0 reviews_total=7 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/tiingo/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_tiingo_exit=0

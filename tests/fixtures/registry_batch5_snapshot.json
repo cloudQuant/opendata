@@ -427,16 +427,16 @@
     "ods_legs": "The 33 registered source/domain legs on the 20 legacy domains remain split by the 10 explicit legacy freshness-field mappings present in the pinned AkShare/THS mapping YAMLs; the remaining 23 are explicitly unmapped."
   },
   "counts": {
-    "deferred_domain_count": 318,
-    "deferred_source_domain_leg_count": 318,
-    "domain_count": 338,
+    "deferred_domain_count": 333,
+    "deferred_source_domain_leg_count": 333,
+    "domain_count": 353,
     "legacy_dwd_domain_count": 20,
     "legacy_source_domain_leg_count": 33,
     "mapped_ods_leg_count": 10,
     "provider_model_identity_count": 351,
     "queried_table_count": 30,
     "query_semantic_domain_count": 318,
-    "registered_source_domain_leg_count": 351,
+    "registered_source_domain_leg_count": 366,
     "unmapped_ods_leg_count": 23,
     "warehouse_table_catalog_count": 53,
     "descriptor_eligible_identity_count": 329,
@@ -631,6 +631,7 @@
     "government_us_commodity_psd_data",
     "government_us_commodity_psd_report",
     "government_us_treasury_auctions",
+    "government_us_treasury_prices",
     "government_us_weather_bulletin",
     "government_us_weather_bulletin_download",
     "hqm_corporate_bond",
@@ -721,14 +722,28 @@
     "tiingo_etf_historical",
     "tiingo_trailing_dividend_yield",
     "tiingo_world_news",
+    "tmx_available_indices",
+    "tmx_bond_prices",
+    "tmx_calendar_earnings",
     "tmx_company_filings",
+    "tmx_company_news",
+    "tmx_equity_gainers",
     "tmx_equity_historical",
     "tmx_equity_info",
     "tmx_equity_quote",
     "tmx_equity_search",
+    "tmx_etf_countries",
+    "tmx_etf_historical",
+    "tmx_etf_holdings",
+    "tmx_etf_info",
+    "tmx_etf_search",
+    "tmx_etf_sectors",
     "tmx_historical_dividends",
     "tmx_index_constituents",
+    "tmx_index_sectors",
+    "tmx_insider_trading",
     "tmx_price_target_consensus",
+    "tmx_treasury_prices",
     "tradier_equity_historical",
     "tradier_equity_quote",
     "tradier_equity_search",
@@ -903,6 +918,66 @@
     {
       "domain": "currency_reference_rates",
       "source": "ecb"
+    },
+    {
+      "domain": "government_us_treasury_prices",
+      "source": "government_us"
+    },
+    {
+      "domain": "tmx_available_indices",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_bond_prices",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_calendar_earnings",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_company_news",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_equity_gainers",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_countries",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_historical",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_holdings",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_info",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_search",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_sectors",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_index_sectors",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_insider_trading",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_treasury_prices",
+      "source": "tmx"
     },
     {
       "domain": "yield_curve",
@@ -2236,6 +2311,7 @@
     "government_us_commodity_psd_data",
     "government_us_commodity_psd_report",
     "government_us_treasury_auctions",
+    "government_us_treasury_prices",
     "government_us_weather_bulletin",
     "government_us_weather_bulletin_download",
     "hqm_corporate_bond",
@@ -2334,14 +2410,28 @@
     "tiingo_etf_historical",
     "tiingo_trailing_dividend_yield",
     "tiingo_world_news",
+    "tmx_available_indices",
+    "tmx_bond_prices",
+    "tmx_calendar_earnings",
     "tmx_company_filings",
+    "tmx_company_news",
+    "tmx_equity_gainers",
     "tmx_equity_historical",
     "tmx_equity_info",
     "tmx_equity_quote",
     "tmx_equity_search",
+    "tmx_etf_countries",
+    "tmx_etf_historical",
+    "tmx_etf_holdings",
+    "tmx_etf_info",
+    "tmx_etf_search",
+    "tmx_etf_sectors",
     "tmx_historical_dividends",
     "tmx_index_constituents",
+    "tmx_index_sectors",
+    "tmx_insider_trading",
     "tmx_price_target_consensus",
+    "tmx_treasury_prices",
     "tradier_equity_historical",
     "tradier_equity_quote",
     "tradier_equity_search",
@@ -7206,6 +7296,10 @@
       "source": "government_us"
     },
     {
+      "domain": "government_us_treasury_prices",
+      "source": "government_us"
+    },
+    {
       "domain": "government_us_weather_bulletin",
       "source": "government_us"
     },
@@ -7658,7 +7752,27 @@
       "source": "tiingo"
     },
     {
+      "domain": "tmx_available_indices",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_bond_prices",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_calendar_earnings",
+      "source": "tmx"
+    },
+    {
       "domain": "tmx_company_filings",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_company_news",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_equity_gainers",
       "source": "tmx"
     },
     {
@@ -7678,6 +7792,30 @@
       "source": "tmx"
     },
     {
+      "domain": "tmx_etf_countries",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_historical",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_holdings",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_info",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_search",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_sectors",
+      "source": "tmx"
+    },
+    {
       "domain": "tmx_historical_dividends",
       "source": "tmx"
     },
@@ -7686,7 +7824,19 @@
       "source": "tmx"
     },
     {
+      "domain": "tmx_index_sectors",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_insider_trading",
+      "source": "tmx"
+    },
+    {
       "domain": "tmx_price_target_consensus",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_treasury_prices",
       "source": "tmx"
     },
     {
@@ -7843,10 +7993,10 @@
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/receipt.json": "f2e3eb877e7a1ec4f6a080ebbe60137330e50b38d8d5224ac186e0950191bef3",
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/smoke.json": "224c2475432ea6fca4b2c6e1442718ae2b0b829386530bf97a5361fb79897dc9",
     "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5",
-    "opendata/data/domains.yaml": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+    "opendata/data/domains.yaml": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
     "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
     "opendata/data/mappings/ths.yaml": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418",
-    "opendata/data/models/__init__.py": "9cd3fb1387fc6676716bc0a9cc2309180bc41015c10821f89457f1195e437cca",
+    "opendata/data/models/__init__.py": "e4e8d51235c3a74a2c0e07c521fef6c6bc7d277e522756e633190c4e9c6be02f",
     "opendata/data/models/finviz_performance.py": "1c0df807da91d8cb2fb1b5720431ce7d68bbacd3d4eb746fa2ff34ca5bf07b86",
     "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
     "opendata/data/models/yfinance_iter2.py": "7f7091ebbe366457446a31d8c12068d8b0a2f5dc96d48be1abce60554e68009c",
@@ -8005,5 +8155,148 @@
     "source_status": "PARTIAL; source-level offline acceptance is PASS, central service and live FRED are NOT_RUN.",
     "scenario_policy": "No matching C65-approved use case was found; scenario remains absent and unconfirmed.",
     "verified_policy": "Capability verified remains false; no source verification or cross-source parity is claimed."
+  },
+  "wave33_census_rebase": {
+    "scope": "the 15 wave-33 model domains only; legacy/measured, ods mapped+unmapped and the warehouse table catalog are byte-frozen",
+    "measured_by": "live: opendata.data.domains.load_domains + alert_matrix.registered_legs/warehouse_tables after register_providers(); classification authority = dwd_/ods_ warehouse presence (tests/test_authority_reconciliation.py SINGLE_SOURCE_EXEMPTIONS notion)",
+    "delta": {
+      "domain_count": {
+        "from": 338,
+        "to": 353,
+        "components": "+15"
+      },
+      "deferred_domain_count": {
+        "from": 318,
+        "to": 333,
+        "components": "+15"
+      },
+      "deferred_source_domain_leg_count": {
+        "from": 318,
+        "to": 333,
+        "components": "+15"
+      },
+      "registered_source_domain_leg_count": {
+        "from": 351,
+        "to": 366,
+        "components": "+15"
+      }
+    },
+    "unmoved": {
+      "legacy_dwd_domain_count": 20,
+      "legacy_source_domain_leg_count": 33,
+      "mapped_ods_leg_count": 10,
+      "unmapped_ods_leg_count": 23,
+      "warehouse_table_catalog_count": 53,
+      "provider_model_identities": 351,
+      "query_semantic_domain_ids": 318
+    },
+    "classification": {
+      "government_us_treasury_prices": {
+        "legs": [
+          "government_us"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_calendar_earnings": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_company_news": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_equity_gainers": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_insider_trading": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_etf_historical": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_etf_info": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_etf_search": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_etf_sectors": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_etf_countries": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_etf_holdings": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_bond_prices": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_treasury_prices": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_available_indices": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_index_sectors": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      }
+    },
+    "identities": "known 353 == legacy 20 | deferred 333 (disjoint); legs 366 == legacy 33 | deferred_legs 333; ods 33 + deferred_legs 333 == 366"
   }
 }

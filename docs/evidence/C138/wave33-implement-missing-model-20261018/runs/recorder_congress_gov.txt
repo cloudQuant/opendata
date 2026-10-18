@@ -1,0 +1,22 @@
+# carrier for recorder_congress_gov
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/congress_gov/claims.json --output docs/evidence/C101/congress_gov/claims.reviewed.json --provider congress_gov --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over congress_gov's regenerated shard
+# started_utc: 2026-10-18T20:58:57+00:00
+# exit: 0
+# stdout_chars: 620 stderr_chars: 0
+
+re-signing: dropped 8 earlier review(s) for the addressed identities
+REVIEW_SIGNED: congress_gov::CongressAmendmentInfo
+REVIEW_SIGNED: congress_gov::CongressAmendmentText
+REVIEW_SIGNED: congress_gov::CongressAmendments
+REVIEW_SIGNED: congress_gov::CongressBillInfo
+REVIEW_SIGNED: congress_gov::CongressBillText
+REVIEW_SIGNED: congress_gov::CongressBills
+REVIEW_SIGNED: congress_gov::CongressCommitteeDocuments
+REVIEW_SIGNED: congress_gov::CongressCommitteeInfo
+recorder_exit=0 signed=8 refused=0 reviews_total=8 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/congress_gov/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_congress_gov_exit=0

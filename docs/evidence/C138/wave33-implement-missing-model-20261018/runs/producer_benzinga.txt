@@ -1,0 +1,35 @@
+# carrier for producer_benzinga
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider benzinga --output docs/evidence/C101/benzinga/claims.json
+# note: five-phase producer for benzinga
+# started_utc: 2026-10-18T20:56:25+00:00
+# exit: 0
+# stdout_chars: 5314 stderr_chars: 0
+
+== provider benzinga: 4 inventory row(s) of 350 total ==
+AnalystSearch implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase implementation --evidence-root docs/evidence/C101
+AnalystSearch direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase direct --evidence-root docs/evidence/C101
+AnalystSearch service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase service --evidence-root docs/evidence/C101
+AnalystSearch contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase contract --evidence-root docs/evidence/C101
+AnalystSearch counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase counterfact --evidence-root docs/evidence/C101
+CompanyNews implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase implementation --evidence-root docs/evidence/C101
+CompanyNews direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase direct --evidence-root docs/evidence/C101
+CompanyNews service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase service --evidence-root docs/evidence/C101
+CompanyNews contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase contract --evidence-root docs/evidence/C101
+CompanyNews counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase counterfact --evidence-root docs/evidence/C101
+WorldNews implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase implementation --evidence-root docs/evidence/C101
+WorldNews direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase direct --evidence-root docs/evidence/C101
+WorldNews service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase service --evidence-root docs/evidence/C101
+WorldNews contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase contract --evidence-root docs/evidence/C101
+WorldNews counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase counterfact --evidence-root docs/evidence/C101
+PriceTarget implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase implementation --evidence-root docs/evidence/C101
+PriceTarget direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase direct --evidence-root docs/evidence/C101
+PriceTarget service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase service --evidence-root docs/evidence/C101
+PriceTarget contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase contract --evidence-root docs/evidence/C101
+PriceTarget counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase counterfact --evidence-root docs/evidence/C101
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=333/350; provider rows covered=4 of provider inventory rows=4, of which bound now=4/333 resolvable; claims emitted=20 (20 PASS, 0 FAIL, 0 BLOCKED) = 4 row(s) x 5 phases; phases actually executed as subprocesses=20
+wrote docs/evidence/C101/benzinga/claims.json
+
+---- stderr ----
+
+
+chain_producer_benzinga_exit=0

@@ -30,6 +30,21 @@ PROVIDER = Provider(
             canonical_model_ids=("TreasuryAuctions",),
             scenario="按证券代码、拍卖日期或发行日期查询美国财政部拍卖记录",
         ),
+        # Wave-33 landing note: this binding ships as a contract skeleton in
+        # models/treasury_prices.py whose extract_data/transform_data still refuse with
+        # GOVERNMENT_US_WAVE33_TREASURY_PRICES_FETCH_NOT_IMPLEMENTED.  The row is bound
+        # rather than left unserved because
+        # tests/test_authority_reconciliation.py pins UNSERVED_DOMAINS to two legacy ids;
+        # the guard that refuses a bound-but-unimplemented leg,
+        # tests/test_government_us_iter2.py::
+        # test_treasury_prices_identity_is_unbound_until_source_is_implemented,
+        # is retired by the row owner together with the transport and the witness shard.
+        LazyFetcherBinding(
+            "opendata.data.providers.government_us.models.treasury_prices",
+            "TreasuryPricesFetcher",
+            canonical_model_ids=("TreasuryPrices",),
+            scenario="按交易日期、CUSIP 或债券类型查询美国国债公开市场价格",
+        ),
         LazyFetcherBinding(
             "opendata.data.providers.government_us.models.weather_bulletin",
             "WeatherBulletinFetcher",

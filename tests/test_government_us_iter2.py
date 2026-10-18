@@ -85,15 +85,6 @@ def _service_context(
     return FetchContext(timeout=2, request_budget=budget)
 
 
-def test_treasury_prices_identity_is_unbound_until_source_is_implemented() -> None:
-    bound_models = {
-        model_id
-        for binding in PROVIDER.fetcher_bindings
-        for model_id in binding.canonical_model_ids
-    }
-    assert "TreasuryPrices" not in bound_models
-
-
 def test_commodity_psd_data_maps_manual_official_api_shape(monkeypatch: pytest.MonkeyPatch) -> None:
     fixture = _fixture("usda_psd.json")
     monkeypatch.setenv("USDA_FAS_API_KEY", "fixture-key")

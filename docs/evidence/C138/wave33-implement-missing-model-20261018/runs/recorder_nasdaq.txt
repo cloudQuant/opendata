@@ -1,0 +1,23 @@
+# carrier for recorder_nasdaq
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/nasdaq/claims.json --output docs/evidence/C101/nasdaq/claims.reviewed.json --provider nasdaq --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over nasdaq's regenerated shard
+# started_utc: 2026-10-18T21:20:55+00:00
+# exit: 0
+# stdout_chars: 565 stderr_chars: 0
+
+re-signing: dropped 9 earlier review(s) for the addressed identities
+REVIEW_SIGNED: nasdaq::CalendarDividend
+REVIEW_SIGNED: nasdaq::CalendarEarnings
+REVIEW_SIGNED: nasdaq::CalendarIpo
+REVIEW_SIGNED: nasdaq::CompanyFilings
+REVIEW_SIGNED: nasdaq::EconomicCalendar
+REVIEW_SIGNED: nasdaq::EquityScreener
+REVIEW_SIGNED: nasdaq::EquitySearch
+REVIEW_SIGNED: nasdaq::HistoricalDividends
+REVIEW_SIGNED: nasdaq::TopRetail
+recorder_exit=0 signed=9 refused=0 reviews_total=9 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/nasdaq/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_nasdaq_exit=0

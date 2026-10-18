@@ -841,6 +841,213 @@ domains:
     storage_mode: transient
     permissions:
     - query
+  tmx_calendar_earnings:
+    display_name: TMX财报日历
+    rest_path: market/tmx/calendar-earnings
+    contract: TmxCalendarEarnings
+    temporal_kind: event
+    time_field: report_date
+    natural_key:
+    - symbol
+    - report_date
+    filter_dims:
+    - symbol
+    - report_date
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_company_news:
+    display_name: TMX公司新闻
+    rest_path: company/tmx/news
+    contract: TmxCompanyNews
+    temporal_kind: event
+    time_field: date
+    natural_key:
+    - url
+    - date
+    filter_dims:
+    - date
+    - source
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_equity_gainers:
+    display_name: TMX股票涨幅榜
+    rest_path: market/tmx/equity-gainers
+    contract: TmxEquityGainers
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - rank
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_insider_trading:
+    display_name: TMX内部人交易
+    rest_path: company/tmx/insider-trading
+    contract: TmxInsiderTrading
+    temporal_kind: event
+    time_field: transaction_date
+    natural_key:
+    - symbol
+    - transaction_date
+    - owner_name
+    - transaction_type
+    filter_dims:
+    - symbol
+    - transaction_date
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_etf_historical:
+    display_name: TMXETF日线历史
+    rest_path: market/tmx/etf-historical
+    contract: TmxEtfHistorical
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_etf_info:
+    display_name: TMXETF基本信息
+    rest_path: market/tmx/etf-info
+    contract: TmxEtfInfo
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - issuer
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_etf_search:
+    display_name: TMXETF检索
+    rest_path: market/tmx/etf-search
+    contract: TmxEtfSearch
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - issuer
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_etf_sectors:
+    display_name: TMXETF行业权重
+    rest_path: market/tmx/etf-sectors
+    contract: TmxEtfSectors
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    - sector
+    filter_dims:
+    - symbol
+    - sector
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_etf_countries:
+    display_name: TMXETF国家权重
+    rest_path: market/tmx/etf-countries
+    contract: TmxEtfCountries
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    - country
+    filter_dims:
+    - symbol
+    - country
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_etf_holdings:
+    display_name: TMXETF持仓明细
+    rest_path: market/tmx/etf-holdings
+    contract: TmxEtfHoldings
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    - name
+    filter_dims:
+    - symbol
+    - country
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_bond_prices:
+    display_name: TMXIIROC债券价格
+    rest_path: fixedincome/tmx/bond-prices
+    contract: TmxBondPrices
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - isin
+    - cusip
+    filter_dims:
+    - cusip
+    - issuer_name
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_treasury_prices:
+    display_name: TMXIIROC国债价格
+    rest_path: fixedincome/tmx/treasury-prices
+    contract: TmxTreasuryPrices
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - cusip
+    - maturity_date
+    filter_dims:
+    - cusip
+    - issuer_name
+    - security_type
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_available_indices:
+    display_name: TMX可用指数目录
+    rest_path: index/tmx/available-indices
+    contract: TmxAvailableIndices
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - exchange
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_index_sectors:
+    display_name: TMX指数行业权重
+    rest_path: index/tmx/sectors
+    contract: TmxIndexSectors
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - sector
+    filter_dims:
+    - sector
+    storage_mode: transient
+    permissions:
+    - query
   deribit_futures_curve:
     display_name: Deribit current futures curve
     rest_path: derivatives/deribit/futures-curve
@@ -1919,6 +2126,22 @@ domains:
     natural_key:
     - content
     filter_dims: []
+    storage_mode: transient
+    permissions:
+    - query
+  government_us_treasury_prices:
+    display_name: 美国财政部公开市场债券价格
+    rest_path: fixedincome/government-us/treasury-prices
+    contract: TreasuryPrice
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - cusip
+    - maturity_date
+    filter_dims:
+    - cusip
+    - security_type
+    - maturity_date
     storage_mode: transient
     permissions:
     - query

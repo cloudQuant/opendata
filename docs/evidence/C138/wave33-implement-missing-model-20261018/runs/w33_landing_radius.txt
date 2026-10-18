@@ -1,0 +1,29 @@
+# carrier for w33_landing_radius.py (wave-33 landing radius and attribution)
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C138/wave33-implement-missing-model-20261018/probes/w33_landing_radius.py []
+# judge argv (disk): /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_model_evidence.py --inventory docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv --claims docs/evidence/C101/claims.merged.json --output /tmp/w33_landing_radius/judge.disk.json
+A0_pin_table HEAD claims pin domains.yaml on 317/1695 rows, 1585 byte-pin slots (read off the receipts, not asserted)
+wrote /tmp/w33_landing_radius/judge.head.json and /tmp/w33_landing_radius/judge.head.md: 350 identities, 0 offline accepted
+A_pre_chain_judged accepted=0/350 statuses={'STALE': 317, 'UNREVIEWED': 11, 'INCOMPLETE': 22} claims=1695 identity_set=5168e1e723999312 judge_exit=0
+wrote /tmp/w33_landing_radius/judge.disk.json and /tmp/w33_landing_radius/judge.disk.md: 350 identities, 332 offline accepted
+B_post_chain accepted=332/350 statuses={'OFFLINE_ACCEPTED': 332, 'UNREVIEWED': 11, 'INCOMPLETE': 7} claims=1695 identity_set=5168e1e723999312 judge_exit=0
+B0_coverage providers_with_accepted=28/32 zero_accepted=['biztoc', 'seeking_alpha', 'stockgrid', 'wsj']
+C_drift head stale_rows=317/1695 disk stale_rows=0 forged_digest stale_rows=332/1695 issues=['contract_pin_2_current_hash_drift', 'contract_pin_3_current_hash_drift'] sample=[]
+D_recomputed_trap accepted 0 -> 332 movers=28 -- recomputing HEAD reads 0 accepted, so this table would call every lander a mover; it is printed to price the trap, not to attribute
+E_landed_report file=claims.merged.report.json accepted 317 -> 332 movers=['government_us', 'tmx'] deltas={'government_us': 1, 'tmx': 14} regressions=[] tmx 8->22 government_us 5->6
+F_control_forged row=alpha_vantage::EquityHistorical status OFFLINE_ACCEPTED -> UNREVIEWED (in memory only) regressions=['alpha_vantage:3->2'] accepted 332 -> 331 face_bites=True
+F_recheck_real accepted 317 -> 332 movers=['government_us', 'tmx'] regressions=[] identical_to_E=True
+G_census_rerun exit=1 residue_axis_census_face residue=18 actions={'implement_missing_model': 4, 'ledger_ruled_out': 11, 'new_provider_package': 2, 'shard_entry_needs_harness': 1} witnessable_today=0 rows_without_module=8 cross_distinct=2 identity_set=5168e1e723999312 arms=8 arms_passed=7 arms_failed=1
+G_census_actions 2_actions {'implement_missing_model': 4, 'ledger_ruled_out': 11, 'new_provider_package': 2, 'shard_entry_needs_harness': 1} sums=18 registry_publish_model=0
+G_census_red_arm failing=['B_landed_negative'] cause=yfinance::BalanceSheet landed (accepted=True) -- wave 32 consumed the shipped census's hardcoded negative control; the census bytes were not touched by this probe
+H_graphql_gate operations 7 -> 11 new=['getCompanyInsidersActivities', 'getEnhancedEarningsForDate', 'getNewsAndEvents', 'getStockListSymbolsWithQuote'] unregistered_live_call=TmxProviderError:TMX_OPERATION_NOT_ALLOWED allow_list_is_an_enum_not_a_wildcard=True
+H_domains_radius keys 338 -> 353 (+15)
+I_counterfact_leg row=tmx::EtfHistorical exit=0 verdict=VERDICT=PASS refusal=TmxProviderError:TMX_BAD_ROWS site=opendata/data/providers/tmx/models/fetchers_w33_graphql.py evidence_root=/tmp/w33_landing_radius/evidence_root
+I_refusal_reason_head the refusal is raised by EtfHistoricalFetcher.transform_data in opendata/data/providers/tmx/models/fetchers_w33_graphql.py, at the len(source_rows) > _history_limit(params) guard -- the site this leg's traceback actually
+I_counterfact_leg row=government_us::TreasuryPrices exit=0 verdict=VERDICT=PASS refusal=GovernmentUSProviderError:TREASURY_PRICE_BAD_VALUE site=opendata/data/providers/government_us/models/treasury_prices.py::TreasuryPricesFetcher.transform_data evidence_root=/tmp/w33_landing_radius/evidence_root
+I_refusal_reason_head the tampered line keeps the requested CUSIP, the security type, both date cells and the eight-column shape, and is the same length as the row it replaces, but its bid cell reads 99.985500x, which is neither a number nor 
+I_leg_roots legs=2 distinct=['/tmp/w33_landing_radius/evidence_root'] c101_root_seen=False
+J_offline_leg_hosts row=government_us::TreasuryPrices kind=shared_http_client declared=['api.fas.usda.gov', 'api.fiscaldata.treasury.gov', 'api.weather.gov', 'apps.fas.usda.gov'] forged=['sinkhole.invalid.example'] requests=1 rows_served=1 child_exit=0
+J_real_path opendata/data/request_budget.py:459 `if host not in grant.allowed_hosts:` -- the grant the witness builds at iter2_claims_probe_runner.py:152 is never consulted by the seam fake
+K_carriers population=docs/evidence/C138/wave33-implement-missing-model-20261018/runs/*.txt files=61 walked=60 self_carrier_excluded=w33_landing_radius.txt missing_exit_line=[] chain_exit_readings=59 chain_exit_nonzero=[] negative_readings=[] summary_flags={'nonzero_members_empty': True, 'merge_idempotent': True, 'stable_sha_hits': 4} recorders={'recorder_tmx.txt': (22, 2), 'recorder_government_us.txt': (6, 0)}
+landing_radius_face arms=11 arms_passed=11 arms_failed=0 failed=[] pre_chain_accepted=0 post_chain_accepted=332 movers={'government_us': 1, 'tmx': 14} census_residue=33->18 identity_set=5168e1e723999312 PASS=True
+w33_landing_radius_exit=0

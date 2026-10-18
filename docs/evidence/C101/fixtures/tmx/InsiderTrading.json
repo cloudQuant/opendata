@@ -1,0 +1,67 @@
+{
+  "responses": [
+    {
+      "body": {
+        "data": {
+          "getCompanyInsidersActivities": {
+            "activitySummary": [
+              {
+                "buyShares": 30000,
+                "netActivity": 0,
+                "periodkey": "3M",
+                "soldShares": 30000,
+                "totalShares": 60000
+              }
+            ],
+            "insiderActivities": [
+              {
+                "buy": [
+                  {
+                    "name": "A. Buyer",
+                    "shares": 30000,
+                    "sharesHeld": 400000,
+                    "tradeValue": 1200000.0,
+                    "trades": 3
+                  }
+                ],
+                "periodkey": "3M",
+                "sell": [
+                  {
+                    "name": "A. Seller",
+                    "shares": 30000,
+                    "sharesHeld": 400000,
+                    "tradeValue": 1200000.0,
+                    "trades": 3
+                  }
+                ]
+              },
+              {
+                "buy": [
+                  {
+                    "name": "A. Buyer",
+                    "shares": 30000,
+                    "sharesHeld": 400000,
+                    "tradeValue": 1200000.0,
+                    "trades": 3
+                  }
+                ],
+                "periodkey": "6M",
+                "sell": [
+                  {
+                    "name": "A. Seller",
+                    "shares": 30000,
+                    "sharesHeld": 400000,
+                    "tradeValue": 1200000.0,
+                    "trades": 3
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "method": "POST",
+      "url_contains": "app-money.tmx.com/graphql"
+    }
+  ]
+}

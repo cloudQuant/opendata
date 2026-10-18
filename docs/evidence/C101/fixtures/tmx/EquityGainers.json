@@ -1,0 +1,45 @@
+{
+  "responses": [
+    {
+      "body": {
+        "data": {
+          "stockList": {
+            "createdAt": "2026-10-09T00:00:00+00:00",
+            "description": "TMX top price performers",
+            "listItems": [
+              {
+                "longName": "Shopify Inc.",
+                "metric": 3.42,
+                "percentChange": 0.0342,
+                "price": 41.07,
+                "priceChange": 1.36,
+                "rank": 1,
+                "symbol": "SHOP",
+                "volume": 2310400
+              },
+              {
+                "longName": "Canadian Natural Resources Limited",
+                "metric": 3.42,
+                "percentChange": 0.0342,
+                "price": 41.07,
+                "priceChange": 1.36,
+                "rank": 2,
+                "symbol": "CNQ",
+                "volume": 2310400
+              }
+            ],
+            "longDescription": "Ranked by daily percentage change",
+            "metricTitle": "Change (Day) %",
+            "name": "Top Price Performers",
+            "stockListId": "TOP_PRICE_PERFORMER",
+            "totalPercentChange": 0.0281,
+            "totalPriceChange": 34.51,
+            "updatedAt": "2026-10-09T20:00:00+00:00"
+          }
+        }
+      },
+      "method": "POST",
+      "url_contains": "app-money.tmx.com/graphql"
+    }
+  ]
+}
