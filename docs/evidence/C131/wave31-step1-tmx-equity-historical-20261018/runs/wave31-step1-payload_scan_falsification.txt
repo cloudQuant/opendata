@@ -1,0 +1,10 @@
+wave-31 step 1 -- does the pre-commit payload scan bite on THIS commit's staged bytes?
+argv: PYTHONPATH= $PY docs/evidence/C131/wave31-step1-tmx-equity-historical-20261018/probes/payload_scan_falsification.py
+hosts: the first staged payload paths copied into an mktemp tree; the repo tree is never written. Planted literals come from an LCG and are not printed anywhere in this file.
+repo_root=/Users/yunjinqi/Documents/new_projects/opendata config=/Users/yunjinqi/Documents/new_projects/opendata/.gitleaks.toml config_exists=True hosts=3 host_tails=contract-exit0.txt,counterfact-exit0.txt,direct-exit0.txt
+planted_body_entropy ghp=4.7255 akia=4.0000 flat40=0.0000 -- arm A's premise is the entropy gate, not a rule regex.
+A_planted_high_entropy_token_reports: kind=plant scanned=4 findings=1 rules=['github-pat'] gitleaks_rc=1 expected=>=1 -> True
+B_clean_copy_stays_clean: kind=clean scanned=3 findings=0 rules=[] gitleaks_rc=0 expected=0 -> True
+C_assembled_literal_stays_quiet: kind=assembled scanned=4 findings=0 rules=[] gitleaks_rc=0 expected=0 -> True
+falsification_face arms=3 arms_passed=3 arms_failed=0 PASS=True
+falsification_exit=0

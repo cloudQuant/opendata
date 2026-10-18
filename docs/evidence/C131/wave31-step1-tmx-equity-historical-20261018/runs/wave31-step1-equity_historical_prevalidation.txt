@@ -1,0 +1,39 @@
+wave-31 step 1 -- 25 phase legs under a scratch evidence root, plus the limit-on-the-wire, count-guard, window-scaling, added-row-wellformed, two-sites and tamper arms
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C131/wave31-step1-tmx-equity-historical-20261018/probes/equity_historical_prevalidation.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+materialized: fixtures=5 root=/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/w31s1-tmx-preval-tmvk05ow
+phase: tmx::EquityQuote::implementation exit=0 VERDICT=PASS
+phase: tmx::EquityQuote::direct exit=0 VERDICT=PASS
+phase: tmx::EquityQuote::service exit=0 VERDICT=PASS
+phase: tmx::EquityQuote::contract exit=0 VERDICT=PASS
+phase: tmx::EquityQuote::counterfact exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::implementation exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::direct exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::service exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::contract exit=0 VERDICT=PASS
+phase: tmx::EquityInfo::counterfact exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::implementation exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::direct exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::service exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::contract exit=0 VERDICT=PASS
+phase: tmx::CompanyFilings::counterfact exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::implementation exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::direct exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::service exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::contract exit=0 VERDICT=PASS
+phase: tmx::PriceTargetConsensus::counterfact exit=0 VERDICT=PASS
+phase: tmx::EquityHistorical::implementation exit=0 VERDICT=PASS
+phase: tmx::EquityHistorical::direct exit=0 VERDICT=PASS
+phase: tmx::EquityHistorical::service exit=0 VERDICT=PASS
+phase: tmx::EquityHistorical::contract exit=0 VERDICT=PASS
+phase: tmx::EquityHistorical::counterfact exit=0 VERDICT=PASS
+PHASE_TALLY passed=25 failed=0 blocked=0 total=25
+CONTROL_FIVE_SERVED EquityQuote:rows=1 emitted=['TmxEquityQuote'] contract=TmxEquityQuote runtime_identity=True methods=['POST'] | EquityInfo:rows=1 emitted=['TmxEquityInfo'] contract=TmxEquityInfo runtime_identity=True methods=['POST'] | CompanyFilings:rows=1 emitted=['TmxCompanyFiling'] contract=TmxCompanyFiling runtime_identity=True methods=['POST'] | PriceTargetConsensus:rows=1 emitted=['TmxPriceTargetConsensus'] contract=TmxPriceTargetConsensus runtime_identity=True methods=['POST'] | EquityHistorical:rows=1 emitted=['TmxEquityHistorical'] contract=TmxEquityHistorical runtime_identity=True methods=['POST']
+CONTROL_LIMIT_ON_THE_WIRE 2026-10-09..2026-10-09: wire_limit=1 _history_limit=1 rows_in_doc=1 served=1 seam_calls=1 | 2026-10-08..2026-10-09: wire_limit=2 _history_limit=2 rows_in_doc=2 served=2 seam_calls=1
+CONTROL_COUNT_GUARD_BITES control_rows=1 tampered_refusal=TmxProviderError code=TMX_BAD_ROWS site=fetchers.py:277:transform_data declared_code=TMX_BAD_ROWS
+CONTROL_WINDOW_SCALING two_rows_under_two_day_window served=2 dates=['2026-10-09', '2026-10-08'] seam_calls=1
+CONTROL_ADDED_ROW_IS_WELLFORMED prior_day_alone served=1 date=2026-10-08 close=121.44
+CONTROL_TWO_BAD_ROWS_SITES non_list_root: TmxProviderError code=TMX_BAD_ROWS site=client.py:176:list_rows | over_limit_list: TmxProviderError code=TMX_BAD_ROWS site=fetchers.py:277:transform_data distinct_frames=2 frames=['client.py:176:list_rows', 'fetchers.py:277:transform_data']
+CONTROL_TAMPER_BITES EquityQuote:control=1 declared=TMX_BAD_ROW observed=TMX_BAD_ROW match=True | EquityInfo:control=1 declared=TMX_BAD_ROW observed=TMX_BAD_ROW match=True | CompanyFilings:control=1 declared=TMX_BAD_ROWS observed=TMX_BAD_ROWS match=True | PriceTargetConsensus:control=1 declared=TMX_BAD_ROW observed=TMX_BAD_ROW match=True | EquityHistorical:control=1 declared=TMX_BAD_ROWS observed=TMX_BAD_ROWS match=True
+PREVALIDATION_DONE phase_failures_or_blocked=0
+equity_historical_prevalidation_exit=0

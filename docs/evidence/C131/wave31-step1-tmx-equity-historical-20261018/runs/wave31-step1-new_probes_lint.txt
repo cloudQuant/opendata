@@ -1,0 +1,17 @@
+wave-31 step 1 -- lint 面（本波 4 枚探针，take2：typing 修正之后）
+files=4
+argv_files=declaration_counterfact.py; equity_historical_prevalidation.py; payload_scan_falsification.py; w31s1_run_chain.py
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m ruff check docs/evidence/C131/wave31-step1-tmx-equity-historical-20261018/probes/declaration_counterfact.py <4 条路径尾部追加>
+stderr_bytes=0
+All checks passed!
+ruff_check_exit=0
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m ruff format --check <4 条路径尾部追加>
+stderr_bytes=0
+4 files already formatted
+ruff_format_exit=0
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m mypy --config-file pyproject.toml <4 条路径尾部追加>
+stderr_bytes=0
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+Success: no issues found in 4 source files
+mypy_exit=0
+lint_face steps=3 failed=0

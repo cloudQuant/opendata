@@ -234,10 +234,16 @@ class EquitySearchFetcher(_TypedFetcher[EquitySearchQuery]):
         return _equity_search_rows(_root(raw, "findTmxCompaniesByKeywords"))
 
 
+def _history_limit(params: EquityHistoricalQuery) -> int:
+    """The row ceiling the history window implies, published to the source as ``limit``."""
+    return min(_MAX_HISTORY_DAYS, (params.end_date - params.start_date).days + 1)
+
+
 class EquityHistoricalFetcher(_TypedFetcher[EquityHistoricalQuery]):
     """Fetch and map bounded daily equity price history."""
 
     canonical_model: ClassVar[str | None] = "EquityHistorical"
+    row_model: ClassVar[type[TmxEquityHistorical]] = TmxEquityHistorical
     capability: ClassVar[Capability] = _capability(
         "tmx_equity_historical", "daily", "EquityHistorical"
     )
@@ -257,7 +263,7 @@ class EquityHistoricalFetcher(_TypedFetcher[EquityHistoricalQuery]):
                 "adjusted": False,
                 "adjustmentType": None,
                 "unadjusted": None,
-                "limit": min(_MAX_HISTORY_DAYS, (params.end_date - params.start_date).days + 1),
+                "limit": _history_limit(params),
             },
             timeout=self._timeout(ctx),
         )
@@ -265,6 +271,10 @@ class EquityHistoricalFetcher(_TypedFetcher[EquityHistoricalQuery]):
     def transform_data(self, raw: GraphqlReply, params: EquityHistoricalQuery) -> FetchResult:
         """Map daily source rows into the strict history contract."""
         source_rows = list_rows(_root(raw, "getCompanyPriceHistory"))
+        # Over-delivery is a source contract violation, not a longer history: refuse rather than
+        # publish rows the requested window never selected (same ruling as the filings guard).
+        if len(source_rows) > _history_limit(params):
+            raise TmxProviderError("TMX_BAD_ROWS")
         result = []
         for source_row in source_rows:
             mapped = {

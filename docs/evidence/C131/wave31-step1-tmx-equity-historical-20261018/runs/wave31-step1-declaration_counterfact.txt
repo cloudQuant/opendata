@@ -1,0 +1,26 @@
+wave-31 step 1 -- the shipped four-axis row judge run against tmx::EquityHistorical with the declaration present, then removed in memory, then restored; plus the rulings-parity and AST-vs-runtime-artifact arms against their controls
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C131/wave31-step1-tmx-equity-historical-20261018/probes/declaration_counterfact.py   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+judge_report offline_acceptance=286 identity_set=5168e1e723999312 incomplete=27
+PIN sha256:16=6968b9ccdf10e1d4 file=opendata/data/providers/tmx/models/fetchers.py
+PIN sha256:16=7b976e79887012e6 file=scripts/quality/iter2_witnesses/tmx.py
+PIN sha256:16=462cc550398d728f file=opendata/data/providers/tmx/models/client.py
+PIN sha256:16=18b46adc3ccbcfb7 file=scripts/quality/iter2_claims_probe_runner.py
+SCRATCH_NOT_USED scratch_dir=/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T
+A_declared tmx::EquityHistorical judge_status=OFFLINE_ACCEPTED verdict=DOCUMENT_REACHABLE declared=True is_contract_ast=False emitted_ast=[] contract=TmxEquityHistorical counts={'transform_data': 1} trippable=['opendata/data/providers/tmx/models/fetchers.py:277 transform_data TMX_BAD_ROWS'] raises=8 code_raises=1
+A_declared_site tmx::EquityHistorical opendata/data/providers/tmx/models/fetchers.py:277 transform_data TMX_BAD_ROWS
+B_runtime_identity tmx::EquityHistorical domain=tmx_equity_historical row_model=TmxEquityHistorical contract_model=TmxEquityHistorical runtime_is=True
+B_declaration_removed tmx::EquityHistorical verdict=ROW_CLASS_NOT_CONTRACT declared=False is_contract_ast=False
+B_restored tmx::EquityHistorical verdict=DOCUMENT_REACHABLE declared=True
+B_MOVES tmx::EquityHistorical declared=DOCUMENT_REACHABLE stripped=ROW_CLASS_NOT_CONTRACT PASS=True
+C_parity_site tmx::CompanyFilings opendata/data/providers/tmx/models/fetchers.py:448 transform_data TMX_BAD_ROWS
+C_ruling_parity history_codes=[('TMX_BAD_ROWS', 'transform_data')] filings_codes=[('TMX_BAD_ROWS', 'transform_data')] shared=[('TMX_BAD_ROWS', 'transform_data')] PASS=True
+D_client_segment '_client'
+D_tmx_files opendata/data/providers/tmx/models
+D_tmx_row_class tmx::EquityHistorical emitted=[] is_contract=False look_alike=False client_names=[] runtime_is=domain=tmx_equity_historical row_model=TmxEquityHistorical contract_model=TmxEquityHistorical runtime_is=True
+D_tmx_after tmx::EquityHistorical doc_sites_after=[False]
+D_control government_us::CommodityPsdData verdict=DOCUMENT_REACHABLE emitted=['opendata.data.models.government_us.CommodityPsdData'] is_contract=True client_names=['_client'] doc_sites_after=[False, False, False, False, True, False]
+D_control government_us::CommodityPsdReport verdict=DOCUMENT_TRIPPED emitted=['opendata.data.models.government_us.CommodityPsdReport'] is_contract=True client_names=['_client'] doc_sites_after=[False, True, True]
+D_readings tmx_ast_contract_false=True tmx_client_names_empty=True control_both_live=True NOTE=both artifacts published, neither used to green a number
+COUNTERFACT_DONE arms=3 arms_passed=3
+declaration_counterfact_exit=0

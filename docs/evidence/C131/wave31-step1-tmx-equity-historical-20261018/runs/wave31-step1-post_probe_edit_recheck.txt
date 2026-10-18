@@ -1,0 +1,9 @@
+wave-31 step 1 -- 探针改字节（只动 typing 与标签取法）之后的复测面
+正谓词：只比 `^(phase: |PHASE_TALLY|CONTROL_|PREVALIDATION_DONE|claims_document|pinned_files=|pin_drift)` 形状的行；散文头、`materialized:` 的 mktemp 根、载档追加的 `<name>_exit=` 都不属判定形状，不进入比较。
+argv(prevalidation): /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C131/wave31-step1-tmx-equity-historical-20261018/probes/equity_historical_prevalidation.py
+prevalidation_exit=0
+argv(pin_drift): /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C131/wave31-step1-tmx-equity-historical-20261018/probes/w31s1_run_chain.py --stage pin-drift
+pin_drift_exit=0
+verdict_lines orig=34 recheck=34 differing_positionwise=0
+recheck_face verdict_changed=False
+recheck_face done_line_now=['PREVALIDATION_DONE phase_failures_or_blocked=0']
