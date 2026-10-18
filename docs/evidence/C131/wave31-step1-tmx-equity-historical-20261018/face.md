@@ -15,6 +15,7 @@ producer → recorder → merge → judge，探针一律 `import` 自带判定�
 | tmx 已验收行 | 4 | 5 | `...pin_drift_pre_production.txt:10`、`...judge.txt:7` |
 | 残留总数 | 65 | 64 | `runs/wave31-step1-residue_axis_census.txt:82` |
 | 提交前的索引面凭据筛（72 枚 staged 路径） | 出厂闸门看不见（它读提交历史） | `findings=0 rc=0 unresolved=0`，另有能咬的 A/B/C 三臂 3/3 | `runs/wave31-step1-precommit_staged_scan.txt:5`、`runs/wave31-step1-payload_scan_falsification.txt`（§3.1） |
+| 提交后的出厂闸复测（读 history，HEAD=`86fb93ac9`） | — | `secret_check_exit=0`，425 commits / 288.85 MB，`no leaks found` | `runs/wave31-step1-post_commit_secret_check.txt:4,6`（§3.2） |
 
 `EquityHistorical` 五相全部 `exit=0 status=PASS`：`runs/wave31-step1-producer.txt:30-34`（argv 就在
 同一行里打印）。recorder `signed=5 refused=0`，并显式记下 `re-signing: dropped 4 earlier review(s)`
@@ -99,9 +100,22 @@ wave-28/30 的两台仪器，作用对象是本次 index：
   载体文件名/标签/临时前缀三处随之改名，机制一字未动）：
   `runs/wave31-step1-payload_scan_falsification.txt` A 臂 `findings=1 rules=['github-pat']`、
   B 臂干净副本 `findings=0`、C 臂拼接体 `findings=0`，`arms=3 arms_passed=3 PASS=True`。
-  诚实边界：A 臂的宿主取 staged 清单前 3 枚（`captures/tmx/*/contract-exit0.txt` 等），
-  它证明的是**屏会咬**，不是"这 3 枚是总体"——总体由上一条的 67 覆盖。
+  诚实边界：A 臂的宿主取 staged 清单前 3 枚（`captures/tmx/*/contract-exit0.txt` 等，载档 `:4`
+  `hosts=3`），它证明的是**屏会咬**，不是"这 3 枚是总体"——总体由上一条的 72 覆盖。
+  （这一句上一版写的是"67"。67 在任何载档里都不存在，是我凭 wave-30 的印象打的一个数；
+  现按 `precommit_staged_scan.txt:5` 改回现测的 72。见 §7 第 5 条。）
 - 我这一步自己的错见 §7 第 4 条（首版 lint 总体漏掉 4 枚探针）。
+
+### 3.2 提交之后的出厂闸复测（把自指的那一段补上）
+
+索引面那一把扫的是 stage 那一刻的字节；§3.1 与 face.md 在那之后又被改过，所以"72 枚干净"
+不覆盖最终留在历史里的那份 payload。提交后跑出厂闸的那个成员（`scripts/quality/secret_scan_check.py`
+→ `gitleaks detect --source . --config .gitleaks.toml --redact`，读的是**提交历史**，HEAD 即本波提交）：
+
+- `runs/wave31-step1-post_commit_secret_check.txt:4` `head=86fb93ac9 secret_check_exit=0`，
+  `:6` `gitleaks_inf=425 commits scanned. | scanned ~288847332 bytes (288.85 MB) in 1m43s | no leaks found`。
+- 这一把的载档自身又在这把之后落盘，所以它是这条链条上唯一没有被关闭的自指：它只是散文，
+  不含凭据形状，且它已经在下一把的历史里（下一波提交前的索引面会扫到它）。
 
 ## 4. 两枚判定器伪影（发布，不动判定器）
 
@@ -221,16 +235,25 @@ buckets={'NEED_BINDING': 32, 'NEED_DECLARE': 17, 'NEED_SHARD_ENTRY': 15}`（列�
   phase_failures_or_blocked=0`，同面 pin 读数 `pinned_files=14 stale_files=0`——
   这 4 枚探针不在 shard 的 pin 清单里（那份清单是 9 枚仓内源文件 + C101 自身的 fixture/receipt），
   所以改它们不产生重签税。
+- §3.1 的诚实边界那句里我写了"总体由上一条的 67 覆盖"。**67 不存在于任何载档**——它是我按
+  wave-30 的印象打的一个数，而 wave-30 自己的现测是 92/94
+  （`docs/evidence/C130/plane1-action-map-rebase-20261018/runs/wave30-step8a-precommit-staged-scan.txt:23,73`），
+  两个都不该被抄进本波。本波总体由 `precommit_staged_scan.txt:5` 现测为 72，已按载档改回。
+  同类错误在这一步还有第二处：`post_commit_secret_check` 第一把的载档里 `stderr_inf_lines:` 是空的
+  ——gitleaks 的 stderr 带 ANSI，`INF` 后面紧跟 `\x1b[0m` 而非空格，`"INF " in line` 一条也没接住，
+  于是写进去一条"看起来像读数的空"。重取时先剥 ANSI 再过滤，并 `assert len(inf)==3` 且其中一条
+  含 `no leaks found`；错的那把留在同一载档的自述里。
 
 ## 8. 载档清单（每条自带 argv 与 `<name>_exit=<digit>`）
 
-`runs/` 24 份：`producer`(127 行) `recorder` `merge_take1` `merge_take2`(含 idempotency) `judge`(含
+`runs/` 25 份：`producer`(127 行) `recorder` `merge_take1` `merge_take2`(含 idempotency) `judge`(含
 pre/post 两代面) `declaration_counterfact` `equity_historical_prevalidation`
 `incomplete_row_guard_check`(96 行，臂 6/6) `readiness_census` `residue_axis_census`(83 行)
 `seam_reachability_census` `receipt_pin_consistency` `batch5_fence_dry_census` `ruff_check`
 `ruff_format` `mypy` `bandit` `pytest_tmx_and_pin_planes` `pin_drift_pre_production`
 `pin_drift_pre_production_rerun` `precommit_staged_scan` `payload_scan_falsification`
-`new_probes_lint` `post_probe_edit_recheck`，共 630 行 / 90058 字节（`wc -lc runs/*.txt` 现测）。
+`new_probes_lint` `post_probe_edit_recheck` `post_commit_secret_check`，共 638 行 / 91330 字节
+（`wc -lc runs/*.txt` 现测）。
 `probes/` 4 份 / 1113 行：`w31s1_run_chain.py`（链驱动，`--stage pin-drift` 是真参数，可单跑）、
 `declaration_counterfact.py`、`equity_historical_prevalidation.py`、
 `payload_scan_falsification.py`（波 30 同名仪器移植，改名三处：载档文件名、标签、临时前缀）。
