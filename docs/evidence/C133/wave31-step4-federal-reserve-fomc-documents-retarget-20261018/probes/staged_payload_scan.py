@@ -65,11 +65,21 @@ def staged_paths() -> list[str]:
     return paths
 
 
-def materialize(paths: list[str], dest: Path) -> int:
-    """Write every staged blob out of the index, so the scan reads the committed bytes."""
+def committed_paths() -> list[str]:
+    """Read the payload a commit already took, since after one the index is empty."""
+    out, rc = git_bytes(
+        "-c", "core.quotepath=off", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"
+    )
+    paths = sorted(line for line in out.decode("utf-8").splitlines() if line)
+    print(f"committed_roster exit={rc} files={len(paths)}", flush=True)
+    return paths
+
+
+def materialize(paths: list[str], dest: Path, blob_prefix: str) -> int:
+    """Write every blob out of the chosen git object, so the scan reads commit-bound bytes."""
     written = 0
     for rel in paths:
-        data, rc = git_bytes("show", f":{rel}")
+        data, rc = git_bytes("show", f"{blob_prefix}{rel}")
         if rc != 0:
             print(f"MATERIALIZE_FAIL {rel} exit={rc}", flush=True)
             continue
@@ -155,31 +165,38 @@ def last_stderr_line(text: str) -> str:
 GITLEAKS = shutil.which("gitleaks")
 
 
-def main() -> int:
-    """Price the staged payload three ways and gate on the planted control."""
+def main(argv: list[str]) -> int:
+    """Price the payload three ways and gate on the planted control, over index or HEAD bytes."""
+    source = argv[argv.index("--source") + 1] if "--source" in argv else "index"
+    if source not in ("index", "head"):
+        print(f"PRESCAN_ABORT unknown_source={source}", flush=True)
+        return 2
+    blob_prefix = ":" if source == "index" else "HEAD:"
+    blob_label = "index" if source == "index" else "HEAD"
+    face_name = "staged_payload_scan" if source == "index" else "committed_payload_scan"
     own_path = Path(__file__).resolve()
     if GITLEAKS is None:
         print("PRESCAN_ABORT gitleaks_binary=absent", flush=True)
         return 2
     work = Path(tempfile.mkdtemp(prefix="w31s4-scan-"))
     repo_config = REPO / ".gitleaks.toml"
-    paths = staged_paths()
+    paths = staged_paths() if source == "index" else committed_paths()
     out: list[str] = [
         f"TOOL gitleaks_version={gitleaks_version()} repo_config_present={repo_config.is_file()}"
     ]
 
     for rel in CODE_FILES:
-        index_data, index_rc = git_bytes("show", f":{rel}")
+        index_data, index_rc = git_bytes("show", f"{blob_prefix}{rel}")
         disk = (REPO / rel).read_bytes()
         out.append(
-            f"CODE {Path(rel).name} index={short(index_data)} worktree={short(disk)} "
-            f"index_exit={index_rc} same={short(index_data) == short(disk)}"
+            f"CODE {Path(rel).name} {blob_label}={short(index_data)} worktree={short(disk)} "
+            f"{blob_label}_exit={index_rc} same={short(index_data) == short(disk)}"
         )
     missing_code = [rel for rel in CODE_FILES if rel not in paths]
 
     tree = work / "payload"
     tree.mkdir()
-    copied = materialize(paths, tree)
+    copied = materialize(paths, tree, blob_prefix)
 
     shipped = run_gitleaks("shipped", tree, repo_config, work / "shipped.json")
 
@@ -205,11 +222,13 @@ def main() -> int:
     shutil.rmtree(work, ignore_errors=True)
 
     out.append(
-        f"A_staged_roster count={len(paths)} code_files_in_roster={not missing_code} "
+        f"A_{'staged' if source == 'index' else 'committed'}_roster count={len(paths)} "
+        f"code_files_in_roster={not missing_code} "
         f"missing={missing_code or '[]'}"
     )
     out.append(
-        f"B_blobs_from_index copied={copied} of={len(paths)} reading=the scan read index bytes, "
+        f"B_blobs_from_{'index' if source == 'index' else 'HEAD'} copied={copied} of={len(paths)} "
+        f"reading=the scan read {blob_label} bytes, "
         "so a worktree-only edit cannot hide behind it"
     )
     out.append(
@@ -239,7 +258,7 @@ def main() -> int:
 
     gates = {
         "A_roster_nonempty_and_covers_code": bool(paths) and not missing_code,
-        "B_copied_equals_staged": copied == len(paths),
+        f"B_copied_equals_{'staged' if source == 'index' else 'committed'}": copied == len(paths),
         "C_shipped_clean": shipped["findings"] == 0,
         "D_strip_actually_changed_config": stripped_text != raw and rules_kept > 0,
         "D_allowlist_free_clean": allowlist_free["findings"] == 0,
@@ -256,19 +275,26 @@ def main() -> int:
 
     body = "\n".join(out)
     exit_code = 0 if all_pass else 1
-    path = RUNS / "wave31-step4-staged_payload_scan.txt"
+    path = RUNS / f"wave31-step4-{face_name}.txt"
+    argv_tail = [] if source == "index" else ["--source", source]
     path.write_text(
         carrier(
             {
-                "name": "staged_payload_scan",
-                "argv": [PY, str(own_path)],
+                "name": face_name,
+                "argv": [PY, str(own_path), *argv_tail],
                 "pythonpath": ".",
                 "exit": exit_code,
                 "stderr": "",
                 "stdout": body,
-                "note": "credential pre-scan over the staged index payload: shipped config, every "
-                "allowlist table removed, and the built-in ruleset, plus a runtime-planted "
-                "fake key that must move the count from 0 to 1",
+                "note": (
+                    "credential pre-scan over the staged index payload: shipped config, every "
+                    "allowlist table removed, and the built-in ruleset, plus a runtime-planted "
+                    "fake key that must move the count from 0 to 1"
+                    if source == "index"
+                    else "the same three scans re-run over the bytes commit 623c83a2 took into "
+                    "HEAD, because after a commit the index is empty and the index-mode face "
+                    "can only read a true zero roster"
+                ),
             }
         ),
         encoding="utf-8",
@@ -279,4 +305,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(sys.argv[1:]))

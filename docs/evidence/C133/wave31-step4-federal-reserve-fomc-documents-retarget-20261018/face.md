@@ -145,11 +145,15 @@ step-3 的链路里有一把 plane-2 面（`declared/dev_done/missing_model_rows
 `landed_bytes_face.py`（10 臂）在 §3.4，第六台 `staged_payload_scan.py`（9 臂）在 §3.5。
 
 总体的边界要说清：**六台 = 本波 `probes/` 里会打 `arms=` 的那六枚**（目录里第七枚 `.py` 是驱动
-`w31s4_run_chain.py`，它不造臂）。`runs/` 里打 `arms=` 的面其实有 10 把、共 73 臂，多出的四把不在这
-六台之内：`fomc_retarget_cost_face_take1_REFUTED`（6 臂，是被判否的 take 1，§4.4）与三把从 C128 借来
-现跑的探针 `incomplete_row_guard_check`（6）、`receipt_pin_consistency`（3）、`residue_axis_census`（8）
-——它们的 argv 头部第二行各自写着 `docs/evidence/C128/plane1-residue-readiness-20261017/probes/…`，
-所以字节归属不在本波目录，本波的 FORMAT leg 也就管不到它们。
+`w31s4_run_chain.py`，它不造臂）。`runs/` 里打成对 `arms=N arms_passed=N` 的面其实有 12 把、共 91 臂，
+多出的六把不在这六台的"当代绿面"之内：`fomc_retarget_cost_face_take1_REFUTED`（6 臂，是被判否的 take 1，
+§4.4）、三把从 C128 借来现跑的探针 `incomplete_row_guard_check`（6）、`receipt_pin_consistency`（3）、
+`residue_axis_census`（8）——它们的 argv 头部第二行各自写着
+`docs/evidence/C128/plane1-residue-readiness-20261017/probes/…`，所以字节归属不在本波目录，本波的
+FORMAT leg 也就管不到它们——以及 `staged_payload_scan` 的另外两代（HEAD 模式 9 臂、commit 后 index 模式
+那把 9 臂只过 8 的红面，见 §3.5）。另有第十三把含 `arms` 字样的面 `readiness_census:11`，它打的是
+`readiness_arms=3 readiness_passed=3 readiness_failed=0`，拼写不同所以不进上面的 91；两把尺合算是
+13 把面 / 94 臂。
 
 ### 3.1 落地前：`probes/fomc_documents_retarget_prevalidation.py`（6 臂）
 
@@ -279,21 +283,23 @@ retired_face=handoff_spellings_vs_resolved_class all_arms_pass=True`。
 - `:16` `H_self_lint bytes=10879 codes={}`：同 §3.4 的 `G` 臂，用 `take1_lint_preexistence.ruff_over()`
   对自己当代字节跑同一条通道。
 
-自指的限制要说尽，不要留给读者猜：这台仪器的载档写在 `runs/` 里，而它自己也是 payload 的成员。我没有把
-这个循环当成缺陷绕过，而是把它测成了一个**不动点**：先把 134 枚（含探针与上一把载档）全部暂存，再跑这台
-仪器，于是 `:9` 的 `count=134` 就是最终提交的总体大小，`A`/`B`/`C`/`D`/`E` 读的都是暂存区里那 134 枚的
-index 字节，其中包含载档自己上一代的字节；跑完只重新暂存这把载档。此时"被扫的那代载档字节"与"落盘的那代
-载档字节"是否同一代，不需要任何人相信散文——判定式是
+自指的限制要说尽，不要留给读者猜。我最初在这里发布的收口判定式是"commit 之后重跑本仪器，
+`git diff --name-only` 应为空"，**那条是错的**，而且错得正好：commit 之后 index 是空的，
+`diff --cached --name-only` 因此读 0 枚，`A` 臂当场红（`staged_payload_scan_POSTCOMMIT_RED.txt:9`
+`count=0 code_files_in_roster=False missing=[四枚码文件全列出]`、`:17 arms_passed=8`、
+`:18 exit=1`）。那把红面我留在档里，没有覆盖它。真正值得注意的形状是 `:10`
+`B_blobs_from_index copied=0 of=0` ——空总体上 `copied == len(paths)` 是**空真**，如果我只留 B 臂，
+这个 0 会读成"扫描全绿"。让这条不成立的正是 A 臂把总体大小与缺失文件名一起打印。
 
-```
-PYTHONPATH=. python docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/probes/staged_payload_scan.py
-git -c core.quotepath=off diff --name-only        # 必须为空
-```
-
-重跑写回的字节若与 index（commit 之后是 HEAD）不同，`diff --name-only` 会立刻列出这把载档，谓词为假；
-为空就是不动点成立。我在提交前实测它为空，所以"载档覆盖了自己的字节"这条是可复算的，而不是我读出来的
-一枚摘要。void 条件：这条判定只在总体不再变化时成立——commit 之后若又改了 payload 里任何一枚文件，
-`count` 会变，这把面必须重取，否则 §3.5 的所有读数都成了上一代。
+修法是给同一台仪器加一个 `--source head` 模式：总体取自
+`git diff-tree --no-commit-id --name-only -r HEAD`，字节取自 `git show HEAD:<path>`，写在独立的载档
+`committed_payload_scan.txt` 上，因此它不会覆盖 index 模式那把。现值九臂全过：
+`:9 A_committed_roster count=134`（与 commit `623c83a2` 的实际文件数同目，`git diff-tree … | wc -l` 实测
+134）、`:10 B_blobs_from_HEAD copied=134 of=134`、`:11-13` 三套规则集各 `findings=0`、
+`:14` 种 key 后读 1、`:16 H_self_lint bytes=12416 codes={}`（加模式后的探针当代字节）。
+所以"提交进去的字节是干净的"这句现在有一条不依赖暂存区的面撑着；index 模式那把仍只对**提交前**的总体说话，
+它的 `H bytes=10879` 指的是 `623c83a2` 里的探针字节，用 `git show 623c83a2:probes/staged_payload_scan.py`
+可取回。两代载档各自成立，我没有把它们并成一枚会同时说两件事的面。
 
 
 ## 4. 判定器伪影与本波发现
@@ -551,6 +557,16 @@ control_actions_off_harness=[shard_entry_needs_harness] control_real_fake_ok=[Tr
     并且它说明一件比单个 bug 更麻烦的事：**用来防"散文式断言"的仪器，如果它的对照臂只能与自身比较，
     它本身就成了新的散文**。现在的 `F` 臂（种一枚假 key，同一 argv 必须从 0 变 1）是那把仪器的自检。
 
+13. **我在 §3.5 发布的收口判定式自己不成立**。那条写的是"commit 之后重跑 `staged_payload_scan.py`，
+    `git diff --name-only` 为空即证明载档与提交字节同代"。我没在发布前跑过 commit **之后**的那一侧，
+    而 commit 之后 index 是空的：`diff --cached --name-only` 读 0 枚，`A` 臂红
+    （`staged_payload_scan_POSTCOMMIT_RED.txt:9` `count=0`、`:18 staged_payload_scan_exit=1`）。
+    这条错误里真正值得留的形状是 `:10` `B_blobs_from_index copied=0 of=0` 仍读 True——**空总体上的
+    相等是空真**，若我的门只有 B，"0 枚文件、0 处命中"会被读成一份干净的大扫描。处置不是改散文，
+    而是给仪器加 `--source head` 模式（总体取自 `git diff-tree … HEAD`，字节取自 `git show HEAD:`），
+    写成独立载档 `committed_payload_scan.txt`，九臂全过，并把红那把留在档里不覆盖。
+    它与 §7.11 同族（计数要有被计数对象的行来支撑），只是这次是**我自己写的谓词**在空总体上失真。
+
 ## 8. 载档清单
 
 `docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/`
@@ -561,11 +577,13 @@ control_actions_off_harness=[shard_entry_needs_harness] control_real_fake_ok=[Tr
 - `probes/fomc_retarget_cost_face.py`（317 行）—— 7 臂代价面（§3.2），字节同样冻结
 - `probes/handoff_judge_counterfact.py`（235 行）—— 6 臂重基判定器反例（§3.3）
 - `probes/take1_lint_preexistence.py`（248 行）—— 12 臂 lint 归属 + 控制臂形状校准（§4.5、§4.8）
-- `probes/landed_bytes_face.py`（277 行）—— 10 臂字节面（§3.4），本波唯一"改探针不重跑就会自己变红"
+- `probes/landed_bytes_face.py`（277 行）—— 10 臂字节面（§3.4），第一台"改探针不重跑就会自己变红"
   的仪器；它 import 驱动常量与 `take1_lint_preexistence.ruff_over`，所以 `G` 臂用的还是同一条计费通道
-- `probes/staged_payload_scan.py`（282 行）—— 9 臂凭证预扫（§3.5），扫的是 index 字节而不是工作树；
-  它自己带一次"对照臂是死的"缺陷与修复，记在 §7.12
-- `runs/`（本波提交的 31 把面，`wave31-step4-` 前缀一律省略）：`producer`、`recorder`、
+- `probes/staged_payload_scan.py`（308 行）—— 凭证预扫，两种总体各一把面：默认 index 模式 9 臂
+  （§3.5，提交前扫暂存区字节）与 `--source head` 模式 9 臂（扫 commit 已取的 HEAD 字节）。它自带
+  两次自己的缺陷：对照臂没有能力不同（§7.12）与空总体上的空真谓词（§7.13）。它的 `H_self_lint`
+  使它也属于"改探针不重跑就会自己变红"那一类
+- `runs/`（本波提交的 33 把面，`wave31-step4-` 前缀一律省略）：`producer`、`recorder`、
   `merge_take1`、`merge_take2`、`judge`、`pin_drift_pre_production`、
   `pin_drift_pre_production_rerun`、`fomc_documents_retarget_prevalidation`、
   `fomc_retarget_cost_face`（take 2）、`fomc_retarget_cost_face_take1_REFUTED`、
@@ -574,13 +592,16 @@ control_actions_off_harness=[shard_entry_needs_harness] control_real_fake_ok=[Tr
   `batch5_fence_dry_census`、`ruff_check`、`ruff_check_take1_PREFIXES`、`ruff_format`、
   `ruff_format_retake`、`ruff_format_take1`、`mypy`、`mypy_retake`、`mypy_take1_ROSTER_REFUTED`、
   `bandit`、`pytest_federal_reserve_and_pin_planes`、`pytest_collect_denominator`、
-  `take1_lint_preexistence`、`landed_bytes_face`、`staged_payload_scan`
+  `take1_lint_preexistence`、`landed_bytes_face`、`staged_payload_scan`、`committed_payload_scan`、
+  `staged_payload_scan_POSTCOMMIT_RED`
 
-  31 是把 `runs/*.txt` 数出来的（`ls -1 runs/*.txt | wc -l`），31 这个数字与清单条目数是我分别数的，
-  所以对不上时以 shell 那把为准。逐把读尾部 exit 行的实测分类：**27 把 `*_exit=0`，4 把非 0**
+  33 是把 `runs/*.txt` 数出来的（`ls -1 runs/*.txt | wc -l`），33 这个数字与清单条目数是我分别数的，
+  所以对不上时以 shell 那把为准。逐把读尾部 exit 行的实测分类：**28 把 `*_exit=0`，5 把非 0**
   ——`ruff_check_take1_PREFIXES`、`mypy_take1_ROSTER_REFUTED`、`ruff_format_take1` 是本波第一手红面，
-  `batch5_fence_dry_census`（`:11 exit=1`）是设计内拒绝。这一轮同时数了"没有 exit 行的载档"：0 把，
-  所以 27 + 4 = 31 是闭合的，不是我挑着读。需要单列的是第四把 take-1：
+  `batch5_fence_dry_census`（`:11 exit=1`）是设计内拒绝，`staged_payload_scan_POSTCOMMIT_RED`
+  （`:18 exit=1`）是我发布了一条不成立的谓词之后、按 §7.13 留下的那一把。这一轮同时数了"没有 exit 行的
+  载档"：0 把，
+  所以 28 + 5 = 33 是闭合的，不是我挑着读。需要单列的是第四把 take-1：
   `fomc_retarget_cost_face_take1_REFUTED` **退 0 而被判否**——它的伪造臂因错而绿（§4.4），所以
   "exit 与结论同向"在这台链上也不是恒等式。
   `ruff_format.txt` 与 `ruff_format_retake.txt` 是同一条 argv 的两代，引用时按 §7.10 取新那把。

@@ -1,0 +1,18 @@
+wave-31 step 4 -- the same three scans re-run over the bytes commit 623c83a2 took into HEAD, because after a commit the index is empty and the index-mode face can only read a true zero roster
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C133/wave31-step4-federal-reserve-fomc-documents-retarget-20261018/probes/staged_payload_scan.py --source head   (cwd = repo root, no pipes, PYTHONPATH=.)
+stderr_bytes=0
+TOOL gitleaks_version=8.30.1 repo_config_present=True
+CODE fomc_documents.py HEAD=3a03c7d4f79a33be worktree=3a03c7d4f79a33be HEAD_exit=0 same=True
+CODE rows_a.py HEAD=e9c4edc8405c7306 worktree=e9c4edc8405c7306 HEAD_exit=0 same=True
+CODE federal_reserve.py HEAD=be380dd643f747de worktree=be380dd643f747de HEAD_exit=0 same=True
+CODE test_federal_reserve_iter2_models.py HEAD=52218ac2ad608800 worktree=52218ac2ad608800 HEAD_exit=0 same=True
+A_committed_roster count=134 code_files_in_roster=True missing=[]
+B_blobs_from_HEAD copied=134 of=134 reading=the scan read HEAD bytes, so a worktree-only edit cannot hide behind it
+C_scan_shipped findings=0 exit=0 config=.gitleaks.toml (as shipped, allowlists active)
+D_scan_allowlist_free findings=0 exit=0 raw_lines=185 stripped_lines=15 lines_dropped=167 rules_kept=2 config_actually_changed=True
+E_scan_builtin findings=0 exit=0
+F_planted_control findings=1 files=['POSITIVE_CONTROL.txt'] reading=the argv that reads 0 over the payload must read 1 once a fake key is planted
+G_planted_literal_not_printed leaked=False reading=no line of this carrier can carry the planted token
+H_self_lint codes={} hits=[] parser_agrees=True bytes=12416
+prescan_face=arms=9 arms_passed=9 gates={'A_roster_nonempty_and_covers_code': True, 'B_copied_equals_committed': True, 'C_shipped_clean': True, 'D_strip_actually_changed_config': True, 'D_allowlist_free_clean': True, 'E_builtin_clean': True, 'F_control_bit': True, 'G_literal_not_carried': True, 'H_probe_itself_rule_clean': True} all_pass=True
+committed_payload_scan_exit=0
