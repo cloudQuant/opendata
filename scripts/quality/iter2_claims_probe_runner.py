@@ -192,13 +192,71 @@ def _spec_body(spec: dict[str, Any]) -> tuple[bytes, str]:
     return _seam_body_bytes(spec.get("body"))
 
 
+def _echo_request_id(body: bytes, json_body: Any, *, needle: str) -> bytes:  # noqa: ANN401
+    """Rewrite one envelope's ``id`` with the id the client actually asked with.
+
+    A JSON-RPC server answers the request it was given, and a provider that parses the reply checks
+    the echo (``deribit/client.py`` refuses unless ``response_id == request_id``), where the id came
+    from a process-global counter. A fixture carrying a fixed id can therefore serve exactly *one*
+    fetch generation per process, and the counterfact phase runs two in a row -- its untampered
+    control consumes the first ids, so the tampered run asks an id the fixture cannot echo and
+    refuses at the envelope, never reaching the cell the tamper broke. Substituting the echo is the
+    faithful reading, and it is opt-in per fixture entry so every spec on disk keeps the bytes it
+    was received under. Only that one key moves: every other byte the fixture declares is served as
+    the module's own encoder produced it, and a payload with no integer id means the entry declared
+    an echo the call cannot honour.
+    """
+    if not isinstance(json_body, dict):
+        raise WitnessFailure(
+            f"client seam fixture entry url_contains={needle!r} declares echo_request_id "
+            "but the call carried no JSON payload to echo"
+        )
+    asked = json_body.get("id")
+    if type(asked) is not int:
+        raise WitnessFailure(
+            f"client seam fixture entry url_contains={needle!r} declares echo_request_id "
+            f"but the payload carries id={asked!r}, which is not an integer"
+        )
+    try:
+        document = json.loads(body)
+    except ValueError:
+        raise WitnessFailure(
+            f"echo_request_id is declared for a body that is not JSON at all "
+            f"(url_contains={needle!r})"
+        ) from None
+    if not isinstance(document, dict) or document.get("jsonrpc") != "2.0":
+        raise WitnessFailure(
+            f"echo_request_id is declared for a body that is not a JSON-RPC 2.0 envelope "
+            f"(url_contains={needle!r}, body={type(document).__name__})"
+        )
+    document["id"] = asked
+    return json.dumps(document).encode("utf-8")
+
+
 class _FakeSharedClient:
-    """Serves the fixture envelope through the governed client's own ``get`` surface."""
+    """Serves the fixture envelope through the governed client's own ``get``/``request`` surface.
+
+    ``GovernedHttpClient`` publishes exactly two public verbs (measured by introspection: ``get``
+    and ``request``), so a fake that answers only ``get`` silently blocks every provider whose
+    fetcher posts. A fixture spec may declare ``method`` (a string or a list of strings) and the
+    fake then refuses to serve that spec under another verb, so widening the surface does not turn a
+    POST-shaped fixture into a free GET. Specs that declare nothing keep the old behaviour, which is
+    what every receipt on disk was produced under.
+    """
 
     def __init__(self, responses: list[dict[str, Any]]) -> None:
         self.responses = responses
         self.calls: list[str] = []
+        self.methods: list[str] = []
         self._cursors: dict[int, int] = {}
+
+    @staticmethod
+    def _method_matches(spec: dict[str, Any], method: str) -> bool:
+        declared = spec.get("method")
+        if declared is None:
+            return True
+        wanted = [declared] if isinstance(declared, str) else list(declared)
+        return any(str(name).upper() == method.upper() for name in wanted)
 
     def get(
         self,
@@ -211,10 +269,36 @@ class _FakeSharedClient:
         **_extra: Any,  # noqa: ANN401  # cache_context / use_cache stay unread offline
     ) -> Any:  # noqa: ANN401  # returns a requests.Response
         """Return the first fixture response whose ``url_contains`` matches, or fail loudly."""
+        return self._respond("GET", url)
+
+    def request(
+        self,
+        method: str,
+        url: str,
+        *,
+        params: Any = None,  # noqa: ANN401
+        headers: Any = None,  # noqa: ANN401
+        timeout: Any = None,  # noqa: ANN401
+        source: str = "unspecified",
+        cache_context: Any = None,  # noqa: ANN401
+        json_body: Any = None,  # noqa: ANN401
+        use_cache: bool = True,
+        **_extra: Any,  # noqa: ANN401
+    ) -> Any:  # noqa: ANN401  # returns a requests.Response
+        """Mirror ``GovernedHttpClient.request``, the verb several providers actually call."""
+        return self._respond(str(method), url, json_body=json_body)
+
+    def _respond(self, method: str, url: str, *, json_body: Any = None) -> Any:  # noqa: ANN401
+        """Serve one fixture envelope entry, recording the call the way ``get`` always did."""
         self.calls.append(url)
+        self.methods.append(method.upper())
+        mismatched: list[Any] = []
         for index, spec in enumerate(self.responses):
             needle = spec.get("url_contains")
             if not (isinstance(needle, str) and needle in url):
+                continue
+            if not self._method_matches(spec, method):
+                mismatched.append(spec.get("method"))
                 continue
             sequence = spec.get("sequence")
             if isinstance(sequence, list) and sequence:
@@ -229,6 +313,9 @@ class _FakeSharedClient:
                 body, default_type = _seam_body_bytes(sequence[cursor])
             else:
                 body, default_type = _spec_body(spec)
+            if spec.get("echo_request_id"):
+                body = _echo_request_id(body, json_body, needle=str(needle))
+                default_type = "application/json"
             import requests
 
             response = requests.Response()
@@ -238,6 +325,11 @@ class _FakeSharedClient:
             response.reason = "OK"
             response.headers.update({"Content-Type": spec.get("content_type", default_type)})
             return response
+        if mismatched:
+            raise WitnessFailure(
+                f"client seam fixture entries matched url={url!r} but declare "
+                f"method={mismatched!r}, and the source asked {method.upper()}"
+            )
         raise WitnessFailure(f"client seam fixture covers no response for url={url!r}")
 
 

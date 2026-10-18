@@ -2,7 +2,7 @@
   "acceptance_rule": "all five phase claims plus an explicit valid primary-model or human ACCEPT receipt; claim PASS alone is candidate only",
   "claims_input": {
     "path": "docs/evidence/C101/claims.merged.json",
-    "sha256": "fdfd94eb68020b68e87c7ef5ad344dcead5feb0bed9bd6f7ede6172052618a3f"
+    "sha256": "73c7701a6931d02c203704869f2ab82a66bd934e5c2e5d2a77b43cdceddfc8b3"
   },
   "claims_status_source": "explicit JSON claims only; no directory globbing or markdown status parsing",
   "global_issues": [],
@@ -2702,192 +2702,427 @@
       "upstream_model": "CongressCommitteeDocuments"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "deribit::FuturesCurve",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesCurve/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "DeribitProviderError",
+              "refusal_code": "DERIBIT_INCONSISTENT_INSTRUMENTS",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "DeribitProviderError",
+              "refusal_code": "DERIBIT_INCONSISTENT_INSTRUMENTS",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the summary keeps a mark, a last and a volume, and its new name is a well-formed dated future that simply is not in the directory the same query just returned: symbol is the join key between the two replies and a required column of DeribitFuturesCurve, so the curve fetcher must refuse the snapshot rather than publish a dated future it has no definition for; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesCurve/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesCurve/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesCurve/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesCurve/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "deribit",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-deribit-FuturesCurve",
       "upstream_model": "FuturesCurve"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "deribit::FuturesHistorical",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesHistorical/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "DeribitProviderError",
+              "refusal_code": "DERIBIT_BAD_CHART_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "DeribitProviderError",
+              "refusal_code": "DERIBIT_BAD_CHART_RESPONSE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "a close array that carries a numeric string keeps the tick, the open/high/low and the volume arrays exactly as long, so the length guards pass and only the reader of close notices: close is a required column of DeribitFuturesHistorical and the candle fetcher must refuse the chart rather than coerce the cell to a float it never parsed or publish a bar with no close. The break is in the second of the two chart replies, so the first instrument's candle is served whole and the refusal is the fetcher's, not a fixture that never worked; untampered control produced 2 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesHistorical/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesHistorical/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesHistorical/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesHistorical/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "deribit",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-deribit-FuturesHistorical",
       "upstream_model": "FuturesHistorical"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "deribit::FuturesInfo",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesInfo/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "DeribitProviderError",
+              "refusal_code": "DERIBIT_INCONSISTENT_TICKER",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "DeribitProviderError",
+              "refusal_code": "DERIBIT_INCONSISTENT_TICKER",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the reply still carries a well-formed timestamp and a complete stats block, so nothing but the name disagrees: symbol is the contract column of DeribitFuturesInfo that the caller asked for as SOL_USDC-PERPETUAL, and the ticker fetcher must refuse a quote about another instrument rather than rename someone else's book onto the requested future; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesInfo/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesInfo/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesInfo/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesInfo/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "deribit",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-deribit-FuturesInfo",
       "upstream_model": "FuturesInfo"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "deribit::FuturesInstruments",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesInstruments/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "DeribitProviderError",
+              "refusal_code": "DERIBIT_BAD_RESPONSE_SHAPE",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "DeribitProviderError",
+              "refusal_code": "DERIBIT_BAD_RESPONSE_SHAPE",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "quoting the identifier leaves every other cell of the directory record well-formed, and instrument_id is the contract column of DeribitFuturesInstruments that Deribit documents as an integer: the directory fetcher must refuse the page rather than publish a contract whose id is a string or silently re-derive it from the instrument name; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesInstruments/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesInstruments/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesInstruments/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/FuturesInstruments/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "deribit",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-deribit-FuturesInstruments",
       "upstream_model": "FuturesInstruments"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "deribit::OptionsChains",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/OptionsChains/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "DeribitProviderError",
+              "refusal_code": "DERIBIT_BAD_INSTRUMENT_KIND",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "DeribitProviderError",
+              "refusal_code": "DERIBIT_BAD_INSTRUMENT_KIND",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the record is asked for as kind=option and keeps its strike, option_type and expiry cells, so only the kind cell contradicts the request and the contract: DeribitOptionsChains rows are option contracts by definition, and the chain fetcher must refuse a directory that mixed a future into the option chain rather than join its summary and ticker onto it; untampered control produced 1 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/OptionsChains/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/OptionsChains/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/OptionsChains/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/deribit/OptionsChains/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "deribit",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-deribit-OptionsChains",
       "upstream_model": "OptionsChains"
     },
@@ -15808,25 +16043,114 @@
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "government_us::TreasuryPrices",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -15840,7 +16164,7 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "government_us",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-government_us-TreasuryPrices",
       "upstream_model": "TreasuryPrices"
     },
@@ -15931,25 +16255,114 @@
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "government_us::WeatherBulletinDownload",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -15963,7 +16376,7 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "government_us",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-government_us-WeatherBulletinDownload",
       "upstream_model": "WeatherBulletinDownload"
     },
@@ -26998,14 +27411,14 @@
   ],
   "schema_version": 1,
   "summary": {
-    "claim_count": 1410,
+    "claim_count": 1445,
     "identity_count": 350,
-    "offline_acceptance_count": 276,
-    "primary_review_count": 276,
+    "offline_acceptance_count": 281,
+    "primary_review_count": 281,
     "status_counts": {
-      "INCOMPLETE": 6,
-      "OFFLINE_ACCEPTED": 276,
-      "UNREVIEWED": 68
+      "INCOMPLETE": 8,
+      "OFFLINE_ACCEPTED": 281,
+      "UNREVIEWED": 61
     }
   }
 }

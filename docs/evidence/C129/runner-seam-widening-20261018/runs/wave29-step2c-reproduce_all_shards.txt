@@ -1,0 +1,29 @@
+reproduce_start shards=25 workers=4 skipped=['deribit']
+shard provider=alpha_vantage exit=0 emitted=15 pass=15 fail=0 blocked=0
+shard provider=benzinga exit=0 emitted=20 pass=20 fail=0 blocked=0
+shard provider=bls exit=0 emitted=10 pass=10 fail=0 blocked=0
+shard provider=cboe exit=0 emitted=55 pass=45 fail=0 blocked=10
+shard provider=cftc exit=0 emitted=10 pass=10 fail=0 blocked=0
+shard provider=congress_gov exit=0 emitted=40 pass=40 fail=0 blocked=0
+shard provider=ecb exit=0 emitted=15 pass=15 fail=0 blocked=0
+shard provider=econdb exit=0 emitted=40 pass=30 fail=0 blocked=10
+shard provider=eia exit=0 emitted=10 pass=10 fail=0 blocked=0
+shard provider=famafrench exit=0 emitted=30 pass=30 fail=0 blocked=0
+shard provider=federal_reserve exit=0 emitted=65 pass=60 fail=0 blocked=5
+shard provider=finra exit=0 emitted=10 pass=10 fail=0 blocked=0
+shard provider=finviz exit=0 emitted=35 pass=35 fail=0 blocked=0
+shard provider=fmp exit=0 emitted=345 pass=345 fail=0 blocked=0
+shard provider=fred exit=0 emitted=180 pass=180 fail=0 blocked=0
+shard provider=government_us exit=0 emitted=30 pass=20 fail=0 blocked=10
+shard provider=imf exit=0 emitted=40 pass=40 fail=0 blocked=0
+shard provider=intrinio exit=0 emitted=190 pass=185 fail=0 blocked=5
+shard provider=multpl exit=0 emitted=5 pass=5 fail=0 blocked=0
+shard provider=nasdaq exit=0 emitted=45 pass=45 fail=0 blocked=0
+shard provider=oecd exit=0 emitted=45 pass=45 fail=0 blocked=0
+shard provider=sec exit=0 emitted=120 pass=120 fail=0 blocked=0
+shard provider=tiingo exit=0 emitted=35 pass=35 fail=0 blocked=0
+shard provider=tradier exit=0 emitted=25 pass=25 fail=0 blocked=0
+shard provider=tradingeconomics exit=0 emitted=5 pass=5 fail=0 blocked=0
+reproduce_face shards=25 clean=20 red=5 red_providers=['cboe', 'econdb', 'federal_reserve', 'government_us', 'intrinio'] claims_emitted=1420 claims_passed=1380 identity_exits=[]
+REPRODUCE_EXIT=1
+1792278400

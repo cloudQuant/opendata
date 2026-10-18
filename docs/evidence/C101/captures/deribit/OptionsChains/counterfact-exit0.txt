@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model OptionsChains --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "DeribitProviderError", "refusal_code": "DERIBIT_BAD_INSTRUMENT_KIND", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "DeribitProviderError", "refusal_code": "DERIBIT_BAD_INSTRUMENT_KIND", "rejected": [], "status": null}, "reason": "the record is asked for as kind=option and keeps its strike, option_type and expiry cells, so only the kind cell contradicts the request and the contract: DeribitOptionsChains rows are option contracts by definition, and the chain fetcher must refuse a directory that mixed a future into the option chain rather than join its summary and ticker onto it; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

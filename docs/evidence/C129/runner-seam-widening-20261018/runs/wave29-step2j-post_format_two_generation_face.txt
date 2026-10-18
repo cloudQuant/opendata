@@ -1,0 +1,49 @@
+===== 波 29 step 2j：两代载档等值 + 波 29 落地面（钉死波前 commit） =====
+仪器：probes/post_format_two_generation_face.py。下面第一块是它自己的 stdout（原样）。
+第二块是主线同轮跑的字段级差分：把 re-format 之前的 merge/judge 两份产物留在 /tmp 里，与盘面
+逐叶对比。差分结论：281 条 review 里唯一动过的叶是 reviewed_at_utc 与 receipt.sha256 两格，
+350 个恒等式的 status 一字不差，报告在剥掉时间戳与 claims_input 之后整文档相等。
+receipt.sha256 会跟着动不是巧合：iter2_primary_review_recorder.py:172 把含 reviewed_at_utc 的收据
+正文序列化成 receipt_text，:187 再把这段正文整段哈希成 receipt.sha256，所以它是那次时间戳移动的派生格。
+
+可复现边界（写清楚，免得下一波误当配方）：/tmp 那两份上一代产物不在版本库里，
+字段级差分取不回来。等值这件事的可复现证明是第一块里 A/B/C 三臂 —— 它们读的是仓库里两代
+载档的 face 行与逐 provider 账，任何 clone 都能重跑。
+
+PASS A_resign_face_two_generations
+     face_equal=True ledger_old=26 ledger_new=26 ledger_diffs=[] signed_total=True
+PASS B_merge_judge_two_generations
+     merge_face='claims=1445 identities=289 reviews=281 accepted_identities=281' judge_equal=True
+PASS C_verify_arms_two_generations
+     arms_old={'A_shards_join_the_merge': 'PASS', 'B_identity_set_still_pinned': 'PASS', 'C_judge_recomputes_the_archived_report': 'PASS', 'D_status_partition': 'PASS', 'E_accepted_equals_reviews_equals_prediction': 'PASS', 'F_no_pin_claims_equal_the_produced_blocked': 'PASS', 'G_dropping_a_review_moves_the_count': 'PASS'} arms_new={'A_shards_join_the_merge': 'PASS', 'B_identity_set_still_pinned': 'PASS', 'C_judge_recomputes_the_archived_report': 'PASS', 'D_status_partition': 'PASS', 'E_accepted_equals_reviews_equals_prediction': 'PASS', 'F_no_pin_claims_equal_the_produced_blocked': 'PASS', 'G_dropping_a_review_moves_the_count': 'PASS'} face_new='verify_merge_judge_face arms=7 arms_passed=7 accepted=281 identity_set=5168e1e723999312 verdict=GREEN'
+PASS D_disk_is_the_archived_generation
+     claims_input_digest_matches_disk=True signed_total=281 disk_accepted=281
+PASS E_wave29_delta_vs_pinned_commit
+     population=350 shapes={'UNREVIEWED->OFFLINE_ACCEPTED': 5, 'UNREVIEWED->INCOMPLETE': 2} gained=['deribit', 'deribit', 'deribit', 'deribit', 'deribit'] incomplete=['government_us', 'government_us'] accepted=276->281
+PASS F_forged_generations_go_red
+     resign_tamper=False(want False) base_tamper=False(want False) tamper_detail=population=350 shapes={'UNREVIEWED->OFFLINE_ACCEPTED': 4, 'UNREVIEWED->INCOMPLETE': 2} gained=['deribit', 'deribit', 'deribit', 'deribit'] incomplete=['government_us', 'government_us'] accepted=276->281
+PASS G_restored_after_tamper
+     resign_equal=True e_still_green=True
+post_format_two_generation_face arms=7 arms_passed=7 base=99834046c2db verdict=GREEN
+two_gen_face_exit=0
+
+===== 第二块：字段级差分（主线同轮读数，转录） =====
+merged_bytes 5731bdf86608bf3f -> 73c7701a6931d02c
+review_field_diffs_only=['receipt', 'reviewed_at_utc']  receipt_leaf_paths_that_moved=['.sha256']  n=281/281
+all_reviews_moved_on_same_paths=True  reviews_old=281 reviews_new=281 same_keys=True
+report_scrub_equal=True（剥掉 reviewed_at_utc/generated_at/claims_input/inventory 后整文档相等）
+report_models_old=350 report_models_new=350 statuses_equal=True
+summary_old=281 {'INCOMPLETE': 8, 'OFFLINE_ACCEPTED': 281, 'UNREVIEWED': 61}
+summary_new=281 {'INCOMPLETE': 8, 'OFFLINE_ACCEPTED': 281, 'UNREVIEWED': 61}
+claims_input_old=5731bdf86608bf3f claims_input_new=73c7701a6931d02c new_matches_disk=True
+two_gen_exit=0
+
+===== 读数 =====
+七臂全绿，face 行 post_format_two_generation_face arms=7 arms_passed=7 base=99834046c2db verdict=GREEN。
+臂 E 是本波的落地面本身：population=350，accepted=276->281，
+shapes={'UNREVIEWED->OFFLINE_ACCEPTED': 5, 'UNREVIEWED->INCOMPLETE': 2}，
+gained 五枚全在 deribit，incomplete 两枚全在 government_us（TreasuryPrices、WeatherBulletinDownload）。
+波前基准不是 HEAD~n 而是钉死的 full sha 99834046c2db5eba1d39e9c8e176e0699a76a50c（波 28 步骤 4 那次提交）——
+本波提交之后 HEAD 会移动，这支探针读的还是同一个波前。
+臂 F 的两处伪造各自转红：把新代载档的 signed_total 改成 280，A 比较器红；把波前报告里一枚
+deribit 行伪造成 OFFLINE_ACCEPTED，E 读到 gained=4、shapes 变成 5->4，红。改不红就说明 A/E 在读常数。

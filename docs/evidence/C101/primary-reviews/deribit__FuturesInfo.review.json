@@ -1,0 +1,259 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/deribit/claims.json",
+    "sha256": "299012b058ba2746a6b108e03a82d770efd41831729778c518c717a6d1dd96bd"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/contract.json",
+          "sha256": "032f19f65820723e9a5792c2d93038b59c45899fa1ed04a888bd5c23d9fd3b79"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/counterfact.json",
+          "sha256": "113a15a9373e1298803281096b979f1180ddb69e0a601cc7138d61a272c503bc"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/direct.json",
+          "sha256": "6038d233fe11e5303162b8295229c82f6f5816e313dbb5df35d88959e44e6f8b"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/implementation.json",
+          "sha256": "c28e712e9d9ef9c4f30f1669753fc5f21153832e6f1096dc10ae84a178cb814c"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/service.json",
+          "sha256": "5d4e6bcdf80d3ea66fb1461779a60d7bca325306ebc34bbd28cd961aa4ba71b0"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "FuturesInfo",
+  "model_identity": "deribit::FuturesInfo",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "deribit",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-17T23:40:32Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "FuturesInfo"
+}

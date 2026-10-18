@@ -270,6 +270,7 @@ class DeribitFuturesHistoricalFetcher(
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "FuturesHistorical"
+    row_model: ClassVar[type[DeribitFuturesHistorical]] = DeribitFuturesHistorical
     capability: ClassVar[Capability] = _capability(
         "deribit_futures_historical", "intraday", "FuturesHistorical"
     )
@@ -381,6 +382,7 @@ class DeribitFuturesInfoFetcher(Fetcher[FuturesInfoQuery, tuple[RpcReply, ...]])
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "FuturesInfo"
+    row_model: ClassVar[type[DeribitFuturesInfo]] = DeribitFuturesInfo
     capability: ClassVar[Capability] = _capability(
         "deribit_futures_info", "snapshot", "FuturesInfo"
     )
@@ -423,6 +425,7 @@ class DeribitFuturesInstrumentsFetcher(Fetcher[FuturesInstrumentsQuery, RpcReply
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "FuturesInstruments"
+    row_model: ClassVar[type[DeribitFuturesInstruments]] = DeribitFuturesInstruments
     capability: ClassVar[Capability] = _capability(
         "deribit_futures_instruments", "snapshot", "FuturesInstruments"
     )
@@ -464,6 +467,7 @@ class DeribitFuturesCurveFetcher(Fetcher[FuturesCurveQuery, tuple[RpcReply, RpcR
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "FuturesCurve"
+    row_model: ClassVar[type[DeribitFuturesCurve]] = DeribitFuturesCurve
     capability: ClassVar[Capability] = _capability(
         "deribit_futures_curve", "snapshot", "FuturesCurve"
     )
@@ -556,6 +560,7 @@ class DeribitOptionsChainsFetcher(
 
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str | None] = "OptionsChains"
+    row_model: ClassVar[type[DeribitOptionsChains]] = DeribitOptionsChains
     capability: ClassVar[Capability] = _capability(
         "deribit_options_chains", "snapshot", "OptionsChains"
     )

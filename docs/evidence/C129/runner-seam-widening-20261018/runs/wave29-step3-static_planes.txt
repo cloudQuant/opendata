@@ -1,0 +1,85 @@
+== ruff check (whole repo)
+
+Found 440 errors.
+[*] 60 fixable with the `--fix` option (33 hidden fixes can be enabled with the `--unsafe-fixes` option).
+ruff_check_exit=0
+== ruff format --check (touched)
+Would reformat: docs/evidence/C129/runner-seam-widening-20261018/probes/resign_all_shards.py
+1 file would be reformatted, 9 files already formatted
+ruff_format_check_exit=0
+== mypy (touched product files)
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor.*']
+Success: no issues found in 3 source files
+mypy_exit=0
+static_planes_chain_exit=0
+
+===== 第二次取档（绿色重取）：每条命令单独取 exit，不经过管道 =====
+All checks passed!
+ruff_check_touched_exit=0
+10 files already formatted
+ruff_format_check_touched_exit=0
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor.*']
+Success: no issues found in 3 source files
+mypy_exit=0
+FAILED tests/test_congress_cboe_iter2.py::test_provider_model_service_injects_identity_and_serializes_typed_rows[CongressAmendments]
+FAILED tests/test_script_download_backend_iter2.py::test_real_browser_download_chain_against_owned_mysql
+2 failed, 1412 passed, 25136 deselected in 8.14s
+pytest_slice_exit=1
+Found 440 errors.
+ruff_check_whole_tree_exit=1
+writeset_disjoint_exit=0
+===== 第三次取档：人群划分与两相控制 =====
+-- PY_SELFDEV(opendata scripts tests) 的 440 里占多少、分布在哪：
+ 110 opendata
+  34 tests
+  13 scripts
+ruff_check_selfdev_exit=1
+-- 反例人群（未纳入 gate 视图的目录）：
+283
+-- 写集 disjointness 两侧：
+foreign_paths_lines=0
+writerset_lines=3
+ M opendata/data/providers/deribit/models/fetchers.py
+ M scripts/quality/iter2_claims_probe_runner.py
+?? scripts/quality/iter2_witnesses/deribit.py
+
+读数（step 3：静态面取档，以及这支仪表自己第一次取档时的两个错）
+
+第一块（1—14 行）是**坏掉的取法**，原样保留：`echo "x_exit=${PIPESTATUS[0]:-$?}"` 是 bash 写法，
+这个 shell 是 zsh（管道状态数组叫 `$pipestatus`、且 1 起始），于是 `${PIPESTATUS[0]}` 展开为空，
+`:-$?` 兜到了 `tail` 的返回码。结果第一块里 `ruff_check_exit=0` 与 `ruff_format_check_exit=0`
+两行是**假读数**：同一块自己的正文就写着 `Found 440 errors` 与 `Would reformat: resign_all_shards.py`。
+一个 exit 与它旁边的文本互相矛盾时，缺陷在仪表 —— 这两行不改，只在这里说明，并在第二块重取。
+
+第二块把每条命令单独跑、紧跟 `echo *_exit=$?`，不经过管道，读数变为：
+`ruff_check_touched_exit=0`（三枚产品文件）、`ruff_format_check_touched_exit=0`（十枚文件，
+其中 `resign_all_shards.py` 是在这次读数之前用 `ruff format` 改的格式，
+`1 file reformatted` + `resign_lint_exit=0` 都在上面）、`mypy_exit=0` =
+`Success: no issues found in 3 source files`。
+`ruff_check_whole_tree_exit=1` 与 `pytest_slice_exit=1` 是这次如实打出来的两个红。
+
+`format --check` 那一格顺手抓到一次真实回归：step 2f 的探针在被 archive 之后又被编辑（我为了
+face 打印 `expected_total`），编辑没重排格式 —— 这条红是本波自己的，已在归档前修好。
+`resign_all_shards.py` 的字节改动不影响任何 pin：仓里没有任何仪器读这枚文件的摘要
+（`grep -rn resign_all_shards` 只命中 `verify_merge_judge_face.py:49` 引用的是**载档名**，不是探针），
+所以没有再跑一次去刷新 review 时间戳的必要 —— 那只会把 merge/judge 的字节再搅一遍而不动任何计数。
+
+plane 1 之外的切片测试：`2 failed, 1412 passed, 25136 deselected`。两枚红的归属做了两相控制：
+* `tests/test_congress_cboe_iter2.py::…[CongressAmendments]`：失败点在测试自己的夹具里 ——
+  `contract.model_validate(case["expected"])` 把 `number='42'`（字符串）喂给
+  `CongressAmendment.number: int`，`pydantic_core.ValidationError: int_type`。
+  它 import 的模块面（`opendata/data/models/`）与本波写集不相交，
+  第三块的 `foreign_paths_lines=0` 证明那两枚测试文件与整个 `opendata/data/models/`
+  在本波一格没动，而 `writerset_lines=3` 是同一条命令在写集一侧的正向对照（空读数必须有另一侧撑着，
+  否则 0 只是命令没跑到）。所以这枚红是**波前既有**的测试面/契约面类型错配，不属本波。
+* `tests/test_script_download_backend_iter2.py::test_real_browser_download_chain_against_owned_mysql`：
+  `tests/script_download_backend_harness.py:834 DockerCommandError`，本机无 Docker/MySQL，
+  环境门，同样与写集无关。
+
+440 这个数字要说清人群才不误导（第三块）：`opendata` 110 + `tests` 34 + `scripts` 13 = 157 在
+`PY_SELFDEV` 视图里，另有 283 在 `quality-source-repairs/`（一个未跟踪、与本波无关的目录，
+不在 `PY_SELFDEV` 之内，见 Makefile:25）。`ruff check .` 是开发者全树视图，
+Makefile:9 自己就注明它会显示历史项；本波写集三枚文件的 `ruff check` 是 0 findings。
+**157 这一格是留下的未解 mover**：它意味着 `make lint` 面在当前工作区是红的，
+而 17 成员的 `make gate` 自波 20 起没跑过 —— 本轮的 commit 不声称 gate 绿，
+只声称本波写集自身的三枚静态面绿。

@@ -1,0 +1,226 @@
+===== 波 29 step 5：静态面重取（写集扩到 14 枚文件之后） =====
+每条命令原样打在块标题里，exit 行取自主线当轮直接返回码（命令未经管道，所以 $? 就是它自己）。
+本载档同时记两处仪表自身的红，因为它们都出现在同一轮里、且都会伪装成产品结论。
+
+本载档取代 step 3 的静态面那块（step 3 的载档没有把 pytest 的 argv 打进去，只打了 exit；
+那是一条"读数没有配方"的缺陷，字面留在 step 3 载档里，不回填）。
+
+===== ruff check（14 枚写集文件；argv: python -m ruff check <14 files>） =====
+All checks passed!
+ruff_check_touched_exit=0
+
+===== ruff format --check（同 14 枚；argv: python -m ruff format --check <14 files>） =====
+14 files already formatted
+ruff_format_check_touched_exit=0
+
+===== mypy（3 枚产品文件；argv: python -m mypy opendata/.../fetchers.py scripts/quality/iter2_claims_probe_runner.py scripts/quality/iter2_witnesses/deribit.py） =====
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor.*']
+Success: no issues found in 3 source files
+mypy_exit=0
+
+===== pytest -k deribit（argv: python -m pytest -q -o addopts= -p no:cacheprovider -k deribit） =====
+...................................................                      [100%]
+51 passed, 26499 deselected in 3.01s
+pytest_k_deribit_exit=0
+
+===== pytest 两枚波前红文件（argv: python -m pytest -q -o addopts= -p no:cacheprovider tests/test_congress_cboe_iter2.py tests/test_script_download_backend_iter2.py） =====
+....F..................................................F                 [100%]
+=================================== FAILURES ===================================
+_ test_provider_model_service_injects_identity_and_serializes_typed_rows[CongressAmendments] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x115738160>
+case = {'bad_query': {'amendment_type': 'SAMDT', 'congress': 118, 'limit': 20, 'offset': 0}, 'bad_response': {'amendments': [...est Bill', 'amendment_type': 'SAMDT', 'amendment_url': 'https://api.congress.gov/v3/amendment/118/samdt/42', ...}, ...}
+
+    @pytest.mark.parametrize("case", _CASES, ids=lambda case: str(case["model"]))
+    def test_provider_model_service_injects_identity_and_serializes_typed_rows(
+        monkeypatch: pytest.MonkeyPatch, case: dict[str, Any]
+    ) -> None:
+        """Each model's source fixture passes through provider_model_query and JSON serialization."""
+        fetcher_type = case["fetcher"]
+        fetcher = fetcher_type()
+        model = case["model"]
+        contract = case["contract"]
+>       expected = contract.model_validate(case["expected"]).model_dump(mode="json")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for CongressAmendment
+E       number
+E         Input should be a valid integer [type=int_type, input_value='42', input_type=str]
+E           For further information visit https://errors.pydantic.dev/2.12/v/int_type
+
+tests/test_congress_cboe_iter2.py:599: ValidationError
+_____________ test_real_browser_download_chain_against_owned_mysql _____________
+
+tmp_path = PosixPath('/private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pytest-of-yunjinqi/pytest-37/test_real_browser_download_cha0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x115752350>
+
+    @pytest.mark.integration
+    def test_real_browser_download_chain_against_owned_mysql(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Click the real UI and execute actual API/background/storage paths offline."""
+        from opendata.api import data as data_module
+        from opendata.core import database
+        from opendata.core.config import settings
+        from opendata.models.data_script import DataScript  # noqa: F401
+        from opendata.models.data_table import DataTable  # noqa: F401
+        from opendata.models.interface import (  # noqa: F401
+            InterfaceCategory,
+            InterfaceParameter,
+        )
+        from opendata.models.task import ScheduledTask, TaskExecution  # noqa: F401
+        from opendata.models.user import User  # noqa: F401
+    
+        run_started = utc_now()
+        run_id = f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}_{secrets.token_hex(4)}"
+        evidence_dir = EVIDENCE_ROOT / "runs" / run_id
+        evidence_dir.mkdir(parents=True, exist_ok=True)
+        pre_hashes = _file_hashes()
+        lease = OwnedMysql()
+        server = None
+        engine = None
+        test_session_maker = None
+        source_calls: list[dict[str, Any]] = []
+        token_blacklist = None
+        backend_http_events: list[dict[str, Any]] = []
+        backend_exception_events: list[dict[str, Any]] = []
+        run_secret: str | None = None
+        active_token: str | None = None
+        inactive_token: str | None = None
+    
+        def generated_secret_values() -> tuple[str, ...]:
+            return tuple(
+                value
+                for value in (
+                    lease.password,
+                    lease.root_password,
+                    run_secret,
+                    active_token,
+                    inactive_token,
+                )
+                if isinstance(value, str) and value
+            )
+    
+        def redact_generated_output(value: str) -> str:
+            return _redact_generated_text(value, generated_secret_values())[0]
+    
+        manifest: dict[str, Any] = {
+            "run_id": run_id,
+            "started_at_utc": run_started,
+            "status": "running",
+            "pytest_command": os.environ.get("OPENDATA_AC21_PYTEST_COMMAND"),
+            "product_hashes_pre": pre_hashes,
+            "harness_hashes_pre": _harness_hashes(),
+            "credentials_recorded": False,
+            "external_provider_calls_allowed": False,
+            "runtime_module_origins": _runtime_module_origins(),
+            "test_scope": (
+                "ui-errors-only"
+                if os.environ.get("OPENDATA_AC21_ERRORS_ONLY") == "1"
+                else "full-download-chain"
+            ),
+        }
+        write_json(evidence_dir / "run-manifest.json", manifest)
+    
+        try:
+            manifest["synthetic_credential_redaction_counterfactual"] = (
+                _assert_docker_failure_redaction_counterfactual(monkeypatch)
+            )
+>           target = lease.start()
+                     ^^^^^^^^^^^^^
+
+tests/test_script_download_backend_iter2.py:1165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/script_download_backend_harness.py:338: in start
+    image_inspection = self._docker(_mysql_image_inspect_args())
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tests.script_download_backend_harness.OwnedMysql object at 0x11567a190>
+args = ['image', 'inspect', '--format', '{{json .RepoDigests}}', 'docker.io/library/mysql@sha256:ca3f0494c0f1fc86eb45f5e4786a1bb9f64d2f85b562cc74a9595046f6519a42']
+
+    def _docker(self, args: list[str], *, check: bool = True) -> DockerCommandResult:
+        """Run a fixed Docker operation and redact secrets from all returned text."""
+        docker = shutil.which("docker")
+        if docker is None:
+            raise RuntimeError("Docker CLI is required for the AC21 owned database")
+        # The CLI path is resolved once; argv is built only from the harness.
+        command = [docker, *args]
+        stage = self._docker_stage(args)
+        failure: DockerCommandError | None = None
+        result: subprocess.CompletedProcess[bytes] | None = None
+        try:
+            result = subprocess.run(  # noqa: S603
+                command,
+                check=check,
+                capture_output=True,
+                text=False,
+                timeout=120,
+                env={**os.environ, "DOCKER_CLI_HINTS": "false"},
+            )
+        except subprocess.CalledProcessError as exc:
+            return_code = exc.returncode if isinstance(exc.returncode, int) else None
+            stderr_sha256, stderr_bytes = _stderr_fingerprint(exc.stderr)
+            failure = DockerCommandError(
+                failure_class="CalledProcessError",
+                stage=stage,
+                return_code=return_code,
+                stderr_sha256=stderr_sha256,
+                stderr_bytes=stderr_bytes,
+            )
+        except subprocess.TimeoutExpired as exc:
+            stderr_sha256, stderr_bytes = _stderr_fingerprint(exc.stderr)
+            failure = DockerCommandError(
+                failure_class="TimeoutExpired",
+                stage=stage,
+                return_code=None,
+                stderr_sha256=stderr_sha256,
+                stderr_bytes=stderr_bytes,
+            )
+        except OSError:
+            failure = DockerCommandError(failure_class="OSError", stage=stage, return_code=None)
+    
+        if failure is not None:
+            # Raise after leaving the except block so no raw subprocess exception
+            # remains as the diagnostic's implicit context.
+>           raise failure from None
+E           tests.script_download_backend_harness.DockerCommandError: Docker command failed: class=CalledProcessError stage=image-inspect return_code=1 stderr_sha256=5192198ad4329ee7ec763ca62c240c22c9a59b69e727d83a9ed52cf6679ca7d6 stderr_bytes=117
+
+tests/script_download_backend_harness.py:834: DockerCommandError
+=========================== short test summary info ============================
+FAILED tests/test_congress_cboe_iter2.py::test_provider_model_service_injects_identity_and_serializes_typed_rows[CongressAmendments]
+FAILED tests/test_script_download_backend_iter2.py::test_real_browser_download_chain_against_owned_mysql
+2 failed, 54 passed in 0.86s
+pytest_two_red_files_exit=1
+
+===== ruff check . 整树（argv: python -m ruff check --output-format=concise .） =====
+[*] 60 fixable with the `--fix` option (33 hidden fixes can be enabled with the `--unsafe-fixes` option).
+[... 上方 441 行省略：整份是 69141 条人群计数，不入载档]
+ruff_check_whole_tree_exit=1
+
+===== evidence_traceability（argv: python scripts/quality/evidence_traceability.py；只留末行摘要） =====
+FAIL: 69142 new traceability violation(s) against a 0-entry baseline.
+[... 上方 138296 行省略：整份是 69141 条人群计数，不入载档]
+traceability_exit=1
+
+===== 人群划分（同一轮里逐条量出来的，不是 step 3 那份的转录） =====
+ruff 440 条按目录：opendata=110 scripts=13 tests=34 alembic=0 alembic_data=0
+=> PY_SELFDEV 合计 157；未跟踪的 quality-source-repairs=283；157+283=440，
+另有 2 行是 "Found 440 errors." 与可修复提示行，不是 finding。
+数法：ruff check --output-format=concise 后按行首目录名计数。第一版用默认图形输出配 grep 行首目录名，
+五个目录全打成 0 —— 那是我的 grep 锚点错，不是产品干净；空读数必须由非空那一侧撑着。
+
+evidence_traceability 69142 条按规则：untracked 规则 69141 条，narrative 规则 1 条
+（docs/evidence/C108/ 那枚），exit 规则 0 条。**exit 规则计 0 是这块对本波真正关心的判据**：
+波里每一份载档都带着自己的直接返回码行，包括本轮新落的 2f2/2g2/2h2/2j 四份。
+69141 条 untracked 按区域：C100=69043、C101=62、C129=24、C108=11、C128=1 ——
+C100 那 69043 是裁决"只提交代码 + 精选证据"留在盘上的原始收据，
+这台仪器走的是文件系统而不是 git 索引，所以 .gitignore 不会让它变小。
+本步不测什么：不声称 make gate 绿（17 名成员自波 20 起整轮未跑），不声称 PY_SELFDEV 那 157 条被解决。
+
+仪表自身的两处红（留在载档里，别抹）：
+1. 第一版把 14 枚文件塞进一个 shell 变量再不加引号展开。zsh 不对不加引号的标量做词分割，
+   于是整串当成一个文件名传给 ruff，check 与 format 两枚都读回非零，并伴随 "File name too long"。
+   那不是产品违规，是我这条命令的形状；改成 zsh 数组后 files_n=14，上面两块归零。
+2. step 3 那块载档打了 pytest 的计数却没打 argv，"1412 passed, 25136 deselected" 这个选择面
+   现在无法复现。本载档把每条 argv 打在块标题里，选择面因此是 "(a) -k deribit 51 passed"
+   与 "(b) 两枚具名文件 2 failed, 54 passed"，能与 step 3 对号的只有那两枚红文件名。

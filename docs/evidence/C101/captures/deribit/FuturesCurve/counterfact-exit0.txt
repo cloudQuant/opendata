@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesCurve --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "DeribitProviderError", "refusal_code": "DERIBIT_INCONSISTENT_INSTRUMENTS", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "DeribitProviderError", "refusal_code": "DERIBIT_INCONSISTENT_INSTRUMENTS", "rejected": [], "status": null}, "reason": "the summary keeps a mark, a last and a volume, and its new name is a well-formed dated future that simply is not in the directory the same query just returned: symbol is the join key between the two replies and a required column of DeribitFuturesCurve, so the curve fetcher must refuse the snapshot rather than publish a dated future it has no definition for; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

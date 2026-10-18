@@ -1,0 +1,29 @@
+PASS A_real_surface real_verbs=['get', 'request'] public_count=2
+PASS B_head_gap_was_real head_verbs=['get'] head_sha16=6f73b11a14b8c81d
+PASS C_widening_is_present live_verbs=['get', 'request']
+PASS D_get_signature_parity get_signature=(self, url: 'str', *, params: 'Any' = None, headers: 'Any' = None, timeout: 'Any' = None, source: 'str' = 'unspecified', **_extra: 'Any') -> 'Any'
+PASS E_get_path_parity_json live=(200, 'application/json', b'{"ok": true}') head=(200, 'application/json', b'{"ok": true}') calls_equal=True
+PASS E_get_path_parity_text live=(201, 'text/html', b'<html>\n<body>') head=(201, 'text/html', b'<html>\n<body>') calls_equal=True
+PASS F_post_served_and_head_refuses_it live=(200, 'application/json', b'{"ok": true}') live_calls=['https://h/quote'] live_methods=['POST'] head_refusal="AttributeError:'_FakeSharedClient' object has no attribute 'request'"
+PASS G_sequence_exhaustion_message_parity exc=WitnessFailure text_equal=True
+PASS H_no_needle_message_parity message="client seam fixture covers no response for url='https://h/absent'" both_equal_literal=True
+PASS I_declared_method_refuses_other_verb refused='client seam fixture entries matched url=' lower_case_post_status=200
+PASS J_cursor_shared_across_verbs pages=[b'{"p": 1}', b'{"p": 2}'] calls=2 methods=['GET', 'GET']
+PASS K_call_site_vocabulary_covered sites_provider=4 sites_internal=2 site_kwargs=['cache_context', 'headers', 'json_body', 'params', 'source', 'timeout', 'use_cache'] fake_named=['cache_context', 'headers', 'json_body', 'params', 'source', 'timeout', 'use_cache'] fake_var_keyword=['_extra'] surface_equal=True
+  site opendata/data/http_client.py:415 positional=2 kwargs=['cache_context', 'headers', 'params', 'source', 'timeout', 'use_cache']
+  site opendata/data/http_client.py:760 positional=2 kwargs=[]
+  site opendata/data/providers/bls/models/_client.py:121 positional=2 kwargs=['headers', 'json_body', 'source', 'timeout']
+  site opendata/data/providers/deribit/client.py:87 positional=2 kwargs=['headers', 'json_body', 'source', 'timeout']
+  site opendata/data/providers/finra/models/_client.py:114 positional=2 kwargs=['headers', 'json_body', 'params', 'source', 'timeout']
+  site opendata/data/providers/tmx/models/client.py:132 positional=2 kwargs=['headers', 'json_body', 'source', 'timeout']
+PASS L_diff_confined_to_seam_surface regions=[(236, 333), (195, 233)] changed_lines=93 outside=[] blank_lines_excluded=2
+PASS N_echo_absent_leaves_bytes_alone served=b'{"jsonrpc": "2.0", "id": 7, "result": {}}' head_encoder_equal=True
+PASS O_echo_fills_only_the_id served=b'{"jsonrpc": "2.0", "id": 42, "result": {"ok": 1}, "usOut": 1}'
+PASS P_echo_refuses_payloadless_verb refusal="client seam fixture entry url_contains='/rpc' declares echo_"
+PASS Q_echo_refuses_non_integer_id refusal="client seam fixture entry url_contains='/rpc' declares echo_"
+PASS R_echo_refuses_non_envelope_json refusal='echo_request_id is declared for a body that is not a JSON-RP'
+PASS R2_echo_refuses_non_json_body refusal='echo_request_id is declared for a body that is not JSON at a'
+PASS S_echo_with_sequence pages=[{'jsonrpc': '2.0', 'id': 5, 'page': 1}, {'jsonrpc': '2.0', 'id': 9, 'page': 2}] calls=2
+PASS T_phase_judges_byte_identical judged_definitions=12 drifted=[]
+PASS M_forged_old_surface_refuses_post forged_verbs=['get'] forged_refusal='AttributeError' restored_verbs=['get', 'request'] restored_equal=True
+fake_client_verb_parity_face arms=22 arms_passed=22 arms_failed=0 failed=[] head_sha16=6f73b11a14b8c81d live_sha16=18b46adc3ccbcfb7 changed_lines=93 parity_verdict=GREEN

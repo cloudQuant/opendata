@@ -1,0 +1,44 @@
+===== 为什么有这一块：仪器字节与载档不同代 =====
+step 2f 的载档产于 07:23:55；probes/resign_all_shards.py 在 07:30:38 被 ruff format 改过排版
+（face.md 第 9 节当时记的 067fb9b23229cc7f 是那一次 format 之前的摘要，盘面现为 f0f3ed96c2734ec3）。
+载档与仪器不同代时，"这份脚本产出这份载档"这句话就没有载体了。下面三份载档用当前字节重跑，
+face 行必须与上一代逐字相同；相等性由 probes/post_format_two_generation_face.py 读两份载档自己判。
+
+下面各 *_exit 行是主线当轮直接返回码的转录（每条命令单独取，未经管道）。
+
+
+===== 重跑 2/3 之一：merge（不写时间戳，只聚合 2f2 的产物） =====
+shards merged=26
+  shard docs/evidence/C101/alpha_vantage/claims.reviewed.json
+  shard docs/evidence/C101/benzinga/claims.reviewed.json
+  shard docs/evidence/C101/bls/claims.reviewed.json
+  shard docs/evidence/C101/cboe/claims.reviewed.json
+  shard docs/evidence/C101/cftc/claims.reviewed.json
+  shard docs/evidence/C101/congress_gov/claims.reviewed.json
+  shard docs/evidence/C101/deribit/claims.reviewed.json
+  shard docs/evidence/C101/ecb/claims.reviewed.json
+  shard docs/evidence/C101/econdb/claims.reviewed.json
+  shard docs/evidence/C101/eia/claims.reviewed.json
+  shard docs/evidence/C101/famafrench/claims.reviewed.json
+  shard docs/evidence/C101/federal_reserve/claims.reviewed.json
+  shard docs/evidence/C101/finra/claims.reviewed.json
+  shard docs/evidence/C101/finviz/claims.reviewed.json
+  shard docs/evidence/C101/fmp/claims.reviewed.json
+  shard docs/evidence/C101/fred/claims.reviewed.json
+  shard docs/evidence/C101/government_us/claims.reviewed.json
+  shard docs/evidence/C101/imf/claims.reviewed.json
+  shard docs/evidence/C101/intrinio/claims.reviewed.json
+  shard docs/evidence/C101/multpl/claims.reviewed.json
+  shard docs/evidence/C101/nasdaq/claims.reviewed.json
+  shard docs/evidence/C101/oecd/claims.reviewed.json
+  shard docs/evidence/C101/sec/claims.reviewed.json
+  shard docs/evidence/C101/tiingo/claims.reviewed.json
+  shard docs/evidence/C101/tradier/claims.reviewed.json
+  shard docs/evidence/C101/tradingeconomics/claims.reviewed.json
+claims=1445 identities=289 reviews=281 accepted_identities=281
+wrote docs/evidence/C101/claims.merged.json
+merge_exit=0
+
+===== 重跑 2/3 之二：judge（350 恒等式判定） =====
+wrote docs/evidence/C101/judge/claims.merged.report.json and docs/evidence/C101/judge/claims.merged.report.md: 350 identities, 281 offline accepted
+judge_exit=0

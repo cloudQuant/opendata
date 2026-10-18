@@ -1,0 +1,56 @@
+resign_start shards=26 workers=4 expected_signed=281
+sign provider=alpha_vantage exit=0 signed=3 refused=0 expected=3 reviews_total=3
+sign provider=benzinga exit=0 signed=4 refused=0 expected=4 reviews_total=4
+sign provider=bls exit=0 signed=2 refused=0 expected=2 reviews_total=2
+sign provider=cboe exit=0 signed=9 refused=2 expected=9 reviews_total=9
+sign provider=cftc exit=0 signed=2 refused=0 expected=2 reviews_total=2
+sign provider=congress_gov exit=0 signed=8 refused=0 expected=8 reviews_total=8
+sign provider=deribit exit=0 signed=5 refused=0 expected=5 reviews_total=5
+sign provider=ecb exit=0 signed=3 refused=0 expected=3 reviews_total=3
+sign provider=econdb exit=0 signed=6 refused=2 expected=6 reviews_total=6
+sign provider=eia exit=0 signed=2 refused=0 expected=2 reviews_total=2
+sign provider=famafrench exit=0 signed=6 refused=0 expected=6 reviews_total=6
+sign provider=federal_reserve exit=0 signed=12 refused=1 expected=12 reviews_total=12
+sign provider=finra exit=0 signed=2 refused=0 expected=2 reviews_total=2
+sign provider=finviz exit=0 signed=7 refused=0 expected=7 reviews_total=7
+sign provider=fmp exit=0 signed=69 refused=0 expected=69 reviews_total=69
+sign provider=fred exit=0 signed=36 refused=0 expected=36 reviews_total=36
+sign provider=government_us exit=0 signed=4 refused=2 expected=4 reviews_total=4
+sign provider=imf exit=0 signed=8 refused=0 expected=8 reviews_total=8
+sign provider=intrinio exit=0 signed=37 refused=1 expected=37 reviews_total=37
+sign provider=multpl exit=0 signed=1 refused=0 expected=1 reviews_total=1
+sign provider=nasdaq exit=0 signed=9 refused=0 expected=9 reviews_total=9
+sign provider=oecd exit=0 signed=9 refused=0 expected=9 reviews_total=9
+sign provider=sec exit=0 signed=24 refused=0 expected=24 reviews_total=24
+sign provider=tiingo exit=0 signed=7 refused=0 expected=7 reviews_total=7
+sign provider=tradier exit=0 signed=5 refused=0 expected=5 reviews_total=5
+sign provider=tradingeconomics exit=0 signed=1 refused=0 expected=1 reviews_total=1
+resign_face shards=26 clean=26 red=0 red_providers=[] signed_total=281 expected_total=281 refused_total=8 reviews_total_max=69 per_shard_signed={'alpha_vantage': 3, 'benzinga': 4, 'bls': 2, 'cboe': 9, 'cftc': 2, 'congress_gov': 8, 'deribit': 5, 'ecb': 3, 'econdb': 6, 'eia': 2, 'famafrench': 6, 'federal_reserve': 12, 'finra': 2, 'finviz': 7, 'fmp': 69, 'fred': 36, 'government_us': 4, 'imf': 8, 'intrinio': 37, 'multpl': 1, 'nasdaq': 9, 'oecd': 9, 'sec': 24, 'tiingo': 7, 'tradier': 5, 'tradingeconomics': 1}
+resign_exit=0
+
+
+读数（step 2f：26 份分片重签，签名人群与被排除人群都被预测过）
+
+上面是 `probes/resign_all_shards.py` 的原样 stdout，`resign_exit=0`。face：
+`shards=26 clean=26 red=0 signed_total=281 expected_total=281 refused_total=8
+reviews_total_max=69`，另有逐分片 `signed=`/`refused=`/`expected=` 三列并排。
+
+关键点是 `signed_total` 与 `expected_total` 相等，而 `expected_total` **不是**事后抄 face 得来的：
+它就是 step 2e 的 arm F 在重生产之后、重签之前打出的 `all_pass=281`。签名器签了 281 条，
+拒了 8 条，8 条正是 arm F 打的 `all_blocked=8`（cboe 2 / econdb 2 / federal_reserve 1 /
+government_us 2 / intrinio 1）。也就是说这一轮没有"顺手多签"或"少签后被静默"的空间：
+两个独立人群计数相遇了。
+
+`deribit: 5` 是本仓第一次有这个 provider 的 review 记录，5 行全部签出；
+`fmp: 69`、`intrinio: 37`、`fred: 36`、`sec: 24` 这些大分片同批重签，`reviews_total` 与
+`signed` 每片相等，说明 `iter2_primary_review_recorder.py:280` 丢掉旧 review 再写入的路径按
+identity 精确作用，没有把别的分片带进来（merge 端 `reviews=281` 是第二道确认）。
+
+不带 `--reexecute`，也不带 `--allow-unproven`：签名器只记录"审阅者读过这些 claim"，
+执行证据全部来自 step 2c 的 producer 子进程。反过来说，如果这次只改 pin 而不重生产，
+`--allow-unproven` 就会被用来把没跑过的东西签成签过 —— 那是目标里"禁止口头判定"要拦的事。
+
+谓词的改法（跑之前改，见 step 2e 载档第 2 条）也留一句在这里，因为它会改变红绿含义：
+旧谓词 `refused != 0` 会把这一轮正确的一批拒签（8 条 BLOCKED）判成 26 片全红；
+新谓词 `signed != expected` 让"少签"和"多签"都能红，而"依设计拒签"不再红。
+两次运行的 exit code 都是 0，只有 face 的字段变了。

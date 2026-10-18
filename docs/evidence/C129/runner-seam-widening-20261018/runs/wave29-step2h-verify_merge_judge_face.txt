@@ -1,0 +1,73 @@
+product_roots shards=26 merged_claims=1445 merge_claims_field=1445 report_models=350
+digest_roots={'csv': '5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65', 'merge': '5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65', 'report': '5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65', 'pinned': '5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65'} inventory_error=''
+verdict_moves=0 moves=[]
+published_status={'INCOMPLETE': 8, 'OFFLINE_ACCEPTED': 281, 'UNREVIEWED': 61} recomputed_status={'OFFLINE_ACCEPTED': 281, 'UNREVIEWED': 61, 'INCOMPLETE': 8}
+accepted=281 reviews=281 five_pass=281 face_field_hits=1 value=281 signed_total=281
+no_pin=40 no_pin_blocked=40 no_pin_exit3=40 carrier_blocked_claims=40
+control_victim=alpha_vantage::EquityHistorical control_accepted=280 control_status=INCOMPLETE
+rerun_global_issues=[] rerun_invalid_claims=0
+PASS A_shards_join_the_merge
+PASS B_identity_set_still_pinned
+PASS C_judge_recomputes_the_archived_report
+PASS D_status_partition
+PASS E_accepted_equals_reviews_equals_prediction
+PASS F_no_pin_claims_equal_the_produced_blocked
+PASS G_dropping_a_review_moves_the_count
+verify_merge_judge_face arms=7 arms_passed=7 accepted=281 identity_set=5168e1e723999312 verdict=GREEN
+verify_face_exit=0
+
+
+读数（step 2h：把这一代的 plane 1 face 用仓里那份 judge 原地重算一遍，再自己反证一次）
+
+上面这段是 `probes/verify_merge_judge_face.py` 的原样 stdout，`verify_face_exit=0`，
+face `arms=7 arms_passed=7 accepted=281 identity_set=5168e1e723999312 verdict=GREEN`。
+
+为什么还要这一支探针：step 2c/2e/2f/2g 四份载档记的是驱动自己打了什么，那是报告，不是复算。
+探针不复制判定语句，而是 `sys.path` 引到 `scripts/quality/` 后 `import iter2_model_evidence`，
+把 `load_inventory` 与 `build_report` 原样在内存里再跑一次 —— 用的就是 shipped CLI 调的那两个函数。
+arm C 的断言是整个 report 文档相等（`rerun == archived`），不是 summary 相等，也不是某个数相等；
+顺带 `claims_input.sha256` 等于此刻 `claims.merged.json` 的字节摘要，所以载档里那份 judge 报告
+描述的就是盘上现在这份 merge，而不是上一代的字节。
+
+逐 arm 读数：
+* A 分片并起来就是 merge：`shards=26 merged_claims=1445 verdict_moves=0`。
+  每个 identity 的五相 status 在 `claims.json`（producer 写的）与 `claims.reviewed.json`
+  （recorder 写的）之间一格没动，而 26 份 reviewed 分片的并集逐键等于 merge。
+  也就是说 merge 与 sign 这两步都没有改写判定，它们只做拼接与背书。
+* B 身份集四个根重合：CSV 摘要、merge 文档摘要、judge 报告里的摘要、`EXPECTED_IDENTITY_SHA256`
+  常数，四个值全等于 `5168e1e723999312…`，`report_models=350`。本轮动了共享 runner、动了 26 份
+  分片，但身份集是 inventory 的属性，本来就不该动 —— 这一格是"本来不该动"的实测。
+* D 三桶划分 350：`published={'INCOMPLETE': 8, 'OFFLINE_ACCEPTED': 281, 'UNREVIEWED': 61}`
+  与逐 model 重算的 Counter 相等，且相加等于 `identity_count=350`。
+* E 三个独立计数相遇：judge 的 `offline_acceptance_count` = merge 里的 review 条数 =
+  从"五相全 PASS"重算出的集合大小 = 281，而 step 2f 载档 face 行里的 `signed_total` 也是 281。
+  `accepted == review_keys(merged) == five_pass` 是集合相等而不是长度相等。
+* F 无 pin 人群等于生产驱动自己记的 BLOCKED：merge 里 `pins.probe == []` 的 claim 40 条，
+  40 条全是 BLOCKED、全是 `exit_code=3`；step 2c 载档 25 行分片账的 `blocked=` 求和也是 40。
+  `global_issues=[]`、`invalid_claims=0` 一并打出：没有任何一行处在降级态。
+
+arm G 是这支探针存在的另一半理由（目标要求 counterfact 反例）。做法是深拷贝 merge 文档，
+删掉排序后第一个已接受 identity 的 review，再跑一次同一个 `build_report`：
+`control_accepted=280 control_status=INCOMPLETE`。计数掉了 1，那一行从 OFFLINE_ACCEPTED
+变成 INCOMPLETE。若这条不掉，前面四个 arm 读到的 281 就只能算抄来的常数。
+这里顺带把 judge 的桶语义钉准了一句以前没写过的：61 条 UNREVIEWED 是**根本没有 claim** 的行
+（`missing_phases` 五相全缺），而"五相都有 claim 且全 PASS、但没有背书"的行落进的是 INCOMPLETE。
+所以"UNREVIEWED"这个名字描述的是缺 claim 的人群，不是缺 review 的人群 —— 缺 review 是 INCOMPLETE。
+本轮把 2 行 government_us 从 UNREVIEWED 迁到 INCOMPLETE 的机制正是这个：它们补上了 claim。
+
+两处仪表缺陷，都是这一代里就地改掉、并留字在这里：
+1. arm E 最初用 `\bsigned_total=(\d+)` 在整个载档里搜，命中两次（驱动 face 行的 281 与
+   step 2f  prose 里回述的 281）而后求和，打出 `signed_total=562`，于是 arm E 红。
+   谓词改成锚定 `^resign_face` 那一行，并要求**恰好一个命中**（多命中直接算探针自己的 bug，
+   读数里打 `face_field_hits=1`）。这不是把判定放宽，是把"读哪一行"说清楚。
+2. arm C 最初用 `REPO_ROOT / DEFAULT_INVENTORY` 这个绝对路径去 `load_inventory`，
+   而 `build_report` 会把 `inventory["path"]` 原样写进报告，于是重算出的文档与载档里那份
+   只差一个路径根，比较失败。改成 `os.chdir(REPO_ROOT)` 后按 shipped argv 的相对路径读取 ——
+   比较对象是整份文档，所以任何路径根的差别都必须由探针自己消除，而不是把比较缩小到 summary。
+
+代数一致性（这一代的运行是同一次 turn 里第二次跑的）：本 turn 依次跑了
+`reproduce_invariance_delta.py`、`resign_all_shards.py`、`iter2_claims_merge.py`、
+`iter2_model_evidence.py`，四个 exit 都是 0（就是各载档末尾那四行 `*_exit=0`）。
+把这次的 stdout 与上一代（07:13—07:14 那批）逐行 diff：invariance 与 resign 的账**完全相同**，
+merge 与 judge 的 face 行也完全相同，唯一新增的是 exit 行。也就是说重签只动了 review 的
+时间戳与收据，没有任何一个计数跟着动 —— 这句话现在有 diff 做凭据，不是推断。

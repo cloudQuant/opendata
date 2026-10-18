@@ -1,0 +1,48 @@
+{
+  "responses": [
+    {
+      "body": {
+        "id": null,
+        "jsonrpc": "2.0",
+        "result": [
+          {
+            "base_currency": "BTC",
+            "contract_size": 10.0,
+            "counter_currency": "USD",
+            "creation_timestamp": 1700000000000,
+            "expiration_timestamp": 1798156800000,
+            "future_type": "reversed",
+            "instrument_id": 138583,
+            "instrument_name": "BTC-25DEC26",
+            "instrument_type": "reversed",
+            "is_active": true,
+            "kind": "future",
+            "lot_size": 1,
+            "maker_commission": 0.0,
+            "max_leverage": 50,
+            "min_trade_amount": 10.0,
+            "price_index": "btc_usd",
+            "product_group": "BTC",
+            "quote_currency": "USD",
+            "settlement_currency": "USD",
+            "settlement_period": "month",
+            "state": "open",
+            "taker_commission": 0.0005,
+            "tick_size": 2.5,
+            "tick_size_steps": [
+              {
+                "above_price": 100000.0,
+                "tick_size": 5.0
+              }
+            ],
+            "underlying_type": "crypto"
+          }
+        ],
+        "usOut": 1791779400123456
+      },
+      "echo_request_id": true,
+      "method": "POST",
+      "url_contains": "public/get_instruments"
+    }
+  ]
+}

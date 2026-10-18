@@ -1,0 +1,27 @@
+===== 为什么有这一块：仪器字节与载档不同代 =====
+step 2f 的载档产于 07:23:55；probes/resign_all_shards.py 在 07:30:38 被 ruff format 改过排版
+（face.md 第 9 节当时记的 067fb9b23229cc7f 是那一次 format 之前的摘要，盘面现为 f0f3ed96c2734ec3）。
+载档与仪器不同代时，"这份脚本产出这份载档"这句话就没有载体了。下面三份载档用当前字节重跑，
+face 行必须与上一代逐字相同；相等性由 probes/post_format_two_generation_face.py 读两份载档自己判。
+
+下面各 *_exit 行是主线当轮直接返回码的转录（每条命令单独取，未经管道）。
+
+
+===== 重跑 3/3：verify_merge_judge_face.py（七臂复算，当前盘面） =====
+product_roots shards=26 merged_claims=1445 merge_claims_field=1445 report_models=350
+digest_roots={'csv': '5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65', 'merge': '5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65', 'report': '5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65', 'pinned': '5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65'} inventory_error=''
+verdict_moves=0 moves=[]
+published_status={'INCOMPLETE': 8, 'OFFLINE_ACCEPTED': 281, 'UNREVIEWED': 61} recomputed_status={'OFFLINE_ACCEPTED': 281, 'UNREVIEWED': 61, 'INCOMPLETE': 8}
+accepted=281 reviews=281 five_pass=281 face_field_hits=1 value=281 signed_total=281
+no_pin=40 no_pin_blocked=40 no_pin_exit3=40 carrier_blocked_claims=40
+control_victim=alpha_vantage::EquityHistorical control_accepted=280 control_status=INCOMPLETE
+rerun_global_issues=[] rerun_invalid_claims=0
+PASS A_shards_join_the_merge
+PASS B_identity_set_still_pinned
+PASS C_judge_recomputes_the_archived_report
+PASS D_status_partition
+PASS E_accepted_equals_reviews_equals_prediction
+PASS F_no_pin_claims_equal_the_produced_blocked
+PASS G_dropping_a_review_moves_the_count
+verify_merge_judge_face arms=7 arms_passed=7 accepted=281 identity_set=5168e1e723999312 verdict=GREEN
+verify_face_exit=0

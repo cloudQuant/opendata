@@ -1,0 +1,214 @@
+===== 波 29 step 6：静态面最终代重取（写集 14 枚 .py，含本轮加臂之后的探针） =====
+为什么还要再取一次：step 5 之后本波又动了两次字节 —— 给两代等值探针加了 H/I 两臂，并落了一枚新载档（它自己也是一条新的 untracked）。写集清单在这里逐字打印，不再用 step 5 载档里那种 `<14 files>` 缩写：那条缩写就是 step 5 想修的「读数没有配方」，只是还留在文件清单这一层。
+
+写集 14 枚（product 3 + C128 仪器 3 + C129 探针 8；由 git status 与目录 glob 现读）：
+   1. opendata/data/providers/deribit/models/fetchers.py
+   2. scripts/quality/iter2_claims_probe_runner.py
+   3. scripts/quality/iter2_witnesses/deribit.py
+   4. docs/evidence/C128/plane1-residue-readiness-20261017/probes/landed_face_rebase.py
+   5. docs/evidence/C128/plane1-residue-readiness-20261017/probes/ledger_axis_blast.py
+   6. docs/evidence/C128/plane1-residue-readiness-20261017/probes/witness_seam_kind_census.py
+   7. docs/evidence/C129/runner-seam-widening-20261018/probes/counterfact_two_generation_diag.py
+   8. docs/evidence/C129/runner-seam-widening-20261018/probes/deribit_witness_prevalidation.py
+   9. docs/evidence/C129/runner-seam-widening-20261018/probes/fake_client_verb_parity.py
+  10. docs/evidence/C129/runner-seam-widening-20261018/probes/post_format_two_generation_face.py
+  11. docs/evidence/C129/runner-seam-widening-20261018/probes/reproduce_all_shards.py
+  12. docs/evidence/C129/runner-seam-widening-20261018/probes/reproduce_invariance_delta.py
+  13. docs/evidence/C129/runner-seam-widening-20261018/probes/resign_all_shards.py
+  14. docs/evidence/C129/runner-seam-widening-20261018/probes/verify_merge_judge_face.py
+files_n=14
+
+===== ruff check（14 枚；argv: $PY -m ruff check <上面 14 条路径逐字>） =====
+All checks passed!
+ruff_check_touched_exit=0
+ruff_check_stderr_bytes=0
+
+===== ruff format --check（同 14 枚；argv: $PY -m ruff format --check <同上>） =====
+14 files already formatted
+ruff_format_check_touched_exit=0
+
+===== mypy（3 枚产品文件；argv: $PY -m mypy <product 3 条>） =====
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor.*']
+Success: no issues found in 3 source files
+mypy_exit=0
+
+===== ruff check --output-format=concise .（整树；argv 逐字打在标题里） =====
+Found 440 errors.
+py_selfdev_by_dir={"opendata": 110, "scripts": 13, "tests": 34} py_selfdev_sum=157 quality_source_repairs=283
+ruff_check_whole_tree_exit=1
+
+===== evidence_traceability（argv: $PY scripts/quality/evidence_traceability.py） =====
+FAIL: 69148 new traceability violation(s) against a 0-entry baseline.
+by_rule={"narrative": 1, "untracked": 69147}
+by_root={"docs/evidence/C100": 69047, "docs/evidence/C101": 62, "docs/evidence/C108": 12, "docs/evidence/C128": 1, "docs/evidence/C129": 26}
+rule_rows_sum=69148 root_rows_sum=69148 stdout_lines=138309 stdout_bytes=20630797 stderr_bytes=0
+traceability_exit=1
+
+----- 非 C100 的全部 charge 名单（逐字）。step 5 那块只留了总数、没留名单，
+      所以下面这条 delta 只能对本代的名单说话，跨代的逐项差集要靠这份名单做基准。） -----
+charged| docs/evidence/C101/captures/deribit/FuturesCurve/contract-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesCurve/counterfact-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesCurve/direct-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesCurve/implementation-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesCurve/service-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesHistorical/contract-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesHistorical/counterfact-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesHistorical/direct-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesHistorical/implementation-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesHistorical/service-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesInfo/contract-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesInfo/counterfact-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesInfo/direct-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesInfo/implementation-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesInfo/service-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesInstruments/contract-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesInstruments/counterfact-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesInstruments/direct-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesInstruments/implementation-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/FuturesInstruments/service-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/OptionsChains/contract-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/OptionsChains/counterfact-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/OptionsChains/direct-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/OptionsChains/implementation-exit0.txt#untracked
+charged| docs/evidence/C101/captures/deribit/OptionsChains/service-exit0.txt#untracked
+charged| docs/evidence/C101/deribit/claims.json#untracked
+charged| docs/evidence/C101/deribit/claims.reviewed.json#untracked
+charged| docs/evidence/C101/fixtures/deribit/FuturesCurve.json#untracked
+charged| docs/evidence/C101/fixtures/deribit/FuturesHistorical.json#untracked
+charged| docs/evidence/C101/fixtures/deribit/FuturesInfo.json#untracked
+charged| docs/evidence/C101/fixtures/deribit/FuturesInstruments.json#untracked
+charged| docs/evidence/C101/fixtures/deribit/OptionsChains.json#untracked
+charged| docs/evidence/C101/primary-reviews/deribit__FuturesCurve.review.json#untracked
+charged| docs/evidence/C101/primary-reviews/deribit__FuturesHistorical.review.json#untracked
+charged| docs/evidence/C101/primary-reviews/deribit__FuturesInfo.review.json#untracked
+charged| docs/evidence/C101/primary-reviews/deribit__FuturesInstruments.review.json#untracked
+charged| docs/evidence/C101/primary-reviews/deribit__OptionsChains.review.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesCurve/contract.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesCurve/counterfact.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesCurve/direct.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesCurve/implementation.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesCurve/service.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesHistorical/contract.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesHistorical/counterfact.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesHistorical/direct.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesHistorical/implementation.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesHistorical/service.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesInfo/contract.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesInfo/counterfact.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesInfo/direct.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesInfo/implementation.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesInfo/service.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesInstruments/contract.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesInstruments/counterfact.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesInstruments/direct.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesInstruments/implementation.json#untracked
+charged| docs/evidence/C101/receipts/deribit/FuturesInstruments/service.json#untracked
+charged| docs/evidence/C101/receipts/deribit/OptionsChains/contract.json#untracked
+charged| docs/evidence/C101/receipts/deribit/OptionsChains/counterfact.json#untracked
+charged| docs/evidence/C101/receipts/deribit/OptionsChains/direct.json#untracked
+charged| docs/evidence/C101/receipts/deribit/OptionsChains/implementation.json#untracked
+charged| docs/evidence/C101/receipts/deribit/OptionsChains/service.json#untracked
+charged| docs/evidence/C108/#narrative
+charged| docs/evidence/C108/engine-smoke/captures/benzinga/PriceTarget/contract-exit0.txt#untracked
+charged| docs/evidence/C108/engine-smoke/captures/benzinga/PriceTarget/counterfact-exit0.txt#untracked
+charged| docs/evidence/C108/engine-smoke/captures/benzinga/PriceTarget/direct-exit0.txt#untracked
+charged| docs/evidence/C108/engine-smoke/captures/benzinga/PriceTarget/implementation-exit0.txt#untracked
+charged| docs/evidence/C108/engine-smoke/captures/benzinga/PriceTarget/service-exit0.txt#untracked
+charged| docs/evidence/C108/engine-smoke/fixtures/benzinga/PriceTarget.json#untracked
+charged| docs/evidence/C108/engine-smoke/receipts/benzinga/PriceTarget/contract.json#untracked
+charged| docs/evidence/C108/engine-smoke/receipts/benzinga/PriceTarget/counterfact.json#untracked
+charged| docs/evidence/C108/engine-smoke/receipts/benzinga/PriceTarget/direct.json#untracked
+charged| docs/evidence/C108/engine-smoke/receipts/benzinga/PriceTarget/implementation.json#untracked
+charged| docs/evidence/C108/engine-smoke/receipts/benzinga/PriceTarget/service.json#untracked
+charged| docs/evidence/C128/plane1-residue-readiness-20261017/runs/wave29-step2d-landed-face-rebase.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/face.md#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/probes/counterfact_two_generation_diag.py#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/probes/deribit_witness_prevalidation.py#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/probes/fake_client_verb_parity.py#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/probes/post_format_two_generation_face.py#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/probes/reproduce_all_shards.py#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/probes/reproduce_invariance_delta.py#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/probes/resign_all_shards.py#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/probes/verify_merge_judge_face.py#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step0-counterfactual_widening.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step1-fake_client_verb_parity.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step1b-fake_client_verb_parity.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2a-counterfact_two_generation_diag.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2b-deribit_witness_prevalidation.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2c-reproduce_all_shards.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2e-reproduce_invariance_delta.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2f-resign_all_shards.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2f2-resign_all_shards_post_format.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2g-merge_and_judge.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2g2-merge_and_judge_post_format.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2h-verify_merge_judge_face.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2h2-verify_merge_judge_face_post_format.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2j-post_format_two_generation_face.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2j2-post_format_two_generation_face_9arms.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step3-static_planes.txt#untracked
+charged| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step5-static_planes_retake.txt#untracked
+non_c100_charged_n=101
+
+delta_vs_step5_carrier=+6 (step5=69142 由那一份载档正则读回，现=69148)
+prose_69043_c100_claim_replaced_by_this_reading=69047
+
+----- 归因尝试一：st_birthtime（born after step 5 才算新册）-----
+step5_carrier_mtime=1792281100.411741 step5_carrier_mtime_iso=2026-10-18T07:51:40.411741
+charged_rows=69148 charged_distinct_paths=69148 stat_missing=0 charged_new_since_step5_n=5 delta=6 fully_attributed=False
+new_charge| docs/evidence/C100/frontend-download/runs/20261018T002136Z_578b1bbd/backend-exceptions-redacted.json birthtime=2026-10-18T08:21:36.823239
+new_charge| docs/evidence/C100/frontend-download/runs/20261018T002136Z_578b1bbd/run-manifest.json birthtime=2026-10-18T08:21:36.246432
+new_charge| docs/evidence/C129/runner-seam-widening-20261018/face.md birthtime=2026-10-18T08:20:50.166103
+new_charge| docs/evidence/C129/runner-seam-widening-20261018/probes/post_format_two_generation_face.py birthtime=2026-10-18T08:02:38.826609
+new_charge| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2j2-post_format_two_generation_face_9arms.txt birthtime=2026-10-18T08:04:11.728980
+control_2j_carrier_birthtime=1792280890.949173 (iso=2026-10-18T07:48:10.949173) before_step5=True names_the_probe=True probe_birthtime=1792281758.826609 probe_birth_after_step5=True
+⇒ 这一条归因路数被自己的对照否证：2j 那份载档出生早于 step 5 的载档，而它正文点名了这台仪器的探针路径 —— 所以探针文件在 step 5 那代必然已经在册；可它现在的 birthtime 晚于 step 5。原因是编辑走「临时文件 + 改名覆盖」，换 inode 就把 birthtime 一起刷新，于是**birthtime 也不等于创建**。
+----- 归因尝试二：把 C100 那侧的**活写手**按目录点名（不靠时钟猜）-----
+frontend_download_runs_dirs_total=55 dirs_born_after_step5=1 fd_charges_those_dirs=2
+fd_dir| 20261018T002136Z_578b1bbd files=2 birthtime=2026-10-18T08:21:36.126615
+写手就是 `tests/test_script_download_backend_iter2.py`：它每次执行都往 `docs/evidence/C100/frontend-download/runs/<UTC 时间戳>_<8hex 运行 id>/` 落一份 `run-manifest.json` 与一份 `backend-exceptions-redacted.json`（两枚都是 untracked 册）。**traceability 的母数不是档案的纯函数**：静态面里那格 pytest 每跑一次就往被普查的根里加两行。所以本载档把两条 pytest 调到 traceability **之后**跑，让上面这格读数不被本载档自己的 pytest 充气 —— 但它拦不住上一代 builder 已经落盘的那一枚（下面名单里看得见）。
+attributed_by_named_writers=3 (c129_carrier_new=1 + fd_files_after_step5=2) delta=6 residual_unexplained=3
+carrier_new| docs/evidence/C129/runner-seam-widening-20261018/runs/wave29-step2j2-post_format_two_generation_face_9arms.txt
+birthtime_only_new_not_carrier| docs/evidence/C129/runner-seam-widening-20261018/face.md
+birthtime_only_new_not_carrier| docs/evidence/C129/runner-seam-widening-20261018/probes/post_format_two_generation_face.py
+non_c100_name_list_rows_this_carrier_archives=101 根因仍是 step 5 只归档总数、没归档名单：总数差在任何磁盘时钟上都不可逐项归因（编辑换 inode、写手在普查根里落新文件），只有名单差可以。本载档把非 C100 的名单逐字落盘（上面 charged| 那些行），并把 C100 那侧唯一还在长大的写手按目录点名 —— 下一轮的差集就有两边的基准了。
+new_since_step5_by_root={"docs/evidence/C129": 3, "docs/evidence/C100": 2} c100_new_n=2
+
+other_rule_charge| docs/evidence/C108/#narrative
+other_rule_charge_n=1
+
+===== 同一代字节上再跑一次两代等值探针（argv 打在标题里） =====
+argv=$PY docs/evidence/C129/runner-seam-widening-20261018/probes/post_format_two_generation_face.py   # cwd=仓库根；未注入 PYTHONPATH，路径由探针自己 sys.path.insert
+post_format_two_generation_face arms=9 arms_passed=9 base=99834046c2db verdict=GREEN
+two_gen_face_exit=0
+probe_sha16=9e6df4a674bf18e3 probe_stdout_bytes=2530 probe_stderr_bytes=0
+probe_run1_sha16=af63f4d21926660e probe_run2_sha16=af63f4d21926660e run1_exit=0 run2_exit=0 run1_stdout_bytes=2530 run2_stdout_bytes=2530 run2_stderr_bytes=0 two_runs_stdout_identical=True
+两次跑在同一代探针字节上，stdout 逐字节比较在本载档里现测（不是引用 step 2j2 那次的散文）：见上面 probe_run1_sha16 / probe_run2_sha16 与 identical 那一格。
+
+===== pytest -k deribit（argv: $PY -m pytest -q -o addopts= -p no:cacheprovider -k deribit；argv 逐字抄自 step 5 载档的块标题，不重装） =====
+51 passed, 26499 deselected in 2.87s
+pytest_k_deribit_exit=0 pytest_k_deribit_stdout_bytes=117 pytest_k_deribit_stderr_bytes=0
+
+===== pytest 两枚波前红文件（argv: $PY -m pytest -q -o addopts= -p no:cacheprovider tests/test_congress_cboe_iter2.py tests/test_script_download_backend_iter2.py） =====
+2 failed, 54 passed in 0.89s
+pytest_two_red_files_exit=1 pytest_two_red_files_stdout_bytes=8296 pytest_two_red_files_stderr_bytes=0
+frontend_download_dirs_after_pytest_born_after_step5=2 names=["20261018T002136Z_578b1bbd", "20261018T002531Z_c2036978"]
+上面那格就是充气机制的实物：这两条 pytest 里跑的是**这一代**的写手，它落的收据不进本载档traceability 那几格（那几格在此之前已取），只进下一个读者的母数。两枚红的归因沿用 step 5 的两相控制（外来路径 0 行 / 写集 3 行），本载档只重取计数与 exit：第一枚是夹具把 `number='42'` 喂给 `CongressAmendment.number: int`，第二枚是 Docker 环境门。
+
+===== 写集 digest（本载档写完之前现读；载档自己的 sha 由 §9 表携带） =====
+sha16 c95af59ff225890f opendata/data/providers/deribit/models/fetchers.py
+sha16 18b46adc3ccbcfb7 scripts/quality/iter2_claims_probe_runner.py
+sha16 af9d1913d5f9e73e scripts/quality/iter2_witnesses/deribit.py
+sha16 97abad183481ccb9 docs/evidence/C128/plane1-residue-readiness-20261017/probes/landed_face_rebase.py
+sha16 21d24cbaecc44100 docs/evidence/C128/plane1-residue-readiness-20261017/probes/ledger_axis_blast.py
+sha16 0f8de9dd340fab3c docs/evidence/C128/plane1-residue-readiness-20261017/probes/witness_seam_kind_census.py
+sha16 ef62182a92c4b124 docs/evidence/C129/runner-seam-widening-20261018/probes/counterfact_two_generation_diag.py
+sha16 83a11931b5557e24 docs/evidence/C129/runner-seam-widening-20261018/probes/deribit_witness_prevalidation.py
+sha16 809ae95f2ab38314 docs/evidence/C129/runner-seam-widening-20261018/probes/fake_client_verb_parity.py
+sha16 9e6df4a674bf18e3 docs/evidence/C129/runner-seam-widening-20261018/probes/post_format_two_generation_face.py
+sha16 9c2d2fad7634738c docs/evidence/C129/runner-seam-widening-20261018/probes/reproduce_all_shards.py
+sha16 3154f98be58f1d0d docs/evidence/C129/runner-seam-widening-20261018/probes/reproduce_invariance_delta.py
+sha16 f0f3ed96c2734ec3 docs/evidence/C129/runner-seam-widening-20261018/probes/resign_all_shards.py
+sha16 b46d1e51fd260078 docs/evidence/C129/runner-seam-widening-20261018/probes/verify_merge_judge_face.py
+
+本载档自身的 exit 行由上面每条命令的 subprocess 返回码逐条转写，没有一条是从散文里抄的；`make gate`（17 枚）本波仍未跑，这里不声称 gate 绿。
+自指滞后按 §91 的约定记账：上面 traceability 那几格是在本载档落盘**之前**跑的，所以它看不见自己 —— 本载档一落地，下一个读者会读到 +1（untracked）。这条 +1 不由本载档声称，由下一个读者现读。

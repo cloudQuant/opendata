@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInstruments --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "DeribitProviderError", "refusal_code": "DERIBIT_BAD_RESPONSE_SHAPE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "DeribitProviderError", "refusal_code": "DERIBIT_BAD_RESPONSE_SHAPE", "rejected": [], "status": null}, "reason": "quoting the identifier leaves every other cell of the directory record well-formed, and instrument_id is the contract column of DeribitFuturesInstruments that Deribit documents as an integer: the directory fetcher must refuse the page rather than publish a contract whose id is a string or silently re-derive it from the instrument name; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

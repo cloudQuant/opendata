@@ -1,0 +1,81 @@
+===== 波 29 step 2j2：两代载档等值 + 波 29 落地面 + 残留普查（九臂，钉死波前 commit） =====
+仪器：probes/post_format_two_generation_face.py，现 426 行 / 19675 字节 / sha16 9e6df4a674bf18e3。
+本载档引用的字节 = 跑出下面第一块的那一份字节：这一轮最后一次编辑之后只跑没改，
+`ruff check` 退出 0、`ruff format --check` 输出 `1 file already formatted` 退出 0，
+然后才跑探针（§5 缺陷 5 立的规矩：载档必须引用跑它的那一代字节）。
+argv（照抄本次工具结果里跑的那条，不补写）：
+    PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python \
+        docs/evidence/C129/runner-seam-widening-20261018/probes/post_format_two_generation_face.py
+exit 与流（直接取，未走管道，所以 $? 就是探针自己的返回码）：two_gen_face_exit=0
+first_block_stdout_bytes=2530 first_block_stderr_bytes=0
+
+这代把臂从 7 加到 9（H/I），因为 §6 与 §8 里那段"61 行 = 6 家没有分片 provider"的普查
+原本只有散文。加臂过程中我自己的两处仪表缺陷一并记在这里，它们是第一块读数的一部分成因：
+  1. 第一稿的 H 臂把 provider 总体从判定报告自己的 models 列表里取。于是 I 臂伪造时把 yfinance
+     的行改标成 wsj，yfinance 同时从**分子和分母**里消失，集合仍然相等，`sets_broke` 印 False
+     而臂却报 PASS —— 一行自相矛盾。总体改成用 shipped judge 的 `load_inventory` 现读 CSV
+     的 provider 列（返回 `csv_sha256` 与报告 `inventory.csv_sha256` 对照，I 臂里那格
+     `csv_sha16_matches_report=True` 就是这次对照）。
+  2. 伪造原先只改**一**行：那样 yfinance 还剩 28 行，集合两边都还留着这个名字，
+     `sets_equal` 不动，红只落在"最大簇 = yfinance 29"那一格 —— 控制臂扳不动它声称要扳的那件事。
+     改成整簇 29 行一起改标：桶仍 61、人数仍 350，集合从两边各自断开，I 才测到 partition。
+
+PASS A_resign_face_two_generations
+     face_equal=True ledger_old=26 ledger_new=26 ledger_diffs=[] signed_total=True
+PASS B_merge_judge_two_generations
+     merge_face='claims=1445 identities=289 reviews=281 accepted_identities=281' judge_equal=True
+PASS C_verify_arms_two_generations
+     arms_old={'A_shards_join_the_merge': 'PASS', 'B_identity_set_still_pinned': 'PASS', 'C_judge_recomputes_the_archived_report': 'PASS', 'D_status_partition': 'PASS', 'E_accepted_equals_reviews_equals_prediction': 'PASS', 'F_no_pin_claims_equal_the_produced_blocked': 'PASS', 'G_dropping_a_review_moves_the_count': 'PASS'} arms_new={'A_shards_join_the_merge': 'PASS', 'B_identity_set_still_pinned': 'PASS', 'C_judge_recomputes_the_archived_report': 'PASS', 'D_status_partition': 'PASS', 'E_accepted_equals_reviews_equals_prediction': 'PASS', 'F_no_pin_claims_equal_the_produced_blocked': 'PASS', 'G_dropping_a_review_moves_the_count': 'PASS'} face_new='verify_merge_judge_face arms=7 arms_passed=7 accepted=281 identity_set=5168e1e723999312 verdict=GREEN'
+PASS D_disk_is_the_archived_generation
+     claims_input_digest_matches_disk=True signed_total=281 disk_accepted=281
+PASS E_wave29_delta_vs_pinned_commit
+     population=350 shapes={'UNREVIEWED->OFFLINE_ACCEPTED': 5, 'UNREVIEWED->INCOMPLETE': 2} gained=['deribit', 'deribit', 'deribit', 'deribit', 'deribit'] incomplete=['government_us', 'government_us'] accepted=276->281
+PASS F_forged_generations_go_red
+     resign_tamper=False(want False) base_tamper=False(want False) tamper_detail=population=350 shapes={'UNREVIEWED->OFFLINE_ACCEPTED': 4, 'UNREVIEWED->INCOMPLETE': 2} gained=['deribit', 'deribit', 'deribit', 'deribit'] incomplete=['government_us', 'government_us'] accepted=276->281
+PASS G_restored_after_tamper
+     resign_equal=True e_still_green=True
+PASS H_unreviewed_is_the_no_shard_population
+     csv_providers=32 shards_present=26 shards_absent=['biztoc', 'seeking_alpha', 'stockgrid', 'tmx', 'wsj', 'yfinance'] unreviewed_providers=['biztoc', 'seeking_alpha', 'stockgrid', 'tmx', 'wsj', 'yfinance'] top3=[('yfinance', 29), ('tmx', 24), ('seeking_alpha', 3)] partition_sum=61==bucket=61 sets_equal=True incomplete_bucket=8 report_provider_set_matches_csv=True
+PASS I_forged_partition_goes_red
+     csv_sha16_matches_report=True h_under_forgery=False(want False) sets_broke=True(want True) bucket_held=61 sum_held=61 rows_held=350 counts=[('wsj', 32), ('tmx', 24), ('seeking_alpha', 3)]
+post_format_two_generation_face arms=9 arms_passed=9 base=99834046c2db verdict=GREEN
+
+===== 第二块：字段级差分（主线同轮读数，转录） =====
+merged_bytes 5731bdf86608bf3f -> 73c7701a6931d02c
+review_field_diffs_only=['receipt', 'reviewed_at_utc']  receipt_leaf_paths_that_moved=['.sha256']  n=281/281
+all_reviews_moved_on_same_paths=True  reviews_old=281 reviews_new=281 same_keys=True
+report_scrub_equal=True（剥掉 reviewed_at_utc/generated_at/claims_input/inventory 后整文档相等）
+report_models_old=350 report_models_new=350 statuses_equal=True
+summary_old=281 {'INCOMPLETE': 8, 'OFFLINE_ACCEPTED': 281, 'UNREVIEWED': 61}
+summary_new=281 {'INCOMPLETE': 8, 'OFFLINE_ACCEPTED': 281, 'UNREVIEWED': 61}
+claims_input_old=5731bdf86608bf3f claims_input_new=73c7701a6931d02c new_matches_disk=True
+two_gen_exit=0
+
+===== 读数 =====
+九臂全绿，face 行 post_format_two_generation_face arms=9 arms_passed=9 base=99834046c2db verdict=GREEN。
+
+A/B/C 与上一份载档（49 行 / 5873505140c4dc68，七臂那一代）逐字相同：它们读的是仓库里两代载档的
+face 行与逐 provider 账，加臂不碰这三格，所以这份载档留着旧的那一代作为 A/B/C 的被读对象。
+D 读 claims_input_digest_matches_disk=True signed_total=281 disk_accepted=281。
+E 是本波的落地面：population=350，accepted=276->281，
+shapes={'UNREVIEWED->OFFLINE_ACCEPTED': 5, 'UNREVIEWED->INCOMPLETE': 2}，
+gained 五枚全在 deribit，incomplete 两枚全在 government_us（TreasuryPrices、WeatherBulletinDownload）。
+F 的两处伪造各自转红：把新代载档的 signed_total 改成 280，A 比较器红；把波前报告里一枚 deribit 行
+伪造成 OFFLINE_ACCEPTED，E 读到 gained=4、shapes 变成 5->4，红。改不红就说明 A/E 在读常数。
+G 撤销伪造后 A/E 复原。
+
+H 是 §6 第四个事实与 §8 分族读数的载档：csv_providers=32、shards_present=26、
+缺席名单 ['biztoc', 'seeking_alpha', 'stockgrid', 'tmx', 'wsj', 'yfinance']，
+同一行左边把 UNREVIEWED 的按 provider 名单原样印出（与缺席名单逐字相同），
+top3=[('yfinance', 29), ('tmx', 24), ('seeking_alpha', 3)]，partition_sum=61==bucket=61，
+incomplete_bucket=8，report_provider_set_matches_csv=True。
+所以"最大的一簇是 yfinance 29、tmx 24 是第二簇"这一格从此不住在散文里；本波第一稿把 tmx 写成
+最大簇（§5 缺陷 7），更正后的值由 H 臂携带。
+
+I 是 H 的反例，而且是**保计数的**反例：把 yfinance 的全部 29 枚 UNREVIEWED 行改标成 wsj，
+bucket_held=61、sum_held=61、rows_held=350 三格全不动，counts 变成 [('wsj', 32), ('tmx', 24),
+('seeking_alpha', 3)]，sets_broke=True(want True)、h_under_forgery=False(want False)。
+它证明 H 读的是"分族 = 缺席名单"这个关系，而不是 61 这个数。
+
+波前基准不是 HEAD~n 而是钉死的 full sha 99834046c2db5eba1d39e9c8e176e0699a76a50c（波 28 步骤 4
+那次提交）—— 本波提交之后 HEAD 会移动，这支探针读的还是同一个波前。

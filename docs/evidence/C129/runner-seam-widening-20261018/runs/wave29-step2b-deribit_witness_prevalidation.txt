@@ -1,0 +1,78 @@
+materialized: fixtures=5 root=/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/w29-deribit-preval-40x6pbaq
+phase: deribit::FuturesHistorical::implementation exit=0 VERDICT=PASS
+phase: deribit::FuturesHistorical::direct exit=0 VERDICT=PASS
+phase: deribit::FuturesHistorical::service exit=0 VERDICT=PASS
+phase: deribit::FuturesHistorical::contract exit=0 VERDICT=PASS
+phase: deribit::FuturesHistorical::counterfact exit=0 VERDICT=PASS
+phase: deribit::FuturesInfo::implementation exit=0 VERDICT=PASS
+phase: deribit::FuturesInfo::direct exit=0 VERDICT=PASS
+phase: deribit::FuturesInfo::service exit=0 VERDICT=PASS
+phase: deribit::FuturesInfo::contract exit=0 VERDICT=PASS
+phase: deribit::FuturesInfo::counterfact exit=0 VERDICT=PASS
+phase: deribit::FuturesInstruments::implementation exit=0 VERDICT=PASS
+phase: deribit::FuturesInstruments::direct exit=0 VERDICT=PASS
+phase: deribit::FuturesInstruments::service exit=0 VERDICT=PASS
+phase: deribit::FuturesInstruments::contract exit=0 VERDICT=PASS
+phase: deribit::FuturesInstruments::counterfact exit=0 VERDICT=PASS
+phase: deribit::FuturesCurve::implementation exit=0 VERDICT=PASS
+phase: deribit::FuturesCurve::direct exit=0 VERDICT=PASS
+phase: deribit::FuturesCurve::service exit=0 VERDICT=PASS
+phase: deribit::FuturesCurve::contract exit=0 VERDICT=PASS
+phase: deribit::FuturesCurve::counterfact exit=0 VERDICT=PASS
+phase: deribit::OptionsChains::implementation exit=0 VERDICT=PASS
+phase: deribit::OptionsChains::direct exit=0 VERDICT=PASS
+phase: deribit::OptionsChains::service exit=0 VERDICT=PASS
+phase: deribit::OptionsChains::contract exit=0 VERDICT=PASS
+phase: deribit::OptionsChains::counterfact exit=0 VERDICT=PASS
+PHASE_TALLY passed=25 failed=0 blocked=0 total=25
+CONTROL_POSITIVE served: rows=2 classes=['DeribitFuturesHistorical'] methods=['POST', 'POST'] urls=2
+CONTROL_SECOND_GENERATION served: rows=2 counter_next=5
+CONTROL_ECHO_DECLARATION_GUARD refused: DeribitProviderError DERIBIT_BAD_ENVELOPE status=200
+CONTROL_VERB_GUARD refused: DeribitProviderError DERIBIT_TRANSPORT_ERROR
+CONTROL_SEQUENCE_EXHAUSTION refused: DeribitProviderError DERIBIT_TRANSPORT_ERROR
+CONTROL_SEAM_PAGES served_ids=[1, 2] distinct_bodies=True
+CONTROL_SEAM_EXHAUSTION refused: seam sequence for url_contains='public/get_tradingview_chart_data' exhausted after 2 page(s); the source asked for more than the fixture declares
+PREVALIDATION_DONE phase_failures_or_blocked=0
+deribit_prevalidation_exit=0
+
+
+这台仪器测什么：在付 produce→sign→merge→judge 这一轮之前，用**出厂的判定器**把 deribit 首份见证
+模块跑满。25 格 = 5 个模型 × 5 个相位，每格都是 `iter2_claims_probe_runner.py` 的真子进程，
+`--evidence-root` 指向 `tempfile.mkdtemp` 出来的 scratch 根，fixture 由 producer 自己的序列化函数
+（`json.dumps(..., indent=2, ensure_ascii=False, sort_keys=True)` + 换行）落盘 —— 也就是说这里没有
+第二套判定逻辑，只有同一套逻辑换了个证据根。
+
+读数：`PHASE_TALLY passed=25 failed=0 blocked=0 total=25`，25 行逐格带
+`exit=0 VERDICT=PASS`（`exit=3` 会被单独计成 blocked，非 0 非 3 计成 failed，两者都是 0）。
+
+控制臂是这一轮必须留档的部分，因为本波付的钱是"台架变宽"，而变宽的台架最容易自证：
+  * `CONTROL_POSITIVE`：id-echo 的 POST fixture 一次进程内服务两次图表调用，
+    `classes=['DeribitFuturesHistorical']` 就是本波新补的 `row_model` 声明生效的正面读数。
+  * `CONTROL_SECOND_GENERATION`：**不**重装计数器再取一代，仍然 `rows=2`，`counter_next=5`。
+    这一格是 `counterfact` 相位真正依赖的性质（同一进程跑控制+篡改两代），也是别的 provider 的
+    写死 id fixture 从来不需要具备的性质。
+  * `CONTROL_ECHO_DECLARATION_GUARD`：把 `echo_request_id` 删掉，同一份 fixture 立刻反例，
+    观察面是 `DeribitProviderError DERIBIT_BAD_ENVELOPE status=200`。这一格证明 `id: null`
+    占位不是"碰巧也能过"：声明一旦被摘掉，信封就拒 —— 反过来说，见证模块里每一格 echo 声明
+    都是承重的。
+  * `CONTROL_VERB_GUARD`：把 `method` 翻成 `GET` 后反例（观察面同样是
+    `DERIBIT_TRANSPORT_ERROR` 而不是自定义码）。这一格证明 `method` 键不是装饰。
+  * `CONTROL_SEQUENCE_EXHAUSTION`：三枚 symbol 问一个两页 `sequence`，第三问反例。
+    两页的顺序是 FuturesHistorical 唯一能证明"按序服务"的东西 —— 五个模型里只有它的两腿
+    打到同一个路由，其余四个地址互不相同。
+  * `CONTROL_SEAM_PAGES` / `CONTROL_SEAM_EXHAUSTION`：同一条界**在台架面上**再读一次。
+    必须重读的理由是 `opendata/data/providers/deribit/client.py:99-101` 的宽
+    `except Exception` 会把任何传输异常洗成 `DERIBIT_TRANSPORT_ERROR`（:87 那条 `request` 调用点
+    就在它的保护范围内），
+    所以 provider 级臂看不到台架自己的话术；台架级给出 `served_ids=[1, 2]`、
+    `distinct_bodies=True` 与第三问的原文
+    `seam sequence ... exhausted after 2 page(s); the source asked for more than the fixture declares`。
+    这里没有把洗码当成缺陷：见证模块声明的五枚反例码都是解析器自己的码，
+    而 `DERIBIT_TRANSPORT_ERROR` 不属于任何一格的 `refusal_code`。
+
+诚实边界：deribit 五枚 fixture 的 body 全部是**手写夹具，不是线上抓包**（模拟日 2026-01-01）；
+`usOut` 是信封要求的字段之一，不是计时证据；本轮没有任何 socket 可以打通，因此
+`execution_mode=offline-only` 的既有语义没变。
+
+本载档不测什么：不写 canonical 收据；不设 `OPENDATA_ALLOW_LIVE_E2E`；plane 2 一格没动；
+`ledger_axis_blast.py` 的 landed 常数在本轮判完之前不重定基（那是 step 3 的钱）。

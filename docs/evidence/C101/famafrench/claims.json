@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchBreakpoints --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-17T03:09:44.615518+00:00",
+      "executed_at_utc": "2026-10-17T22:57:25.305156+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -23,8 +23,8 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -45,8 +45,8 @@
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -98,7 +98,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchBreakpoints",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchBreakpoints/implementation.json",
-        "sha256": "b91af8a9067cf93161cf80f4c5865f7961f58e6760f6ded6ea0a591a18ccce77"
+        "sha256": "b98ce759e82428e146699de8c03b23972d244a784ccb1c1f4123bde76352a672"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchBreakpoints"
@@ -106,7 +106,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchBreakpoints --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-17T03:09:45.444930+00:00",
+      "executed_at_utc": "2026-10-17T22:57:26.911557+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -126,15 +126,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "5d8d0d36aef500156e15eaa439818ec791c2ed2871d31c6695c94a89d9f1abf7",
-            "before_sha256": "5d8d0d36aef500156e15eaa439818ec791c2ed2871d31c6695c94a89d9f1abf7",
+            "after_sha256": "6e5aa56126730ad2aa02be3b91a446261b4383a5cba91550db02e20879b20c53",
+            "before_sha256": "6e5aa56126730ad2aa02be3b91a446261b4383a5cba91550db02e20879b20c53",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchBreakpoints.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -186,7 +186,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchBreakpoints",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchBreakpoints/direct.json",
-        "sha256": "59532b54bb03dd41c43a7f47e2a8f639bdc833f9ac8ff52ab15e249c9eca2658"
+        "sha256": "4c1c1089bcdbc67e0478b1854b845cf4416c284b0d4d6be1c7f2453a67d12cfc"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchBreakpoints"
@@ -194,7 +194,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchBreakpoints --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-17T03:09:46.460193+00:00",
+      "executed_at_utc": "2026-10-17T22:57:28.768923+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -214,15 +214,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "5d8d0d36aef500156e15eaa439818ec791c2ed2871d31c6695c94a89d9f1abf7",
-            "before_sha256": "5d8d0d36aef500156e15eaa439818ec791c2ed2871d31c6695c94a89d9f1abf7",
+            "after_sha256": "6e5aa56126730ad2aa02be3b91a446261b4383a5cba91550db02e20879b20c53",
+            "before_sha256": "6e5aa56126730ad2aa02be3b91a446261b4383a5cba91550db02e20879b20c53",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchBreakpoints.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -274,7 +274,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchBreakpoints",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchBreakpoints/service.json",
-        "sha256": "71d42d1e786fb1dbad54a6371e04328929777a74cea4cb465f232082c6c6a994"
+        "sha256": "a18a4fc82f694e19211818475a4c1c5977062b15beea9da12dbe0709321a5cd5"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchBreakpoints"
@@ -282,7 +282,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchBreakpoints --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-17T03:09:47.295748+00:00",
+      "executed_at_utc": "2026-10-17T22:57:30.294142+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -302,15 +302,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "5d8d0d36aef500156e15eaa439818ec791c2ed2871d31c6695c94a89d9f1abf7",
-            "before_sha256": "5d8d0d36aef500156e15eaa439818ec791c2ed2871d31c6695c94a89d9f1abf7",
+            "after_sha256": "6e5aa56126730ad2aa02be3b91a446261b4383a5cba91550db02e20879b20c53",
+            "before_sha256": "6e5aa56126730ad2aa02be3b91a446261b4383a5cba91550db02e20879b20c53",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchBreakpoints.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -362,7 +362,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchBreakpoints",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchBreakpoints/contract.json",
-        "sha256": "a6a741cfb29f412995e282ee98640ffc698bd0ecc1acb1832e9d0bd63de627d5"
+        "sha256": "604565f36b29b7827adb94a336ba58e91d5be3d832f5bb1d43779c4153edec21"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchBreakpoints"
@@ -370,7 +370,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchBreakpoints --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-17T03:09:48.155992+00:00",
+      "executed_at_utc": "2026-10-17T22:57:31.814882+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -390,15 +390,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "5d8d0d36aef500156e15eaa439818ec791c2ed2871d31c6695c94a89d9f1abf7",
-            "before_sha256": "5d8d0d36aef500156e15eaa439818ec791c2ed2871d31c6695c94a89d9f1abf7",
+            "after_sha256": "6e5aa56126730ad2aa02be3b91a446261b4383a5cba91550db02e20879b20c53",
+            "before_sha256": "6e5aa56126730ad2aa02be3b91a446261b4383a5cba91550db02e20879b20c53",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchBreakpoints.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -450,7 +450,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchBreakpoints",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchBreakpoints/counterfact.json",
-        "sha256": "9372d2f893231516a388cc7300ab1232e9e7a5c234d64bd6fc6d624885d4d5e4"
+        "sha256": "b8bc0740aeee65303c246f2748945f66e091f8c9e08ca3034bc240d995380141"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchBreakpoints"
@@ -458,7 +458,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchCountryPortfolioReturns --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-17T03:09:49.020692+00:00",
+      "executed_at_utc": "2026-10-17T22:57:33.409718+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -478,8 +478,8 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -500,8 +500,8 @@
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -553,7 +553,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchCountryPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchCountryPortfolioReturns/implementation.json",
-        "sha256": "37ce31a52ee778265c035f10c4ba7322d8bdb729bda41704a8b6f4ebb4fb3d3e"
+        "sha256": "3ef6f993517fa9f0e36077dab1795ce7f9b28d8a6d32c2ec864e0f9391c69dd7"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchCountryPortfolioReturns"
@@ -561,7 +561,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchCountryPortfolioReturns --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-17T03:09:49.862895+00:00",
+      "executed_at_utc": "2026-10-17T22:57:34.863799+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -581,15 +581,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "96edd68c5d3fe9dc5b0937594481282fdb000b3aeff1af248134f97eaed14676",
-            "before_sha256": "96edd68c5d3fe9dc5b0937594481282fdb000b3aeff1af248134f97eaed14676",
+            "after_sha256": "f5fb3fb1a7b22a0436146bf75b50a30bd97d5dcb7c923307b011b899e5144f70",
+            "before_sha256": "f5fb3fb1a7b22a0436146bf75b50a30bd97d5dcb7c923307b011b899e5144f70",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchCountryPortfolioReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -641,7 +641,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchCountryPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchCountryPortfolioReturns/direct.json",
-        "sha256": "2f936d864015176c6129cffefad9197d9e144ef5cbd349ba7bca977a54832360"
+        "sha256": "6711f33ee486dcc58cf53a42befdab501ed0aaa4b02977e71c996b95625995ed"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchCountryPortfolioReturns"
@@ -649,7 +649,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchCountryPortfolioReturns --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-17T03:09:50.898801+00:00",
+      "executed_at_utc": "2026-10-17T22:57:36.767062+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -669,15 +669,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "96edd68c5d3fe9dc5b0937594481282fdb000b3aeff1af248134f97eaed14676",
-            "before_sha256": "96edd68c5d3fe9dc5b0937594481282fdb000b3aeff1af248134f97eaed14676",
+            "after_sha256": "f5fb3fb1a7b22a0436146bf75b50a30bd97d5dcb7c923307b011b899e5144f70",
+            "before_sha256": "f5fb3fb1a7b22a0436146bf75b50a30bd97d5dcb7c923307b011b899e5144f70",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchCountryPortfolioReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -729,7 +729,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchCountryPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchCountryPortfolioReturns/service.json",
-        "sha256": "fe0465f338fb3722ad05f2f54c841fd00e92b7202697677ee952d8cfd7e051f3"
+        "sha256": "285c0891a08fd825749c188ed9458708de0157cbb69dfa6b30bca94924ce2a22"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchCountryPortfolioReturns"
@@ -737,7 +737,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchCountryPortfolioReturns --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-17T03:09:51.771206+00:00",
+      "executed_at_utc": "2026-10-17T22:57:38.424202+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -757,15 +757,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "96edd68c5d3fe9dc5b0937594481282fdb000b3aeff1af248134f97eaed14676",
-            "before_sha256": "96edd68c5d3fe9dc5b0937594481282fdb000b3aeff1af248134f97eaed14676",
+            "after_sha256": "f5fb3fb1a7b22a0436146bf75b50a30bd97d5dcb7c923307b011b899e5144f70",
+            "before_sha256": "f5fb3fb1a7b22a0436146bf75b50a30bd97d5dcb7c923307b011b899e5144f70",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchCountryPortfolioReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -817,7 +817,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchCountryPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchCountryPortfolioReturns/contract.json",
-        "sha256": "fa0a8add1eb6e26869312b7ea954b1b5d22d978260e2f3fe0e739c51f753c518"
+        "sha256": "f7e5046feed72d11eb543fb3760c38c55e58d668a4f33fdeb310a5ac9381bef8"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchCountryPortfolioReturns"
@@ -825,7 +825,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchCountryPortfolioReturns --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-17T03:09:52.596850+00:00",
+      "executed_at_utc": "2026-10-17T22:57:39.890332+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -845,15 +845,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "96edd68c5d3fe9dc5b0937594481282fdb000b3aeff1af248134f97eaed14676",
-            "before_sha256": "96edd68c5d3fe9dc5b0937594481282fdb000b3aeff1af248134f97eaed14676",
+            "after_sha256": "f5fb3fb1a7b22a0436146bf75b50a30bd97d5dcb7c923307b011b899e5144f70",
+            "before_sha256": "f5fb3fb1a7b22a0436146bf75b50a30bd97d5dcb7c923307b011b899e5144f70",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchCountryPortfolioReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -905,7 +905,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchCountryPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchCountryPortfolioReturns/counterfact.json",
-        "sha256": "bb3f0f29d1776ded90afd989596ef57592ee20d388174ee2a98c6484b2de387d"
+        "sha256": "e28ccbff50593294851cba53085c28d3b167a07e1d5bcceaf589eeed1e8c9a40"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchCountryPortfolioReturns"
@@ -913,7 +913,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchFactors --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-17T03:09:53.443841+00:00",
+      "executed_at_utc": "2026-10-17T22:57:41.434337+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -933,8 +933,8 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -955,8 +955,8 @@
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1008,7 +1008,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchFactors",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchFactors/implementation.json",
-        "sha256": "9734cd51b77fa8a0d25de149c3c59dedd32a0eeb3cbedf1dc5db11cf55f8d941"
+        "sha256": "36ad2d83d58757ce73f0385eea06991e37bd6b1bd708eaf18177c692f732239c"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchFactors"
@@ -1016,7 +1016,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchFactors --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-17T03:09:54.300560+00:00",
+      "executed_at_utc": "2026-10-17T22:57:43.108777+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1036,15 +1036,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "0dd6b40726c16a1d330fc282f8bcbba02a7ed918ac04ef74c60100da3f557566",
-            "before_sha256": "0dd6b40726c16a1d330fc282f8bcbba02a7ed918ac04ef74c60100da3f557566",
+            "after_sha256": "dbb0a03a9916fe5b3ec1e122cdcf8837a48985789a203f37d0e5b9f7c86d533c",
+            "before_sha256": "dbb0a03a9916fe5b3ec1e122cdcf8837a48985789a203f37d0e5b9f7c86d533c",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchFactors.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1096,7 +1096,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchFactors",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchFactors/direct.json",
-        "sha256": "7127813cdc5152a498627dd8151cb2a5c0cec872a9de8dbe6818ba61aabad56d"
+        "sha256": "05655d2e8018754bb888be45290a15aa176653a276e03684025314ee37327e95"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchFactors"
@@ -1104,7 +1104,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchFactors --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-17T03:09:55.287026+00:00",
+      "executed_at_utc": "2026-10-17T22:57:44.743727+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1124,15 +1124,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "0dd6b40726c16a1d330fc282f8bcbba02a7ed918ac04ef74c60100da3f557566",
-            "before_sha256": "0dd6b40726c16a1d330fc282f8bcbba02a7ed918ac04ef74c60100da3f557566",
+            "after_sha256": "dbb0a03a9916fe5b3ec1e122cdcf8837a48985789a203f37d0e5b9f7c86d533c",
+            "before_sha256": "dbb0a03a9916fe5b3ec1e122cdcf8837a48985789a203f37d0e5b9f7c86d533c",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchFactors.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1184,7 +1184,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchFactors",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchFactors/service.json",
-        "sha256": "c97f6f1128c0865c208558c6ea1e8e3572bfc53928c70d99fa818a9533906ddd"
+        "sha256": "a863e14b188cbb16234db3bf914cd1c65b94b532fd2e8983721b02a112bc78e8"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchFactors"
@@ -1192,7 +1192,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchFactors --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-17T03:09:56.151186+00:00",
+      "executed_at_utc": "2026-10-17T22:57:46.317170+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1212,15 +1212,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "0dd6b40726c16a1d330fc282f8bcbba02a7ed918ac04ef74c60100da3f557566",
-            "before_sha256": "0dd6b40726c16a1d330fc282f8bcbba02a7ed918ac04ef74c60100da3f557566",
+            "after_sha256": "dbb0a03a9916fe5b3ec1e122cdcf8837a48985789a203f37d0e5b9f7c86d533c",
+            "before_sha256": "dbb0a03a9916fe5b3ec1e122cdcf8837a48985789a203f37d0e5b9f7c86d533c",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchFactors.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1272,7 +1272,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchFactors",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchFactors/contract.json",
-        "sha256": "9b41fcc0ef39d0983e2f0fe3c54acfeffad7b009cabcbcddf2229851e1fbffb4"
+        "sha256": "7b5b1e3f858df4079c6d1dfecade0c1a749c2a8e7d36a764112e4512b74210e0"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchFactors"
@@ -1280,7 +1280,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchFactors --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-17T03:09:56.983173+00:00",
+      "executed_at_utc": "2026-10-17T22:57:47.946244+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1300,15 +1300,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "0dd6b40726c16a1d330fc282f8bcbba02a7ed918ac04ef74c60100da3f557566",
-            "before_sha256": "0dd6b40726c16a1d330fc282f8bcbba02a7ed918ac04ef74c60100da3f557566",
+            "after_sha256": "dbb0a03a9916fe5b3ec1e122cdcf8837a48985789a203f37d0e5b9f7c86d533c",
+            "before_sha256": "dbb0a03a9916fe5b3ec1e122cdcf8837a48985789a203f37d0e5b9f7c86d533c",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchFactors.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1360,7 +1360,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchFactors",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchFactors/counterfact.json",
-        "sha256": "9fb1cc2eadebc729fb0864a6fb7a754a9e0f6f3c9adc822558e25f1eb7065b90"
+        "sha256": "46fb0479d4ef8e385cc733cc7e7f385b203ac33c6e613f3d83e15a15b5719e83"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchFactors"
@@ -1368,7 +1368,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchInternationalIndexReturns --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-17T03:09:57.852444+00:00",
+      "executed_at_utc": "2026-10-17T22:57:49.588033+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1388,8 +1388,8 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1410,8 +1410,8 @@
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1463,7 +1463,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchInternationalIndexReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchInternationalIndexReturns/implementation.json",
-        "sha256": "3051970fb378ceebe2847faf5bc1d1364274432a325b2566894c1bda1aa895c5"
+        "sha256": "3d9a69b89808b7cb179585b4d2ddbbd76b14ddf2fb081912cf2d94a7bcc4dd27"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchInternationalIndexReturns"
@@ -1471,7 +1471,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchInternationalIndexReturns --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-17T03:09:58.693296+00:00",
+      "executed_at_utc": "2026-10-17T22:57:51.155657+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1491,15 +1491,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "c80be5cacc7ae14cccb8ebdee0d99f2d5eec78118f6a2623347e27d5995eb5af",
-            "before_sha256": "c80be5cacc7ae14cccb8ebdee0d99f2d5eec78118f6a2623347e27d5995eb5af",
+            "after_sha256": "729fe532ed12264aabb9ba891324816e0557de9e147ae11bdfcc0fd529256a03",
+            "before_sha256": "729fe532ed12264aabb9ba891324816e0557de9e147ae11bdfcc0fd529256a03",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchInternationalIndexReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1551,7 +1551,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchInternationalIndexReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchInternationalIndexReturns/direct.json",
-        "sha256": "45424c679c74f9b18ae13fd0d50ff662164a64d178fe9b3ae6102b4ffd747830"
+        "sha256": "a4e9f1f33114c1cedfcf341c015304b9cd3392dc1385c9554a83bcbef6731ef6"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchInternationalIndexReturns"
@@ -1559,7 +1559,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchInternationalIndexReturns --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-17T03:09:59.673649+00:00",
+      "executed_at_utc": "2026-10-17T22:57:52.842965+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1579,15 +1579,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "c80be5cacc7ae14cccb8ebdee0d99f2d5eec78118f6a2623347e27d5995eb5af",
-            "before_sha256": "c80be5cacc7ae14cccb8ebdee0d99f2d5eec78118f6a2623347e27d5995eb5af",
+            "after_sha256": "729fe532ed12264aabb9ba891324816e0557de9e147ae11bdfcc0fd529256a03",
+            "before_sha256": "729fe532ed12264aabb9ba891324816e0557de9e147ae11bdfcc0fd529256a03",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchInternationalIndexReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1639,7 +1639,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchInternationalIndexReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchInternationalIndexReturns/service.json",
-        "sha256": "f103ebd46a1d350d0d72bc62daf0f1ee923e8cbcc4032754717853b57b8a44cc"
+        "sha256": "d173ffadee35819404ceaa349d8f19f6394131a6375ab7dd9c432b7f9f156a10"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchInternationalIndexReturns"
@@ -1647,7 +1647,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchInternationalIndexReturns --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-17T03:10:00.538236+00:00",
+      "executed_at_utc": "2026-10-17T22:57:54.556181+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1667,15 +1667,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "c80be5cacc7ae14cccb8ebdee0d99f2d5eec78118f6a2623347e27d5995eb5af",
-            "before_sha256": "c80be5cacc7ae14cccb8ebdee0d99f2d5eec78118f6a2623347e27d5995eb5af",
+            "after_sha256": "729fe532ed12264aabb9ba891324816e0557de9e147ae11bdfcc0fd529256a03",
+            "before_sha256": "729fe532ed12264aabb9ba891324816e0557de9e147ae11bdfcc0fd529256a03",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchInternationalIndexReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1727,7 +1727,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchInternationalIndexReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchInternationalIndexReturns/contract.json",
-        "sha256": "22280591fe8ad2640eedae293eb16d1131f68608100fa3ab6e2391b17de7df6a"
+        "sha256": "5422389437514208cf601f3df0d6a2ce261304c28d7d6185c75949a689438e12"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchInternationalIndexReturns"
@@ -1735,7 +1735,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchInternationalIndexReturns --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-17T03:10:01.359779+00:00",
+      "executed_at_utc": "2026-10-17T22:57:56.208784+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1755,15 +1755,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "c80be5cacc7ae14cccb8ebdee0d99f2d5eec78118f6a2623347e27d5995eb5af",
-            "before_sha256": "c80be5cacc7ae14cccb8ebdee0d99f2d5eec78118f6a2623347e27d5995eb5af",
+            "after_sha256": "729fe532ed12264aabb9ba891324816e0557de9e147ae11bdfcc0fd529256a03",
+            "before_sha256": "729fe532ed12264aabb9ba891324816e0557de9e147ae11bdfcc0fd529256a03",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchInternationalIndexReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1815,7 +1815,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchInternationalIndexReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchInternationalIndexReturns/counterfact.json",
-        "sha256": "820b15808b3482d26dad27005fad1958c67533e85360b8219998eb3929b977c5"
+        "sha256": "3dfef98b1dc5257312a028b62848dc3024eb5c081a1bd9eaa96884d250330594"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchInternationalIndexReturns"
@@ -1823,7 +1823,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchRegionalPortfolioReturns --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-17T03:10:02.251813+00:00",
+      "executed_at_utc": "2026-10-17T22:57:57.780910+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1843,8 +1843,8 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1865,8 +1865,8 @@
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -1918,7 +1918,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchRegionalPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchRegionalPortfolioReturns/implementation.json",
-        "sha256": "6296d58ae9cbd424b8aebb849b2d9b07ec8057aa9255acf3dd9d216f5b6fd184"
+        "sha256": "c70175b77e8fb21b762ea6a214f135e511285cfba1bae9faaa323c8ed3a981f6"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchRegionalPortfolioReturns"
@@ -1926,7 +1926,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchRegionalPortfolioReturns --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-17T03:10:03.089310+00:00",
+      "executed_at_utc": "2026-10-17T22:57:59.440194+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1946,15 +1946,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "1caa31ab3d13420ae8fb218ba0bb867408c3e7d0b42d1485acbb391c6794f80c",
-            "before_sha256": "1caa31ab3d13420ae8fb218ba0bb867408c3e7d0b42d1485acbb391c6794f80c",
+            "after_sha256": "b4f8482963ab5c148cc32a68c2b883d848b80aafbe36406570213f0257dccd14",
+            "before_sha256": "b4f8482963ab5c148cc32a68c2b883d848b80aafbe36406570213f0257dccd14",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchRegionalPortfolioReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -2006,7 +2006,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchRegionalPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchRegionalPortfolioReturns/direct.json",
-        "sha256": "f5f7fffc2aa89f24fea0cf6dff83e0168cd9de00546c4209ab26451ee76b2ff0"
+        "sha256": "b63e7e6ba80c70d041a713cbe661d9aabd27a5ea663d21df8644c4b67c334856"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchRegionalPortfolioReturns"
@@ -2014,7 +2014,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchRegionalPortfolioReturns --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-17T03:10:04.081150+00:00",
+      "executed_at_utc": "2026-10-17T22:58:01.215502+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2034,15 +2034,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "1caa31ab3d13420ae8fb218ba0bb867408c3e7d0b42d1485acbb391c6794f80c",
-            "before_sha256": "1caa31ab3d13420ae8fb218ba0bb867408c3e7d0b42d1485acbb391c6794f80c",
+            "after_sha256": "b4f8482963ab5c148cc32a68c2b883d848b80aafbe36406570213f0257dccd14",
+            "before_sha256": "b4f8482963ab5c148cc32a68c2b883d848b80aafbe36406570213f0257dccd14",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchRegionalPortfolioReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -2094,7 +2094,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchRegionalPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchRegionalPortfolioReturns/service.json",
-        "sha256": "2c3d1f4d0104191c0e6ad54844723cbdd84ae4030c4e31a65894122793512e89"
+        "sha256": "5f820cf2827059d8e92f5f4686dcb408b0a2c5c92e1eea020fb2075caa862c8b"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchRegionalPortfolioReturns"
@@ -2102,7 +2102,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchRegionalPortfolioReturns --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-17T03:10:04.947456+00:00",
+      "executed_at_utc": "2026-10-17T22:58:02.702997+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2122,15 +2122,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "1caa31ab3d13420ae8fb218ba0bb867408c3e7d0b42d1485acbb391c6794f80c",
-            "before_sha256": "1caa31ab3d13420ae8fb218ba0bb867408c3e7d0b42d1485acbb391c6794f80c",
+            "after_sha256": "b4f8482963ab5c148cc32a68c2b883d848b80aafbe36406570213f0257dccd14",
+            "before_sha256": "b4f8482963ab5c148cc32a68c2b883d848b80aafbe36406570213f0257dccd14",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchRegionalPortfolioReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -2182,7 +2182,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchRegionalPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchRegionalPortfolioReturns/contract.json",
-        "sha256": "306e85afa07d8fc9ced2a9d1c2ce240ce1c8271bd2b361baa775348571e23cc6"
+        "sha256": "a9b8e73eba7e30556aa693aa740a65ef34f98c94664b7945e6ac00da02b7faac"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchRegionalPortfolioReturns"
@@ -2190,7 +2190,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchRegionalPortfolioReturns --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-17T03:10:05.803819+00:00",
+      "executed_at_utc": "2026-10-17T22:58:04.175233+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2210,15 +2210,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "1caa31ab3d13420ae8fb218ba0bb867408c3e7d0b42d1485acbb391c6794f80c",
-            "before_sha256": "1caa31ab3d13420ae8fb218ba0bb867408c3e7d0b42d1485acbb391c6794f80c",
+            "after_sha256": "b4f8482963ab5c148cc32a68c2b883d848b80aafbe36406570213f0257dccd14",
+            "before_sha256": "b4f8482963ab5c148cc32a68c2b883d848b80aafbe36406570213f0257dccd14",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchRegionalPortfolioReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -2270,7 +2270,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchRegionalPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchRegionalPortfolioReturns/counterfact.json",
-        "sha256": "a4256a4d51d3650db8f4471dce1fc6d62a2e44fa57e5f7f443fc0dda93a46a7f"
+        "sha256": "26a5a0e1094227572300a965d34242485a3d862c21ccc4b509b3602be770fc97"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchRegionalPortfolioReturns"
@@ -2278,7 +2278,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchUSPortfolioReturns --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-17T03:10:06.678382+00:00",
+      "executed_at_utc": "2026-10-17T22:58:05.761981+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2298,8 +2298,8 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -2320,8 +2320,8 @@
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -2373,7 +2373,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchUSPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchUSPortfolioReturns/implementation.json",
-        "sha256": "6ec75017a0ff43c8214b1b0aafa4bb611536532d8e08b06232c5550d11a23502"
+        "sha256": "df6ced809fd1b941ea41b8fc251d7bfaaf8070e798194f19e2a9413d11361653"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchUSPortfolioReturns"
@@ -2381,7 +2381,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchUSPortfolioReturns --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-17T03:10:07.510456+00:00",
+      "executed_at_utc": "2026-10-17T22:58:07.293670+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2401,15 +2401,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "6eadd20b759931841e5390291f1af55dabdc91b2221f29132eea5fb0795886f4",
-            "before_sha256": "6eadd20b759931841e5390291f1af55dabdc91b2221f29132eea5fb0795886f4",
+            "after_sha256": "bdfa2c9abbd78032c7252036d0b57666ea0ce524af49c4db3fa512c7b4adc368",
+            "before_sha256": "bdfa2c9abbd78032c7252036d0b57666ea0ce524af49c4db3fa512c7b4adc368",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchUSPortfolioReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -2461,7 +2461,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchUSPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchUSPortfolioReturns/direct.json",
-        "sha256": "542ef8b0dbf8d711267c0ba840b5554051f01f0e52481a1a709cd9d5cf654cd4"
+        "sha256": "9cbf8948c0ccf45b1c5ca3fec8fc94addcd51e4e5d9396a3a4f846e0593328da"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchUSPortfolioReturns"
@@ -2469,7 +2469,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchUSPortfolioReturns --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-17T03:10:08.522497+00:00",
+      "executed_at_utc": "2026-10-17T22:58:08.957343+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2489,15 +2489,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "6eadd20b759931841e5390291f1af55dabdc91b2221f29132eea5fb0795886f4",
-            "before_sha256": "6eadd20b759931841e5390291f1af55dabdc91b2221f29132eea5fb0795886f4",
+            "after_sha256": "bdfa2c9abbd78032c7252036d0b57666ea0ce524af49c4db3fa512c7b4adc368",
+            "before_sha256": "bdfa2c9abbd78032c7252036d0b57666ea0ce524af49c4db3fa512c7b4adc368",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchUSPortfolioReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -2549,7 +2549,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchUSPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchUSPortfolioReturns/service.json",
-        "sha256": "bb016196cb4584a277cf17d5833415fa769db88591bbce67027362bf01552fb9"
+        "sha256": "8c876914390c414355ffa1eb65b13ebda1bc93ca00a25a1bc864d27caa9070ef"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchUSPortfolioReturns"
@@ -2557,7 +2557,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchUSPortfolioReturns --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-17T03:10:09.366768+00:00",
+      "executed_at_utc": "2026-10-17T22:58:10.517736+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2577,15 +2577,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "6eadd20b759931841e5390291f1af55dabdc91b2221f29132eea5fb0795886f4",
-            "before_sha256": "6eadd20b759931841e5390291f1af55dabdc91b2221f29132eea5fb0795886f4",
+            "after_sha256": "bdfa2c9abbd78032c7252036d0b57666ea0ce524af49c4db3fa512c7b4adc368",
+            "before_sha256": "bdfa2c9abbd78032c7252036d0b57666ea0ce524af49c4db3fa512c7b4adc368",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchUSPortfolioReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -2637,7 +2637,7 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchUSPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchUSPortfolioReturns/contract.json",
-        "sha256": "70d0ca195e4da9d8528dd6fc89953060b022aa57d655bf7d642ebcaf03f3f36f"
+        "sha256": "7ef26769af436647e77930f0512e438c9fef48a19e5cca4c28f4c1b871dca771"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchUSPortfolioReturns"
@@ -2645,7 +2645,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider famafrench --model FamaFrenchUSPortfolioReturns --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-17T03:10:10.212727+00:00",
+      "executed_at_utc": "2026-10-17T22:58:12.010671+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2665,15 +2665,15 @@
         "contract_version": "sha256:c9ae8592d6aec546613eb402a2f883d271f56c3b0c682a48a16a840e4b8a7ff4",
         "fixture": [
           {
-            "after_sha256": "6eadd20b759931841e5390291f1af55dabdc91b2221f29132eea5fb0795886f4",
-            "before_sha256": "6eadd20b759931841e5390291f1af55dabdc91b2221f29132eea5fb0795886f4",
+            "after_sha256": "bdfa2c9abbd78032c7252036d0b57666ea0ce524af49c4db3fa512c7b4adc368",
+            "before_sha256": "bdfa2c9abbd78032c7252036d0b57666ea0ce524af49c4db3fa512c7b4adc368",
             "path": "docs/evidence/C101/fixtures/famafrench/FamaFrenchUSPortfolioReturns.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
-            "before_sha256": "6f73b11a14b8c81d5bac226a2e555f5406943ae5ced9933eb97262ea3b52eed7",
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
@@ -2725,13 +2725,13 @@
       "receipt": {
         "model_identity": "famafrench::FamaFrenchUSPortfolioReturns",
         "path": "docs/evidence/C101/receipts/famafrench/FamaFrenchUSPortfolioReturns/counterfact.json",
-        "sha256": "f2173f5cb5c76607be3354120289411ede89939e8efbb4bf9f26819ab5daac61"
+        "sha256": "cc871239a93d3edcc58f7790a52e3b873a452a9ab26d270f5887074b144e4141"
       },
       "status": "PASS",
       "upstream_model": "FamaFrenchUSPortfolioReturns"
     }
   ],
-  "generated_at_utc": "2026-10-17T03:10:11.573912+00:00",
+  "generated_at_utc": "2026-10-17T22:58:14.441668+00:00",
   "generated_by": "scripts/quality/iter2_claims_producer.py",
   "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
   "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",

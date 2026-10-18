@@ -1,0 +1,70 @@
+--- merge driver stdout (iter2_claims_merge.py --output docs/evidence/C101/claims.merged.json) ---
+
+shards merged=26
+  shard docs/evidence/C101/alpha_vantage/claims.reviewed.json
+  shard docs/evidence/C101/benzinga/claims.reviewed.json
+  shard docs/evidence/C101/bls/claims.reviewed.json
+  shard docs/evidence/C101/cboe/claims.reviewed.json
+  shard docs/evidence/C101/cftc/claims.reviewed.json
+  shard docs/evidence/C101/congress_gov/claims.reviewed.json
+  shard docs/evidence/C101/deribit/claims.reviewed.json
+  shard docs/evidence/C101/ecb/claims.reviewed.json
+  shard docs/evidence/C101/econdb/claims.reviewed.json
+  shard docs/evidence/C101/eia/claims.reviewed.json
+  shard docs/evidence/C101/famafrench/claims.reviewed.json
+  shard docs/evidence/C101/federal_reserve/claims.reviewed.json
+  shard docs/evidence/C101/finra/claims.reviewed.json
+  shard docs/evidence/C101/finviz/claims.reviewed.json
+  shard docs/evidence/C101/fmp/claims.reviewed.json
+  shard docs/evidence/C101/fred/claims.reviewed.json
+  shard docs/evidence/C101/government_us/claims.reviewed.json
+  shard docs/evidence/C101/imf/claims.reviewed.json
+  shard docs/evidence/C101/intrinio/claims.reviewed.json
+  shard docs/evidence/C101/multpl/claims.reviewed.json
+  shard docs/evidence/C101/nasdaq/claims.reviewed.json
+  shard docs/evidence/C101/oecd/claims.reviewed.json
+  shard docs/evidence/C101/sec/claims.reviewed.json
+  shard docs/evidence/C101/tiingo/claims.reviewed.json
+  shard docs/evidence/C101/tradier/claims.reviewed.json
+  shard docs/evidence/C101/tradingeconomics/claims.reviewed.json
+claims=1445 identities=289 reviews=281 accepted_identities=281
+wrote docs/evidence/C101/claims.merged.json
+merge_exit=0
+
+--- judge driver stdout (iter2_model_evidence.py, argv 见下方复算入口) ---
+
+wrote docs/evidence/C101/judge/claims.merged.report.json and docs/evidence/C101/judge/claims.merged.report.md: 350 identities, 281 offline accepted
+judge_exit=0
+
+
+读数（step 2g：merge 与 plane 1 judge，付款是否兑现就看这两个空集合）
+
+上面两段分别是 `iter2_claims_merge.py` 与 `iter2_model_evidence.py` 的原样 stdout（argv 用 §9
+复算配方里的那一条，`--inventory` 指向模型级任务清单.csv，`--output` 写进仓内的
+`docs/evidence/C101/judge/claims.merged.report.json`）。两个 exit 都是 0。
+
+merge 端：`claims=1445 identities=289 reviews=281 accepted_identities=281`。
+1445 = 289 identity × 5 相，与 step 2e 的人口计数一致；281 与 step 2f 的 signed_total 一致。
+
+judge 端 face：`350 identities, 281 offline accepted`，
+`summary={claim_count: 1445, identity_count: 350, offline_acceptance_count: 281,
+primary_review_count: 281, status_counts: {INCOMPLETE: 8, OFFLINE_ACCEPTED: 281, UNREVIEWED: 61}}`，
+`identity_set=5168e1e723999312`（未动），`global_issues=[]`，`invalid_claims=0`。
+
+plane 1 的账：`276 -> 281/350`，减项解释是逐状态算出来的，不是凑的 ——
+`OFFLINE_ACCEPTED +5`（deribit 五行），`UNREVIEWED -7`（其中 5 行就是 deribit 转成 ACCEPT，
+剩下 2 行是 government_us::TreasuryPrices / WeatherBulletinDownload：HEAD 的分片里没有它们的
+claim，本轮按 producer 的人口规则补成 5 相全 BLOCKED，于是 judge 把它们从 UNREVIEWED
+改记为 INCOMPLETE），`INCOMPLETE +2`（正是那两行）。三行相加 `350 = 281 + 61 + 8`。
+这两行仍然是未验收行，只是状态更诚实：从"没有任何 claim"变成"有 claim，且 claim 说没配见证"。
+
+两个空集合是这次付款的收据。`iter2_model_evidence.py:625-627` 会把每条 pin 重新哈希与盘面对比，
+命中就追加 `{pin}_current_hash_drift` 并置 `stale`，`:731` 的 `valid = not issues and not stale`
+会让该行降级；`:724-728` 再调 `_validate_pin_groups`。共享 runner 是 `probe` pin 的对象，
+所以只改 runner 不重生产重签的话，已验收的 276 行会全部降级 —— `invalid_claims=0` 与
+`global_issues=[]` 就是"没有一行处于降级态"的实测，而不是推断。
+
+复算入口（同一代可重跑）：
+`probes/reproduce_all_shards.py` -> `probes/reproduce_invariance_delta.py` ->
+`probes/resign_all_shards.py` -> 上面两条 shipped argv。前一步的 face 给出后一步的预测人群，
+后一步的 face 再独立数一次，两次相遇才算绿。

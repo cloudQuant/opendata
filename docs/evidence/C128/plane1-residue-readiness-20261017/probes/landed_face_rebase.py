@@ -67,10 +67,10 @@ PROBE_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROBE_DIR))
 
 RUNS = PROBE_DIR.parent / "runs"
-CARRIER = RUNS / "wave28-step4b-landed-face-rebase.txt"
+CARRIER = RUNS / "wave29-step2d-landed-face-rebase.txt"
 
-EXPECTED_ACCEPTED = 276
-EXPECTED_DELTA = {"INCOMPLETE": -1, "OFFLINE_ACCEPTED": 1, "UNREVIEWED": 0}
+EXPECTED_ACCEPTED = 281
+EXPECTED_DELTA = {"INCOMPLETE": 2, "OFFLINE_ACCEPTED": 5, "UNREVIEWED": -7}
 SUBJECTS = (
     {
         "module": "ledger_axis_blast",

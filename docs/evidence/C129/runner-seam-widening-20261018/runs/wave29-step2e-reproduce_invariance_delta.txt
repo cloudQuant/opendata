@@ -1,0 +1,67 @@
+shard deribit: NEW_IN_WORKTREE identities=5
+shards_worktree=26 new_shards=['deribit'] deribit_new=True
+identities head=282 worktree=289 added=7 dropped=0
+probe pins runner_sha16=18b46adc3ccbcfb7 head_exec=1380 head_exec_not_disk=1380 exec_matches_disk=1405 exec_stale=0 no_pin=40 no_pin_and_blocked=40
+verdict_moved=0 moved=[]
+additions=7 added=['deribit::FuturesCurve', 'deribit::FuturesHistorical', 'deribit::FuturesInfo', 'deribit::FuturesInstruments', 'deribit::OptionsChains', 'government_us::TreasuryPrices(absent-in-HEAD-shard)', 'government_us::WeatherBulletinDownload(absent-in-HEAD-shard)']
+carrier_moved=0 examples=[]
+population identities=289 all_pass=281 all_blocked=8 mixed=0 all_blocked_ids=['cboe::FuturesCurve', 'cboe::IndexSnapshots', 'econdb::CountryProfile', 'econdb::ExportDestinations', 'federal_reserve::FomcDocuments', 'government_us::TreasuryPrices', 'government_us::WeatherBulletinDownload', 'intrinio::OptionsSnapshots']
+additions_not_deribit=['government_us::TreasuryPrices(absent-in-HEAD-shard)', 'government_us::WeatherBulletinDownload(absent-in-HEAD-shard)'] blocked_reasons=['no offline witness configured for this model row']
+produce_log shards=25 exits_nonzero=0 fail=0 blocked=40 red_by_blocked=['cboe', 'econdb', 'federal_reserve', 'government_us', 'intrinio'] face=reproduce_face shards=25 clean=20 red=5 red_providers=['cboe', 'econdb', 'federal_reserve', 'government_us', 'intrinio'] claims_emitted=1420 claims_passed=1380 identity_exits=[]
+PASS A_population_reconciles new_shards=['deribit'] dropped=0 head=282 added=7 worktree=289
+PASS B_verdict_sequences_unchanged moved=0 added=7
+PASS C_probe_pin_moved_on_the_executed_population head_exec=1380 head_old=1380 matches=1405 stale=0 no_pin=40/40
+PASS D_receipt_carriers_unchanged carrier_moved=0
+PASS E_blocked_explains_the_produce_red ledger_shards=25 exit_nonzero=0 fail=0 blocked=40 red=['cboe', 'econdb', 'federal_reserve', 'government_us', 'intrinio']
+PASS F_signable_population all_pass=281 all_blocked=8 mixed=0
+PASS G_additions_cannot_be_accepted non_deribit_added=2 of_blocked=8
+reproduce_invariance_face shards=26 arms=7 moved=0 signable=281 verdict=GREEN
+invariance_exit=0
+
+
+读数（step 2e：全量重生产之后，"证据还在说它说过的话"这句断言的现读）
+
+上面这段是 `probes/reproduce_invariance_delta.py` 的原样 stdout，`invariance_exit=0`。它比较的是
+HEAD 的 26 份 `claims.json` 与工作区当前 26 份，逐 identity 比五相序列，而不是比 digest 或时间戳。
+
+七相的读法：
+* A 人口对齐：`head=282 worktree=289 added=7 dropped=0 new_shards=['deribit'] deribit_new=True`。
+  HEAD 里没有 deribit 分片，工作区有；`289 = 282 + 7`，没有任何 identity 消失。
+* B 判定序列未动：`moved=0`。这是这一整轮"补齐"唯一的正当性所在 —— 花掉一次全量重生产，
+  买到的是"除 pin 之外什么都没变"。
+* C 只读**被执行过**的那部分人群：`head_exec=1380 head_old=1380 matches=1405 stale=0 no_pin=40/40`。
+  HEAD 里 1380 条已执行 claim 的 probe pin 全都不等于盘上的加宽后 runner（`18b46adc3ccbcfb7`），
+  工作区 1405 条全都等于，且 `stale=0`。剩下 40 条根本没有 pin。
+* D 载档未动：`carrier_moved=0` —— 每条 claim 仍然指向同一份 receipt 路径、同一个 exit_code。
+  receipt 文档里的字节会变（它自带执行时刻），所以 digest 不能当不变量，路径与 exit 才能。
+* E 把生产驱动那句 `red=5` 读回它自己的账：`ledger_shards=25 exit_nonzero=0 fail=0 blocked=40
+  red=['cboe','econdb','federal_reserve','government_us','intrinio']`。
+* F 可签人群：`all_pass=281 all_blocked=8 mixed=0`。
+* G 新增的 7 条不可能被接受：deribit 的 5 条是 PASS（本轮产品），另外 2 条是 BLOCKED。
+
+两处仪表缺陷，都在这一代里就地改掉，并留在这里而不是抹平：
+1. `reproduce_all_shards.py` 原来的 `bad` 谓词把 `blocked != 0` 也算红。BLOCKED 是合法判定
+   （producer 对跑不起来的相记 BLOCKED，`iter2_claims_producer.py:387` 的 `<not run>` 分支），
+   于是 25 个 `exit=0` 的分片里有 5 个被记成红。`red_providers` 因此不是"失败的 provider"，
+   而是"有任何非 PASS claim 的 provider"。上面原始 stdout 里的那行 face 是**旧谓词**打的，
+   保留原样；arm E 用驱动自己打出的 `fail=`/`blocked=` 逐分片账把它读回真值：
+   `fail=0`，`blocked=40 = 8 个 identity × 5 相`，红集与全 BLOCKED 的 provider 集合完全相同。
+   谓词已改成只把 `exit != 0`、`failed`、解析失败算红，并在 face 里另打
+   `claims_failed`/`claims_blocked`/`blocked_providers`，这样下一轮不需要再推一次。
+2. `resign_all_shards.py` 原来把 `refused != 0` 算红。签名器对 BLOCKED claim 依设计拒签
+   （`iter2_primary_review_recorder.py:296`，且不带 `--identity` 时 `:329` 仍 exit 0），
+   所以"有拒签"从来不是缺陷。跑之前就把谓词换成"分片 signed 必须等于从盘上 claims 推出的
+   all-PASS identity 数"，face 里同时打 `expected_total` 与 `refused_total`。
+
+40 条 no-pin claim 是本轮 arm C 的定义边界，值得写清楚：`pins.probe == []`，`receipt` 是空串，
+`exit_code=3`，`reason='no offline witness configured for this model row'`。没有执行，就没有可哈希
+的对象，因此"每条 claim 的 probe pin 都等于盘上 runner"这句话对它们是恒假式，不是漏网。
+arm C 因此读"有人群定义的人群"，同时用 `no_pin == no_pin_blocked` 证明被排除的确实一条不差全是
+BLOCKED —— 排除是被测出来的，不是被假定的。
+
+两条新增的 government_us identity 是一个真实的、以前没记过的发现：HEAD 的
+`government_us/claims.json` 只有 4 个 identity（20 条 claim），而 CSV 里该 provider 有 6 行
+（`csv government_us rows= 6`，CSV 与 HEAD 相比未改）。本轮重生产把它们按 producer 的人口规则
+补成 5 相全 BLOCKED。也就是说 **HEAD 上那一份分片相对 producer 自己的人口是欠员的**，
+欠的不是 PASS 行而是"未配见证"的行；judge 因此把它们从 UNREVIEWED 改记为 INCOMPLETE，
+这条在 step 2g 载档里是 plane 1 减项的解释。

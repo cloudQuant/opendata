@@ -1,0 +1,45 @@
+rearm_counter model=FuturesHistorical control_verbs=['POST', 'POST'] control_rows=2 tamper_op=set tamper_path=["responses", 0, "sequence", 1, "result", "close", 0] declared=DERIBIT_BAD_CHART_RESPONSE observed=DeribitProviderError code=DERIBIT_BAD_CHART_RESPONSE match=True
+rearm_counter model=FuturesInfo control_verbs=['POST'] control_rows=1 tamper_op=set tamper_path=["responses", 0, "body", "result", "instrument_name"] declared=DERIBIT_INCONSISTENT_TICKER observed=DeribitProviderError code=DERIBIT_INCONSISTENT_TICKER match=True
+rearm_counter model=FuturesInstruments control_verbs=['POST'] control_rows=1 tamper_op=set tamper_path=["responses", 0, "body", "result", 0, "instrument_id"] declared=DERIBIT_BAD_RESPONSE_SHAPE observed=DeribitProviderError code=DERIBIT_BAD_RESPONSE_SHAPE match=True
+rearm_counter model=FuturesCurve control_verbs=['POST', 'POST'] control_rows=1 tamper_op=set tamper_path=["responses", 1, "body", "result", 0, "instrument_name"] declared=DERIBIT_INCONSISTENT_INSTRUMENTS observed=DeribitProviderError code=DERIBIT_INCONSISTENT_INSTRUMENTS match=True
+rearm_counter model=OptionsChains control_verbs=['POST', 'POST', 'POST'] control_rows=1 tamper_op=set tamper_path=["responses", 0, "body", "result", 0, "kind"] declared=DERIBIT_BAD_INSTRUMENT_KIND observed=DeribitProviderError code=DERIBIT_BAD_INSTRUMENT_KIND match=True
+REARM_TALLY models=5 declared_code_matched=5
+counterfact_diag_exit=0
+
+
+这台仪器测什么：deribit 首份见证模块落地前，五个 `counterfact` 相位在全新工作树里 5/5 反例，
+反例面全部是同一条 `the shipped refusal raises code 'DERIBIT_BAD_ENVELOPE', not the declared
+'<DERIBIT_*>'`。这条读数有两种成因，而它们的修法相反：要么是我手写的 fixture/tamper 形状错，
+要么是台架与传输层的 id 约定不兼容。仪器把两者分开：`_run` 每次调用前把
+`opendata/data/providers/deribit/client.py:31` 的进程级 `itertools.count(1)` 重新装到 1 —— 也就是
+每个相位本该有的"全新进程"待遇 —— 然后在控制跑与篡改跑之间只换文档，比较观察到的 `code` 与
+声明的 `refusal_code`。
+
+读数：`REARM_TALLY models=5 declared_code_matched=5`。五行的 tamper 各自咬到自己声明的码，
+控制腿都在 POST 形状上服务成功（`control_verbs` 与 `control_rows` 逐行给出：FuturesHistorical 两页
+两行、FuturesCurve 两次调用一行、OptionsChains 三次调用一行）。所以"fixture 写错了"这条被排除，
+剩下的成因是台架的：`witness_counterfact` 在**同一进程**里跑两代取数（先未篡改的控制、再篡改的），
+而 `_parse_reply`（`client.py:123`）要求回复的 id 必须等于自己这次问的 id；写死 id 的 fixture
+只能答第一代，第二代必然在信封处反例，tamper 根本到不了解析器。
+
+这条读数是本波 `echo_request_id` 补齐的正当性来源：它证明要修的是台架，而不是把五格的
+`refusal_code` 抄成 `DERIBIT_BAD_ENVELOPE`。后者会把一个由台架造成的失败伪装成产品契约，
+且违反 `_guard_against_copied_refusal`。
+
+更正上一代载档的一句：`wave29-step1-fake_client_verb_parity.txt` 第 94 行断言
+"所以声明面要先补 `deribit/specs.py`"。这句被现读推翻，两处都错：
+1. `no_ledger=NO_SPECS_MODULE:ModuleNotFoundError` 是**路线**读数（该行不在声明式 ModelSpec 账本里，
+   所以不能走 specs 声明这条路），不是"该补 specs.py"的处方；deribit 是手写 fetcher 的 provider，
+   它的声明面从来不是 `specs.py`。
+2. 真正缺的声明是 fetcher 类上的 `row_model`：判定器在
+   `scripts/quality/iter2_claims_probe_runner.py:523-525` 读 `getattr(fetcher, "row_model", None)`
+   并要求它是 `ContractModel` 的子类，否则 `implementation` 相位直接反例
+   "the bound fetcher publishes no typed contract row model"。deribit 五个 fetcher 原先只有
+   `canonical_model`，本波补了五行 `row_model` 声明（`models/fetchers.py`，+5）。
+   另一处缺失与本载档无关但同批：deribit 此前**没有任何见证模块**，
+   `witness_module=False` 在 step 0 的 flip 行里就是这一条。
+
+本载档不测什么：不写 canonical 收据（fixture 只落 `tempfile.mkdtemp` 的 scratch 根，
+`docs/evidence/C101/**` 一字节未动）；不设 `OPENDATA_ALLOW_LIVE_E2E`； sockets 由
+`_block_real_sockets` 先封；plane 2 一格没动；`rearm` 是本仪器的假设而不是产品语义 ——
+真实相位是独立子进程，计数器天然从 1 起。

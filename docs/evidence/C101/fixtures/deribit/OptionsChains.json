@@ -1,0 +1,111 @@
+{
+  "responses": [
+    {
+      "body": {
+        "id": null,
+        "jsonrpc": "2.0",
+        "result": [
+          {
+            "activity_currency": "USD",
+            "base_currency": "BTC",
+            "counter_currency": "BTC",
+            "creation_timestamp": 1700000000000,
+            "expiration_date": "2027-06-30",
+            "expiration_timestamp": 1814313600000,
+            "index_id": 1000033,
+            "instrument_id": 240001,
+            "instrument_name": "BTC-30JUN27-100000-P",
+            "is_active": true,
+            "kind": "option",
+            "option_type": "put",
+            "quote_currency": "USD",
+            "settlement_asset": "BTC",
+            "settlement_currency": "BTC",
+            "state": "open",
+            "strike": 100000.0
+          }
+        ],
+        "usOut": 1791779400123456
+      },
+      "echo_request_id": true,
+      "method": "POST",
+      "url_contains": "public/get_instruments"
+    },
+    {
+      "body": {
+        "id": null,
+        "jsonrpc": "2.0",
+        "result": [
+          {
+            "ask_price": 3300.0,
+            "base_currency": "BTC",
+            "bid_price": 3100.0,
+            "creation_timestamp": 1700000000000,
+            "high": 3600.0,
+            "instrument_name": "BTC-30JUN27-100000-P",
+            "interest_rate": 0.0,
+            "kind": "option",
+            "last": 3240.0,
+            "low": 3000.0,
+            "mark_iv": 72.4,
+            "mark_price": 3250.0,
+            "mid_price": 3200.0,
+            "open_interest": 480.0,
+            "price_change": null,
+            "quote_currency": "USD",
+            "underlying_index": "index_price",
+            "underlying_price": 100900.0,
+            "volume": 12.25
+          }
+        ],
+        "usOut": 1791779400123456
+      },
+      "echo_request_id": true,
+      "method": "POST",
+      "url_contains": "public/get_book_summary_by_currency"
+    },
+    {
+      "body": {
+        "id": null,
+        "jsonrpc": "2.0",
+        "result": {
+          "ask_iv": 73.0,
+          "best_ask_price": 3300.0,
+          "best_bid_price": 3100.0,
+          "bid_iv": 70.0,
+          "greeks": {
+            "delta": 0.4,
+            "gamma": 0.01,
+            "rho": 0.03,
+            "theta": -0.02,
+            "vega": 0.5
+          },
+          "index_price": 101000.0,
+          "instrument_name": "BTC-30JUN27-100000-P",
+          "interest_rate": 0.0,
+          "last_price": 3240.0,
+          "mark_iv": 72.4,
+          "mark_price": 3250.0,
+          "max_price": 9999.0,
+          "min_price": 0.1,
+          "open_interest": 480.0,
+          "state": "open",
+          "stats": {
+            "high": 3600.0,
+            "low": 3000.0,
+            "price_change": -1.1,
+            "volume": 12.25,
+            "volume_usd": 40000.0
+          },
+          "timestamp": 1791779400123,
+          "underlying_index": "index_price",
+          "underlying_price": 100900.0
+        },
+        "usOut": 1791779400123456
+      },
+      "echo_request_id": true,
+      "method": "POST",
+      "url_contains": "public/ticker"
+    }
+  ]
+}

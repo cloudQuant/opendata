@@ -1,0 +1,174 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/deribit/FuturesInfo/counterfact-exit0.txt",
+    "sha256": "f51e900431132fa27a1b313eaefc984fe7a5af4fc5d446a0039abf852c967be9",
+    "size_bytes": 1000,
+    "stdout_excerpt": "COUNTERFACT_JSON={\"expected\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"DeribitProviderError\", \"refusal_code\": \"DERIBIT_INCONSISTENT_TICKER\", \"rejected\": [], \"status\": null}, \"observed\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"DeribitProviderError\", \"refusal_code\": \"DERIBIT_INCONSISTENT_TICKER\", \"rejected\": [], \"status\": null}, \"reason\": \"the reply still carries a well-formed timestamp and a complete stats block, so nothing but the name disagrees: symbol is the contract column of DeribitFuturesInfo that the caller asked for as SOL_USDC-PERPETUAL, and the ticker fetcher must refuse a quote about another instrument rather than rename someone else's book onto the requested future; untampered control produced 1 row(s) through the same seam\"}\nVERDICT=PASS\n"
+  },
+  "counterfact": {
+    "expected": {
+      "invalid": [],
+      "missing": [],
+      "refusal_class": "DeribitProviderError",
+      "refusal_code": "DERIBIT_INCONSISTENT_TICKER",
+      "rejected": [],
+      "status": null
+    },
+    "observed": {
+      "invalid": [],
+      "missing": [],
+      "refusal_class": "DeribitProviderError",
+      "refusal_code": "DERIBIT_INCONSISTENT_TICKER",
+      "rejected": [],
+      "status": null
+    },
+    "reason": "the reply still carries a well-formed timestamp and a complete stats block, so nothing but the name disagrees: symbol is the contract column of DeribitFuturesInfo that the caller asked for as SOL_USDC-PERPETUAL, and the ticker fetcher must refuse a quote about another instrument rather than rename someone else's book onto the requested future; untampered control produced 1 row(s) through the same seam"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInfo --phase counterfact --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-17T22:54:16.662954+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+          "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+          "path": "opendata/data/models/deribit.py"
+        },
+        {
+          "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+      "fixture": [
+        {
+          "after_sha256": "029059c5db97f6c7862f9299b8c7646995103af72379f81f630c9ed39c61a7b0",
+          "before_sha256": "029059c5db97f6c7862f9299b8c7646995103af72379f81f630c9ed39c61a7b0",
+          "path": "docs/evidence/C101/fixtures/deribit/FuturesInfo.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+          "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+          "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+          "path": "scripts/quality/iter2_witnesses/deribit.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+          "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+          "path": "opendata/data/providers/deribit/provider.py"
+        },
+        {
+          "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+          "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+          "path": "opendata/data/providers/deribit/models/fetchers.py"
+        },
+        {
+          "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+          "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+          "path": "opendata/data/providers/deribit/client.py"
+        },
+        {
+          "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+          "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+          "path": "opendata/data/providers/deribit/_source.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "deribit::FuturesInfo",
+  "phase": "counterfact",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "path": "opendata/data/models/deribit.py"
+      },
+      {
+        "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+    "fixture": [
+      {
+        "after_sha256": "029059c5db97f6c7862f9299b8c7646995103af72379f81f630c9ed39c61a7b0",
+        "before_sha256": "029059c5db97f6c7862f9299b8c7646995103af72379f81f630c9ed39c61a7b0",
+        "path": "docs/evidence/C101/fixtures/deribit/FuturesInfo.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+        "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+        "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+        "path": "scripts/quality/iter2_witnesses/deribit.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+        "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+        "path": "opendata/data/providers/deribit/provider.py"
+      },
+      {
+        "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+        "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+        "path": "opendata/data/providers/deribit/models/fetchers.py"
+      },
+      {
+        "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+        "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+        "path": "opendata/data/providers/deribit/client.py"
+      },
+      {
+        "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+        "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+        "path": "opendata/data/providers/deribit/_source.py"
+      }
+    ]
+  },
+  "provider": "deribit",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-deribit-FuturesInfo",
+  "upstream_model": "FuturesInfo"
+}

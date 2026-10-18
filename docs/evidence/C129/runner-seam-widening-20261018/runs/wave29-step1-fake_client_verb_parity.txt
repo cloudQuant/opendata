@@ -1,0 +1,98 @@
+wave 29 step 1 载档：runner 假客户端动词面补齐的**付钱前读数**（两取 + 两侧对照）
+================================================================================
+本载档记录的是"要不要为 `_FakeSharedClient` 加 `request` 这个动词"这一决定的前置测量，
+不是决定本身。决定所需的价格面（1656 格 `probe` 钉）与收益面（`convertible=0`）分别由
+本代另一条读数（`counterfactual_runner_widening`，见下文 §残差定价）与本载档的 14 臂给出。
+
+仪器：`docs/evidence/C129/runner-seam-widening-20261018/probes/fake_client_verb_parity.py`
+（353 行 / 15549 字节 / sha256 前 16 位 `67f2c3202c998766`；本载档写完之后再动这台仪器一个字节，
+这里三个数就全作废，必须重跑重取）
+被检对象：`scripts/quality/iter2_claims_probe_runner.py`
+  worktree sha16 `1074c1d8b2f23d33`、HEAD blob sha16 `6f73b11a14b8c81d`、`git diff --numstat` = `49  1`
+  （改动全部落在 `_FakeSharedClient` 类体内，类体行区间 `(195, 289)`，见臂 L）
+
+argv（从工具结果里抄，不补写）：
+  取 1：`cd /Users/yunjinqi/Documents/new_projects/opendata && PYTHONPATH= /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C129/runner-seam-widening-20261018/probes/fake_client_verb_parity.py > /tmp/w29s1.parity.out 2> /tmp/w29s1.parity.err`
+  取 2：同上，输出落在 `/tmp/w29s1.parity.take2.out` 与 `/tmp/w29s1.parity.take2.err`
+  静态面：`PYTHONPATH= $PY -m ruff check <仪器>`、`PYTHONPATH= $PY -m ruff format <仪器>`、`$PY -m py_compile <仪器>`
+
+退出与字节面（本机现读，非引用）：
+  静态面按时间序两次落在**同一份钉住字节**上：两取之前 `ruff check` → `All checks passed!`
+  （ruff_check_exit=0），两取之后再验 `ruff format --check` → `1 file already formatted`
+  且 `ruff check` → `All checks passed!`（format_check_exit=0 check_exit=0）；
+  `py_compile_exit=0`。所以钉住的 `probe_sha16` 与两取 stdout 是同一代字节。
+  parity_take1_exit=0 parity_take2_exit=0
+  take1_stdout_bytes=2713 take2_stdout_bytes=2713
+  take1_stderr_bytes=0 take2_stderr_bytes=0
+  take1_sha256_16=5a5a722e6b1501ea take2_sha256_16=5a5a722e6b1501ea
+  parity_diff_exit=0 parity_diff_lines=0
+
+取 1 stdout 逐字（取 2 与之逐字节相同，故不重复贴）：
+    PASS A_real_surface real_verbs=['get', 'request'] public_count=2
+    PASS B_head_gap_was_real head_verbs=['get'] head_sha16=6f73b11a14b8c81d
+    PASS C_widening_is_present live_verbs=['get', 'request']
+    PASS D_get_signature_parity get_signature=(self, url: 'str', *, params: 'Any' = None, headers: 'Any' = None, timeout: 'Any' = None, source: 'str' = 'unspecified', **_extra: 'Any') -> 'Any'
+    PASS E_get_path_parity_json live=(200, 'application/json', b'{"ok": true}') head=(200, 'application/json', b'{"ok": true}') calls_equal=True
+    PASS E_get_path_parity_text live=(201, 'text/html', b'<html>\n<body>') head=(201, 'text/html', b'<html>\n<body>') calls_equal=True
+    PASS F_post_served_and_head_refuses_it live=(200, 'application/json', b'{"ok": true}') live_calls=['https://h/quote'] live_methods=['POST'] head_refusal="AttributeError:'_FakeSharedClient' object has no attribute 'request'"
+    PASS G_sequence_exhaustion_message_parity exc=WitnessFailure text_equal=True
+    PASS H_no_needle_message_parity message="client seam fixture covers no response for url='https://h/absent'" both_equal_literal=True
+    PASS I_declared_method_refuses_other_verb refused='client seam fixture entries matched url=' lower_case_post_status=200
+    PASS J_cursor_shared_across_verbs pages=[b'{"p": 1}', b'{"p": 2}'] calls=2 methods=['GET', 'GET']
+    PASS K_call_site_vocabulary_covered sites_provider=4 sites_internal=2 site_kwargs=['cache_context', 'headers', 'json_body', 'params', 'source', 'timeout', 'use_cache'] fake_named=['cache_context', 'headers', 'json_body', 'params', 'source', 'timeout', 'use_cache'] fake_var_keyword=['_extra'] surface_equal=True
+      site opendata/data/http_client.py:415 positional=2 kwargs=['cache_context', 'headers', 'params', 'source', 'timeout', 'use_cache']
+      site opendata/data/http_client.py:760 positional=2 kwargs=[]
+      site opendata/data/providers/bls/models/_client.py:121 positional=2 kwargs=['headers', 'json_body', 'source', 'timeout']
+      site opendata/data/providers/deribit/client.py:87 positional=2 kwargs=['headers', 'json_body', 'source', 'timeout']
+      site opendata/data/providers/finra/models/_client.py:114 positional=2 kwargs=['headers', 'json_body', 'params', 'source', 'timeout']
+      site opendata/data/providers/tmx/models/client.py:132 positional=2 kwargs=['headers', 'json_body', 'source', 'timeout']
+    PASS L_diff_confined_to_fake_class class_range=(195,289) changed_lines=49 outside=[]
+    PASS M_forged_old_surface_refuses_post forged_verbs=['get'] forged_refusal='AttributeError' restored_verbs=['get', 'request'] restored_equal=True
+    fake_client_verb_parity_face arms=14 arms_passed=14 arms_failed=0 failed=[] head_sha16=6f73b11a14b8c81d live_sha16=1074c1d8b2f23d33 changed_lines=49 parity_verdict=GREEN
+
+哪些格是测出来的、哪些格是设计出来的（写给下一轮）：
+  * 判定字面量 `{get, request}` 不是引用文档串：臂 A 从 `vars(GovernedHttpClient)` 现读，
+    `public_count=2` 且 `inherited_public` 为空（同代另一条独立读数），所以这个字面量可证伪。
+  * 臂 B 读的是 `git show HEAD:` 的字节装出来的类，不是文档串里的说法；因此"旧面只有 get"
+    这条前提是测的，`head_sha16` 就是它的钉子。
+  * 臂 E 的两格是**已入库收据的字节不变性**证明：同一份 fixture、同一个 `get` 调用，
+    worktree 与 HEAD 返回的 (status, Content-Type, body, calls) 四元组相等；
+    这一格决定了"1656 格里已 ACCEPT 的部分不会因这次加动词而移动"。
+    判定用的 body/type 不采用我手打的字面量，而是用被测模块自己的 `_seam_body_bytes` 现算
+    （`json.dumps` 的冒号后空格这类形状，手打必错）。
+  * 臂 F 的后半截（HEAD 侧 `AttributeError`）是这台仪器的反例：它证明"POST 之前不通"是动词面缺失，
+    而不是 fixture 形状缺失；臂 M 再把 `request` 从已加载的类上就地删掉（只在本进程，磁盘一个字节没动），
+    删掉后 POST 必反、恢复后动词集必须回到臂 C 读到的那两个 —— 两侧都跑在同一个 GREEN 面里。
+  * 臂 K 是本载档里唯一有产品后果的新格：`opendata/` 下（除 `_vendor`）`<client>.request(...)`
+    调用点 6 处，其中 provider 侧 4 处（bls / deribit / finra / tmx）、引擎内部 2 处；
+    provider 侧用到的关键字 `headers / json_body / params / source / timeout` 全部是假客户端的
+    **具名**参数而不是被 `**_extra` 吞掉的 —— 这一格之所以要区分具名与 `**_extra`，是因为
+    只要留着 catch-all，任何拼错的关键字都会静悄悄通过，"能调用"就变成了假绿。
+  * 臂 L 是范围声明：`git diff --numstat` 的 49 行新增全落在类体 `(195, 289)` 内，
+    `outside=[]`，所以判定器、收据写入器和 `_seam_guard` 一个字节没动；这一格是"只付 `probe` 钉的钱、
+    不付 claims/ledger 的钱"这个断言的形状证明。
+
+与旧代的差别（一句话）：wave 24 那句"tmx 腿被 runner seam 的 get-only 卡住"此前只有
+`BLOCKED_ON_RUNNER_SURFACE` 这一格间接指向；本代把它换成三个直接读数（B：HEAD 类只有 get；
+F：HEAD 类对 POST 反例；K：4 个 provider 调用点的形状已在具名参数面上被覆盖）。
+
+本载档不测什么：不改 canonical 收据（`docs/evidence/C101/**` 一个字节没读、没写）；不设
+`OPENDATA_ALLOW_LIVE_E2E`；不碰真网络；plane 2 一格没动；**加动词之后有没有行能转成 ACCEPT，
+不是本仪器的问题**——本代 `counterfactual_runner_widening` 的现读面是
+`flipped_providers={'deribit': 5, 'tmx': 24} new_verbs=['request'] post_required=False
+population=29 verdicts={'NO_CODE_SITE': 1, 'ROW_CLASS_NOT_CONTRACT': 12, 'UNBOUND': 16}
+convertible=0 movable=True arms=7 arms_passed=7 identity_set=5168e1e723999312`
+（scratch `/tmp/w29s0-widen.txt` 7601 字节 / sha16 `ddd6e9e6f9f32835`，尚未入库），
+即：单靠这次补齐，今天一行也转不成 ACCEPT；它只把 29 行的桶从"卡在台架"移进"要么补声明、
+要么补模型"。所以这次补齐的**唯一正当买法**是与一个真需要 `request` 的行批次同波落地、
+同波付一次 produce→sign→merge→judge；否则应当 `git checkout --` 撤销而不是留着。
+下一步（step 2）按这条读数选批：deribit 5 行全部 `bound=True` 且 `declare_tag=NEEDS_RETARGET`、
+`raises` 8–23 / `code_raises` 1–16（取数在跑、只是产出的行类不是声明的契约类），
+它的 fetcher 走的正是 `opendata/data/providers/deribit/client.py:87` 的 `request` 调用点，
+是"补齐动词之后能立刻被见证"的那一批；两包均无 `specs.py`（`NO_SPECS_MODULE:ModuleNotFoundError`
+29/29 行同值，与 `ledger_axis_blast.py` 的 D1"这是包的属性不是行的属性"一致），
+所以声明面要先补 `deribit/specs.py`。
+
+（本代最后一句"所以声明面要先补 `deribit/specs.py`"已被 step 2a 现读推翻，
+更正与理由见 `wave29-step2a-counterfact_two_generation_diag.txt` 的"更正上一代载档的一句"一节；
+保留原文不删，是为了让这条错误的推理留在记录里。）

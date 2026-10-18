@@ -1,0 +1,2208 @@
+{
+  "claims": [
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesCurve --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T22:54:00.574199+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesCurve",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesCurve/implementation.json",
+        "sha256": "09c70fc01237992c11a5008aa118d6fbee0284c54642c61899b8641f099ee2df"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesCurve --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T22:54:01.708228+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "fdd9b25d3fefa6d44a22fcaab771025476eb2459c8741c69ecaa3927088c3493",
+            "before_sha256": "fdd9b25d3fefa6d44a22fcaab771025476eb2459c8741c69ecaa3927088c3493",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesCurve.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesCurve",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesCurve/direct.json",
+        "sha256": "d526044ca852b8f4b6fe244058f971de039ea9f55eb923da0ac3c7452b1ba933"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesCurve --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T22:54:02.882299+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "fdd9b25d3fefa6d44a22fcaab771025476eb2459c8741c69ecaa3927088c3493",
+            "before_sha256": "fdd9b25d3fefa6d44a22fcaab771025476eb2459c8741c69ecaa3927088c3493",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesCurve.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesCurve",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesCurve/service.json",
+        "sha256": "24d3225813ce528b897422967c20b81ffff99661b534b4fe82ff8003c7cdd80a"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesCurve --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T22:54:03.907834+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "fdd9b25d3fefa6d44a22fcaab771025476eb2459c8741c69ecaa3927088c3493",
+            "before_sha256": "fdd9b25d3fefa6d44a22fcaab771025476eb2459c8741c69ecaa3927088c3493",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesCurve.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesCurve",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesCurve/contract.json",
+        "sha256": "47502099d7f5fde5eb5e84a6bc43c534b3988ba9fbf9dc4adb65ff0231bbdbd3"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesCurve --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T22:54:05.910404+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "fdd9b25d3fefa6d44a22fcaab771025476eb2459c8741c69ecaa3927088c3493",
+            "before_sha256": "fdd9b25d3fefa6d44a22fcaab771025476eb2459c8741c69ecaa3927088c3493",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesCurve.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesCurve",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesCurve/counterfact.json",
+        "sha256": "82606a2b5538f440fc1c7cbba1ca4cb36e45a7dabe4a9022a8077553a24ddac5"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesCurve"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesHistorical --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T22:54:06.877373+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesHistorical",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesHistorical/implementation.json",
+        "sha256": "2a30ec870b8c3a19be94cbe96eb64fbf670e9b1782342b1142d52ab7825185a6"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesHistorical --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T22:54:08.011165+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "f2de7d724e717140e1e715cf3989d4813bfb99205eba7906224b8231a55de926",
+            "before_sha256": "f2de7d724e717140e1e715cf3989d4813bfb99205eba7906224b8231a55de926",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesHistorical.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesHistorical",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesHistorical/direct.json",
+        "sha256": "3fb885d11d884984ce25579d571b1fc43701c3421c046e03e0604ef0b6d4348a"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesHistorical --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T22:54:09.202437+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "f2de7d724e717140e1e715cf3989d4813bfb99205eba7906224b8231a55de926",
+            "before_sha256": "f2de7d724e717140e1e715cf3989d4813bfb99205eba7906224b8231a55de926",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesHistorical.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesHistorical",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesHistorical/service.json",
+        "sha256": "09a5736094624991cb139594b5cbdce4bb6f8a3272e94652f3b2690d5d70d2b0"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesHistorical --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T22:54:10.227205+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "f2de7d724e717140e1e715cf3989d4813bfb99205eba7906224b8231a55de926",
+            "before_sha256": "f2de7d724e717140e1e715cf3989d4813bfb99205eba7906224b8231a55de926",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesHistorical.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesHistorical",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesHistorical/contract.json",
+        "sha256": "2f7759526a959ce7bb97589dea8b7b31478d82654eb55cb788590d888d2aa74d"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesHistorical --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T22:54:11.255556+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "f2de7d724e717140e1e715cf3989d4813bfb99205eba7906224b8231a55de926",
+            "before_sha256": "f2de7d724e717140e1e715cf3989d4813bfb99205eba7906224b8231a55de926",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesHistorical.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesHistorical",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesHistorical/counterfact.json",
+        "sha256": "7ced592df24fea84080b52f6ae407a603e4037be084564011f1b7628bea8e5f6"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesHistorical"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInfo --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T22:54:12.293361+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesInfo",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/implementation.json",
+        "sha256": "c28e712e9d9ef9c4f30f1669753fc5f21153832e6f1096dc10ae84a178cb814c"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInfo --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T22:54:13.325858+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "029059c5db97f6c7862f9299b8c7646995103af72379f81f630c9ed39c61a7b0",
+            "before_sha256": "029059c5db97f6c7862f9299b8c7646995103af72379f81f630c9ed39c61a7b0",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesInfo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesInfo",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/direct.json",
+        "sha256": "6038d233fe11e5303162b8295229c82f6f5816e313dbb5df35d88959e44e6f8b"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInfo --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T22:54:14.498299+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "029059c5db97f6c7862f9299b8c7646995103af72379f81f630c9ed39c61a7b0",
+            "before_sha256": "029059c5db97f6c7862f9299b8c7646995103af72379f81f630c9ed39c61a7b0",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesInfo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesInfo",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/service.json",
+        "sha256": "5d4e6bcdf80d3ea66fb1461779a60d7bca325306ebc34bbd28cd961aa4ba71b0"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInfo --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T22:54:15.550898+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "029059c5db97f6c7862f9299b8c7646995103af72379f81f630c9ed39c61a7b0",
+            "before_sha256": "029059c5db97f6c7862f9299b8c7646995103af72379f81f630c9ed39c61a7b0",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesInfo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesInfo",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/contract.json",
+        "sha256": "032f19f65820723e9a5792c2d93038b59c45899fa1ed04a888bd5c23d9fd3b79"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInfo --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T22:54:16.662954+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "029059c5db97f6c7862f9299b8c7646995103af72379f81f630c9ed39c61a7b0",
+            "before_sha256": "029059c5db97f6c7862f9299b8c7646995103af72379f81f630c9ed39c61a7b0",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesInfo.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesInfo",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/counterfact.json",
+        "sha256": "113a15a9373e1298803281096b979f1180ddb69e0a601cc7138d61a272c503bc"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesInfo"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInstruments --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T22:54:17.689047+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesInstruments",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesInstruments/implementation.json",
+        "sha256": "471d71efbd3858bc32134a96eb7a68903c8ecb188ddfce4d0902ebb851b3ffca"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesInstruments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInstruments --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T22:54:18.742404+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "0827c7fb4288b67225cf6d60ace244fa306b5e23272659c03495857106140cb3",
+            "before_sha256": "0827c7fb4288b67225cf6d60ace244fa306b5e23272659c03495857106140cb3",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesInstruments.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesInstruments",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesInstruments/direct.json",
+        "sha256": "7d48d8ce05fff5a7e3612c12fe51111f838d280a84546c250f551f4aecc6b26f"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesInstruments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInstruments --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T22:54:19.919071+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "0827c7fb4288b67225cf6d60ace244fa306b5e23272659c03495857106140cb3",
+            "before_sha256": "0827c7fb4288b67225cf6d60ace244fa306b5e23272659c03495857106140cb3",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesInstruments.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesInstruments",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesInstruments/service.json",
+        "sha256": "68d3c92bf829aa5457fae16278d3a54b33dd15e7e13a66c870c08f936ee4413a"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesInstruments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInstruments --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T22:54:20.955979+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "0827c7fb4288b67225cf6d60ace244fa306b5e23272659c03495857106140cb3",
+            "before_sha256": "0827c7fb4288b67225cf6d60ace244fa306b5e23272659c03495857106140cb3",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesInstruments.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesInstruments",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesInstruments/contract.json",
+        "sha256": "22753d13839bb723d11455e01f808210173bcc4c74e4a8e77e2900c33a4923b0"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesInstruments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInstruments --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T22:54:22.977408+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "0827c7fb4288b67225cf6d60ace244fa306b5e23272659c03495857106140cb3",
+            "before_sha256": "0827c7fb4288b67225cf6d60ace244fa306b5e23272659c03495857106140cb3",
+            "path": "docs/evidence/C101/fixtures/deribit/FuturesInstruments.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::FuturesInstruments",
+        "path": "docs/evidence/C101/receipts/deribit/FuturesInstruments/counterfact.json",
+        "sha256": "b59778b47da33f714988f5e03b4c2d4685f8f487f64514606e392f11a478614b"
+      },
+      "status": "PASS",
+      "upstream_model": "FuturesInstruments"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model OptionsChains --phase implementation --evidence-root docs/evidence/C101",
+      "evidence_kind": "implementation_check",
+      "executed_at_utc": "2026-10-17T22:54:24.053634+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "implementation",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::OptionsChains",
+        "path": "docs/evidence/C101/receipts/deribit/OptionsChains/implementation.json",
+        "sha256": "63732171750348d88ee8f5b56d3d3eb7778b6a9ca41c4224d7ffc7703498f1dd"
+      },
+      "status": "PASS",
+      "upstream_model": "OptionsChains"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model OptionsChains --phase direct --evidence-root docs/evidence/C101",
+      "evidence_kind": "direct_fetcher",
+      "executed_at_utc": "2026-10-17T22:54:25.091734+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "direct",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "8eeabb63c79b6a98e37510804ec62408d07e436df5dba473de50d2164d91f83b",
+            "before_sha256": "8eeabb63c79b6a98e37510804ec62408d07e436df5dba473de50d2164d91f83b",
+            "path": "docs/evidence/C101/fixtures/deribit/OptionsChains.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::OptionsChains",
+        "path": "docs/evidence/C101/receipts/deribit/OptionsChains/direct.json",
+        "sha256": "827dd01c8e162d2609e6c3e1d537e6f0cf9b4943ea5513cc89947f2fa7580c95"
+      },
+      "status": "PASS",
+      "upstream_model": "OptionsChains"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model OptionsChains --phase service --evidence-root docs/evidence/C101",
+      "evidence_kind": "provider_model_query",
+      "executed_at_utc": "2026-10-17T22:54:26.296244+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "service",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "8eeabb63c79b6a98e37510804ec62408d07e436df5dba473de50d2164d91f83b",
+            "before_sha256": "8eeabb63c79b6a98e37510804ec62408d07e436df5dba473de50d2164d91f83b",
+            "path": "docs/evidence/C101/fixtures/deribit/OptionsChains.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::OptionsChains",
+        "path": "docs/evidence/C101/receipts/deribit/OptionsChains/service.json",
+        "sha256": "13269c7c7eedf2d28e56fe180abdbb63e085b8b76ea371c972dade0a82439280"
+      },
+      "status": "PASS",
+      "upstream_model": "OptionsChains"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model OptionsChains --phase contract --evidence-root docs/evidence/C101",
+      "evidence_kind": "typed_contract",
+      "executed_at_utc": "2026-10-17T22:54:27.338397+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "contract",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "8eeabb63c79b6a98e37510804ec62408d07e436df5dba473de50d2164d91f83b",
+            "before_sha256": "8eeabb63c79b6a98e37510804ec62408d07e436df5dba473de50d2164d91f83b",
+            "path": "docs/evidence/C101/fixtures/deribit/OptionsChains.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::OptionsChains",
+        "path": "docs/evidence/C101/receipts/deribit/OptionsChains/contract.json",
+        "sha256": "cea47710c54deba724fc017caa8171acbf839de6230eeac74cbff22a7170fe7f"
+      },
+      "status": "PASS",
+      "upstream_model": "OptionsChains"
+    },
+    {
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model OptionsChains --phase counterfact --evidence-root docs/evidence/C101",
+      "evidence_kind": "adversarial_counterfact",
+      "executed_at_utc": "2026-10-17T22:54:29.364002+00:00",
+      "execution_mode": "offline_fixture",
+      "exit_code": 0,
+      "phase": "counterfact",
+      "pins": {
+        "contract": [
+          {
+            "after_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "before_sha256": "37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+            "path": "opendata/data/models/deribit.py"
+          },
+          {
+            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:37bd98e6e809b236b735cfac72bbabb55b44c10ab7232c5c17669b89715e0eff",
+        "fixture": [
+          {
+            "after_sha256": "8eeabb63c79b6a98e37510804ec62408d07e436df5dba473de50d2164d91f83b",
+            "before_sha256": "8eeabb63c79b6a98e37510804ec62408d07e436df5dba473de50d2164d91f83b",
+            "path": "docs/evidence/C101/fixtures/deribit/OptionsChains.json"
+          }
+        ],
+        "probe": [
+          {
+            "after_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "before_sha256": "18b46adc3ccbcfb7a7196c3856c91161973138a762fe092710e7003f2a7f27b4",
+            "path": "scripts/quality/iter2_claims_probe_runner.py"
+          },
+          {
+            "after_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "before_sha256": "ebc6a89233eb43b0d75f80efe48359f93ec85331cbd82dffbc2083729dcd0c5a",
+            "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "before_sha256": "af9d1913d5f9e73efdda0df06ad5d21c2c8cd3f11d000d689f1a73f9503c613e",
+            "path": "scripts/quality/iter2_witnesses/deribit.py"
+          }
+        ],
+        "source": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "before_sha256": "3fc249f0bda3f05b92a186e0d4ce5483ffaa0748b08d2b0330094084784cb9f8",
+            "path": "opendata/data/providers/deribit/provider.py"
+          },
+          {
+            "after_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "before_sha256": "c95af59ff225890fdbf096277c326f3d7231c96d8e08586540a047c600e0250d",
+            "path": "opendata/data/providers/deribit/models/fetchers.py"
+          },
+          {
+            "after_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "before_sha256": "d154b61a37cf3de9595a95978b76fb6360513479bce13377898554fb46728797",
+            "path": "opendata/data/providers/deribit/client.py"
+          },
+          {
+            "after_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "before_sha256": "f4e7c31cc79273ba045d9fda11db726c21b0ff0589ba04a840eb09ca8a1947c2",
+            "path": "opendata/data/providers/deribit/_source.py"
+          }
+        ]
+      },
+      "provider": "deribit",
+      "reason": "witness reported a clean verdict",
+      "receipt": {
+        "model_identity": "deribit::OptionsChains",
+        "path": "docs/evidence/C101/receipts/deribit/OptionsChains/counterfact.json",
+        "sha256": "bc142e58e8ee35bf5a18b6fad89ab8cc3319ceb9c08cb837c934f8b13b44087d"
+      },
+      "status": "PASS",
+      "upstream_model": "OptionsChains"
+    }
+  ],
+  "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
+  "primary_reviews": [
+    {
+      "decision": "ACCEPT",
+      "provider": "deribit",
+      "receipt": {
+        "model_identity": "deribit::FuturesCurve",
+        "path": "docs/evidence/C101/primary-reviews/deribit__FuturesCurve.review.json",
+        "sha256": "c28f7aa31401387fee8c63a187fba004f718b25b43ed18dfbeaee0b7dda3de58"
+      },
+      "reviewed_at_utc": "2026-10-17T23:40:32Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "FuturesCurve"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "deribit",
+      "receipt": {
+        "model_identity": "deribit::FuturesHistorical",
+        "path": "docs/evidence/C101/primary-reviews/deribit__FuturesHistorical.review.json",
+        "sha256": "12e77f5dd7aa8ad60ab7631aeaa036959d445a0fea2613059c2f135e954c640a"
+      },
+      "reviewed_at_utc": "2026-10-17T23:40:32Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "FuturesHistorical"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "deribit",
+      "receipt": {
+        "model_identity": "deribit::FuturesInfo",
+        "path": "docs/evidence/C101/primary-reviews/deribit__FuturesInfo.review.json",
+        "sha256": "f6c50d096c85ae05f64ce5d42a74c1a7a304e34ecbab3ee9236ea5fe7a2c96c2"
+      },
+      "reviewed_at_utc": "2026-10-17T23:40:32Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "FuturesInfo"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "deribit",
+      "receipt": {
+        "model_identity": "deribit::FuturesInstruments",
+        "path": "docs/evidence/C101/primary-reviews/deribit__FuturesInstruments.review.json",
+        "sha256": "bea5f20711e50fa54f447f8de37158faf9bc5dc858bc6cd5b6098b0dee471bb1"
+      },
+      "reviewed_at_utc": "2026-10-17T23:40:32Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "FuturesInstruments"
+    },
+    {
+      "decision": "ACCEPT",
+      "provider": "deribit",
+      "receipt": {
+        "model_identity": "deribit::OptionsChains",
+        "path": "docs/evidence/C101/primary-reviews/deribit__OptionsChains.review.json",
+        "sha256": "3bdec9de547950a675fa626241f189a40dfb7748c97969bd3271d84c71720a58"
+      },
+      "reviewed_at_utc": "2026-10-17T23:40:32Z",
+      "reviewer_id": "iter2-acceptance-reviewer",
+      "reviewer_model": "qoder-cli-agent",
+      "reviewer_role": "acceptance_reviewer",
+      "reviewer_type": "primary_model",
+      "upstream_model": "OptionsChains"
+    }
+  ],
+  "schema_version": 1
+}

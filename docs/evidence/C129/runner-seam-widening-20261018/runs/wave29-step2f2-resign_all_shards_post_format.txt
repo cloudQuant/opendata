@@ -1,0 +1,39 @@
+===== 为什么有这一块：仪器字节与载档不同代 =====
+step 2f 的载档产于 07:23:55；probes/resign_all_shards.py 在 07:30:38 被 ruff format 改过排版
+（face.md 第 9 节当时记的 067fb9b23229cc7f 是那一次 format 之前的摘要，盘面现为 f0f3ed96c2734ec3）。
+载档与仪器不同代时，"这份脚本产出这份载档"这句话就没有载体了。下面三份载档用当前字节重跑，
+face 行必须与上一代逐字相同；相等性由 probes/post_format_two_generation_face.py 读两份载档自己判。
+
+下面各 *_exit 行是主线当轮直接返回码的转录（每条命令单独取，未经管道）。
+
+
+===== 重跑 1/3：resign_all_shards.py（当前字节） =====
+resign_start shards=26 workers=4 expected_signed=281
+sign provider=alpha_vantage exit=0 signed=3 refused=0 expected=3 reviews_total=3
+sign provider=benzinga exit=0 signed=4 refused=0 expected=4 reviews_total=4
+sign provider=bls exit=0 signed=2 refused=0 expected=2 reviews_total=2
+sign provider=cboe exit=0 signed=9 refused=2 expected=9 reviews_total=9
+sign provider=cftc exit=0 signed=2 refused=0 expected=2 reviews_total=2
+sign provider=congress_gov exit=0 signed=8 refused=0 expected=8 reviews_total=8
+sign provider=deribit exit=0 signed=5 refused=0 expected=5 reviews_total=5
+sign provider=ecb exit=0 signed=3 refused=0 expected=3 reviews_total=3
+sign provider=econdb exit=0 signed=6 refused=2 expected=6 reviews_total=6
+sign provider=eia exit=0 signed=2 refused=0 expected=2 reviews_total=2
+sign provider=famafrench exit=0 signed=6 refused=0 expected=6 reviews_total=6
+sign provider=federal_reserve exit=0 signed=12 refused=1 expected=12 reviews_total=12
+sign provider=finra exit=0 signed=2 refused=0 expected=2 reviews_total=2
+sign provider=finviz exit=0 signed=7 refused=0 expected=7 reviews_total=7
+sign provider=fmp exit=0 signed=69 refused=0 expected=69 reviews_total=69
+sign provider=fred exit=0 signed=36 refused=0 expected=36 reviews_total=36
+sign provider=government_us exit=0 signed=4 refused=2 expected=4 reviews_total=4
+sign provider=imf exit=0 signed=8 refused=0 expected=8 reviews_total=8
+sign provider=intrinio exit=0 signed=37 refused=1 expected=37 reviews_total=37
+sign provider=multpl exit=0 signed=1 refused=0 expected=1 reviews_total=1
+sign provider=nasdaq exit=0 signed=9 refused=0 expected=9 reviews_total=9
+sign provider=oecd exit=0 signed=9 refused=0 expected=9 reviews_total=9
+sign provider=sec exit=0 signed=24 refused=0 expected=24 reviews_total=24
+sign provider=tiingo exit=0 signed=7 refused=0 expected=7 reviews_total=7
+sign provider=tradier exit=0 signed=5 refused=0 expected=5 reviews_total=5
+sign provider=tradingeconomics exit=0 signed=1 refused=0 expected=1 reviews_total=1
+resign_face shards=26 clean=26 red=0 red_providers=[] signed_total=281 expected_total=281 refused_total=8 reviews_total_max=69 per_shard_signed={'alpha_vantage': 3, 'benzinga': 4, 'bls': 2, 'cboe': 9, 'cftc': 2, 'congress_gov': 8, 'deribit': 5, 'ecb': 3, 'econdb': 6, 'eia': 2, 'famafrench': 6, 'federal_reserve': 12, 'finra': 2, 'finviz': 7, 'fmp': 69, 'fred': 36, 'government_us': 4, 'imf': 8, 'intrinio': 37, 'multpl': 1, 'nasdaq': 9, 'oecd': 9, 'sec': 24, 'tiingo': 7, 'tradier': 5, 'tradingeconomics': 1}
+resign_exit=0
