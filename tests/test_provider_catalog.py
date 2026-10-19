@@ -124,6 +124,8 @@ def test_catalog_contains_34_sources_and_only_66_fetcher_bindings() -> None:
     # Re-pinned after 360c61d (32-provider implementation surface): 14 sources moved from
     # reserved to implemented, and the binding census grew 66 -> 342 with that wave plus the
     # iter2 declarative/engine rows (live split: 325 hand-written facade fetchers + 17 engine).
+    # Wave 38 moves one name from reserved to implemented: seeking_alpha's calendar leg.
+
     assert {provider.source for provider in providers if provider.is_implemented} == {
         "akshare",
         "alpha_vantage",
@@ -149,6 +151,7 @@ def test_catalog_contains_34_sources_and_only_66_fetcher_bindings() -> None:
         "nasdaq",
         "oecd",
         "sec",
+        "seeking_alpha",
         "ths",
         "tiingo",
         "tmx",
@@ -337,10 +340,7 @@ def test_registration_and_legacy_fetchers_project_the_same_capabilities() -> Non
     assert register_providers(registry) == []
     # live counterfact: a dropped declarative binding must break the exact census identity.
     unique_binding = next(iter(declarative_bindings - expected - declared))
-    assert (
-        len(registered)
-        != len(expected | declared | (declarative_bindings - {unique_binding}))
-    )
+    assert len(registered) != len(expected | declared | (declarative_bindings - {unique_binding}))
 
 
 @pytest.mark.parametrize("field,value", [("period", "1W"), ("market", "us")])

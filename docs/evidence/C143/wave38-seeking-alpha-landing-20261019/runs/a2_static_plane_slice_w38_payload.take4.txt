@@ -1,0 +1,160 @@
+A2 files (complete resolver): 25
+  opendata/data/models/seeking_alpha.py
+  opendata/data/providers/seeking_alpha/models/calendar_earnings_public.py
+  opendata/data/providers/seeking_alpha/provider.py
+  opendata/data/providers/seeking_alpha/registration.py
+  opendata/data/providers/seeking_alpha/_source.py
+  opendata/data/providers/seeking_alpha/specs.py
+  opendata/data/providers/seeking_alpha/__init__.py
+  opendata/data/models/__init__.py
+  opendata/data/providers/catalog.py
+  scripts/quality/iter2_witnesses/seeking_alpha.py
+  tests/test_seeking_alpha.py
+  tests/test_provider_domains.py
+  tests/test_provider_catalog.py
+  tests/test_authority_reconciliation.py
+  tests/test_pipeline_jobs.py
+  tests/test_alert_matrix.py
+  tests/test_alert_matrix_model_domains.py
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w41b_staged_credential_scan.py
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w45_run_chain.py
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w47_closure_face.py
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w48_calendar_landing_face.py
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w49_batch5_rebase.py
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w50_carrier_path_correction.py
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w51_test_plane_attribution.py
+  docs/evidence/C142/wave38-seeking-alpha-calendar-20261019/probes/w44_capture_receipt.py
+
+Static-tool execution partition: 25 file(s), 0 verified immutable snapshot(s) excluded.
+Historical Ruff findings: 149323 (NOT GREEN; historical evidence only).
+FAIL pinned Gitleaks file scan
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m4:33PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 24.3ms[0m
+[90m4:33PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m4:33PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 12.5ms[0m
+[90m4:33PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m4:33PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 5.6ms[0m
+[90m4:33PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/option/option_em.py returned 1: [90m4:33PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.91ms[0m
+[90m4:33PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/stock/cons.py returned 1: [90m4:33PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 46.2ms[0m
+[90m4:33PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m4:34PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 24.5ms[0m
+[90m4:34PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m4:34PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 12.3ms[0m
+[90m4:34PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m4:34PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 5.62ms[0m
+[90m4:34PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/option/option_em.py returned 1: [90m4:34PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 5.31ms[0m
+[90m4:34PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/stock/cons.py returned 1: [90m4:34PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 47.5ms[0m
+[90m4:34PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m4:34PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 29.9ms[0m
+[90m4:34PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m4:34PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 16.9ms[0m
+[90m4:34PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m4:34PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 6.41ms[0m
+[90m4:34PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/option/option_em.py returned 1: [90m4:34PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 6.1ms[0m
+[90m4:34PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/stock/cons.py returned 1: [90m4:34PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 52.3ms[0m
+[90m4:34PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m4:35PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 27.6ms[0m
+[90m4:35PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m4:35PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 15ms[0m
+[90m4:35PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m4:35PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 7.12ms[0m
+[90m4:35PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/option/option_em.py returned 1: [90m4:35PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 6.39ms[0m
+[90m4:35PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/stock/cons.py returned 1: [90m4:35PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 57.7ms[0m
+[90m4:35PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m4:36PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 35.7ms[0m
+[90m4:36PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m4:36PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 19.2ms[0m
+[90m4:36PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m4:36PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 7.74ms[0m
+[90m4:36PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/option/option_em.py returned 1: [90m4:36PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 7.19ms[0m
+[90m4:36PM[0m [33mWRN[0m [1mleaks found: 1[0m
+FAIL: A2 gate failed on: immutable evidence secret scan
+
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/stock/cons.py returned 1: [90m4:36PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 71.1ms[0m
+[90m4:36PM[0m [33mWRN[0m [1mleaks found: 1[0m
+ok   ruff check
+ok   ruff format --check
+ok  mypy (18 unique target(s))
+mypy target results:
+  docs/evidence/C142/wave38-seeking-alpha-calendar-20261019/probes/w44_capture_receipt.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w41b_staged_credential_scan.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w45_run_chain.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w47_closure_face.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w48_calendar_landing_face.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w49_batch5_rebase.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w50_carrier_path_correction.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w51_test_plane_attribution.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/models/__init__.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/models/seeking_alpha.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/providers/catalog.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/providers/seeking_alpha/__init__.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/providers/seeking_alpha/_source.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/providers/seeking_alpha/models/calendar_earnings_public.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/providers/seeking_alpha/provider.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/providers/seeking_alpha/registration.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/providers/seeking_alpha/specs.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  scripts/quality/iter2_witnesses/seeking_alpha.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+ok   bandit
+a2_take4_exit=1

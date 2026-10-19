@@ -1,0 +1,14 @@
+# carrier for w50_carrier_path_correction.py
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w50_carrier_path_correction.py
+
+moved_payload identities=350 claims=1710 accepted=0 status_counts={'INCOMPLETE': 5, 'STALE': 337, 'UNREVIEWED': 8} sha256=8d13469fb1a45297 json_bytes=1515119 md_bytes=359642
+carrier_reading {"pre_chain_accepted": 0, "pre_chain_claims": 1710, "pre_chain_identities": 350, "pre_chain_status_counts": {"INCOMPLETE": 5, "STALE": 337, "UNREVIEWED": 8}}
+counterfact_forged claims=1715 matches_carrier=False real_matches_carrier=True
+foreign_generation identities=350 claims=1705 accepted=0 status_counts={'INCOMPLETE': 5, 'STALE': 336, 'UNREVIEWED': 9} differs_from_moved=True foreign_matches_wave38_carrier=False
+foreign_bundle_modified_files=0 []
+restore judge_pre_chain.report.json head=f3267cc8386d1f8c worktree=f3267cc8386d1f8c equal=True
+restore judge_pre_chain.report.md head=2be2ad31431e5d56 worktree=2be2ad31431e5d56 equal=True
+guard real_outside=[] forged_outside=['PRE_CHAIN_OUTPUT', 'RUNS'] driver_pre_chain_output=docs/evidence/C143/wave38-seeking-alpha-landing-20261019/runs/judge_pre_chain.report.json driver_runs=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C143/wave38-seeking-alpha-landing-20261019/runs repointed=True armed=True
+carrier_path_face arms=4 arms_passed=4 arms_failed=0 failed=[] PASS=True
+
+w50_carrier_path_correction_exit=0

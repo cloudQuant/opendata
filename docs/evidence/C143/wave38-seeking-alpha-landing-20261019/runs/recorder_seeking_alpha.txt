@@ -1,0 +1,16 @@
+# carrier for recorder_seeking_alpha
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/seeking_alpha/claims.json --output docs/evidence/C101/seeking_alpha/claims.reviewed.json --provider seeking_alpha --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over seeking_alpha's regenerated shard
+# started_utc: 2026-10-19T07:36:41+00:00
+# exit: 0
+# stdout_chars: 1997 stderr_chars: 0
+
+REVIEW_SIGNED: seeking_alpha::CalendarEarnings
+REVIEW_REFUSED: seeking_alpha::ForwardEpsEstimates:implementation:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; direct:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; service:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; contract:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; counterfact:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,counterfact_receipt_path_invalid,fixture_pins_missing,probe_pins_missing,source_pins_missing
+REVIEW_REFUSED: seeking_alpha::ForwardSalesEstimates:implementation:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; direct:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; service:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; contract:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; counterfact:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,counterfact_receipt_path_invalid,fixture_pins_missing,probe_pins_missing,source_pins_missing
+recorder_exit=0 signed=1 refused=2 reviews_total=1 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/seeking_alpha/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_seeking_alpha_exit=0

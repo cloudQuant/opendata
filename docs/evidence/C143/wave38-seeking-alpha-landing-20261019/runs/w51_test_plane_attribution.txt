@@ -1,0 +1,23 @@
+# carrier for w51_test_plane_attribution.py
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w51_test_plane_attribution.py
+
+worktree_plane {'tests': '26630', 'failures': '28', 'errors': '0', 'skipped': '271', 'seconds': '709.089'}
+control_plane  {'tests': '26625', 'failures': '37', 'errors': '0', 'skipped': '271', 'seconds': '645.946'}
+set_diff worktree=28 control=37 shared=28 new=0 fixed=9
+new_red_nodes=[]
+arithmetic worktree==shared+new=True control==shared+fixed=True
+fixed_by_fence byte_pin_marker=7 population_marker=2 named_total=9 of=9
+fixed byte_pin tests/test_alert_matrix.py::TestCollection::test_a_leg_with_no_field_mapping_is_the_measured_majority
+fixed byte_pin tests/test_alert_matrix.py::TestCollection::test_every_leg_is_measured_or_counted_never_dropped
+fixed byte_pin tests/test_alert_matrix_model_domains.py::test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tables
+fixed population tests/test_authority_reconciliation.py::TestLiveTableMatchesLiveRegistry::test_domains_without_a_row_are_exactly_the_single_source_ones
+fixed population tests/test_pipeline_jobs.py::TestPartitionMaintenanceJob::test_the_registered_census_reaches_the_ods_layer
+fixed byte_pin tests/test_provider_domains.py::test_declared_domain_contracts_match_exact_registered_provider_models
+fixed byte_pin tests/test_provider_domains.py::test_exact_domain_identity_assertion_rejects_removed_and_added_domains
+fixed byte_pin tests/test_provider_domains.py::test_production_domains_preserve_v1_legacy_entries_and_explicit_semantics
+fixed byte_pin tests/test_provider_domains.py::test_public_exports_match_reviewed_batch5_counts_and_types
+control_provenance commit=66fe1acc9086 ancestor_of_worktree_head=True
+residual_unexplained_fixed_reds=0 []
+test_plane_attribution arms=8 arms_passed=8 arms_failed=0 failed=[] PASS=True
+
+w51_test_plane_attribution_exit=0

@@ -1,0 +1,23 @@
+# carrier for recorder_oecd
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/oecd/claims.json --output docs/evidence/C101/oecd/claims.reviewed.json --provider oecd --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over oecd's regenerated shard
+# started_utc: 2026-10-19T07:33:37+00:00
+# exit: 0
+# stdout_chars: 551 stderr_chars: 0
+
+re-signing: dropped 9 earlier review(s) for the addressed identities
+REVIEW_SIGNED: oecd::CompositeLeadingIndicator
+REVIEW_SIGNED: oecd::ConsumerPriceIndex
+REVIEW_SIGNED: oecd::CountryInterestRates
+REVIEW_SIGNED: oecd::GdpForecast
+REVIEW_SIGNED: oecd::GdpNominal
+REVIEW_SIGNED: oecd::GdpReal
+REVIEW_SIGNED: oecd::HousePriceIndex
+REVIEW_SIGNED: oecd::SharePriceIndex
+REVIEW_SIGNED: oecd::Unemployment
+recorder_exit=0 signed=9 refused=0 reviews_total=9 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/oecd/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_oecd_exit=0

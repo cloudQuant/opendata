@@ -75,6 +75,10 @@ SINGLE_SOURCE_EXEMPTIONS: frozenset[str] = frozenset(
 # keeps it out of both the legacy dwd/ods plan and the authority table (25 -> 29 names here).
 # C100's ten initial ready model domains and the subsequent Alpha Vantage trio also remain outside
 # the warehouse authority plan. Some history domains permit upsert, but none has a warehouse table.
+# Wave 37 added ``cboe_index_snapshots`` and wave 38 adds ``seeking_alpha_calendar_earnings``: both
+# landed a single-leg ``verified=False``/``transient`` model domain. The cboe name was missed when
+# wave 37 shipped -- its test plane covered nine files and this one was not among them -- so the
+# omission is corrected here rather than presented as never having existed.
 NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
     {
         "alpha_vantage_equity_historical",
@@ -96,6 +100,7 @@ NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
         "cboe_index_constituent_quotes",
         "cboe_index_historical",
         "cboe_index_search",
+        "cboe_index_snapshots",
         "cboe_options_chains",
         "cftc_commitment_of_traders",
         "cftc_market_directory",
@@ -343,6 +348,7 @@ NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
         "sec_schema_files",
         "sec_sic_search",
         "sec_symbol_map",
+        "seeking_alpha_calendar_earnings",
         "senior_loan_officer_survey",
         "sofr",
         "sonia",

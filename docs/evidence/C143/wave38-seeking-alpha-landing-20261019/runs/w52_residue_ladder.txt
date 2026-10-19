@@ -1,0 +1,23 @@
+# carrier for w52_residue_ladder.py
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w52_residue_ladder.py
+
+judge identities=350 claims=1725 accepted=338 residue=12 status_counts={'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 338, 'UNREVIEWED': 5} identity_set=5168e1e723999312
+census_exit=1 rows_parsed=12 actions_by_row={'new_provider_package': 2, 'ledger_ruled_out': 9, 'implement_missing_model': 1}
+census_nested_totals declared={'implement_missing_model': 1, 'ledger_ruled_out': 9, 'new_provider_package': 2} parsed_rows_sum=12 nested_sums=12
+ladder new_provider_package   biztoc::WorldNews                      status=UNREVIEWED  verdict=UNBOUND   mechanism=new_provider_package
+ladder ledger_ruled_out       cboe::FuturesCurve                     status=INCOMPLETE  verdict=UNBOUND   mechanism=client_seam
+ladder ledger_ruled_out       econdb::CountryProfile                 status=INCOMPLETE  verdict=UNBOUND   mechanism=engine_transport
+ladder ledger_ruled_out       econdb::ExportDestinations             status=INCOMPLETE  verdict=UNBOUND   mechanism=engine_transport
+ladder ledger_ruled_out       intrinio::OptionsSnapshots             status=INCOMPLETE  verdict=UNBOUND   mechanism=client_seam
+ladder ledger_ruled_out       seeking_alpha::ForwardEpsEstimates     status=INCOMPLETE  verdict=UNBOUND   mechanism=client_seam
+ladder ledger_ruled_out       seeking_alpha::ForwardSalesEstimates   status=INCOMPLETE  verdict=UNBOUND   mechanism=client_seam
+ladder new_provider_package   stockgrid::ShortVolume                 status=UNREVIEWED  verdict=UNBOUND   mechanism=new_provider_package
+ladder ledger_ruled_out       wsj::ETFActive                         status=UNREVIEWED  verdict=UNBOUND   mechanism=engine_transport
+ladder ledger_ruled_out       wsj::ETFGainers                        status=UNREVIEWED  verdict=UNBOUND   mechanism=engine_transport
+ladder ledger_ruled_out       wsj::ETFLosers                         status=UNREVIEWED  verdict=UNBOUND   mechanism=engine_transport
+ladder implement_missing_model yfinance::AvailableIndices             status=INCOMPLETE  verdict=UNBOUND   mechanism=engine_transport
+two_sided landed_rows_still_listed=0 known_residue_rows_present=['biztoc::WorldNews', 'yfinance::AvailableIndices'] of=2
+census_arms green=['A_landed_positive', 'C_population_identity'] red=['B_landed_negative']
+residue_ladder arms=7 arms_passed=7 arms_failed=0 failed=[] PASS=True
+
+w52_residue_ladder_exit=0

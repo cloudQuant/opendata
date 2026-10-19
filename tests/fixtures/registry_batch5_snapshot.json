@@ -9,14 +9,14 @@
       "non_base_contract_model_classes": 325
     },
     "live_counts": {
-      "all_symbols": 347,
-      "contract_model_classes_including_base": 343,
-      "non_base_contract_model_classes": 342
+      "all_symbols": 349,
+      "contract_model_classes_including_base": 345,
+      "non_base_contract_model_classes": 344
     },
     "delta_vs_adjudication": {
-      "all_symbols": 17,
-      "contract_model_classes_including_base": 17,
-      "non_base_contract_model_classes": 17
+      "all_symbols": 19,
+      "contract_model_classes_including_base": 19,
+      "non_base_contract_model_classes": 19
     },
     "attribution": {
       "removed_by_iteration2": [
@@ -337,9 +337,9 @@
     "fixed_identities": 351,
     "fixed_unbound": 33,
     "provider_model_legs": 351,
-    "all_symbols": 347,
-    "contract_model_classes_including_base": 343,
-    "non_base_contract_model_classes": 342,
+    "all_symbols": 349,
+    "contract_model_classes_including_base": 345,
+    "non_base_contract_model_classes": 344,
     "non_contract_exports": [
       {
         "name": "BlsCatalogPage",
@@ -427,19 +427,19 @@
     "ods_legs": "The 33 registered source/domain legs on the 20 legacy domains remain split by the 10 explicit legacy freshness-field mappings present in the pinned AkShare/THS mapping YAMLs; the remaining 23 are explicitly unmapped."
   },
   "counts": {
-    "deferred_domain_count": 336,
-    "deferred_source_domain_leg_count": 336,
-    "domain_count": 356,
+    "deferred_domain_count": 338,
+    "deferred_source_domain_leg_count": 338,
+    "domain_count": 358,
     "legacy_dwd_domain_count": 20,
     "legacy_source_domain_leg_count": 33,
     "mapped_ods_leg_count": 10,
-    "provider_model_identity_count": 369,
+    "provider_model_identity_count": 371,
     "queried_table_count": 30,
-    "query_semantic_domain_count": 336,
-    "registered_source_domain_leg_count": 369,
+    "query_semantic_domain_count": 338,
+    "registered_source_domain_leg_count": 371,
     "unmapped_ods_leg_count": 23,
     "warehouse_table_catalog_count": 53,
-    "descriptor_eligible_identity_count": 347,
+    "descriptor_eligible_identity_count": 349,
     "model_key_only_identity_count": 22,
     "descriptor_eligible_legacy_identity_count": 11
   },
@@ -463,6 +463,7 @@
     "cboe_index_constituent_quotes",
     "cboe_index_historical",
     "cboe_index_search",
+    "cboe_index_snapshots",
     "cboe_options_chains",
     "cftc_commitment_of_traders",
     "cftc_market_directory",
@@ -710,6 +711,7 @@
     "sec_schema_files",
     "sec_sic_search",
     "sec_symbol_map",
+    "seeking_alpha_calendar_earnings",
     "senior_loan_officer_survey",
     "sofr",
     "sonia",
@@ -851,6 +853,10 @@
       "source": "cboe"
     },
     {
+      "domain": "cboe_index_snapshots",
+      "source": "cboe"
+    },
+    {
       "domain": "cboe_options_chains",
       "source": "cboe"
     },
@@ -921,66 +927,6 @@
     {
       "domain": "currency_reference_rates",
       "source": "ecb"
-    },
-    {
-      "domain": "government_us_treasury_prices",
-      "source": "government_us"
-    },
-    {
-      "domain": "tmx_available_indices",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_bond_prices",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_calendar_earnings",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_company_news",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_equity_gainers",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_etf_countries",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_etf_historical",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_etf_holdings",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_etf_info",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_etf_search",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_etf_sectors",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_index_sectors",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_insider_trading",
-      "source": "tmx"
-    },
-    {
-      "domain": "tmx_treasury_prices",
-      "source": "tmx"
     },
     {
       "domain": "yield_curve",
@@ -1563,6 +1509,10 @@
       "source": "government_us"
     },
     {
+      "domain": "government_us_treasury_prices",
+      "source": "government_us"
+    },
+    {
       "domain": "government_us_weather_bulletin",
       "source": "government_us"
     },
@@ -1923,6 +1873,10 @@
       "source": "sec"
     },
     {
+      "domain": "seeking_alpha_calendar_earnings",
+      "source": "seeking_alpha"
+    },
+    {
       "domain": "tiingo_company_news",
       "source": "tiingo"
     },
@@ -1951,7 +1905,27 @@
       "source": "tiingo"
     },
     {
+      "domain": "tmx_available_indices",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_bond_prices",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_calendar_earnings",
+      "source": "tmx"
+    },
+    {
       "domain": "tmx_company_filings",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_company_news",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_equity_gainers",
       "source": "tmx"
     },
     {
@@ -1971,6 +1945,30 @@
       "source": "tmx"
     },
     {
+      "domain": "tmx_etf_countries",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_historical",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_holdings",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_info",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_search",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_etf_sectors",
+      "source": "tmx"
+    },
+    {
       "domain": "tmx_historical_dividends",
       "source": "tmx"
     },
@@ -1979,7 +1977,15 @@
       "source": "tmx"
     },
     {
+      "domain": "tmx_index_sectors",
+      "source": "tmx"
+    },
+    {
       "domain": "tmx_index_snapshots",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_insider_trading",
       "source": "tmx"
     },
     {
@@ -1988,6 +1994,10 @@
     },
     {
       "domain": "tmx_price_target_consensus",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_treasury_prices",
       "source": "tmx"
     },
     {
@@ -2148,6 +2158,7 @@
     "cboe_index_constituent_quotes",
     "cboe_index_historical",
     "cboe_index_search",
+    "cboe_index_snapshots",
     "cboe_options_chains",
     "cftc_commitment_of_traders",
     "cftc_market_directory",
@@ -2409,6 +2420,7 @@
     "sec_schema_files",
     "sec_sic_search",
     "sec_symbol_map",
+    "seeking_alpha_calendar_earnings",
     "senior_loan_officer_survey",
     "sofr",
     "sonia",
@@ -2959,6 +2971,16 @@
       "contract": "CboeSearchedIndex",
       "domain": "cboe_index_search",
       "model": "IndexSearch",
+      "scenario_present": true,
+      "source": "cboe",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.cboe.models.index_snapshots_public:CboeIndexSnapshotsFetcher",
+      "contract": "CboeIndexSnapshots",
+      "domain": "cboe_index_snapshots",
+      "model": "IndexSnapshots",
       "scenario_present": true,
       "source": "cboe",
       "verified": false,
@@ -5615,6 +5637,16 @@
       "canonical_ids_declared": true
     },
     {
+      "binding": "opendata.data.providers.seeking_alpha.models.calendar_earnings_public:SeekingAlphaCalendarEarningsFetcher",
+      "contract": "SeekingAlphaCalendarEarnings",
+      "domain": "seeking_alpha_calendar_earnings",
+      "model": "CalendarEarnings",
+      "scenario_present": true,
+      "source": "seeking_alpha",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
       "binding": "opendata.data.providers.ths.models.financial_statement:ThsFinancialStatementFetcher",
       "contract": "FinancialStatement",
       "domain": "financial_statement",
@@ -6405,6 +6437,7 @@
     "cboe_index_constituent_quotes",
     "cboe_index_historical",
     "cboe_index_search",
+    "cboe_index_snapshots",
     "cboe_options_chains",
     "cftc_commitment_of_traders",
     "cftc_market_directory",
@@ -6652,6 +6685,7 @@
     "sec_schema_files",
     "sec_sic_search",
     "sec_symbol_map",
+    "seeking_alpha_calendar_earnings",
     "senior_loan_officer_survey",
     "sofr",
     "sonia",
@@ -6833,6 +6867,10 @@
     },
     {
       "domain": "cboe_index_search",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_index_snapshots",
       "source": "cboe"
     },
     {
@@ -7896,6 +7934,10 @@
       "source": "sec"
     },
     {
+      "domain": "seeking_alpha_calendar_earnings",
+      "source": "seeking_alpha"
+    },
+    {
       "domain": "financial_statement",
       "source": "ths"
     },
@@ -8221,10 +8263,10 @@
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/receipt.json": "f2e3eb877e7a1ec4f6a080ebbe60137330e50b38d8d5224ac186e0950191bef3",
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/smoke.json": "224c2475432ea6fca4b2c6e1442718ae2b0b829386530bf97a5361fb79897dc9",
     "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5",
-    "opendata/data/domains.yaml": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+    "opendata/data/domains.yaml": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
     "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
     "opendata/data/mappings/ths.yaml": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418",
-    "opendata/data/models/__init__.py": "2e7c67651ebab942f02138bb56266973435ed4e1008f6e470389a535110725e3",
+    "opendata/data/models/__init__.py": "ea5071c658d8032dd10907da5fbba86f62a64699fb4c67ff7432e0c7f7380398",
     "opendata/data/models/finviz_performance.py": "1c0df807da91d8cb2fb1b5720431ce7d68bbacd3d4eb746fa2ff34ca5bf07b86",
     "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
     "opendata/data/models/yfinance_iter2.py": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
@@ -8857,5 +8899,173 @@
       "yfinance_futures_curve"
     ],
     "digest_before": "c2562d2db3d61ac81b3f1394df806d55c3e44f1e824b3ffc6c43ffd26aa160b5"
+  },
+  "wave37_wave38_census_rebase": {
+    "scope": "the two model domains waves 37 and 38 added; the legacy/measured cohort, the ods mapped+unmapped split, the warehouse table catalog, the model-key-only partition and the provider count are declared frozen below and each is re-checked against the live registry by this probe",
+    "measured_by": "from: git show HEAD:tests/fixtures/registry_batch5_snapshot.json; to: rebase_batch5_census.py + rebase_descriptor_census.py over the live registry, read after register_providers()",
+    "domains_added": [
+      "cboe_index_snapshots",
+      "seeking_alpha_calendar_earnings"
+    ],
+    "domains_removed": [],
+    "identities_added": [
+      [
+        "cboe",
+        "IndexSnapshots",
+        "cboe_index_snapshots"
+      ],
+      [
+        "seeking_alpha",
+        "CalendarEarnings",
+        "seeking_alpha_calendar_earnings"
+      ]
+    ],
+    "identities_removed": [],
+    "identity_fields_moved": 0,
+    "legs_added": [
+      [
+        "cboe",
+        "cboe_index_snapshots"
+      ],
+      [
+        "seeking_alpha",
+        "seeking_alpha_calendar_earnings"
+      ]
+    ],
+    "legs_removed": [],
+    "cohort_counts": {
+      "domain_ids": {
+        "from": 356,
+        "to": 358
+      },
+      "deferred_domain_ids": {
+        "from": 336,
+        "to": 338
+      },
+      "deferred_source_domain_legs": {
+        "from": 336,
+        "to": 338
+      },
+      "source_domain_legs": {
+        "from": 369,
+        "to": 371
+      },
+      "query_semantic_domain_ids": {
+        "from": 336,
+        "to": 338
+      },
+      "provider_model_identities": {
+        "from": 369,
+        "to": 371
+      }
+    },
+    "counts": {
+      "domain_count": {
+        "from": 356,
+        "to": 358
+      },
+      "query_semantic_domain_count": {
+        "from": 336,
+        "to": 338
+      },
+      "deferred_domain_count": {
+        "from": 336,
+        "to": 338
+      },
+      "deferred_source_domain_leg_count": {
+        "from": 336,
+        "to": 338
+      },
+      "registered_source_domain_leg_count": {
+        "from": 369,
+        "to": 371
+      },
+      "provider_model_identity_count": {
+        "from": 369,
+        "to": 371
+      },
+      "descriptor_eligible_identity_count": {
+        "from": 347,
+        "to": 349
+      },
+      "descriptor_eligible_legacy_identity_count": {
+        "from": 11,
+        "to": 11
+      },
+      "model_key_only_identity_count": {
+        "from": 22,
+        "to": 22
+      },
+      "warehouse_table_catalog_count": {
+        "from": 53,
+        "to": 53
+      },
+      "legacy_dwd_domain_count": {
+        "from": 20,
+        "to": 20
+      },
+      "legacy_source_domain_leg_count": {
+        "from": 33,
+        "to": 33
+      }
+    },
+    "frozen_verified": {
+      "legacy_legs_equal_live": true,
+      "legacy_head_count": 33,
+      "legacy_live_count": 33,
+      "warehouse_head_set_equal_live": true,
+      "warehouse_head_count": 53,
+      "warehouse_live_count": 53,
+      "legacy_dwd_domains_equal_live": true,
+      "model_key_only_head": 22,
+      "model_key_only_live": 22,
+      "registered_sources_head": 34,
+      "registered_sources_live": 34,
+      "query_semantic_added": [
+        "cboe_index_snapshots",
+        "seeking_alpha_calendar_earnings"
+      ],
+      "candidate_counts_restored_keys": [
+        "domain_specs",
+        "fixed_bound",
+        "fixed_identities",
+        "provider_model_legs"
+      ]
+    },
+    "export_census": {
+      "measured_by": "live opendata.data.models.__all__ counted with the same ContractModel subclass tests tests/test_provider_domains.py:1867-1877 uses; written to both blocks the tests cross-check (candidate_counts and iter2_census_rebase.live_counts) and the delta recomputed as live minus batch5_count_adjudication.counts",
+      "keys": {
+        "all_symbols": {
+          "from": 347,
+          "to": 349,
+          "adjudication": 330
+        },
+        "contract_model_classes_including_base": {
+          "from": 343,
+          "to": 345,
+          "adjudication": 326
+        },
+        "non_base_contract_model_classes": {
+          "from": 342,
+          "to": 344,
+          "adjudication": 325
+        }
+      },
+      "frozen_blocks_equal_head": {
+        "batch5_count_adjudication": true,
+        "batch4_baseline": true,
+        "batch5_adjudication_counts": true
+      }
+    },
+    "source_pin_delta": {
+      "entries_pinned": 31,
+      "entries_changed": 2,
+      "changed": [
+        "opendata/data/domains.yaml from=c4005525174644ed to=015edd5ca6a409f4",
+        "opendata/data/models/__init__.py from=2e7c67651ebab942 to=ea5071c658d8032d"
+      ]
+    },
+    "test_sites": "the test-side literals moved by this re-base are listed in the probe's carrier, not here: tests/test_provider_domains.py and tests/test_pipeline_jobs.py byte-pin this fixture's digest, so recording the list inside the fixture would invalidate the very digest it would have to name",
+    "why_late": "wave 37 landed cboe_index_snapshots without re-basing this fence and wave 38 adds a second domain on top of the same drift; re-basing a pin a wave moved is the house rule (waves 33 and 34 each carry a waveNN_census_rebase block, over 15 and 3 domains)"
   }
 }

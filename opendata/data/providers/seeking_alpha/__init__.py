@@ -1,1 +1,1 @@
-"""Seeking Alpha protocol-gap evidence; no provider or fetcher is declared."""
+"""seeking_alpha provider package: public unauthenticated route adapters."""

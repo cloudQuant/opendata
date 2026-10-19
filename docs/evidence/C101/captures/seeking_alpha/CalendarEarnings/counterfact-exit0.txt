@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model CalendarEarnings --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "SeekingAlphaCalendarEarningsError", "refusal_code": "SEEKING_ALPHA_CALENDAR_BAD_TEXT_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "SeekingAlphaCalendarEarningsError", "refusal_code": "SEEKING_ALPHA_CALENDAR_BAD_TEXT_FIELD", "rejected": [], "status": null}, "reason": "the calendar publishes slug as the ticker text and the contract's 'symbol' is a required StrictStr; a boolean in that cell is a corrupt body, and because pydantic would widen True to the literal text 'True', the adapter must refuse the page with SEEKING_ALPHA_CALENDAR_BAD_TEXT_FIELD rather than publish a schedule row for a ticker that the source never named; untampered control produced 4 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

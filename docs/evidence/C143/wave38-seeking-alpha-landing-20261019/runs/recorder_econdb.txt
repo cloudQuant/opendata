@@ -1,0 +1,22 @@
+# carrier for recorder_econdb
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/econdb/claims.json --output docs/evidence/C101/econdb/claims.reviewed.json --provider econdb --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over econdb's regenerated shard
+# started_utc: 2026-10-19T07:09:44+00:00
+# exit: 0
+# stdout_chars: 2208 stderr_chars: 0
+
+re-signing: dropped 6 earlier review(s) for the addressed identities
+REVIEW_SIGNED: econdb::AvailableIndicators
+REVIEW_SIGNED: econdb::EconomicIndicators
+REVIEW_SIGNED: econdb::GdpNominal
+REVIEW_SIGNED: econdb::GdpReal
+REVIEW_SIGNED: econdb::PortVolume
+REVIEW_SIGNED: econdb::YieldCurve
+REVIEW_REFUSED: econdb::CountryProfile:implementation:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; direct:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; service:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; contract:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; counterfact:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,counterfact_receipt_path_invalid,fixture_pins_missing,probe_pins_missing,source_pins_missing
+REVIEW_REFUSED: econdb::ExportDestinations:implementation:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; direct:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; service:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; contract:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; counterfact:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,counterfact_receipt_path_invalid,fixture_pins_missing,probe_pins_missing,source_pins_missing
+recorder_exit=0 signed=6 refused=2 reviews_total=6 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/econdb/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_econdb_exit=0

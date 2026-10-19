@@ -1,0 +1,55 @@
+# carrier for producer_econdb
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider econdb --output docs/evidence/C101/econdb/claims.json
+# note: five-phase producer for econdb
+# started_utc: 2026-10-19T07:08:58+00:00
+# exit: 0
+# stdout_chars: 8653 stderr_chars: 0
+
+== provider econdb: 8 inventory row(s) of 350 total ==
+AvailableIndicators implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase implementation --evidence-root docs/evidence/C101
+AvailableIndicators direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase direct --evidence-root docs/evidence/C101
+AvailableIndicators service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase service --evidence-root docs/evidence/C101
+AvailableIndicators contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase contract --evidence-root docs/evidence/C101
+AvailableIndicators counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase counterfact --evidence-root docs/evidence/C101
+CountryProfile implementation <not run> exit=- status=BLOCKED reason=no model witness
+CountryProfile direct         <not run> exit=- status=BLOCKED reason=no model witness
+CountryProfile service        <not run> exit=- status=BLOCKED reason=no model witness
+CountryProfile contract       <not run> exit=- status=BLOCKED reason=no model witness
+CountryProfile counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+EconomicIndicators implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase implementation --evidence-root docs/evidence/C101
+EconomicIndicators direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase direct --evidence-root docs/evidence/C101
+EconomicIndicators service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase service --evidence-root docs/evidence/C101
+EconomicIndicators contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase contract --evidence-root docs/evidence/C101
+EconomicIndicators counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase counterfact --evidence-root docs/evidence/C101
+ExportDestinations implementation <not run> exit=- status=BLOCKED reason=no model witness
+ExportDestinations direct         <not run> exit=- status=BLOCKED reason=no model witness
+ExportDestinations service        <not run> exit=- status=BLOCKED reason=no model witness
+ExportDestinations contract       <not run> exit=- status=BLOCKED reason=no model witness
+ExportDestinations counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+GdpNominal implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase implementation --evidence-root docs/evidence/C101
+GdpNominal direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase direct --evidence-root docs/evidence/C101
+GdpNominal service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase service --evidence-root docs/evidence/C101
+GdpNominal contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase contract --evidence-root docs/evidence/C101
+GdpNominal counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase counterfact --evidence-root docs/evidence/C101
+GdpReal implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase implementation --evidence-root docs/evidence/C101
+GdpReal direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase direct --evidence-root docs/evidence/C101
+GdpReal service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase service --evidence-root docs/evidence/C101
+GdpReal contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase contract --evidence-root docs/evidence/C101
+GdpReal counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase counterfact --evidence-root docs/evidence/C101
+PortVolume implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase implementation --evidence-root docs/evidence/C101
+PortVolume direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase direct --evidence-root docs/evidence/C101
+PortVolume service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase service --evidence-root docs/evidence/C101
+PortVolume contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase contract --evidence-root docs/evidence/C101
+PortVolume counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase counterfact --evidence-root docs/evidence/C101
+YieldCurve implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase implementation --evidence-root docs/evidence/C101
+YieldCurve direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase direct --evidence-root docs/evidence/C101
+YieldCurve service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase service --evidence-root docs/evidence/C101
+YieldCurve contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase contract --evidence-root docs/evidence/C101
+YieldCurve counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase counterfact --evidence-root docs/evidence/C101
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=338/350; provider rows covered=8 of provider inventory rows=8, of which bound now=6/338 resolvable; claims emitted=40 (30 PASS, 0 FAIL, 10 BLOCKED) = 8 row(s) x 5 phases; phases actually executed as subprocesses=40
+wrote docs/evidence/C101/econdb/claims.json
+
+---- stderr ----
+
+
+chain_producer_econdb_exit=0

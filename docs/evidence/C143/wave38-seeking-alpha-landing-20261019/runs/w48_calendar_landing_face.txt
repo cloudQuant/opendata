@@ -1,0 +1,18 @@
+# carrier for w48_calendar_landing_face.py
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w48_calendar_landing_face.py
+# claims_sha256=832268d0eb1dc8e8 identity_set=5168e1e723999312
+# reference checkout: OpenBB (output-contract comparator only)
+
+A_judge_row accepted=338 identities=350 claims=1725 row_status=OFFLINE_ACCEPTED row_phases=['contract', 'counterfact', 'direct', 'implementation', 'service'] row_missing=[] row_review=VALID row_issues=[] refused_status=INCOMPLETE status_counts={'INCOMPLETE': 7, 'OFFLINE_ACCEPTED': 338, 'UNREVIEWED': 5}
+B_refusal_partition refused=['ForwardEpsEstimates', 'ForwardSalesEstimates'] refused_count=2 bound=['CalendarEarnings'] overlap=[] union_is_inventory=True inventory_models=3 injection_moves_count=True forged_count=3
+C_capture_backing adapter_url_in_receipt=True p2_url_in_receipt=True http_chain=['200', '200', '404'] body_digests_match=True p1_records=50 p2_records=6 closure=56 total_count=56 total_pages=2 literal_next_status=404 literal_next_is_json=False
+D_guard_two_sided clean_pages=50+6 more=[True,False] symbol_bool=SEEKING_ALPHA_CALENDAR_BAD_TEXT_FIELD cursor_removed=SEEKING_ALPHA_CALENDAR_BAD_PAGINATION size_lie=SEEKING_ALPHA_CALENDAR_SIZE_MISMATCH
+E_pagination_follows_envelope two_page_rows=56 requests=2 second_query=[{'filter[selected_date]': '2026-10-20', 'page[number]': '2'}] first_query=[{'filter[selected_date]': '2026-10-20'}] relabelled_single_page_rows=50 relabelled_requests=1 cursor_is_envelope_driven=True
+F_contract_comparator standard=5 provider_own=4 reference_union=9 landed_columns=9 landed_minus_reference=[] reference_minus_landed=[] never_filled_by_adapter=['eps_consensus', 'eps_previous']
+G_phase_receipts present=5 of=5 readings={'implementation': 'claim=PASS receipt_bytes=True exit=0 receipt_phase=None', 'direct': 'claim=PASS receipt_bytes=True exit=0 receipt_phase=None', 'service': 'claim=PASS receipt_bytes=True exit=0 receipt_phase=None', 'contract': 'claim=PASS receipt_bytes=True exit=0 receipt_phase=None', 'counterfact': 'claim=PASS receipt_bytes=True exit=0 receipt_phase=None'} refusal_code=SEEKING_ALPHA_CALENDAR_BAD_TEXT_FIELD expected_equals_observed=True claim_rows_by_model={'CalendarEarnings': 5, 'ForwardEpsEstimates': 5, 'ForwardSalesEstimates': 5} refused_rows={'ForwardEpsEstimates': (5, ['BLOCKED'], ['<empty>'], ['no offline witness configured for this model row']), 'ForwardSalesEstimates': (5, ['BLOCKED'], ['<empty>'], ['no offline witness configured for this model row'])}
+H_census_bucket row=seeking_alpha::CalendarEarnings action=ABSENT_FROM_CENSUS_ROWS detail=residue=12 actions={'implement_missing_model': 1, 'ledger_ruled_out': 9, 'new_provider_package': 2} exit=1 red_arms=['B_landed_negative']
+I_authority_partition unlisted=341 absent_from_pinned_lists=[] multi_source_without_row=[] wave37_domain_listed=True this_wave_domain_listed=True reconcile=()
+J_generation identity_set=5168e1e723999312 claims_sha256=832268d0eb1dc8e8 witness_sha256=7f5e891f39c7cf93 receipt_sha256=03658660ac5f3ec4 p1_sha16=e092c87561ade151 implemented_sources=31 of=34 adapter_host=seekingalpha.com
+calendar_landing_face arms=10 arms_passed=10 arms_failed=0 failed=[] PASS=True
+
+w48_calendar_landing_face_exit=0

@@ -1,0 +1,170 @@
+{
+  "authorization_boundary": "public unauthenticated GETs only; no credentialed request was made",
+  "captured_utc_range": [
+    "2026-10-19T06:14:58+00:00",
+    "2026-10-19T06:21:49+00:00"
+  ],
+  "captured_utc_range_source": "min/max mtime of the files under sources/, read from disk in this run; these are the write times of this wave's captures, not request logs",
+  "environment": {
+    "auth": "No Authorization header, API key, account login, or Cookie request supplied.",
+    "curl_command": "/usr/bin/curl -s -L -A <UA> -D <headers> -o <body> <url> (-g added for the literal links.next probe)",
+    "follow_redirects": true,
+    "host": "Darwin, macOS, arm64",
+    "user_agent_class": "desktop browser UA, no session cookies"
+  },
+  "progressive_parameter_chain": [
+    {
+      "error_detail": "Parameter filter is required",
+      "evidence_root": "docs/evidence/C140",
+      "http": "400",
+      "step": 1,
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?start_date=2026-10-19&end_date=2026-10-26"
+    },
+    {
+      "error_detail": "Parameter filter[selected_date] is required",
+      "evidence_root": "docs/evidence/C140",
+      "http": "400",
+      "step": 2,
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bstart_date%5D=2026-10-19&filter%5Bend_date%5D=2026-10-26"
+    },
+    {
+      "error_detail": "",
+      "evidence_root": "docs/evidence/C140",
+      "http": "200",
+      "step": 3,
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bselected_date%5D=2026-10-19"
+    },
+    {
+      "error_detail": "meta.total_pages=2; links.next non-null",
+      "evidence_root": "docs/evidence/C142/wave38-seeking-alpha-calendar-20261019",
+      "http": "200",
+      "step": 4,
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bselected_date%5D=2026-10-20"
+    },
+    {
+      "error_detail": "1 record, total_count 51: the currency filter narrows the same date",
+      "evidence_root": "docs/evidence/C142/wave38-seeking-alpha-calendar-20261019",
+      "http": "200",
+      "step": 5,
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bselected_date%5D=2026-10-20&filter%5Bwith_rating%5D=false&filter%5Bcurrency%5D=USD&page%5Bnumber%5D=2"
+    },
+    {
+      "error_detail": "6 records; links.next null; 50+6==total_count",
+      "evidence_root": "docs/evidence/C142/wave38-seeking-alpha-calendar-20261019",
+      "http": "200",
+      "step": 4,
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bselected_date%5D=2026-10-20&page%5Bnumber%5D=2"
+    },
+    {
+      "error_detail": "text/html; links.next is not resolvable against the site root",
+      "evidence_root": "docs/evidence/C142/wave38-seeking-alpha-calendar-20261019",
+      "http": "404",
+      "step": 7,
+      "url": "https://seekingalpha.com/earnings_calendar/tickers?filter[selected_date]=2026-10-20&page[number]=2"
+    }
+  ],
+  "receipt_version": 1,
+  "review": "wave-38 access round: the route, its required filter, and its page cursor are all answered by the source itself; links.next is proven unresolvable so the adapter constructs page[number] rather than following the site's link",
+  "source_captures": [
+    {
+      "body_bytes": 6832,
+      "body_file": "sources/sa-calendar-full-params.json",
+      "body_sha256": "1132135ad406f5b07450b3e977c4b9ed37fc71ad1adae84f3730aba7a7acd082",
+      "envelope": {
+        "json": true,
+        "links_next": null,
+        "meta_size": 27,
+        "meta_total_count": 27,
+        "meta_total_pages": 1,
+        "records": 27
+      },
+      "headers_file": "sources/sa-calendar-full-params.headers",
+      "http": "200",
+      "id": "sa-calendar-full-params",
+      "status_line_chain": [
+        "HTTP/2 200 "
+      ],
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bselected_date%5D=2026-10-19&filter%5Bwith_rating%5D=false&filter%5Bcurrency%5D=USD",
+      "use": "seeking_alpha::CalendarEarnings route exactly as this repo's adapter calls it; unauthenticated; 27 records, meta.total_pages=1"
+    },
+    {
+      "body_bytes": 12389,
+      "body_file": "sources/sa-calendar-second-date.json",
+      "body_sha256": "e092c87561ade151254912686f519bcc92d72417a07b2575c5dc297d4d3bdf18",
+      "envelope": {
+        "json": true,
+        "links_next": "/earnings_calendar/tickers?filter[selected_date]=2026-10-20&page[number]=2",
+        "meta_size": 50,
+        "meta_total_count": 56,
+        "meta_total_pages": 2,
+        "records": 50
+      },
+      "headers_file": "sources/sa-calendar-second-date.headers",
+      "http": "200",
+      "id": "sa-calendar-second-date",
+      "status_line_chain": [
+        "HTTP/2 200 "
+      ],
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bselected_date%5D=2026-10-20",
+      "use": "a date whose count exceeds one page: meta size=50 total_count=56 total_pages=2 and a non-null links.next; this is what proves the route paginates"
+    },
+    {
+      "body_bytes": 1645,
+      "body_file": "sources/sa-calendar-page2-api-form.json",
+      "body_sha256": "ef0ca695afd19f1ae8efd9ed3a36bf80582fd3e87ce5c4545c6cbadc3e6f349a",
+      "envelope": {
+        "json": true,
+        "links_next": null,
+        "meta_size": 6,
+        "meta_total_count": 56,
+        "meta_total_pages": 2,
+        "records": 6
+      },
+      "headers_file": "sources/sa-calendar-page2-api-form.headers",
+      "http": "200",
+      "id": "sa-calendar-page2-api-form",
+      "status_line_chain": [
+        "HTTP/2 200 "
+      ],
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bselected_date%5D=2026-10-20&page%5Bnumber%5D=2",
+      "use": "page 2 built on the API URL: 6 records, links.next null, and 50+6 equals total_count 56, so the adapter's page cursor is complete rather than truncated"
+    },
+    {
+      "body_bytes": 462,
+      "body_file": "sources/sa-calendar-page2-full-params.json",
+      "body_sha256": "e44c612b0094d130ed5ce2f0a981353178776a0c67918ad708fe91bd308f66a6",
+      "envelope": {
+        "json": true,
+        "links_next": null,
+        "meta_size": 1,
+        "meta_total_count": 51,
+        "meta_total_pages": 2,
+        "records": 1
+      },
+      "headers_file": "sources/sa-calendar-page2-full-params.headers",
+      "http": "200",
+      "id": "sa-calendar-page2-full-params",
+      "status_line_chain": [
+        "HTTP/2 200 "
+      ],
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bselected_date%5D=2026-10-20&filter%5Bwith_rating%5D=false&filter%5Bcurrency%5D=USD&page%5Bnumber%5D=2",
+      "use": "the same date and page sent with the upstream reference's extra filters: meta.total_count falls 56 -> 51 and page 2 holds 1 record instead of 6, so filter[currency]=USD silently narrows the US calendar; this repo's adapter does NOT send with_rating or currency, and this capture is the measured reason"
+    },
+    {
+      "body_bytes": 6654,
+      "body_file": "sources/sa-calendar-links-next-literal.out",
+      "body_sha256": "19cdfb336f2407e55c0053bc79583f018e060e536fd7caff94aaf373b381c927",
+      "envelope": {
+        "json": false
+      },
+      "headers_file": "sources/sa-calendar-links-next-literal.headers",
+      "http": "404",
+      "id": "sa-calendar-links-next-literal",
+      "status_line_chain": [
+        "HTTP/2 404 "
+      ],
+      "url": "https://seekingalpha.com/earnings_calendar/tickers?filter[selected_date]=2026-10-20&page[number]=2",
+      "use": "the published links.next resolved literally against the site root: HTTP/2 404 with text/html, so links.next is NOT a fetchable API address and the adapter must build page[number] itself; sent with curl -g because the link carries raw brackets"
+    }
+  ]
+}

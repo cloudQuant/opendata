@@ -1,0 +1,15 @@
+# carrier for w44_capture_receipt.py
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C142/wave38-seeking-alpha-calendar-20261019/probes/w44_capture_receipt.py
+# started_utc: 2026-10-19T06:24:27+00:00
+
+capture sa-calendar-full-params http=200 chain=['HTTP/2 200 '] bytes=6832 sha16=1132135ad406f5b0 envelope={'json': True, 'records': 27, 'meta_size': 27, 'meta_total_count': 27, 'meta_total_pages': 1, 'links_next': None}
+capture sa-calendar-second-date http=200 chain=['HTTP/2 200 '] bytes=12389 sha16=e092c87561ade151 envelope={'json': True, 'records': 50, 'meta_size': 50, 'meta_total_count': 56, 'meta_total_pages': 2, 'links_next': '/earnings_calendar/tickers?filter[selected_date]=2026-10-20&page[number]=2'}
+capture sa-calendar-page2-api-form http=200 chain=['HTTP/2 200 '] bytes=1645 sha16=ef0ca695afd19f1a envelope={'json': True, 'records': 6, 'meta_size': 6, 'meta_total_count': 56, 'meta_total_pages': 2, 'links_next': None}
+capture sa-calendar-page2-full-params http=200 chain=['HTTP/2 200 '] bytes=462 sha16=e44c612b0094d130 envelope={'json': True, 'records': 1, 'meta_size': 1, 'meta_total_count': 51, 'meta_total_pages': 2, 'links_next': None}
+capture sa-calendar-links-next-literal http=404 chain=['HTTP/2 404 '] bytes=6654 sha16=19cdfb336f2407e5 envelope={'json': False}
+currency_filter_narrowing filtered_total_count=51 unfiltered_total_count=56 filtered_p2_records=1 unfiltered_p2_records=6 narrows=True
+capture_range=['2026-10-19T06:14:58+00:00', '2026-10-19T06:21:49+00:00']
+pagination_closure p1_plus_p2=56 total_count=56 closes=True
+capture_receipt_face captures=5 of=5 arms=5 arms_passed=5 failed=[] receipt=docs/evidence/C142/wave38-seeking-alpha-calendar-20261019/capture-receipt.json receipt_sha256=03658660ac5f3ec4
+
+w44_capture_receipt_exit=0

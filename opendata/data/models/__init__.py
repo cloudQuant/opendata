@@ -379,6 +379,7 @@ from opendata.data.models.sec_iter2 import (
     SecSicCode,
     SecSymbolMapRecord,
 )
+from opendata.data.models.seeking_alpha import SeekingAlphaCalendarEarnings
 from opendata.data.models.tiingo import (
     TiingoCompanyNews,
     TiingoCryptoHistorical,
@@ -627,6 +628,7 @@ __all__ = [
     "SecSchemaFile",
     "SecSicCode",
     "SecSymbolMapRecord",
+    "SeekingAlphaCalendarEarnings",
     "SP500Multiples",
     "SdmxGroupContext",
     "TiingoCryptoHistorical",

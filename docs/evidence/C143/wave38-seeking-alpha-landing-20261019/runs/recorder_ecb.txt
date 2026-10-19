@@ -1,0 +1,17 @@
+# carrier for recorder_ecb
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/ecb/claims.json --output docs/evidence/C101/ecb/claims.reviewed.json --provider ecb --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over ecb's regenerated shard
+# started_utc: 2026-10-19T07:08:58+00:00
+# exit: 0
+# stdout_chars: 331 stderr_chars: 0
+
+re-signing: dropped 3 earlier review(s) for the addressed identities
+REVIEW_SIGNED: ecb::BalanceOfPayments
+REVIEW_SIGNED: ecb::CurrencyReferenceRates
+REVIEW_SIGNED: ecb::YieldCurve
+recorder_exit=0 signed=3 refused=0 reviews_total=3 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/ecb/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_ecb_exit=0

@@ -4719,3 +4719,14 @@ domains:
     filter_dims: ["date", "symbol", "category", "transform"]
     storage_mode: "transient"
     permissions: ["query"]
+
+  seeking_alpha_calendar_earnings:
+    display_name: "SeekingAlpha财报日历"
+    rest_path: "market/seeking-alpha/calendar-earnings"
+    contract: "SeekingAlphaCalendarEarnings"
+    temporal_kind: "event"
+    time_field: "report_date"
+    natural_key: ["symbol", "report_date"]
+    filter_dims: ["symbol", "report_date", "reporting_time"]
+    storage_mode: "transient"
+    permissions: ["query"]

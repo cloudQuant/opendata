@@ -1,0 +1,165 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/seeking_alpha/captures/seeking_alpha/CalendarEarnings/implementation-exit0.txt",
+    "sha256": "38f68728f906e15150ed93dc0ee809a83663475e94fe90770ce8e1188dcdf8d3",
+    "size_bytes": 407,
+    "stdout_excerpt": "implementation: registered domain=seeking_alpha_calendar_earnings row_model=SeekingAlphaCalendarEarnings verified=False transport=offline-only\nVERDICT=PASS\n"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model CalendarEarnings --phase implementation --evidence-root docs/evidence/C101/seeking_alpha",
+    "executed_at_utc": "2026-10-19T06:38:22.287461+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "7f1ddda87f6c0308ee4ad295379395207c3506b4c0a28498181332e87265b781",
+          "before_sha256": "7f1ddda87f6c0308ee4ad295379395207c3506b4c0a28498181332e87265b781",
+          "path": "opendata/data/models/seeking_alpha.py"
+        },
+        {
+          "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+          "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:7f1ddda87f6c0308ee4ad295379395207c3506b4c0a28498181332e87265b781",
+      "fixture": [
+        {
+          "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "c3703f165c1d43cd22691ffc294d496198b50f05f837c98fe6a57288bbd01ced",
+          "before_sha256": "c3703f165c1d43cd22691ffc294d496198b50f05f837c98fe6a57288bbd01ced",
+          "path": "scripts/quality/iter2_witnesses/seeking_alpha.py"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "c3703f165c1d43cd22691ffc294d496198b50f05f837c98fe6a57288bbd01ced",
+          "before_sha256": "c3703f165c1d43cd22691ffc294d496198b50f05f837c98fe6a57288bbd01ced",
+          "path": "scripts/quality/iter2_witnesses/seeking_alpha.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+          "before_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "ec2578dbbca1678026dd31c9e6ac28d9c3570c84a5f94a318995e0603577068b",
+          "before_sha256": "ec2578dbbca1678026dd31c9e6ac28d9c3570c84a5f94a318995e0603577068b",
+          "path": "opendata/data/providers/seeking_alpha/registration.py"
+        },
+        {
+          "after_sha256": "aeda2ca4c7be79b6c1e611973cde472c9f837e2977a14e05e54d4c97c1397966",
+          "before_sha256": "aeda2ca4c7be79b6c1e611973cde472c9f837e2977a14e05e54d4c97c1397966",
+          "path": "opendata/data/providers/seeking_alpha/provider.py"
+        },
+        {
+          "after_sha256": "b892f2d89e0202d5c181faae8ef322676876d05c075a37e7bfd00ab051c33b91",
+          "before_sha256": "b892f2d89e0202d5c181faae8ef322676876d05c075a37e7bfd00ab051c33b91",
+          "path": "opendata/data/providers/seeking_alpha/models/calendar_earnings_public.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "seeking_alpha::CalendarEarnings",
+  "phase": "implementation",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "7f1ddda87f6c0308ee4ad295379395207c3506b4c0a28498181332e87265b781",
+        "before_sha256": "7f1ddda87f6c0308ee4ad295379395207c3506b4c0a28498181332e87265b781",
+        "path": "opendata/data/models/seeking_alpha.py"
+      },
+      {
+        "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+        "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:7f1ddda87f6c0308ee4ad295379395207c3506b4c0a28498181332e87265b781",
+    "fixture": [
+      {
+        "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "c3703f165c1d43cd22691ffc294d496198b50f05f837c98fe6a57288bbd01ced",
+        "before_sha256": "c3703f165c1d43cd22691ffc294d496198b50f05f837c98fe6a57288bbd01ced",
+        "path": "scripts/quality/iter2_witnesses/seeking_alpha.py"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "c3703f165c1d43cd22691ffc294d496198b50f05f837c98fe6a57288bbd01ced",
+        "before_sha256": "c3703f165c1d43cd22691ffc294d496198b50f05f837c98fe6a57288bbd01ced",
+        "path": "scripts/quality/iter2_witnesses/seeking_alpha.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+        "before_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "ec2578dbbca1678026dd31c9e6ac28d9c3570c84a5f94a318995e0603577068b",
+        "before_sha256": "ec2578dbbca1678026dd31c9e6ac28d9c3570c84a5f94a318995e0603577068b",
+        "path": "opendata/data/providers/seeking_alpha/registration.py"
+      },
+      {
+        "after_sha256": "aeda2ca4c7be79b6c1e611973cde472c9f837e2977a14e05e54d4c97c1397966",
+        "before_sha256": "aeda2ca4c7be79b6c1e611973cde472c9f837e2977a14e05e54d4c97c1397966",
+        "path": "opendata/data/providers/seeking_alpha/provider.py"
+      },
+      {
+        "after_sha256": "b892f2d89e0202d5c181faae8ef322676876d05c075a37e7bfd00ab051c33b91",
+        "before_sha256": "b892f2d89e0202d5c181faae8ef322676876d05c075a37e7bfd00ab051c33b91",
+        "path": "opendata/data/providers/seeking_alpha/models/calendar_earnings_public.py"
+      }
+    ]
+  },
+  "provider": "seeking_alpha",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-seeking_alpha-CalendarEarnings",
+  "upstream_model": "CalendarEarnings"
+}

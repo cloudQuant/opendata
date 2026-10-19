@@ -1,0 +1,89 @@
+{
+  "responses": [
+    {
+      "content_type": "application/json",
+      "method": "GET",
+      "sequence": [
+        {
+          "data": [
+            {
+              "attributes": {
+                "exchange": "NASDAQ",
+                "marketcap": 1982039200000.0,
+                "name": "Space Exploration Technologies Corp.",
+                "release_date": "2026-10-20T00:00:00.000-04:00",
+                "release_time": "Post-Market",
+                "sector_id": 50,
+                "slug": "SPCX"
+              },
+              "id": "554436",
+              "type": "earning_calendar_ticker"
+            },
+            {
+              "attributes": {
+                "exchange": "NASDAQ",
+                "marketcap": 315598600.0,
+                "name": "FVCBankcorp, Inc.",
+                "release_date": "2026-10-20T00:00:00.000-04:00",
+                "release_time": "Post-Market",
+                "sector_id": 40,
+                "slug": "FVCB"
+              },
+              "id": "118621",
+              "type": "earning_calendar_ticker"
+            },
+            {
+              "attributes": {
+                "exchange": "NYSE",
+                "marketcap": 200000000000.0,
+                "name": "General Electric Co.",
+                "release_date": "2026-10-20T00:00:00.000-04:00",
+                "release_time": "Post-Market",
+                "sector_id": 20,
+                "slug": "GE"
+              },
+              "id": "401020",
+              "type": "earning_calendar_ticker"
+            }
+          ],
+          "links": {
+            "next": "/earnings_calendar/tickers?filter[selected_date]=2026-10-20&page[number]=2",
+            "self": "/earnings_calendar/tickers"
+          },
+          "meta": {
+            "size": 3,
+            "total_count": 4,
+            "total_pages": 2
+          }
+        },
+        {
+          "data": [
+            {
+              "attributes": {
+                "exchange": "TSX",
+                "marketcap": 150000000.0,
+                "name": "Loree Ltd.",
+                "release_date": "2026-10-20T00:00:00.000-04:00",
+                "release_time": "Post-Market",
+                "sector_id": 30,
+                "slug": "LOR:CA"
+              },
+              "id": "330001",
+              "type": "earning_calendar_ticker"
+            }
+          ],
+          "links": {
+            "next": null,
+            "self": "/earnings_calendar/tickers"
+          },
+          "meta": {
+            "size": 1,
+            "total_count": 4,
+            "total_pages": 2
+          }
+        }
+      ],
+      "url_contains": "earnings_calendar/tickers"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+# carrier for producer_tradingeconomics
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider tradingeconomics --output docs/evidence/C101/tradingeconomics/claims.json
+# note: five-phase producer for tradingeconomics
+# started_utc: 2026-10-19T07:40:51+00:00
+# exit: 0
+# stdout_chars: 1754 stderr_chars: 0
+
+== provider tradingeconomics: 1 inventory row(s) of 350 total ==
+EconomicCalendar implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradingeconomics --model EconomicCalendar --phase implementation --evidence-root docs/evidence/C101
+EconomicCalendar direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradingeconomics --model EconomicCalendar --phase direct --evidence-root docs/evidence/C101
+EconomicCalendar service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradingeconomics --model EconomicCalendar --phase service --evidence-root docs/evidence/C101
+EconomicCalendar contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradingeconomics --model EconomicCalendar --phase contract --evidence-root docs/evidence/C101
+EconomicCalendar counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradingeconomics --model EconomicCalendar --phase counterfact --evidence-root docs/evidence/C101
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=338/350; provider rows covered=1 of provider inventory rows=1, of which bound now=1/338 resolvable; claims emitted=5 (5 PASS, 0 FAIL, 0 BLOCKED) = 1 row(s) x 5 phases; phases actually executed as subprocesses=5
+wrote docs/evidence/C101/tradingeconomics/claims.json
+
+---- stderr ----
+
+
+chain_producer_tradingeconomics_exit=0

@@ -34,6 +34,9 @@ from opendata.data.providers.multpl.provider import PROVIDER as MULTPL_PROVIDER
 from opendata.data.providers.nasdaq.provider import PROVIDER as NASDAQ_PROVIDER
 from opendata.data.providers.oecd.provider import PROVIDER as OECD_PROVIDER
 from opendata.data.providers.sec.provider import PROVIDER as SEC_PROVIDER
+from opendata.data.providers.seeking_alpha.provider import (
+    PROVIDER as SEEKING_ALPHA_PROVIDER,
+)
 from opendata.data.providers.ths.provider import PROVIDER as THS_PROVIDER
 from opendata.data.providers.tiingo.provider import PROVIDER as TIINGO_PROVIDER
 from opendata.data.providers.tmx.provider import PROVIDER as TMX_PROVIDER
@@ -83,7 +86,7 @@ _UPSTREAM_PROVIDERS: tuple[Provider, ...] = (
     FMP_PROVIDER,
     INTRINIO_PROVIDER,
     MULTPL_PROVIDER,
-    _reserved_provider("seeking_alpha"),
+    SEEKING_ALPHA_PROVIDER,
     TIINGO_PROVIDER,
     TRADINGECONOMICS_PROVIDER,
     BENZINGA_PROVIDER,
