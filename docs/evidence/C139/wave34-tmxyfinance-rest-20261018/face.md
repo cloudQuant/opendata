@@ -180,3 +180,24 @@ timeseries/{symbol}`，`type=<prefix><Measure>` 列表 + period1/period2），�
   `w36_dir_mode_gitleaks_runs_dir.txt` 不在**它们自己那次**运行的读取集合里（一个扫描读不到自己尚未写出的字节），
   所以它们的覆盖由"对下一个提交再跑 `gitleaks git --log-opts=-1 --config .gitleaks.toml`"闭合，
   命令与配置就写在这里，读者可原样重跑；我不会把"扫描"说成覆盖了它自身。
+
+### 13.8 目标级审计（prompt → artifact 对照，从盘上量，不用记忆）
+
+把目标的三句要求逐条落到可复核的读数上（本节的每个数都是这一回合用 `docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv` + `docs/evidence/C101/claims.merged.json` 现跑的 `iter2_model_evidence.build_report` 与文件系统计数，不是引用的旧文）：
+
+1. **"逐条验收，验收必须以可复算证据面（判定探针 + counterfact 反例）落档，禁止口头判定"** —— 已验收 **336/350** 行：
+   * 判定器自己报 `missing_phases=0`（336 行全有五相），并且我**独立于判定器**又核了磁盘：`docs/evidence/C101/receipts/<provider>/<model>/{implementation,direct,service,contract,counterfact}.json` 的缺档行数 **0**；
+   * 每行的 `counterfact.json` 里 `refusal` 或 `tamper` 记号缺失的行数 **0**。也就是说"有反例"不是分类口号，而是逐档读出来的。
+   * 复算入口就是本节用的两条：出货判定器 + `receipts` 目录计数。
+2. **"32 个 provider 的本仓自研实现"——总体口径有两个，且它们不是同一个集合**，这条之前没人写清：
+   * 按 **350 行任务清单**：清单覆盖 **32 个 provider 值**，其中 **biztoc、stockgrid 在仓库里没有 provider 包目录**（各 1 行，就是那两行 `new_provider_package`），所以按这个口径实现面是 **30/32**；
+   * 按 **仓库 provider 目录**：盘上 **32 个包**，其中 **akshare（12 个 models/*.py，包内 341 个 .py）与 ths（13 个 models/*.py，26 个 .py）在 350 行清单里一行都没有**（`grep -c akshare 模型级任务清单.csv = 0`，`ths` 同样 0），所以按这个口径**逐条验收**这两家是不可达的——它们的验收只在迭代1 的遗留证据里（`docs/evidence/C65/legacy-per-table-review.csv` 提到 akshare 3 处），不在本目标的平面 1 面上。
+   * 两个总体的并集是 **34 个 provider 名**。这条不是"我多做了两个"，而是**范围口径必须写死**：说"32 个全部实现且逐条验收"在这两个口径下都不成立。
+3. **未达成的部分（不粉饰），14 行的分解是 6 + 5 + 2 + 1**：
+   * **6 行** `no_capture`（seeking_alpha ×3、wsj ×3）：既没有任何捕获，也没有取数站点（`wsj_network_sites hits=0 / py_files=2 / models_py_files=0`，`seeking_alpha` 同型），本仓离线不能重推——需要一次**授权的网络访问**并把结果按 `*.headers` 落档；
+   * **5 行** `model_contract_page`（cboe ×2、econdb ×2、intrinio ×1）：只有 OpenBB/intrinio 文档页捕获，账本理由是可引的 `NOT_DECLARABLE/NOT_DECLARED`（11/11 cite 在 `:21-:31`）——需要 owner 裁决"文档页捕获算不算拒绝证据"，或同样给一次授权访问；
+   * **2 行** `new_provider_package`（biztoc::WorldNews、stockgrid::ShortVolume）：盘上无包目录，前置是 rights 注册（`RIGHTS2-biztoc` / `RIGHTS2-stockgrid`，owner 是 cloudQuant，不是我能签的合规声明）；
+   * **1 行** `implement_missing_model`（yfinance::AvailableIndices）：0 端点，上游是常量字典转置，现有验收机制要求一个篡改可达的请求站点——需要"参考输入"式的验收机制决定。
+4. **子代理约束**：实测 34 次派发 > 上限 30（§13.4 第 7 条给了复算口径），且本目标后半程我没有再派发——这条是既成事实的记录，不是达成项。
+
+结论：目标**未完成**。已达成的是"336 行逐条有可复算五相 + 反例"与"14 行未达成部分现在有了逐行证据等级"；未完成的是那 14 行（需要 owner 裁决与一次授权的网络/权利动作）与范围口径 2 里那两家（akshare/ths）在本目标平面上无行可验。
