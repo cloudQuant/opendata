@@ -52,7 +52,7 @@
 
 ## 8. 本波没落什么（带分母）
 
-残差 **15**：`ledger_ruled_out` 11（其中 3 条理由不是证据，见 §5）、`new_provider_package` 2（biztoc::WorldNews、stockgrid::ShortVolume：`globbed=0`，整包落地 + `catalog.py` 全树改动；rights 侧不是闸门——`openbb_inventory_plane` 的 RIGHTS LINK 只在 `if served:` 触发，注册是 `docs/data-rights-registry.md` 新增编号行 + `provider-inventory.yaml` 的 `rights_rows` + CSV 两行的 `rights_status/rights_evidence_ref`，责任人见 `RIGHTS2-biztoc`/`RIGHTS2-stockgrid`）、`implement_missing_model` 1（`yfinance::AvailableIndices`，0 端点，见 §4）、`shard_entry_needs_harness` 1（`yfinance::KeyMetrics`，SDK 版本决策，见 §3）。provider 覆盖 **28/32**，零验收仍是 biztoc / seeking_alpha / stockgrid / wsj。`witnessable_today=0`。
+残差 **15**：`ledger_ruled_out` 11（其中 3 条理由不是证据，见 §5。两处数字都属于 wave-34 那一代：残差现已是 14，而 §13 用 `.headers` 捕获这把尺子把那"3 条"改测成 `no_capture=6`（seeking_alpha 三行与 wsj 三行），并把另外 5 行定级为 `model_contract_page`（只有 OpenBB/intrinio 文档页捕获，没有 provider 端点响应），见 §13.2 与 §13.4 第 8 条——原读数保留，不静默覆盖）、`new_provider_package` 2（biztoc::WorldNews、stockgrid::ShortVolume：`globbed=0`，整包落地 + `catalog.py` 全树改动；rights 侧不是闸门——`openbb_inventory_plane` 的 RIGHTS LINK 只在 `if served:` 触发，注册是 `docs/data-rights-registry.md` 新增编号行 + `provider-inventory.yaml` 的 `rights_rows` + CSV 两行的 `rights_status/rights_evidence_ref`，责任人见 `RIGHTS2-biztoc`/`RIGHTS2-stockgrid`）、`implement_missing_model` 1（`yfinance::AvailableIndices`，0 端点，见 §4）、`shard_entry_needs_harness` 1（`yfinance::KeyMetrics`，SDK 版本决策，见 §3）。provider 覆盖 **28/32**，零验收仍是 biztoc / seeking_alpha / stockgrid / wsj。`witnessable_today=0`。
 
 ## 9. 下一波预测判据
 
@@ -102,3 +102,65 @@ timeseries/{symbol}`，`type=<prefix><Measure>` 列表 + period1/period2），�
    （同一形态的宽 except 会把仪器拒绝伪装成产品错误码），本波不改那 12 处，只把它记成待裁决的仪器缺陷。
 4. 上一轮的两条自捕（链与磁盘伪造抢树、复用驱动覆盖载档）在本轮同样被规避：这次重跑写的是
    **新载档名** `w35_keymetrics_rerun.txt`，且对照臂全在 /tmp 与内存里，被钉路径零写入。
+
+## 13. wave-36 拒绝证据面：残差 14 行的每一条 exclusion  rests 在哪一类证据上
+
+一句话：目标是"禁止口头判定"，而平面 1 停在 336/350 时有 14 行是被**某样东西**排除的；此前我对那 14 行能说出口的最强陈述是从 provider 代码里抄来的散文。本面把它换成逐行读数：每行的拒绝理由**落在哪一类证据上**，以及这一类证据本仓能不能在离线里重算。本步不改产品代码、不动 `domains.yaml`、不启动重签。
+
+### 13.1 仪器与代际对账
+
+`probes/w35_refusal_evidence_face.py`（809 行，37033 B，sha16 `fef0f435dba34d89`）；载档 `runs/w35_refusal_evidence_face.txt`（38 行，7624 B，sha16 `2eeb65a642409c0b`，行号即该文件行号）。判定不手抄：平面 1 走 `scripts.quality.iter2_model_evidence.build_report`（`:5`），残差行集走出货 `residue_axis_census.py` 的子进程（`:6-7`），账本理由走出货 `incomplete_row_guard_check._ruled_out`（`:21-31`）。身份集 `5168e1e723999312` 与上数代同（`:6`），`claims_sha256=9ebbe59602b07f5b`（载档头 `:3`）。九臂全绿 `:36`，出口 `w35_refusal_evidence_face_exit=0` `:38`。
+
+### 13.2 新事实：本仓有捕获格式，但 11 行 ruled_out 里没有一行落在 provider 端点捕获上
+
+* `headers_census total=88 codes={'200': 71, '301': 1, '307': 1, '403': 7, '404': 6, 'NO_STATUS_LINE': 2} providers_with_captures=['cboe','econdb','finviz','fmp','fred','intrinio','yfinance'] classes={'contract_page': 31, 'no_status_line': 2, 'provider_surface': 42, 'server_unrecorded': 13} unattributed=49`（`:12`）。格式是 `docs/evidence` 下 10 个目录里的 `*.headers`，首行是线格式状态行（`HTTP/2 200`）。分类有两个通道：**manifest 里记录的请求 URL**（`manifest_named=19/88`，索引条目 38 个，`:35`）优先，其次是 `server:` 头；`server` 缺失时不猜，读成 `server_unrecorded=13`。归属到 provider 名的只有 39 档，49 档归不到任何 provider 名下，前缀全集在 `:13`（`{'openbb': 18, 'obb': 6, 'uncomtrade': 5, 'sofrai': 4, 'fed': 3, 'pd': 3, 'sofr': 2, 'treasury': 2, …}`），且 `unattributed_sum=49 == unattributed=49` 是 E 臂判据（前缀表必须是全集）。
+* **逐行归属（arm G，tier 而不是二分）**：`ruled_out_cited count=11 population=11 tiers={'model_contract_page': 5, 'no_capture': 6} no_capture_rows=[seeking_alpha::CalendarEarnings, seeking_alpha::ForwardEpsEstimates, seeking_alpha::ForwardSalesEstimates, wsj::ETFActive, wsj::ETFGainers, wsj::ETFLosers] no_capture=6`（`:32`）。也就是说：**11 行里没有一行有 `provider_surface` 捕获**——5 行的模型名捕获全是 contract page（`openbb-*` 由 `server: GitHub.com` 定类，intrinio 那一行由 manifest 的 URL 通道定类——它的 `basis_sources=['manifest_url']`（`:25`），URL 与被试自述用途都在 `docs/evidence/C100/remaining-protocol-review/market-six/capture-receipt.json` 与 `…/intrinio-legacy-five-independent/official-captures.json` 里，读者可对文件复算），另外 6 行在模型级与 provider 级都是 0 档。逐行读数在 `:21-:31`，每行带 `basis_sources`（`manifest_url` 还是 `server_header`）、`model_captures`、`model_classes`、`provider_captures`、`basis_codes`。
+* 那 5 行的 receipt 自述用途是可读的：`docs/evidence/C100/remaining-protocol-review/market-six/capture-receipt.json` 的 `source_captures[]` 每条含 `url / http / body_file / headers_file / use`，其中 OptionsSnapshots 与 AvailableIndices 两条的 `use` 字面是 "Public ODP v4 row schema only"。这条不是我推断的措辞，是仪器读到的字段名，读者可以对该文件 `grep` 复算。
+* `wsj_capture_facing headers_named_wsj=0 path_named_wsj=0 code_401_captures=0 code_4xx_captures=13`（`:14`）：88 档里**没有一档 401**，而 4xx 有 13 档；99253 档证据文件里路径含 wsj 的是 **0**（分母在 `:15`）。
+
+这**更正**了我上一代的三句口头话：(a) §5 把"理由不是证据"只判给三条 wsj，实测那一组是 6 行（seeking_alpha 三行同型）；(b) §5 曾把 `cboe::FuturesCurve` 与 `seeking_alpha::CalendarEarnings` 一起归为 class-a"可测"，捕获轴把前者读到 `model_contract_page`（`:21`）、后者读到 `no_capture`（`:26`），"可测"不等于"有捕获"；(c) 本面自己前两代的 `capture_backed=5` 说法**已撤回**——那是 provider 名匹配的结果，把 cboe 网站 200、econdb 的 403 guide 也算成"该行有捕获"，见 §13.4 第 8 条。
+
+### 13.3 散文侧的角色普查（零要能被读成"这里没有"，而不是"我没搜到"）
+
+`prose_census walked=99253 readable_text=91101 self_excluded=83 providers_on_disk=32 http_protocol_string_files=271 co_naming_lines=94 co_naming_files=65`（`:15`）+ `co_naming_roles={'ledger_prose_echo': 3, 'lint_source_echo': 12, 'multi_provider_dump': 55, 'prior_assessment': 2, 'tamper_recipe': 1, 'test_log': 9, 'this_wave_artifact': 12}`（`:16`）。`unclassified` 不在表里（=0），E 臂的判据之一就是它：行级普查（同一行同时含 wsj 与 401）必须**全部**归到已命名角色，否则那个"零捕获"可能只是过滤器把证据筛掉了。角色里两档值得单独读：`tamper_recipe=1` 是 `docs/evidence/C100/acceptance-quality-preservation/mechanical-format/audit_mechanical_format.py` 的 `string_mutant = wsj_bytes.replace(b"HTTP 401", b"HTTP 402", 1)`——前波把这句散文当**格式篡改靶**测过，而不是当访问事实测过；`this_wave_artifact=12` 是本面自己的探针/载档引用了自己搜索的字面串，单列角色以免把"我写了这句话"算成"存在载体"。
+
+### 13.4 撤回与更正留痕（八条）
+
+1. **总体过滤造假零**（本面最重要的一条）：第二版 arm E 只看 `.md/.txt/.json/.csv`，读到 `status_line_files=0`，我差点据此写"本仓不产响应捕获"。本仓的捕获格式是 `*.headers`，88 档、含 13 个 4xx。**该结论撤回**，E 臂改成"格式存在(88) + 4xx 存在(13) + 401 为 0 + wsj 为 0"四件一起判，零才有分母。
+2. **正则假设 HTTP/1.x**：`HTTP/1\.[01][^A-Za-z0-9]{0,3}[0-9]{3}` 的中间类允许跨换行，匹配到 ruff 源码快照里的 `HTTP/1.1"\n297`（297 是**行号**不是状态码），读 2 档；改成 `^HTTP/(?P<version>[0-9.]+)[ \t]+(?P<code>[1-5][0-9]{2})\b` 后那两档归零、真捕获浮出。版本号当变量读，不再假设 1.1。
+3. **手打身份集错了 5/11**：第一版 arm G 的 provider/model 列表里 `cboe::CompanyDeals`、`cboe::KeyRates`、`econdb::AvailableIndicators`、`econdb::ReferenceDatasets`、`intrinio::News`、`seeking_alpha::ForwardEps/ForwardSales`（短名）等 5 行**不在** census 的 `ledger_ruled_out` 集合里，红在读数 `cited=8 expected=11` 上——是我的列表错，不是判定器错。行集现在由 census 自己的 `row … action=` 行给（`:20` 给计数与 provider 全集）。
+4. **丢桶的解析**：`_census_face` 第一版按空格切两次，丢掉 `{'implement_missing_model': 1,` 后 `json.loads` 抛 "Extra data"，崩在任何读数打印之前（0 行载档）。现在 `ast.literal_eval` 取 `2_actions ` 到 ` sums=` 之间，并把"解析出的桶数 == census 自己声明的 `4_action_totals actions=3`"（`:6`）写成判据——短解析会被数抓到，而不是只被异常抓到。
+5. **出货 census 本代死掉，我不粉饰**：`census_self_exit=1 census_red_arms=['B_landed_negative'] census_face_line_found=False census_stderr_tail=['readiness_census.py exited 1:']`（`:7`）。它在 arm C 之后终止，终面行不可读。这也是已记录的"被消耗掉的负面对照"仍在红的后果：C137 §6.2 的逐字读数 `arms=8 arms_passed=7 arms_failed=1 failing_arms=['B_landed_negative_PASS=False']`，与 C138 §4 的归因 `G_census_red_arm failing=['B_landed_negative'] cause=yfinance::BalanceSheet landed (accepted=True)`——wave-28 把 `yfinance::BalanceSheet` 写死成负面对照，wave-32 把这一行落地了，于是那一臂恒红并把整个 census 的出口拖成 1。本面不改它（改它等于放宽判定器），只把读数来源换成它的 `C_population_identity` 与逐行 `row` 输出，并把这条死亡写进载档 `:7`。
+6. **arm F 的 grep 无 `--include`**：`live_gate files=8` 里 6 档是 `__pycache__` 的 .pyc（`:19`），闸门真源 2 档（`conftest.py`、`test_provider_model_metadata.py`）。判据改按 py 子集，两个计数都打，`.pyc` 不再冒充"闸门存在处数"。
+7. **我自己的子代理计数是假的**：我在本会话里两次说过"29/30 已用尽"，那是从压缩摘要继承的自记账号，从没回盘量过。按 transcript `~/.qoder-cn/projects/-Users-yunjinqi-Documents-new-projects-opendata/6973912e-1dea-458f-acfe-f6deca083012.jsonl` 里 `type=="tool_use" and name=="Agent"` 的**去重 id** 计数，真实派发是 **34**（逐行 JSON 解析失败 0 行），即本目标已超出 `≤30` 上限 4 个。复算口径就写在这里：同一 id 只算一次（流式快照会重复落同一条消息），只数派发、不数并发存活。处置：本目标剩余步骤**不再派发任何子代理**——这与实际约束一致，残差 14 行需要的是 owner 裁决（§13.6），不是再多一个执行者。超限是既成事实，本节只把它记账，不假装可以回滚。
+8. **"capture_backed=5" 是我把归属粒度当成了证据等级（本面最后一条自我更正，连续三代读数都在这里翻车）**：
+   - 第一代按 **provider 名**匹配捕获，得 `capture_backed=5 / prose_only=6`，并把 cboe 与 intrinio 那几档说成
+     "端点答了、拒的是结构理由"。这站不住：`cboe-allaccess.headers` 与 `IndexSnapshots` 这一行没有名字上的对应关系。
+   - 第二代按 **model 名**匹配（归一化分隔符），5 行的模型捕获暴露为 `server: GitHub.com` 的文档页；而 intrinio
+     那档因为**没有 server 头**被我上一版的分类器 fallback 成 `api_endpoint`，于是读出 `model_endpoint=1`。
+     那个 1 是分类器缺省值造出来的，不是读数。
+   - 第三代把 receipt 的**请求 URL** 作为首选分类通道，并把"没有 server 头"单列为 `server_unrecorded=13` 而不猜类别，
+     读数落回 `tiers={'model_contract_page': 5, 'no_capture': 6}`（`:32`）：intrinio 那档由 URL 判为 contract page，
+     11 行里没有任何一行有 provider 端点捕获。
+   教训的形状与"零需要分母"不同、与"仪器必须 import 仓内判定器"相同：**分类通道必须来自被试自己记录的字段**
+   （这里是 receipt 的 `url` / `use`），我猜的缺省值会把"信息缺失"读成"证据存在"。载档逐行打 `basis_sources`
+   （`:21-:31`）就是为了让下一位读者看得出每一行是靠哪个通道定的类。
+
+### 13.5 静态平面与载荷
+
+四代 A2 切片都留在树上当"每一代字节确实被测过"的历史档，出货读数是 take4；四代的红项始终是同一个既存成员，与本载荷无关，这一点有对照件（下面第 5 条）。
+
+1. **take1**（`.headers` 发现之前那代字节，`runs/a2_static_plane_slice_w35_refusal_probe.raw.txt`）：`A2 files (complete resolver): 1`（`:3`，不是先前那种 "0 of 1" 空跑）；`ok ruff check :59` / `ok ruff format --check :60` / `ok mypy (1 unique target(s)) :61` / `ok bandit :67`；唯一红 `FAIL pinned Gitleaks file scan :8`，25 档命中全在 `docs/evidence/C100/**/inputs/pristine/akshare/*.py`，日志里 C139 只出现两次且都不是命中（`:4` 候选清单、`:63` mypy 逐 target `exit=0 stdout_chars=164`＝只有 pyproject 的 unused-section 提示）；`a2_exit=1`、`real 258.78`。
+2. **take2**（`.headers` 改写之后那代，`…take2.txt`）同形状：`:3` 候选 1、四个成员全绿 `:59/:60/:61/:67`、唯一红 `:8`、`real 421.40` `:68`、`a2_take2_exit=1` `:71`。两代的命中档数我用同一条命令各自数过（`grep -c "docs/evidence/C100"` 作用在各自载档上，take1=25、take2=25、take3=25、take4=25），也就是这几代改写让红档数动了 0；A2 切片本身不打印 `distinct_files` 这一类字段，那个口径来自更早的专用 gitleaks 载档，不在此处引用。两代计时差（258.78 vs 421.40）归因给并发——take2 那回我同时跑了别的命令，不是文件变慢。
+3. **take3**（`runs/a2_static_plane_slice_w36_payload.take3.txt`，首次把凭证扫描克隆一起收进 `--files`）：`A2 files (complete resolver): 2` `:1`、`ok ruff check :58` / `ok ruff format --check :59` / `ok mypy (2 unique target(s)) :60` / `ok bandit :72`、唯一红 `FAIL pinned Gitleaks file scan :7`（25 档，仍全在 C100）、`real 429.22` `:73`、`a2_take3_exit=1` `:76`。
+4. **take4 是本载荷的出货代**（`runs/a2_static_plane_slice_w36_payload.take4.txt`，76 行）：`A2 files (complete resolver): 2` `:1`；`ok ruff check :58` / `ok ruff format --check :59` / `ok mypy (2 unique target(s)) :60`，逐 target 读数 `w35_refusal_evidence_face.py: exit=0 stdout_chars=164` `:62` 与 `w36_staged_credential_scan.py: exit=0 stdout_chars=164` `:66`；`ok bandit :72`；唯一红 `FAIL pinned Gitleaks file scan :7`，25 档命中全在 C100，C139 的 4 次出现是候选清单两行 + mypy 逐 target 两行，无命中；汇总行 `FAIL: A2 gate failed on: immutable evidence secret scan` `:70`、`real 217.15` `:73`、`a2_take4_exit=1` `:76`。**出口 1 是那个既存成员，不是我这两把探针**——take4 的四个成员（ruff check / format / mypy / bandit）都是 ok。
+5. 对照件（既存，不在本载荷里）：`docs/evidence/C135/wave31-step6-domains-pin-blast-radius-20261018/runs/a2_static_plane_control_untouched_probe.txt`，`a2_control_exit=1`（`:73`）——用一根**本波从未触碰**的探针跑同一把 A2，红项与命中分布一致，所以"红与本波新增文件无关"是读数而不是推理。
+6. 凭证扫描克隆 `w36_staged_credential_scan.py` 在 take4 之前我也直接跑过同一四把：ruff check ok、ruff format 无改动、mypy `Success: no issues found in 1 source file`、bandit findings 0；take4 的 `:66` 是它在出货闸门里的独立读数。
+
+### 13.6 预测判据（下一面必须读到）
+
+**若 owner 给 seeking_alpha / wsj 这 6 行一个"访问被拒"裁决**：落档必须带 provider 端点捕获（不是又一张 contract page），形式与本仓既有格式一致——`docs/evidence/<C..>/<wave>/` 下任一捕获目录里的一档 `*.headers`（实测那 88 档分布在 `sources|captures|fixtures|raw` 等 10 个目录，所以不要求非叫 `sources/`），首行 `HTTP/2 401` 或 `403`，并把该档 sha16 写进账本行理由。下一代这把仪器应读到：`headers_census` 的 `code_401_captures >= 1`、`providers_with_captures` 含 `wsj` 与/或 `seeking_alpha`、arm G 的 `tiers` 里出现 `model_provider_surface`（每引入一档合规捕获，`no_capture` 降 1）。若新捕获只是 `server: GitHub.com` 或 URL 属于 `docs.*`，它会读成 `model_contract_page` 而不是 `provider_surface`——那等于没有回答"访问被拒"。**失效条件**：`code_401_captures > 0` 但 `providers_with_captures` 仍读不到 `wsj`/`seeking_alpha`（文件名与所在目录都不含 provider 名，归属链没建起来，捕获存在也重放不了）；或 `sum(tiers.values()) != 11`（tier 表与行集脱节）；或 census 的 `residue + accepted != 350`（面与平面脱代）。
+
+**若 owner 改判其中若干行为"接受"**：平面 1 从 336 起按行数增，代价不是每行而是全树——`domains.yaml` 新增键会重签当时全部已验收行（本代行集 336，读数形式是 `stale=336` 而非 `stale=行数`）；`domains_total` 只随**键数**增长，新增行数与新增键数不一定相等，二者之差必须显式列出。
+
+**若 biztoc::WorldNews / stockgrid::ShortVolume 完成 rights 注册**：与本臂无关（它们是 `new_provider_package`），预测 `census_actions` 里 `new_provider_package` 从 2 降、`residue` 分母随之降，而 `ledger_ruled_out=11` 不动。最后一行 `implement_missing_model`（`yfinance::AvailableIndices`）仍需要"参考输入"机制，本面测过它 0 端点、没有可让篡改抵达的请求站点。

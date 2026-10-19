@@ -1,0 +1,38 @@
+# carrier for w35_refusal_evidence_face.py
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C139/wave34-tmxyfinance-rest-20261018/probes/w35_refusal_evidence_face.py
+# claims_sha256=9ebbe59602b07f5b
+
+population judge_accepted=336 identities=350 claims=1705 statuses={'INCOMPLETE': 5, 'OFFLINE_ACCEPTED': 336, 'UNREVIEWED': 9}
+population census_residue=14 census_buckets_parsed=3 census_buckets_declared=3 census_row_lines=14 census_actions={'implement_missing_model': 1, 'ledger_ruled_out': 11, 'new_provider_package': 2} identity_set=5168e1e723999312
+census_self_exit=1 census_red_arms=['B_landed_negative'] census_face_line_found=False census_stderr_tail=['readiness_census.py exited 1:'] note: the shipped census dies after its arm C, so its terminal face line is unreadable this generation and residue/identity come from its C_population_identity line instead
+wsj_ledger ETFGainers {'coverage_status': 'NOT_ASSESSED', 'implementation_task_status': 'NOT_RUN', 'live_verification_status': 'NOT_RUN'}
+wsj_ledger ETFLosers {'coverage_status': 'NOT_ASSESSED', 'implementation_task_status': 'NOT_RUN', 'live_verification_status': 'NOT_RUN'}
+wsj_ledger ETFActive {'coverage_status': 'NOT_ASSESSED', 'implementation_task_status': 'NOT_RUN', 'live_verification_status': 'NOT_RUN'}
+wsj_network_sites hits=0 py_files=2 models_py_files=0 dirs=['models'] tokens=['requests.', 'httpx', 'urlopen', 'Session(', 'Client(', 'curl_cffi']
+headers_census total=88 codes={'200': 71, '301': 1, '307': 1, '403': 7, '404': 6, 'NO_STATUS_LINE': 2} providers_with_captures=['cboe', 'econdb', 'finviz', 'fmp', 'fred', 'intrinio', 'yfinance'] classes={'contract_page': 31, 'no_status_line': 2, 'provider_surface': 42, 'server_unrecorded': 13} unattributed=49
+unattributed_prefixes={'openbb': 18, 'obb': 6, 'uncomtrade': 5, 'sofrai': 4, 'fed': 3, 'pd': 3, 'sofr': 2, 'treasury': 2, 'aapl': 1, 'agency': 1, 'fomc': 1, 'invalid': 1, 'markets': 1, 'response': 1} unattributed_sum=49 unattributed=49
+wsj_capture_facing headers_named_wsj=0 path_named_wsj=0 code_401_captures=0 code_4xx_captures=13
+prose_census walked=99253 readable_text=91101 self_excluded=83 providers_on_disk=32 http_protocol_string_files=271 co_naming_lines=94 co_naming_files=65 longest_matched_line=1388673
+co_naming_roles={'ledger_prose_echo': 3, 'lint_source_echo': 12, 'multi_provider_dump': 55, 'prior_assessment': 2, 'tamper_recipe': 1, 'test_log': 9, 'this_wave_artifact': 12}
+capture_predicate_controls {'capture_planted_codes': ['401'], 'prose_planted_codes': []}
+ledger_fragment_source rows=['wsj::ETFActive', 'wsj::ETFGainers', 'wsj::ETFLosers'] fragment_chars=70 fragment='The official WSJ Market Data pages were reachabl'
+live_gate files=8 py_files=2 pycache_files=6 token_present_in_env=False py_sample=['conftest.py', 'test_provider_model_metadata.py']
+ruled_out_rows_from_census count=11 providers=['cboe', 'econdb', 'intrinio', 'seeking_alpha', 'wsj']
+ruled_out_cite row=cboe::FuturesCurve ledger_dict=NOT_DECLARABLE cite=opendata/data/providers/cboe/specs.py:317 no_ledger=- entry_chars=85 tier=model_contract_page basis_sources=['manifest_url', 'server_header'] model_captures=['openbb-futures-curve.headers', 'openbb-cboe-futurescurve.headers'] model_classes={'contract_page': 2} provider_captures=8 provider_classes={'contract_page': 1, 'provider_surface': 7} basis_codes=['200']
+ruled_out_cite row=cboe::IndexSnapshots ledger_dict=NOT_DECLARABLE cite=opendata/data/providers/cboe/specs.py:319 no_ledger=- entry_chars=85 tier=model_contract_page basis_sources=['server_header'] model_captures=['openbb-indexsnapshots-model.headers', 'openbb-indexsnapshots.headers'] model_classes={'contract_page': 2} provider_captures=8 provider_classes={'contract_page': 1, 'provider_surface': 7} basis_codes=['200']
+ruled_out_cite row=econdb::CountryProfile ledger_dict=NOT_DECLARED cite=opendata/data/providers/econdb/specs.py:151 no_ledger=- entry_chars=83 tier=model_contract_page basis_sources=['server_header'] model_captures=['openbb-countryprofile-query.headers', 'openbb-countryprofile.headers'] model_classes={'contract_page': 2} provider_captures=2 provider_classes={'provider_surface': 2} basis_codes=['200']
+ruled_out_cite row=econdb::ExportDestinations ledger_dict=NOT_DECLARED cite=opendata/data/providers/econdb/specs.py:153 no_ledger=- entry_chars=83 tier=model_contract_page basis_sources=['server_header'] model_captures=['openbb-exportdestinations-query.headers', 'openbb-exportdestinations.headers'] model_classes={'contract_page': 2} provider_captures=2 provider_classes={'provider_surface': 2} basis_codes=['200']
+ruled_out_cite row=intrinio::OptionsSnapshots ledger_dict=NOT_DECLARABLE cite=opendata/data/providers/intrinio/specs.py:712 no_ledger=- entry_chars=85 tier=model_contract_page basis_sources=['manifest_url'] model_captures=['intrinio-options-snapshots.headers', 'openbb-options-snapshots.headers'] model_classes={'contract_page': 2} provider_captures=1 provider_classes={'contract_page': 1} basis_codes=['200']
+ruled_out_cite row=seeking_alpha::CalendarEarnings ledger_dict=NOT_DECLARED cite=opendata/data/providers/seeking_alpha/specs.py:9 no_ledger=- entry_chars=83 tier=no_capture basis_sources=[] model_captures=[] model_classes={} provider_captures=0 provider_classes={} basis_codes=[]
+ruled_out_cite row=seeking_alpha::ForwardEpsEstimates ledger_dict=NOT_DECLARED cite=opendata/data/providers/seeking_alpha/specs.py:13 no_ledger=- entry_chars=83 tier=no_capture basis_sources=[] model_captures=[] model_classes={} provider_captures=0 provider_classes={} basis_codes=[]
+ruled_out_cite row=seeking_alpha::ForwardSalesEstimates ledger_dict=NOT_DECLARED cite=opendata/data/providers/seeking_alpha/specs.py:17 no_ledger=- entry_chars=83 tier=no_capture basis_sources=[] model_captures=[] model_classes={} provider_captures=0 provider_classes={} basis_codes=[]
+ruled_out_cite row=wsj::ETFActive ledger_dict=NOT_DECLARED cite=opendata/data/providers/wsj/specs.py:9 no_ledger=- entry_chars=83 tier=no_capture basis_sources=[] model_captures=[] model_classes={} provider_captures=0 provider_classes={} basis_codes=[]
+ruled_out_cite row=wsj::ETFGainers ledger_dict=NOT_DECLARED cite=opendata/data/providers/wsj/specs.py:9 no_ledger=- entry_chars=83 tier=no_capture basis_sources=[] model_captures=[] model_classes={} provider_captures=0 provider_classes={} basis_codes=[]
+ruled_out_cite row=wsj::ETFLosers ledger_dict=NOT_DECLARED cite=opendata/data/providers/wsj/specs.py:9 no_ledger=- entry_chars=83 tier=no_capture basis_sources=[] model_captures=[] model_classes={} provider_captures=0 provider_classes={} basis_codes=[]
+ruled_out_cited count=11 population=11 tiers={'model_contract_page': 5, 'no_capture': 6} no_capture_rows=['seeking_alpha::CalendarEarnings', 'seeking_alpha::ForwardEpsEstimates', 'seeking_alpha::ForwardSalesEstimates', 'wsj::ETFActive', 'wsj::ETFGainers', 'wsj::ETFLosers'] no_capture=6
+H_forge rows=2 forged_from_real_row=True arm_c_goes_red_on_forge=True
+I_predicate_controls ledger_absent_entry_chars=0 ledger_absent_reason=- ledger_present_row=cboe::FuturesCurve ledger_present_entry_chars=85 network_control_hits=14 network_control_files=12 capture_planted=['401'] prose_planted=[]
+I_capture_class_controls docs_host=GitHub.com api_host=cloudflare docs_name=openbb-sloos-model.headers api_name=fomc-statement.headers manifest_named=19/88 manifest_index_files=38 fake_tier=no_capture real_tier=model_contract_page tier_differs=True
+refusal_evidence_face arms=9 arms_passed=9 arms_failed=0 failed=[] PASS=True
+
+w35_refusal_evidence_face_exit=0
