@@ -299,10 +299,15 @@ top handwritten providers: fmp=69 fred=36 intrinio=32 yfinance=28 tmx=24 sec=24
 * **台账的 `implementation_task_status`（5 DEV_DONE / 13 IN_PROGRESS / 332 NOT_RUN）**：第三套记账，
   目前没有任何验收机制读它来判定落地。
 
-因此「把 333 行标签推到 DEV_DONE」是一个错误待办——那只会让台账标签与两套真实机制进一步脱钩。正确的下一步
+因此「把 333 行标签推到 DEV_DONE」是一个错误待办——那只会让台账标签与两套真实机制进一步脱钩。当时的下一步
 是二选一并写进计划：要么为手写 population 定义与之相称的第二平面谓词（例如让 `witnessed_dev_done` 也接受
 平面 1 的五阶段 receipt），要么明确 AC2-10 只度量声明式行、把 350 行的验收结论统一交给平面 1 与 `w75` 这条链。
 `label_without_witness=0` 与 `dev_done_label=5` 这两个数也说明：现在标签比机制更保守，没有虚标。
+
+**2026-10-19 13:39Z owner 裁定：走后者。** AC2-10 的度量范围明确限定为声明式引擎行，谓词与两个常量都不动，
+台账标签也不批量推；350 行的逐条验收结论由平面 1 的五阶段链与 `w75` 承载。已入
+`docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/前置条件与决策清单.md` §6（ACCEPT-SCOPE-01），
+同一节另记 RESIDUE-OWNER-01（残差 11 行按测得分档挂 owner 待办）与 SUBAGENT-BUDGET-01（34 > 30 记为违反）。
 
 ## 16. 签完之后又被静态面改了字节：撤销半径是量出来的，而我第一版的面读了一个不存在的字段
 

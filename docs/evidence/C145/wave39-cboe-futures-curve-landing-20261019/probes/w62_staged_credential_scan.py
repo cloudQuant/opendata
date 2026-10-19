@@ -48,6 +48,10 @@ WAVE_PREFIXES: tuple[str, ...] = (
     "docs/evidence/C101/",
     "docs/evidence/C144/",
     "docs/evidence/C145/",
+    # The owner ruling of 2026-10-19 (ACCEPT-SCOPE-01 / RESIDUE-OWNER-01) lands in the iteration-2
+    # decisions doc, so that path is part of this wave's write set too. The ``scope`` arm only
+    # declares what belongs to the wave; adding a prefix changes no credential rule and no baseline.
+    "docs/迭代计划/",
 )
 
 
