@@ -1,0 +1,19 @@
+# carrier for w43_committed_payload_face
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C141/wave37-cboe-index-snapshots-20261019/probes/w43_committed_payload_face.py
+# commit=b2e7421e7 parent=a4a4ce2ad3b73c521d535f3c909b3b3d48b29dc4
+
+reconcile commit_paths=2252 worktree_drift_vs_commit=0 moved_vs_parent=2252 missing_in_commit=0
+drift_list=[]
+commit_paths_by_root={'docs/evidence/C101': 2144, 'docs/evidence/C141': 83, 'docs/evidence/C140': 13, 'opendata': 6, 'docs/evidence/C139': 2, 'scripts': 2, 'tests': 2}
+
+---- payload scan ----
+pre_commit_gate payload_index_sha256=0faac03536b133431af3ee5e219e4d5e5aee34316508742b2b9fad1722a21ae4
+staged_files_from_scan_carrier=2251 committed_paths=2252 gate_scope_note=the pre-commit gate read the index while its own terminal carrier was still unstaged, so this face is the arm that scans the commit
+gitleaks_git_mode commit=b2e7421e7 rc=0 findings=0 rules=[] planted_control rc=0 findings=2 arm_can_move=True
+gitleaks_dir_mode bundles rc=0 findings=2 rules=['github-pat', 'github-pat'] planted rc=0 findings=4 arm_can_move=True
+secret_scan_check rc=0 tail=[90m1:56PM[0m [32mINF[0m [1m452 commits scanned.[0m | [90m1:56PM[0m [32mINF[0m [1mscanned ~329190510 bytes (329.19 MB) in 2m11s[0m | [90m1:56PM[0m [32mINF[0m [1mno leaks found[0m
+generation claims_sha256=ee5256aa4108a7b7 judge_report_sha256=472c11cef6c0299f
+
+committed_payload_face commit=b2e7421e7 paths=2252 arms=7 arms_passed=6 arms_failed=1 failed=['dir_mode_clean_and_armed'] PASS=False
+
+w43_committed_payload_face_exit=1

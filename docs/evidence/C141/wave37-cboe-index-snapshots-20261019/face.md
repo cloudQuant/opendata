@@ -11,9 +11,13 @@ Cboe 官方面板的 `HTTP/2 200` 载荷，据此实现并验收了 `cboe::Index
 `main()`，因为它的载档 `runs/w38_artifact_request_face.txt` 是已提交的，重跑会覆盖），残差桶走 wave-36 拒绝面的
 `_census_face()`。
 
-* 落地面 `probes/w40_snapshot_landing_face.py`（sha16 由本波 a2 载档 `runs/a2_static_plane_slice_w37_payload.take2.txt`
-  的逐 target 读数覆盖）载档 `runs/w40_snapshot_landing_face.txt`（16 行，2582 B，sha16 `72d0f7dfc021d468`）：
+* 落地面 `probes/w40_snapshot_landing_face.py`（397 行，17642 B，sha16 `ab95477128b9e708`）载档
+  `runs/w40_snapshot_landing_face.txt`（16 行，2582 B，sha16 `72d0f7dfc021d468`）：
   八臂全绿 `arms=8 arms_passed=8 arms_failed=0 PASS=True` `:14`，出口 `w40_snapshot_landing_face_exit=0` `:16`。
+  同目录其余仪器的字节对应产生各代读数的版本：链驱动 `w39_run_chain.py`（234 行，sha16 `57664650c26d1524`）、
+  凭证闸门 `w41_staged_credential_scan.py`（224 行，sha16 `bc7ffd9a92a3c044`，它 produce 的是 take2）、
+  cboe 单 provider 重签 `w42_cboe_resign.py`（149 行，sha16 `c3b810139a5d4c66`）、
+  收口面 `w43_committed_payload_face.py`（389 行，sha16 `4386d8d61b65f636`，它 produce 的是 take3）。
 * 代际：身份集 `5168e1e723999312` 与上数代同，`claims_sha256=ee5256aa4108a7b7`，判定报告 sha16 `472c11cef6c0299f`，
   本行 witness 分片 `snapshots.py` sha16 `621f27df74665353`，捕获体 sha16 `9554ad964bcee6ac` `:12`。
   上一代落地面（cboe-only 重跑之前）留档不覆盖：`runs/w40_snapshot_landing_face.take1_superseded.txt`
@@ -225,3 +229,51 @@ census 自身仍因 wave-28 那个被消耗掉的负面对照在 arm C 之后终
   不是测量。
 * **若本行的捕获被替换成更新的一份**：`capture_sha256` 与 `body_digest_and_path_match` 会同时移动；
   只动其一说明我引的字节与 receipt 说的字节不是同一份，那必须读成代际脱节而不是"刷新了一次捕获"。
+
+## 11. 收口面：对已提交字节的三条读数，以及它第一代的红
+
+`probes/w43_committed_payload_face.py` 对落地下提交 `b2e7421e7`（父 `a4a4ce2ad3b73c52`）做三件事，
+每一代的载档都留着：
+
+* **逐档字节对账**（take3 载档 `runs/w43_committed_payload_face.take3.txt:5`）：
+  `reconcile commit_paths=2252 worktree_drift_vs_commit=0 moved_vs_parent=2252 missing_in_commit=0`，
+  分档 `docs/evidence/C101: 2144, docs/evidence/C141: 83, docs/evidence/C140: 13, opendata: 6,
+  docs/evidence/C139: 2, scripts: 2, tests: 2` `:7`。
+  "提交带的就是我读到的字节"这条断言的**反证孪臂**是同谓词对父提交读出的 `moved_vs_parent=2252` —— 一个
+  只能读到 0 的比较器什么也没测。
+* **git 模式扫这一条提交**（`:12`）：`gitleaks_git_mode commit=b2e7421e7 rc=0 findings=0`，
+  植入对照 `planted_control rc=0 findings=2 arm_can_move=True`（对照体在 `/tmp` 里的一个 scratch 仓库，
+  用同样的 argv 与同样的 `--log-opts=-1`，因为 gitleaks 从工作目录解析仓库）。
+  臂 `head_is_landing_commit` 要求 `git rev-parse HEAD` 就是这条提交，否则 `-1` 扫的是别的。
+* **dir 模式只扫提交带的那 96 档 bundle 字节**（`:13-14`）：
+  `dir_mode_tree copied_from_commit=96 local_only_files=6 …`、
+  `gitleaks_dir_mode bundles rc=0 findings=0 planted findings=2 arm_can_move=True`；
+  出货闸门 `secret_scan_check rc=0 … 452 commits scanned … no leaks found` `:15`。
+  终读 `arms=8 arms_passed=8 PASS=True` `:18`，出口 `:20`。
+
+第一代与第二代各有一条红，两条都记下来而不是删掉载档：
+
+1. take1（`runs/w43_committed_payload_face.txt:13,17,19`，`arms=7 arms_passed=6`）红在
+   `dir_mode_clean_and_armed`：`findings=2 rules=['github-pat','github-pat']`。
+   定位（redact 后按路径报）落在
+   `docs/evidence/C141/…/probes/__pycache__/{w41_staged_credential_scan,w43_committed_payload_face}.cpython-313.pyc`。
+   原因是我自己造成的一个真实风险，而且形状值得记：**CPython 把 `"ghp_" + ("0123456789" * 3 + "abcdefghij")`
+   在编译期折叠成常量**，所以我为了武装闸门而写的"运行时拼合、永不打印"的假凭证，被 `py_compile` 以字面量
+   形式写进了探针旁边的 `.pyc`。`.gitignore` 第 2 行 `__pycache__/` 让它进不了提交
+   （实测 `git show --name-only b2e7421e7 | grep -c __pycache__ = 0`），git 模式因而读 0；
+   而 dir 模式扫的是**工作树副本**，于是读到 2。教训的形状：载荷扫描的树必须由提交构造，不能 copy 目录。
+2. take2（`runs/w43_committed_payload_face.take2.txt:18`，`arms=8 arms_passed=7`，出口 `:20`）把 dir 树改成由
+   `git ls-tree <sha>` 构造后，扫描本身读 0，但红在**我新加的一条簿记臂**
+   `local_only_bytecode_named`——它要求"跳过的本地文件里还有 `.pyc`"，而我在跑 take2 之前已经把这些缓存删了。
+   也就是说这条臂在拿一个**我自己刚改过的状态**当判据。take3 把它改成断言"扫描树比工作树窄、且差集被命名"
+   （`local_only_files_named`，实测 `local_only_files=6`，样本打进 `:13`），`.pyc` 是否还在盘上只作为
+   一个读数打印（`bytecode_still_present=0 (take 1 read 2 here)`），不再当判据。
+
+## 12. 撤回清单补两条（同一型错误的第二次与第三次出现）
+
+8. **`local_only_bytecode_named` 是一条会随我自己的清理动作失效的臂**（§11 第 2 点）。写臂时问一句
+   "这条臂的前提会不会在我记录证据的过程中消失"——会的话，把它降级成读数，判据只留可复算的关系。
+   这与 §13.4 第 5 条（被消耗掉的负面对照把整个 census 拖红）是同一型：判据依赖一个已经不存在的事件。
+9. **"永不打印假凭证"不等于"假凭证不落盘"**：折叠后的常量进了 `.pyc`。以后任何武装扫描的探针都要
+   (a) 用 `PYTHONDONTWRITEBYTECODE=1` 跑（本波 take3 起就是这么执行的），
+   (b) 扫描树从提交构造，而不是从目录复制。
