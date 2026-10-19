@@ -438,3 +438,33 @@ flagged=25  under_C100_pristine=25  outside_C100=0
 但一旦真有一条失效 pin，两种读法就分岔了：`flat_stale` 会去遍历字符串的**字符**，计数变成 pin 名的字符数；
 arm H 的 `group == []` 则拿 str 跟 list 比，永远 False，于是那条 arm 会以「红」的方式告诉我们一个本来只是
 数字错了的事实。mypy 把它报出来了，就改成 `append([...])`，不要再留「只在缺陷出现时才正确」的写法。
+
+## 19. 收口面：对 `46f56cd8e` 的逐档字节对账、两种 gitleaks 模式与出货闸门
+
+`w63_closure_face.py --commit 46f56cd8e --scope diff`（8 个 arm 全绿，exit 0），读数逐条来自
+`runs/w63_closure_face.docs_commit.stdout.txt`：
+
+```
+reconcile parent=66123fb55 commit_paths=2318 worktree_drift_vs_commit=0 missing_in_commit=0
+commit_paths_by_root={'C101': 2133, 'C145': 127, 'C144': 58}
+pre_commit_gate payload_index_sha256=4966dda35e887dea…   staged_files=2318 = committed_paths=2318
+gitleaks git-mode  commit=46f56cd8e findings=0  planted findings=2  arm_can_move=True
+gitleaks dir-mode  copied_from_commit=2318 findings=0  planted findings=2  arm_can_move=True
+secret_scan_check  rc=0  458 commits / 391.73 MB / no leaks found
+generation         claims_sha256=e6e3b6bcdb4f9875  judge_report_sha256=61c42e4b352c7028
+```
+
+三点要把范围说清楚，不能让 0 独自说话：
+
+* `worktree_drift_vs_commit=0` 是对 2318 个路径逐个 `git show <sha>:<path>` 与工作区字节比较得出的，
+  它替代了「mtime 相同」那种假证据——我这一波已经吃过一次把未修改误读成已修改的亏。
+* dir-mode 的对象是**这次提交携带的 2318 个 blob**（复制进 scratch 后扫），仪器同时打出
+  `local_only_files=3596`、`bytecode_skipped=20`：那 3596 个是本仓三棵 bundle 里**未变更**、由更早的波次
+  提交的文件，不在这次扫描范围内。所以「findings=0」的主语是本次载荷，不是整个 docs/evidence 树。
+* 出货闸门 `secret_scan_check` 是仓内自己那条（458 commits / 391.73 MB），它的 0 与上面两个 0 是三个
+  不同的 population，分开引用。
+
+还有一个自我引用的口子由仪器自己点名：pre-commit 的 staged 扫描读的是索引，而它自己的 carrier 那时还没
+入索引——`gate_scope_note` 就是这么写的，收口面因此才是「扫提交」的那一路。两次扫描（feat 载荷 15 文件、
+docs 载荷 2318 文件）都是 baseline 0 / planted 2、11/11 arms，载体分别留在
+`w62_staged_credential_scan.feat_payload.txt` 与 `w62_staged_credential_scan.txt`。

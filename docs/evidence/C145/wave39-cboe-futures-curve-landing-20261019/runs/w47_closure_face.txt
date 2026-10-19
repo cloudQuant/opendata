@@ -1,0 +1,19 @@
+# carrier for w47_closure_face.py
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C145/wave39-cboe-futures-curve-landing-20261019/probes/w47_closure_face.py --commit 46f56cd8e
+
+reconcile commit=46f56cd8e parent=66123fb55 commit_paths=2318 worktree_drift_vs_commit=0 moved_vs_parent=2318 missing_in_commit=0
+drift_list=[]
+commit_paths_by_root={'docs/evidence/C101': 2133, 'docs/evidence/C145': 127, 'docs/evidence/C144': 58}
+
+---- payload scan ----
+pre_commit_gate payload_index_sha256=4966dda35e887dea68def6dd83096c63599363bcc19efb1c8e70ae1bc0116c24
+staged_files_from_scan_carrier=2318 committed_paths=2318 gate_scope_note=the pre-commit gate read the index before its own carrier was staged, so this face is the arm that scans the commit
+gitleaks_git_mode commit=46f56cd8e rc=0 findings=0 rules=[] planted_control rc=0 findings=2 arm_can_move=True
+dir_mode_tree copied_from_commit=2318 local_only_files=3596 local_only_sample=['docs/evidence/C101/README.md', 'docs/evidence/C101/alpha_vantage/primary-reviews/alpha_vantage__EquityHistorical.review.json', 'docs/evidence/C101/alpha_vantage/primary-reviews/alpha_vantage__EtfHistorical.review.json', 'docs/evidence/C101/alpha_vantage/primary-reviews/alpha_vantage__HistoricalEps.review.json'] bytecode_skipped=20
+gitleaks_dir_mode bundles rc=0 findings=0 rules=[] planted rc=0 findings=2 arm_can_move=True
+secret_scan_check rc=0 tail=[90m8:55PM[0m [32mINF[0m [1m458 commits scanned.[0m | [90m8:55PM[0m [32mINF[0m [1mscanned ~391726943 bytes (391.73 MB) in 4m36s[0m | [90m8:55PM[0m [32mINF[0m [1mno leaks found[0m
+generation claims_sha256=e6e3b6bcdb4f9875 judge_report_sha256=61c42e4b352c7028
+
+closure_face commit=46f56cd8e paths=2318 arms=8 arms_passed=8 arms_failed=0 failed=[] PASS=True
+
+w47_closure_face_exit=0
