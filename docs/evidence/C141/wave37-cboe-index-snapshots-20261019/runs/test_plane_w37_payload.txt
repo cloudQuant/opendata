@@ -1,0 +1,98 @@
+# carrier for the wave-37 provider test plane (post re-sign), two-sided control
+# argv(worktree): PATH=... PYTHONDONTWRITEBYTECODE=1 /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest -o addopts= -p no:cacheprovider -q --tb=no <9 files>
+# argv(control):   same nine files inside the detached HEAD worktree /tmp/ctrl_head37 (git worktree add --detach at a4a4ce2ad)
+# started_utc: 2026-10-19T05:23:27Z
+
+---- worktree run (this wave's tree) ----
+F.F......FFFF..............................F............................ [  4%]
+........................................................................ [  8%]
+........................................................................ [ 13%]
+........................................................................ [ 17%]
+........................................................................ [ 21%]
+........................................................................ [ 26%]
+........................................................................ [ 30%]
+........................................................................ [ 35%]
+........................................................................ [ 39%]
+........................................................................ [ 43%]
+........................................................................ [ 48%]
+........................................................................ [ 52%]
+........................................................................ [ 56%]
+........................................................................ [ 61%]
+........................................................................ [ 65%]
+........................................................................ [ 70%]
+........................................................................ [ 74%]
+........................................................................ [ 78%]
+........................................................................ [ 83%]
+........................................................................ [ 87%]
+........................................................................ [ 92%]
+........................................................................ [ 96%]
+...........................................................              [100%]
+=========================== short test summary info ============================
+FAILED tests/test_provider_catalog.py::test_catalog_contains_34_sources_and_only_66_fetcher_bindings
+FAILED tests/test_provider_catalog.py::test_registration_and_legacy_fetchers_project_the_same_capabilities
+FAILED tests/test_provider_domains.py::test_production_domains_preserve_v1_legacy_entries_and_explicit_semantics
+FAILED tests/test_provider_domains.py::test_declared_domain_contracts_match_exact_registered_provider_models
+FAILED tests/test_provider_domains.py::test_exact_domain_identity_assertion_rejects_removed_and_added_domains
+FAILED tests/test_provider_domains.py::test_public_exports_match_reviewed_batch5_counts_and_types
+FAILED tests/test_congress_cboe_iter2.py::test_provider_model_service_injects_identity_and_serializes_typed_rows[CongressAmendments]
+7 failed, 1636 passed in 6.64s
+
+worktree_pytest_exit=1
+
+---- detached HEAD control run (pre-change tree) ----
+F.F......FFFF..............................F............................ [  4%]
+........................................................................ [  8%]
+........................................................................ [ 13%]
+........................................................................ [ 17%]
+........................................................................ [ 21%]
+........................................................................ [ 26%]
+........................................................................ [ 30%]
+........................................................................ [ 35%]
+........................................................................ [ 39%]
+........................................................................ [ 43%]
+........................................................................ [ 48%]
+........................................................................ [ 52%]
+........................................................................ [ 57%]
+........................................................................ [ 61%]
+........................................................................ [ 65%]
+........................................................................ [ 70%]
+........................................................................ [ 74%]
+........................................................................ [ 79%]
+........................................................................ [ 83%]
+........................................................................ [ 87%]
+........................................................................ [ 92%]
+........................................................................ [ 96%]
+....F.........FFFFFFF.......................F..........                  [100%]
+=========================== short test summary info ============================
+FAILED tests/test_provider_catalog.py::test_catalog_contains_34_sources_and_only_66_fetcher_bindings
+FAILED tests/test_provider_catalog.py::test_registration_and_legacy_fetchers_project_the_same_capabilities
+FAILED tests/test_provider_domains.py::test_production_domains_preserve_v1_legacy_entries_and_explicit_semantics
+FAILED tests/test_provider_domains.py::test_declared_domain_contracts_match_exact_registered_provider_models
+FAILED tests/test_provider_domains.py::test_exact_domain_identity_assertion_rejects_removed_and_added_domains
+FAILED tests/test_provider_domains.py::test_public_exports_match_reviewed_batch5_counts_and_types
+FAILED tests/test_congress_cboe_iter2.py::test_provider_model_service_injects_identity_and_serializes_typed_rows[CongressAmendments]
+FAILED tests/test_cboe_index_historical_public.py::test_official_capture_replays_with_local_date_filter
+FAILED tests/test_cboe_index_historical_public.py::test_captured_official_symbols_replay_their_observed_schema[VVIX-vvix-history-investigation-20261012.csv-0c8b79bf3aaefa48a9f37cb410ba980e39bf975379f9a68e9fd6a4d1c4128bbe-expected_date0-expected_values0]
+FAILED tests/test_cboe_index_historical_public.py::test_captured_official_symbols_replay_their_observed_schema[VIX9D-vix9d-history-investigation-20261012.csv-9c2476680030afa10a7008764b70865094ec97f2fa64e5113f0f0216506bb89a-expected_date1-expected_values1]
+FAILED tests/test_cboe_index_historical_public.py::test_captured_official_symbols_replay_their_observed_schema[OVX-ovx-history-investigation-20261012.csv-70d756e1300ee7d2f4cc375fe6b435b1049dc8440c9005bce49bee71fea8b7b2-expected_date2-expected_values2]
+FAILED tests/test_cboe_index_historical_public.py::test_captured_official_symbols_replay_their_observed_schema[GVZ-gvz-history-investigation-20261012.csv-f19436d8165084197c2abb1c60a723c5645f780d5cf17123d36973fc5042d3ae-expected_date3-expected_values3]
+FAILED tests/test_cboe_index_historical_public.py::test_captured_official_symbols_replay_their_observed_schema[VXAPL-vxapl-history-investigation-20261012.csv-ef6fa254af0471ca3d7bb3b337809c7c9665d3a6c753abb0bb89e704d9d3d9b5-expected_date4-expected_values4]
+FAILED tests/test_cboe_index_historical_public.py::test_captured_official_symbols_replay_their_observed_schema[VXAZN-vxazn-history-investigation-20261012.csv-67df3c078a1bf7475d45c3cbfcbce6825a9e25b5551b00382d7bb9a0db556009-expected_date5-expected_values5]
+FAILED tests/test_cboe_index_historical_public.py::test_captured_official_symbols_replay_their_observed_schema[VXEEM-vxeem-history-investigation-20261012.csv-29140018e7af4303cc098726c4cd02d39e4f48993efb83e5de64f3bc65374c5f-expected_date6-expected_values6]
+FAILED tests/test_cboe_index_historical_public.py::test_integration_handoff_declares_only_the_limited_candidate_domain
+16 failed, 1623 passed in 6.45s
+
+control_pytest_exit=1
+
+attribution: the 7 red cells above are red in BOTH trees (identical node ids); this wave's
+registration moved 3 further cboe enumerations and those 3 are green here, so the delta from
+this wave's own code is 0 regressions and 3 re-pins (tests/test_cboe_engine_provider.py 9->10
+bindings and the 9-domain literal, tests/test_congress_cboe_iter2_cboe.py 10-model set and
+NOT_DECLARABLE 2->1).
+control_only_red_count=9: all 9 sit in tests/test_cboe_index_historical_public.py, which reads
+docs/evidence/C100/congress-cboe/captures/vix-history-20261012.csv and two C100 JSON handoffs
+(test lines 33-39); C100 is gitignored since C113, so a fresh worktree cannot replay them. A
+HEAD worktree is therefore not a byte control for those 9 cells and they are not counted as
+pre-existing reds nor as repairs.
+
+test_plane_w37_exit=1

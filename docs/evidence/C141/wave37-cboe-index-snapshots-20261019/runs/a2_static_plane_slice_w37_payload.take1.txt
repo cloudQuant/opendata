@@ -1,0 +1,133 @@
+# carrier for a2 static plane slice (wave-37 payload)
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/a2_check.py --files <13 repo-relative paths listed below>
+# started_utc: 2026-10-19T05:20:46Z
+A2 files (complete resolver): 12
+  opendata/data/models/cboe_index_snapshots.py
+  opendata/data/providers/cboe/models/index_snapshots_public.py
+  opendata/data/models/__init__.py
+  opendata/data/providers/cboe/provider.py
+  opendata/data/providers/cboe/specs.py
+  tests/test_cboe_engine_provider.py
+  tests/test_congress_cboe_iter2_cboe.py
+  scripts/quality/iter2_witnesses/_parts/cboe/snapshots.py
+  scripts/quality/iter2_witnesses/_parts/cboe/historical.py
+  docs/evidence/C141/wave37-cboe-index-snapshots-20261019/probes/w39_run_chain.py
+  docs/evidence/C141/wave37-cboe-index-snapshots-20261019/probes/w40_snapshot_landing_face.py
+  docs/evidence/C141/wave37-cboe-index-snapshots-20261019/probes/w41_staged_credential_scan.py
+
+Static-tool execution partition: 12 file(s), 0 verified immutable snapshot(s) excluded.
+Historical Ruff findings: 149323 (NOT GREEN; historical evidence only).
+FAIL pinned Gitleaks file scan
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m1:22PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 22ms[0m
+[90m1:22PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m1:22PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.7ms[0m
+[90m1:22PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m1:22PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 5.33ms[0m
+[90m1:22PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/option/option_em.py returned 1: [90m1:22PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.8ms[0m
+[90m1:22PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231356Z-ac04-c65-c74/inputs/pristine/akshare/stock/cons.py returned 1: [90m1:22PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 44.7ms[0m
+[90m1:22PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m1:22PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 22ms[0m
+[90m1:22PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m1:22PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 12ms[0m
+[90m1:22PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m1:22PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 5.13ms[0m
+[90m1:22PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/option/option_em.py returned 1: [90m1:22PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.71ms[0m
+[90m1:22PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231655Z-ac04-c65-c74-r2/inputs/pristine/akshare/stock/cons.py returned 1: [90m1:22PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 44.2ms[0m
+[90m1:22PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m1:23PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 22.8ms[0m
+[90m1:23PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m1:23PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 12.5ms[0m
+[90m1:23PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m1:23PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 5.21ms[0m
+[90m1:23PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/option/option_em.py returned 1: [90m1:23PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 5.05ms[0m
+[90m1:23PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T231947Z-ac04-c65-c74-r3/inputs/pristine/akshare/stock/cons.py returned 1: [90m1:23PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 45.3ms[0m
+[90m1:23PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m1:23PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 21.7ms[0m
+[90m1:23PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m1:23PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.4ms[0m
+[90m1:23PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m1:23PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 4.99ms[0m
+[90m1:23PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/option/option_em.py returned 1: [90m1:23PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.5ms[0m
+[90m1:23PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/ac04-current-codemod-replay/runs/20261012T232427Z-ac04-c65-c74-r4/inputs/pristine/akshare/stock/cons.py returned 1: [90m1:23PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 43.2ms[0m
+[90m1:23PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/bond/bond_china_money.py returned 1: [90m1:24PM[0m [32mINF[0m [1mscanned ~15881 bytes (15.88 KB) in 21.8ms[0m
+[90m1:24PM[0m [33mWRN[0m [1mleaks found: 2[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/bond/bond_convert.py returned 1: [90m1:24PM[0m [32mINF[0m [1mscanned ~22513 bytes (22.51 KB) in 11.6ms[0m
+[90m1:24PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/futures/futures_hf_em.py returned 1: [90m1:24PM[0m [32mINF[0m [1mscanned ~8191 bytes (8.19 KB) in 5.06ms[0m
+[90m1:24PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/option/option_em.py returned 1: [90m1:24PM[0m [32mINF[0m [1mscanned ~7117 bytes (7.12 KB) in 4.77ms[0m
+[90m1:24PM[0m [33mWRN[0m [1mleaks found: 1[0m
+  Gitleaks docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/inputs/pristine/akshare/stock/cons.py returned 1: [90m1:24PM[0m [32mINF[0m [1mscanned ~43453 bytes (43.45 KB) in 42.9ms[0m
+[90m1:24PM[0m [33mWRN[0m [1mleaks found: 1[0m
+FAIL ruff check
+E501 Line too long (110 > 100)
+  --> scripts/quality/iter2_witnesses/_parts/cboe/historical.py:18:101
+   |
+16 | CboeIndexHistoricalFetcher, which the implementation phase reads; the class it names is the
+17 | verified resolution of the capability domain:
+18 | ``contract_model('cboe_index_historical') -> opendata.data.models.cboe_index_historical.CboeIndexHistorical``.
+   |                                                                                                     ^^^^^^^^^^
+19 |
+20 | No expected_* face here was copied from a captured run: EquityHistorical and EtfHistorical
+   |
+
+Found 1 error.
+FAIL: A2 gate failed on: immutable evidence secret scan, ruff check
+
+ok   ruff format --check
+ok  mypy (10 unique target(s))
+mypy target results:
+  docs/evidence/C141/wave37-cboe-index-snapshots-20261019/probes/w39_run_chain.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C141/wave37-cboe-index-snapshots-20261019/probes/w40_snapshot_landing_face.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  docs/evidence/C141/wave37-cboe-index-snapshots-20261019/probes/w41_staged_credential_scan.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/models/__init__.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/models/cboe_index_snapshots.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/providers/cboe/models/index_snapshots_public.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/providers/cboe/provider.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  opendata/data/providers/cboe/specs.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  scripts/quality/iter2_witnesses/_parts/cboe/historical.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+  scripts/quality/iter2_witnesses/_parts/cboe/snapshots.py: exit=0 stdout_chars=164 stderr_chars=0
+    stdout:
+pyproject.toml: note: unused section(s): module = ['opendata.data.providers.akshare._vendor', 'opendata.data.providers.akshare._vendor.*', 'opendata.data_fetch.*']
+
+ok   bandit
+real 230.43
+user 194.66
+sys 58.08
+a2_slice_exit=1

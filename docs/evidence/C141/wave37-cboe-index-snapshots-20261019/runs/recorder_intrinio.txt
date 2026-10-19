@@ -1,0 +1,52 @@
+# carrier for recorder_intrinio
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/intrinio/claims.json --output docs/evidence/C101/intrinio/claims.reviewed.json --provider intrinio --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over intrinio's regenerated shard
+# started_utc: 2026-10-19T05:07:16+00:00
+# exit: 0
+# stdout_chars: 2614 stderr_chars: 0
+
+re-signing: dropped 37 earlier review(s) for the addressed identities
+REVIEW_SIGNED: intrinio::BalanceSheet
+REVIEW_SIGNED: intrinio::CalendarIpo
+REVIEW_SIGNED: intrinio::CashFlowStatement
+REVIEW_SIGNED: intrinio::CompanyFilings
+REVIEW_SIGNED: intrinio::CompanyNews
+REVIEW_SIGNED: intrinio::CurrencyPairs
+REVIEW_SIGNED: intrinio::EquityHistorical
+REVIEW_SIGNED: intrinio::EquityInfo
+REVIEW_SIGNED: intrinio::EquityQuote
+REVIEW_SIGNED: intrinio::EquitySearch
+REVIEW_SIGNED: intrinio::EtfHistorical
+REVIEW_SIGNED: intrinio::EtfHoldings
+REVIEW_SIGNED: intrinio::EtfInfo
+REVIEW_SIGNED: intrinio::EtfPricePerformance
+REVIEW_SIGNED: intrinio::EtfSearch
+REVIEW_SIGNED: intrinio::FinancialRatios
+REVIEW_SIGNED: intrinio::ForwardEbitdaEstimates
+REVIEW_SIGNED: intrinio::ForwardEpsEstimates
+REVIEW_SIGNED: intrinio::ForwardPeEstimates
+REVIEW_SIGNED: intrinio::ForwardSalesEstimates
+REVIEW_SIGNED: intrinio::FredSeries
+REVIEW_SIGNED: intrinio::HistoricalAttributes
+REVIEW_SIGNED: intrinio::HistoricalDividends
+REVIEW_SIGNED: intrinio::HistoricalMarketCap
+REVIEW_SIGNED: intrinio::IncomeStatement
+REVIEW_SIGNED: intrinio::IndexHistorical
+REVIEW_SIGNED: intrinio::InsiderTrading
+REVIEW_SIGNED: intrinio::KeyMetrics
+REVIEW_SIGNED: intrinio::LatestAttributes
+REVIEW_SIGNED: intrinio::MarketSnapshots
+REVIEW_SIGNED: intrinio::OptionsChains
+REVIEW_SIGNED: intrinio::OptionsUnusual
+REVIEW_SIGNED: intrinio::PriceTargetConsensus
+REVIEW_SIGNED: intrinio::ReportedFinancials
+REVIEW_SIGNED: intrinio::SearchAttributes
+REVIEW_SIGNED: intrinio::ShareStatistics
+REVIEW_SIGNED: intrinio::WorldNews
+REVIEW_REFUSED: intrinio::OptionsSnapshots:implementation:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; direct:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; service:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; contract:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,fixture_pins_missing,probe_pins_missing,source_pins_missing; counterfact:claim_receipt_path_invalid,claim_status_blocked,command_exit_nonzero,contract_pins_missing,counterfact_receipt_path_invalid,fixture_pins_missing,probe_pins_missing,source_pins_missing
+recorder_exit=0 signed=37 refused=1 reviews_total=37 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/intrinio/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_intrinio_exit=0

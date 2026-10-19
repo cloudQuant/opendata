@@ -28,6 +28,7 @@ from opendata.data.models.cboe_index import (
     CboeSearchedIndex,
 )
 from opendata.data.models.cboe_index_historical import CboeIndexHistorical
+from opendata.data.models.cboe_index_snapshots import CboeIndexSnapshots
 from opendata.data.models.cftc import (
     COT,
     COTSearch,
@@ -766,6 +767,7 @@ __all__ = [
     "NasdaqTopRetail",
     "SecInstitutionSearchResult",
     "CboeIndexHistorical",
+    "CboeIndexSnapshots",
     "OecdCompositeLeadingIndicator",
     "OecdConsumerPriceIndex",
     "OecdCountryInterestRate",

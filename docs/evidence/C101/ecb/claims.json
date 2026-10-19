@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T23:21:11.022859+00:00",
+      "executed_at_utc": "2026-10-19T04:43:26.596760+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -20,8 +20,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -108,7 +108,7 @@
       "receipt": {
         "model_identity": "ecb::BalanceOfPayments",
         "path": "docs/evidence/C101/receipts/ecb/BalanceOfPayments/implementation.json",
-        "sha256": "cdef80cca73277ff458639716f57fc398c7ad47308fff8c20b129954c1dfeacf"
+        "sha256": "218ec0fbac4aeac9a0b59fdf3059c6ca0f1d40ad1d16f42fa30512316d4f2612"
       },
       "status": "PASS",
       "upstream_model": "BalanceOfPayments"
@@ -116,7 +116,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T23:21:11.909537+00:00",
+      "executed_at_utc": "2026-10-19T04:43:27.833767+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -133,8 +133,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -211,7 +211,7 @@
       "receipt": {
         "model_identity": "ecb::BalanceOfPayments",
         "path": "docs/evidence/C101/receipts/ecb/BalanceOfPayments/direct.json",
-        "sha256": "7f640b4b313c7c4665977dc527e14abea6a47fd9cc5e8a4a3c222319dc9d5561"
+        "sha256": "f7f2fb0a4f2756d406311fab349281ea520fa9a205df789dc872810be4c4ae1d"
       },
       "status": "PASS",
       "upstream_model": "BalanceOfPayments"
@@ -219,7 +219,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T23:21:12.969678+00:00",
+      "executed_at_utc": "2026-10-19T04:43:29.138373+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -236,8 +236,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -314,7 +314,7 @@
       "receipt": {
         "model_identity": "ecb::BalanceOfPayments",
         "path": "docs/evidence/C101/receipts/ecb/BalanceOfPayments/service.json",
-        "sha256": "a5ff02d3e9dc31190413bdc27509eab967cfe208223005304d079c04ce32a4b8"
+        "sha256": "18b25133dcf823d942c8a2b62dbba1bd155996bafc23688d153db29363ec5936"
       },
       "status": "PASS",
       "upstream_model": "BalanceOfPayments"
@@ -322,7 +322,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T23:21:13.856138+00:00",
+      "executed_at_utc": "2026-10-19T04:43:30.361953+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -339,8 +339,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -417,7 +417,7 @@
       "receipt": {
         "model_identity": "ecb::BalanceOfPayments",
         "path": "docs/evidence/C101/receipts/ecb/BalanceOfPayments/contract.json",
-        "sha256": "c95f200086f77ef857f47e6e6e6da41ee41b4c4da1207d70bfb9c0f3282c8b03"
+        "sha256": "1ba491152d2659683cca6d1962658f544d57ce752c242c32ca7cf5068d94e981"
       },
       "status": "PASS",
       "upstream_model": "BalanceOfPayments"
@@ -425,7 +425,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model BalanceOfPayments --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T23:21:15.619545+00:00",
+      "executed_at_utc": "2026-10-19T04:43:32.743317+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -442,8 +442,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -520,7 +520,7 @@
       "receipt": {
         "model_identity": "ecb::BalanceOfPayments",
         "path": "docs/evidence/C101/receipts/ecb/BalanceOfPayments/counterfact.json",
-        "sha256": "d540b86ad8c0ef46c4e4bcc76233345e99988f91ce156251acba613910cbaf2c"
+        "sha256": "54aceb90761240c38138b5ddb5f7b78b6b8e5e20b2ee49e7c3cc3b4f0fc069c8"
       },
       "status": "PASS",
       "upstream_model": "BalanceOfPayments"
@@ -528,7 +528,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T23:21:16.477709+00:00",
+      "executed_at_utc": "2026-10-19T04:43:33.913953+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -540,8 +540,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -623,7 +623,7 @@
       "receipt": {
         "model_identity": "ecb::CurrencyReferenceRates",
         "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/implementation.json",
-        "sha256": "7aa43bc4ee8436121ea5aaead773dd1a6571d49528ea15e9d91754da06ca5fdf"
+        "sha256": "0d691a2fd5c5d5f20419d0e82b7e85b8f73da1e167ff42753c989ec5b81e1fe2"
       },
       "status": "PASS",
       "upstream_model": "CurrencyReferenceRates"
@@ -631,7 +631,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T23:21:17.357985+00:00",
+      "executed_at_utc": "2026-10-19T04:43:35.097650+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -643,8 +643,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -716,7 +716,7 @@
       "receipt": {
         "model_identity": "ecb::CurrencyReferenceRates",
         "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/direct.json",
-        "sha256": "e0b9c0d1074d48455eb50b4aaa518391c0c97b502906b1a257955a0e62288513"
+        "sha256": "23d6aba1ab8f76c53d2ca438fcbd198d3f703e288203f840f82c82c1be878ed6"
       },
       "status": "PASS",
       "upstream_model": "CurrencyReferenceRates"
@@ -724,7 +724,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T23:21:18.435844+00:00",
+      "executed_at_utc": "2026-10-19T04:43:36.424403+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -736,8 +736,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -809,7 +809,7 @@
       "receipt": {
         "model_identity": "ecb::CurrencyReferenceRates",
         "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/service.json",
-        "sha256": "a2261d2281a806459798ca9aa84f6a357cdf97ea6c0f9d2ee63d04d2afa1d781"
+        "sha256": "177455dac35ff67ac5d91743e0673c7a8c7a689cc20c3b043cbc5c78c2c0fcff"
       },
       "status": "PASS",
       "upstream_model": "CurrencyReferenceRates"
@@ -817,7 +817,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T23:21:19.355446+00:00",
+      "executed_at_utc": "2026-10-19T04:43:37.622407+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -829,8 +829,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -902,7 +902,7 @@
       "receipt": {
         "model_identity": "ecb::CurrencyReferenceRates",
         "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/contract.json",
-        "sha256": "6a556b3e3b7ac0dde3d97425699fb01c1631aa7b86638e89b6fff02176ae8338"
+        "sha256": "592229f71bc3c6234fe436e1f8dbc173d28c42d1fb7e6a0ee8980651f7a61890"
       },
       "status": "PASS",
       "upstream_model": "CurrencyReferenceRates"
@@ -910,7 +910,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model CurrencyReferenceRates --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T23:21:21.146609+00:00",
+      "executed_at_utc": "2026-10-19T04:43:40.057144+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -922,8 +922,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -995,7 +995,7 @@
       "receipt": {
         "model_identity": "ecb::CurrencyReferenceRates",
         "path": "docs/evidence/C101/receipts/ecb/CurrencyReferenceRates/counterfact.json",
-        "sha256": "7a4afe244b8e65f448b922e4ed99fe54f3878006c3be6a273ab9e8fe9db8d41a"
+        "sha256": "b33567aac20c8aacbe0482dcc8bbcd3fa82c83ffdd800be47b6a8528d9937f0e"
       },
       "status": "PASS",
       "upstream_model": "CurrencyReferenceRates"
@@ -1003,7 +1003,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T23:21:22.009254+00:00",
+      "executed_at_utc": "2026-10-19T04:43:41.269604+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1020,8 +1020,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1108,7 +1108,7 @@
       "receipt": {
         "model_identity": "ecb::YieldCurve",
         "path": "docs/evidence/C101/receipts/ecb/YieldCurve/implementation.json",
-        "sha256": "24f500bdeff210c8f51b4b6ceccb7ce9e49d7a86c19dfdb0e2d0c66e46a1c665"
+        "sha256": "db33851cea23ec6ffd5dbe07c4fc5c0f8dc238323ad3290d612ca2cff6441c1a"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -1116,7 +1116,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T23:21:22.887794+00:00",
+      "executed_at_utc": "2026-10-19T04:43:42.484651+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1133,8 +1133,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1211,7 +1211,7 @@
       "receipt": {
         "model_identity": "ecb::YieldCurve",
         "path": "docs/evidence/C101/receipts/ecb/YieldCurve/direct.json",
-        "sha256": "1c131c8528609e4fefebd054f7a12d468443cd3edce0e16e994fb89c50eb3d29"
+        "sha256": "438ea67c7735a776c82c2cb8982ee3810d5dd285f9be7402b89ebf76bf743794"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -1219,7 +1219,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T23:21:23.947847+00:00",
+      "executed_at_utc": "2026-10-19T04:43:43.905736+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1236,8 +1236,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1314,7 +1314,7 @@
       "receipt": {
         "model_identity": "ecb::YieldCurve",
         "path": "docs/evidence/C101/receipts/ecb/YieldCurve/service.json",
-        "sha256": "e63a026569eb90fb2c41ac6673e25caf06feb88239922e8386ed5d098bc600b0"
+        "sha256": "7add0208c126481177e5b3827e62b8b33046aef197e27eb4dd475dcb469c9ccb"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -1322,7 +1322,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T23:21:24.840375+00:00",
+      "executed_at_utc": "2026-10-19T04:43:44.953905+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1339,8 +1339,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1417,7 +1417,7 @@
       "receipt": {
         "model_identity": "ecb::YieldCurve",
         "path": "docs/evidence/C101/receipts/ecb/YieldCurve/contract.json",
-        "sha256": "5afcc67a7f218e991428ed712fb232997d334c8efe192e6a800626c6510e3faa"
+        "sha256": "6f891d7cdfc07b70cef9a68a31229dc17810405bc50de533078a9e032e5b8d79"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -1425,7 +1425,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider ecb --model YieldCurve --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T23:21:26.627741+00:00",
+      "executed_at_utc": "2026-10-19T04:43:46.808093+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1442,8 +1442,8 @@
             "path": "opendata/data/models/currency.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1520,13 +1520,13 @@
       "receipt": {
         "model_identity": "ecb::YieldCurve",
         "path": "docs/evidence/C101/receipts/ecb/YieldCurve/counterfact.json",
-        "sha256": "6857a9bda27533dec8487191ad2125c9c324737b6cde9721924972f20d9d5638"
+        "sha256": "bce0227fdddd59810ac20507370d1877ef08d69f764eb0443c16b6f38d0387b9"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
     }
   ],
-  "generated_at_utc": "2026-10-18T23:21:28.042348+00:00",
+  "generated_at_utc": "2026-10-19T04:43:48.463710+00:00",
   "generated_by": "scripts/quality/iter2_claims_producer.py",
   "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
   "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",

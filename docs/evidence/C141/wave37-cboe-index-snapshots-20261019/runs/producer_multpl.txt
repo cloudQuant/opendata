@@ -1,0 +1,20 @@
+# carrier for producer_multpl
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider multpl --output docs/evidence/C101/multpl/claims.json
+# note: five-phase producer for multpl
+# started_utc: 2026-10-19T05:07:16+00:00
+# exit: 0
+# stdout_chars: 1664 stderr_chars: 0
+
+== provider multpl: 1 inventory row(s) of 350 total ==
+SP500Multiples implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase implementation --evidence-root docs/evidence/C101
+SP500Multiples direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase direct --evidence-root docs/evidence/C101
+SP500Multiples service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase service --evidence-root docs/evidence/C101
+SP500Multiples contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase contract --evidence-root docs/evidence/C101
+SP500Multiples counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase counterfact --evidence-root docs/evidence/C101
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=337/350; provider rows covered=1 of provider inventory rows=1, of which bound now=1/337 resolvable; claims emitted=5 (5 PASS, 0 FAIL, 0 BLOCKED) = 1 row(s) x 5 phases; phases actually executed as subprocesses=5
+wrote docs/evidence/C101/multpl/claims.json
+
+---- stderr ----
+
+
+chain_producer_multpl_exit=0

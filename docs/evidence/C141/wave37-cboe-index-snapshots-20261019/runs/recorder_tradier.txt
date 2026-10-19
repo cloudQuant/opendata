@@ -1,0 +1,19 @@
+# carrier for recorder_tradier
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/tradier/claims.json --output docs/evidence/C101/tradier/claims.reviewed.json --provider tradier --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over tradier's regenerated shard
+# started_utc: 2026-10-19T05:15:46+00:00
+# exit: 0
+# stdout_chars: 413 stderr_chars: 0
+
+re-signing: dropped 5 earlier review(s) for the addressed identities
+REVIEW_SIGNED: tradier::EquityHistorical
+REVIEW_SIGNED: tradier::EquityQuote
+REVIEW_SIGNED: tradier::EquitySearch
+REVIEW_SIGNED: tradier::EtfHistorical
+REVIEW_SIGNED: tradier::OptionsChains
+recorder_exit=0 signed=5 refused=0 reviews_total=5 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/tradier/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_tradier_exit=0

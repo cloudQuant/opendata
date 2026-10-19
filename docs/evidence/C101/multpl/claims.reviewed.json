@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T23:42:04.585527+00:00",
+      "executed_at_utc": "2026-10-19T05:07:17.511655+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/multpl.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -88,7 +88,7 @@
       "receipt": {
         "model_identity": "multpl::SP500Multiples",
         "path": "docs/evidence/C101/receipts/multpl/SP500Multiples/implementation.json",
-        "sha256": "343d9f9abc9b2a7a05f268c5d6828f5a0d6e7796c55bdbfc5f360dccd3fc2f5e"
+        "sha256": "954f4b5a9cd50f2bb884d19b3663f336c94c4243f289b79e258b4344a1c9f9bc"
       },
       "status": "PASS",
       "upstream_model": "SP500Multiples"
@@ -96,7 +96,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T23:42:05.465790+00:00",
+      "executed_at_utc": "2026-10-19T05:07:18.426551+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -108,8 +108,8 @@
             "path": "opendata/data/models/multpl.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -171,7 +171,7 @@
       "receipt": {
         "model_identity": "multpl::SP500Multiples",
         "path": "docs/evidence/C101/receipts/multpl/SP500Multiples/direct.json",
-        "sha256": "25e2829bd3731056c9c43aceea959559d707b14cfa8a7f296ce3c87e9cbdf03c"
+        "sha256": "e008926dbed40c614537daa2aba0263103f33ea33203b68d67f67cbc904e4358"
       },
       "status": "PASS",
       "upstream_model": "SP500Multiples"
@@ -179,7 +179,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T23:42:06.515096+00:00",
+      "executed_at_utc": "2026-10-19T05:07:19.458353+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -191,8 +191,8 @@
             "path": "opendata/data/models/multpl.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -254,7 +254,7 @@
       "receipt": {
         "model_identity": "multpl::SP500Multiples",
         "path": "docs/evidence/C101/receipts/multpl/SP500Multiples/service.json",
-        "sha256": "2116e559e9094369f4c474182b67ffb6a732afcc12fc7110f1021b318f3ce7dd"
+        "sha256": "6ecdb4cbdbe5667082aff2df44893455cc45cd706f753dc61b8638b4681ea746"
       },
       "status": "PASS",
       "upstream_model": "SP500Multiples"
@@ -262,7 +262,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T23:42:07.428698+00:00",
+      "executed_at_utc": "2026-10-19T05:07:20.336260+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -274,8 +274,8 @@
             "path": "opendata/data/models/multpl.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -337,7 +337,7 @@
       "receipt": {
         "model_identity": "multpl::SP500Multiples",
         "path": "docs/evidence/C101/receipts/multpl/SP500Multiples/contract.json",
-        "sha256": "522148498e0d8c65f50ee5d8c5c78a29d7a117c40a79d29d64be2c40043d28f7"
+        "sha256": "5ec902da8b22ca8a142e810314549a7de9145bf8db79763cf78e2d106c0f9141"
       },
       "status": "PASS",
       "upstream_model": "SP500Multiples"
@@ -345,7 +345,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider multpl --model SP500Multiples --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T23:42:09.191957+00:00",
+      "executed_at_utc": "2026-10-19T05:07:22.128815+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -357,8 +357,8 @@
             "path": "opendata/data/models/multpl.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -420,7 +420,7 @@
       "receipt": {
         "model_identity": "multpl::SP500Multiples",
         "path": "docs/evidence/C101/receipts/multpl/SP500Multiples/counterfact.json",
-        "sha256": "9fb7bc1ab47b0c68883def9d57fd1111d01c51afbc86e79cf3f3751c6ff37ced"
+        "sha256": "f128a1451b55c1608ff11fbf47648dc2da593de9bbe63da842a009c3cc5b79de"
       },
       "status": "PASS",
       "upstream_model": "SP500Multiples"
@@ -434,9 +434,9 @@
       "receipt": {
         "model_identity": "multpl::SP500Multiples",
         "path": "docs/evidence/C101/primary-reviews/multpl__SP500Multiples.review.json",
-        "sha256": "50f1d30792f16d015b1907f3507f3f7447c686e78030d73ab3bd44fa35e8bc63"
+        "sha256": "289d4cc5b452cb6eb0c88ed34ff3f2e2db8b423d0ca82dc14796a4f9eba54888"
       },
-      "reviewed_at_utc": "2026-10-18T23:42:10Z",
+      "reviewed_at_utc": "2026-10-19T05:07:23Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

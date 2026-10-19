@@ -248,3 +248,40 @@ timeseries/{symbol}`，`type=<prefix><Measure>` 列表 + period1/period2），�
 两臂的反例：`E_forge` 把合成 receipt 写进 `/tmp` 后索引必须多出该键、删除后必须逐字回到快照（`:24` 两个布尔都是读数，不是断言）；`D` 在 host-only 与 endpoint 两个粒度分开打，就是为了让"文档页命中"不能再冒充"端点命中"——第一代正是这样把 intrinio 读成有捕获的。
 
 **下一代的验证判据**：任一工件被授权取得并按 `*.headers` + body 落档后，本面应读到 `D_capture_present captured >= 1` 且该行的 `capture_endpoint` 是**它自己的端点键**（不是 `docs.*|documentation`）；`host_page_only_rows` 保持只列文档页命中的行。失效条件：只有 receipt 的 URL 与请求 URL 主机相同但路径段不同（键不命中，`captured` 不涨），或 `B_upstream_resolved` 从 11 掉到更少（参考 checkout 被换版本，契约源丢失）。
+
+## 14. wave-37 追加：§13.10 那张表里"只差一次授权 GET"的六行，其中一行的工件已经拿到并落了地
+
+上一节把 14 行按"还差哪一个工件"列表化之后，本波执行了一次授权访问（只发公开无鉴权 GET，
+`docs/evidence/C140/wave37-unauthenticated-access-20261019/capture-receipt.json` 的
+`authorization_boundary` 字面就是 "public unauthenticated GETs only; no credentialed request was made"，
+sha16 `9fcf37c8ace6019a`），并用本面自己那把仪器重测。载档
+`runs/w38_artifact_request_face.take2_after_access.txt`（29 行，sha16 `a46f96c531a69203`，7 臂全绿 `:27`，
+出口 `:29`）。
+
+* 工件归属与索引条目**都**移动了：`D_capture_present captured=5 uncaptured=9` `:23`（上一代
+  `runs/w38_artifact_request_face.txt:23` 是 `captured=1 uncaptured=13`），
+  `C_endpoint_literals … receipt_endpoint_keys=13` `:22`（上一代 `:22` 是 9，+4 个 `host|首段` 键）。
+  进入已捕获集合的是四行：`cboe::IndexSnapshots`→`cdn.cboe.com|api`、
+  `seeking_alpha::CalendarEarnings`→`seekingalpha.com|api`、
+  `seeking_alpha::ForwardEpsEstimates` 与 `ForwardSalesEstimates`（同一 `symbol_data/estimates` 端点，
+  所以**两行共用一个键**——键数与行数不是同一个数，本节不把二者混称），
+  外加上一代就命中但只到文档层的 `intrinio::OptionsSnapshots`→`docs.intrinio.com|documentation`。
+  这里的键粒度是 `host|首段`，本身不足以支撑文档级断言——这一点由 wave-37 的落地面在
+  `docs/evidence/C141/wave37-cboe-index-snapshots-20261019/face.md` §2 里用 receipt 的
+  `url` 字面 + `body_sha256` + 路径同一来补，不是本节这张表能承担的断言强度。
+* 本节 §13.10 表格里 `cboe::IndexSnapshots` 那一行的"盘上端点捕获=无 / 还差的工件=一次该 URL 的 GET 捕获"
+  **已被本波的载荷取代**：同一 URL 的 `HTTP/2 307 → HTTP/2 200` 捕获在 C140（358,262 B 体，
+  sha256 前缀 `9554ad964bcee6ac`），该行随后在 wave-37 落地为平面 1 第 337 行。表格其余 13 行按原样成立。
+* `A_population residue=14 … judge_accepted=336` `:6` 与 `G_generation … claims_sha256=9ebbe59602b07f5b` `:26`
+  是**重签之前那一代**的读数：这把面在 C140 落档之后、C141 的 claims 重产之前跑的，所以它的平面读数是 336 而不是
+  337。留着这一代是为了让"工件到位"与"该行被验收"是两个可以被分别观察的事件，而不是一个。
+* `E_forge` 的反例臂仍按它原有的形状可动：`row=biztoc::WorldNews host=biztoc.p.rapidapi.com
+  key=biztoc.p.rapidapi.com| injection_gains_key=True index_reverts_exactly=True` `:24`。这一行仍是
+  `uncaptured`，它的工件仍是 rights 注册 + key，不是 GET。
+
+对本节预测判据（§13.6）的回填：**若 owner 给 seeking_alpha / wsj 那 6 行"访问被拒"裁决**那一条里，
+本波替 seeking_alpha 的三行给出了相反的读数——它们不是被拒，而是**能拿 200**（`earnings_calendar/tickers`
+一次 200、两次参数链 400；`symbol_data/estimates` 一次 200、一次 400）。所以这三行的阻塞点从
+"访问证据"移到"没有 provider 包"（`opendata/data/providers/catalog.py` 是树级前提）。
+`wsj` 三行与 `cboe::FuturesCurve` 在本波之后仍未获任何端点级捕获，`ledger_ruled_out` 从 11 降到 10 的唯一
+原因就是我删掉了 cboe 拒绝台账里的 `IndexSnapshots` 那一条。

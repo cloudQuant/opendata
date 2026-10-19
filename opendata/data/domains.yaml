@@ -4577,6 +4577,17 @@ domains:
     storage_mode: transient
     permissions: [query]
 
+  cboe_index_snapshots:
+    display_name: Cboe index snapshots
+    rest_path: index/cboe-index-snapshots
+    contract: CboeIndexSnapshots
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol]
+    filter_dims: [symbol]
+    storage_mode: transient
+    permissions: [query]
+
   finviz_compare_groups:
     display_name: "Finviz行业板块比较"
     rest_path: "market/finviz/compare-groups"

@@ -1,0 +1,134 @@
+{
+  "receipt_version": 1,
+  "review": "unauthenticated access probe for the four residue rows whose inventory credential_fields is empty",
+  "captured_utc_range": [
+    "2026-10-19T04:12:02.588495Z",
+    "2026-10-19T04:13:09.865165Z"
+  ],
+  "environment": {
+    "host": "Darwin, macOS, arm64",
+    "curl_command": "/usr/bin/curl -s -L -A <UA> -D <headers> -o <body> <url>",
+    "auth": "No Authorization header, API key, account login, or Cookie request supplied.",
+    "follow_redirects": true
+  },
+  "source_captures": [
+    {
+      "id": "cboe-all-us-indices",
+      "url": "https://cdn.cboe.com/api/global/delayed_quotes/quotes/all_us_indices.json",
+      "effective_url": "https://cdn-api.cboe.com/api/global/delayed_quotes/quotes/all_us_indices.json",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 307 ",
+        "HTTP/2 200 "
+      ],
+      "server": "cloudflare",
+      "content_type": "text/html; charset=UTF-8",
+      "body_bytes": 358262,
+      "body_sha256": "9554ad964bcee6ace5b09bb5b65efd5b7ad85cc0e25e1ee9f7e5d5828e5c49b0",
+      "headers_file": "sources/cboe-all-us-indices.headers",
+      "body_file": "sources/cboe-all-us-indices.json",
+      "use": "cboe::IndexSnapshots candidate source; unauthenticated; 307 then 200 on cdn-api.cboe.com"
+    },
+    {
+      "id": "seeking-alpha-earnings-calendar-missing-filter",
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?start_date=2026-10-19&end_date=2026-10-26",
+      "effective_url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?start_date=2026-10-19&end_date=2026-10-26",
+      "http": "400",
+      "status_line_chain": [
+        "HTTP/2 400 "
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "body_bytes": 104,
+      "body_sha256": "9966892a3ced95533fed2f7f81e7b16879c211363980f72ddd252ee9ec26a438",
+      "headers_file": "sources/seeking-alpha-earnings-calendar-missing-filter.headers",
+      "body_file": "sources/seeking-alpha-earnings-calendar-missing-filter.json",
+      "use": "seeking_alpha::CalendarEarnings; shows the API is live and what parameter it demands"
+    },
+    {
+      "id": "seeking-alpha-earnings-calendar-filtered",
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bstart_date%5D=2026-10-19&filter%5Bend_date%5D=2026-10-26",
+      "effective_url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bstart_date%5D=2026-10-19&filter%5Bend_date%5D=2026-10-26",
+      "http": "400",
+      "status_line_chain": [
+        "HTTP/2 400 "
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "body_bytes": 119,
+      "body_sha256": "1af2ea3e46b940f46605d9691aff4ae5a8a2c2dba6f30c2413320df6e8713223",
+      "headers_file": "sources/seeking-alpha-earnings-calendar-filtered.headers",
+      "body_file": "sources/seeking-alpha-earnings-calendar-filtered.json",
+      "use": "seeking_alpha::CalendarEarnings with the documented filter shape"
+    },
+    {
+      "id": "seeking-alpha-symbol-data-estimates",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?symbols=AAPL",
+      "effective_url": "https://seekingalpha.com/api/v3/symbol_data/estimates?symbols=AAPL",
+      "http": "400",
+      "status_line_chain": [
+        "HTTP/2 400 "
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "body_bytes": 108,
+      "body_sha256": "ee580c8bd08446f3e784bb158faae21f647feceb95a487478eb6a5e3c06e3837",
+      "headers_file": "sources/seeking-alpha-symbol-data-estimates.headers",
+      "body_file": "sources/seeking-alpha-symbol-data-estimates.json",
+      "use": "seeking_alpha::ForwardEpsEstimates and ForwardSalesEstimates source endpoint"
+    },
+    {
+      "id": "seeking-alpha-earnings-calendar-200",
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bselected_date%5D=2026-10-19",
+      "effective_url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bselected_date%5D=2026-10-19",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200 "
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "body_bytes": 7537,
+      "body_sha256": "ee8efb6a16618b5b68f161e49d640c45ccbc6619dc4519287f8b009518b208d7",
+      "headers_file": "sources/seeking-alpha-earnings-calendar-200.headers",
+      "body_file": "sources/seeking-alpha-earnings-calendar-200.json",
+      "use": "seeking_alpha::CalendarEarnings live 200 payload; the endpoint is unauthenticated"
+    },
+    {
+      "id": "seeking-alpha-symbol-data-estimates-relative-periods",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids=AAPL&relative_periods=12",
+      "effective_url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids=AAPL&relative_periods=12",
+      "http": "400",
+      "status_line_chain": [
+        "HTTP/2 400 "
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "body_bytes": 136,
+      "body_sha256": "67f42221288941cff0edabacb01f2549ca1afe830ae2c84c340fcadaded797fe",
+      "headers_file": "sources/seeking-alpha-symbol-data-estimates-relative-periods.headers",
+      "body_file": "sources/seeking-alpha-symbol-data-estimates-relative-periods.json",
+      "use": "seeking_alpha::ForwardEpsEstimates/ForwardSalesEstimates; 400 names the next required parameter"
+    }
+  ],
+  "authorization_boundary": "public unauthenticated GETs only; no credentialed request was made",
+  "progressive_parameter_chain": [
+    {
+      "step": 1,
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?start_date=2026-10-19&end_date=2026-10-26",
+      "http": "400",
+      "error_detail": "Parameter filter is required"
+    },
+    {
+      "step": 2,
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bstart_date%5D=2026-10-19&filter%5Bend_date%5D=2026-10-26",
+      "http": "400",
+      "error_detail": "Parameter filter[selected_date] is required"
+    },
+    {
+      "step": 3,
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bselected_date%5D=2026-10-19",
+      "http": "200",
+      "error_detail": ""
+    }
+  ]
+}

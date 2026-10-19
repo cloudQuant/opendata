@@ -3,9 +3,13 @@
 The four index/directory ModelSpecs below remain executable through the declaration engine.
 Handwritten typed adapters in ``models.all_access`` additionally implement EquityHistorical,
 EtfHistorical, EquityQuote, EquitySearch, and OptionsChains from Cboe's documented All Access API.
-``NOT_DECLARABLE`` names only the two fixed identities without a documented source protocol:
-FuturesCurve and IndexSnapshots. A separate handwritten adapter handles the limited public
-volatility-index subset of IndexHistorical.
+``NOT_DECLARABLE`` names the one fixed identity still without a documented source protocol,
+FuturesCurve. IndexHistorical is served by a separate handwritten adapter over the public
+volatility-index CSV subset, and IndexSnapshots left this set on 2026-10-19: the official
+unauthenticated panel ``api/global/delayed_quotes/quotes/all_us_indices.json`` was captured with
+``HTTP/2 200`` (810 index rows) at
+``docs/evidence/C140/wave37-unauthenticated-access-20261019/sources/cboe-all-us-indices.json``,
+body sha256 ``9554ad964bcee6ac…``, and ``models.index_snapshots_public`` maps it.
 
 The ``EQUITY_SEARCH`` ModelSpec is retained as an engine-format fixture for the existing delimited
 decoder, but is no longer the provider binding. Runtime EquitySearch uses the documented All
@@ -316,6 +320,4 @@ EQUITY_SEARCH = ModelSpec(
 NOT_DECLARABLE: dict[str, str] = {
     "FuturesCurve": "The reviewed official All Access docs do not establish the fixed model's "
     "underlying list, quote/history join, or curve output protocol.",
-    "IndexSnapshots": "No official endpoint/response mapping for the fixed regional snapshot "
-    "identity was evidenced in this slice.",
 }

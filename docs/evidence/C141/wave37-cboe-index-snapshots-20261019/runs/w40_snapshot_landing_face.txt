@@ -1,0 +1,16 @@
+# carrier for w40_snapshot_landing_face.py
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C141/wave37-cboe-index-snapshots-20261019/probes/w40_snapshot_landing_face.py
+# claims_sha256=ee5256aa4108a7b7 identity_set=5168e1e723999312
+# reference checkout: /Users/yunjinqi/Documents/new_projects/openbb/openbb_platform (output-contract comparator only)
+
+A_judge_row accepted=337 identities=350 claims=1710 row_status=OFFLINE_ACCEPTED row_phases=['contract', 'counterfact', 'direct', 'implementation', 'service'] row_missing=[] row_review=VALID row_issues=[] status_counts={'INCOMPLETE': 5, 'OFFLINE_ACCEPTED': 337, 'UNREVIEWED': 8}
+B_refusal_ledger live_count=1 live_names=['FuturesCurve'] IndexSnapshots_absent=True injection_moves_count=True forged_count=2
+C_capture_backing endpoint_key=cdn.cboe.com|api index_named_by=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C140/wave37-unauthenticated-access-20261019/capture-receipt.json index_size=13 receipt_url_exact_matches=1 receipt_http=['200'] status_line_chain=['HTTP/2 307 ', 'HTTP/2 200 '] body_digest_and_path_match=[True] body_bytes=358262 same_host_coarser_key=cdn.cboe.com|api same_host_also_present=True foreign_control_absent=True
+D_guard_two_sided clean_rows=810 tampered_refused_code=CBOE_INDEX_SNAPSHOTS_BAD_NUMERIC_FIELD selected_rows=1 selected_symbol=^VIX
+E_contract_comparator reference_own=12 reference_base=12 reference_union=16 landed_columns=16 landed_minus_reference=[] reference_minus_landed=[] never_filled_by_fetcher=['currency', 'name', 'status']
+F_phase_receipts present=5 of=5 readings={'implementation': 'exit=0 status=PASS', 'direct': 'exit=0 status=PASS', 'service': 'exit=0 status=PASS', 'contract': 'exit=0 status=PASS', 'counterfact': 'exit=0 status=PASS'} control_row_receipts=0 refusal_class=CboeIndexSnapshotsError refusal_code=CBOE_INDEX_SNAPSHOTS_BAD_NUMERIC_FIELD expected_equals_observed=True control_note_on_disk=True
+G_generation identity_set=5168e1e723999312 claims_sha256=ee5256aa4108a7b7 judge_report_sha256=472c11cef6c0299f witness_sha256=621f27df74665353 capture_sha256=9554ad964bcee6ac snapshot_url_host=cdn.cboe.com
+H_census_bucket row=cboe::IndexSnapshots action=ABSENT_FROM_CENSUS_ROWS census_exit=1 detail=residue=13 actions={'implement_missing_model': 1, 'ledger_ruled_out': 10, 'new_provider_package': 2} red_arms=['B_landed_negative'] ruled_out_bucket_absent_for_this_row=True
+snapshot_landing_face arms=8 arms_passed=8 arms_failed=0 failed=[] PASS=True
+
+w40_snapshot_landing_face_exit=0

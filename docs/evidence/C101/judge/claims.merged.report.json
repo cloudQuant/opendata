@@ -2,7 +2,7 @@
   "acceptance_rule": "all five phase claims plus an explicit valid primary-model or human ACCEPT receipt; claim PASS alone is candidate only",
   "claims_input": {
     "path": "docs/evidence/C101/claims.merged.json",
-    "sha256": "9ebbe59602b07f5b30dccbcb210ac27b908f366ccb4e91cc36c3b16dd1bda008"
+    "sha256": "ee5256aa4108a7b7c86f38ba7fa70a01a2354039610cb753a7370cc164ecbed9"
   },
   "claims_status_source": "explicit JSON claims only; no directory globbing or markdown status parsing",
   "global_issues": [],
@@ -1640,129 +1640,87 @@
       "upstream_model": "IndexSearch"
     },
     {
-      "issues": [
-        "claim_receipt_path_invalid",
-        "claim_status_blocked",
-        "command_exit_nonzero",
-        "contract_pins_missing",
-        "counterfact_receipt_path_invalid",
-        "fixture_pins_missing",
-        "primary_review_missing",
-        "probe_pins_missing",
-        "source_pins_missing"
-      ],
-      "missing_material": [
-        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
-        "add externally recorded primary-model or human review receipt"
-      ],
+      "issues": [],
+      "missing_material": [],
       "missing_phases": [],
       "model_identity": "cboe::IndexSnapshots",
       "phases": {
         "contract": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "typed_contract",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/cboe/IndexSnapshots/contract.json",
+          "status": "CANDIDATE"
         },
         "counterfact": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
-          "counterfact": null,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "CboeIndexSnapshotsError",
+              "refusal_code": "CBOE_INDEX_SNAPSHOTS_BAD_NUMERIC_FIELD",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "CboeIndexSnapshotsError",
+              "refusal_code": "CBOE_INDEX_SNAPSHOTS_BAD_NUMERIC_FIELD",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "the panel publishes current_price as a quote number and _number only nulls a genuine JSON null; a boolean in that cell is a corrupt body, and because pydantic would widen True to a price of 1.0 the adapter must refuse the whole panel with CBOE_INDEX_SNAPSHOTS_BAD_NUMERIC_FIELD rather than emit an index snapshot priced at 1; untampered control produced 1 row(s) through the same seam"
+          },
           "evidence_kind": "adversarial_counterfact",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "counterfact_receipt_path_invalid",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/cboe/IndexSnapshots/counterfact.json",
+          "status": "CANDIDATE"
         },
         "direct": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "direct_fetcher",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/cboe/IndexSnapshots/direct.json",
+          "status": "CANDIDATE"
         },
         "implementation": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "implementation_check",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/cboe/IndexSnapshots/implementation.json",
+          "status": "CANDIDATE"
         },
         "service": {
           "claim_count": 1,
-          "claim_status": "BLOCKED",
+          "claim_status": "PASS",
           "counterfact": null,
           "evidence_kind": "provider_model_query",
-          "issues": [
-            "claim_receipt_path_invalid",
-            "claim_status_blocked",
-            "command_exit_nonzero",
-            "contract_pins_missing",
-            "fixture_pins_missing",
-            "probe_pins_missing",
-            "source_pins_missing"
-          ],
-          "receipt": null,
-          "status": "INCOMPLETE"
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/cboe/IndexSnapshots/service.json",
+          "status": "CANDIDATE"
         }
       },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "cboe",
-      "status": "INCOMPLETE",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-cboe-IndexSnapshots",
       "upstream_model": "IndexSnapshots"
     },
@@ -27310,25 +27268,114 @@
     },
     {
       "issues": [
-        "primary_review_missing"
+        "claim_receipt_path_invalid",
+        "claim_status_blocked",
+        "command_exit_nonzero",
+        "contract_pins_missing",
+        "counterfact_receipt_path_invalid",
+        "fixture_pins_missing",
+        "primary_review_missing",
+        "probe_pins_missing",
+        "source_pins_missing"
       ],
       "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
+        "repair implementation evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair direct evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair service evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair contract evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, fixture_pins_missing, probe_pins_missing, source_pins_missing",
+        "repair counterfact evidence: claim_receipt_path_invalid, claim_status_blocked, command_exit_nonzero, contract_pins_missing, counterfact_receipt_path_invalid, fixture_pins_missing, probe_pins_missing, source_pins_missing",
         "add externally recorded primary-model or human review receipt"
       ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "missing_phases": [],
       "model_identity": "yfinance::AvailableIndices",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "counterfact_receipt_path_invalid",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "BLOCKED",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [
+            "claim_receipt_path_invalid",
+            "claim_status_blocked",
+            "command_exit_nonzero",
+            "contract_pins_missing",
+            "fixture_pins_missing",
+            "probe_pins_missing",
+            "source_pins_missing"
+          ],
+          "receipt": null,
+          "status": "INCOMPLETE"
+        }
+      },
       "primary_review": {
         "decision": null,
         "evidence_snapshot_status": null,
@@ -27342,7 +27389,7 @@
         "status": "MISSING_OR_INVALID"
       },
       "provider": "yfinance",
-      "status": "UNREVIEWED",
+      "status": "INCOMPLETE",
       "task_id": "OBB2-yfinance-AvailableIndices",
       "upstream_model": "AvailableIndices"
     },
@@ -27636,7 +27683,7 @@
               "rejected": [],
               "status": null
             },
-            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCryptoHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 20 row(s) through the same seam"
+            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCryptoHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam"
           },
           "evidence_kind": "adversarial_counterfact",
           "issues": [],
@@ -27721,7 +27768,7 @@
               "rejected": [],
               "status": null
             },
-            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCurrencyHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 20 row(s) through the same seam"
+            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCurrencyHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam"
           },
           "evidence_kind": "adversarial_counterfact",
           "issues": [],
@@ -28911,7 +28958,7 @@
               "rejected": [],
               "status": null
             },
-            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceFuturesHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 20 row(s) through the same seam"
+            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceFuturesHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam"
           },
           "evidence_kind": "adversarial_counterfact",
           "issues": [],
@@ -29729,14 +29776,14 @@
   ],
   "schema_version": 1,
   "summary": {
-    "claim_count": 1705,
+    "claim_count": 1710,
     "identity_count": 350,
-    "offline_acceptance_count": 336,
-    "primary_review_count": 336,
+    "offline_acceptance_count": 337,
+    "primary_review_count": 337,
     "status_counts": {
       "INCOMPLETE": 5,
-      "OFFLINE_ACCEPTED": 336,
-      "UNREVIEWED": 9
+      "OFFLINE_ACCEPTED": 337,
+      "UNREVIEWED": 8
     }
   }
 }

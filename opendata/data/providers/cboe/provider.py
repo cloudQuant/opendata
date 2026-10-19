@@ -31,6 +31,12 @@ PROVIDER = Provider(
             scenario="指数日线：读取 Cboe 官方历史页明确链接的波动率指数 OHLC CSV",
         ),
         LazyFetcherBinding(
+            "opendata.data.providers.cboe.models.index_snapshots_public",
+            "CboeIndexSnapshotsFetcher",
+            canonical_model_ids=("IndexSnapshots",),
+            scenario="指数快照：读取 Cboe 官方公开 all_us_indices 延迟报价面板",
+        ),
+        LazyFetcherBinding(
             "opendata.data.providers.cboe.models.index_constituents",
             "CboeIndexConstituentsFetcher",
             canonical_model_ids=("IndexConstituents",),

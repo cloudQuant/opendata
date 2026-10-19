@@ -1,13 +1,13 @@
 {
   "capture": {
     "path": "docs/evidence/C101/captures/yfinance/CryptoHistorical/contract-exit0.txt",
-    "sha256": "874b7e840b07e24ba4acc60f4b52a6bfce8805a2e871c90a0eeb1817da8328ec",
+    "sha256": "5669479ec281e0fa0d91173d0545d9c0edbf03f9f805d43b4c7c6402926358ae",
     "size_bytes": 352,
-    "stdout_excerpt": "contract: YfinanceHistoricalBar validated 20 produced row(s); strict round-trip and extra-forbid boundaries hold\nVERDICT=PASS\n"
+    "stdout_excerpt": "contract: YfinanceHistoricalBar validated 21 produced row(s); strict round-trip and extra-forbid boundaries hold\nVERDICT=PASS\n"
   },
   "machine_execution": {
     "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CryptoHistorical --phase contract --evidence-root docs/evidence/C101",
-    "executed_at_utc": "2026-10-19T01:32:49.616490+00:00",
+    "executed_at_utc": "2026-10-19T05:16:19.865322+00:00",
     "exit_code": 0,
     "pins": {
       "contract": [
@@ -17,16 +17,16 @@
           "path": "opendata/data/models/yfinance_iter2.py"
         },
         {
-          "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-          "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+          "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+          "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
           "path": "opendata/data/domains.yaml"
         }
       ],
       "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
       "fixture": [
         {
-          "after_sha256": "b935595b18ae3c66732dc2e4fa8505de3cd569c5c9255ccef28ffeee7d22060f",
-          "before_sha256": "b935595b18ae3c66732dc2e4fa8505de3cd569c5c9255ccef28ffeee7d22060f",
+          "after_sha256": "82c3bec7ac561617deaf8aa926c7f66058615db7c81bca056255f8d924ca92c9",
+          "before_sha256": "82c3bec7ac561617deaf8aa926c7f66058615db7c81bca056255f8d924ca92c9",
           "path": "docs/evidence/C101/fixtures/yfinance/CryptoHistorical.json"
         }
       ],
@@ -128,16 +128,16 @@
         "path": "opendata/data/models/yfinance_iter2.py"
       },
       {
-        "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-        "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+        "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+        "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
         "path": "opendata/data/domains.yaml"
       }
     ],
     "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
     "fixture": [
       {
-        "after_sha256": "b935595b18ae3c66732dc2e4fa8505de3cd569c5c9255ccef28ffeee7d22060f",
-        "before_sha256": "b935595b18ae3c66732dc2e4fa8505de3cd569c5c9255ccef28ffeee7d22060f",
+        "after_sha256": "82c3bec7ac561617deaf8aa926c7f66058615db7c81bca056255f8d924ca92c9",
+        "before_sha256": "82c3bec7ac561617deaf8aa926c7f66058615db7c81bca056255f8d924ca92c9",
         "path": "docs/evidence/C101/fixtures/yfinance/CryptoHistorical.json"
       }
     ],

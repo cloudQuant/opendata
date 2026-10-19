@@ -1,0 +1,18 @@
+# carrier for recorder_benzinga
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/benzinga/claims.json --output docs/evidence/C101/benzinga/claims.reviewed.json --provider benzinga --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over benzinga's regenerated shard
+# started_utc: 2026-10-19T04:39:59+00:00
+# exit: 0
+# stdout_chars: 372 stderr_chars: 0
+
+re-signing: dropped 4 earlier review(s) for the addressed identities
+REVIEW_SIGNED: benzinga::AnalystSearch
+REVIEW_SIGNED: benzinga::CompanyNews
+REVIEW_SIGNED: benzinga::PriceTarget
+REVIEW_SIGNED: benzinga::WorldNews
+recorder_exit=0 signed=4 refused=0 reviews_total=4 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/benzinga/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_benzinga_exit=0

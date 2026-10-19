@@ -1,9 +1,9 @@
 {
   "capture": {
     "path": "docs/evidence/C101/captures/yfinance/CryptoHistorical/counterfact-exit0.txt",
-    "sha256": "cbfd7ec904932b4e11d546848a717d5347174690659efa6d705c6517ba3cb001",
+    "sha256": "9e5342ea67325388979bfc2159c22f1992247ddbc40e652effbc16b00c499a2e",
     "size_bytes": 1094,
-    "stdout_excerpt": "COUNTERFACT_JSON={\"expected\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"YfinanceProviderError\", \"refusal_code\": \"YFINANCE_EMPTY_RESPONSE\", \"rejected\": [], \"status\": null}, \"observed\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"YfinanceProviderError\", \"refusal_code\": \"YFINANCE_EMPTY_RESPONSE\", \"rejected\": [], \"status\": null}, \"reason\": \"an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCryptoHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 20 row(s) through the same seam\"}\nVERDICT=PASS\n"
+    "stdout_excerpt": "COUNTERFACT_JSON={\"expected\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"YfinanceProviderError\", \"refusal_code\": \"YFINANCE_EMPTY_RESPONSE\", \"rejected\": [], \"status\": null}, \"observed\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"YfinanceProviderError\", \"refusal_code\": \"YFINANCE_EMPTY_RESPONSE\", \"rejected\": [], \"status\": null}, \"reason\": \"an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCryptoHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam\"}\nVERDICT=PASS\n"
   },
   "counterfact": {
     "expected": {
@@ -22,11 +22,11 @@
       "rejected": [],
       "status": null
     },
-    "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCryptoHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 20 row(s) through the same seam"
+    "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCryptoHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam"
   },
   "machine_execution": {
     "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CryptoHistorical --phase counterfact --evidence-root docs/evidence/C101",
-    "executed_at_utc": "2026-10-19T01:32:52.757794+00:00",
+    "executed_at_utc": "2026-10-19T05:16:22.210515+00:00",
     "exit_code": 0,
     "pins": {
       "contract": [
@@ -36,16 +36,16 @@
           "path": "opendata/data/models/yfinance_iter2.py"
         },
         {
-          "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-          "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+          "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+          "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
           "path": "opendata/data/domains.yaml"
         }
       ],
       "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
       "fixture": [
         {
-          "after_sha256": "b935595b18ae3c66732dc2e4fa8505de3cd569c5c9255ccef28ffeee7d22060f",
-          "before_sha256": "b935595b18ae3c66732dc2e4fa8505de3cd569c5c9255ccef28ffeee7d22060f",
+          "after_sha256": "82c3bec7ac561617deaf8aa926c7f66058615db7c81bca056255f8d924ca92c9",
+          "before_sha256": "82c3bec7ac561617deaf8aa926c7f66058615db7c81bca056255f8d924ca92c9",
           "path": "docs/evidence/C101/fixtures/yfinance/CryptoHistorical.json"
         }
       ],
@@ -147,16 +147,16 @@
         "path": "opendata/data/models/yfinance_iter2.py"
       },
       {
-        "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-        "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+        "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+        "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
         "path": "opendata/data/domains.yaml"
       }
     ],
     "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
     "fixture": [
       {
-        "after_sha256": "b935595b18ae3c66732dc2e4fa8505de3cd569c5c9255ccef28ffeee7d22060f",
-        "before_sha256": "b935595b18ae3c66732dc2e4fa8505de3cd569c5c9255ccef28ffeee7d22060f",
+        "after_sha256": "82c3bec7ac561617deaf8aa926c7f66058615db7c81bca056255f8d924ca92c9",
+        "before_sha256": "82c3bec7ac561617deaf8aa926c7f66058615db7c81bca056255f8d924ca92c9",
         "path": "docs/evidence/C101/fixtures/yfinance/CryptoHistorical.json"
       }
     ],

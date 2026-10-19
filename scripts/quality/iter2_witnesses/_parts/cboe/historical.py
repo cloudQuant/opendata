@@ -15,16 +15,19 @@ so the seam patches that module; the CSV carrier rides the seam's list-of-lines 
 The one provider-local change this shard required is declaring ``row_model`` on
 CboeIndexHistoricalFetcher, which the implementation phase reads; the class it names is the
 verified resolution of the capability domain:
-``contract_model('cboe_index_historical') -> opendata.data.models.cboe_index_historical.CboeIndexHistorical``.
+``contract_model('cboe_index_historical') ->
+opendata.data.models.cboe_index_historical.CboeIndexHistorical``.
 
 No expected_* face here was copied from a captured run: EquityHistorical and EtfHistorical
 refuse through the All Access numeric/required guards (code-only, attribution faces empty as
 branch B requires), and IndexHistorical refuses through its own strict CSV numeric guard
 ``CboeIndexHistoricalError`` with a code and a status face.
 
-FuturesCurve and IndexSnapshots are deliberately absent: cboe binds no fetcher for either
-fixed identity (``opendata/data/providers/cboe/specs.py`` NOT_DECLARABLE), so witnessing them
-would require a catalog/domains/models change this wave freezes. They are reported as GAPs.
+FuturesCurve is deliberately absent: cboe binds no fetcher for that fixed identity
+(``opendata/data/providers/cboe/specs.py`` NOT_DECLARABLE), so witnessing it would require a
+catalog/domains/models change this wave freezes. It is reported as a GAP. IndexSnapshots was
+refused the same way when this shard was authored and left ``NOT_DECLARABLE`` in wave 37, once the
+official panel was captured; it is witnessed by the sibling ``_parts/cboe/snapshots.py`` shard.
 """
 
 from __future__ import annotations

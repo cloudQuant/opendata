@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBills --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T23:19:56.182209+00:00",
+      "executed_at_utc": "2026-10-19T04:41:52.035656+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -88,7 +88,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBills",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBills/implementation.json",
-        "sha256": "76b8c1f9a042e0092370b0ac6d432af9b2a59b2a9ce5fd73b3f49aa049a0c3ee"
+        "sha256": "888c590c4c5239e3943a33ded2ac55384edfeea75d7346c330b26ef89d1138bc"
       },
       "status": "PASS",
       "upstream_model": "CongressBills"
@@ -96,7 +96,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBills --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T23:19:57.054061+00:00",
+      "executed_at_utc": "2026-10-19T04:41:53.130300+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -108,8 +108,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -171,7 +171,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBills",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBills/direct.json",
-        "sha256": "6228ad67a3858ce5d0051fc255645b49e313481f897c338b039b4ce7ebf1fe14"
+        "sha256": "d65d5e35cb8bb7e027ce16abf7b32f99da0153ecf3fa85c3d37fc0ebdfabca65"
       },
       "status": "PASS",
       "upstream_model": "CongressBills"
@@ -179,7 +179,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBills --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T23:19:58.114425+00:00",
+      "executed_at_utc": "2026-10-19T04:41:54.406756+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -191,8 +191,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -254,7 +254,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBills",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBills/service.json",
-        "sha256": "6721e2c652be5a535d8881c2985b9c4a91a253b5d9a208f7770e2df52040c417"
+        "sha256": "f8f971bf138894e6625d6a9eeb469ac598a1f3c6e11ad6696200583a02e6fb75"
       },
       "status": "PASS",
       "upstream_model": "CongressBills"
@@ -262,7 +262,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBills --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T23:19:59.015578+00:00",
+      "executed_at_utc": "2026-10-19T04:41:55.505955+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -274,8 +274,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -337,7 +337,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBills",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBills/contract.json",
-        "sha256": "a6696f2b5b0096e718e4b287e9146b2d8453234eaa61017bf893f6c03b15c8db"
+        "sha256": "92cff15e64545d137508124a5f54ea1c881c059ec92229cb9067b2019a5d7499"
       },
       "status": "PASS",
       "upstream_model": "CongressBills"
@@ -345,7 +345,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBills --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T23:20:00.786669+00:00",
+      "executed_at_utc": "2026-10-19T04:41:57.738260+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -357,8 +357,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -420,7 +420,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBills",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBills/counterfact.json",
-        "sha256": "779ac28246232aca594f03fca30650b1cc47f30715158397c7e2022be123bcb0"
+        "sha256": "f924c25299115caf62327b92449e8918322a552eed28d1dc4278604c19f742f7"
       },
       "status": "PASS",
       "upstream_model": "CongressBills"
@@ -428,7 +428,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBillInfo --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T23:20:01.646350+00:00",
+      "executed_at_utc": "2026-10-19T04:41:58.818117+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -440,8 +440,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -513,7 +513,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBillInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBillInfo/implementation.json",
-        "sha256": "9f4dbc2585c9c4fb4d59634bf662f8f08c8aaeea717b70dea4beb90c99959dae"
+        "sha256": "9091fc3bb246f10eaea6a7f789d2c6a5453d4856507821a22e2836437ecb5610"
       },
       "status": "PASS",
       "upstream_model": "CongressBillInfo"
@@ -521,7 +521,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBillInfo --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T23:20:02.519444+00:00",
+      "executed_at_utc": "2026-10-19T04:41:59.900253+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -533,8 +533,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -596,7 +596,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBillInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBillInfo/direct.json",
-        "sha256": "9f7eceb8268cd5c046248302517b5d58d286d10b65d77bcfcc39744789234b01"
+        "sha256": "253c8b2059cdbb02ab528694965a64953c880f109ecf9de4708251bdbcf01bbf"
       },
       "status": "PASS",
       "upstream_model": "CongressBillInfo"
@@ -604,7 +604,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBillInfo --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T23:20:03.579587+00:00",
+      "executed_at_utc": "2026-10-19T04:42:01.185756+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -616,8 +616,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -679,7 +679,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBillInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBillInfo/service.json",
-        "sha256": "5f5122ae09272b272a391964930ad2f6e6f14855c6330f1c5258c2566eeb549c"
+        "sha256": "b506b0070f5cdc8653b16d8e854ce8590ca546427ace6b98ee8401930fdb0452"
       },
       "status": "PASS",
       "upstream_model": "CongressBillInfo"
@@ -687,7 +687,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBillInfo --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T23:20:04.498159+00:00",
+      "executed_at_utc": "2026-10-19T04:42:02.269448+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -699,8 +699,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -762,7 +762,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBillInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBillInfo/contract.json",
-        "sha256": "e538186d9a1daaff4041cea9da67e9f7793d5e5df58332a63e89760d17fd6515"
+        "sha256": "6c5a33853dc48e508ff12d3016fc45c94a4fee6789af4d53561bf6678365c831"
       },
       "status": "PASS",
       "upstream_model": "CongressBillInfo"
@@ -770,7 +770,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBillInfo --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T23:20:06.396229+00:00",
+      "executed_at_utc": "2026-10-19T04:42:04.500926+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -782,8 +782,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -845,7 +845,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBillInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBillInfo/counterfact.json",
-        "sha256": "53ae46ed914d8e19f4890616adb1724a536209a68714016a09dc24145c472fcd"
+        "sha256": "9047082fbc89da9f552c3c4c81384507a5cbf17ab72699db3a66f8521541abb9"
       },
       "status": "PASS",
       "upstream_model": "CongressBillInfo"
@@ -853,7 +853,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBillText --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T23:20:07.306484+00:00",
+      "executed_at_utc": "2026-10-19T04:42:05.602108+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -865,8 +865,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -938,7 +938,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBillText",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBillText/implementation.json",
-        "sha256": "8d50a3180e7e8b8cf9cc3210eac79b24af8fb9083fe8f02e811bbb0ed5e80c6c"
+        "sha256": "2b3127b190a90d598cf42459f378df668c50114e3c919f00a76a66365d274129"
       },
       "status": "PASS",
       "upstream_model": "CongressBillText"
@@ -946,7 +946,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBillText --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T23:20:08.249476+00:00",
+      "executed_at_utc": "2026-10-19T04:42:06.698122+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -958,8 +958,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -1021,7 +1021,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBillText",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBillText/direct.json",
-        "sha256": "6ed2b38d06115313750fc4674e0c7fc7ba23c88dca4eb0554db8a35a250c11b1"
+        "sha256": "2d21be056fca9f39fe5f7a84d69204d55065607f39de778f7ec2e960e016997a"
       },
       "status": "PASS",
       "upstream_model": "CongressBillText"
@@ -1029,7 +1029,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBillText --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T23:20:09.265522+00:00",
+      "executed_at_utc": "2026-10-19T04:42:07.939005+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1041,8 +1041,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -1104,7 +1104,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBillText",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBillText/service.json",
-        "sha256": "905354c88adca0215f5ed4c038d450d1407136a0b8de549ba8bc9c3582e86836"
+        "sha256": "c318676fda7256578845be754c5e7647fb6bbc34619b9ee0325c0c37f01dbeaf"
       },
       "status": "PASS",
       "upstream_model": "CongressBillText"
@@ -1112,7 +1112,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBillText --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T23:20:10.159250+00:00",
+      "executed_at_utc": "2026-10-19T04:42:09.044131+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1124,8 +1124,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -1187,7 +1187,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBillText",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBillText/contract.json",
-        "sha256": "ee4b5e8dafd143fe393cd00d37ad0c934f896b2b1197aa774385c735b3bb21bb"
+        "sha256": "fa3a1368f1a63bc50072ff61267b18e1f5266788f44c9b254d287cdd2b89d0ab"
       },
       "status": "PASS",
       "upstream_model": "CongressBillText"
@@ -1195,7 +1195,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressBillText --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T23:20:11.957069+00:00",
+      "executed_at_utc": "2026-10-19T04:42:11.324409+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1207,8 +1207,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -1270,7 +1270,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressBillText",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressBillText/counterfact.json",
-        "sha256": "980d6f505ece38d661b80c0a3db6b1c85008bc06af8123848208dee5210dc0ca"
+        "sha256": "cd84070845132f852968e3081baa6f08eb2ee518280b7eb425cb42635378572c"
       },
       "status": "PASS",
       "upstream_model": "CongressBillText"
@@ -1278,7 +1278,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendments --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T23:20:12.812653+00:00",
+      "executed_at_utc": "2026-10-19T04:42:12.550869+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1290,8 +1290,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -1363,7 +1363,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendments",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendments/implementation.json",
-        "sha256": "f38736ad2393ea919087d2e99195268c9cd6214df6e0b6cbed9b18cca3f2bb91"
+        "sha256": "ddd3da0bf61e25539e5aa553bdc2537acdf3e4d2af398ed303ae88d88bd32ad5"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendments"
@@ -1371,7 +1371,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendments --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T23:20:13.684565+00:00",
+      "executed_at_utc": "2026-10-19T04:42:13.694955+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1383,8 +1383,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -1446,7 +1446,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendments",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendments/direct.json",
-        "sha256": "bc310859d3746fe0a87580081d11826ee627648c338f0ce99b5e5b5566ab2dac"
+        "sha256": "4146716e90385046f72eb39239686b3fad3fbb260c0ca00ad20925a7f6937b8f"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendments"
@@ -1454,7 +1454,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendments --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T23:20:14.741284+00:00",
+      "executed_at_utc": "2026-10-19T04:42:14.943764+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1466,8 +1466,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -1529,7 +1529,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendments",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendments/service.json",
-        "sha256": "1270f6faee407d931642bcd2451d6632829c7d7b2417c53b12bc14e9afdb6b8f"
+        "sha256": "87a1086a3b0e241dbdb753d8dcf974dd1d04bd6bfcece01f458abc786073b069"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendments"
@@ -1537,7 +1537,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendments --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T23:20:15.637497+00:00",
+      "executed_at_utc": "2026-10-19T04:42:16.052264+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1549,8 +1549,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -1612,7 +1612,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendments",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendments/contract.json",
-        "sha256": "196d353092d82fa914e8a4e7ead5fff38b5aa0f5ed056ce231ceabb5c6d9ca76"
+        "sha256": "6d0fe562f6e61f34dcdc682dd3bfb4a64936607eefbd18dc2235a54afb7de0ae"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendments"
@@ -1620,7 +1620,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendments --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T23:20:17.413051+00:00",
+      "executed_at_utc": "2026-10-19T04:42:18.242360+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1632,8 +1632,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -1695,7 +1695,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendments",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendments/counterfact.json",
-        "sha256": "d721c7fc1c255aabdacec3e8fe85c9b888595719099b4671a118761e6c3cc6a3"
+        "sha256": "754632fc2a35666d1150beaba50cbf6242f4526fa5bfb15a5da7c20ca48226f0"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendments"
@@ -1703,7 +1703,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendmentInfo --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T23:20:18.271753+00:00",
+      "executed_at_utc": "2026-10-19T04:42:19.337297+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1715,8 +1715,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -1788,7 +1788,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendmentInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendmentInfo/implementation.json",
-        "sha256": "564183a0367f4b4efed543e9c22b1876bd3d8f7eb48fea5777925e58095c47f1"
+        "sha256": "e12e2c4b00ca4170d8892f61ede2a3163c1b8ad6cb4fa65ec0d2f9a182becec7"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendmentInfo"
@@ -1796,7 +1796,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendmentInfo --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T23:20:19.164287+00:00",
+      "executed_at_utc": "2026-10-19T04:42:20.449877+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1808,8 +1808,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -1871,7 +1871,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendmentInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendmentInfo/direct.json",
-        "sha256": "78d33b4f235113378bb8f6928ceedb958efd017b24203c67a5801bc0fd556fd8"
+        "sha256": "cf0d046f44022759435f302d6458fe5d1fa2dc23917c711ea5ba3a83fe67158f"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendmentInfo"
@@ -1879,7 +1879,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendmentInfo --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T23:20:20.226848+00:00",
+      "executed_at_utc": "2026-10-19T04:42:21.706947+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1891,8 +1891,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -1954,7 +1954,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendmentInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendmentInfo/service.json",
-        "sha256": "df1373e420ea26bd2f327183611bc79dd304a97d98fb74f2caf498c07b5fb34b"
+        "sha256": "39f23730d3aeb68603d5268e247a64144769735b09aca2325775fdc7f3c5427d"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendmentInfo"
@@ -1962,7 +1962,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendmentInfo --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T23:20:21.117956+00:00",
+      "executed_at_utc": "2026-10-19T04:42:22.798253+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1974,8 +1974,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -2037,7 +2037,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendmentInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendmentInfo/contract.json",
-        "sha256": "d25f9b666e055a2e31769b70994386e921e16e2b3210b590568d4cc3b2ddb4f7"
+        "sha256": "28642c2efffff43fb5de1d565a6bb35be963b5ffcd526a47fb5337003cbc3fee"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendmentInfo"
@@ -2045,7 +2045,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendmentInfo --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T23:20:22.891198+00:00",
+      "executed_at_utc": "2026-10-19T04:42:25.017550+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2057,8 +2057,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -2120,7 +2120,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendmentInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendmentInfo/counterfact.json",
-        "sha256": "58673097347c4fc9f667ad573b05ac2d5db1d01b484c1c18bb6a7e272feee89c"
+        "sha256": "34869e09ea7015653930505b4193653bbaa98f8e1fd0fb3da3b132080f4d8a39"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendmentInfo"
@@ -2128,7 +2128,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendmentText --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T23:20:23.754139+00:00",
+      "executed_at_utc": "2026-10-19T04:42:26.097647+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2140,8 +2140,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -2213,7 +2213,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendmentText",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendmentText/implementation.json",
-        "sha256": "67d3c0cfc97f5ec322e101acdf4fc66d2b6855e357e7069a7f3fbaf7c83546d8"
+        "sha256": "6c6553c4be5221a603865872bc1689e54f1c4a4a68c7e85c394786b87c2938d4"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendmentText"
@@ -2221,7 +2221,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendmentText --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T23:20:24.631408+00:00",
+      "executed_at_utc": "2026-10-19T04:42:27.181130+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2233,8 +2233,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -2296,7 +2296,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendmentText",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendmentText/direct.json",
-        "sha256": "9f7f9868b24c3a7cbd14ff977eb4d54f7a07be358bceabb495358c61798100c0"
+        "sha256": "9e0649d6a6cd1e812cbc38e47a009db038111a4075c8960a5d037a57835bed96"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendmentText"
@@ -2304,7 +2304,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendmentText --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T23:20:25.681796+00:00",
+      "executed_at_utc": "2026-10-19T04:42:28.458531+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2316,8 +2316,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -2379,7 +2379,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendmentText",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendmentText/service.json",
-        "sha256": "832b85b8ed870a891105c343956ac47e4e3a7ba36c130f102f3b2ca885f2fb6c"
+        "sha256": "7d084803eedf2e17bbd48e71633a26360f06b4f14cda225fee9be143568f43d6"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendmentText"
@@ -2387,7 +2387,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendmentText --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T23:20:26.569825+00:00",
+      "executed_at_utc": "2026-10-19T04:42:29.535031+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2399,8 +2399,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -2462,7 +2462,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendmentText",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendmentText/contract.json",
-        "sha256": "b694a625d84bb5835508c5028670752d177818e265b5d9a9bc5a2802b343a23a"
+        "sha256": "9766f7b9d74811fbe8a7ef56fa51539c0dd1b91b8742580eb0c1905ec882e801"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendmentText"
@@ -2470,7 +2470,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressAmendmentText --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T23:20:28.349031+00:00",
+      "executed_at_utc": "2026-10-19T04:42:31.810069+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2482,8 +2482,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -2545,7 +2545,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressAmendmentText",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressAmendmentText/counterfact.json",
-        "sha256": "46346d4dfcad90689f444e7c86ef0fb87d862beb220faa082028eb1474cb8e51"
+        "sha256": "be543d63ca22be0928138426c37e0c1c1501d06f94de1c4521c6d503c52f733f"
       },
       "status": "PASS",
       "upstream_model": "CongressAmendmentText"
@@ -2553,7 +2553,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressCommitteeInfo --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T23:20:29.210528+00:00",
+      "executed_at_utc": "2026-10-19T04:42:32.911430+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2565,8 +2565,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -2638,7 +2638,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressCommitteeInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressCommitteeInfo/implementation.json",
-        "sha256": "a53a2b8596b8be6c69b081c8dcae756d901e30bab8aaee3d6b865e92b244c522"
+        "sha256": "e127a30b7048197cfa479978895cbf1207d7e2946c56658142b5249a8c733bf7"
       },
       "status": "PASS",
       "upstream_model": "CongressCommitteeInfo"
@@ -2646,7 +2646,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressCommitteeInfo --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T23:20:30.092399+00:00",
+      "executed_at_utc": "2026-10-19T04:42:33.989580+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2658,8 +2658,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -2721,7 +2721,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressCommitteeInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressCommitteeInfo/direct.json",
-        "sha256": "af476ea530396e2afa7d8353c87ba8857001487f6ec9e15375074384cd00c816"
+        "sha256": "146c5e3518d1f55ea2a42f3add6483077e1b3bb5513fc9662915444183f3dedf"
       },
       "status": "PASS",
       "upstream_model": "CongressCommitteeInfo"
@@ -2729,7 +2729,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressCommitteeInfo --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T23:20:31.143482+00:00",
+      "executed_at_utc": "2026-10-19T04:42:35.278671+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2741,8 +2741,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -2804,7 +2804,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressCommitteeInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressCommitteeInfo/service.json",
-        "sha256": "ab0ab19165caf0379e04a2d653e8cdbe60bd1a2814ec9ad7d5a9942a4393c577"
+        "sha256": "de21fa9869d7b6a1ca1eac66eed9a15b71fb5f33f04e1bd7f325fc9a8e98d217"
       },
       "status": "PASS",
       "upstream_model": "CongressCommitteeInfo"
@@ -2812,7 +2812,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressCommitteeInfo --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T23:20:32.030910+00:00",
+      "executed_at_utc": "2026-10-19T04:42:36.349755+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2824,8 +2824,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -2887,7 +2887,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressCommitteeInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressCommitteeInfo/contract.json",
-        "sha256": "535e3a2d949e96d1038866af5ab5dd77eb74539a3865e42e5fc869f121c810a8"
+        "sha256": "577cda0afa64d99e05b78fdef7a136003b009bcfbb2cbe8420b81f72e21c700e"
       },
       "status": "PASS",
       "upstream_model": "CongressCommitteeInfo"
@@ -2895,7 +2895,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressCommitteeInfo --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T23:20:33.794406+00:00",
+      "executed_at_utc": "2026-10-19T04:42:38.532457+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2907,8 +2907,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -2970,7 +2970,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressCommitteeInfo",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressCommitteeInfo/counterfact.json",
-        "sha256": "84f959995e22b0bc882159e30ffa04c4245dd07163b0a91bd5c7d46c7aed2d8b"
+        "sha256": "d035760be81bfd7a460da0ec0e3bad744cd526b93c5ce83d055efd506a955d21"
       },
       "status": "PASS",
       "upstream_model": "CongressCommitteeInfo"
@@ -2978,7 +2978,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressCommitteeDocuments --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T23:20:34.636737+00:00",
+      "executed_at_utc": "2026-10-19T04:42:39.640442+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2990,8 +2990,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -3063,7 +3063,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressCommitteeDocuments",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressCommitteeDocuments/implementation.json",
-        "sha256": "22e7094d75638f402816218490fdef0c37acee7a03863370f09c0713f976effb"
+        "sha256": "a602180ad1a5e91ad31610d4085fb8d3c5b284030833a8efa31ee1439b70aca3"
       },
       "status": "PASS",
       "upstream_model": "CongressCommitteeDocuments"
@@ -3071,7 +3071,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressCommitteeDocuments --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T23:20:35.516428+00:00",
+      "executed_at_utc": "2026-10-19T04:42:40.731168+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3083,8 +3083,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -3146,7 +3146,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressCommitteeDocuments",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressCommitteeDocuments/direct.json",
-        "sha256": "d2fa5ab5cb4902ee238095c74a467bfc561bfb2fedea90d26708d011dcadce5f"
+        "sha256": "9a18c2a7a7ee84ee6f784502ba60fbc63f39c129fac3de8be1c6779ea2c020ce"
       },
       "status": "PASS",
       "upstream_model": "CongressCommitteeDocuments"
@@ -3154,7 +3154,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressCommitteeDocuments --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T23:20:36.570483+00:00",
+      "executed_at_utc": "2026-10-19T04:42:41.981463+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3166,8 +3166,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -3229,7 +3229,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressCommitteeDocuments",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressCommitteeDocuments/service.json",
-        "sha256": "648f0d0167fdecacb61089637542b8bc61f8da507ff38fdae4faf6d8011b2c13"
+        "sha256": "df1dc90ed7d0262239e34e055f70812f1b4682f202171edcb4b15fc4e27b9a91"
       },
       "status": "PASS",
       "upstream_model": "CongressCommitteeDocuments"
@@ -3237,7 +3237,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressCommitteeDocuments --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T23:20:37.449979+00:00",
+      "executed_at_utc": "2026-10-19T04:42:43.070544+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3249,8 +3249,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -3312,7 +3312,7 @@
       "receipt": {
         "model_identity": "congress_gov::CongressCommitteeDocuments",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressCommitteeDocuments/contract.json",
-        "sha256": "432dd1793f7a1c98d0f7bf75c2dc745947b0c93a2bddbaf7152cdb0a32513a38"
+        "sha256": "69a32b8c3b70d45ec528183a4591cf704fdd97d067cfb31dadf78d56c195ed56"
       },
       "status": "PASS",
       "upstream_model": "CongressCommitteeDocuments"
@@ -3320,7 +3320,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider congress_gov --model CongressCommitteeDocuments --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T23:20:39.210341+00:00",
+      "executed_at_utc": "2026-10-19T04:42:45.303021+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3332,8 +3332,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
-            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "after_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
+            "before_sha256": "095e2661189f6fb2720028e03c2d63103f15f5b00db5775f3648eadc87615032",
             "path": "opendata/data/domains.yaml"
           },
           {
@@ -3395,13 +3395,13 @@
       "receipt": {
         "model_identity": "congress_gov::CongressCommitteeDocuments",
         "path": "docs/evidence/C101/receipts/congress_gov/CongressCommitteeDocuments/counterfact.json",
-        "sha256": "4f229331bcea9d0330ef74ea17cb555267df52227c07164f58601daca41ae18e"
+        "sha256": "f7b9e82ab414f53d78783dd371bd8902a297d7be120e4d5048f91302b1b90f73"
       },
       "status": "PASS",
       "upstream_model": "CongressCommitteeDocuments"
     }
   ],
-  "generated_at_utc": "2026-10-18T23:20:40.614041+00:00",
+  "generated_at_utc": "2026-10-19T04:42:47.190444+00:00",
   "generated_by": "scripts/quality/iter2_claims_producer.py",
   "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
   "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",

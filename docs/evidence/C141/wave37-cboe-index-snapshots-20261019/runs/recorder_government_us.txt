@@ -1,0 +1,20 @@
+# carrier for recorder_government_us
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/government_us/claims.json --output docs/evidence/C101/government_us/claims.reviewed.json --provider government_us --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over government_us's regenerated shard
+# started_utc: 2026-10-19T05:02:05+00:00
+# exit: 0
+# stdout_chars: 517 stderr_chars: 0
+
+re-signing: dropped 6 earlier review(s) for the addressed identities
+REVIEW_SIGNED: government_us::CommodityPsdData
+REVIEW_SIGNED: government_us::CommodityPsdReport
+REVIEW_SIGNED: government_us::TreasuryAuctions
+REVIEW_SIGNED: government_us::TreasuryPrices
+REVIEW_SIGNED: government_us::WeatherBulletin
+REVIEW_SIGNED: government_us::WeatherBulletinDownload
+recorder_exit=0 signed=6 refused=0 reviews_total=6 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/government_us/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_government_us_exit=0

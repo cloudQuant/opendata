@@ -503,6 +503,7 @@ def test_all_access_bindings_preserve_unverified_rights_and_the_fixed_eleven_mod
         "IndexConstituents",
         "IndexSearch",
         "IndexHistorical",
+        "IndexSnapshots",
         "EquityHistorical",
         "EtfHistorical",
         "EquityQuote",
@@ -511,7 +512,9 @@ def test_all_access_bindings_preserve_unverified_rights_and_the_fixed_eleven_mod
     }
     assert all(not fetcher.capability.verified for fetcher in PROVIDER.fetchers)
     assert PROVIDER.credentials[0].environment_variable == "CBOE_LIVEVOL_ACCESS_TOKEN"
-    assert set(NOT_DECLARABLE) == {"FuturesCurve", "IndexSnapshots"}
+    # IndexSnapshots moved from the refusal ledger to a bound adapter once the official panel was
+    # captured (wave 37), so the two legs are 10 + 1 and the fixed identity count is unchanged.
+    assert set(NOT_DECLARABLE) == {"FuturesCurve"}
     assert len(PROVIDER.fetcher_dict) + len(NOT_DECLARABLE) == 11
 
 

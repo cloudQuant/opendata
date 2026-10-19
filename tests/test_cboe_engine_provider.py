@@ -102,7 +102,7 @@ class TestProviderRegistration:
         assert len(provider.credentials) == 1
         assert provider.credentials[0].environment_variable == "CBOE_LIVEVOL_ACCESS_TOKEN"
         assert provider.credentials[0].required_for_health is False
-        assert len(provider.fetcher_bindings) == 9
+        assert len(provider.fetcher_bindings) == 10
 
     def test_registry_publishes_every_declared_model(self) -> None:
         registry = ProviderRegistry()
@@ -118,6 +118,7 @@ class TestProviderRegistration:
             "cboe_index_constituent_quotes",
             "cboe_index_search",
             "cboe_index_historical",
+            "cboe_index_snapshots",
         }
         # Two cross-faces so a silent drop cannot hide in the literal: no two bindings publish the
         # same domain, and the published count equals the descriptor's binding count.
@@ -505,13 +506,17 @@ class TestDeclarationRejectsMalformedTemplate:
         assert transport.calls == []
 
 
-def test_pilot_records_the_two_models_without_reviewed_source_protocols() -> None:
-    """Keep the fixed eleven-model count while naming the two protocol gaps explicitly."""
+def test_pilot_records_the_one_model_without_reviewed_source_protocols() -> None:
+    """Keep the fixed eleven-model count while naming the remaining protocol gap explicitly.
+
+    IndexSnapshots left this set in wave 37: the official ``all_us_indices.json`` panel was
+    captured unauthenticated with ``HTTP/2 200`` and is now a handwritten adapter, so the refusal
+    count fell 2 -> 1 and the hand-written count rose 5 -> 6. The sum stays 11.
+    """
     assert set(specs.NOT_DECLARABLE) == {
         "FuturesCurve",
-        "IndexSnapshots",
     }
-    assert len(specs.NOT_DECLARABLE) == 2
+    assert len(specs.NOT_DECLARABLE) == 1
     declared = {
         AVAILABLE_INDICES.model,
         INDEX_CONSTITUENTS.model,
@@ -525,6 +530,7 @@ def test_pilot_records_the_two_models_without_reviewed_source_protocols() -> Non
         "EtfHistorical",
         "EquityQuote",
         "IndexHistorical",
+        "IndexSnapshots",
         "OptionsChains",
     }
     assert declared.isdisjoint(handwritten)
