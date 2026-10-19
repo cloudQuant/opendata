@@ -33,9 +33,14 @@ GITLEAKS = "/opt/homebrew/bin/gitleaks"
 PY = "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python"
 BUNDLE = "docs/evidence/C143/wave38-seeking-alpha-landing-20261019"
 RUNS = REPO / BUNDLE / "runs"
-SCAN_CARRIER = RUNS / "w41b_staged_credential_scan.txt"
+SCAN_CARRIER = RUNS / "w41b_staged_credential_scan.feat_staging.stdout.txt"
 SCRATCH = Path("/tmp/w47_closure")  # nosec B108  # noqa: S108
 BUNDLE_PREFIXES = ("docs/evidence/C142", "docs/evidence/C143", "docs/evidence/C101")
+TREE_PREFIXES = BUNDLE_PREFIXES + (
+    "opendata",
+    "scripts/quality/iter2_witnesses",
+    "tests",
+)
 SCAN_CHECK = "scripts/quality/secret_scan_check.py"
 
 
@@ -74,10 +79,23 @@ def commit_paths(rev: str) -> list[str]:
     return sorted({line for line in proc.stdout.splitlines() if line.strip()})
 
 
-def _reconcile(rev: str) -> dict[str, Any]:
+def tree_paths(rev: str, prefixes: tuple[str, ...]) -> list[str]:
+    """Every path the commit's tree carries under the given prefixes (not just its diff).
+
+    The diff scope only reconciles what one commit changed; the tree scope also proves the rest of
+    the wave's committed evidence still matches the worktree byte for byte, which is the claim a
+    closure face actually needs when a later commit refined two of the instruments.
+    """
+    proc = git("ls-tree", "-r", "--name-only", rev, "--", *prefixes)
+    if proc.returncode != 0:
+        raise SystemExit(f"git ls-tree {rev} failed rc={proc.returncode}")
+    return sorted({line for line in proc.stdout.splitlines() if line.strip()})
+
+
+def _reconcile(rev: str, scope: str = "diff") -> dict[str, Any]:
     """Compare committed bytes with the worktree, and with the parent for the drift twin."""
     parent = git("rev-parse", f"{rev}^").stdout.strip()
-    paths = commit_paths(rev)
+    paths = tree_paths(rev, TREE_PREFIXES) if scope == "tree" else commit_paths(rev)
     drift: list[str] = []
     moved: list[str] = []
     missing: list[str] = []
@@ -204,11 +222,17 @@ def main(argv: list[str] | None = None) -> int:
     """Reconcile the commit's bytes, then scan the commit and this wave's bundles with controls."""
     parser = argparse.ArgumentParser(description="wave-38 post-commit closure face")
     parser.add_argument("--commit", default="", help="commit to scan; defaults to HEAD")
+    parser.add_argument(
+        "--scope",
+        choices=("diff", "tree"),
+        default="diff",
+        help="diff = the commit's own paths; tree = every path under the wave prefixes",
+    )
     args = parser.parse_args(argv)
     rev = args.commit or git("rev-parse", "HEAD").stdout.strip()
     RUNS.mkdir(parents=True, exist_ok=True)
     SCRATCH.mkdir(parents=True, exist_ok=True)
-    face = _reconcile(rev)
+    face = _reconcile(rev, scope=args.scope)
     lines = [
         f"reconcile commit={rev[:9]} parent={face['parent'][:9]} "
         f"commit_paths={face['commit_paths']} "

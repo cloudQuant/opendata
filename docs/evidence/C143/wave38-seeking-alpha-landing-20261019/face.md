@@ -180,14 +180,71 @@ body 摘要与收据一致）、`D_guard_two_sided`、`E_pagination_follows_enve
    `outside_bundle=[]`、对伪造的外部 bundle 返回 `['PRE_CHAIN_OUTPUT', 'RUNS']` ——
    守卫能被触发，所以"已加守卫"这句才有内容。
 
+## 9. 测试平面：本波引入 0 条新红，修好 9 条
+
+两份完整平面（同一份 `tests/` 清单，全部 26630/26626 项）：
+
+| 平面 | 项 | 失败 | 跳过 | 用时 | 载体里的退出行 |
+|---|---|---|---|---|---|
+| 本工作树（wave38 实现 + 重钉后的围栏） | 26630 | 28 | 271 | 709.32s（junit 计数 `time=709.089`） | `runs/test_plane_w38_full.take2.txt`：`test_plane_exit=1` |
+| 同一棵工作树的前一次完整跑 | 26630 | 28 | 271 | 653.49s | `runs/test_plane_w38_full.txt`（退出行丢了，见下） |
+| 对照：wave37 已提交那一次（`66fe1acc9`）的 detached worktree，且把被 gitignore 的 `docs/evidence/C100/**` 复制进去 | 26626 | 37 | 271 | 646.25s | `runs/test_plane_head37_control.txt`：`ctrl_plane_exit=1` |
+
+第一跑的包装器把退出行打到了控制台而不是载体内（`echo` 写在重定向之后），这条缺口由第二跑补上：
+`{ pytest …; echo "test_plane_exit=$?"; } > 载档` 的写法让载体自带退出码，
+而两跑的 node-id 集合**逐条相同**（臂 `repeat_run_reproduces_the_set`：
+`repeat_run present=True failures=28 same_node_set=True difference=[]`），
+所以"这一棵树的红集合"不是抖动出来的。对照平面的退出码也在自己的载档里
+（`plane_exit_lines {'worktree': 'test_plane_exit=1', 'control': 'ctrl_plane_exit=1'}`）。
+
+`probes/w51_test_plane_attribution.py` 读这两份 junit 的 node-id **集合**，读数
+`runs/w51_test_plane_attribution.txt`：`set_diff worktree=28 control=37 shared=28 new=0 fixed=9`，
+`new_red_nodes=[]`，两侧算术都成立（`worktree==shared+new`、`control==shared+fixed`），
+并且臂 `no_new_red_arm_can_bite` 用一条伪造的 node id 证明这条臂会翻红 —— 所以 `new=0` 是读数，
+不是"扫不出差别"。两份平面各自的退出行也在载体文件里被找到并核过：
+  `plane_exit_lines {'worktree': 'test_plane_exit=1', 'control': 'ctrl_plane_exit=1'}`
+  （臂 `both_planes_ship_exit_lines`；另一条臂 `neither_plane_had_collection_errors` 核两份平面的
+  junit `errors="0"`，即 28 与 37 都不是收集错误的产物）。
+
+**被修好的 9 条为什么算被这条围栏解释**：探针不看测试名，只看它们**在对照树里**的断言字符串，
+9/9 都带围栏的标记 —— 7 条是
+`AssertionError: opendata/data/domains.yaml assert '<盘上摘要>' == '<fixture 里的钉值 c4005525…>'`
+（即 fixture 对 `domains.yaml` 的字节 pin），2 条是
+`AssertionError: assert {…} == {…} Extra items in the left set: 'cboe_index_snapshots'`
+（即同一份 fixture 的域 id 清单）。反过来，一条伪造的、与围栏无关的断言字符串喂进同一个谓词
+必须不匹配（`fence_marker_predicate_can_refuse`）。九条的名字也全部落在围栏的五个消费文件里。
+这就是 §7 那句作废声明的证据形状：wave37 把其中 4 条判成"两棵树一样红 = 既有失败"，而对照树里
+它们的红其实是这条 pin。
+
+**共享的 28 条**在本波之前就已经红（每一条都在对照集合里，`new=0`），按断言面分五族，
+族计数相加 = 28：
+
+| 族 | 行数 | 断言面 |
+|---|---|---|
+| 注册表普查漂移 | 13 | `assert 371 == 342`（catalog bindings）、`oecd assert 11 == 2`、congress_gov `assert 8 == 0` 与 `assert True is False`（`is_implemented`）、ecb `assert 371 == 62`、federal_reserve `'federal_reserve_yield_curve' not in {…}`、first_model_bindings 注册顺序 `At index 16 diff: 'fred' != 'imf'` |
+| 产品运行面缺陷 | 2 | `test_data_catalog` 报 `NameError: name '_EconomicCalendarQuery' is not defined`；`test_congress_cboe_iter2[CongressAmendments]` 报 pydantic `number Input should be a valid integer` |
+| 权限/权利登记面 | 4 | `test_openbb_inventory_guard`：`KeyError: 'rights_rows'`、`IndexError`、`assert (1, 1) == (1, 0)`、`assert ['RIGHTS LINK…'] == []`（多出 24 条） |
+| 机器本地依赖 | 4 | Docker `image-inspect return_code=1`（owned_mysql 那条）、被同一事实触发的 `test_e2e_opt_in_guard`、`ReplayRequestMismatchError`（port_fidelity bond_daily_sina）、`test_scheduled_patrol` 的 `all(<generator>)` 为假 |
+| 证据自计数漂移 | 5 | `assert 5055 == 172`（仓库清单）、`assert '13' == '14'`、`breaks=5 flipped=5 …`、两条集合差 `Extra items in the left set: 'tests/test_financial_pit_api.py'` |
+
+两族值得单独说，因为它们不是"数字没更新"这么简单：
+
+* 普查漂移那 13 条与 §7 修掉的围栏是**同一类缺陷**——每个 provider 自己钉的绑定数/域清单被逐波
+  放宽却从未跟着重钉。本波只重钉了 batch5 那一份（它的消费面最广），其余的要先由 owner 决定
+  "这一族数字到底是几"，不是我能替它定的数；
+* 运行面那 2 条里，`_EconomicCalendarQuery` 是一条**已验收行**的模块在运行时缺名字
+  （`opendata/data/providers/tradingeconomics/models/economic_calendar.py:41` 把该类型定义在
+  `TYPE_CHECKING` 下，`:265` 起的签名/局部标注在运行时被求值）。平面 1 的 `OFFLINE_ACCEPTED`
+  不覆盖这条解析路径，所以这条读数写在这里当作交付面的一部分，而不是当作别人的偶发失败。
+
 ## 10. 出货闸门：静态四件在本波载荷上为绿
 
-`scripts/quality/a2_check.py --files <本波 25 个载荷路径>`，读数
-`runs/a2_static_plane_slice_w38_payload.take4.txt`（`A2 files (complete resolver): 25`，
-`a2_take4_exit=1`）：
+`scripts/quality/a2_check.py --files <本波 26 个载荷路径>`，读数
+`runs/a2_static_plane_slice_w38_payload.take5.txt`（`A2 files (complete resolver): 26`，
+`a2_take5_exit=1`）：
 
-- `ok ruff check`、`ok ruff format --check`、`ok mypy (18 unique target(s))`（18 个 mypy 目标逐个
-  `exit=0`；`tests/` 按仓内配置被 mypy 排除，所以 25 个载荷里只有 18 个进 mypy）、`ok bandit`；
+- `ok ruff check`、`ok ruff format --check`、`ok mypy (19 unique target(s))`（19 个 mypy 目标逐个
+  `exit=0`；`tests/` 按仓内配置被 mypy 排除，所以 26 个载荷里只有 19 个进 mypy）、`ok bandit`；
 - 两条红的都在 gitleaks 家族上，且都是**按构造而红**：`FAIL pinned Gitleaks file scan` 与
   `FAIL: A2 gate failed on: immutable evidence secret scan`，报的全部是
   `docs/evidence/C100/**/inputs/pristine/akshare/*.py` 里那批 akshare 上游源文件自带的
@@ -199,9 +256,30 @@ take1 红在 `ruff check / ruff format / mypy / bandit` 四件，全部是同一
 删掉了 `w46_landing_face.py`（一份从未产出载体的草稿探针，它的臂被 `w48` 全部覆盖），工具读到
 `No such file or directory`；take2 红在 `ruff format --check`（`tests/test_provider_catalog.py`
 我改完没格式化）与 `mypy`（`w49` 里我复用了 `value` 这个变量名，数字循环把它绑成 `int`，
-十六进制循环又要往里赋 `str`）；take3 四件齐绿但清单里还没有 `w51`，take4 才是覆盖 25 个路径的一次。
-`w52` 晚于 take4，它按同一套工具单独核过（`ruff check`/`ruff format`/`mypy`/`bandit` 全绿），
-提交前还会按最终清单再取一次面。
+十六进制循环又要往里赋 `str`）；take3 四件齐绿但清单里还没有 `w51`，take4 覆盖了 25 个路径但还没有 `w52`；
+take5 是覆盖最终 26 个载荷的那一次，也就是上面引用的那一份。
+
+## 11. 凭证面：载荷 0 命中，且三套规则都报得出被投毒的 token
+
+* **feat 提交的索引面**（提交前）：`runs/w41b_staged_credential_scan.feat_staging.stdout.txt` ——
+  那一次运行时 `w41b` 只往 stdout 打、不写载体，所以这份载体是包装器逐字保存的运行输出
+  （头部写明 argv 与它是被扫描的那一次索引），并且 `w47` 读的就是这份文件；
+  `staged_files=2262`、`staged_outside_wave=0`、`worktree_differs_from_index_files=0`（即提交的字节
+  就是这一面读过的字节）、载荷按 `git show :<path>` 物化后
+  `payload_index_sha256=b258952e002e1b9c…`；三套规则各读两遍：
+  `A_shipped baseline=0 planted=2`、`B_allowlist_stripped baseline=0 planted=2`、
+  `C_builtin baseline=0 planted=2`，`moved=True` 三件齐，命中的规则集是
+  `{'github-pat': 1, 'generic-api-key': 1}`；`allowlist_suppressed_in_this_payload=0`、
+  `plant_files_inside_staged_payload=0`（伪造 token 只活在 `/tmp` 副本里，且只在运行期拼装、从不打印）。
+  `arms=11 arms_passed=11 PASS=True`，`w41b_staged_credential_scan_exit=0`。
+  第一次取面时 `scope` 臂是红的：我的波清单里漏了围栏重钉动的 5 个路径
+  （`tests/fixtures/registry_batch5_snapshot.json` 与四个消费测试）——那正是这条臂该拦的东西。
+  这个"载体没落盘"的缺口已经补掉：`w41b` 现在把本次输出逐字写进
+  `runs/w41b_staged_credential_scan.txt`，下面这条 docs 提交用的就是它自己写的载体。
+* **docs 提交的索引面**：`runs/w41b_staged_credential_scan.txt`（同一支探针，扫的是收口这一批
+  载荷的索引），三套规则的基线仍须为 0、投毒仍须非 0，两臂同时成立才算数。
+* **提交后载荷面**：`probes/w47_closure_face.py --commit <feat sha>`，
+  见 §13 的收口面读数。
 
 ## 12. 残差 12 行：逐行的档位与它究竟缺哪一件东西
 
@@ -227,74 +305,28 @@ census 自身的臂读数也被核：`green=['A_landed_positive','C_population_i
 一行是"0 端点的来源要不要留名"的裁决；只有 `yfinance::AvailableIndices` 一行在形式上还挂在一个
 实现问题上，而它缺的是端点本身。
 
-## 9. 测试平面：红被按 node-id 集合归因，而不是按数量
 
-两份完整平面（同一份清单，`tests/` 全目录）：
+## 13. 收口面：对 `dffa64969` 的字节对账与载荷扫描
 
-| 平面 | tests | failures | skipped | 用时 | 载体退出行 |
-|---|---|---|---|---|---|
-| 本工作树（wave38 代码 + 重钉后的围栏） | 26630 | 28 | 271 | 709.09s | `runs/test_plane_w38_full.take2.txt`：`test_plane_exit=1` |
-| 对照：`66fe1acc9`（wave37 已提交，wave38 之前）的 detached worktree，`docs/evidence/C100/**` 就位 | 26626 | 37 | 271 | 646.25s | `runs/test_plane_head37_control.txt`：`ctrl_plane_exit=1` |
+`probes/w47_closure_face.py --commit dffa64969`（父 `66fe1acc9`），读数
+`runs/w47_closure_face.txt`（diff 面，7/8 臂）与包装器输出
+`runs/w47_closure_face.feat.stdout.txt`；`--scope tree` 的那一次见 §13.1。
 
-`probes/w51_test_plane_attribution.py` 读这两份 junit，读数
-`runs/w51_test_plane_attribution.txt`（`arms=8 arms_passed=8 failed=[] PASS=True`）：
-
-- `set_diff worktree=28 control=37 shared=28 **new=0** fixed=9`；集合减法两面都算过：
-  `worktree==shared+new=True`、`control==shared+fixed=True` —— 本波**没有引入任何一条新红**；
-- 被修好的 9 条红，其在**对照树里**的断言面逐条核过：7 条打印的是
-  `AssertionError: opendata/data/domains.yaml assert '<活摘要>' == 'c4005525…'`
-  —— 正是围栏对 `domains.yaml` 的字节 pin；2 条打印的是
-  `Extra items in the left set: 'cboe_index_snapshots'` —— 正是同一份围栏的域 id 清单。
-  于是 §7 那句"真因是这条字节 pin"不是叙事，是断言面上的字符串；
-- 两条臂本身也带反例：伪造一条本工作树没有的 node id 会让 `no_new_red` 臂翻红
-  （`no_new_red_arm_can_bite`），把 `FORGED_MESSAGE` 喂给围栏标记谓词必须返回不匹配
-  （`fence_marker_predicate_can_refuse`）——能失败的臂才算臂；
-- 对照树的身份也被核：它自报 `commit=66fe1acc9086…`，`merge-base --is-ancestor` 判定它是本工作树
-  HEAD 的祖先（`control_is_a_pre_wave_ancestor`）。
-
-**这 28 条共享的红不是本波的**，但也不是同一件事，按断言面分成五族（族计数之和 = 28）：
-
-1. **注册表普查漂移 14 条**：`test_provider_catalog`(`assert 371 == 342`、`oecd assert 11 == 2`)、
-   `test_oecd_engine_provider` ×3(`11 == 2`、`DID NOT RAISE LookupError`、集合多出 `economy_oecd_gdp_nominal`)、
-   `test_congress_gov_engine_provider` ×5(`8 == 0`、`assert True is False` 等)、
-   `test_ecb_reference_registration`(`371 == 62`)、`test_first_model_bindings`(注册顺序 index 16
-   `'fred' != 'imf'`)、`test_federal_reserve_domains`(`'federal_reserve_yield_curve' not in {…}`)、
-   `test_scheduled_patrol`(`all(<generator>)` 为假)。这些是**同一类围栏**：每个 provider 自己钉的
-   绑定数/域清单，被 wave32-34 与 wave37-38 逐波放宽却从未跟着重钉。本波只重钉了 batch5 那一条
-   （§7），其余每条都需要按 §7 同样的"活测量 + 打印差值 + 反例"流程单独走一波，
-   且其中若干条要先有 owner 裁决（例如 oecd/congress_gov 的绑定数该是多少）。
-2. **产品运行面缺陷 2 条**：`test_data_catalog` 报
-   `NameError: name '_EconomicCalendarQuery' is not defined` ——
-   `opendata/data/providers/tradingeconomics/models/economic_calendar.py:41` 把查询模型定义在
-   `TYPE_CHECKING` 块里，而 `:265-266` 的函数签名在运行时被解析；`test_congress_cboe_iter2[CongressAmendments]`
-   报 `pydantic_core.ValidationError: number Input should be a valid integer`。两条都在已验收的行上，
-   也就是**平面 1 的 OFFLINE_ACCEPTED 不等于这条运行路径可用**——这一条我按读数上报，不替它辩护。
-3. **权限登记面 4 条**：`test_openbb_inventory_guard`(`KeyError: 'rights_rows'`、`IndexError`、
-   `assert (1, 1) == (1, 0)`、24 条 `RIGHTS LINK` 未被记录)。这就是 akshare/ths 那族 owner 裁决，
-   判定侧与登记侧对不上，不是实现缺口。
-4. **证据清单自计数 5 条**：`test_immutable_evidence`(`5055 == 172`)、`test_c65_evidence_probes`
-   (`'13' == '14'`)、`test_ac2_case_probe`、`test_acceptance_probe_gate`、`test_p0_integration_surface`
-   (后两条同一原因：集合里多出 `tests/test_financial_pit_api.py`)。计数随证据树增长而漂移。
-5. **机器本地依赖 3 条**：`test_script_download_backend_iter2[…owned_mysql]`
-   (`DockerCommandError … image-inspect return_code=1`，本机没有那个镜像)、
-   `test_e2e_opt_in_guard`(同一条被守卫点名，因为它在活平面之外建了引擎)、
-   `test_port_fidelity[bond_daily_sina]`(`ReplayRequestMismatchError: request mismatch before replay
-   cursor advance at call 1`)。
-
-## 11. 凭证面
-
-索引面在提交前取：`probes/w41b_staged_credential_scan.py`，读数
-`runs/w41b_staged_credential_scan.txt`——`staged_files=2252`、
-`staged_outside_wave=0`（这条臂第一次跑时是红的：它自己的清单里没有围栏重钉那 5 个路径，
-把 5 条补进去才绿，说明这条臂真的在看路径）、
-`worktree_differs_from_index_files=0`、载荷物化后的索引摘要 `payload_index_sha256=b258952e002e1b9c…`。
-三套规则各跑两遍（基线与投毒）：
-`A_shipped baseline=0 / planted=2`、`B_allowlist_stripped baseline=0 / planted=2`、
-`C_builtin baseline=0 / planted=2`，且投毒命中的规则集是
-`{'github-pat': 1, 'generic-api-key': 1}` —— 载荷本身 0 命中，而伪造 token 一定被读到，
-这才是"0 发现"的资格。伪造 token 只在运行期拼装、从不打印，投毒落在 `/tmp` 下的副本里，
-`plant_files_inside_staged_payload=0` 证明它没混进被扫的载荷。
-
-提交后的 git-mode 与 dir-mode 两面由 `probes/w47_closure_face.py --commit <feat sha>` 取，
-随收口面一起入档；它同时把逐档字节对账（`git show <sha>:<path>` 与工作树字节）与
-父提交漂移孪生面放在一起。
+* **逐档字节对账**：`commit_paths=2262`、`moved_vs_parent=2262`（每一条都相对父提交真的变了，
+  不是"路径存在而已"）、`missing_in_commit=0`，而 `worktree_drift_vs_commit=2` ——
+  两条漂移被逐名打印：`face.md` 与 `w47_closure_face.py` 本身。原因是**先提交载荷、后修仪器**：
+  feat 提交之后我又改了这份面和收口探针（`w41b` 补写载体、`w51` 补退出码与复现臂、
+  `w47` 补 `--scope tree`）。这条臂因此是红的，`arms=8 arms_passed=7 failed=['worktree_matches_commit']`，
+  `w47_closure_face_exit=1`；剩下的 2260 条字节一致。这两条被改的文件随本收口提交入档，
+  收口提交之后另取一次树面对账（`--scope tree`），那一面覆盖"波内全部前缀在树里的每条路径"，
+  所以它核的是"提交后的树 == 工作树"，而不是只核那一次提交改了什么。
+* **git 模式载荷扫描**：`gitleaks_git_mode commit=dffa64969 rc=0 findings=0 rules=[]`，
+  同一份 argv 扫一个只往里放伪造 token 的临时仓库得 `findings=2`
+  （`arm_can_move=True`）——所以那个 0 是"扫得动之后没有"，不是"扫不动所以没有"。
+* **目录模式**：树是从 `git ls-tree <commit>` 建的（`copied_from_commit=2242`），不是工作树副本；
+  工作树里多出来的 3563 个本地文件（历史 bundle 与被 gitignore 的输入）被点名而不被扫，
+  `bytecode_skipped=3` 记下了本地 `__pycache__`——上一波正是它把常量折叠出来的伪造 token 写进了
+  `.pyc`，所以目录面只认提交里的字节。结果同样 `findings=0`，投毒对照 `findings=2`。
+* **出货闸门**：仓内自带的 `secret_scan_check` `rc=0`。
+* **代次摘要**：`claims_sha256=832268d0eb1dc8e8`、`judge_report_sha256=1ba70159c25af361`
+  ——与 §1 的 338/1725 是同一代。

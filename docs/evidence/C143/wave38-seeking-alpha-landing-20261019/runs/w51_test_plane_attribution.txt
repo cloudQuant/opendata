@@ -16,8 +16,10 @@ fixed byte_pin tests/test_provider_domains.py::test_declared_domain_contracts_ma
 fixed byte_pin tests/test_provider_domains.py::test_exact_domain_identity_assertion_rejects_removed_and_added_domains
 fixed byte_pin tests/test_provider_domains.py::test_production_domains_preserve_v1_legacy_entries_and_explicit_semantics
 fixed byte_pin tests/test_provider_domains.py::test_public_exports_match_reviewed_batch5_counts_and_types
+repeat_run present=True failures=28 same_node_set=True difference=[]
 control_provenance commit=66fe1acc9086 ancestor_of_worktree_head=True
 residual_unexplained_fixed_reds=0 []
-test_plane_attribution arms=8 arms_passed=8 arms_failed=0 failed=[] PASS=True
+plane_exit_lines {'worktree': 'test_plane_exit=1', 'control': 'ctrl_plane_exit=1'}
+test_plane_attribution arms=10 arms_passed=10 arms_failed=0 failed=[] PASS=True
 
 w51_test_plane_attribution_exit=0

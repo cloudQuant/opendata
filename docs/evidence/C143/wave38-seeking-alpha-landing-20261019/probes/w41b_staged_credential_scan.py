@@ -48,6 +48,7 @@ import subprocess  # nosec B404  # house style: fixed argv child processes, no s
 import sys
 from collections import Counter
 from pathlib import Path
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
 GITLEAKS = "/opt/homebrew/bin/gitleaks"
@@ -56,6 +57,7 @@ SHIPPED_CONFIG = ".gitleaks.toml"
 STRIPPED_CONFIG_TEXT = "[extend]\nuseDefault = true\n"
 PLANT_FILE_NAME = "scan_control_plant.txt"
 SCRATCH_ROOT = Path("/tmp/w41b_scan")  # nosec B108  # noqa: S108
+CARRIER = Path(__file__).resolve().parent.parent / "runs" / "w41b_staged_credential_scan.txt"
 #: Wave 38's declared path set: the landed seeking_alpha row's package, the catalog entry that
 #: moves it from reserved to implemented, the three test enumerations its registration rotates,
 #: the regenerated claim tree, and the two evidence bundles this wave writes (plus C141, whose
@@ -227,5 +229,33 @@ def main(argv: list[str] | None = None) -> int:
     return 0 if not failed else 1
 
 
+class _Tee:
+    """Mirror stdout into a buffer so the run ships its own carrier verbatim."""
+
+    def __init__(self, stream: Any) -> None:  # noqa: ANN401  # a text stream, whatever stdout is
+        self.stream = stream
+        self.buffer: list[str] = []
+
+    def write(self, text: str) -> int:
+        self.buffer.append(text)
+        self.stream.write(text)
+        return len(text)
+
+    def flush(self) -> None:
+        self.stream.flush()
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    tee = _Tee(sys.__stdout__)
+    sys.stdout = tee
+    try:
+        code = main()
+    finally:
+        sys.stdout = sys.__stdout__
+        CARRIER.parent.mkdir(parents=True, exist_ok=True)
+        CARRIER.write_text(
+            "# carrier for w41b_staged_credential_scan.py (this run's stdout, verbatim)\n"
+            f"# argv: {sys.executable} {Path(__file__).resolve()}\n" + "".join(tee.buffer),
+            encoding="utf-8",
+        )
+    sys.exit(code)

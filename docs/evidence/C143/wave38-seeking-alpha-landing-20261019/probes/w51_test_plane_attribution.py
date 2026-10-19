@@ -25,6 +25,7 @@ is not evidence.
 
 from __future__ import annotations
 
+import re
 import subprocess  # nosec B404  # house style: fixed argv child processes, no shell
 import sys
 import xml.etree.ElementTree as ET  # nosec B405  # reads our own pytest junit, not foreign XML
@@ -35,6 +36,7 @@ REPO = Path("/Users/yunjinqi/Documents/new_projects/opendata")
 BUNDLE = "docs/evidence/C143/wave38-seeking-alpha-landing-20261019"
 RUNS = REPO / BUNDLE / "runs"
 WORKTREE_XML = RUNS / "test_plane_w38_full.take2.xml"
+REPEAT_XML = RUNS / "test_plane_w38_full.xml"
 CONTROL_XML = RUNS / "test_plane_head37_control.xml"
 CONTROL_CARRIER = RUNS / "test_plane_head37_control.txt"
 GIT = "/usr/bin/git"  # absolute executable, so bandit sees no partial path
@@ -174,6 +176,15 @@ def main() -> int:
         BYTE_PIN_MARKER in FORGED_MESSAGE or POPULATION_MARKER in FORGED_MESSAGE
     )
 
+    repeat = _failures(REPEAT_XML) if REPEAT_XML.is_file() else {}
+    repeat_counts = _counts(REPEAT_XML) if REPEAT_XML.is_file() else {}
+    lines.append(
+        f"repeat_run present={bool(repeat)} failures={repeat_counts.get('failures', '?')} "
+        f"same_node_set={set(repeat) == set(worktree)} "
+        f"difference={sorted(set(repeat) ^ set(worktree))[:5]}"
+    )
+    arms["repeat_run_reproduces_the_set"] = bool(repeat) and set(repeat) == set(worktree)
+
     control_commit = ""
     for row in CONTROL_CARRIER.read_text(encoding="utf-8").splitlines():
         if row.startswith("# commit: "):
@@ -191,6 +202,20 @@ def main() -> int:
 
     unexplained = [node for node in fixed if node not in set(byte_pin) | set(population)]
     lines.append(f"residual_unexplained_fixed_reds={len(unexplained)} {unexplained[:5]}")
+
+    exit_lines = {}
+    for label, carrier in (
+        ("worktree", RUNS / "test_plane_w38_full.take2.txt"),
+        ("control", CONTROL_CARRIER),
+    ):
+        found = [
+            row.strip()
+            for row in carrier.read_text(encoding="utf-8").splitlines()
+            if re.search(r"\w*_(exit|rc)=\d+$", row.strip())
+        ]
+        exit_lines[label] = found[-1] if found else "MISSING"
+    lines.append(f"plane_exit_lines {exit_lines}")
+    arms["both_planes_ship_exit_lines"] = all(value != "MISSING" for value in exit_lines.values())
 
     failed = sorted(name for name, ok in arms.items() if not ok)
     lines.append(

@@ -1,0 +1,20 @@
+# captured stdout of the feat-commit closure face run (w47 prints to stdout; its carrier is written beside this file)
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w47_closure_face.py --commit dffa64969
+# audited commit dffa64969 (parent 66fe1acc9); the --scope tree re-take against the closure commit is appended in §13.1
+
+reconcile commit=dffa64969 parent=66fe1acc9 commit_paths=2262 worktree_drift_vs_commit=2 moved_vs_parent=2262 missing_in_commit=0
+drift_list=['docs/evidence/C143/wave38-seeking-alpha-landing-20261019/face.md', 'docs/evidence/C143/wave38-seeking-alpha-landing-20261019/probes/w47_closure_face.py']
+commit_paths_by_root={'docs/evidence/C101': 2138, 'docs/evidence/C143': 91, 'docs/evidence/C142': 13, 'opendata': 11, 'tests': 8, 'scripts': 1}
+
+---- payload scan ----
+pre_commit_gate payload_index_sha256=ba0e6a2ddc49c347fc636880db8bba5aea305c2dc9123e19182cf6724210278c
+staged_files_from_scan_carrier=2262 committed_paths=2262 gate_scope_note=the pre-commit gate read the index before its own carrier was staged, so this face is the arm that scans the commit
+gitleaks_git_mode commit=dffa64969 rc=0 findings=0 rules=[] planted_control rc=0 findings=2 arm_can_move=True
+dir_mode_tree copied_from_commit=2242 local_only_files=3563 local_only_sample=['docs/evidence/C101/README.md', 'docs/evidence/C101/alpha_vantage/primary-reviews/alpha_vantage__EquityHistorical.review.json', 'docs/evidence/C101/alpha_vantage/primary-reviews/alpha_vantage__EtfHistorical.review.json', 'docs/evidence/C101/alpha_vantage/primary-reviews/alpha_vantage__HistoricalEps.review.json'] bytecode_skipped=3
+gitleaks_dir_mode bundles rc=0 findings=0 rules=[] planted rc=0 findings=2 arm_can_move=True
+secret_scan_check rc=0 tail=[90m4:55PM[0m [32mINF[0m [1m454 commits scanned.[0m | [90m4:55PM[0m [32mINF[0m [1mscanned ~359137585 bytes (359.14 MB) in 4m13s[0m | [90m4:55PM[0m [32mINF[0m [1mno leaks found[0m
+generation claims_sha256=832268d0eb1dc8e8 judge_report_sha256=1ba70159c25af361
+
+closure_face commit=dffa64969 paths=2262 arms=8 arms_passed=7 arms_failed=1 failed=['worktree_matches_commit'] PASS=False
+w47_closure_face_exit=1
+w47_wrapper_exit=1
