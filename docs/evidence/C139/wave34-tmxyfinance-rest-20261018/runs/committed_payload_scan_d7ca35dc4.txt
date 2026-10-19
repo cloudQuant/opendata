@@ -1,0 +1,14 @@
+# carrier for committed_payload_scan_d7ca35dc4
+# argv: /usr/bin/git diff --name-only d7ca35dc4^ d7ca35dc4
+# per-path: /usr/bin/git show d7ca35dc4:<path> in bytes mode vs read_bytes()
+
+commit_paths=221
+worktree_drift_vs_commit=0 list=[]
+byte_identical=True
+payload_sha256=a32ae066809caaa2b6659b5a26262c0a94a9e0ef894b753691ab4f9e37d8e661
+CONTROL_paths_absent_at_parent=14
+CONTROL_changed_vs_parent=207
+CONTROL_drift_vs_parent=221 bites=True
+note: the pre-commit scan read 221 index paths; this commit's own tree adds the two scan carriers written after it, so the reconciliation population is git's, not prose
+
+committed_payload_scan_d7ca35dc4_exit=0
