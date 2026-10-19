@@ -37,6 +37,12 @@ PROVIDER = Provider(
             scenario="指数快照：读取 Cboe 官方公开 all_us_indices 延迟报价面板",
         ),
         LazyFetcherBinding(
+            "opendata.data.providers.cboe.models.futures_settlement_public",
+            "CboeFuturesCurveFetcher",
+            canonical_model_ids=("FuturesCurve",),
+            scenario="期货曲线：读取 Cboe 官方结算 CSV 中某一产品按到期日排列的结算价曲线",
+        ),
+        LazyFetcherBinding(
             "opendata.data.providers.cboe.models.index_constituents",
             "CboeIndexConstituentsFetcher",
             canonical_model_ids=("IndexConstituents",),

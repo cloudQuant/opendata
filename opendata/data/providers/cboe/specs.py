@@ -3,13 +3,17 @@
 The four index/directory ModelSpecs below remain executable through the declaration engine.
 Handwritten typed adapters in ``models.all_access`` additionally implement EquityHistorical,
 EtfHistorical, EquityQuote, EquitySearch, and OptionsChains from Cboe's documented All Access API.
-``NOT_DECLARABLE`` names the one fixed identity still without a documented source protocol,
-FuturesCurve. IndexHistorical is served by a separate handwritten adapter over the public
-volatility-index CSV subset, and IndexSnapshots left this set on 2026-10-19: the official
+IndexHistorical is served by a separate handwritten adapter over the public volatility-index CSV
+subset. ``NOT_DECLARABLE`` is empty as of 2026-10-19: ``IndexSnapshots`` left it when the official
 unauthenticated panel ``api/global/delayed_quotes/quotes/all_us_indices.json`` was captured with
 ``HTTP/2 200`` (810 index rows) at
 ``docs/evidence/C140/wave37-unauthenticated-access-20261019/sources/cboe-all-us-indices.json``,
-body sha256 ``9554ad964bcee6ac…``, and ``models.index_snapshots_public`` maps it.
+body sha256 ``9554ad964bcee6ac…``, and ``models.index_snapshots_public`` maps it; ``FuturesCurve``
+left it when Cboe's own public settlement CSV was captured with ``HTTP/2 200`` and a working ``dt=``
+day selection at
+``docs/evidence/C144/wave39-unauthenticated-access-20261019/sources/cboe-futures-settlement-csv.csv``
+(body sha256 ``2715f48481217cf7…``, 56 rows over 12 products), mapped by
+``models.futures_settlement_public``.
 
 The ``EQUITY_SEARCH`` ModelSpec is retained as an engine-format fixture for the existing delimited
 decoder, but is no longer the provider binding. Runtime EquitySearch uses the documented All
@@ -317,7 +321,10 @@ EQUITY_SEARCH = ModelSpec(
 )
 
 #: Fixed Cboe identities without a documented source protocol in this implementation.
-NOT_DECLARABLE: dict[str, str] = {
-    "FuturesCurve": "The reviewed official All Access docs do not establish the fixed model's "
-    "underlying list, quote/history join, or curve output protocol.",
-}
+#: ``FuturesCurve`` left this set on 2026-10-19: Cboe's own public settlement CSV answers
+#: ``HTTP/2 200`` with ``text/csv`` unauthenticated and ``dt=`` selects the settlement day, so the
+#: three halves the old refusal named -- underlying list, curve output, history -- are each answered
+#: by a captured artifact rather than by prose. See
+#: ``docs/evidence/C144/wave39-unauthenticated-access-20261019/capture-receipt.json`` and
+#: ``opendata/data/providers/cboe/models/futures_settlement_public.py``.
+NOT_DECLARABLE: dict[str, str] = {}

@@ -4730,3 +4730,14 @@ domains:
     filter_dims: ["symbol", "report_date", "reporting_time"]
     storage_mode: "transient"
     permissions: ["query"]
+
+  cboe_futures_curve:
+    display_name: "Cboe期货结算曲线"
+    rest_path: "derivatives/cboe/futures-curve"
+    contract: "CboeFuturesCurve"
+    temporal_kind: "snapshot"
+    time_field: "date"
+    natural_key: ["symbol", "date", "expiration"]
+    filter_dims: ["symbol", "date", "expiration"]
+    storage_mode: "transient"
+    permissions: ["query"]

@@ -21,6 +21,7 @@ from opendata.data.models.benzinga import (
     BenzingaPriceTarget,
     BenzingaWorldNews,
 )
+from opendata.data.models.cboe_futures_curve import CboeFuturesCurve
 from opendata.data.models.cboe_index import (
     CboeAvailableIndex,
     CboeEquitySearchListing,
@@ -770,6 +771,7 @@ __all__ = [
     "SecInstitutionSearchResult",
     "CboeIndexHistorical",
     "CboeIndexSnapshots",
+    "CboeFuturesCurve",
     "OecdCompositeLeadingIndicator",
     "OecdConsumerPriceIndex",
     "OecdCountryInterestRate",

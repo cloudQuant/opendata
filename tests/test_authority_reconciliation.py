@@ -78,7 +78,9 @@ SINGLE_SOURCE_EXEMPTIONS: frozenset[str] = frozenset(
 # Wave 37 added ``cboe_index_snapshots`` and wave 38 adds ``seeking_alpha_calendar_earnings``: both
 # landed a single-leg ``verified=False``/``transient`` model domain. The cboe name was missed when
 # wave 37 shipped -- its test plane covered nine files and this one was not among them -- so the
-# omission is corrected here rather than presented as never having existed.
+# omission is corrected here rather than presented as never having existed. Wave 39 adds
+# ``cboe_futures_curve`` on the same shape: one leg off Cboe's public settlement CSV, transient,
+# unverified, and named here in the same wave that registers it rather than in a later correction.
 NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
     {
         "alpha_vantage_equity_historical",
@@ -97,6 +99,7 @@ NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
         "cboe_equity_quote",
         "cboe_equity_search",
         "cboe_etf_historical",
+        "cboe_futures_curve",
         "cboe_index_constituent_quotes",
         "cboe_index_historical",
         "cboe_index_search",
