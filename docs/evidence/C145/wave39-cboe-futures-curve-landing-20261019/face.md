@@ -470,6 +470,45 @@ generation         claims_sha256=e6e3b6bcdb4f9875  judge_report_sha256=61c42e4b3
   不同的 population，分开引用。
 
 还有一个自我引用的口子由仪器自己点名：pre-commit 的 staged 扫描读的是索引，而它自己的 carrier 那时还没
-入索引——`gate_scope_note` 就是这么写的，收口面因此才是「扫提交」的那一路。两次扫描（feat 载荷 15 文件、
+入索引——`gate_scope_note` 就是这么写的，收口面因此才是「扫提交」的那一路。
+
+## 20. 第一个中文路径进了提交，收口面就把它报成「提交里没有」
+
+owner 裁定的计划文档 `docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/前置条件与决策清单.md` 是本波
+第一个带进提交的 CJK 路径。对 `4e51edc41` 的收口面第一次跑出 **7/8**：
+
+```
+FAIL arm = worktree_matches_commit
+reconcile commit_paths=6 moved_vs_parent=5 missing_in_commit=1
+commit_paths_by_root={'docs/evidence/C145': 5, '"docs': 1}
+```
+
+那个假根 `"docs` 就是病因：wave 38 的仪器用默认 quotepath 的 `git show --name-only` 列载荷，git 会把非
+ASCII 路径八进制转义并整体加引号，于是这一行变成 `"docs/\350\277\255..."`；root 切分切坏之后，
+`git show <sha>:"docs/\350..."` 自然找不到东西，就报「提交里缺一个路径」。**提交里并不缺**：同一个路径用
+字面量问 git，两边字节完全相同——
+
+```
+git show 4e51edc41:<字面路径> | shasum -a 256  ->  4dbe34c166b8af9deb3e342909a7440fa298e9749e9693c84793080958d4246b
+shasum -a 256 <工作区文件>                      ->  4dbe34c166b8af9deb3e342909a7440fa298e9749e9693c84793080958d4246b
+```
+
+修法只在包装器里做，不动别的波次已提交的仪器，也不写 git 配置：`w63` 在调用仪器前设三个进程级环境变量
+`GIT_CONFIG_COUNT=1 / GIT_CONFIG_KEY_0=core.quotepath / GIT_CONFIG_VALUE_0=false`，并打印
+`quotepath_off head_paths=6 nonascii_raw=1 sample=['docs/迭代计划/…/前置条件与决策清单.md']` 作为「覆盖确实
+生效」的 arm（原始 UTF-8 路径出现在列表里，就是证据本身）。重跑读数：
+
+```
+reconcile commit_paths=6 moved_vs_parent=6 missing_in_commit=0 worktree_drift_vs_commit=0
+gitleaks git-mode findings=0  planted findings=2  arm_can_move=True
+gitleaks dir-mode(copied_from_commit=5) findings=0  planted 2
+secret_scan_check rc=0  460 commits / 391.75 MB / no leaks found
+closure_face commit=4e51edc41 arms=8 arms_passed=8 PASS=True
+```
+
+红的那一次没有抹掉，留在 `runs/w63_closure_face.decision_commit.quotepath_red.txt`，与绿的重跑并排。
+这条与仓里已知的 gate 侧同类缺陷（`evidence_traceability._tracked_files()` 也用默认 quotepath，因而把
+5 个已跟踪的中文叙事文件记成 `#untracked`）是同一个机制的第三种表现形态，那个 gate 侧修法仍按既定裁定
+留在 owner 手上，本波只修自己仪器的读数。两次扫描（feat 载荷 15 文件、
 docs 载荷 2318 文件）都是 baseline 0 / planted 2、11/11 arms，载体分别留在
 `w62_staged_credential_scan.feat_payload.txt` 与 `w62_staged_credential_scan.txt`。

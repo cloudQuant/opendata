@@ -20,6 +20,8 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import os
+import subprocess  # nosec B404  # house style: fixed argv child processes, no shell
 import sys
 from pathlib import Path
 from typing import Any
@@ -79,6 +81,26 @@ def main(argv: list[str] | None = None) -> int:
     if not armed:
         print("w63_closure_face_exit=1 # re_point_failed")
         return 1
+    # The shipped reconciler asks git for the commit's path list, and git quotes non-ASCII paths by
+    # default: with a CJK path in the payload it emitted ``"docs/\350\277\255..."``, parsed the root
+    # as ``"docs``, and reported that path missing from the commit while its bytes were identical.
+    # A process-scoped override keeps the child's listing raw without touching repo or user config.
+    os.environ["GIT_CONFIG_COUNT"] = "1"
+    os.environ["GIT_CONFIG_KEY_0"] = "core.quotepath"
+    os.environ["GIT_CONFIG_VALUE_0"] = "false"
+    printable = subprocess.run(  # nosec B603
+        ["/usr/bin/git", "show", "--name-only", "--format=", "HEAD"],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        check=False,
+    ).stdout
+    nonascii = [line for line in printable.splitlines() if not line.isascii()]
+    print(
+        f"quotepath_off head_paths={len(printable.splitlines())} "
+        f"nonascii_raw={len(nonascii)} sample={nonascii[:1]}",
+        flush=True,
+    )
     rc = int(instrument.main(["--commit", args.commit, "--scope", args.scope]))
     print(f"w63_reused_instrument={INSTRUMENT.name} closure_returned={rc}", flush=True)
     print(f"w63_closure_face_exit={rc}")

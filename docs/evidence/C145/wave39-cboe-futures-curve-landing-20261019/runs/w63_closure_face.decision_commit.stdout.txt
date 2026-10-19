@@ -1,0 +1,20 @@
+re_point bundle=docs/evidence/C145/wave39-cboe-futures-curve-landing-20261019 prefixes=('docs/evidence/C144', 'docs/evidence/C145', 'docs/evidence/C101') tree=('docs/evidence/C144', 'docs/evidence/C145', 'docs/evidence/C101', 'opendata', 'scripts/quality/iter2_witnesses', 'tests') scan_carrier_exists=True
+quotepath_off head_paths=6 nonascii_raw=1 sample=['docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/前置条件与决策清单.md']
+reconcile commit=4e51edc41 parent=05fd3cd5b commit_paths=6 worktree_drift_vs_commit=0 moved_vs_parent=6 missing_in_commit=0
+drift_list=[]
+commit_paths_by_root={'docs/evidence/C145': 5, 'docs/迭代计划/迭代2-统一Provider架构与全量能力补齐': 1}
+
+---- payload scan ----
+pre_commit_gate payload_index_sha256=38c021a57b52d75cacfda150658793a4c053c3361c7e4db52abd91dca208122f
+staged_files_from_scan_carrier=6 committed_paths=6 gate_scope_note=the pre-commit gate read the index before its own carrier was staged, so this face is the arm that scans the commit
+gitleaks_git_mode commit=4e51edc41 rc=0 findings=0 rules=[] planted_control rc=0 findings=2 arm_can_move=True
+dir_mode_tree copied_from_commit=5 local_only_files=5914 local_only_sample=['docs/evidence/C101/README.md', 'docs/evidence/C101/alpha_vantage/claims.json', 'docs/evidence/C101/alpha_vantage/claims.reviewed.json', 'docs/evidence/C101/alpha_vantage/primary-reviews/alpha_vantage__EquityHistorical.review.json'] bytecode_skipped=20
+gitleaks_dir_mode bundles rc=0 findings=0 rules=[] planted rc=0 findings=2 arm_can_move=True
+secret_scan_check rc=0 tail=[90m10:29PM[0m [32mINF[0m [1m460 commits scanned.[0m | [90m10:29PM[0m [32mINF[0m [1mscanned ~391746757 bytes (391.75 MB) in 3m30s[0m | [90m10:29PM[0m [32mINF[0m [1mno leaks found[0m
+generation claims_sha256=e6e3b6bcdb4f9875 judge_report_sha256=61c42e4b352c7028
+
+closure_face commit=4e51edc41 paths=6 arms=8 arms_passed=8 arms_failed=0 failed=[] PASS=True
+w47_closure_face_exit=0
+w63_reused_instrument=w47_closure_face.py closure_returned=0
+w63_closure_face_exit=0
+w63_closure_face_wrapper_exit=0
