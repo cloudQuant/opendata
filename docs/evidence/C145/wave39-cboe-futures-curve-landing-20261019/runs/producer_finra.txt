@@ -1,0 +1,25 @@
+# carrier for producer_finra
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider finra --output docs/evidence/C101/finra/claims.json
+# note: five-phase producer for finra
+# started_utc: 2026-10-19T09:52:48+00:00
+# exit: 0
+# stdout_chars: 2926 stderr_chars: 0
+
+== provider finra: 2 inventory row(s) of 350 total ==
+OTCAggregate implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase implementation --evidence-root docs/evidence/C101
+OTCAggregate direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase direct --evidence-root docs/evidence/C101
+OTCAggregate service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase service --evidence-root docs/evidence/C101
+OTCAggregate contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase contract --evidence-root docs/evidence/C101
+OTCAggregate counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase counterfact --evidence-root docs/evidence/C101
+EquityShortInterest implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase implementation --evidence-root docs/evidence/C101
+EquityShortInterest direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase direct --evidence-root docs/evidence/C101
+EquityShortInterest service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase service --evidence-root docs/evidence/C101
+EquityShortInterest contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase contract --evidence-root docs/evidence/C101
+EquityShortInterest counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase counterfact --evidence-root docs/evidence/C101
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=339/350; provider rows covered=2 of provider inventory rows=2, of which bound now=2/339 resolvable; claims emitted=10 (10 PASS, 0 FAIL, 0 BLOCKED) = 2 row(s) x 5 phases; phases actually executed as subprocesses=10
+wrote docs/evidence/C101/finra/claims.json
+
+---- stderr ----
+
+
+chain_producer_finra_exit=0

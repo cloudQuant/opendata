@@ -1,0 +1,49 @@
+populations claims=1725 rows_in_claims=345 accepted=338 ledger_rows=350 joined_accepted_to_claims=338
+evidence_complete=338 accepted_but_unjoined=[]
+gap rows_with_full_witness_but_not_dev_done=333 by_status={'NOT_RUN': 320, 'IN_PROGRESS': 13}
+GAP alpha_vantage::EquityHistorical              ledger=NOT_RUN
+GAP alpha_vantage::EtfHistorical                 ledger=NOT_RUN
+GAP alpha_vantage::HistoricalEps                 ledger=NOT_RUN
+GAP benzinga::AnalystSearch                      ledger=NOT_RUN
+GAP benzinga::CompanyNews                        ledger=NOT_RUN
+GAP benzinga::PriceTarget                        ledger=NOT_RUN
+GAP benzinga::WorldNews                          ledger=NOT_RUN
+GAP bls::BlsSearch                               ledger=IN_PROGRESS
+GAP bls::BlsSeries                               ledger=IN_PROGRESS
+GAP cboe::EquityHistorical                       ledger=NOT_RUN
+GAP cboe::EquityQuote                            ledger=NOT_RUN
+GAP cboe::EquitySearch                           ledger=NOT_RUN
+GAP cboe::EtfHistorical                          ledger=NOT_RUN
+GAP cboe::IndexHistorical                        ledger=NOT_RUN
+GAP cboe::IndexSnapshots                         ledger=NOT_RUN
+GAP cboe::OptionsChains                          ledger=NOT_RUN
+GAP cftc::COT                                    ledger=NOT_RUN
+GAP cftc::COTSearch                              ledger=NOT_RUN
+GAP congress_gov::CongressAmendmentInfo          ledger=NOT_RUN
+GAP congress_gov::CongressAmendmentText          ledger=NOT_RUN
+GAP congress_gov::CongressAmendments             ledger=NOT_RUN
+GAP congress_gov::CongressBillInfo               ledger=NOT_RUN
+GAP congress_gov::CongressBillText               ledger=NOT_RUN
+GAP congress_gov::CongressBills                  ledger=NOT_RUN
+GAP congress_gov::CongressCommitteeDocuments     ledger=NOT_RUN
+GAP congress_gov::CongressCommitteeInfo          ledger=NOT_RUN
+GAP deribit::FuturesCurve                        ledger=NOT_RUN
+GAP deribit::FuturesHistorical                   ledger=NOT_RUN
+GAP deribit::FuturesInfo                         ledger=NOT_RUN
+GAP deribit::FuturesInstruments                  ledger=NOT_RUN
+GAP deribit::OptionsChains                       ledger=NOT_RUN
+GAP ecb::BalanceOfPayments                       ledger=IN_PROGRESS
+GAP ecb::CurrencyReferenceRates                  ledger=IN_PROGRESS
+GAP ecb::YieldCurve                              ledger=IN_PROGRESS
+GAP econdb::AvailableIndicators                  ledger=NOT_RUN
+GAP econdb::EconomicIndicators                   ledger=NOT_RUN
+GAP econdb::GdpNominal                           ledger=NOT_RUN
+GAP econdb::GdpReal                              ledger=NOT_RUN
+GAP econdb::PortVolume                           ledger=NOT_RUN
+GAP econdb::YieldCurve                           ledger=NOT_RUN
+sample_first=alpha_vantage::EquityHistorical phases={"implementation": "PASS", "direct": "PASS", "service": "PASS", "contract": "PASS", "counterfact": "PASS"}
+counterfact_legs total=345 sampled=12 path_and_digest_recorded=12 receipt_tracked_at_head=12 (receipt bodies are verified by wave 38, not here)
+plane2_gap_census arms=5 arms_passed=5 PASS=True red=[]
+w71_plane2_gap_census_exit=0
+w71_plane2_gap_census_exit=0
+w71_plane2_gap_census_wrapper_exit=0

@@ -1,0 +1,25 @@
+# carrier for recorder_cboe.take2
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/cboe/claims.json --output docs/evidence/C101/cboe/claims.reviewed.json --provider cboe --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over cboe's regenerated shard
+# started_utc: 2026-10-19T10:57:18+00:00
+# exit: 0
+# stdout_chars: 615 stderr_chars: 0
+
+re-signing: dropped 11 earlier review(s) for the addressed identities
+REVIEW_SIGNED: cboe::AvailableIndices
+REVIEW_SIGNED: cboe::EquityHistorical
+REVIEW_SIGNED: cboe::EquityQuote
+REVIEW_SIGNED: cboe::EquitySearch
+REVIEW_SIGNED: cboe::EtfHistorical
+REVIEW_SIGNED: cboe::FuturesCurve
+REVIEW_SIGNED: cboe::IndexConstituents
+REVIEW_SIGNED: cboe::IndexHistorical
+REVIEW_SIGNED: cboe::IndexSearch
+REVIEW_SIGNED: cboe::IndexSnapshots
+REVIEW_SIGNED: cboe::OptionsChains
+recorder_exit=0 signed=11 refused=0 reviews_total=11 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/cboe/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_cboe.take2_exit=0

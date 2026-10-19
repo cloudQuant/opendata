@@ -1,0 +1,234 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/cboe/claims.json",
+    "sha256": "5803d1a1c9165931197ad3062d1de44dc0b6af265c70d117f8993c7ff115618c"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+            "before_sha256": "9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+            "path": "opendata/data/models/cboe_futures_curve.py"
+          },
+          {
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/FuturesCurve/contract.json",
+          "sha256": "4ecadef27e55afa9ad455efd447a57eb189546ac5d85c8ef39464c349ad530b9"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+            "before_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "58ba0e858ed1de1c36bf9ddd367e0f7f793699dfc3eb702363f7153fe7fbf66c",
+            "before_sha256": "58ba0e858ed1de1c36bf9ddd367e0f7f793699dfc3eb702363f7153fe7fbf66c",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "9d72af3cd620b32a7cc368d59f2b654f5ba688ebc7a32dee90050e38b17b5ea6",
+            "before_sha256": "9d72af3cd620b32a7cc368d59f2b654f5ba688ebc7a32dee90050e38b17b5ea6",
+            "path": "opendata/data/providers/cboe/models/futures_settlement_public.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+            "before_sha256": "9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+            "path": "opendata/data/models/cboe_futures_curve.py"
+          },
+          {
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/FuturesCurve/counterfact.json",
+          "sha256": "21e4e2e496ad1515231af281dad3e9b62b019e0ec488b5f9f0bbf83d5dcb8686"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+            "before_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "58ba0e858ed1de1c36bf9ddd367e0f7f793699dfc3eb702363f7153fe7fbf66c",
+            "before_sha256": "58ba0e858ed1de1c36bf9ddd367e0f7f793699dfc3eb702363f7153fe7fbf66c",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "9d72af3cd620b32a7cc368d59f2b654f5ba688ebc7a32dee90050e38b17b5ea6",
+            "before_sha256": "9d72af3cd620b32a7cc368d59f2b654f5ba688ebc7a32dee90050e38b17b5ea6",
+            "path": "opendata/data/providers/cboe/models/futures_settlement_public.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+            "before_sha256": "9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+            "path": "opendata/data/models/cboe_futures_curve.py"
+          },
+          {
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/FuturesCurve/direct.json",
+          "sha256": "d4fb3baabc9cc575f745ffbf4c1eeb406fd75671fe56738c09f4dc0eca028aa0"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+            "before_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "58ba0e858ed1de1c36bf9ddd367e0f7f793699dfc3eb702363f7153fe7fbf66c",
+            "before_sha256": "58ba0e858ed1de1c36bf9ddd367e0f7f793699dfc3eb702363f7153fe7fbf66c",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "9d72af3cd620b32a7cc368d59f2b654f5ba688ebc7a32dee90050e38b17b5ea6",
+            "before_sha256": "9d72af3cd620b32a7cc368d59f2b654f5ba688ebc7a32dee90050e38b17b5ea6",
+            "path": "opendata/data/providers/cboe/models/futures_settlement_public.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+            "before_sha256": "9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+            "path": "opendata/data/models/cboe_futures_curve.py"
+          },
+          {
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/FuturesCurve/implementation.json",
+          "sha256": "e4de99cd7b1b981708ff9f7ab4c29b4f6ba1cd5125bc92a76d35dc86df432181"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+            "before_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "58ba0e858ed1de1c36bf9ddd367e0f7f793699dfc3eb702363f7153fe7fbf66c",
+            "before_sha256": "58ba0e858ed1de1c36bf9ddd367e0f7f793699dfc3eb702363f7153fe7fbf66c",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "9d72af3cd620b32a7cc368d59f2b654f5ba688ebc7a32dee90050e38b17b5ea6",
+            "before_sha256": "9d72af3cd620b32a7cc368d59f2b654f5ba688ebc7a32dee90050e38b17b5ea6",
+            "path": "opendata/data/providers/cboe/models/futures_settlement_public.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+            "before_sha256": "9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+            "path": "opendata/data/models/cboe_futures_curve.py"
+          },
+          {
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:9e23b8c392fac0ba3e349ea8480f697e368426f12a750d9b09d6309ec9a05c1b",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/cboe/FuturesCurve/service.json",
+          "sha256": "309f138673213280cac80b240546611060b8e7c9ef5ff6b21547e08358fe5bb6"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+            "before_sha256": "6a35a244e53bb67ff29ef40255749bdbcb8b4b1d136a2263f71e68646197ac9f",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "before_sha256": "5bac8132eb2d5f2d0940483cf3dee2c77ea0ee00a55bd39dfa24ba6e37857587",
+            "path": "opendata/data/providers/cboe/registration.py"
+          },
+          {
+            "after_sha256": "58ba0e858ed1de1c36bf9ddd367e0f7f793699dfc3eb702363f7153fe7fbf66c",
+            "before_sha256": "58ba0e858ed1de1c36bf9ddd367e0f7f793699dfc3eb702363f7153fe7fbf66c",
+            "path": "opendata/data/providers/cboe/provider.py"
+          },
+          {
+            "after_sha256": "9d72af3cd620b32a7cc368d59f2b654f5ba688ebc7a32dee90050e38b17b5ea6",
+            "before_sha256": "9d72af3cd620b32a7cc368d59f2b654f5ba688ebc7a32dee90050e38b17b5ea6",
+            "path": "opendata/data/providers/cboe/models/futures_settlement_public.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "FuturesCurve",
+  "model_identity": "cboe::FuturesCurve",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "cboe",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-19T10:57:18Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "FuturesCurve"
+}

@@ -1,0 +1,577 @@
+{
+  "receipt_version": 1,
+  "review": "wave-39 unauthenticated access round for the residue rows whose ledger reason is an access assessment rather than a code gap",
+  "authorization_boundary": "public unauthenticated GETs only; no credentialed request was made. No -H/--header with an authorization or cookie value, no -u/--user, no --cookie, and no API key appeared in any argv used in this round.",
+  "curl_argv_template": "/usr/bin/curl -s -L -g -A <desktop browser user agent> -m <max> -D <headers> -o <body> -w <metrics> <url>",
+  "captured_utc": "2026-10-19T10:09:05.892002Z",
+  "environment": {
+    "host": "Darwin, macOS, arm64",
+    "follow_redirects": true,
+    "requests_made": 23
+  },
+  "source_captures": [
+    {
+      "id": "cboe-futures-settlement-csv",
+      "family": "cboe",
+      "url": "https://www.cboe.com/us/futures/market_statistics/settlement/csv/",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "cloudflare",
+      "content_type": "text/csv",
+      "response_date": "Mon, 19 Oct 2026 09:11:38 GMT",
+      "redirect_location": "",
+      "content_disposition": "attachment; filename=FuturesSettlements_2026-10-16.csv",
+      "headers_bytes": 837,
+      "body_bytes": 1767,
+      "body_sha256": "2715f48481217cf790af273da85287d051dab10c37fe3f524c301f15f8d19927",
+      "headers_file": "sources/cboe-futures-settlement-csv.headers",
+      "body_file": "sources/cboe-futures-settlement-csv.csv",
+      "use": "cboe::FuturesCurve candidate source; unauthenticated 200 text/csv settlement table",
+      "body_excerpt": "Product,Symbol,Expiration Date,Price\nVX,VX/V6,2026-10-21,19.9075\nVX,VX43/V6,2026-10-28,19.9075\nVX,VX44/X6,2026-11-04,19.9075\nVX,VX45/X6,2026-11-11,19.9075\nVX,VX/X6,2026-11-18,19.2382\nVX,VX47/X6,2026-1"
+    },
+    {
+      "id": "cboe-futures-settlement-csv-dt-2026-10-16",
+      "family": "cboe",
+      "url": "https://www.cboe.com/us/futures/market_statistics/settlement/csv?dt=2026-10-16",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "cloudflare",
+      "content_type": "text/csv",
+      "response_date": "Mon, 19 Oct 2026 09:13:17 GMT",
+      "redirect_location": "",
+      "content_disposition": "attachment; filename=FuturesSettlements_2026-10-16.csv",
+      "headers_bytes": 851,
+      "body_bytes": 1767,
+      "body_sha256": "2715f48481217cf790af273da85287d051dab10c37fe3f524c301f15f8d19927",
+      "headers_file": "sources/cboe-futures-settlement-csv-dt-2026-10-16.headers",
+      "body_file": "sources/cboe-futures-settlement-csv-dt-2026-10-16.csv",
+      "use": "cboe::FuturesCurve first-take history probe, asked for the day the route was already serving -- the comparison that produced a false 'dt is ignored' reading, see corrections",
+      "body_excerpt": "Product,Symbol,Expiration Date,Price\nVX,VX/V6,2026-10-21,19.9075\nVX,VX43/V6,2026-10-28,19.9075\nVX,VX44/X6,2026-11-04,19.9075\nVX,VX45/X6,2026-11-11,19.9075\nVX,VX/X6,2026-11-18,19.2382\nVX,VX47/X6,2026-1"
+    },
+    {
+      "id": "cboe-futures-settlement-csv-dt-2026-10-09",
+      "family": "cboe",
+      "url": "https://www.cboe.com/us/futures/market_statistics/settlement/csv?dt=2026-10-09",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "cloudflare",
+      "content_type": "text/csv",
+      "response_date": "Mon, 19 Oct 2026 09:31:06 GMT",
+      "redirect_location": "",
+      "content_disposition": "attachment; filename=FuturesSettlements_2026-10-09.csv",
+      "headers_bytes": 850,
+      "body_bytes": 1731,
+      "body_sha256": "642c664208a084b3d64f2ca9f8c2972d073a1158435c788bd8a1f02af225aed3",
+      "headers_file": "sources/cboe-futures-settlement-csv-dt-2026-10-09.headers",
+      "body_file": "sources/cboe-futures-settlement-csv-dt-2026-10-09.csv",
+      "use": "cboe::FuturesCurve history probe on a date the route is NOT already serving; this is the arm that overturns the first take's 'dt is ignored' reading",
+      "body_excerpt": "Product,Symbol,Expiration Date,Price\nVX,VX41/V6,2026-10-14,17.1186\nVX,VX/V6,2026-10-21,17.1186\nVX,VX43/V6,2026-10-28,17.1186\nVX,VX44/X6,2026-11-04,17.1186\nVX,VX45/X6,2026-11-11,17.1186\nVX,VX/X6,2026-1"
+    },
+    {
+      "id": "cboe-futures-settlement-csv-dt-2026-10-15",
+      "family": "cboe",
+      "url": "https://www.cboe.com/us/futures/market_statistics/settlement/csv?dt=2026-10-15",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "cloudflare",
+      "content_type": "text/csv",
+      "response_date": "Mon, 19 Oct 2026 09:31:08 GMT",
+      "redirect_location": "",
+      "content_disposition": "attachment; filename=FuturesSettlements_2026-10-15.csv",
+      "headers_bytes": 851,
+      "body_bytes": 1749,
+      "body_sha256": "f426c41135af0e04ce2cf3e4c7f7e2acaee9ca6dda77dff578b9e6f09a541bee",
+      "headers_file": "sources/cboe-futures-settlement-csv-dt-2026-10-15.headers",
+      "body_file": "sources/cboe-futures-settlement-csv-dt-2026-10-15.csv",
+      "use": "cboe::FuturesCurve history probe, second distinct settlement day",
+      "body_excerpt": "Product,Symbol,Expiration Date,Price\nVX,VX/V6,2026-10-21,17.4227\nVX,VX43/V6,2026-10-28,17.4227\nVX,VX44/X6,2026-11-04,18.40\nVX,VX45/X6,2026-11-11,18.40\nVX,VX/X6,2026-11-18,17.9231\nVX,VX47/X6,2026-11-24"
+    },
+    {
+      "id": "cboe-futures-settlement-csv-dt-2026-10-17-saturday",
+      "family": "cboe",
+      "url": "https://www.cboe.com/us/futures/market_statistics/settlement/csv?dt=2026-10-17",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "cloudflare",
+      "content_type": "text/csv",
+      "response_date": "Mon, 19 Oct 2026 09:31:17 GMT",
+      "redirect_location": "",
+      "content_disposition": "attachment; filename=FuturesSettlements_2026-10-17.csv",
+      "headers_bytes": 850,
+      "body_bytes": 38,
+      "body_sha256": "fb3907637b20ec51927e44bd0c06628cc47fb9cde8f317c743131a779dbaf39d",
+      "headers_file": "sources/cboe-futures-settlement-csv-dt-2026-10-17-saturday.headers",
+      "body_file": "sources/cboe-futures-settlement-csv-dt-2026-10-17-saturday.csv",
+      "use": "cboe::FuturesCurve empty-curve edge: a non-settlement day answers 200 with the header row and no data rows",
+      "body_excerpt": "Product,Symbol,Expiration Date,Price\n"
+    },
+    {
+      "id": "cboe-futures-roots-json",
+      "family": "cboe",
+      "url": "https://cdn.cboe.com/api/global/delayed_quotes/symbol_book/futures-roots.json",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 307",
+        "HTTP/2 200"
+      ],
+      "server": "cloudflare",
+      "content_type": "application/json",
+      "response_date": "Mon, 19 Oct 2026 09:11:44 GMT",
+      "redirect_location": "https://cdn-api.cboe.com/api/global/delayed_quotes/symbol_book/futures-roots.json",
+      "content_disposition": "",
+      "headers_bytes": 1539,
+      "body_bytes": 1891,
+      "body_sha256": "2419d1ee55622381d73148ae4b2514f27fa8e7f3a375294625c4347ff883f2e5",
+      "headers_file": "sources/cboe-futures-roots-json.headers",
+      "body_file": "sources/cboe-futures-roots-json.json",
+      "use": "cboe::FuturesCurve underlying-list probe; the fixed model's 'underlying list' half of the refusal, tested against the public symbol book",
+      "body_excerpt": "{\"timestamp\": \"2020-11-03\", \"data\": [\n{\"future_root\": \"IBHY\", \"underlying\": \"^IBHY\", \"family\": \"IBHY\", \"sort_order\": 1, \"name\":\"Cboe iBoxx iShares High Yield Corporate Bond Index Futures\"},\n{\"future_r"
+    },
+    {
+      "id": "wsj-etfmovers-leaders",
+      "family": "wsj",
+      "url": "https://www.wsj.com/market-data/mutualfunds-etfs/etfmovers?id=%7B%22application%22%3A%22WSJ%22%2C%22etfMover%22%3A%22leaders%22%2C%22count%22%3A25%7D&type=mdc_etfmovers",
+      "http": "NO_STATUS_LINE",
+      "status_line_chain": [],
+      "server": "",
+      "content_type": "",
+      "response_date": "",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 0,
+      "body_bytes": 0,
+      "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "headers_file": "sources/wsj-etfmovers-leaders.headers",
+      "body_file": "sources/wsj-etfmovers-leaders.txt",
+      "use": "wsj::ETF Gainers/Losers/Active; the route the inventory names, with no credential field. Carries no response headers because no TCP connection was established",
+      "body_excerpt": ""
+    },
+    {
+      "id": "sa-estimates-step1-filter-ticker",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?filter%5Bticker%5D=AAPL",
+      "http": "400",
+      "status_line_chain": [
+        "HTTP/2 400"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:12:10 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1101,
+      "body_bytes": 108,
+      "body_sha256": "ee580c8bd08446f3e784bb158faae21f647feceb95a487478eb6a5e3c06e3837",
+      "headers_file": "sources/sa-estimates-step1-filter-ticker.headers",
+      "body_file": "sources/sa-estimates-step1-filter-ticker.json",
+      "use": "seeking_alpha::ForwardEpsEstimates chain step 1; asks by symbol and is told which parameter the route actually wants",
+      "body_excerpt": "{\"errors\":[{\"code\":\"400\",\"detail\":\"Parameter ticker_ids is required\",\"status\":\"400\",\"title\":\"Bad Request\"}]}"
+    },
+    {
+      "id": "sa-estimates-step2-ticker-ids",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=AAPL",
+      "http": "400",
+      "status_line_chain": [
+        "HTTP/2 400"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:13:18 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1101,
+      "body_bytes": 114,
+      "body_sha256": "6540279fdcac400c48e668a161903dc399bbebfb3b5aa5ee6cabcacd6a21352c",
+      "headers_file": "sources/sa-estimates-step2-ticker-ids.headers",
+      "body_file": "sources/sa-estimates-step2-ticker-ids.json",
+      "use": "seeking_alpha::ForwardEpsEstimates chain step 2; names the next required parameter",
+      "body_excerpt": "{\"errors\":[{\"code\":\"400\",\"detail\":\"Parameter relative_periods is required\",\"status\":\"400\",\"title\":\"Bad Request\"}]}"
+    },
+    {
+      "id": "sa-estimates-step3-relative-periods",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=AAPL&relative_periods=4",
+      "http": "400",
+      "status_line_chain": [
+        "HTTP/2 400"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:13:35 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1111,
+      "body_bytes": 136,
+      "body_sha256": "67f42221288941cff0edabacb01f2549ca1afe830ae2c84c340fcadaded797fe",
+      "headers_file": "sources/sa-estimates-step3-relative-periods.headers",
+      "body_file": "sources/sa-estimates-step3-relative-periods.json",
+      "use": "seeking_alpha::ForwardEpsEstimates chain step 3; names the data-items parameter",
+      "body_excerpt": "{\"errors\":[{\"code\":\"400\",\"detail\":\"`revisions_data_items` or `estimates_data_items` is required\",\"status\":\"400\",\"title\":\"Bad Request\"}]}"
+    },
+    {
+      "id": "sa-estimates-step4-eps-avg",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=AAPL&relative_periods=4&estimates_data_items%5B%5D=eps_avg",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:16:00 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1183,
+      "body_bytes": 31,
+      "body_sha256": "7b1dd4c5afe06f5b270d4bc627180687d646409d805951e481baa2fa2cafdc19",
+      "headers_file": "sources/sa-estimates-step4-eps-avg.headers",
+      "body_file": "sources/sa-estimates-step4-eps-avg.json",
+      "use": "seeking_alpha::ForwardEpsEstimates chain step 4; first response that satisfies the route's own demands -- 200 with an empty envelope",
+      "body_excerpt": "{\"revisions\":{},\"estimates\":{}}"
+    },
+    {
+      "id": "sa-estimates-step4-revisions-eps-up",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=AAPL&relative_periods=4&revisions_data_items%5B%5D=eps_up",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:16:03 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1183,
+      "body_bytes": 31,
+      "body_sha256": "7b1dd4c5afe06f5b270d4bc627180687d646409d805951e481baa2fa2cafdc19",
+      "headers_file": "sources/sa-estimates-step4-revisions-eps-up.headers",
+      "body_file": "sources/sa-estimates-step4-revisions-eps-up.json",
+      "use": "seeking_alpha::ForwardSalesEstimates sibling; the other data-items key the route offered in step 3",
+      "body_excerpt": "{\"revisions\":{},\"estimates\":{}}"
+    },
+    {
+      "id": "sa-estimates-step4-items-unbracketed",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=AAPL&relative_periods=4&estimates_data_items=eps_avg",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:16:04 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1183,
+      "body_bytes": 31,
+      "body_sha256": "7b1dd4c5afe06f5b270d4bc627180687d646409d805951e481baa2fa2cafdc19",
+      "headers_file": "sources/sa-estimates-step4-items-unbracketed.headers",
+      "body_file": "sources/sa-estimates-step4-items-unbracketed.json",
+      "use": "seeking_alpha spelling probe; repeated-key form against comma/plain form",
+      "body_excerpt": "{\"revisions\":{},\"estimates\":{}}"
+    },
+    {
+      "id": "sa-estimates-item-not-real",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=AAPL&relative_periods=4&estimates_data_items%5B%5D=zzz_not_a_real_item",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:16:24 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1183,
+      "body_bytes": 31,
+      "body_sha256": "7b1dd4c5afe06f5b270d4bc627180687d646409d805951e481baa2fa2cafdc19",
+      "headers_file": "sources/sa-estimates-item-not-real.headers",
+      "body_file": "sources/sa-estimates-item-not-real.json",
+      "use": "seeking_alpha falsifiability probe; if an invented data item answers the same way as a plausible one, the empty envelope says nothing about item naming",
+      "body_excerpt": "{\"revisions\":{},\"estimates\":{}}"
+    },
+    {
+      "id": "sa-estimates-numeric-ticker-ids",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=167087&relative_periods=4&estimates_data_items%5B%5D=eps_avg",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:16:33 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1183,
+      "body_bytes": 31,
+      "body_sha256": "7b1dd4c5afe06f5b270d4bc627180687d646409d805951e481baa2fa2cafdc19",
+      "headers_file": "sources/sa-estimates-numeric-ticker-ids.headers",
+      "body_file": "sources/sa-estimates-numeric-ticker-ids.json",
+      "use": "seeking_alpha identifier probe; tests whether the route wants a numeric symbol id",
+      "body_excerpt": "{\"revisions\":{},\"estimates\":{}}"
+    },
+    {
+      "id": "sa-estimates-ticker-not-real",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=ZZZZNOTREAL&relative_periods=4&estimates_data_items%5B%5D=eps_avg",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:16:36 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1183,
+      "body_bytes": 31,
+      "body_sha256": "7b1dd4c5afe06f5b270d4bc627180687d646409d805951e481baa2fa2cafdc19",
+      "headers_file": "sources/sa-estimates-ticker-not-real.headers",
+      "body_file": "sources/sa-estimates-ticker-not-real.json",
+      "use": "seeking_alpha identifier probe; a symbol that cannot resolve, as the floor against 'AAPL was the wrong key'",
+      "body_excerpt": "{\"revisions\":{},\"estimates\":{}}"
+    },
+    {
+      "id": "sa-estimates-periods-zero",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=AAPL&relative_periods=0&estimates_data_items%5B%5D=eps_avg",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:17:16 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1183,
+      "body_bytes": 31,
+      "body_sha256": "7b1dd4c5afe06f5b270d4bc627180687d646409d805951e481baa2fa2cafdc19",
+      "headers_file": "sources/sa-estimates-periods-zero.headers",
+      "body_file": "sources/sa-estimates-periods-zero.json",
+      "use": "seeking_alpha range probe; relative_periods is not validated for magnitude",
+      "body_excerpt": "{\"revisions\":{},\"estimates\":{}}"
+    },
+    {
+      "id": "sa-estimates-periods-twelve-two-items",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=AAPL&relative_periods=12&estimates_data_items%5B%5D=eps_avg&estimates_data_items%5B%5D=revenue_avg",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:17:17 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1183,
+      "body_bytes": 31,
+      "body_sha256": "7b1dd4c5afe06f5b270d4bc627180687d646409d805951e481baa2fa2cafdc19",
+      "headers_file": "sources/sa-estimates-periods-twelve-two-items.headers",
+      "body_file": "sources/sa-estimates-periods-twelve-two-items.json",
+      "use": "seeking_alpha breadth probe; eps and revenue items together, the widest plausible ask",
+      "body_excerpt": "{\"revisions\":{},\"estimates\":{}}"
+    },
+    {
+      "id": "sa-estimates-periods-negative",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=AAPL&relative_periods=-1&estimates_data_items%5B%5D=eps_avg",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:17:37 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1183,
+      "body_bytes": 31,
+      "body_sha256": "7b1dd4c5afe06f5b270d4bc627180687d646409d805951e481baa2fa2cafdc19",
+      "headers_file": "sources/sa-estimates-periods-negative.headers",
+      "body_file": "sources/sa-estimates-periods-negative.json",
+      "use": "seeking_alpha range probe; a negative period is accepted and still answers empty",
+      "body_excerpt": "{\"revisions\":{},\"estimates\":{}}"
+    },
+    {
+      "id": "sa-estimates-period-end-dates-instead-of-periods",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=AAPL&period_end_dates%5B%5D=2026-12-31&estimates_data_items%5B%5D=eps_avg",
+      "http": "400",
+      "status_line_chain": [
+        "HTTP/2 400"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:17:39 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1101,
+      "body_bytes": 114,
+      "body_sha256": "6540279fdcac400c48e668a161903dc399bbebfb3b5aa5ee6cabcacd6a21352c",
+      "headers_file": "sources/sa-estimates-period-end-dates-instead-of-periods.headers",
+      "body_file": "sources/sa-estimates-period-end-dates-instead-of-periods.json",
+      "use": "seeking_alpha control on the emptiness: drops relative_periods for a date list, so a route that still validates answers 400 rather than the empty 200",
+      "body_excerpt": "{\"errors\":[{\"code\":\"400\",\"detail\":\"Parameter relative_periods is required\",\"status\":\"400\",\"title\":\"Bad Request\"}]}"
+    },
+    {
+      "id": "sa-estimates-with-scale",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=AAPL&relative_periods=4&estimates_data_items%5B%5D=eps_avg&scale=thousands",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:17:41 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1183,
+      "body_bytes": 31,
+      "body_sha256": "7b1dd4c5afe06f5b270d4bc627180687d646409d805951e481baa2fa2cafdc19",
+      "headers_file": "sources/sa-estimates-with-scale.headers",
+      "body_file": "sources/sa-estimates-with-scale.json",
+      "use": "seeking_alpha unit probe; a scale parameter does not unlock the envelope",
+      "body_excerpt": "{\"revisions\":{},\"estimates\":{}}"
+    },
+    {
+      "id": "sa-estimates-with-filter-symbol",
+      "family": "seeking_alpha",
+      "url": "https://seekingalpha.com/api/v3/symbol_data/estimates?ticker_ids%5B%5D=AAPL&relative_periods=4&estimates_data_items%5B%5D=eps_avg&filter%5Bsymbol%5D=AAPL",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:17:45 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1183,
+      "body_bytes": 31,
+      "body_sha256": "7b1dd4c5afe06f5b270d4bc627180687d646409d805951e481baa2fa2cafdc19",
+      "headers_file": "sources/sa-estimates-with-filter-symbol.headers",
+      "body_file": "sources/sa-estimates-with-filter-symbol.json",
+      "use": "seeking_alpha belt-and-braces probe; both symbol spellings at once",
+      "body_excerpt": "{\"revisions\":{},\"estimates\":{}}"
+    },
+    {
+      "id": "sa-control-earnings-calendar-2026-10-20",
+      "family": "control",
+      "url": "https://seekingalpha.com/api/v3/earnings_calendar/tickers?filter%5Bselected_date%5D=2026-10-20",
+      "http": "200",
+      "status_line_chain": [
+        "HTTP/2 200"
+      ],
+      "server": "",
+      "content_type": "application/json; charset=utf-8",
+      "response_date": "Mon, 19 Oct 2026 09:16:55 GMT",
+      "redirect_location": "",
+      "content_disposition": "",
+      "headers_bytes": 1215,
+      "body_bytes": 12389,
+      "body_sha256": "e092c87561ade151254912686f519bcc92d72417a07b2575c5dc297d4d3bdf18",
+      "headers_file": "sources/sa-control-earnings-calendar-2026-10-20.headers",
+      "body_file": "sources/sa-control-earnings-calendar-2026-10-20.json",
+      "use": "SAME-HOST CONTROL: proves the client, user agent and transport used for the estimates probes can be served non-empty data unauthenticated on seekingalpha.com",
+      "body_excerpt": "{\"data\":[{\"id\":\"554436\",\"type\":\"earning_calendar_ticker\",\"attributes\":{\"slug\":\"SPCX\",\"name\":\"Space Exploration Technologies Corp.\",\"exchange\":\"NASDAQ\",\"sector_id\":50,\"release_time\":\"Post-Market\",\"rele"
+    }
+  ],
+  "progressive_parameter_chain": [
+    {
+      "step": 1,
+      "capture_id": "sa-estimates-step1-filter-ticker",
+      "http": "400",
+      "body_excerpt": "{\"errors\":[{\"code\":\"400\",\"detail\":\"Parameter ticker_ids is required\",\"status\":\"400\",\"title\":\"Bad Request\"}]}"
+    },
+    {
+      "step": 2,
+      "capture_id": "sa-estimates-step2-ticker-ids",
+      "http": "400",
+      "body_excerpt": "{\"errors\":[{\"code\":\"400\",\"detail\":\"Parameter relative_periods is required\",\"status\":\"400\",\"title\":\"Bad Request\"}]}"
+    },
+    {
+      "step": 3,
+      "capture_id": "sa-estimates-step3-relative-periods",
+      "http": "400",
+      "body_excerpt": "{\"errors\":[{\"code\":\"400\",\"detail\":\"`revisions_data_items` or `estimates_data_items` is required\",\"status\":\"400\",\"title\":\"Bad Request\"}]}"
+    },
+    {
+      "step": 4,
+      "capture_id": "sa-estimates-step4-eps-avg",
+      "http": "200",
+      "body_excerpt": "{\"revisions\":{},\"estimates\":{}}"
+    }
+  ],
+  "wsj_transport_attempts": [
+    {
+      "attempt": 1,
+      "max_time_seconds": 25,
+      "curl_exit": 28,
+      "curl_message": "curl: (28) Connection timed out after 20003 milliseconds",
+      "http_code": "000",
+      "headers_bytes": 0
+    },
+    {
+      "attempt": 2,
+      "max_time_seconds": 40,
+      "curl_exit": 28,
+      "curl_message": "curl: (28) Connection timed out after 40006 milliseconds",
+      "http_code": "000",
+      "headers_bytes": 0
+    },
+    {
+      "attempt": 3,
+      "max_time_seconds": 15,
+      "curl_exit": 28,
+      "curl_message": "curl: (28) Connection timed out after 15006 milliseconds",
+      "http_code": "000",
+      "headers_bytes": 0,
+      "verbose": "Trying 69.63.187.12:443... / no 'Connected to' line"
+    }
+  ],
+  "wsj_resolver": {
+    "query_type": "python socket.gethostbyname('www.wsj.com')",
+    "answers": [
+      "69.63.187.12"
+    ],
+    "system_nameserver": "8.8.8.8",
+    "note": "Resolution succeeded; the TCP handshake to the resolved address never completed. The refusal this records is transport-level and machine-local, not a statement that the route does not exist."
+  },
+  "refused_ledger_reasons": {
+    "cboe::FuturesCurve": "The reviewed official All Access docs do not establish the fixed model's underlying list, quote/history join, or curve output protocol."
+  },
+  "corrections": [
+    {
+      "claim_withdrawn": "the cboe settlement route ignores dt=, so no historical curve is evidenced",
+      "why_it_was_wrong": "the only dated probe was 2026-10-16, the day the route was already serving, so the comparison had no way to come out different; three further probes (2026-10-09, 2026-10-15, 2026-10-17) return distinct bodies",
+      "arm": "C",
+      "status": "CORRECTED_IN_SAME_ROUND"
+    }
+  ],
+  "dispositions": {
+    "cboe::FuturesCurve": "REFUTED as unevidenced, and stronger than the refusal allowed: the settlement table answers 200 text/csv unauthenticated with a per-expiry forward curve, dt= selects the settlement day (so the curve is historical, not today-only), and the refusal's 'underlying list' half is answered by the public futures-roots JSON.",
+    "seeking_alpha::ForwardEpsEstimates": "NOT REFUTED AS ACCESS-BLOCKED, still UNEVIDENCED: the route is reachable and its parameter validation is live, but every request that satisfies its demands returns one byte-identical empty envelope, and the same-host control shows that is not the transport.",
+    "seeking_alpha::ForwardSalesEstimates": "same as ForwardEpsEstimates; the revisions_data_items spelling answers identically.",
+    "wsj::ETFGainers": "UNVERIFIABLE FROM THIS NETWORK: no TCP connection was established in three attempts, so neither the ledger's prose nor this round can say anything about the response shape.",
+    "wsj::ETFLosers": "Same route, same transport failure as wsj::ETFGainers.",
+    "wsj::ETFActive": "Same route, same transport failure as wsj::ETFGainers."
+  },
+  "history_note": "CORRECTED. The first take compared the unparameterized table against ?dt=2026-10-16, which is the day the route was already serving, and concluded dt= was ignored. That control could not differ. Re-run against dates the default is not: 2026-10-09, 2026-10-15 and 2026-10-16 each return their own bytes, and 2026-10-17 (a non-settlement Saturday) returns the header row alone. The route does select the settlement day, and each response's content-disposition filename names it."
+}

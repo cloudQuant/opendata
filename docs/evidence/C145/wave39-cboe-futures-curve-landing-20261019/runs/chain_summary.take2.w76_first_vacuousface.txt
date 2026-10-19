@@ -1,0 +1,70 @@
+# wave-39 cboe-only re-sign summary (take 2)
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C145/wave39-cboe-futures-curve-landing-20261019/probes/w76_cboe_resign.py
+
+{
+  "stale_face_before": {
+    "total_claims": 1725,
+    "pin_occurrences_by_target": {
+      "opendata/data/providers/cboe/models/futures_settlement_public.py": 5,
+      "scripts/quality/iter2_witnesses/_parts/cboe/futures.py": 66,
+      "opendata/data/models/__init__.py": 0
+    },
+    "claims_touching_targets": {
+      "cboe": 55
+    },
+    "stale_claims_by_provider": {
+      "cboe": 71
+    },
+    "stale_total": 71,
+    "stale_groups": {
+      "cboe:fixture": 11,
+      "cboe:probe": 55,
+      "cboe:source": 5
+    }
+  },
+  "stale_face_after": {
+    "total_claims": 1725,
+    "pin_occurrences_by_target": {
+      "opendata/data/providers/cboe/models/futures_settlement_public.py": 5,
+      "scripts/quality/iter2_witnesses/_parts/cboe/futures.py": 66,
+      "opendata/data/models/__init__.py": 0
+    },
+    "claims_touching_targets": {
+      "cboe": 55
+    },
+    "stale_claims_by_provider": {
+      "cboe": 71
+    },
+    "stale_total": 71,
+    "stale_groups": {
+      "cboe:fixture": 11,
+      "cboe:probe": 55,
+      "cboe:source": 5
+    }
+  },
+  "exits": {
+    "producer_cboe.take2": 0,
+    "recorder_cboe.take2": 0,
+    "merge_take1.take2": 0,
+    "merge_take2.take2": 0,
+    "judge.take2": 0
+  },
+  "merged_stable_sha_take2_first": "d5f40a9057735a70",
+  "merged_stable_sha_take2_second": "d5f40a9057735a70",
+  "merge_idempotent": true,
+  "post_resign_reading": {
+    "post_resign_take2_identities": 350,
+    "post_resign_take2_accepted": 339,
+    "post_resign_take2_claims": 1725,
+    "post_resign_take2_status_counts": {
+      "INCOMPLETE": 6,
+      "OFFLINE_ACCEPTED": 339,
+      "UNREVIEWED": 5
+    }
+  },
+  "nonzero_members": []
+}
+
+stale_face_before={'total_claims': 1725, 'pin_occurrences_by_target': {'opendata/data/providers/cboe/models/futures_settlement_public.py': 5, 'scripts/quality/iter2_witnesses/_parts/cboe/futures.py': 66, 'opendata/data/models/__init__.py': 0}, 'claims_touching_targets': {'cboe': 55}, 'stale_claims_by_provider': {'cboe': 71}, 'stale_total': 71, 'stale_groups': {'cboe:fixture': 11, 'cboe:probe': 55, 'cboe:source': 5}} stale_face_after={'total_claims': 1725, 'pin_occurrences_by_target': {'opendata/data/providers/cboe/models/futures_settlement_public.py': 5, 'scripts/quality/iter2_witnesses/_parts/cboe/futures.py': 66, 'opendata/data/models/__init__.py': 0}, 'claims_touching_targets': {'cboe': 55}, 'stale_claims_by_provider': {'cboe': 71}, 'stale_total': 71, 'stale_groups': {'cboe:fixture': 11, 'cboe:probe': 55, 'cboe:source': 5}} exits={'producer_cboe.take2': 0, 'recorder_cboe.take2': 0, 'merge_take1.take2': 0, 'merge_take2.take2': 0, 'judge.take2': 0} merged_stable_sha_take2_first=d5f40a9057735a70 merged_stable_sha_take2_second=d5f40a9057735a70 merge_idempotent=True post_resign_reading={'post_resign_take2_identities': 350, 'post_resign_take2_accepted': 339, 'post_resign_take2_claims': 1725, 'post_resign_take2_status_counts': {'INCOMPLETE': 6, 'OFFLINE_ACCEPTED': 339, 'UNREVIEWED': 5}} nonzero_members=[]
+
+w76_cboe_resign_exit=0

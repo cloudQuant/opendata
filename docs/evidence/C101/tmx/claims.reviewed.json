@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model AvailableIndices --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:37:28.789792+00:00",
+      "executed_at_utc": "2026-10-19T10:17:14.901165+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -113,7 +113,7 @@
       "receipt": {
         "model_identity": "tmx::AvailableIndices",
         "path": "docs/evidence/C101/receipts/tmx/AvailableIndices/implementation.json",
-        "sha256": "69abe1e19779c39dfafa34d839db5b9b0af268d7ef12777199a822652e1f6db2"
+        "sha256": "524d6bac3a1d98a5e01d8d2a0bf4c7c54fe4c13a90bb0590bc6db27118e2751b"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -121,7 +121,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model AvailableIndices --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:37:29.960900+00:00",
+      "executed_at_utc": "2026-10-19T10:17:15.926863+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -133,8 +133,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -206,7 +206,7 @@
       "receipt": {
         "model_identity": "tmx::AvailableIndices",
         "path": "docs/evidence/C101/receipts/tmx/AvailableIndices/direct.json",
-        "sha256": "2926dedf0461fa3d6649e32c8ae4f2544a6c66bacb911989216599ac1e33d179"
+        "sha256": "8c30c1ed57b5458c97568418dcb1a6cdbe35ab37b3cd1c3d79260246648c391a"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -214,7 +214,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model AvailableIndices --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:37:31.107614+00:00",
+      "executed_at_utc": "2026-10-19T10:17:16.976656+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -226,8 +226,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -299,7 +299,7 @@
       "receipt": {
         "model_identity": "tmx::AvailableIndices",
         "path": "docs/evidence/C101/receipts/tmx/AvailableIndices/service.json",
-        "sha256": "ed4f62bf063798011d7a69b0e06eeaeb0c6e2d033e591f0dcba18bb074b67610"
+        "sha256": "abf01580b21493d16609d148bf4c3397b5496c598e4c5440aaecffca7b4f6f5f"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -307,7 +307,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model AvailableIndices --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:37:32.312633+00:00",
+      "executed_at_utc": "2026-10-19T10:17:17.995825+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -319,8 +319,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -392,7 +392,7 @@
       "receipt": {
         "model_identity": "tmx::AvailableIndices",
         "path": "docs/evidence/C101/receipts/tmx/AvailableIndices/contract.json",
-        "sha256": "bce9798f38e5bd324d28198a1344d4c554034f8fb328eb903ce9a1de2377e49e"
+        "sha256": "8f3196dd3312447405613f4fd45c974a3770b207d2318e358548f103adae7063"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -400,7 +400,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model AvailableIndices --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:37:34.641173+00:00",
+      "executed_at_utc": "2026-10-19T10:17:20.088480+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -412,8 +412,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -485,7 +485,7 @@
       "receipt": {
         "model_identity": "tmx::AvailableIndices",
         "path": "docs/evidence/C101/receipts/tmx/AvailableIndices/counterfact.json",
-        "sha256": "4bd4bbfb794e6753258c847e1d5b695fa082bf3e1a2204568fe9ffc294ec5714"
+        "sha256": "9b853f42562c545378685c53407758aeb3472e3eafadf4b40f94438ef618d284"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -493,7 +493,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model BondPrices --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:37:35.827400+00:00",
+      "executed_at_utc": "2026-10-19T10:17:21.147956+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -505,8 +505,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -603,7 +603,7 @@
       "receipt": {
         "model_identity": "tmx::BondPrices",
         "path": "docs/evidence/C101/receipts/tmx/BondPrices/implementation.json",
-        "sha256": "d99531b93f9c559d0d3fe216da3f89bf6972337025c71fa621e87d91479a90ff"
+        "sha256": "a9181e5ba1c1de04422ae331eecad3e6b90297494251058a744bcdceedf8ea4a"
       },
       "status": "PASS",
       "upstream_model": "BondPrices"
@@ -611,7 +611,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model BondPrices --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:37:37.000596+00:00",
+      "executed_at_utc": "2026-10-19T10:17:22.205911+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -623,8 +623,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -696,7 +696,7 @@
       "receipt": {
         "model_identity": "tmx::BondPrices",
         "path": "docs/evidence/C101/receipts/tmx/BondPrices/direct.json",
-        "sha256": "a3bc0d8876efde02c9c737eca83865bc64a737e0b76022d36275ca9f7ed7ab21"
+        "sha256": "b08222ee222a98d3d403192e781ce7df307a5bd891ae361e51edde3c0f5268ce"
       },
       "status": "PASS",
       "upstream_model": "BondPrices"
@@ -704,7 +704,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model BondPrices --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:37:38.194300+00:00",
+      "executed_at_utc": "2026-10-19T10:17:23.244921+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -716,8 +716,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -789,7 +789,7 @@
       "receipt": {
         "model_identity": "tmx::BondPrices",
         "path": "docs/evidence/C101/receipts/tmx/BondPrices/service.json",
-        "sha256": "36ddf4221cce665c8a9d3d9b78b03aa078d186b8f524e374776ac11374b60963"
+        "sha256": "3b014ceb1e263b61418e201c4d1d2856cc668f8ec9b7382d6c8eba7cb0ccac82"
       },
       "status": "PASS",
       "upstream_model": "BondPrices"
@@ -797,7 +797,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model BondPrices --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:37:39.449023+00:00",
+      "executed_at_utc": "2026-10-19T10:17:24.278463+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -809,8 +809,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -882,7 +882,7 @@
       "receipt": {
         "model_identity": "tmx::BondPrices",
         "path": "docs/evidence/C101/receipts/tmx/BondPrices/contract.json",
-        "sha256": "52fcafb16307b456317f753ea3fc3aff8a154f811c1083e13df0579a8a550be1"
+        "sha256": "7189482bb7b1fad62983a8f4a23f99d0e396dee3e8007b6dbfd00591096b1ce3"
       },
       "status": "PASS",
       "upstream_model": "BondPrices"
@@ -890,7 +890,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model BondPrices --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:37:41.825041+00:00",
+      "executed_at_utc": "2026-10-19T10:17:26.404384+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -902,8 +902,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -975,7 +975,7 @@
       "receipt": {
         "model_identity": "tmx::BondPrices",
         "path": "docs/evidence/C101/receipts/tmx/BondPrices/counterfact.json",
-        "sha256": "e16a339e95e272641d0e0391c0765933fb5b0619bafaee0ab2b0deee3fe0a8ad"
+        "sha256": "47605d72cc3e262f1441adb92d211d99a175e05c8ff1019adcd5c30a1095eff0"
       },
       "status": "PASS",
       "upstream_model": "BondPrices"
@@ -983,7 +983,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CalendarEarnings --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:37:43.011644+00:00",
+      "executed_at_utc": "2026-10-19T10:17:27.438559+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -995,8 +995,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1098,7 +1098,7 @@
       "receipt": {
         "model_identity": "tmx::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/tmx/CalendarEarnings/implementation.json",
-        "sha256": "3db69940e66f9e0f98b1c806d27d34a933c458d24d73c20c4950aa40571e3e87"
+        "sha256": "c7fce30eae551077a670e0a8ded68cd51d1aa10627fcce36cca7b06c1afe4254"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -1106,7 +1106,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CalendarEarnings --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:37:44.186021+00:00",
+      "executed_at_utc": "2026-10-19T10:17:28.494293+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1118,8 +1118,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1196,7 +1196,7 @@
       "receipt": {
         "model_identity": "tmx::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/tmx/CalendarEarnings/direct.json",
-        "sha256": "77e960c879c8b8b66f0f3b84a5c8ea18b8f14308af7f33f3bf28df43e2da59c1"
+        "sha256": "f2f51f62a72c07452d418e6b9dc920ff189112ec8d5139f7e6dd1217a999a420"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -1204,7 +1204,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CalendarEarnings --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:37:45.325052+00:00",
+      "executed_at_utc": "2026-10-19T10:17:29.532151+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1216,8 +1216,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1294,7 +1294,7 @@
       "receipt": {
         "model_identity": "tmx::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/tmx/CalendarEarnings/service.json",
-        "sha256": "aac77e203242bf379a164f6d09e7db89a0170ccd52e43035c59bf37909ffaae0"
+        "sha256": "8d15c66e0e8c39411496d03ea675d0feac05dd8937ed50f7cf7c50b2c87bfdd4"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -1302,7 +1302,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CalendarEarnings --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:37:46.459349+00:00",
+      "executed_at_utc": "2026-10-19T10:17:30.557869+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1314,8 +1314,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1392,7 +1392,7 @@
       "receipt": {
         "model_identity": "tmx::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/tmx/CalendarEarnings/contract.json",
-        "sha256": "3475185a9f00e665935b3e36388c8b4d2d6737149febf57d53cae670b1187632"
+        "sha256": "2ffcdfd8701dd4c4ea5a229e1e93a252aaf41593d8ed376ca05927d12c5c975d"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -1400,7 +1400,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CalendarEarnings --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:37:48.792630+00:00",
+      "executed_at_utc": "2026-10-19T10:17:32.646221+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1412,8 +1412,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1490,7 +1490,7 @@
       "receipt": {
         "model_identity": "tmx::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/tmx/CalendarEarnings/counterfact.json",
-        "sha256": "92bd39290811da8790a8be1ec7b5a2a1651d50efd84236530753dc8d33a98fcd"
+        "sha256": "0d203fd6adff93bddd01dfc790d5bf8e9ea581a7e1b49fda62250045d9b21a2c"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -1498,7 +1498,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyFilings --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:37:49.932621+00:00",
+      "executed_at_utc": "2026-10-19T10:17:33.687880+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1510,8 +1510,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1608,7 +1608,7 @@
       "receipt": {
         "model_identity": "tmx::CompanyFilings",
         "path": "docs/evidence/C101/receipts/tmx/CompanyFilings/implementation.json",
-        "sha256": "f3c3b19f28a0c5a715f9c63411ebd301a3ffe26699b7d833467720a232c822ad"
+        "sha256": "a9dde109fa50a3ba56f5aef5f8724aff19f2b827a2411c58dc07d69e7f251486"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -1616,7 +1616,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyFilings --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:37:51.071481+00:00",
+      "executed_at_utc": "2026-10-19T10:17:34.701032+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1628,8 +1628,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1701,7 +1701,7 @@
       "receipt": {
         "model_identity": "tmx::CompanyFilings",
         "path": "docs/evidence/C101/receipts/tmx/CompanyFilings/direct.json",
-        "sha256": "d1da200ef76f98816ff4505abc4322269c5c864fadab496586341b67ab63ac5f"
+        "sha256": "b82595ce5d74e4549762c2d92b4e866c01aa5f327f509a6db0400bd7e36174bb"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -1709,7 +1709,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyFilings --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:37:52.250585+00:00",
+      "executed_at_utc": "2026-10-19T10:17:35.734377+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1721,8 +1721,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1794,7 +1794,7 @@
       "receipt": {
         "model_identity": "tmx::CompanyFilings",
         "path": "docs/evidence/C101/receipts/tmx/CompanyFilings/service.json",
-        "sha256": "c54b3b40cb9030d53d0e963bb24bc330c1323aee046b960b3f28f8c0f3ccb5aa"
+        "sha256": "b219391f05837b442c45b61b930d7c06b8e8fbc2c50897feca8f153948d9a58f"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -1802,7 +1802,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyFilings --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:37:53.427047+00:00",
+      "executed_at_utc": "2026-10-19T10:17:36.770335+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1814,8 +1814,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1887,7 +1887,7 @@
       "receipt": {
         "model_identity": "tmx::CompanyFilings",
         "path": "docs/evidence/C101/receipts/tmx/CompanyFilings/contract.json",
-        "sha256": "dab410b6f4522e80d9ec0a4176a12b472b5cc37101d9efcad88b7a66a1a94459"
+        "sha256": "ba0ba58b7d258467ce9fc5d2734bcb6a86a213b3e91d8f2a48624937e1a28cff"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -1895,7 +1895,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyFilings --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:37:55.806254+00:00",
+      "executed_at_utc": "2026-10-19T10:17:38.847392+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1907,8 +1907,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1980,7 +1980,7 @@
       "receipt": {
         "model_identity": "tmx::CompanyFilings",
         "path": "docs/evidence/C101/receipts/tmx/CompanyFilings/counterfact.json",
-        "sha256": "4172c66f51866aa2e977122141d7e6765786ad402415c428c1a8202e31562531"
+        "sha256": "ba47c76a0ab6687884ff39556a28e609a3dcf37a6a4e16eba066f7de98b4066e"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -1988,7 +1988,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyNews --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:37:56.958000+00:00",
+      "executed_at_utc": "2026-10-19T10:17:39.931180+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2000,8 +2000,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2103,7 +2103,7 @@
       "receipt": {
         "model_identity": "tmx::CompanyNews",
         "path": "docs/evidence/C101/receipts/tmx/CompanyNews/implementation.json",
-        "sha256": "20712694067620c0313d47c21a43a046f8a408f974207e53f62c4d3119b73600"
+        "sha256": "6e8ef883d0015262a91e32964565237617388717d39f4e9176e2c582479041d8"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -2111,7 +2111,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyNews --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:37:58.105070+00:00",
+      "executed_at_utc": "2026-10-19T10:17:40.962794+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2123,8 +2123,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2201,7 +2201,7 @@
       "receipt": {
         "model_identity": "tmx::CompanyNews",
         "path": "docs/evidence/C101/receipts/tmx/CompanyNews/direct.json",
-        "sha256": "d03545a12555cf33d365aa488db2bbce2f1e538ac6d7d1185a490c732e5195e9"
+        "sha256": "af20db1b21bd83e8157200c1828847edcbe22288851318094bde4bfd13054313"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -2209,7 +2209,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyNews --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:37:59.235135+00:00",
+      "executed_at_utc": "2026-10-19T10:17:41.979039+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2221,8 +2221,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2299,7 +2299,7 @@
       "receipt": {
         "model_identity": "tmx::CompanyNews",
         "path": "docs/evidence/C101/receipts/tmx/CompanyNews/service.json",
-        "sha256": "5996579bc4e4186e2a85ef5396610f41d2d2bda6480b323c5b494d81548f7516"
+        "sha256": "e5cc575ffa9921e59458451faf1845cce937a7fdf5481065bc962541e31c813b"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -2307,7 +2307,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyNews --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:38:00.417720+00:00",
+      "executed_at_utc": "2026-10-19T10:17:43.014665+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2319,8 +2319,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2397,7 +2397,7 @@
       "receipt": {
         "model_identity": "tmx::CompanyNews",
         "path": "docs/evidence/C101/receipts/tmx/CompanyNews/contract.json",
-        "sha256": "52289e407cbc3026c61a2b2909e9af4b9fe72cce0dee396a048c365d13c4afcb"
+        "sha256": "adc5ae6f4f4ed8239993bfccbdf7134078bb8a8d93b44d0c46e86b094a793814"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -2405,7 +2405,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model CompanyNews --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:38:02.757194+00:00",
+      "executed_at_utc": "2026-10-19T10:17:45.113446+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2417,8 +2417,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2495,7 +2495,7 @@
       "receipt": {
         "model_identity": "tmx::CompanyNews",
         "path": "docs/evidence/C101/receipts/tmx/CompanyNews/counterfact.json",
-        "sha256": "c7fc65d56b7cb8697a6482aed71aac02b2010ed49b7b2fba70769bbdeccccf33"
+        "sha256": "bf1ac8e545a14adac68bc0d5bb83e984524919a680f822899fb697fe2c43d0ee"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -2503,7 +2503,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:38:03.917433+00:00",
+      "executed_at_utc": "2026-10-19T10:17:46.167049+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2515,8 +2515,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2613,7 +2613,7 @@
       "receipt": {
         "model_identity": "tmx::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tmx/EquityHistorical/implementation.json",
-        "sha256": "583e2e2d31cf8715109cc415a002f6b6270858bc53d4e15f700c3f7758d5ff1d"
+        "sha256": "2ca32b38d3410923ebe846b96f9676921c5f3f1a4a0ef09d69f5d76c0e7c1793"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -2621,7 +2621,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:38:05.124366+00:00",
+      "executed_at_utc": "2026-10-19T10:17:47.194046+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2633,8 +2633,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2706,7 +2706,7 @@
       "receipt": {
         "model_identity": "tmx::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tmx/EquityHistorical/direct.json",
-        "sha256": "b343315b073d2c3de6457949fe188e7c86a417d1b5b472d9d912efcd165d638b"
+        "sha256": "8e4605274fb485f2b9a81ce02d9893046c9d5ffbd95d93163d2fedd2f7dfa16f"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -2714,7 +2714,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:38:06.306253+00:00",
+      "executed_at_utc": "2026-10-19T10:17:48.200290+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2726,8 +2726,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2799,7 +2799,7 @@
       "receipt": {
         "model_identity": "tmx::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tmx/EquityHistorical/service.json",
-        "sha256": "33af8d302e4e9f3dba0d60ec1ac98458eb5c0a5b0dfd71249c30dcc44729bf64"
+        "sha256": "1be5205a38d06cdb939238ca78b4c40a25eba06e2e36c7b607c860656b8320eb"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -2807,7 +2807,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:38:07.507359+00:00",
+      "executed_at_utc": "2026-10-19T10:17:49.215345+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2819,8 +2819,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2892,7 +2892,7 @@
       "receipt": {
         "model_identity": "tmx::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tmx/EquityHistorical/contract.json",
-        "sha256": "12c7d5936be346f3a453eaf10f343946278eecf0f3f6ffc25d4ed9a1d76084b4"
+        "sha256": "69165db062e7e6776a58e678dabdad7d11d2e01d7b2c7b1a1ff3d714261b3cec"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -2900,7 +2900,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:38:09.828430+00:00",
+      "executed_at_utc": "2026-10-19T10:17:51.292389+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2912,8 +2912,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2985,7 +2985,7 @@
       "receipt": {
         "model_identity": "tmx::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tmx/EquityHistorical/counterfact.json",
-        "sha256": "72ec2207a797a866953388e64078733478f2d4127806b53307d191780d0ac85e"
+        "sha256": "8c49b25bc36a951437b1861d7999455adca7b1621e023fd682edbba2a91ffc53"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -2993,7 +2993,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityInfo --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:38:10.969628+00:00",
+      "executed_at_utc": "2026-10-19T10:17:52.432202+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -3005,8 +3005,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3103,7 +3103,7 @@
       "receipt": {
         "model_identity": "tmx::EquityInfo",
         "path": "docs/evidence/C101/receipts/tmx/EquityInfo/implementation.json",
-        "sha256": "7bc5af9158795dbbadf9207449c3d238f77150b872ebc04ab32508c8bc3d2bf8"
+        "sha256": "cbde1215a37192e9c43fb80c324a0a28143c0b62d6cbce252c876fe670b380e0"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -3111,7 +3111,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityInfo --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:38:12.359587+00:00",
+      "executed_at_utc": "2026-10-19T10:17:53.482637+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3123,8 +3123,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3196,7 +3196,7 @@
       "receipt": {
         "model_identity": "tmx::EquityInfo",
         "path": "docs/evidence/C101/receipts/tmx/EquityInfo/direct.json",
-        "sha256": "7bbdfd3e1b9359034920fc78af0b905f8920e3aa7491f9204f38803f6cf5ac27"
+        "sha256": "b78937a1a2ec06f38da6392a4cffbab080ec1390d68b4639995bd33bab5b53db"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -3204,7 +3204,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityInfo --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:38:13.555501+00:00",
+      "executed_at_utc": "2026-10-19T10:17:54.513149+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3216,8 +3216,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3289,7 +3289,7 @@
       "receipt": {
         "model_identity": "tmx::EquityInfo",
         "path": "docs/evidence/C101/receipts/tmx/EquityInfo/service.json",
-        "sha256": "305e30e8a73da3561b2f9955f97cfc3a073b12b2fd202493e31448f6b67f95fb"
+        "sha256": "1a9a9088d4d513bc2f957e5bd09cd239043e9063f3160da505e371877b82b790"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -3297,7 +3297,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityInfo --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:38:14.751304+00:00",
+      "executed_at_utc": "2026-10-19T10:17:55.565803+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3309,8 +3309,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3382,7 +3382,7 @@
       "receipt": {
         "model_identity": "tmx::EquityInfo",
         "path": "docs/evidence/C101/receipts/tmx/EquityInfo/contract.json",
-        "sha256": "6e3628d806f75bc21e90f765ba0446ab4e40d3218602286dfbb3a94aa77ba855"
+        "sha256": "05e5378aacba08e0e0978ff2d4bb0db69d0a55b3eb4443809f46cfb069bc67de"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -3390,7 +3390,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityInfo --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:38:17.129149+00:00",
+      "executed_at_utc": "2026-10-19T10:17:57.683897+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3402,8 +3402,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3475,7 +3475,7 @@
       "receipt": {
         "model_identity": "tmx::EquityInfo",
         "path": "docs/evidence/C101/receipts/tmx/EquityInfo/counterfact.json",
-        "sha256": "fd95e6d4b43af2cef19fd68fff146aa5825d2d369f5b4f9a5f039ef101b71e58"
+        "sha256": "31ea0446daf294dc78b213d65555fc93e571f93c44e17299b1b11a0de05c0202"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -3483,7 +3483,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityQuote --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:38:18.449683+00:00",
+      "executed_at_utc": "2026-10-19T10:17:58.720390+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -3495,8 +3495,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3593,7 +3593,7 @@
       "receipt": {
         "model_identity": "tmx::EquityQuote",
         "path": "docs/evidence/C101/receipts/tmx/EquityQuote/implementation.json",
-        "sha256": "45e0d8b22bfa9fc8fe118e223fb3a593afbf3b8a86289129f38ccf4ada132203"
+        "sha256": "ea9a5fe01169e9f16087148b16384118d6b672f8ebb1d240db67cfc3e98ec796"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -3601,7 +3601,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityQuote --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:38:19.715834+00:00",
+      "executed_at_utc": "2026-10-19T10:17:59.765462+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3613,8 +3613,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3686,7 +3686,7 @@
       "receipt": {
         "model_identity": "tmx::EquityQuote",
         "path": "docs/evidence/C101/receipts/tmx/EquityQuote/direct.json",
-        "sha256": "6dbaa347e654fe3cf51940c31fe3611d789bb39ccffe250192134fa7e74331f1"
+        "sha256": "43c39a9a75982b905186ab6e84649458515d2156ddca5add3c2fd8aecc2c5560"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -3694,7 +3694,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityQuote --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:38:20.999537+00:00",
+      "executed_at_utc": "2026-10-19T10:18:00.806226+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3706,8 +3706,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3779,7 +3779,7 @@
       "receipt": {
         "model_identity": "tmx::EquityQuote",
         "path": "docs/evidence/C101/receipts/tmx/EquityQuote/service.json",
-        "sha256": "cf0ab3674f7284f8a25c9d749a29d85ba11d8708f16860c8d8e568a4a0055cb4"
+        "sha256": "d3b1d3d6b76c2ac10c137b324a75d22d2eaa7a9cc5a055dddeb3d0a69026123b"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -3787,7 +3787,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityQuote --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:38:22.211632+00:00",
+      "executed_at_utc": "2026-10-19T10:18:01.867373+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3799,8 +3799,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3872,7 +3872,7 @@
       "receipt": {
         "model_identity": "tmx::EquityQuote",
         "path": "docs/evidence/C101/receipts/tmx/EquityQuote/contract.json",
-        "sha256": "21f62034a5afdc27f1cdbd5c1fdcef2c0b3ca08211c04691dbaa0595680e6279"
+        "sha256": "8f285c2527dc5f8d8b467e015e230d917d3493b547e36ba6d7d74d43f9a7c652"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -3880,7 +3880,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityQuote --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:38:24.724709+00:00",
+      "executed_at_utc": "2026-10-19T10:18:04.020277+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3892,8 +3892,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3965,7 +3965,7 @@
       "receipt": {
         "model_identity": "tmx::EquityQuote",
         "path": "docs/evidence/C101/receipts/tmx/EquityQuote/counterfact.json",
-        "sha256": "e15f28859a9195d7c1340380f32e7801f5daddace9bc4e87409bbe7ad1da7c69"
+        "sha256": "1937a4b24184e7095cda6ee40e68be1ec0988556b5549cede3f077dfed07146e"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -3973,7 +3973,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquitySearch --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:38:25.939143+00:00",
+      "executed_at_utc": "2026-10-19T10:18:05.049073+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -3985,8 +3985,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4083,7 +4083,7 @@
       "receipt": {
         "model_identity": "tmx::EquitySearch",
         "path": "docs/evidence/C101/receipts/tmx/EquitySearch/implementation.json",
-        "sha256": "eb459a2ef91ff6488fd5b48905f599843c8da8b27984dff80fbf96591cd1d8dd"
+        "sha256": "6b6e6e791c909661914dc0ee77b4ec476b00625abacc3a0b61a024107804b2e0"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -4091,7 +4091,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquitySearch --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:38:27.263214+00:00",
+      "executed_at_utc": "2026-10-19T10:18:06.062187+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -4103,8 +4103,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4176,7 +4176,7 @@
       "receipt": {
         "model_identity": "tmx::EquitySearch",
         "path": "docs/evidence/C101/receipts/tmx/EquitySearch/direct.json",
-        "sha256": "27a83b38f804a6933de65bf536896d3fdb5718a948107098556c03a33259c540"
+        "sha256": "08a137f445805222d78b1c0ec5baf1193210938c4f3eb92041234c3b6f3281ec"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -4184,7 +4184,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquitySearch --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:38:28.408131+00:00",
+      "executed_at_utc": "2026-10-19T10:18:07.093736+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -4196,8 +4196,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4269,7 +4269,7 @@
       "receipt": {
         "model_identity": "tmx::EquitySearch",
         "path": "docs/evidence/C101/receipts/tmx/EquitySearch/service.json",
-        "sha256": "f58c46b2625f55e7df137a379a3acb91dad5df6cc469d31ffcbdeaad5469eed0"
+        "sha256": "31fc08384c20a21c3866285a573d2aef9496e44e570630e6e2e8b77d83ab996d"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -4277,7 +4277,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquitySearch --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:38:29.583825+00:00",
+      "executed_at_utc": "2026-10-19T10:18:08.139378+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -4289,8 +4289,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4362,7 +4362,7 @@
       "receipt": {
         "model_identity": "tmx::EquitySearch",
         "path": "docs/evidence/C101/receipts/tmx/EquitySearch/contract.json",
-        "sha256": "7963d7e2278a9d01651823ce35f7f76a4aeb287c78f1db41fb4a5d3e6e32ba71"
+        "sha256": "745f4b50f93437dc34a6f87f17e08fde42a6ce065b96ff155c4fc79d08967f6e"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -4370,7 +4370,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquitySearch --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:38:31.945017+00:00",
+      "executed_at_utc": "2026-10-19T10:18:10.239204+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -4382,8 +4382,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4455,7 +4455,7 @@
       "receipt": {
         "model_identity": "tmx::EquitySearch",
         "path": "docs/evidence/C101/receipts/tmx/EquitySearch/counterfact.json",
-        "sha256": "cb014eb8d36c815981363bf49c6071844978dcb3777673d49c1cb53adea7e750"
+        "sha256": "32753bf65728da7b8213516052c64ed34fe778c639119409b3a6e0e1ad70234e"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -4463,7 +4463,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfSearch --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:38:33.111073+00:00",
+      "executed_at_utc": "2026-10-19T10:18:11.275296+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -4475,8 +4475,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4573,7 +4573,7 @@
       "receipt": {
         "model_identity": "tmx::EtfSearch",
         "path": "docs/evidence/C101/receipts/tmx/EtfSearch/implementation.json",
-        "sha256": "c53baa2f85ff68b7414a0663654c3656a7ccf7b1efbf4ec88584a8ce717a2658"
+        "sha256": "960efcba5deef81bdaac4f0474cbc37aa0d9704d639ae760120c264a30965622"
       },
       "status": "PASS",
       "upstream_model": "EtfSearch"
@@ -4581,7 +4581,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfSearch --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:38:34.262995+00:00",
+      "executed_at_utc": "2026-10-19T10:18:12.346605+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -4593,8 +4593,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4666,7 +4666,7 @@
       "receipt": {
         "model_identity": "tmx::EtfSearch",
         "path": "docs/evidence/C101/receipts/tmx/EtfSearch/direct.json",
-        "sha256": "0c2041051ddffa8a4e944b7942e9e297242a6a39e63ae2046bf5868b3a2c9a77"
+        "sha256": "d66111db92bd0366082236f97b3087a7a12b0fcca3c76a89a76106ed8db4106d"
       },
       "status": "PASS",
       "upstream_model": "EtfSearch"
@@ -4674,7 +4674,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfSearch --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:38:35.409412+00:00",
+      "executed_at_utc": "2026-10-19T10:18:13.379793+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -4686,8 +4686,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4759,7 +4759,7 @@
       "receipt": {
         "model_identity": "tmx::EtfSearch",
         "path": "docs/evidence/C101/receipts/tmx/EtfSearch/service.json",
-        "sha256": "cd5a298502684aa3d335eb2a2b578ef75836f293c62895d8068bf07ec184646f"
+        "sha256": "a2cd51ddc1308d861bfb2638d63a19f52b5e049db9c63591893743092c202458"
       },
       "status": "PASS",
       "upstream_model": "EtfSearch"
@@ -4767,7 +4767,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfSearch --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:38:36.551958+00:00",
+      "executed_at_utc": "2026-10-19T10:18:14.417885+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -4779,8 +4779,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4852,7 +4852,7 @@
       "receipt": {
         "model_identity": "tmx::EtfSearch",
         "path": "docs/evidence/C101/receipts/tmx/EtfSearch/contract.json",
-        "sha256": "6cfe369dd05f21875c3c4a1f02a153c45710f3837bfb357c04b24c346f2d578d"
+        "sha256": "a9a33b1b5a554896da4beeb0d57faa4b4afc9c3e531e5628ceca193bb17e3a8f"
       },
       "status": "PASS",
       "upstream_model": "EtfSearch"
@@ -4860,7 +4860,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfSearch --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:38:38.924343+00:00",
+      "executed_at_utc": "2026-10-19T10:18:16.521737+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -4872,8 +4872,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4945,7 +4945,7 @@
       "receipt": {
         "model_identity": "tmx::EtfSearch",
         "path": "docs/evidence/C101/receipts/tmx/EtfSearch/counterfact.json",
-        "sha256": "b22339afb49d70c4b874db3f4184a8d80c648630df33cdbfe48ceb02233d3252"
+        "sha256": "9171ec16838e09f95590a2536b79d28b88428f40be431274a1b54df9ae22b9dc"
       },
       "status": "PASS",
       "upstream_model": "EtfSearch"
@@ -4953,7 +4953,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfHoldings --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:38:40.071037+00:00",
+      "executed_at_utc": "2026-10-19T10:18:17.548238+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -4965,8 +4965,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5063,7 +5063,7 @@
       "receipt": {
         "model_identity": "tmx::EtfHoldings",
         "path": "docs/evidence/C101/receipts/tmx/EtfHoldings/implementation.json",
-        "sha256": "667d50a09cda2dd7ad93df569164022ccf417034283264bd9ae70c5b13555fd1"
+        "sha256": "0868063e59dca9cba56490a8e7cfaed2f2503ec01e5f5dd95dbf40c6ff0448bc"
       },
       "status": "PASS",
       "upstream_model": "EtfHoldings"
@@ -5071,7 +5071,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfHoldings --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:38:41.226423+00:00",
+      "executed_at_utc": "2026-10-19T10:18:18.584139+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -5083,8 +5083,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5156,7 +5156,7 @@
       "receipt": {
         "model_identity": "tmx::EtfHoldings",
         "path": "docs/evidence/C101/receipts/tmx/EtfHoldings/direct.json",
-        "sha256": "c41a1ade88b71e1f5bf0766c61b2f511413f1eea3bcf7a1296631ab8e6d4f554"
+        "sha256": "03373642879ff13390cf7a7841bc8676ef441d8b67ac53c63079195fdb0fd774"
       },
       "status": "PASS",
       "upstream_model": "EtfHoldings"
@@ -5164,7 +5164,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfHoldings --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:38:42.427714+00:00",
+      "executed_at_utc": "2026-10-19T10:18:19.601273+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -5176,8 +5176,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5249,7 +5249,7 @@
       "receipt": {
         "model_identity": "tmx::EtfHoldings",
         "path": "docs/evidence/C101/receipts/tmx/EtfHoldings/service.json",
-        "sha256": "81f6eaf91f072f512006bc595e26458031ddc9ac8949572eb80d3d4f7b5a5bb3"
+        "sha256": "bd86089a911108aab08de668ab944f1cadf58f325ca80b3df82612458a89835a"
       },
       "status": "PASS",
       "upstream_model": "EtfHoldings"
@@ -5257,7 +5257,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfHoldings --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:38:43.575635+00:00",
+      "executed_at_utc": "2026-10-19T10:18:20.644846+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -5269,8 +5269,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5342,7 +5342,7 @@
       "receipt": {
         "model_identity": "tmx::EtfHoldings",
         "path": "docs/evidence/C101/receipts/tmx/EtfHoldings/contract.json",
-        "sha256": "1ac8f0b90d3f7e0676160b8977458e9653ac9452f027e1b5328f1e7bd131b4b8"
+        "sha256": "f5e6de0ac8d43693e335b5d8ad31938f701be0fef42d8daefe01c512ae802169"
       },
       "status": "PASS",
       "upstream_model": "EtfHoldings"
@@ -5350,7 +5350,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfHoldings --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:38:45.948846+00:00",
+      "executed_at_utc": "2026-10-19T10:18:22.675361+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -5362,8 +5362,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5435,7 +5435,7 @@
       "receipt": {
         "model_identity": "tmx::EtfHoldings",
         "path": "docs/evidence/C101/receipts/tmx/EtfHoldings/counterfact.json",
-        "sha256": "94e469e2d86723194aff31c570fd8ccfe50c3beee77f9a6dc46d1bb6ca7c7a1f"
+        "sha256": "7dbe6d1d9adc4d3f9e45d342a5feedf6d550b9ce2d9da5d8605e88d032bee752"
       },
       "status": "PASS",
       "upstream_model": "EtfHoldings"
@@ -5443,7 +5443,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfSectors --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:38:47.118241+00:00",
+      "executed_at_utc": "2026-10-19T10:18:23.705751+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -5455,8 +5455,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5553,7 +5553,7 @@
       "receipt": {
         "model_identity": "tmx::EtfSectors",
         "path": "docs/evidence/C101/receipts/tmx/EtfSectors/implementation.json",
-        "sha256": "0d84a33ea9f414be2d94760ded4b97ce0ed3d4467074264cf6c7dce1e3cfda0b"
+        "sha256": "35870b7250a7beee0cf39d4256ab3f014f47d6a91260402be73ad384dfc76a9b"
       },
       "status": "PASS",
       "upstream_model": "EtfSectors"
@@ -5561,7 +5561,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfSectors --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:38:48.273994+00:00",
+      "executed_at_utc": "2026-10-19T10:18:24.741725+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -5573,8 +5573,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5646,7 +5646,7 @@
       "receipt": {
         "model_identity": "tmx::EtfSectors",
         "path": "docs/evidence/C101/receipts/tmx/EtfSectors/direct.json",
-        "sha256": "ea7f19926ffa9ad7e7bface24908994f64b41aa56c3facacd9ed256d80a0a5c2"
+        "sha256": "9eedbc03f417ddbb49928d0c76afcaeb9138556d3a9505f62cbad1a0e14e81be"
       },
       "status": "PASS",
       "upstream_model": "EtfSectors"
@@ -5654,7 +5654,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfSectors --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:38:49.457212+00:00",
+      "executed_at_utc": "2026-10-19T10:18:25.742493+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -5666,8 +5666,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5739,7 +5739,7 @@
       "receipt": {
         "model_identity": "tmx::EtfSectors",
         "path": "docs/evidence/C101/receipts/tmx/EtfSectors/service.json",
-        "sha256": "9f9f1ebda5df3bd1d5b90566117355045ef5725375fc48f9ff37fbf714fbbb76"
+        "sha256": "68dd81825ba307b3e6d9a3b1a885d5618b396d3908834db82e0f7bccd735aa05"
       },
       "status": "PASS",
       "upstream_model": "EtfSectors"
@@ -5747,7 +5747,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfSectors --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:38:50.624103+00:00",
+      "executed_at_utc": "2026-10-19T10:18:26.746010+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -5759,8 +5759,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5832,7 +5832,7 @@
       "receipt": {
         "model_identity": "tmx::EtfSectors",
         "path": "docs/evidence/C101/receipts/tmx/EtfSectors/contract.json",
-        "sha256": "a0ce0268bc2bd9f11bbbd56aa666a9507a036b8f1bb0fa5d4e910797c8e90fa6"
+        "sha256": "9de67040303dce0b1b5630ece52417af6565423a5af0c7b2f53e4d46c3ff7c39"
       },
       "status": "PASS",
       "upstream_model": "EtfSectors"
@@ -5840,7 +5840,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfSectors --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:38:52.959095+00:00",
+      "executed_at_utc": "2026-10-19T10:18:28.793739+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -5852,8 +5852,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5925,7 +5925,7 @@
       "receipt": {
         "model_identity": "tmx::EtfSectors",
         "path": "docs/evidence/C101/receipts/tmx/EtfSectors/counterfact.json",
-        "sha256": "dc68f7f854ba987b660c1c9f162602743c31bddbb5f1fcab0a300f309109bbd7"
+        "sha256": "0def9a323a14c3598faa0d11eb4eb31881498cda409761b658620aed0b061fe4"
       },
       "status": "PASS",
       "upstream_model": "EtfSectors"
@@ -5933,7 +5933,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfCountries --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:38:54.164344+00:00",
+      "executed_at_utc": "2026-10-19T10:18:29.814001+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -5945,8 +5945,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6043,7 +6043,7 @@
       "receipt": {
         "model_identity": "tmx::EtfCountries",
         "path": "docs/evidence/C101/receipts/tmx/EtfCountries/implementation.json",
-        "sha256": "18768dc23d88e459e8803cf98be260a4b7584722123a25d433fe3c284262ad22"
+        "sha256": "a10cae183023754e28f24af4e5028dfc9216bcb26a894258cb11059b98530e3d"
       },
       "status": "PASS",
       "upstream_model": "EtfCountries"
@@ -6051,7 +6051,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfCountries --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:38:55.358704+00:00",
+      "executed_at_utc": "2026-10-19T10:18:30.831131+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -6063,8 +6063,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6136,7 +6136,7 @@
       "receipt": {
         "model_identity": "tmx::EtfCountries",
         "path": "docs/evidence/C101/receipts/tmx/EtfCountries/direct.json",
-        "sha256": "fe89cb2d09e47cfad35756cfe4c1070a0663f9222f133c3ce64ed14492db2491"
+        "sha256": "8ad41591f922de1dfb29cfc4bcfa03a147180c8d10906f1989d0fbdf509d8acf"
       },
       "status": "PASS",
       "upstream_model": "EtfCountries"
@@ -6144,7 +6144,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfCountries --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:38:56.496855+00:00",
+      "executed_at_utc": "2026-10-19T10:18:31.830149+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -6156,8 +6156,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6229,7 +6229,7 @@
       "receipt": {
         "model_identity": "tmx::EtfCountries",
         "path": "docs/evidence/C101/receipts/tmx/EtfCountries/service.json",
-        "sha256": "e22207485301f8d69b516f0a144db6f55428a3eec334e2cf6891a764caa20918"
+        "sha256": "ab9b4bba6b1bc01be65491bff0ef2c03de8559330dde8f6887cb0adce97e3d76"
       },
       "status": "PASS",
       "upstream_model": "EtfCountries"
@@ -6237,7 +6237,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfCountries --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:38:57.640188+00:00",
+      "executed_at_utc": "2026-10-19T10:18:32.841817+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -6249,8 +6249,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6322,7 +6322,7 @@
       "receipt": {
         "model_identity": "tmx::EtfCountries",
         "path": "docs/evidence/C101/receipts/tmx/EtfCountries/contract.json",
-        "sha256": "612ab3606d9969c4bd8cc4f0c15cf09b49621ca7c1efc30fc23fc4086ad1cefa"
+        "sha256": "12b4055c9c5ec3bfb7f0f08944a50e03798827698338bcc546257c13eba075a5"
       },
       "status": "PASS",
       "upstream_model": "EtfCountries"
@@ -6330,7 +6330,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfCountries --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:38:59.971074+00:00",
+      "executed_at_utc": "2026-10-19T10:18:34.873280+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -6342,8 +6342,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6415,7 +6415,7 @@
       "receipt": {
         "model_identity": "tmx::EtfCountries",
         "path": "docs/evidence/C101/receipts/tmx/EtfCountries/counterfact.json",
-        "sha256": "9c54b2f6d55019aab819244c6d8fff2faa49db531d034e7dc9bf6fb5b8cdeb66"
+        "sha256": "0234243381f94ccf9ad96b8a7b3d032e0bb82ee6e4a731bc59ffd0a827c1a842"
       },
       "status": "PASS",
       "upstream_model": "EtfCountries"
@@ -6423,7 +6423,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:39:01.147055+00:00",
+      "executed_at_utc": "2026-10-19T10:18:35.882953+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -6435,8 +6435,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6538,7 +6538,7 @@
       "receipt": {
         "model_identity": "tmx::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tmx/EtfHistorical/implementation.json",
-        "sha256": "2a1bece5e990e67d6884cc40c24df0abf4f9cbe950c968b92bf43b8d20918027"
+        "sha256": "4494c38690345a158318fb67ab242fc8a8568da7ac60c7a93b113d5b835a764f"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -6546,7 +6546,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:39:02.304149+00:00",
+      "executed_at_utc": "2026-10-19T10:18:36.899563+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -6558,8 +6558,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6636,7 +6636,7 @@
       "receipt": {
         "model_identity": "tmx::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tmx/EtfHistorical/direct.json",
-        "sha256": "ea0e7443d4ab7822ac94cb39e3fb847b0a1b0662b5821816e1d525e0a7894355"
+        "sha256": "68231ba62f550762230b205153725cbc40be35dfe999d957e2ec97d3a94a3732"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -6644,7 +6644,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:39:03.444512+00:00",
+      "executed_at_utc": "2026-10-19T10:18:37.903343+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -6656,8 +6656,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6734,7 +6734,7 @@
       "receipt": {
         "model_identity": "tmx::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tmx/EtfHistorical/service.json",
-        "sha256": "2faf89a3fb4d731c5c4b63ac5157d91a359cee8c249db4c16d63055698145e7f"
+        "sha256": "72ceba8a4c101aef75e2ab9f59343a6c20ec9c5dadcfb54b9ccb5c0199911239"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -6742,7 +6742,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:39:04.638638+00:00",
+      "executed_at_utc": "2026-10-19T10:18:38.951372+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -6754,8 +6754,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6832,7 +6832,7 @@
       "receipt": {
         "model_identity": "tmx::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tmx/EtfHistorical/contract.json",
-        "sha256": "073febe52f9ec0a85ec94b7b9942eedee4b3dad21ba0348820841444d8136e5c"
+        "sha256": "588fd983a3fd7fa1ad69799e9895361044e1625ddbc0ad0b7cdb820f0f61a9c7"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -6840,7 +6840,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:39:06.964328+00:00",
+      "executed_at_utc": "2026-10-19T10:18:41.029021+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -6852,8 +6852,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6930,7 +6930,7 @@
       "receipt": {
         "model_identity": "tmx::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tmx/EtfHistorical/counterfact.json",
-        "sha256": "d832b91dafa07d82f0b7f734fb4385d63b9a8738667045be60744c954025f027"
+        "sha256": "c82fab889bd420db0d19bfec3e91411b12f9cd701ce22384cb00ebf2d94832a2"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -6938,7 +6938,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfInfo --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:39:08.158662+00:00",
+      "executed_at_utc": "2026-10-19T10:18:42.035020+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -6950,8 +6950,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7048,7 +7048,7 @@
       "receipt": {
         "model_identity": "tmx::EtfInfo",
         "path": "docs/evidence/C101/receipts/tmx/EtfInfo/implementation.json",
-        "sha256": "79049d5dfd09b75cccc95b8107a87ed31e9b8f3eec4db9e7869245cbbf6988a6"
+        "sha256": "37d61d312ec37a52df9ff9114af2652f7cf3f0e0f8d92f50923a1ad7ca9e97ae"
       },
       "status": "PASS",
       "upstream_model": "EtfInfo"
@@ -7056,7 +7056,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfInfo --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:39:09.319262+00:00",
+      "executed_at_utc": "2026-10-19T10:18:43.041822+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -7068,8 +7068,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7141,7 +7141,7 @@
       "receipt": {
         "model_identity": "tmx::EtfInfo",
         "path": "docs/evidence/C101/receipts/tmx/EtfInfo/direct.json",
-        "sha256": "aaf06f4c5d93707aa8950c1f413a61c6ba2d4637c932c5417231f58544898c40"
+        "sha256": "3fae8faff3a844d70e83bdf4bb6621ed7632d66dbfcaacb5bb70f4d528e7fe98"
       },
       "status": "PASS",
       "upstream_model": "EtfInfo"
@@ -7149,7 +7149,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfInfo --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:39:10.526266+00:00",
+      "executed_at_utc": "2026-10-19T10:18:44.058046+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -7161,8 +7161,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7234,7 +7234,7 @@
       "receipt": {
         "model_identity": "tmx::EtfInfo",
         "path": "docs/evidence/C101/receipts/tmx/EtfInfo/service.json",
-        "sha256": "709f22cf17e54d8f2ca25e7b10888ce8a32b3b6fbf6378d2632542470d687c61"
+        "sha256": "e055a06f484bdd6d25f16eaa222920ad4dc7882ed9287b4a4fd27661c5ae68fd"
       },
       "status": "PASS",
       "upstream_model": "EtfInfo"
@@ -7242,7 +7242,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfInfo --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:39:11.673889+00:00",
+      "executed_at_utc": "2026-10-19T10:18:45.069925+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -7254,8 +7254,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7327,7 +7327,7 @@
       "receipt": {
         "model_identity": "tmx::EtfInfo",
         "path": "docs/evidence/C101/receipts/tmx/EtfInfo/contract.json",
-        "sha256": "416245d32f62e292589532f8ace6beb6a385e6f20325e7895fe428b5ffcad67f"
+        "sha256": "74f34ec246ebb3159cd4fce51b0b1fcdc73ecd8bf78d1c645b5dd57d67aa59b9"
       },
       "status": "PASS",
       "upstream_model": "EtfInfo"
@@ -7335,7 +7335,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EtfInfo --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:39:14.033536+00:00",
+      "executed_at_utc": "2026-10-19T10:18:47.146565+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -7347,8 +7347,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7420,7 +7420,7 @@
       "receipt": {
         "model_identity": "tmx::EtfInfo",
         "path": "docs/evidence/C101/receipts/tmx/EtfInfo/counterfact.json",
-        "sha256": "6d34953680b6c19830e753cb388a330d4b812b52e248d4d4ee1b975662347a5f"
+        "sha256": "f7ca55fdec772962e5ee9167d0510d053c97b312ccf6611b841e75a9c95c3cce"
       },
       "status": "PASS",
       "upstream_model": "EtfInfo"
@@ -7428,7 +7428,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityGainers --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:39:15.187172+00:00",
+      "executed_at_utc": "2026-10-19T10:18:48.154031+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -7440,8 +7440,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7543,7 +7543,7 @@
       "receipt": {
         "model_identity": "tmx::EquityGainers",
         "path": "docs/evidence/C101/receipts/tmx/EquityGainers/implementation.json",
-        "sha256": "30835e4303f27f76215730a0eecdae6e40edc0f38b0a692cc00eaa7b03cdae71"
+        "sha256": "71c52fba02c24268ad388363802301d2b4e43e154ca3c8198f5a05f179475bef"
       },
       "status": "PASS",
       "upstream_model": "EquityGainers"
@@ -7551,7 +7551,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityGainers --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:39:16.340980+00:00",
+      "executed_at_utc": "2026-10-19T10:18:49.166518+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -7563,8 +7563,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7641,7 +7641,7 @@
       "receipt": {
         "model_identity": "tmx::EquityGainers",
         "path": "docs/evidence/C101/receipts/tmx/EquityGainers/direct.json",
-        "sha256": "b4fea42c0178a5aa898807f424ef0148ee8172faf8ad392b748cc6a4c2091401"
+        "sha256": "be564185da960d2bcf88c10addb20c27202169907f2d2677b751ed64d16ce75e"
       },
       "status": "PASS",
       "upstream_model": "EquityGainers"
@@ -7649,7 +7649,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityGainers --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:39:17.540331+00:00",
+      "executed_at_utc": "2026-10-19T10:18:50.174345+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -7661,8 +7661,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7739,7 +7739,7 @@
       "receipt": {
         "model_identity": "tmx::EquityGainers",
         "path": "docs/evidence/C101/receipts/tmx/EquityGainers/service.json",
-        "sha256": "951952049804f6e912a99535d9b6f90ded631a1db2f341091f50c18a54d12d90"
+        "sha256": "ebf5bb1da82c85ae159419d42f9f04e2e8a7c3a03de89203048595d4a38d00ed"
       },
       "status": "PASS",
       "upstream_model": "EquityGainers"
@@ -7747,7 +7747,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityGainers --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:39:18.725067+00:00",
+      "executed_at_utc": "2026-10-19T10:18:51.193101+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -7759,8 +7759,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7837,7 +7837,7 @@
       "receipt": {
         "model_identity": "tmx::EquityGainers",
         "path": "docs/evidence/C101/receipts/tmx/EquityGainers/contract.json",
-        "sha256": "88bfa2feda86573d3cf827ba144ca67a770c91f7f3edde2adbdcce1e7abd313a"
+        "sha256": "2f11764d3d97b3030963b412e788006e3fd0e4f95c8c943754b069705f61ea5a"
       },
       "status": "PASS",
       "upstream_model": "EquityGainers"
@@ -7845,7 +7845,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model EquityGainers --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:39:20.959154+00:00",
+      "executed_at_utc": "2026-10-19T10:18:53.321879+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -7857,8 +7857,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7935,7 +7935,7 @@
       "receipt": {
         "model_identity": "tmx::EquityGainers",
         "path": "docs/evidence/C101/receipts/tmx/EquityGainers/counterfact.json",
-        "sha256": "09a46cb1a819de51ea43ebbe7b0c91e86d9fcef72ef82f5fb354bc6bab854a5e"
+        "sha256": "774c102d700fb59a425f77f1dbe6a7012ace2822aed963c6f5890dd870a572bb"
       },
       "status": "PASS",
       "upstream_model": "EquityGainers"
@@ -7943,7 +7943,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model HistoricalDividends --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:39:21.999493+00:00",
+      "executed_at_utc": "2026-10-19T10:18:54.362747+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -7955,8 +7955,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8053,7 +8053,7 @@
       "receipt": {
         "model_identity": "tmx::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/tmx/HistoricalDividends/implementation.json",
-        "sha256": "89bdfcb930eb382a75e100d216da90e378291776a427870f2081984b1a1e9671"
+        "sha256": "37fc0e3829d4181c42dddc417435e1924893ab965a004f5763e74230ffffa543"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -8061,7 +8061,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model HistoricalDividends --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:39:23.073211+00:00",
+      "executed_at_utc": "2026-10-19T10:18:55.411086+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -8073,8 +8073,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8146,7 +8146,7 @@
       "receipt": {
         "model_identity": "tmx::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/tmx/HistoricalDividends/direct.json",
-        "sha256": "32e994676e36658a2f7488b274175beca37621c8a649aff7dada8a7d4ab50f85"
+        "sha256": "dd426b6a91d03adba963e98e7b51d3bda4d28504abf0ca9f3ad5b38cef29e606"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -8154,7 +8154,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model HistoricalDividends --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:39:24.123757+00:00",
+      "executed_at_utc": "2026-10-19T10:18:56.424598+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -8166,8 +8166,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8239,7 +8239,7 @@
       "receipt": {
         "model_identity": "tmx::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/tmx/HistoricalDividends/service.json",
-        "sha256": "f1118f457af2a584a89627d5410243dc946283d1e85f0b8c130744543a911309"
+        "sha256": "6298390432429b39b8e9e90ce198de4d2b1bd12129e3e23e6f7e7139674901e9"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -8247,7 +8247,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model HistoricalDividends --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:39:25.191467+00:00",
+      "executed_at_utc": "2026-10-19T10:18:57.435779+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -8259,8 +8259,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8332,7 +8332,7 @@
       "receipt": {
         "model_identity": "tmx::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/tmx/HistoricalDividends/contract.json",
-        "sha256": "71e546c8acd0788c4d021f60ea434ea2b0d80f827db8bcc226f67cd35bc7108a"
+        "sha256": "7d4cf24a0bf9de00c34e780d6606cf02865012eb8aaa3fa8fefa402794c1db75"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -8340,7 +8340,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model HistoricalDividends --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:39:27.434374+00:00",
+      "executed_at_utc": "2026-10-19T10:18:59.472691+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -8352,8 +8352,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8425,7 +8425,7 @@
       "receipt": {
         "model_identity": "tmx::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/tmx/HistoricalDividends/counterfact.json",
-        "sha256": "764d922339010ce4e5ee1d963f106bbe4bb28febc9f517cd75a11274819df0a3"
+        "sha256": "3abd3ecdaf73a00d34a7e9a8a18270c4ce046d546eaa83430e7978f0b99988d8"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -8433,7 +8433,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexConstituents --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:39:28.728230+00:00",
+      "executed_at_utc": "2026-10-19T10:19:00.481677+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -8445,8 +8445,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8543,7 +8543,7 @@
       "receipt": {
         "model_identity": "tmx::IndexConstituents",
         "path": "docs/evidence/C101/receipts/tmx/IndexConstituents/implementation.json",
-        "sha256": "2b990844bda477fbed3be2a31b27f8e7305774ab9aa6a712507f17c1822f50d1"
+        "sha256": "b6051a8f938729802b7185ff8a55975cad2d91b7357f820cbaa83e6255c3591f"
       },
       "status": "PASS",
       "upstream_model": "IndexConstituents"
@@ -8551,7 +8551,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexConstituents --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:39:29.902378+00:00",
+      "executed_at_utc": "2026-10-19T10:19:01.494465+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -8563,8 +8563,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8636,7 +8636,7 @@
       "receipt": {
         "model_identity": "tmx::IndexConstituents",
         "path": "docs/evidence/C101/receipts/tmx/IndexConstituents/direct.json",
-        "sha256": "88661d8aa164996b9558d9d405388fcddd034716b5b5acd71f4a45ef9b52c53e"
+        "sha256": "d11f8415bc8014f8f8242b29dc8fca3c09f9ab8be8fe3447e0969479d7e57233"
       },
       "status": "PASS",
       "upstream_model": "IndexConstituents"
@@ -8644,7 +8644,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexConstituents --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:39:31.061944+00:00",
+      "executed_at_utc": "2026-10-19T10:19:02.505133+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -8656,8 +8656,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8729,7 +8729,7 @@
       "receipt": {
         "model_identity": "tmx::IndexConstituents",
         "path": "docs/evidence/C101/receipts/tmx/IndexConstituents/service.json",
-        "sha256": "5bb82bd527f47b90698acc7f6b3648dfb4a6ae87bb81e08ec2257d59ce6f95d1"
+        "sha256": "98fbe26e840bf7dd90fa792bb292749aaabcdea8ab45896870b77e927e1a0d06"
       },
       "status": "PASS",
       "upstream_model": "IndexConstituents"
@@ -8737,7 +8737,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexConstituents --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:39:32.226246+00:00",
+      "executed_at_utc": "2026-10-19T10:19:03.535691+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -8749,8 +8749,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8822,7 +8822,7 @@
       "receipt": {
         "model_identity": "tmx::IndexConstituents",
         "path": "docs/evidence/C101/receipts/tmx/IndexConstituents/contract.json",
-        "sha256": "5b9b73eb8f40005b34eff9edd08a860673e6aa8a1db39114a11029cbb005bc83"
+        "sha256": "3b508c10f030fa0d6e08f31a5ee4ee2666daf77b1298ebc42a231bc616a850bc"
       },
       "status": "PASS",
       "upstream_model": "IndexConstituents"
@@ -8830,7 +8830,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexConstituents --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:39:34.595745+00:00",
+      "executed_at_utc": "2026-10-19T10:19:05.587413+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -8842,8 +8842,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8915,7 +8915,7 @@
       "receipt": {
         "model_identity": "tmx::IndexConstituents",
         "path": "docs/evidence/C101/receipts/tmx/IndexConstituents/counterfact.json",
-        "sha256": "e6e16c8e9732763709c03b36a2a91964a18e2947d0a8322477666d73eaa93bf3"
+        "sha256": "599a96be40d7ab6e8ed2429ab43bfc40ca2f46205893e956d24a3bb0463757c8"
       },
       "status": "PASS",
       "upstream_model": "IndexConstituents"
@@ -8923,7 +8923,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexSectors --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:39:35.795149+00:00",
+      "executed_at_utc": "2026-10-19T10:19:06.623834+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -8935,8 +8935,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9033,7 +9033,7 @@
       "receipt": {
         "model_identity": "tmx::IndexSectors",
         "path": "docs/evidence/C101/receipts/tmx/IndexSectors/implementation.json",
-        "sha256": "fd23343a48e97ea3e8b76ab6fd402319c2c5df65fc9e51fd04338ae753e18791"
+        "sha256": "37bbcc28d8659ea36a8ffde2c64aa88ae5ee9060d32e134d76bca2900c50bd87"
       },
       "status": "PASS",
       "upstream_model": "IndexSectors"
@@ -9041,7 +9041,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexSectors --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:39:36.990164+00:00",
+      "executed_at_utc": "2026-10-19T10:19:07.630233+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -9053,8 +9053,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9126,7 +9126,7 @@
       "receipt": {
         "model_identity": "tmx::IndexSectors",
         "path": "docs/evidence/C101/receipts/tmx/IndexSectors/direct.json",
-        "sha256": "6312275cd03efeae24e3472141c90e51fdf1d8068366f0b00bc0d38df8c09a61"
+        "sha256": "13b92cef1c2fe29a13e41733a1afea0228a5a65461ceb2cc175bf0103edb1470"
       },
       "status": "PASS",
       "upstream_model": "IndexSectors"
@@ -9134,7 +9134,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexSectors --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:39:38.156809+00:00",
+      "executed_at_utc": "2026-10-19T10:19:08.642268+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -9146,8 +9146,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9219,7 +9219,7 @@
       "receipt": {
         "model_identity": "tmx::IndexSectors",
         "path": "docs/evidence/C101/receipts/tmx/IndexSectors/service.json",
-        "sha256": "9df5c7000863a636f8a42b85f81bab5d7dbcc4b62c6a448b8f3af784a00e93e4"
+        "sha256": "c796436caed9b22b7b0fdf5da9a187f8757da02f14c2b6ed3ea82a13472eea74"
       },
       "status": "PASS",
       "upstream_model": "IndexSectors"
@@ -9227,7 +9227,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexSectors --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:39:39.321069+00:00",
+      "executed_at_utc": "2026-10-19T10:19:09.684680+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -9239,8 +9239,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9312,7 +9312,7 @@
       "receipt": {
         "model_identity": "tmx::IndexSectors",
         "path": "docs/evidence/C101/receipts/tmx/IndexSectors/contract.json",
-        "sha256": "8cd61136f7e5c26d7833fbc6000c6af840b1b8602348619db1f49a260ebc1652"
+        "sha256": "b2e4093aa935fd26054b6a0dd3a8268247bb13e6743b213eb64302e74df533b7"
       },
       "status": "PASS",
       "upstream_model": "IndexSectors"
@@ -9320,7 +9320,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexSectors --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:39:41.697127+00:00",
+      "executed_at_utc": "2026-10-19T10:19:11.773715+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -9332,8 +9332,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9405,7 +9405,7 @@
       "receipt": {
         "model_identity": "tmx::IndexSectors",
         "path": "docs/evidence/C101/receipts/tmx/IndexSectors/counterfact.json",
-        "sha256": "36a7ddb0fd9caad102a80afd8e5a76a1ae905e763a15f433c5bea219835dbc59"
+        "sha256": "4f7e8ab82a6f703ff628cf5710cb7546e1c8c0af091f5d39704892943305ba83"
       },
       "status": "PASS",
       "upstream_model": "IndexSectors"
@@ -9413,7 +9413,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexSnapshots --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:39:42.846573+00:00",
+      "executed_at_utc": "2026-10-19T10:19:12.795304+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -9425,8 +9425,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9523,7 +9523,7 @@
       "receipt": {
         "model_identity": "tmx::IndexSnapshots",
         "path": "docs/evidence/C101/receipts/tmx/IndexSnapshots/implementation.json",
-        "sha256": "bc9ae80ae5efe191c9e7c5fdd4b4a13691832a96af12e9f9183d3e49e1daae50"
+        "sha256": "4a5d2e28917d722168697d2b9dc66563ce3bb94d9fabf1593a548be636b2c786"
       },
       "status": "PASS",
       "upstream_model": "IndexSnapshots"
@@ -9531,7 +9531,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexSnapshots --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:39:44.089482+00:00",
+      "executed_at_utc": "2026-10-19T10:19:13.825451+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -9543,8 +9543,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9616,7 +9616,7 @@
       "receipt": {
         "model_identity": "tmx::IndexSnapshots",
         "path": "docs/evidence/C101/receipts/tmx/IndexSnapshots/direct.json",
-        "sha256": "b25487b53328ec1e4cf97043d21d6739ddcb76492cbf74e78ff4a38c46073ffe"
+        "sha256": "266cfbdd71b12bc6c30f4cdcea5090069aabd1ddbb8217d1c9d003b05485128f"
       },
       "status": "PASS",
       "upstream_model": "IndexSnapshots"
@@ -9624,7 +9624,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexSnapshots --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:39:45.278656+00:00",
+      "executed_at_utc": "2026-10-19T10:19:14.880908+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -9636,8 +9636,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9709,7 +9709,7 @@
       "receipt": {
         "model_identity": "tmx::IndexSnapshots",
         "path": "docs/evidence/C101/receipts/tmx/IndexSnapshots/service.json",
-        "sha256": "1dc4acb806305e4df5efe1b16c10e9e9c99fd2bf400cd6d6b042cb2b8b554bfd"
+        "sha256": "c3a16150686c2401e4a117b3dc699a99bf1e326de04ff887507b641fe4db81b7"
       },
       "status": "PASS",
       "upstream_model": "IndexSnapshots"
@@ -9717,7 +9717,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexSnapshots --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:39:46.616795+00:00",
+      "executed_at_utc": "2026-10-19T10:19:15.898325+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -9729,8 +9729,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9802,7 +9802,7 @@
       "receipt": {
         "model_identity": "tmx::IndexSnapshots",
         "path": "docs/evidence/C101/receipts/tmx/IndexSnapshots/contract.json",
-        "sha256": "ef9144c22a60728f673ffbd76a804082e0eed6ca6639e607bb3f2b7732ecc972"
+        "sha256": "3c887f1f728083727411dcbfc575f7c0678ac317d0d912cc13d8e178f08bea95"
       },
       "status": "PASS",
       "upstream_model": "IndexSnapshots"
@@ -9810,7 +9810,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model IndexSnapshots --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:39:49.006763+00:00",
+      "executed_at_utc": "2026-10-19T10:19:18.010899+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -9822,8 +9822,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9895,7 +9895,7 @@
       "receipt": {
         "model_identity": "tmx::IndexSnapshots",
         "path": "docs/evidence/C101/receipts/tmx/IndexSnapshots/counterfact.json",
-        "sha256": "2d6847f3b12de5cffd56e144cd972d7d5152a1ceea8ec76d77077226a50564a8"
+        "sha256": "6cde45b8f099d38162d6483f9e823d865fbde399af7433370c8d6a5053aac30c"
       },
       "status": "PASS",
       "upstream_model": "IndexSnapshots"
@@ -9903,7 +9903,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model InsiderTrading --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:39:50.208057+00:00",
+      "executed_at_utc": "2026-10-19T10:19:19.058323+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -9915,8 +9915,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10018,7 +10018,7 @@
       "receipt": {
         "model_identity": "tmx::InsiderTrading",
         "path": "docs/evidence/C101/receipts/tmx/InsiderTrading/implementation.json",
-        "sha256": "f53ba320fe4666a34f5a9e276627e7db4d9c82465d02ae6a6f3d941dadf218a1"
+        "sha256": "7a10a8015ffcb386978fb1d2cc43320087f0f9e5f7b9300ba24f5d7680ac877b"
       },
       "status": "PASS",
       "upstream_model": "InsiderTrading"
@@ -10026,7 +10026,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model InsiderTrading --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:39:51.570792+00:00",
+      "executed_at_utc": "2026-10-19T10:19:20.091614+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -10038,8 +10038,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10116,7 +10116,7 @@
       "receipt": {
         "model_identity": "tmx::InsiderTrading",
         "path": "docs/evidence/C101/receipts/tmx/InsiderTrading/direct.json",
-        "sha256": "37c4690d30e27f4e7f626c91cc2b9e999033d7d2a1554f53e851f7f1144e378e"
+        "sha256": "274468261a7eba73a7c7ecec5a4d8c3fe5225002d73ef626ad61375d826cf3bf"
       },
       "status": "PASS",
       "upstream_model": "InsiderTrading"
@@ -10124,7 +10124,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model InsiderTrading --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:39:52.823296+00:00",
+      "executed_at_utc": "2026-10-19T10:19:21.146535+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -10136,8 +10136,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10214,7 +10214,7 @@
       "receipt": {
         "model_identity": "tmx::InsiderTrading",
         "path": "docs/evidence/C101/receipts/tmx/InsiderTrading/service.json",
-        "sha256": "b1025484ddb554c3f54e304db4689f9ed4804c0e6b4b0550da83c111a62797bd"
+        "sha256": "26bfd1d73e503e14e3a2a0553d7e9ed5500bd7d2dcd1f65391db62ccee7a3c0e"
       },
       "status": "PASS",
       "upstream_model": "InsiderTrading"
@@ -10222,7 +10222,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model InsiderTrading --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:39:54.038073+00:00",
+      "executed_at_utc": "2026-10-19T10:19:22.185962+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -10234,8 +10234,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10312,7 +10312,7 @@
       "receipt": {
         "model_identity": "tmx::InsiderTrading",
         "path": "docs/evidence/C101/receipts/tmx/InsiderTrading/contract.json",
-        "sha256": "c59bfc65afbf830008ec579d37f90600fd7ade3178f88f6b03c3f5ed712f38c9"
+        "sha256": "2f97be96d011cf14434aac7d3e27271e507b9d0a6f21faa43ad282aa5df06453"
       },
       "status": "PASS",
       "upstream_model": "InsiderTrading"
@@ -10320,7 +10320,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model InsiderTrading --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:39:56.457277+00:00",
+      "executed_at_utc": "2026-10-19T10:19:24.259771+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -10332,8 +10332,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10410,7 +10410,7 @@
       "receipt": {
         "model_identity": "tmx::InsiderTrading",
         "path": "docs/evidence/C101/receipts/tmx/InsiderTrading/counterfact.json",
-        "sha256": "ffc253e0cc7f9b3da96b514650ccbd224130ce9776d192254818bf8ef918384d"
+        "sha256": "0cfc763b0dcdcc58d322b76585eaa95311ae1d96e80f305fe48faf31790f8a2b"
       },
       "status": "PASS",
       "upstream_model": "InsiderTrading"
@@ -10418,7 +10418,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model OptionsChains --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:39:57.745506+00:00",
+      "executed_at_utc": "2026-10-19T10:19:25.286984+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -10430,8 +10430,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10528,7 +10528,7 @@
       "receipt": {
         "model_identity": "tmx::OptionsChains",
         "path": "docs/evidence/C101/receipts/tmx/OptionsChains/implementation.json",
-        "sha256": "5a57aaebf207026992921f45e0a012bec6f75cd16a713fd812dbafad22813f64"
+        "sha256": "5bc0f7656404be033f9e2a66c079767c38bc64b48776183072b990989bca21cb"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -10536,7 +10536,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model OptionsChains --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:39:58.961869+00:00",
+      "executed_at_utc": "2026-10-19T10:19:26.324060+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -10548,8 +10548,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10621,7 +10621,7 @@
       "receipt": {
         "model_identity": "tmx::OptionsChains",
         "path": "docs/evidence/C101/receipts/tmx/OptionsChains/direct.json",
-        "sha256": "582df6fb2f487d27c13163139df33f68d2d7c997469370f27e12839dbeebe0c6"
+        "sha256": "c3f3004cf193e8715accdc8e9100722d493c8e9e342a9af04f0eae0929375e51"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -10629,7 +10629,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model OptionsChains --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:40:00.209603+00:00",
+      "executed_at_utc": "2026-10-19T10:19:27.383996+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -10641,8 +10641,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10714,7 +10714,7 @@
       "receipt": {
         "model_identity": "tmx::OptionsChains",
         "path": "docs/evidence/C101/receipts/tmx/OptionsChains/service.json",
-        "sha256": "2423591bca87f73845e78be39f10b457f351fe0aae5dea6362cf34b211e733fa"
+        "sha256": "445148eb9955d6268a4899572e7de11285d3aefe09b9a5f797d85ef677007c94"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -10722,7 +10722,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model OptionsChains --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:40:01.447876+00:00",
+      "executed_at_utc": "2026-10-19T10:19:28.412738+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -10734,8 +10734,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10807,7 +10807,7 @@
       "receipt": {
         "model_identity": "tmx::OptionsChains",
         "path": "docs/evidence/C101/receipts/tmx/OptionsChains/contract.json",
-        "sha256": "d57dd19c7b976f341790b8440d459eb11bfd04c604f4a2bb29a50aee3dbed01c"
+        "sha256": "1946a0cdb1ff5461dde9f23024399bdcc7e44a12d765a04a2a8399bd668d292c"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -10815,7 +10815,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model OptionsChains --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:40:03.807355+00:00",
+      "executed_at_utc": "2026-10-19T10:19:30.474346+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -10827,8 +10827,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10900,7 +10900,7 @@
       "receipt": {
         "model_identity": "tmx::OptionsChains",
         "path": "docs/evidence/C101/receipts/tmx/OptionsChains/counterfact.json",
-        "sha256": "f1a067aaf361e59b379a1cfe4f9431b128de64ff6055f919457f59f585ddf550"
+        "sha256": "d957ecf1d67910b00fe4e28ce0e3e630af5844b0c79d64678e1c9f661e1aba76"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -10908,7 +10908,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model PriceTargetConsensus --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:40:04.956692+00:00",
+      "executed_at_utc": "2026-10-19T10:19:31.532057+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -10920,8 +10920,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -11018,7 +11018,7 @@
       "receipt": {
         "model_identity": "tmx::PriceTargetConsensus",
         "path": "docs/evidence/C101/receipts/tmx/PriceTargetConsensus/implementation.json",
-        "sha256": "ad0efe1239887cb17618b22bc9645da0c79e87e368f425f10eb45f2e7855d1fb"
+        "sha256": "f23dc3dcdbb1b5f76c1e8e887a63b43798a9a62ec0af5568434bd7f2bf15ba82"
       },
       "status": "PASS",
       "upstream_model": "PriceTargetConsensus"
@@ -11026,7 +11026,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model PriceTargetConsensus --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:40:06.126998+00:00",
+      "executed_at_utc": "2026-10-19T10:19:32.548556+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -11038,8 +11038,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -11111,7 +11111,7 @@
       "receipt": {
         "model_identity": "tmx::PriceTargetConsensus",
         "path": "docs/evidence/C101/receipts/tmx/PriceTargetConsensus/direct.json",
-        "sha256": "0dfc1dabd0a0af7e2f405487cd542953ee139b14dae30a8ffdc603d4e84355d2"
+        "sha256": "78ba23d28cb70a9ed3a4d6bdcbec83bd0a28f8af86ebe9c66699b17d66f2bb9f"
       },
       "status": "PASS",
       "upstream_model": "PriceTargetConsensus"
@@ -11119,7 +11119,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model PriceTargetConsensus --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:40:07.357505+00:00",
+      "executed_at_utc": "2026-10-19T10:19:33.559333+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -11131,8 +11131,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -11204,7 +11204,7 @@
       "receipt": {
         "model_identity": "tmx::PriceTargetConsensus",
         "path": "docs/evidence/C101/receipts/tmx/PriceTargetConsensus/service.json",
-        "sha256": "2c0d8e37df9d8d9afe1e7de3cea39addf8c3b460dcde019eda690785193f175f"
+        "sha256": "ee9a918aaf857a47df83cbbbde5cc6aacb95714103cf6b455d1ba88d3174ad85"
       },
       "status": "PASS",
       "upstream_model": "PriceTargetConsensus"
@@ -11212,7 +11212,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model PriceTargetConsensus --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:40:08.558996+00:00",
+      "executed_at_utc": "2026-10-19T10:19:34.583537+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -11224,8 +11224,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -11297,7 +11297,7 @@
       "receipt": {
         "model_identity": "tmx::PriceTargetConsensus",
         "path": "docs/evidence/C101/receipts/tmx/PriceTargetConsensus/contract.json",
-        "sha256": "f99159ba5a6692c62155dd1e38f1665a77905cb970d194ff1bba7946d88bb340"
+        "sha256": "c673d7f32f871b080300c9d103222c4a01b608c6b46d3547e5b537e0ce82a77b"
       },
       "status": "PASS",
       "upstream_model": "PriceTargetConsensus"
@@ -11305,7 +11305,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model PriceTargetConsensus --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:40:10.962915+00:00",
+      "executed_at_utc": "2026-10-19T10:19:36.650028+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -11317,8 +11317,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -11390,7 +11390,7 @@
       "receipt": {
         "model_identity": "tmx::PriceTargetConsensus",
         "path": "docs/evidence/C101/receipts/tmx/PriceTargetConsensus/counterfact.json",
-        "sha256": "5da505fd38c7bdc6f809c2130a9c56bb4a4c820d655f83914c92d417a766b1d1"
+        "sha256": "9c02cff29ef3cc509488c0746128cbf962e317e115a17eedfac96cc17e0d48eb"
       },
       "status": "PASS",
       "upstream_model": "PriceTargetConsensus"
@@ -11398,7 +11398,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model TreasuryPrices --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:40:12.145479+00:00",
+      "executed_at_utc": "2026-10-19T10:19:37.691156+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -11410,8 +11410,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -11508,7 +11508,7 @@
       "receipt": {
         "model_identity": "tmx::TreasuryPrices",
         "path": "docs/evidence/C101/receipts/tmx/TreasuryPrices/implementation.json",
-        "sha256": "3ee84b2e60f6a16c19a277aca7ce0d7876ca198c2ab00541e5640f28f8dfb569"
+        "sha256": "458d88e37bf8d3d9de88c8f15c179d79b61a318d9dfe12fe12dc7efafbbd8161"
       },
       "status": "PASS",
       "upstream_model": "TreasuryPrices"
@@ -11516,7 +11516,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model TreasuryPrices --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:40:13.364177+00:00",
+      "executed_at_utc": "2026-10-19T10:19:38.735342+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -11528,8 +11528,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -11601,7 +11601,7 @@
       "receipt": {
         "model_identity": "tmx::TreasuryPrices",
         "path": "docs/evidence/C101/receipts/tmx/TreasuryPrices/direct.json",
-        "sha256": "241e5decb140f5b47cd776cf19a58b4da22899140b9dcbc79b15d61e5350d9eb"
+        "sha256": "c17cd23d120568620614b6efe8d491f1a51917ecc04708876203d21645623748"
       },
       "status": "PASS",
       "upstream_model": "TreasuryPrices"
@@ -11609,7 +11609,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model TreasuryPrices --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:40:14.563614+00:00",
+      "executed_at_utc": "2026-10-19T10:19:39.772522+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -11621,8 +11621,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -11694,7 +11694,7 @@
       "receipt": {
         "model_identity": "tmx::TreasuryPrices",
         "path": "docs/evidence/C101/receipts/tmx/TreasuryPrices/service.json",
-        "sha256": "89ecc92457611d93a064d195a5451408ff6dc950cb75be0ca0af23bc4ac49d4c"
+        "sha256": "d77fc4285e4dd85cec4aafc86284ba3de5fe3674c460bf5806092e287f14aee3"
       },
       "status": "PASS",
       "upstream_model": "TreasuryPrices"
@@ -11702,7 +11702,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model TreasuryPrices --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:40:15.980333+00:00",
+      "executed_at_utc": "2026-10-19T10:19:40.807576+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -11714,8 +11714,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -11787,7 +11787,7 @@
       "receipt": {
         "model_identity": "tmx::TreasuryPrices",
         "path": "docs/evidence/C101/receipts/tmx/TreasuryPrices/contract.json",
-        "sha256": "ea3ca1509acda32534edc23cf1351df173a1869ec16cb07e661c862d24265135"
+        "sha256": "72a04d6d3fd67734648987512d2a5eb61aca0594015bc91230c5056890dda935"
       },
       "status": "PASS",
       "upstream_model": "TreasuryPrices"
@@ -11795,7 +11795,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tmx --model TreasuryPrices --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:40:18.395930+00:00",
+      "executed_at_utc": "2026-10-19T10:19:42.902187+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -11807,8 +11807,8 @@
             "path": "opendata/data/models/tmx.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -11880,7 +11880,7 @@
       "receipt": {
         "model_identity": "tmx::TreasuryPrices",
         "path": "docs/evidence/C101/receipts/tmx/TreasuryPrices/counterfact.json",
-        "sha256": "6a51c9950e7563585abee9db971e8e39012e1c90eec76035e62a70ec47536366"
+        "sha256": "989afd43555cb72af5009e8af7bf75873fd76d5f892cce83b65c29a32aa021ca"
       },
       "status": "PASS",
       "upstream_model": "TreasuryPrices"
@@ -11894,9 +11894,9 @@
       "receipt": {
         "model_identity": "tmx::AvailableIndices",
         "path": "docs/evidence/C101/primary-reviews/tmx__AvailableIndices.review.json",
-        "sha256": "1360490bf77f3f3f509afaeac390fd4d7b17042bfebae28d0ed706d1f444670e"
+        "sha256": "e454a0960d23fa767b8a08b97e8a8515ce54545c413cd457a3581e05201f14c4"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:43Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11909,9 +11909,9 @@
       "receipt": {
         "model_identity": "tmx::BondPrices",
         "path": "docs/evidence/C101/primary-reviews/tmx__BondPrices.review.json",
-        "sha256": "35902cec1c0f67e54f7d3fd64f7b270705b5b625e447eac9c0de576b0f4995c2"
+        "sha256": "ed6dc93b0b412e25ae59da014e761b95fb70754df4985becb62229b905c4d207"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:43Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11924,9 +11924,9 @@
       "receipt": {
         "model_identity": "tmx::CalendarEarnings",
         "path": "docs/evidence/C101/primary-reviews/tmx__CalendarEarnings.review.json",
-        "sha256": "a061c9051946d65eb4819a3761660432962bc87bc0d8aed700648bc5ace2c81f"
+        "sha256": "61e3ebcfca147630c146660529e71d74519817e290221fc702d34d18be64e519"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:43Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11939,9 +11939,9 @@
       "receipt": {
         "model_identity": "tmx::CompanyFilings",
         "path": "docs/evidence/C101/primary-reviews/tmx__CompanyFilings.review.json",
-        "sha256": "1b2bafecfbc5c7ab1522f5f2eef295d10de6e125b7786c088adaea670cdd4c03"
+        "sha256": "92fd3dec0a48d7554a1f5cc76a57c39b952dfabb43617c8908e26f719c3ef392"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:43Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11954,9 +11954,9 @@
       "receipt": {
         "model_identity": "tmx::CompanyNews",
         "path": "docs/evidence/C101/primary-reviews/tmx__CompanyNews.review.json",
-        "sha256": "9418a14cbc76609b287bd3696655d685266db5725b867a1a6f51790490016615"
+        "sha256": "b144302c7407fba6e195f001787ac083dec747f7906f46b87a08d8ae70a53c4c"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:43Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11969,9 +11969,9 @@
       "receipt": {
         "model_identity": "tmx::EquityGainers",
         "path": "docs/evidence/C101/primary-reviews/tmx__EquityGainers.review.json",
-        "sha256": "5f8f248d6a29fc5b8529f090a30a7a25394577d50729cfa4a96f550cfd83646c"
+        "sha256": "f9936868fd582c84b1df3873f51495e0bee93ca03d37d7f1e573601046c062f7"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:43Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11984,9 +11984,9 @@
       "receipt": {
         "model_identity": "tmx::EquityHistorical",
         "path": "docs/evidence/C101/primary-reviews/tmx__EquityHistorical.review.json",
-        "sha256": "c8c1dea7ad6d001ae5ec3d2040fb7cb3adc8462bf4557e1e54286005684a43f5"
+        "sha256": "3c2b2670f14acf636be8777618aa616836b2eed0bfe8e36fdb04705d3ff68b11"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:43Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11999,9 +11999,9 @@
       "receipt": {
         "model_identity": "tmx::EquityInfo",
         "path": "docs/evidence/C101/primary-reviews/tmx__EquityInfo.review.json",
-        "sha256": "bb12f3663d087392a98e7cb25e7c7bc0e6d064cf8c74909656763365b43146f6"
+        "sha256": "55107908daf80a5201a06688fedf1e50c4673062e97da26a7b450fb2d04ac1f6"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:43Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12014,9 +12014,9 @@
       "receipt": {
         "model_identity": "tmx::EquityQuote",
         "path": "docs/evidence/C101/primary-reviews/tmx__EquityQuote.review.json",
-        "sha256": "ac418e324fe00b28237eb67e643f56c10353bf2741e9508e54e902b30a6be563"
+        "sha256": "7549337c1896db54092a0f367e8f14d53129f5e02dfb73e5fb7d6f75926be5ae"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12029,9 +12029,9 @@
       "receipt": {
         "model_identity": "tmx::EquitySearch",
         "path": "docs/evidence/C101/primary-reviews/tmx__EquitySearch.review.json",
-        "sha256": "e3a4c5df4335adebb8753c0353f87ad136fe32a2bb0cba7191668cf91b68e565"
+        "sha256": "4611e77cccbcc80699285c1e8fb3237a6f2f8b4b415a09a13fb34e1ba05fffb3"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12044,9 +12044,9 @@
       "receipt": {
         "model_identity": "tmx::EtfCountries",
         "path": "docs/evidence/C101/primary-reviews/tmx__EtfCountries.review.json",
-        "sha256": "0bcc7b30219c2b1bbb3c3b986e79f24ce26053f1dfe382f2232a3c94c68c0509"
+        "sha256": "a358f409cec581d6588c40e35fd2eb605754a05422493e9c52c0ab711cac1aac"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12059,9 +12059,9 @@
       "receipt": {
         "model_identity": "tmx::EtfHistorical",
         "path": "docs/evidence/C101/primary-reviews/tmx__EtfHistorical.review.json",
-        "sha256": "7ae3147daf77d320078f398037d7821a4ba77b68fe91afe3694a0ddac7fbeb19"
+        "sha256": "7841dcb551b6a9e39890a334a83b5d2cd86c94de3506f23087ad4256942814a6"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12074,9 +12074,9 @@
       "receipt": {
         "model_identity": "tmx::EtfHoldings",
         "path": "docs/evidence/C101/primary-reviews/tmx__EtfHoldings.review.json",
-        "sha256": "ad8f75043aaa5a1eb5e8eb6cc936ebf68126ffdac282b37244b7b5bb5f55d866"
+        "sha256": "9a914d6580ee7a6cae4848787dd1bbd39ceacfbcd4e4f88e9dbacfbe315d42ad"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12089,9 +12089,9 @@
       "receipt": {
         "model_identity": "tmx::EtfInfo",
         "path": "docs/evidence/C101/primary-reviews/tmx__EtfInfo.review.json",
-        "sha256": "7ef73b6d057109b2bc0f711ea45245c7520927019fe21bf1535beac288f8d5f4"
+        "sha256": "0954d266e061329beaa0abf8c760c1f75b8c32f3046e47413a12f267ae8d3060"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12104,9 +12104,9 @@
       "receipt": {
         "model_identity": "tmx::EtfSearch",
         "path": "docs/evidence/C101/primary-reviews/tmx__EtfSearch.review.json",
-        "sha256": "bc4a7c709e0a62edbf8dbb11e2b6ff8200bff183183cd0cd902ec792dd2c903c"
+        "sha256": "0d17c546bab937cf1641939452619462902b6e95fe931054de7cc35c22b4d9a4"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12119,9 +12119,9 @@
       "receipt": {
         "model_identity": "tmx::EtfSectors",
         "path": "docs/evidence/C101/primary-reviews/tmx__EtfSectors.review.json",
-        "sha256": "30badf66cba119b3bded6360c826a6ee90229782c3b440f12f2be16ab2004716"
+        "sha256": "71b5221cc434f5a64f9969127c27781616924a03ad46379dba9bbd2ba6f9265d"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12134,9 +12134,9 @@
       "receipt": {
         "model_identity": "tmx::HistoricalDividends",
         "path": "docs/evidence/C101/primary-reviews/tmx__HistoricalDividends.review.json",
-        "sha256": "9656b1046099e2caf8661d30fd3a4b0ee01304ea13e47d0a034b6814a2ec9f9e"
+        "sha256": "bda1f3f3da906dce1a948300a2dba258cf3c63df2b4fd2e1af9fdefede82d63e"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12149,9 +12149,9 @@
       "receipt": {
         "model_identity": "tmx::IndexConstituents",
         "path": "docs/evidence/C101/primary-reviews/tmx__IndexConstituents.review.json",
-        "sha256": "14cfb2180006f26f7d09ad7e5b4a0cef8ac7d011aa0533c0013e208c6bb05c6c"
+        "sha256": "ed0da25b68aacdaf4b83631b02b8cf2b9184dce557b5227e894cac3655436fd8"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12164,9 +12164,9 @@
       "receipt": {
         "model_identity": "tmx::IndexSectors",
         "path": "docs/evidence/C101/primary-reviews/tmx__IndexSectors.review.json",
-        "sha256": "ed462f1e7dd676a367769cf18445bb35c05d31d8100cdf6f3e872fecdd4d21c4"
+        "sha256": "c6bbb3916d3efa5f00dccf0adf3d47e3e9e318679fe643822921eb0ed3a12d47"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12179,9 +12179,9 @@
       "receipt": {
         "model_identity": "tmx::IndexSnapshots",
         "path": "docs/evidence/C101/primary-reviews/tmx__IndexSnapshots.review.json",
-        "sha256": "385de1e8dadf1164f3dc7a105560e9d158948bac2f9d3f11181ad818eb4c7d4f"
+        "sha256": "6eba8b2ca6700b2fb6f7961b617efb5dab13c4ac8f288ebb0ec8f5074ee0e1c1"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12194,9 +12194,9 @@
       "receipt": {
         "model_identity": "tmx::InsiderTrading",
         "path": "docs/evidence/C101/primary-reviews/tmx__InsiderTrading.review.json",
-        "sha256": "d3722f9cf69d68918561536d1daac7b468f8a23fbf3c18b2a1249a51a34446c5"
+        "sha256": "1e1a96de92af05c7d010553b3adbcd2bb949e261039323242ad41d7d894577e3"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12209,9 +12209,9 @@
       "receipt": {
         "model_identity": "tmx::OptionsChains",
         "path": "docs/evidence/C101/primary-reviews/tmx__OptionsChains.review.json",
-        "sha256": "3b0e6bcdeddac71a657e65a50168e4a9202081dd33ffdb91ac4744987c6ed935"
+        "sha256": "dc651be88fa533cd5eb3fd820ba8cdcb6322d67839aee0f7ea937f0ca8d4af7c"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12224,9 +12224,9 @@
       "receipt": {
         "model_identity": "tmx::PriceTargetConsensus",
         "path": "docs/evidence/C101/primary-reviews/tmx__PriceTargetConsensus.review.json",
-        "sha256": "6f4145280c399009d8035e4f897f45823a546b62618488b751d38bc05855dff7"
+        "sha256": "4fa04d4ddc000d0946f2ef7145ac3408b5ed147b329d541edf16f0e4721e78ce"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -12239,9 +12239,9 @@
       "receipt": {
         "model_identity": "tmx::TreasuryPrices",
         "path": "docs/evidence/C101/primary-reviews/tmx__TreasuryPrices.review.json",
-        "sha256": "20403b5443ee7ddd2852dea07cce17cbac679bcfaa2b2d00f00a0ca9a8efb6b3"
+        "sha256": "d13b573cfde957c4c0e2c9a1a2f1253f4e21fe309cc78a7dca017e0bd72bdf78"
       },
-      "reviewed_at_utc": "2026-10-19T07:40:19Z",
+      "reviewed_at_utc": "2026-10-19T10:19:44Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

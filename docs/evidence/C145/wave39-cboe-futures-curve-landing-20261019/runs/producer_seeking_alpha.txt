@@ -1,0 +1,30 @@
+# carrier for producer_seeking_alpha
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider seeking_alpha --output docs/evidence/C101/seeking_alpha/claims.json
+# note: five-phase producer for seeking_alpha
+# started_utc: 2026-10-19T10:16:22+00:00
+# exit: 0
+# stdout_chars: 2656 stderr_chars: 0
+
+== provider seeking_alpha: 3 inventory row(s) of 350 total ==
+CalendarEarnings implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model CalendarEarnings --phase implementation --evidence-root docs/evidence/C101
+CalendarEarnings direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model CalendarEarnings --phase direct --evidence-root docs/evidence/C101
+CalendarEarnings service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model CalendarEarnings --phase service --evidence-root docs/evidence/C101
+CalendarEarnings contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model CalendarEarnings --phase contract --evidence-root docs/evidence/C101
+CalendarEarnings counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model CalendarEarnings --phase counterfact --evidence-root docs/evidence/C101
+ForwardEpsEstimates implementation <not run> exit=- status=BLOCKED reason=no model witness
+ForwardEpsEstimates direct         <not run> exit=- status=BLOCKED reason=no model witness
+ForwardEpsEstimates service        <not run> exit=- status=BLOCKED reason=no model witness
+ForwardEpsEstimates contract       <not run> exit=- status=BLOCKED reason=no model witness
+ForwardEpsEstimates counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+ForwardSalesEstimates implementation <not run> exit=- status=BLOCKED reason=no model witness
+ForwardSalesEstimates direct         <not run> exit=- status=BLOCKED reason=no model witness
+ForwardSalesEstimates service        <not run> exit=- status=BLOCKED reason=no model witness
+ForwardSalesEstimates contract       <not run> exit=- status=BLOCKED reason=no model witness
+ForwardSalesEstimates counterfact    <not run> exit=- status=BLOCKED reason=no model witness
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=339/350; provider rows covered=3 of provider inventory rows=3, of which bound now=1/339 resolvable; claims emitted=15 (5 PASS, 0 FAIL, 10 BLOCKED) = 3 row(s) x 5 phases; phases actually executed as subprocesses=15
+wrote docs/evidence/C101/seeking_alpha/claims.json
+
+---- stderr ----
+
+
+chain_producer_seeking_alpha_exit=0

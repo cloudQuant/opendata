@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model CalendarEarnings --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:36:35.664885+00:00",
+      "executed_at_utc": "2026-10-19T10:16:23.479667+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/seeking_alpha.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -83,7 +83,7 @@
       "receipt": {
         "model_identity": "seeking_alpha::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/seeking_alpha/CalendarEarnings/implementation.json",
-        "sha256": "6b5e33f77b006d6dfed9cc3455a0b1170eec23c7b4e75fe72a83021f32fb2179"
+        "sha256": "07495275733a8b9f7e3798e3a513e0a34f6ce02d612e6bc34c2e1860da8de209"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -91,7 +91,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model CalendarEarnings --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:36:36.541291+00:00",
+      "executed_at_utc": "2026-10-19T10:16:24.339099+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -103,8 +103,8 @@
             "path": "opendata/data/models/seeking_alpha.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -161,7 +161,7 @@
       "receipt": {
         "model_identity": "seeking_alpha::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/seeking_alpha/CalendarEarnings/direct.json",
-        "sha256": "db5f6c194ae2897cf11f3a17fcc6469eed0df4ca25d24c28f7003e50c2a60209"
+        "sha256": "ba271d5b2729f669b26313fa8968785ffe22633b6fe817f16be31688923828e1"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -169,7 +169,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model CalendarEarnings --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:36:37.592293+00:00",
+      "executed_at_utc": "2026-10-19T10:16:25.358847+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -181,8 +181,8 @@
             "path": "opendata/data/models/seeking_alpha.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -239,7 +239,7 @@
       "receipt": {
         "model_identity": "seeking_alpha::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/seeking_alpha/CalendarEarnings/service.json",
-        "sha256": "06e48f1a78f490a69c5ac4a405fe6ef121365976d9fc4a9983594f913c0a7b2d"
+        "sha256": "f673c7fb320ab88434ef771804bfc1567785d91f1e0a9d685d0ac06256e18ab6"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -247,7 +247,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model CalendarEarnings --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:36:38.455790+00:00",
+      "executed_at_utc": "2026-10-19T10:16:26.217573+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -259,8 +259,8 @@
             "path": "opendata/data/models/seeking_alpha.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -317,7 +317,7 @@
       "receipt": {
         "model_identity": "seeking_alpha::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/seeking_alpha/CalendarEarnings/contract.json",
-        "sha256": "160f7fd1b7c0f5c61cacc54076b24955b94fc6f2a1f4ecb085f7fe5e78e0eb70"
+        "sha256": "e12be73d6fc9dc2247d146233c3284c9eab99a83acb2960f611f5ecd8014cf1f"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -325,7 +325,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model CalendarEarnings --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:36:40.218511+00:00",
+      "executed_at_utc": "2026-10-19T10:16:28.014164+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -337,8 +337,8 @@
             "path": "opendata/data/models/seeking_alpha.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -395,7 +395,7 @@
       "receipt": {
         "model_identity": "seeking_alpha::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/seeking_alpha/CalendarEarnings/counterfact.json",
-        "sha256": "aab966354ed58d8a016f381daedf8db8e2fa1c47bbfee3d9b275da718e53730d"
+        "sha256": "93635eb50c2c936d0cbb2a31ce14ea758db3a55ee71b9f3006e9a21aa2a4a940"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -403,7 +403,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model ForwardEpsEstimates --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:36:40.220260+00:00",
+      "executed_at_utc": "2026-10-19T10:16:28.015593+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "implementation",
@@ -427,7 +427,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model ForwardEpsEstimates --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:36:40.220268+00:00",
+      "executed_at_utc": "2026-10-19T10:16:28.015607+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "direct",
@@ -451,7 +451,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model ForwardEpsEstimates --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:36:40.220271+00:00",
+      "executed_at_utc": "2026-10-19T10:16:28.015612+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "service",
@@ -475,7 +475,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model ForwardEpsEstimates --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:36:40.220273+00:00",
+      "executed_at_utc": "2026-10-19T10:16:28.015614+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "contract",
@@ -499,7 +499,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model ForwardEpsEstimates --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:36:40.220275+00:00",
+      "executed_at_utc": "2026-10-19T10:16:28.015617+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "counterfact",
@@ -523,7 +523,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model ForwardSalesEstimates --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:36:40.220278+00:00",
+      "executed_at_utc": "2026-10-19T10:16:28.015619+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "implementation",
@@ -547,7 +547,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model ForwardSalesEstimates --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:36:40.220280+00:00",
+      "executed_at_utc": "2026-10-19T10:16:28.015621+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "direct",
@@ -571,7 +571,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model ForwardSalesEstimates --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:36:40.220282+00:00",
+      "executed_at_utc": "2026-10-19T10:16:28.015623+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "service",
@@ -595,7 +595,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model ForwardSalesEstimates --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:36:40.220284+00:00",
+      "executed_at_utc": "2026-10-19T10:16:28.015625+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "contract",
@@ -619,7 +619,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model ForwardSalesEstimates --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:36:40.220285+00:00",
+      "executed_at_utc": "2026-10-19T10:16:28.015628+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "counterfact",
@@ -649,9 +649,9 @@
       "receipt": {
         "model_identity": "seeking_alpha::CalendarEarnings",
         "path": "docs/evidence/C101/primary-reviews/seeking_alpha__CalendarEarnings.review.json",
-        "sha256": "11c902a8187cab6cbbf2f4de64888c964f6ed47663f88984385551d1c8f53a75"
+        "sha256": "a7bf5c116c3df7e220ef5ca9231c1ea6da54673a07ecbc2996946a72bc5d7f65"
       },
-      "reviewed_at_utc": "2026-10-19T07:36:41Z",
+      "reviewed_at_utc": "2026-10-19T10:16:29Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

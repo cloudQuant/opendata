@@ -1,0 +1,12 @@
+set_diff worktree=28 control=28 shared=28 new=0 fixed=0
+worktree_suite={"tests": "26634", "failures": "28", "errors": "0", "skipped": "271", "seconds": "617.512"} control_suite={"tests": "26630", "failures": "28", "errors": "0", "skipped": "271", "seconds": "761.972"}
+node_id_shape sample=['tests/test_ac2_case_probe.py::test_self_test_closes_and_every_break_flips'] distinct_files=18 none_typed_prefix=False
+new_red_families={} unattributed=0
+arm_can_bite forged_new=['tests/synthetic.py::test_injected'] real_new=0
+three_takes take1=28 take2=35 final=28 take1_minus_take2=[] take2_minus_take1=['tests/test_alert_matrix.py::TestCollection::test_a_leg_with_no_field_mapping_is_the_measured_majority', 'tests/test_alert_matrix.py::TestCollection::test_every_leg_is_measured_or_counted_never_dropped', 'tests/test_alert_matrix_model_domains.py::test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tables', 'tests/test_provider_domains.py::test_declared_domain_contracts_match_exact_registered_provider_models', 'tests/test_provider_domains.py::test_exact_domain_identity_assertion_rejects_removed_and_added_domains', 'tests/test_provider_domains.py::test_production_domains_preserve_v1_legacy_entries_and_explicit_semantics', 'tests/test_provider_domains.py::test_public_exports_match_reviewed_batch5_counts_and_types']
+fence_nodes take1=0 take2=7 final=0 final_nodes=[]
+fixed_by_named_marker={} of_fixed=0
+carrier test_plane_w39_worktree_final.txt exit_reading=test_plane_w39_worktree_final_exit=1
+carrier test_plane_w39_worktree.txt exit_reading=test_plane_w39_worktree_exit=1
+carrier test_plane_w39_control.txt exit_reading=test_plane_w39_control_exit=1
+test_plane_attribution arms=9 arms_passed=9 PASS=True red=[]

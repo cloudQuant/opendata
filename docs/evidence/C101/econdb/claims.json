@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:08:59.748463+00:00",
+      "executed_at_utc": "2026-10-19T09:48:24.259969+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -98,7 +98,7 @@
       "receipt": {
         "model_identity": "econdb::AvailableIndicators",
         "path": "docs/evidence/C101/receipts/econdb/AvailableIndicators/implementation.json",
-        "sha256": "96f4fa3e53325a9bf1aeac3934fe4d86aa5668ad984d7af4549599c646e065b2"
+        "sha256": "e095aa94ca181119a4a387d128c48841d650027238069c6b999e0457e5ada20f"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndicators"
@@ -106,7 +106,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:09:00.840441+00:00",
+      "executed_at_utc": "2026-10-19T09:48:25.673293+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -118,8 +118,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -186,7 +186,7 @@
       "receipt": {
         "model_identity": "econdb::AvailableIndicators",
         "path": "docs/evidence/C101/receipts/econdb/AvailableIndicators/direct.json",
-        "sha256": "d30b1d7fa8f5ea825c903f30221694fef9ea349dd11a5a7dee1191d06e6f24f1"
+        "sha256": "87f0b8d7a43d291471f7165e7a28d7239467ace1baba1eb0ecc8be8423fdf0c1"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndicators"
@@ -194,7 +194,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:09:01.944571+00:00",
+      "executed_at_utc": "2026-10-19T09:48:27.113193+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -206,8 +206,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -274,7 +274,7 @@
       "receipt": {
         "model_identity": "econdb::AvailableIndicators",
         "path": "docs/evidence/C101/receipts/econdb/AvailableIndicators/service.json",
-        "sha256": "12407ddf3bf140be625e2c446e83ae83d1f5086588d2ca2dc8c62409e52e8830"
+        "sha256": "49f0d629bf9f1869037957a40be7e4eececcd97d3b2e54d207227094bd351b6c"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndicators"
@@ -282,7 +282,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:09:03.076865+00:00",
+      "executed_at_utc": "2026-10-19T09:48:28.603816+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -294,8 +294,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -362,7 +362,7 @@
       "receipt": {
         "model_identity": "econdb::AvailableIndicators",
         "path": "docs/evidence/C101/receipts/econdb/AvailableIndicators/contract.json",
-        "sha256": "04dde862c99c3c93abb023744124643bb181d06bb4eee4b2b5a97d89ae806678"
+        "sha256": "2011c86a83542ee99e28ca410b75cd20fe5b3f628ddf602d378258e804753cfa"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndicators"
@@ -370,7 +370,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model AvailableIndicators --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:09:05.237663+00:00",
+      "executed_at_utc": "2026-10-19T09:48:31.553825+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -382,8 +382,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -450,7 +450,7 @@
       "receipt": {
         "model_identity": "econdb::AvailableIndicators",
         "path": "docs/evidence/C101/receipts/econdb/AvailableIndicators/counterfact.json",
-        "sha256": "919945386e717aa428cae43fbc406c6ac2cc5bd14647e461298f2e7410728cf9"
+        "sha256": "1492a79b2b68ea41c0345d36435feade780257b794e27a0d0679bc6efcce14b0"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndicators"
@@ -458,7 +458,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:09:05.239359+00:00",
+      "executed_at_utc": "2026-10-19T09:48:31.555372+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "implementation",
@@ -482,7 +482,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:09:05.239368+00:00",
+      "executed_at_utc": "2026-10-19T09:48:31.555381+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "direct",
@@ -506,7 +506,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:09:05.239371+00:00",
+      "executed_at_utc": "2026-10-19T09:48:31.555385+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "service",
@@ -530,7 +530,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:09:05.239373+00:00",
+      "executed_at_utc": "2026-10-19T09:48:31.555387+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "contract",
@@ -554,7 +554,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:09:05.239377+00:00",
+      "executed_at_utc": "2026-10-19T09:48:31.555389+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "counterfact",
@@ -578,7 +578,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:09:06.290051+00:00",
+      "executed_at_utc": "2026-10-19T09:48:33.315271+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -590,8 +590,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -668,7 +668,7 @@
       "receipt": {
         "model_identity": "econdb::EconomicIndicators",
         "path": "docs/evidence/C101/receipts/econdb/EconomicIndicators/implementation.json",
-        "sha256": "c14c1edb72d687b5f3f4382b7b6cfc8e1a78890f4ae90cccc19b757fd05f3961"
+        "sha256": "a5ee242c9c6e6ece6c791c7ef0195b1056407a062ef8b96c8dc1673355a2f2cb"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
@@ -676,7 +676,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:09:07.296133+00:00",
+      "executed_at_utc": "2026-10-19T09:48:34.832269+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -688,8 +688,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -751,7 +751,7 @@
       "receipt": {
         "model_identity": "econdb::EconomicIndicators",
         "path": "docs/evidence/C101/receipts/econdb/EconomicIndicators/direct.json",
-        "sha256": "b76a97e485844f708907fe000e65a37f02fc5e2da52cb3d4acb8e2a517e07475"
+        "sha256": "c31200b84bf6f8d3e25ddfbce102ec1c1a98252ede004afaddb85cb0407c49cd"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
@@ -759,7 +759,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:09:08.293183+00:00",
+      "executed_at_utc": "2026-10-19T09:48:36.441545+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -771,8 +771,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -834,7 +834,7 @@
       "receipt": {
         "model_identity": "econdb::EconomicIndicators",
         "path": "docs/evidence/C101/receipts/econdb/EconomicIndicators/service.json",
-        "sha256": "0f55c677b23b17df9cc7beee9f160ddf6e210732454edf00baedc552d472b41d"
+        "sha256": "4bf07085a89686d0ff007586ddd8dbefd208b73fb1d5c7a6b42799d2aaec5a1d"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
@@ -842,7 +842,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:09:09.424257+00:00",
+      "executed_at_utc": "2026-10-19T09:48:38.538532+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -854,8 +854,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -917,7 +917,7 @@
       "receipt": {
         "model_identity": "econdb::EconomicIndicators",
         "path": "docs/evidence/C101/receipts/econdb/EconomicIndicators/contract.json",
-        "sha256": "43511bea8d840a0073270819e0590ea03b4bd95f399e6e37cf13f98ba73d329f"
+        "sha256": "f2d43219f5092c6cd678cd937efe35c57ea89017a9ae8aafbdf56cf4698b1b99"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
@@ -925,7 +925,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model EconomicIndicators --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:09:11.686509+00:00",
+      "executed_at_utc": "2026-10-19T09:48:41.690172+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -937,8 +937,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1000,7 +1000,7 @@
       "receipt": {
         "model_identity": "econdb::EconomicIndicators",
         "path": "docs/evidence/C101/receipts/econdb/EconomicIndicators/counterfact.json",
-        "sha256": "f31ee49656425f8af7eede4fef0e56af8e361f54addf45fb524245e01aa867d0"
+        "sha256": "98733abbe3b5eb9a9d56c4d49b9fdddf010c429195295fb8f0277d6d2e9c84ae"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
@@ -1008,7 +1008,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:09:11.688859+00:00",
+      "executed_at_utc": "2026-10-19T09:48:41.692211+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "implementation",
@@ -1032,7 +1032,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:09:11.688868+00:00",
+      "executed_at_utc": "2026-10-19T09:48:41.692219+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "direct",
@@ -1056,7 +1056,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:09:11.688870+00:00",
+      "executed_at_utc": "2026-10-19T09:48:41.692222+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "service",
@@ -1080,7 +1080,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:09:11.688873+00:00",
+      "executed_at_utc": "2026-10-19T09:48:41.692224+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "contract",
@@ -1104,7 +1104,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:09:11.688875+00:00",
+      "executed_at_utc": "2026-10-19T09:48:41.692226+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 3,
       "phase": "counterfact",
@@ -1128,7 +1128,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:09:12.859026+00:00",
+      "executed_at_utc": "2026-10-19T09:48:43.574460+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1140,8 +1140,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1218,7 +1218,7 @@
       "receipt": {
         "model_identity": "econdb::GdpNominal",
         "path": "docs/evidence/C101/receipts/econdb/GdpNominal/implementation.json",
-        "sha256": "8078b5cd0ca2ceea91aa711e2773e91ccabedfc19fc5c668d4b85251d3adb6db"
+        "sha256": "9b5ee29a19c09ba5e49e9cd7f70245c22c82e4f283b62edb0c03595e52c3d77a"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
@@ -1226,7 +1226,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:09:14.279616+00:00",
+      "executed_at_utc": "2026-10-19T09:48:45.143018+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1238,8 +1238,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1301,7 +1301,7 @@
       "receipt": {
         "model_identity": "econdb::GdpNominal",
         "path": "docs/evidence/C101/receipts/econdb/GdpNominal/direct.json",
-        "sha256": "351fc769057a09813c37027af074d568830efedf054836f7268bfdd17455039c"
+        "sha256": "2321bed038b5744ba9231e314c54e08f300a37b446c6259dfe042dfed42368b3"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
@@ -1309,7 +1309,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:09:15.928949+00:00",
+      "executed_at_utc": "2026-10-19T09:48:46.612680+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1321,8 +1321,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1384,7 +1384,7 @@
       "receipt": {
         "model_identity": "econdb::GdpNominal",
         "path": "docs/evidence/C101/receipts/econdb/GdpNominal/service.json",
-        "sha256": "7d2e32a1902ed2752d36b2b3396a4c906f4a900b8a68ed1bd802044c44a021d9"
+        "sha256": "93e62f24b21d32236df3fff669e6ccd1284c7506e80bdfafb8380df1cd8f45f3"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
@@ -1392,7 +1392,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:09:17.264695+00:00",
+      "executed_at_utc": "2026-10-19T09:48:48.213255+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1404,8 +1404,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1467,7 +1467,7 @@
       "receipt": {
         "model_identity": "econdb::GdpNominal",
         "path": "docs/evidence/C101/receipts/econdb/GdpNominal/contract.json",
-        "sha256": "ca86a42c2e0926f426d5106dd3f9a1a4f656f74c25489e1f3b635ef9e183da32"
+        "sha256": "2e74628f05d9985d343148bbfd06973a2f0711995620c18a0355ae14c6fce4c6"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
@@ -1475,7 +1475,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpNominal --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:09:20.084818+00:00",
+      "executed_at_utc": "2026-10-19T09:48:51.298843+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1487,8 +1487,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1550,7 +1550,7 @@
       "receipt": {
         "model_identity": "econdb::GdpNominal",
         "path": "docs/evidence/C101/receipts/econdb/GdpNominal/counterfact.json",
-        "sha256": "e1c7dec5284662860f4ee7ae27b12ae94b068c2257892f2aea72868ae3b999a3"
+        "sha256": "7ad0ee4db47e74f0e45c14fb5bf0dde6e8c95487c6aab75e6f28816120597280"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
@@ -1558,7 +1558,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:09:21.337822+00:00",
+      "executed_at_utc": "2026-10-19T09:48:53.003949+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1570,8 +1570,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1648,7 +1648,7 @@
       "receipt": {
         "model_identity": "econdb::GdpReal",
         "path": "docs/evidence/C101/receipts/econdb/GdpReal/implementation.json",
-        "sha256": "6d877f02ec76b098d75d34f5a0b759590395523cc9570be8b18821492b32b039"
+        "sha256": "4c77d35589aebe75b0d15b8745c08cc187957b501e252da53dc89f33fa0c76b4"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
@@ -1656,7 +1656,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:09:22.644196+00:00",
+      "executed_at_utc": "2026-10-19T09:48:54.938459+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1668,8 +1668,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1731,7 +1731,7 @@
       "receipt": {
         "model_identity": "econdb::GdpReal",
         "path": "docs/evidence/C101/receipts/econdb/GdpReal/direct.json",
-        "sha256": "3d2d5fa11ae967c41ca4b54d32291cc525a4a35c533a13eb2866555c632e5b47"
+        "sha256": "3de4c02548a216098ca6dacebea0c81b1d59860bc2a31f2e928af0c5ed98c962"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
@@ -1739,7 +1739,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:09:23.880339+00:00",
+      "executed_at_utc": "2026-10-19T09:48:56.596213+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1751,8 +1751,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1814,7 +1814,7 @@
       "receipt": {
         "model_identity": "econdb::GdpReal",
         "path": "docs/evidence/C101/receipts/econdb/GdpReal/service.json",
-        "sha256": "5409c6858081323e2491e294e028b443124ea2c33304c0b8d513401ab706683c"
+        "sha256": "9fae33f366bd171700b0979d93cf1c3892f1c96a872839bcd38696997d1824b4"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
@@ -1822,7 +1822,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:09:25.162729+00:00",
+      "executed_at_utc": "2026-10-19T09:48:57.922693+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1834,8 +1834,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1897,7 +1897,7 @@
       "receipt": {
         "model_identity": "econdb::GdpReal",
         "path": "docs/evidence/C101/receipts/econdb/GdpReal/contract.json",
-        "sha256": "e56cb15bfa2712fffb9cdd782add5c52917d5559c10ab5bad4d0988419ef0b2c"
+        "sha256": "c00256c621e928f81ea81a013a87e565f1a9df83b723b82a0bdec498c0a24b5c"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
@@ -1905,7 +1905,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model GdpReal --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:09:28.051039+00:00",
+      "executed_at_utc": "2026-10-19T09:49:00.299531+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1917,8 +1917,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1980,7 +1980,7 @@
       "receipt": {
         "model_identity": "econdb::GdpReal",
         "path": "docs/evidence/C101/receipts/econdb/GdpReal/counterfact.json",
-        "sha256": "8d5734a19389c5d3ba110b9c4453b8668ee2e4966403f4cd61fcb7a2772b6fee"
+        "sha256": "00b1fd4ec0cc50d1d15fae6edb4bee9898c5d58f011e4d476137d413b8a4a4e0"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
@@ -1988,7 +1988,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:09:29.524395+00:00",
+      "executed_at_utc": "2026-10-19T09:49:01.718185+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2000,8 +2000,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2078,7 +2078,7 @@
       "receipt": {
         "model_identity": "econdb::PortVolume",
         "path": "docs/evidence/C101/receipts/econdb/PortVolume/implementation.json",
-        "sha256": "739a300b80cbc068a2c32c79727035eb0d12d9b11d2cba32ea829e7ce8c5958c"
+        "sha256": "266f31d188614f230e788e954e90ab4114988927fcdecde85937b508a3f35577"
       },
       "status": "PASS",
       "upstream_model": "PortVolume"
@@ -2086,7 +2086,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:09:30.996747+00:00",
+      "executed_at_utc": "2026-10-19T09:49:03.292428+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2098,8 +2098,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2161,7 +2161,7 @@
       "receipt": {
         "model_identity": "econdb::PortVolume",
         "path": "docs/evidence/C101/receipts/econdb/PortVolume/direct.json",
-        "sha256": "a748cb4355ddf9b6b7d3c674672ac303e6336cd1ef72243b8a246d4c8e2621d0"
+        "sha256": "9ab2312dbe026abd3345d57778a9c75c73e502cd336c4a1df51bdfe7beb4c3c0"
       },
       "status": "PASS",
       "upstream_model": "PortVolume"
@@ -2169,7 +2169,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:09:32.260730+00:00",
+      "executed_at_utc": "2026-10-19T09:49:04.658009+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2181,8 +2181,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2244,7 +2244,7 @@
       "receipt": {
         "model_identity": "econdb::PortVolume",
         "path": "docs/evidence/C101/receipts/econdb/PortVolume/service.json",
-        "sha256": "05b16ef565830c45efc3506378c081ea556d1a713be24205d30df6004b3c3775"
+        "sha256": "2a340a80067a271622ed29229bf780f21669f4c2111fe80cfa2c0d0635bfc8ed"
       },
       "status": "PASS",
       "upstream_model": "PortVolume"
@@ -2252,7 +2252,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:09:33.440375+00:00",
+      "executed_at_utc": "2026-10-19T09:49:06.064344+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2264,8 +2264,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2327,7 +2327,7 @@
       "receipt": {
         "model_identity": "econdb::PortVolume",
         "path": "docs/evidence/C101/receipts/econdb/PortVolume/contract.json",
-        "sha256": "bf9ffae59e3f7435b1a56b3d4092c28ba9e400fbaf7a86384f68c3b8484faed1"
+        "sha256": "c8f0a3eac5086afa086bada9171cde538eff033d61f1c856e7900aa30578abae"
       },
       "status": "PASS",
       "upstream_model": "PortVolume"
@@ -2335,7 +2335,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model PortVolume --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:09:36.066997+00:00",
+      "executed_at_utc": "2026-10-19T09:49:08.968152+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2347,8 +2347,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2410,7 +2410,7 @@
       "receipt": {
         "model_identity": "econdb::PortVolume",
         "path": "docs/evidence/C101/receipts/econdb/PortVolume/counterfact.json",
-        "sha256": "9fef57ac97357b5b26c6593943c104fdc4198e21c440cf8d50b1caadf1b0de2f"
+        "sha256": "706cbf6256d2a7f3fce88694df7d13c14de0a68e4830d0e61093fa2751471311"
       },
       "status": "PASS",
       "upstream_model": "PortVolume"
@@ -2418,7 +2418,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T07:09:37.316983+00:00",
+      "executed_at_utc": "2026-10-19T09:49:10.303202+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2430,8 +2430,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2508,7 +2508,7 @@
       "receipt": {
         "model_identity": "econdb::YieldCurve",
         "path": "docs/evidence/C101/receipts/econdb/YieldCurve/implementation.json",
-        "sha256": "545de98fd8c7090c3fdf6a42db7411a8277927bd2d8bdac6afca9e14b725ebf6"
+        "sha256": "84a87abd6656424a22929f0108b94c9abd4c7b8fbfa86a97900b48e490d8a069"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -2516,7 +2516,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T07:09:38.548102+00:00",
+      "executed_at_utc": "2026-10-19T09:49:11.683658+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2528,8 +2528,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2591,7 +2591,7 @@
       "receipt": {
         "model_identity": "econdb::YieldCurve",
         "path": "docs/evidence/C101/receipts/econdb/YieldCurve/direct.json",
-        "sha256": "68625e94d4ed67e645678f24c99b7c51d6061d9ae7881590e71a48bd5e1224db"
+        "sha256": "eb64c15631d615832995349344e02291a4a3ce0339e17c502459e78e4e595580"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -2599,7 +2599,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T07:09:39.740789+00:00",
+      "executed_at_utc": "2026-10-19T09:49:13.276355+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2611,8 +2611,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2674,7 +2674,7 @@
       "receipt": {
         "model_identity": "econdb::YieldCurve",
         "path": "docs/evidence/C101/receipts/econdb/YieldCurve/service.json",
-        "sha256": "5b0f3b795530b5476fd9397c43dc5fc3f782ca3b1a8a97eb9366258bea970c50"
+        "sha256": "3790dc91863181ae00fdbb7a25fc51dbb31c8e8375ccdc96dacd64d9aa77eb9f"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -2682,7 +2682,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T07:09:40.821455+00:00",
+      "executed_at_utc": "2026-10-19T09:49:15.255942+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2694,8 +2694,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2757,7 +2757,7 @@
       "receipt": {
         "model_identity": "econdb::YieldCurve",
         "path": "docs/evidence/C101/receipts/econdb/YieldCurve/contract.json",
-        "sha256": "4c8b94658d611793c108216d256026e45fd260f085b5abdca619725a5efdc22e"
+        "sha256": "8aa8652bad4e7f7ccd4fa2c5c880933a10b4b849eca1939539488918ea075f62"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -2765,7 +2765,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model YieldCurve --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T07:09:42.973166+00:00",
+      "executed_at_utc": "2026-10-19T09:49:18.099245+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2777,8 +2777,8 @@
             "path": "opendata/data/models/econdb.py"
           },
           {
-            "after_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
-            "before_sha256": "015edd5ca6a409f40f7fad8339d525b44199b7d47efea528e1dee5a49c713b5c",
+            "after_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+            "before_sha256": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2840,13 +2840,13 @@
       "receipt": {
         "model_identity": "econdb::YieldCurve",
         "path": "docs/evidence/C101/receipts/econdb/YieldCurve/counterfact.json",
-        "sha256": "d9571397bcc431d25943ae1f7b392f11113c9cf9c40e6e475a79c9930b45ee66"
+        "sha256": "d0a95067764bc6575abc976bec7f5361f92075241113fa2dafb2a6eb96dad82d"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
     }
   ],
-  "generated_at_utc": "2026-10-19T07:09:44.557976+00:00",
+  "generated_at_utc": "2026-10-19T09:49:20.389742+00:00",
   "generated_by": "scripts/quality/iter2_claims_producer.py",
   "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
   "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",

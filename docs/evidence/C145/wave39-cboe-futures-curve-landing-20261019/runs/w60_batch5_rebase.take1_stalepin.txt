@@ -1,0 +1,72 @@
+# carrier for w49_batch5_rebase.py
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C145/wave39-cboe-futures-curve-landing-20261019/probes/w49_batch5_rebase.py
+base restored_from=HEAD sha=25963e65a8bf2cf2 worktree_before_sha=25963e65a8bf2cf2
+driver rebase_batch5_census.py exit=0 stdout_lines=10
+  driver:: identities: pinned=371 live=372 added=1 removed=0 moved_fields=371
+  driver::    moved: ('akshare', 'bond_daily', 'bond_daily') {}
+  driver::    moved: ('akshare', 'financial_indicator', 'financial_indicator') {}
+  driver::    moved: ('akshare', 'financial_statement', 'financial_statement') {}
+  driver::    moved: ('akshare', 'fund_etf_daily', 'fund_etf_daily') {}
+  driver::    moved: ('akshare', 'futures_daily', 'futures_daily') {}
+driver rebase_descriptor_census.py exit=0 stdout_lines=5
+  driver:: identities=372 eligible=350 descriptors=350 model_key_only=22 legacy_eligible=11 qsem_eligible=339
+  driver:: legacy eligible by source: {'ths': 11}
+  driver:: model_key_only by source: {'akshare': 10, 'ecb': 3, 'fred': 3, 'imf': 3, 'oecd': 2, 'yfinance': 1}
+  driver:: model_key_only domains: ['bond_daily', 'economy_cpi', 'economy_gdp', 'economy_rate', 'economy_unemployment', 'financial_indicator', 'financial_statement', 'fund_etf_daily', 'futures_daily', 'index_constituent', 'index_daily', 'option_daily', 'stock_action', 'stock_daily', 'stock_daily_overseas']
+  driver:: eligible deferred legs: 339 registered legs: 0
+history_restored iter2_census_rebase_historical_subblocks=byte_equal_to_head candidate_counts_keys_the_driver_moved=4 ['domain_specs', 'fixed_bound', 'fixed_identities', 'provider_model_legs']
+export_census all_symbols 349->350 delta_vs_adjudication 19->20
+export_census contract_model_classes_including_base 345->346 delta_vs_adjudication 19->20
+export_census non_base_contract_model_classes 344->345 delta_vs_adjudication 19->20
+cohort_delta domains=358->359 qsem=338->339 legs=371->372 identities=371->372 fields_moved=0
+frozen legacy_legs=33->33 warehouse=53->53 model_key_only=22->22 providers=34->34
+pins entries=31 changed=2
+pin opendata/data/domains.yaml from=015edd5ca6a409f4 to=87e02b3da5277a28
+pin opendata/data/models/__init__.py from=ea5071c658d8032d to=3b5162b23b09c1b9
+fixture_sha head=25963e65a8bf2cf2 worktree=21f6a66fdbe599e1
+counts_literals_scanned=18
+counts_site test_provider_domains.py domain_count was=358 -> 359
+counts_site test_provider_domains.py query_semantic_domain_count was=338 -> 339
+counts_site test_provider_domains.py legacy_dwd_domain_count was=20 -> 20
+counts_site test_provider_domains.py provider_model_identity_count was=371 -> 372
+counts_site test_provider_domains.py deferred_source_domain_leg_count was=338 -> 339
+counts_site test_provider_domains.py legacy_source_domain_leg_count was=33 -> 33
+counts_site test_provider_domains.py descriptor_eligible_identity_count was=349 -> 350
+counts_site test_provider_domains.py model_key_only_identity_count was=22 -> 22
+counts_site test_provider_domains.py descriptor_eligible_legacy_identity_count was=11 -> 11
+counts_site test_provider_domains.py contract_model_classes_including_base was=345 -> 346
+counts_site test_provider_domains.py non_base_contract_model_classes was=344 -> 345
+counts_site test_provider_domains.py all_symbols was=349 -> 350
+counts_site test_pipeline_jobs.py domain_count was=358 -> 359
+counts_site test_pipeline_jobs.py deferred_domain_count was=338 -> 339
+counts_site test_pipeline_jobs.py registered_source_domain_leg_count was=371 -> 372
+counts_site test_pipeline_jobs.py legacy_dwd_domain_count was=20 -> 20
+counts_site test_pipeline_jobs.py legacy_source_domain_leg_count was=33 -> 33
+counts_site test_pipeline_jobs.py warehouse_table_catalog_count was=53 -> 53
+site test_provider_domains.py:provider_model_identity_count head=371 worktree=371 -> 372
+site test_pipeline_jobs.py:domain_count head=358 worktree=358 -> 359
+site test_pipeline_jobs.py:deferred_domain_count head=338 worktree=338 -> 339
+site test_pipeline_jobs.py:registered_source_domain_leg_count head=371 worktree=371 -> 372
+site test_pipeline_jobs.py:deferred_source_domain_leg_count head=338 worktree=338 -> 339
+site test_pipeline_jobs.py:registered_source_domain_leg_count head=371 worktree=371 -> 372
+site test_alert_matrix.py:deferred_source_domain_leg_count head=338 worktree=338 -> 339
+site test_alert_matrix.py:domain_count head=358 worktree=358 -> 359
+site test_alert_matrix.py:registered_source_domain_leg_count head=371 worktree=371 -> 372
+site test_alert_matrix.py:deferred_source_domain_leg_count head=338 worktree=338 -> 339
+site test_alert_matrix.py:domain_count head=358 worktree=358 -> 359
+site test_alert_matrix.py:registered_source_domain_leg_count head=371 worktree=371 -> 372
+site test_alert_matrix_model_domains.py:provider_model_identity_count head=371 worktree=371 -> 372
+site test_alert_matrix_model_domains.py:domain_count head=358 worktree=358 -> 359
+site test_alert_matrix_model_domains.py:registered_source_domain_leg_count head=371 worktree=371 -> 372
+site test_alert_matrix_model_domains.py:deferred_source_domain_leg_count head=338 worktree=338 -> 339
+site test_alert_matrix_model_domains.py:deferred_source_domain_leg_count head=338 worktree=338 -> 339
+site test_provider_domains.py:hex@BATCH5_SNAPSHOT_SHA256 = " head=25963e65a8bf2cf2 worktree=25963e65a8bf2cf2 -> 21f6a66fdbe599e1
+site test_provider_domains.py:hex@BATCH5_DOMAIN_SOURCE_SHA25 head=015edd5ca6a409f4 worktree=015edd5ca6a409f4 -> 87e02b3da5277a28
+site test_provider_domains.py:hex@["opendata/data/models/__i head=ea5071c658d8032d worktree=ea5071c658d8032d -> 3b5162b23b09c1b9
+site test_pipeline_jobs.py:hex@sha256(snapshot_bytes).hex head=25963e65a8bf2cf2 worktree=25963e65a8bf2cf2 -> 21f6a66fdbe599e1
+counts_coverage moved=['all_symbols', 'contract_model_classes_including_base', 'deferred_domain_count', 'deferred_source_domain_leg_count', 'descriptor_eligible_identity_count', 'domain_count', 'non_base_contract_model_classes', 'provider_model_identity_count', 'query_semantic_domain_count', 'registered_source_domain_leg_count'] covered=['all_symbols', 'contract_model_classes_including_base', 'deferred_domain_count', 'deferred_source_domain_leg_count', 'descriptor_eligible_identity_count', 'descriptor_eligible_legacy_identity_count', 'domain_count', 'legacy_dwd_domain_count', 'legacy_source_domain_leg_count', 'model_key_only_identity_count', 'non_base_contract_model_classes', 'provider_model_identity_count', 'query_semantic_domain_count', 'registered_source_domain_leg_count', 'warehouse_table_catalog_count'] uncovered=[]
+counterfact_one_byte_appended_digest=1941f2cf0bafbef1 differs=True live=87e02b3da5277a28
+sites number=17 hex=4 applied=21 failures=0
+batch5_rebase_face arms=11 arms_passed=11 arms_failed=0 failed=[] PASS=True
+
+w49_batch5_rebase_exit=0

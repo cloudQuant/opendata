@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model FuturesCurve --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "CboeFuturesCurveError", "refusal_code": "CBOE_FUTURES_CURVE_BAD_NUMERIC_FIELD", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "CboeFuturesCurveError", "refusal_code": "CBOE_FUTURES_CURVE_BAD_NUMERIC_FIELD", "rejected": [], "status": null}, "reason": "the settlement table publishes Price as a number in 56 of 56 captured rows and returns no rows at all on a day with no settlements, so a text cell in that column is a corrupt body rather than an untraded expiry; _price refuses with CBOE_FUTURES_CURVE_BAD_NUMERIC_FIELD instead of letting StrictFloat widen a bogus cell into a curve point; untampered control produced 14 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---
