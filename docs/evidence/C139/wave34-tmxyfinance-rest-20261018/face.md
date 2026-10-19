@@ -215,3 +215,36 @@ timeseries/{symbol}`，`type=<prefix><Measure>` 列表 + period1/period2），�
 两条本回合自捕（都改成了读数而不是补一句解释）：第一版 arm A 要求"两侧差集不相等"，对**单向**超集是错的，被真实读数 `registry_minus_inventory=[akshare, ths] / inventory_minus_registry=[]` 判红；第一版 arm F 去找"每条 claim 各自的身份字段"，读到 `stamped=0`，那是我猜了生产者的形状——实际是文档级一处。
 
 **预测判据（这一决策被 owner 采纳时下一代必须读到）**：若 owner 决定把 akshare/ths 纳入平面 1，先决条件是同时改判定器的 `EXPECTED_MODEL_COUNT`——**新增几行取决于用哪个通道数模型**：注册表 fetcher 给 10+11=21（`:9`），而盘上 `models/*.py` 给 12+13=25（§13.8 实测），两条都是读数而不是估计；所以 owner 第一步要定"以注册表为准还是以模块为准"，定了之后 `EXPECTED_MODEL_COUNT` 才是 371 或 375与 `EXPECTED_IDENTITY_SHA256`，然后重跑 producer→recorder→merge→judge 全树；预测下一代的 `A_populations` 读 `registry_minus_inventory=[]`、`B_rowless_implementations total=0`、`inventory_rows=371`，且 `residue + accepted == 371`。**失效条件**：只改 CSV 不改常量（`D` 臂会从 `rows=350` 变成抛错，面直接红），或只改常量不重签（`C` 臂读 `claims_match_pinned=False`，因为 336 行仍带旧身份）。
+
+### 13.10 逐行的"还差哪一个官方工件"（artifact-request 面，把阻塞从散文变成可下单的请求）
+
+`probes/w38_artifact_request_face.py`（lint 四把全绿；载档 `runs/w38_artifact_request_face.txt`，7 臂全绿 `:27`，出口 `:29`）。行集仍由出货 census 给（`:6`），端点与列宽由参考 checkout 的模型模块读（只作输出契约对照），捕获索引由仓内 review receipt 的 `source_captures[].url` 给，键是 `host|第一段路径`。
+
+| 行 | 契约类 / 字段数 | 端点字面（`first_url`） | 盘上端点捕获 | 还差的工件 |
+| --- | --- | --- | --- | --- |
+| cboe::IndexSnapshots | `CboeIndexSnapshotsData` / 12 | `https://cdn.cboe.com/api/global/delayed_quotes/quotes/all_us_indices.json` | 无 | 一次该 URL 的 GET 捕获（公开、无鉴权） |
+| cboe::FuturesCurve | `CboeFuturesCurveData` / 1 | `https://www.cboe.com/`（只有站根，无端点） | 无 | 上游取的是 bespoke 源：需要 owner 指明端点，或按现契约维持排除 |
+| econdb::CountryProfile | `EconDbCountryProfileData` / **0 字段** | **0 个 URL 字面** | 无 | 契约由继承而来、模块内无地址 ⇒ 需要官方文档页或样例响应 |
+| econdb::ExportDestinations | `EconDbExportDestinationsData` / 3 | `https://www.econdb.com/widgets/top-trade-items/data/?country=…&split_by=country`（载档里那串被上游 f-string 的字面截断成 `?country={c.upper(`，`{X}` 是我为可读做的替换，不是载档原文） | 无（`econdb-guide` 那档是 403 的站点页） | 一次该 widget URL 的 GET 捕获 |
+| intrinio::OptionsSnapshots | `IntrinioOptionsSnapshotsData` / 12 | `https://api-v2.intrinio.com/options/snapshots?api_key={api_key}` | **receipt 只命中 `docs.intrinio.com\|documentation`**（文档页，不是 API） | 带 key 的一次 API 捕获（需授权） |
+| seeking_alpha::CalendarEarnings | `SACalendarEarningsData` / 4 | `https://seekingalpha.com/api/v3/earnings_calendar/tickers?` | 无 | 一次未鉴权 GET 捕获（返回码本身即结论：401 也算工件） |
+| seeking_alpha::ForwardEpsEstimates | `SAForwardEpsEstimatesData` / 6 | `https://seekingalpha.com/api/v3/symbol_data/estimates` | 无 | 同上 |
+| seeking_alpha::ForwardSalesEstimates | `SAForwardSalesEstimatesData` / 2 | 同上（同端点不同列） | 无 | 同上 |
+| wsj::ETFActive / Gainers / Losers | **上游模块 ABSENT**（3 个文件里按模型名解析不到） | 0 | 无 | 不是"没有端点"，而是**参考 checkout 里没有这三行的契约源**：要么给出上游版本/路径，要么把行从清单里改判 |
+| biztoc::WorldNews | `BiztocWorldNewsData` / 3 | `https://biztoc.p.rapidapi.com/` | 无 | rights 注册 + RapidAPI key（两处都不是代码） |
+| stockgrid::ShortVolume | `StockgridShortVolumeData` / 2 | `https://www.stockgrid.io/` | 无 | rights 注册 + 具体端点 |
+| yfinance::AvailableIndices | `YFinanceAvailableIndicesData` / 2 | `https://finance.yahoo.com/`（站根，无端点） | 无 | 0 端点是实测事实 ⇒ 需要"无传输行"的验收机制 |
+
+表内 14 行的字段数相加 = 47，与 `F_contract_width total_contract_fields=47` 同值（表与读数互查）。
+
+读数汇总：`B_upstream_resolved count=11 of=14 unresolved=[wsj ×3]`（`:21`）、`C_endpoint_literals rows_with_url=10 rows_without=4`（`:22`）、`D_capture_present captured=1 uncaptured=13` 且那唯一一档的键是 `docs.intrinio.com|documentation`（`:23`）、`F_contract_width rows_with_contract_class=11 total_contract_fields=47`（`:25`）。**所以真正的"零"是：0/14 行有自己端点的捕获。**
+
+**按"还缺什么"分三档**（分类用的就是这把仪器自己的 `_upstream_module` / `_url_literals` / `_endpoint_key`，判据是"端点键里有没有路径段"，不是我看表格的感觉）：
+
+* **6 行只差一次授权 GET**（端点路径与契约字段都齐）：`cboe::IndexSnapshots`(12, `cdn.cboe.com|api`)、`econdb::ExportDestinations`(3, `www.econdb.com|widgets`)、`intrinio::OptionsSnapshots`(12, `api-v2.intrinio.com|options`)、`seeking_alpha::CalendarEarnings`(4)、`ForwardEpsEstimates`(6)、`ForwardSalesEstimates`(2)（均 `seekingalpha.com|api`）。这 6 行是 owner 一次批准就能推进平面的部分。鉴权需求由清单自己的列给（不是我猜）：`credential_fields` 为空 = 未鉴权 ⇒ `cboe::IndexSnapshots` 与 seeking_alpha 三行（共 4 行）就是**一次未鉴权 GET**；`credential_fields=api_key` ⇒ `econdb::ExportDestinations` 与 `intrinio::OptionsSnapshots` 需要先有 key。14 行的 `live_target` 全部是 `SOURCE_VERIFIED_WHEN_AUTHORIZED`、并各自挂着 `ACCESS2-<provider>` 决策号 —— 也就是说这张清单从一开始就把"要一次授权"写在了行上，我这面只是把它和盘上证据对上了。
+* **4 行只有站根或带查询的根**（无路径段）：`biztoc::WorldNews`(3)、`cboe::FuturesCurve`(1)、`stockgrid::ShortVolume`(2)、`yfinance::AvailableIndices`(2) —— 前两家还叠着 rights/key，后两家要的是"端点到底是哪一个 / 无传输行怎么验收"的决定。
+* **4 行连 URL 字面都没有**：`econdb::CountryProfile`（模块解析到但 0 URL、0 字段在这一层）与 `wsj` 三行（上游契约模块按模型名解析不到）。
+
+两臂的反例：`E_forge` 把合成 receipt 写进 `/tmp` 后索引必须多出该键、删除后必须逐字回到快照（`:24` 两个布尔都是读数，不是断言）；`D` 在 host-only 与 endpoint 两个粒度分开打，就是为了让"文档页命中"不能再冒充"端点命中"——第一代正是这样把 intrinio 读成有捕获的。
+
+**下一代的验证判据**：任一工件被授权取得并按 `*.headers` + body 落档后，本面应读到 `D_capture_present captured >= 1` 且该行的 `capture_endpoint` 是**它自己的端点键**（不是 `docs.*|documentation`）；`host_page_only_rows` 保持只列文档页命中的行。失效条件：只有 receipt 的 URL 与请求 URL 主机相同但路径段不同（键不命中，`captured` 不涨），或 `B_upstream_resolved` 从 11 掉到更少（参考 checkout 被换版本，契约源丢失）。

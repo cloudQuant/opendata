@@ -1,0 +1,29 @@
+# carrier for w38_artifact_request_face.py
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C139/wave34-tmxyfinance-rest-20261018/probes/w38_artifact_request_face.py
+# claims_sha256=9ebbe59602b07f5b
+# upstream_reference: /Users/yunjinqi/Documents/new_projects/openbb/openbb_platform/providers (output-contract reference only)
+
+A_population residue=14 census_residue=14 actions={'implement_missing_model': 1, 'ledger_ruled_out': 11, 'new_provider_package': 2} judge_accepted=336
+row biztoc::WorldNews action=new_provider_package upstream=resolved/2 urls=2 endpoint_keys=['biztoc.p.rapidapi.com|'] contract=BiztocWorldNewsData fields=3 capture_endpoint=[] capture_host_only=[] first_url=['https://biztoc.p.rapidapi.com/']
+row cboe::FuturesCurve action=ledger_ruled_out upstream=resolved/11 urls=1 endpoint_keys=['www.cboe.com|'] contract=CboeFuturesCurveData fields=1 capture_endpoint=[] capture_host_only=[] first_url=['https://www.cboe.com/']
+row cboe::IndexSnapshots action=ledger_ruled_out upstream=resolved/11 urls=3 endpoint_keys=['cdn.cboe.com|api', 'www.cboe.com|'] contract=CboeIndexSnapshotsData fields=12 capture_endpoint=[] capture_host_only=[] first_url=['https://cdn.cboe.com/api/global/delayed_quotes/quotes/all_us_indices.json']
+row econdb::CountryProfile action=ledger_ruled_out upstream=resolved/9 urls=0 endpoint_keys=[] contract=EconDbCountryProfileData fields=0 capture_endpoint=[] capture_host_only=[] first_url=[]
+row econdb::ExportDestinations action=ledger_ruled_out upstream=resolved/9 urls=1 endpoint_keys=['www.econdb.com|widgets'] contract=EconDbExportDestinationsData fields=3 capture_endpoint=[] capture_host_only=[] first_url=['https://www.econdb.com/widgets/top-trade-items/data/?country={c.upper(']
+row intrinio::OptionsSnapshots action=ledger_ruled_out upstream=resolved/40 urls=2 endpoint_keys=['api-v2.intrinio.com|options', 'docs.intrinio.com|documentation'] contract=IntrinioOptionsSnapshotsData fields=12 capture_endpoint=['docs.intrinio.com|documentation'] capture_host_only=['docs.intrinio.com|'] first_url=['https://api-v2.intrinio.com/options/snapshots?api_key={api_key}']
+row seeking_alpha::CalendarEarnings action=ledger_ruled_out upstream=resolved/4 urls=2 endpoint_keys=['seekingalpha.com|api', 'seekingalpha.com|earnings'] contract=SACalendarEarningsData fields=4 capture_endpoint=[] capture_host_only=[] first_url=['https://seekingalpha.com/api/v3/earnings_calendar/tickers?']
+row seeking_alpha::ForwardEpsEstimates action=ledger_ruled_out upstream=resolved/4 urls=2 endpoint_keys=['seekingalpha.com|api', 'seekingalpha.com|earnings'] contract=SAForwardEpsEstimatesData fields=6 capture_endpoint=[] capture_host_only=[] first_url=['https://seekingalpha.com/api/v3/symbol_data/estimates']
+row seeking_alpha::ForwardSalesEstimates action=ledger_ruled_out upstream=resolved/4 urls=2 endpoint_keys=['seekingalpha.com|api', 'seekingalpha.com|earnings'] contract=SAForwardSalesEstimatesData fields=2 capture_endpoint=[] capture_host_only=[] first_url=['https://seekingalpha.com/api/v3/symbol_data/estimates']
+row stockgrid::ShortVolume action=new_provider_package upstream=resolved/1 urls=2 endpoint_keys=['www.stockgrid.io|'] contract=StockgridShortVolumeData fields=2 capture_endpoint=[] capture_host_only=[] first_url=['https://www.stockgrid.io/']
+row wsj::ETFActive action=ledger_ruled_out upstream=ABSENT/3 urls=0 endpoint_keys=[] contract=- fields=0 capture_endpoint=[] capture_host_only=[] first_url=[]
+row wsj::ETFGainers action=ledger_ruled_out upstream=ABSENT/3 urls=0 endpoint_keys=[] contract=- fields=0 capture_endpoint=[] capture_host_only=[] first_url=[]
+row wsj::ETFLosers action=ledger_ruled_out upstream=ABSENT/3 urls=0 endpoint_keys=[] contract=- fields=0 capture_endpoint=[] capture_host_only=[] first_url=[]
+row yfinance::AvailableIndices action=implement_missing_model upstream=resolved/29 urls=1 endpoint_keys=['finance.yahoo.com|'] contract=YFinanceAvailableIndicesData fields=2 capture_endpoint=[] capture_host_only=[] first_url=['https://finance.yahoo.com/']
+B_upstream_resolved count=11 of=14 unresolved=['wsj::ETFActive', 'wsj::ETFGainers', 'wsj::ETFLosers']
+C_endpoint_literals rows_with_url=10 rows_without=4 receipt_endpoint_keys=9
+D_capture_present captured=1 uncaptured=13 captured_rows=[('intrinio::OptionsSnapshots', 'docs.intrinio.com|documentation')] host_page_only_rows=[] total_contract_fields=47 rows_with_contract_class=11
+E_forge row=biztoc::WorldNews host=biztoc.p.rapidapi.com key=biztoc.p.rapidapi.com| injection_gains_key=True index_reverts_exactly=True
+F_contract_width rows_with_contract_class=11 total_contract_fields=47
+G_generation identity=5168e1e723999312 claims_sha256=9ebbe59602b07f5b census_exit=1 census_red_arms=['B_landed_negative']
+artifact_request_face arms=7 arms_passed=7 arms_failed=0 failed=[] PASS=True
+
+w38_artifact_request_face_exit=0
