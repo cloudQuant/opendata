@@ -1,0 +1,40 @@
+# carrier for recorder_yfinance
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/yfinance/claims.json --output docs/evidence/C101/yfinance/claims.reviewed.json --provider yfinance --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over yfinance's regenerated shard
+# started_utc: 2026-10-18T23:53:44+00:00
+# exit: 0
+# stdout_chars: 1304 stderr_chars: 0
+
+re-signing: dropped 26 earlier review(s) for the addressed identities
+REVIEW_SIGNED: yfinance::BalanceSheet
+REVIEW_SIGNED: yfinance::CashFlowStatement
+REVIEW_SIGNED: yfinance::CompanyNews
+REVIEW_SIGNED: yfinance::CryptoHistorical
+REVIEW_SIGNED: yfinance::CurrencyHistorical
+REVIEW_SIGNED: yfinance::EquityActive
+REVIEW_SIGNED: yfinance::EquityAggressiveSmallCaps
+REVIEW_SIGNED: yfinance::EquityGainers
+REVIEW_SIGNED: yfinance::EquityHistorical
+REVIEW_SIGNED: yfinance::EquityInfo
+REVIEW_SIGNED: yfinance::EquityLosers
+REVIEW_SIGNED: yfinance::EquityQuote
+REVIEW_SIGNED: yfinance::EquityScreener
+REVIEW_SIGNED: yfinance::EquityUndervaluedGrowth
+REVIEW_SIGNED: yfinance::EquityUndervaluedLargeCaps
+REVIEW_SIGNED: yfinance::EtfHistorical
+REVIEW_SIGNED: yfinance::EtfInfo
+REVIEW_SIGNED: yfinance::FuturesHistorical
+REVIEW_SIGNED: yfinance::GrowthTechEquities
+REVIEW_SIGNED: yfinance::HistoricalDividends
+REVIEW_SIGNED: yfinance::IncomeStatement
+REVIEW_SIGNED: yfinance::IndexHistorical
+REVIEW_SIGNED: yfinance::KeyExecutives
+REVIEW_SIGNED: yfinance::OptionsChains
+REVIEW_SIGNED: yfinance::PriceTargetConsensus
+REVIEW_SIGNED: yfinance::ShareStatistics
+recorder_exit=0 signed=26 refused=0 reviews_total=26 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/yfinance/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_yfinance_exit=0

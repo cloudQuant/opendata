@@ -193,8 +193,8 @@ class TestCollection:
         assert expected_legs == expected_deferred_legs | expected_legacy_legs
         assert scope.domains == len(snapshot["legacy_dwd_domain_ids"]) == 20
         assert scope.deferred_domains == expected_deferred
-        assert scope.deferred_legs == len(expected_deferred_legs) == 318
-        assert scope.domains + len(scope.deferred_domains) == len(expected_domains) == 338
+        assert scope.deferred_legs == len(expected_deferred_legs) == 336
+        assert scope.domains + len(scope.deferred_domains) == len(expected_domains) == 356
         assert expected_legacy_legs == {
             (item["domain"], item["source"])
             for item in snapshot["mapped_ods_legs"] + snapshot["unmapped_ods_legs"]
@@ -202,7 +202,7 @@ class TestCollection:
         assert scope.source_legs == len(snapshot["mapped_ods_legs"]) == 10
         assert scope.unmapped_legs == len(snapshot["unmapped_ods_legs"]) == 23
         assert (
-            scope.source_legs + scope.unmapped_legs + scope.deferred_legs == len(actual_legs) == 351
+            scope.source_legs + scope.unmapped_legs + scope.deferred_legs == len(actual_legs) == 369
         )
         assert len(reports) == scope.domains + scope.source_legs == 30
 
@@ -255,13 +255,13 @@ class TestCollection:
         assert (
             sum(len(legs[domain]) for domain in deferred_domains)
             == len(expected_deferred_legs)
-            == 318
+            == 336
         )
-        assert len(legs) == 338
+        assert len(legs) == 356
         assert (
             sum(len(sources) for sources in legs.values())
             == len(expected_legacy_legs) + len(expected_deferred_legs)
-            == 351
+            == 369
         )
         assert mapped == expected_mapped
         assert unmapped == expected_unmapped

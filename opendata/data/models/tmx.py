@@ -696,6 +696,215 @@ class TmxIndexSectors(_TmxContract):
         return _number(value)
 
 
+_OPTIONS_CHAIN_NUMERIC_FIELDS: tuple[str, ...] = (
+    "underlying_price",
+    "strike",
+    "contract_size",
+    "open_interest",
+    "volume",
+    "theoretical_price",
+    "last_trade_price",
+    "last_trade_size",
+    "tick",
+    "bid",
+    "bid_size",
+    "ask",
+    "ask_size",
+    "mark",
+    "open",
+    "open_bid",
+    "open_ask",
+    "high",
+    "bid_high",
+    "ask_high",
+    "low",
+    "bid_low",
+    "ask_low",
+    "close",
+    "close_size",
+    "close_bid",
+    "close_bid_size",
+    "close_ask",
+    "close_ask_size",
+    "prev_close",
+    "change",
+    "change_percent",
+    "implied_volatility",
+    "delta",
+    "gamma",
+    "theta",
+    "vega",
+    "rho",
+    "transactions",
+    "total_value",
+    "settlement_price",
+)
+
+
+class TmxOptionsChains(_TmxContract):
+    """One listed option contract in the TMX/IIROC chain for one underlying and expiry.
+
+    The field list is the upstream declared output contract of
+    ``openbb_tmx/models/options_chains.py`` (spec sheet sha256
+    ``dcb533c0de26bfdd5c3ee39cdb9560a0d4e953dcf91968376a1d2cd347be6d0a``), not an
+    invention: TMX's chain is published as an m-x.ca quotes table plus an EOD CSV file, and
+    every column below is one of the columns that pair carries.
+
+    Nullability is a sourcing statement, not a shape statement.  ``contract_symbol``,
+    ``expiration`` and ``strike`` are the three cells the m-x.ca quote table publishes for
+    every row, so they are required; every other cell is optional because neither upstream
+    prose nor this repo's evidence establishes that a chain row always carries it (a
+    never-traded contract has no last trade, no bid/ask time and no greeks).
+    ``option_type`` is kept a free string rather than a ``call``/``put`` literal because the
+    vocabulary TMX's own CSV uses for it (``C``/``P``) is not established by any evidence in
+    this repo, and typing a literal here would assert a source enum nobody has witnessed.
+    ``last_trade_time``, ``bid_time``, ``ask_time``, ``close_time``, ``close_bid_time`` and
+    ``close_ask_time`` stay strings for the same reason: they are exchange clock timestamps
+    with no published timezone, and :func:`_iso_date` refuses anything that is not an exact
+    ISO calendar date.
+    """
+
+    underlying_symbol: StrictStr | None = None
+    underlying_price: float | None = None
+    contract_symbol: StrictStr
+    eod_date: date | None = None
+    expiration: date
+    dte: StrictInt | None = None
+    strike: float
+    option_type: StrictStr | None = None
+    contract_size: float | None = None
+    open_interest: StrictInt | None = None
+    volume: StrictInt | None = None
+    theoretical_price: float | None = None
+    last_trade_price: float | None = None
+    last_trade_size: StrictInt | None = None
+    last_trade_time: StrictStr | None = None
+    tick: float | None = None
+    bid: float | None = None
+    bid_size: StrictInt | None = None
+    bid_time: StrictStr | None = None
+    bid_exchange: StrictStr | None = None
+    ask: float | None = None
+    ask_size: StrictInt | None = None
+    ask_time: StrictStr | None = None
+    ask_exchange: StrictStr | None = None
+    mark: float | None = None
+    open: float | None = None
+    open_bid: float | None = None
+    open_ask: float | None = None
+    high: float | None = None
+    bid_high: float | None = None
+    ask_high: float | None = None
+    low: float | None = None
+    bid_low: float | None = None
+    ask_low: float | None = None
+    close: float | None = None
+    close_size: StrictInt | None = None
+    close_time: StrictStr | None = None
+    close_bid: float | None = None
+    close_bid_size: StrictInt | None = None
+    close_bid_time: StrictStr | None = None
+    close_ask: float | None = None
+    close_ask_size: StrictInt | None = None
+    close_ask_time: StrictStr | None = None
+    prev_close: float | None = None
+    change: float | None = None
+    change_percent: float | None = None
+    implied_volatility: float | None = None
+    delta: float | None = None
+    gamma: float | None = None
+    theta: float | None = None
+    vega: float | None = None
+    rho: float | None = None
+    transactions: StrictInt | None = None
+    total_value: float | None = None
+    settlement_price: float | None = None
+
+    @field_validator("eod_date", "expiration", mode="before")
+    @classmethod
+    def _parse_dates(cls, value: object) -> object:
+        return None if value is None else _iso_date(value)
+
+    @field_validator(*_OPTIONS_CHAIN_NUMERIC_FIELDS, mode="before")
+    @classmethod
+    def _validate_numbers(cls, value: object) -> object:
+        return _number(value)
+
+
+_INDEX_SNAPSHOT_NUMERIC_FIELDS: tuple[str, ...] = (
+    "price",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "prev_close",
+    "change",
+    "change_percent",
+    "year_high",
+    "year_low",
+    "return_mtd",
+    "return_qtd",
+    "return_ytd",
+    "total_market_value",
+    "number_of_constituents",
+    "constituent_average_market_value",
+    "constituent_median_market_value",
+    "constituent_top10_market_value",
+    "constituent_largest_market_value",
+    "constituent_largest_weight",
+    "constituent_smallest_market_value",
+    "constituent_smallest_weight",
+)
+
+
+class TmxIndexSnapshots(_TmxContract):
+    """One index snapshot row in the TMX regional index panel.
+
+    The field list is the upstream declared output contract of
+    ``openbb_tmx/models/index_snapshots.py`` (spec sheet sha256
+    ``6bff37ba7cda7c7336cf83d545495a1098348f948369214c31209c53253c869b``).  Everything
+    except ``symbol`` is nullable because the row is assembled from three different
+    transports upstream -- the GraphQL quote leg, a static index JSON directory and a
+    cached index backend -- and a snapshot that only reached the quote leg still has a
+    price but publishes none of the constituent statistics.  Nothing here invents a
+    source for the six ``constituent_*`` statistics; they are declared nullable so an
+    implementer can only land them from a leg that actually returns them.
+    """
+
+    symbol: StrictStr
+    name: StrictStr | None = None
+    currency: StrictStr | None = None
+    price: float | None = None
+    open: float | None = None
+    high: float | None = None
+    low: float | None = None
+    close: float | None = None
+    volume: StrictInt | None = None
+    prev_close: float | None = None
+    change: float | None = None
+    change_percent: float | None = None
+    year_high: float | None = None
+    year_low: float | None = None
+    return_mtd: float | None = None
+    return_qtd: float | None = None
+    return_ytd: float | None = None
+    total_market_value: float | None = None
+    number_of_constituents: StrictInt | None = None
+    constituent_average_market_value: float | None = None
+    constituent_median_market_value: float | None = None
+    constituent_top10_market_value: float | None = None
+    constituent_largest_market_value: float | None = None
+    constituent_largest_weight: float | None = None
+    constituent_smallest_market_value: float | None = None
+    constituent_smallest_weight: float | None = None
+
+    @field_validator(*_INDEX_SNAPSHOT_NUMERIC_FIELDS, mode="before")
+    @classmethod
+    def _validate_numbers(cls, value: object) -> object:
+        return _number(value)
+
+
 __all__ = [
     "TmxBondPrices",
     "TmxAvailableIndices",
@@ -717,6 +926,8 @@ __all__ = [
     "TmxHistoricalDividend",
     "TmxIndexConstituent",
     "TmxIndexSectors",
+    "TmxIndexSnapshots",
+    "TmxOptionsChains",
     "TmxPriceTargetConsensus",
     "TmxTreasuryPrices",
     "TmxModelStatus",

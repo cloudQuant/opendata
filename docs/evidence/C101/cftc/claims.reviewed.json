@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COT --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T20:57:59.741539+00:00",
+      "executed_at_utc": "2026-10-18T23:19:43.593190+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/cftc.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -88,7 +88,7 @@
       "receipt": {
         "model_identity": "cftc::COT",
         "path": "docs/evidence/C101/receipts/cftc/COT/implementation.json",
-        "sha256": "6ca0c74e770be98f378fc829412c98164d6fde6b35324f4f8475c93c356c94b2"
+        "sha256": "ddfda5af822ba1a5054d1c2c4ed9bd8b5a36004f55fce298a3bdc266b03c0785"
       },
       "status": "PASS",
       "upstream_model": "COT"
@@ -96,7 +96,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COT --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T20:58:00.670126+00:00",
+      "executed_at_utc": "2026-10-18T23:19:44.464933+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -108,8 +108,8 @@
             "path": "opendata/data/models/cftc.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -171,7 +171,7 @@
       "receipt": {
         "model_identity": "cftc::COT",
         "path": "docs/evidence/C101/receipts/cftc/COT/direct.json",
-        "sha256": "e3997c2ad9db9520f312e08de202d6b11950b62f0dd68af3d4a7c711cf554246"
+        "sha256": "245f36bc574b7a8fb8223485c07c11ac98d6ea5b916bd32283d65124d39d50b1"
       },
       "status": "PASS",
       "upstream_model": "COT"
@@ -179,7 +179,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COT --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T20:58:01.749720+00:00",
+      "executed_at_utc": "2026-10-18T23:19:45.502146+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -191,8 +191,8 @@
             "path": "opendata/data/models/cftc.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -254,7 +254,7 @@
       "receipt": {
         "model_identity": "cftc::COT",
         "path": "docs/evidence/C101/receipts/cftc/COT/service.json",
-        "sha256": "03ead87655d738e68d71833993d4e1c930a26b017c4df080b150a7757795eeed"
+        "sha256": "55c7079017ed1e1826e7d6a27c402b3261e6d75872013cf04ae280262afebc56"
       },
       "status": "PASS",
       "upstream_model": "COT"
@@ -262,7 +262,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COT --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T20:58:02.720247+00:00",
+      "executed_at_utc": "2026-10-18T23:19:46.388396+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -274,8 +274,8 @@
             "path": "opendata/data/models/cftc.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -337,7 +337,7 @@
       "receipt": {
         "model_identity": "cftc::COT",
         "path": "docs/evidence/C101/receipts/cftc/COT/contract.json",
-        "sha256": "0d1d8a1d99a56f52095fa608afac401f356d8fef79c0feb17413e85faf95f546"
+        "sha256": "3afdfca7ccad36aa831b1a00216a73d03a0192454e8f691ec017d786039cb6b7"
       },
       "status": "PASS",
       "upstream_model": "COT"
@@ -345,7 +345,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COT --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T20:58:04.579404+00:00",
+      "executed_at_utc": "2026-10-18T23:19:48.146482+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -357,8 +357,8 @@
             "path": "opendata/data/models/cftc.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -420,7 +420,7 @@
       "receipt": {
         "model_identity": "cftc::COT",
         "path": "docs/evidence/C101/receipts/cftc/COT/counterfact.json",
-        "sha256": "03294c01918ad87517d0a8b2d6090a26471819b0d14cf4e24b5158904ad8f732"
+        "sha256": "88cc88144f92f0583ef97fb9b6cc9a1c3037606c2477454c07a9c24da184fe90"
       },
       "status": "PASS",
       "upstream_model": "COT"
@@ -428,7 +428,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COTSearch --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T20:58:05.419057+00:00",
+      "executed_at_utc": "2026-10-18T23:19:48.985389+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -440,8 +440,8 @@
             "path": "opendata/data/models/cftc.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -518,7 +518,7 @@
       "receipt": {
         "model_identity": "cftc::COTSearch",
         "path": "docs/evidence/C101/receipts/cftc/COTSearch/implementation.json",
-        "sha256": "2f627ce5fb38c11f1756d03befadda9709e77a6c42a061dbb8f3a2014243d47f"
+        "sha256": "6542613601c3b394630bf7cb18182c646f9c3c4670773a04a99049cc6328450a"
       },
       "status": "PASS",
       "upstream_model": "COTSearch"
@@ -526,7 +526,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COTSearch --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T20:58:06.263435+00:00",
+      "executed_at_utc": "2026-10-18T23:19:49.844550+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -538,8 +538,8 @@
             "path": "opendata/data/models/cftc.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -606,7 +606,7 @@
       "receipt": {
         "model_identity": "cftc::COTSearch",
         "path": "docs/evidence/C101/receipts/cftc/COTSearch/direct.json",
-        "sha256": "0f1dbcebcb72a65fe3a130715d5c3d803f620363404c83da722a23710d281f3f"
+        "sha256": "f4b7428c38a2ebcdce2614219389fd542976a29d3247e89a9125c293a20b55c0"
       },
       "status": "PASS",
       "upstream_model": "COTSearch"
@@ -614,7 +614,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COTSearch --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T20:58:07.290860+00:00",
+      "executed_at_utc": "2026-10-18T23:19:50.898144+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -626,8 +626,8 @@
             "path": "opendata/data/models/cftc.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -694,7 +694,7 @@
       "receipt": {
         "model_identity": "cftc::COTSearch",
         "path": "docs/evidence/C101/receipts/cftc/COTSearch/service.json",
-        "sha256": "7a639ede22a3ad7b6a23eafdc670fa28132680658a1ddfb6368a52419ab2e4db"
+        "sha256": "5c81e5f91fc870d65f2fecf4f18a2536e0e50abe80443117c00c53d97024958d"
       },
       "status": "PASS",
       "upstream_model": "COTSearch"
@@ -702,7 +702,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COTSearch --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T20:58:08.155833+00:00",
+      "executed_at_utc": "2026-10-18T23:19:51.805925+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -714,8 +714,8 @@
             "path": "opendata/data/models/cftc.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -782,7 +782,7 @@
       "receipt": {
         "model_identity": "cftc::COTSearch",
         "path": "docs/evidence/C101/receipts/cftc/COTSearch/contract.json",
-        "sha256": "722510eb0a88688811a81b5a4e2d72828faabf2cf8b6dd8127ccfa85ecfeae5b"
+        "sha256": "0e6a84eaa7d4f0cb93b01bbda84a4ee8c840d2e382a18686cb724f65d5fc38fc"
       },
       "status": "PASS",
       "upstream_model": "COTSearch"
@@ -790,7 +790,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COTSearch --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T20:58:09.952750+00:00",
+      "executed_at_utc": "2026-10-18T23:19:53.566978+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -802,8 +802,8 @@
             "path": "opendata/data/models/cftc.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -870,7 +870,7 @@
       "receipt": {
         "model_identity": "cftc::COTSearch",
         "path": "docs/evidence/C101/receipts/cftc/COTSearch/counterfact.json",
-        "sha256": "fc149b536d8cf2cb101bead026a970e394e69b1de9e6274084c0888418527eb9"
+        "sha256": "c9880c79d8b8e0f03c0b7b9b06e632b88f385b03254a45e373720069576723a8"
       },
       "status": "PASS",
       "upstream_model": "COTSearch"
@@ -884,9 +884,9 @@
       "receipt": {
         "model_identity": "cftc::COT",
         "path": "docs/evidence/C101/primary-reviews/cftc__COT.review.json",
-        "sha256": "5a5fda9d0b24288a60a02581216831df8ceac4135253ec39e72caef29c56a4b3"
+        "sha256": "f65db5f4d1b69b871812df1cc81396f97715544f47cf7790e955bc72aabcf997"
       },
-      "reviewed_at_utc": "2026-10-18T20:58:11Z",
+      "reviewed_at_utc": "2026-10-18T23:19:55Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -899,9 +899,9 @@
       "receipt": {
         "model_identity": "cftc::COTSearch",
         "path": "docs/evidence/C101/primary-reviews/cftc__COTSearch.review.json",
-        "sha256": "b48ef79be2ea533bdb34bf813e70ea70b3190d5f5aa85224edf455804dcb8100"
+        "sha256": "e2acd798d5c6eeb9004cfaee4b4ca9e1634b485d2ee9d4abf935c99bbfaa727c"
       },
-      "reviewed_at_utc": "2026-10-18T20:58:11Z",
+      "reviewed_at_utc": "2026-10-18T23:19:55Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

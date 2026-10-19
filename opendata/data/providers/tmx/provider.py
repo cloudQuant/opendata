@@ -5,6 +5,7 @@ from opendata.data.provider import LazyFetcherBinding, Provider
 _FETCHERS = "opendata.data.providers.tmx.models.fetchers"
 _FETCHERS_W33_GRAPHQL = "opendata.data.providers.tmx.models.fetchers_w33_graphql"
 _FETCHERS_W33_ETF_LOADERS = "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders"
+_FETCHERS_W34_ENVELOPE = "opendata.data.providers.tmx.models.fetchers_w34_envelope"
 
 #: (module, class name, canonical model id, scenario) for every bound TMX model.
 _BINDINGS = (
@@ -50,6 +51,18 @@ _BINDINGS = (
         "index directory listing",
     ),
     (_FETCHERS_W33_ETF_LOADERS, "IndexSectorsFetcher", "IndexSectors", "index sector weights"),
+    (
+        _FETCHERS_W34_ENVELOPE,
+        "OptionsChainsFetcher",
+        "OptionsChains",
+        "listed option chain rows for one underlying",
+    ),
+    (
+        _FETCHERS_W34_ENVELOPE,
+        "IndexSnapshotsFetcher",
+        "IndexSnapshots",
+        "regional index snapshot panel",
+    ),
 )
 
 PROVIDER = Provider(

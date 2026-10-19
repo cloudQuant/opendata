@@ -1,0 +1,105 @@
+{
+  "responses": [
+    {
+      "body": {
+        "groups": {
+          "COMPOSITE": [
+            "CUX"
+          ],
+          "ESG": [
+            "HGL"
+          ],
+          "SECTOR": [
+            "SPT"
+          ]
+        },
+        "indices": {
+          "CUX": {
+            "name_en": "S&P/TSX Composite Index",
+            "performance": {
+              "monthtodate": 1.9,
+              "previousday": 0.82,
+              "quartertodate": 3.4,
+              "weeks52high": 24914.62,
+              "weeks52low": 18999.16,
+              "yeartodate": 8.6
+            },
+            "quotedmarketvalue": {
+              "average": 8100000000.0,
+              "largest": 310000000000.0,
+              "largestweight": 12.9,
+              "median": 3200000000.0,
+              "smallest": 11000000.0,
+              "smallestweight": 0.01,
+              "sumtop10": 1512000000000.0,
+              "total": 2400000000000.0
+            }
+          },
+          "HGL": {
+            "name_en": "S&P/TSX Health Care Index",
+            "performance": {
+              "previousday": 0.31,
+              "yeartodate": 5.4
+            },
+            "quotedmarketvalue": {
+              "total": 41000000000.0
+            }
+          },
+          "SPT": {
+            "name_en": "S&P/TSX Capped Energy Index (USD)",
+            "performance": {
+              "monthtodate": -1.2,
+              "previousday": -0.44,
+              "quartertodate": 2.6,
+              "weeks52high": 1980.4,
+              "weeks52low": 1420.9,
+              "yeartodate": 14.3
+            },
+            "quotedmarketvalue": {
+              "average": 3100000000.0,
+              "largest": 14200000000.0,
+              "largestweight": 14.73,
+              "median": 2050000000.0,
+              "smallest": 210000000.0,
+              "smallestweight": 0.22,
+              "sumtop10": 71000000000.0,
+              "total": 96400000000.0
+            }
+          }
+        }
+      },
+      "method": "GET",
+      "url_contains": "tmxinfoservices.com/files/indices/sptsx-indices.json"
+    },
+    {
+      "body": {
+        "data": {
+          "getQuoteForSymbols": [
+            {
+              "longname": "S&P/TSX Composite Index (quoted)",
+              "percentChange": 0.744,
+              "prevClose": 23840.02,
+              "price": 24017.41,
+              "priceChange": 177.39,
+              "symbol": "CUX",
+              "weeks52high": 24914.62,
+              "weeks52low": 18999.16
+            },
+            {
+              "longname": "S&P/TSX Capped Energy Index (USD)",
+              "percentChange": -0.439,
+              "prevClose": 1882.5,
+              "price": 1874.226,
+              "priceChange": -8.27,
+              "symbol": "SPT",
+              "weeks52high": 1980.4,
+              "weeks52low": 1420.9
+            }
+          ]
+        }
+      },
+      "method": "POST",
+      "url_contains": "app-money.tmx.com/graphql"
+    }
+  ]
+}

@@ -181,6 +181,12 @@ PROVIDER = Provider(
             canonical_model_ids=("ShareStatistics",),
             scenario="查询证券代码对应的流通股与持股统计快照",
         ),
+        LazyFetcherBinding(
+            "opendata.data.providers.yfinance.models.futures_curve_iter2",
+            "YfinanceFuturesCurveFetcher",
+            canonical_model_ids=("FuturesCurve",),
+            scenario="按期货合约根代码读取当前期货期限结构曲线",
+        ),
     ),
     optional_dependencies=(
         OptionalDependencySpec(

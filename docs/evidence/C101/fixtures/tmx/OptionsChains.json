@@ -1,0 +1,29 @@
+{
+  "responses": [
+    {
+      "body": [
+        "<html><body><table><tr><th>Instrument</th><th>Instrument</th><th colspan=\"6\">Calls</th><th colspan=\"6\">Puts</th></tr><tr><th>Expiry date</th><th>Strike</th><th>Bid</th><th>Ask</th><th>Last</th><th>Change</th><th>Open interest</th><th>Volume</th><th>Bid</th><th>Ask</th><th>Last</th><th>Change</th><th>Open interest</th><th>Volume</th></tr>",
+        "<tr><td>2026-10-16(Weekly)</td><td>120.00</td><td>10.50</td><td>11.00</td><td>10.80</td><td>0.90</td><td>3210</td><td>45</td><td>9.80</td><td>10.40</td><td>10.10</td><td>-0.40</td><td>1805</td><td>12</td></tr>",
+        "<tr><td>2026-11-20</td><td>125.00</td><td>14.20</td><td>14.90</td><td>14.55</td><td>1.15</td><td>640</td><td>9</td><td>13.10</td><td>13.80</td><td>N/A</td><td>N/A</td><td>410</td><td>0</td></tr>",
+        "</table></body></html>"
+      ],
+      "content_type": "text/html",
+      "method": "GET",
+      "url_contains": "m-x.ca/en/trading/data/quotes?symbol="
+    },
+    {
+      "body": [
+        "eod_date,strike,expiration,closeBid,closeAsk,closeBidSize,closeAskSize,lastTradePrice,volume,prevClose,change,open,high,low,totalValue,transactions,settlementPrice,openInterest,impliedVolatility,Symbol,Call/Put",
+        "2026-10-09,120.000,2026-10-16,10.40,11.10,12,20,10.80,45,9.90,0.90,10.10,11.20,9.80,48600,12,10.75,3210,34.2,SHOP  261016C00120000,0",
+        "2026-10-09,120.000,2026-10-16,9.90,10.50,8,15,10.10,12,10.50,-0.40,10.60,10.90,9.70,12120,5,10.20,1805,35.8,SHOP  261016P00120000,1",
+        "2026-10-09,125.000,2026-11-20,14.10,14.95,25,10,14.55,9,13.40,1.15,13.90,14.80,13.70,13095,4,14.30,640,31.5,SHOP  261120C00125000,0",
+        "2026-10-09,125.000,2026-11-20,13.00,13.90,20,6,13.20,0,12.80,0.40,12.90,13.60,12.70,0,0,13.10,410,33.1,SHOP  261120P00125000,1",
+        "2026-10-09,115.000,2026-09-18,4.20,4.90,5,5,4.55,3,4.10,0.45,4.20,4.80,4.00,1365,1,4.50,288,41.0,SHOP  260918C00115000,0",
+        "2026-10-09,0.000,2026-10-16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,SHOP  ,0"
+      ],
+      "content_type": "text/csv",
+      "method": "GET",
+      "url_contains": "m-x.ca/en/trading/data/historical?symbol="
+    }
+  ]
+}

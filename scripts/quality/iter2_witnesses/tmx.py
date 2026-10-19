@@ -105,6 +105,11 @@ from __future__ import annotations
 
 from typing import Any, Final
 
+from opendata.data.providers.tmx.models.fetchers_w33_etf_loaders import (
+    ALLOWED_DIRECTORY_HOSTS,
+)
+from opendata.data.providers.tmx.models.fetchers_w34_envelope import REQUIRED_HOSTS
+
 #: The one attribute the transport resolves per request; ``models/client.py`` binds it at import
 #: time, so patching it on that module is what the shipped call site reads on the next request.
 _SEAM: Final[dict[str, Any]] = {
@@ -113,9 +118,22 @@ _SEAM: Final[dict[str, Any]] = {
     "attr": "get_shared_http_client",
 }
 
-#: The single host every TMX leg is allowed to name, and the needle the seam matches bodies with.
+#: The GraphQL host every TMX leg is allowed to name, and the needle the seam matches bodies with.
 _GQL_HOST: Final = "app-money.tmx.com"
 _GQL_ROUTE: Final = f"{_GQL_HOST}/graphql"
+
+#: The full grant, read from the provider's own host declarations instead of retyped here.
+#: ``fetchers_w33_etf_loaders.ALLOWED_DIRECTORY_HOSTS`` is what the nine directory rows
+#: (EtfInfo/EtfSearch/EtfSectors/BondPrices/TreasuryPrices/AvailableIndices/...) actually name,
+#: and ``fetchers_w34_envelope.REQUIRED_HOSTS`` what ``OptionsChains``/``IndexSnapshots`` name.
+#: The runner installs this list as every entry's grant
+#: (``iter2_claims_probe_runner.py:1039`` ``entry["hosts"] = config["allowed_hosts"]``), so a host
+#: missing here under-describes the provider's auditable claim; a host typed a second time here is
+#: how the next drift happens.  ``money.tmx.com`` is deliberately absent: it is provider metadata
+#: and a published news *cell* (``fetchers_w33_graphql.py:88-90``), never a request target.
+_ALLOWED_HOSTS: Final[list[str]] = list(
+    dict.fromkeys([_GQL_HOST, *ALLOWED_DIRECTORY_HOSTS, *REQUIRED_HOSTS])
+)
 
 _SOURCE_FILES: Final[list[str]] = [
     "opendata/data/providers/tmx/models/client.py",
@@ -378,7 +396,7 @@ def _equity_search_document() -> dict[str, Any]:
 
 CONFIG: Final[dict[str, Any]] = {
     "registration_module": "opendata.data.providers.tmx.provider",
-    "allowed_hosts": [_GQL_HOST],
+    "allowed_hosts": list(_ALLOWED_HOSTS),
     "credential_env": {},
     "models": {
         "EquityQuote": {

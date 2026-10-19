@@ -1,0 +1,67 @@
+{
+  "responses": [
+    {
+      "body": "",
+      "url_contains": "fc.yahoo.com"
+    },
+    {
+      "body": "fixture-crumb",
+      "url_contains": "v1/test/getcrumb"
+    },
+    {
+      "body": {
+        "quoteSummary": {
+          "error": null,
+          "result": [
+            {
+              "futuresChain": {
+                "futures": [
+                  "ES=F",
+                  "ESZ26.CME",
+                  "ESH27.CME",
+                  "ESM27.CME"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "url_contains": "modules=futuresChain"
+    },
+    {
+      "body": {
+        "quoteResponse": {
+          "error": null,
+          "result": [
+            {
+              "ask": 6211.5,
+              "bid": 6210.5,
+              "exchange": "CME",
+              "lastMarket": 6211.0,
+              "previousClose": 6205.25,
+              "quoteType": "FUTURE",
+              "regularMarketPrice": 6211.0,
+              "regularMarketTime": 1792161000,
+              "symbol": "ESZ26.CME"
+            },
+            {
+              "exchange": "CME",
+              "previousClose": 6340.0,
+              "quoteType": "FUTURE",
+              "regularMarketPrice": 6345.75,
+              "regularMarketTime": 1792076400,
+              "symbol": "ESH27.CME"
+            },
+            {
+              "exchange": "CME",
+              "quoteType": "FUTURE",
+              "regularMarketTime": 1792076400,
+              "symbol": "ESM27.CME"
+            }
+          ]
+        }
+      },
+      "url_contains": "v7/finance/quote"
+    }
+  ]
+}

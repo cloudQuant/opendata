@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesCurve --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T20:58:58.051263+00:00",
+      "executed_at_utc": "2026-10-18T23:20:41.829653+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -88,7 +88,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesCurve",
         "path": "docs/evidence/C101/receipts/deribit/FuturesCurve/implementation.json",
-        "sha256": "c135211fbe33ccd359ef2dab85d221c5614be18ef9662a0000849a4c5480bf77"
+        "sha256": "2564d9056bd545c8760ad9831aa357c463c2c64a415ea9c739b878738b3a1ea1"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -96,7 +96,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesCurve --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T20:58:58.928584+00:00",
+      "executed_at_utc": "2026-10-18T23:20:42.704111+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -108,8 +108,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -171,7 +171,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesCurve",
         "path": "docs/evidence/C101/receipts/deribit/FuturesCurve/direct.json",
-        "sha256": "d5ecaa0f94e30641be1168a76e41b8efffa8fccc3ec57859a9ca2ad62c9f63c1"
+        "sha256": "a00c938e2da49fdc94c1e716944ad4b1496e3ee8f9a2849eaa99a5748f9c320c"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -179,7 +179,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesCurve --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T20:58:59.983250+00:00",
+      "executed_at_utc": "2026-10-18T23:20:43.750988+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -191,8 +191,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -254,7 +254,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesCurve",
         "path": "docs/evidence/C101/receipts/deribit/FuturesCurve/service.json",
-        "sha256": "c9db388376970c6210b9bff5de8c0e9e0de5057c69253f968caffba07faff6ee"
+        "sha256": "54e4dd34567d690c8331d9974ab66762fa3daf1c601c864e4b8291942f84ac95"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -262,7 +262,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesCurve --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T20:59:00.871235+00:00",
+      "executed_at_utc": "2026-10-18T23:20:44.660104+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -274,8 +274,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -337,7 +337,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesCurve",
         "path": "docs/evidence/C101/receipts/deribit/FuturesCurve/contract.json",
-        "sha256": "de2ce2c20209ac63c0bc8cf90f677699228d07780e714afc60ac957876fc6068"
+        "sha256": "7022b7beb2d5401c297a3a99ab57d7a88b8bf2d486e42dece689b46d8e994ba3"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -345,7 +345,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesCurve --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T20:59:02.647275+00:00",
+      "executed_at_utc": "2026-10-18T23:20:46.557223+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -357,8 +357,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -420,7 +420,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesCurve",
         "path": "docs/evidence/C101/receipts/deribit/FuturesCurve/counterfact.json",
-        "sha256": "f7431d0c83bd57cb68d65d1aeeaa03447bd9bd6f33b0cad60c1e19d5f34b2eda"
+        "sha256": "bd7f58bc102c322075bcfceda5593748d021e48b031b9c953db4ab45d18ab7da"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -428,7 +428,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T20:59:03.489575+00:00",
+      "executed_at_utc": "2026-10-18T23:20:47.428793+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -440,8 +440,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -513,7 +513,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesHistorical",
         "path": "docs/evidence/C101/receipts/deribit/FuturesHistorical/implementation.json",
-        "sha256": "a9e745276bfa856c5dd1d76d80b19bc439eb7de80f083fcfad9516ebbef8af73"
+        "sha256": "1e1968afe0c3df66e58f879457a34fe452014e6080c3ec72c013143b84347c14"
       },
       "status": "PASS",
       "upstream_model": "FuturesHistorical"
@@ -521,7 +521,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T20:59:04.358880+00:00",
+      "executed_at_utc": "2026-10-18T23:20:48.321131+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -533,8 +533,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -596,7 +596,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesHistorical",
         "path": "docs/evidence/C101/receipts/deribit/FuturesHistorical/direct.json",
-        "sha256": "96c6b88b6b83dcdd7b31fa872a621b860481f4bcf7a4603bac02d7b916bbbba3"
+        "sha256": "7aad488c51931240049d18fe2f1af6bd4111b8ce2717f779e41e58322256c771"
       },
       "status": "PASS",
       "upstream_model": "FuturesHistorical"
@@ -604,7 +604,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T20:59:05.396711+00:00",
+      "executed_at_utc": "2026-10-18T23:20:49.367412+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -616,8 +616,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -679,7 +679,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesHistorical",
         "path": "docs/evidence/C101/receipts/deribit/FuturesHistorical/service.json",
-        "sha256": "d10020b3469976924c11154c79c608ef0f157eceaf13720020278c48196ac732"
+        "sha256": "2035b975ea3fd207d187897969aaf5cf5e478408e535d4f3650e2a9c1ae1d5ff"
       },
       "status": "PASS",
       "upstream_model": "FuturesHistorical"
@@ -687,7 +687,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T20:59:06.289272+00:00",
+      "executed_at_utc": "2026-10-18T23:20:50.273372+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -699,8 +699,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -762,7 +762,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesHistorical",
         "path": "docs/evidence/C101/receipts/deribit/FuturesHistorical/contract.json",
-        "sha256": "86d705bd33cfa8c2867f1373b0d1b7af41ed64545742a087e28332037c5a7446"
+        "sha256": "71a618bc23093d16a76e9c6cd8b41c87297ec40596b4132283f84e80c5140919"
       },
       "status": "PASS",
       "upstream_model": "FuturesHistorical"
@@ -770,7 +770,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T20:59:08.053835+00:00",
+      "executed_at_utc": "2026-10-18T23:20:52.041331+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -782,8 +782,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -845,7 +845,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesHistorical",
         "path": "docs/evidence/C101/receipts/deribit/FuturesHistorical/counterfact.json",
-        "sha256": "1d4d836b5591192a47f903588565fdd17ce3ac128d4a9ff29a49f4cca5d51ee5"
+        "sha256": "ca260193aefbc07f81f6366c98eeea0ee7e7054cdb7a51efdb277531480ec7ab"
       },
       "status": "PASS",
       "upstream_model": "FuturesHistorical"
@@ -853,7 +853,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInfo --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T20:59:08.904559+00:00",
+      "executed_at_utc": "2026-10-18T23:20:52.891702+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -865,8 +865,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -938,7 +938,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesInfo",
         "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/implementation.json",
-        "sha256": "41a05c691e7f9944b0c3a3dea0e29aeb90193e04f94a814004baab521f480375"
+        "sha256": "fa49ef610796461634e90f4b788893dc1d5adb6cbf428823530d43264498439d"
       },
       "status": "PASS",
       "upstream_model": "FuturesInfo"
@@ -946,7 +946,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInfo --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T20:59:09.769166+00:00",
+      "executed_at_utc": "2026-10-18T23:20:53.771211+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -958,8 +958,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1021,7 +1021,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesInfo",
         "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/direct.json",
-        "sha256": "3d71c075451cbcd82e430ee0aee874b928c0ccad49bdd41c52a93b665d4f0391"
+        "sha256": "9a9f2cafbdedacb807aa7eb5b35f619f673f983097cc27c190cce8fa43a3e9c4"
       },
       "status": "PASS",
       "upstream_model": "FuturesInfo"
@@ -1029,7 +1029,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInfo --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T20:59:10.814513+00:00",
+      "executed_at_utc": "2026-10-18T23:20:54.826173+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1041,8 +1041,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1104,7 +1104,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesInfo",
         "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/service.json",
-        "sha256": "515fc3256476db45e92fa1bed4d6ce348f601e2c5c7bb82165d0dad0b9cfca18"
+        "sha256": "7a9c6acc47825d4beb4baef19ec436f72691f6fbbae1c11f0b9faf087a17db5c"
       },
       "status": "PASS",
       "upstream_model": "FuturesInfo"
@@ -1112,7 +1112,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInfo --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T20:59:11.701548+00:00",
+      "executed_at_utc": "2026-10-18T23:20:55.736164+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1124,8 +1124,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1187,7 +1187,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesInfo",
         "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/contract.json",
-        "sha256": "7d0bd5d635dab1c5d0257ad383a92427d60bb5e2b3082183ee68b8c3b63b1055"
+        "sha256": "c9af798aedfd5f66b8b9c6f68e42944fb9da4d4fa9b7f203d7d1dd1de3d9e3e0"
       },
       "status": "PASS",
       "upstream_model": "FuturesInfo"
@@ -1195,7 +1195,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInfo --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T20:59:13.454090+00:00",
+      "executed_at_utc": "2026-10-18T23:20:57.518571+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1207,8 +1207,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1270,7 +1270,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesInfo",
         "path": "docs/evidence/C101/receipts/deribit/FuturesInfo/counterfact.json",
-        "sha256": "a71ef01669026cece4d4cb520e49fb551a4f7799ab076bbdd6e15ecb2f5cac76"
+        "sha256": "013590f47c8e6104f636ee8e52ea31bb613450036659a0b592173a3bb3d4b336"
       },
       "status": "PASS",
       "upstream_model": "FuturesInfo"
@@ -1278,7 +1278,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInstruments --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T20:59:14.301631+00:00",
+      "executed_at_utc": "2026-10-18T23:20:58.367331+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1290,8 +1290,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1363,7 +1363,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesInstruments",
         "path": "docs/evidence/C101/receipts/deribit/FuturesInstruments/implementation.json",
-        "sha256": "35edc0fd5a1d23f24f0e31ab0aa279741500896b8056d9ad317f00bf6d95b947"
+        "sha256": "657334189b89be540cd567bbb7979ae82b915257612ab555f06df4d405c6d7b5"
       },
       "status": "PASS",
       "upstream_model": "FuturesInstruments"
@@ -1371,7 +1371,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInstruments --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T20:59:15.168212+00:00",
+      "executed_at_utc": "2026-10-18T23:20:59.249596+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1383,8 +1383,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1446,7 +1446,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesInstruments",
         "path": "docs/evidence/C101/receipts/deribit/FuturesInstruments/direct.json",
-        "sha256": "693b9ac24d434277fcb6e801425b19241e84cbc3027bd45e423973c0ccb935dd"
+        "sha256": "30a0ef72ee304dd2e2d65c8a559620d9b603cc1bfebca4f4a1f2189eb311207b"
       },
       "status": "PASS",
       "upstream_model": "FuturesInstruments"
@@ -1454,7 +1454,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInstruments --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T20:59:16.214274+00:00",
+      "executed_at_utc": "2026-10-18T23:21:00.287236+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1466,8 +1466,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1529,7 +1529,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesInstruments",
         "path": "docs/evidence/C101/receipts/deribit/FuturesInstruments/service.json",
-        "sha256": "0cbc71a0382b7c75979579ea5c161dc51f3261f906dc19c37863e54d53f238e5"
+        "sha256": "62bd2c4f059ff810adee3d85bcc2577a1a200131ad760d877becd8a682d11e4e"
       },
       "status": "PASS",
       "upstream_model": "FuturesInstruments"
@@ -1537,7 +1537,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInstruments --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T20:59:17.102972+00:00",
+      "executed_at_utc": "2026-10-18T23:21:01.190254+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1549,8 +1549,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1612,7 +1612,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesInstruments",
         "path": "docs/evidence/C101/receipts/deribit/FuturesInstruments/contract.json",
-        "sha256": "4ee247d29ca8bd08db92e155a902aaf5670c5f94d76789f5d1f76d192dfc05f9"
+        "sha256": "187d83545675d2076d8a806e179e20079bd5ca4b799766ba2f2db134e05d4720"
       },
       "status": "PASS",
       "upstream_model": "FuturesInstruments"
@@ -1620,7 +1620,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model FuturesInstruments --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T20:59:18.875834+00:00",
+      "executed_at_utc": "2026-10-18T23:21:02.968826+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1632,8 +1632,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1695,7 +1695,7 @@
       "receipt": {
         "model_identity": "deribit::FuturesInstruments",
         "path": "docs/evidence/C101/receipts/deribit/FuturesInstruments/counterfact.json",
-        "sha256": "6c8f41ca4bd8a8dcffec85cf6b251adba0d4aea26d74a00fcb91cbe5a6a80e8d"
+        "sha256": "76c90cfe3b50bd0d934edc4aca50afddbc930c8fcc1ce3ea02a3dde8de3e2bca"
       },
       "status": "PASS",
       "upstream_model": "FuturesInstruments"
@@ -1703,7 +1703,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model OptionsChains --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T20:59:19.718724+00:00",
+      "executed_at_utc": "2026-10-18T23:21:03.812127+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1715,8 +1715,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1788,7 +1788,7 @@
       "receipt": {
         "model_identity": "deribit::OptionsChains",
         "path": "docs/evidence/C101/receipts/deribit/OptionsChains/implementation.json",
-        "sha256": "26eb4ad6bdf15b2c1a0752e28391872cd83b07b6c6b56ed7bbde067a4fd9a21d"
+        "sha256": "39e6bbc6e839aaa154a4b2ca783be5967c7ef6d5d91bddbcc384efd8119e7645"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -1796,7 +1796,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model OptionsChains --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T20:59:20.593841+00:00",
+      "executed_at_utc": "2026-10-18T23:21:04.680937+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1808,8 +1808,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1871,7 +1871,7 @@
       "receipt": {
         "model_identity": "deribit::OptionsChains",
         "path": "docs/evidence/C101/receipts/deribit/OptionsChains/direct.json",
-        "sha256": "585efe055f731a387d97a5859bcf8dc7aa706f9454b2c7542056db577edc0704"
+        "sha256": "c86a28a848400e878b4a8a8cf6ee6ee14ed307e36555fb5b8a8c352c584a0654"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -1879,7 +1879,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model OptionsChains --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T20:59:21.641374+00:00",
+      "executed_at_utc": "2026-10-18T23:21:05.732021+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1891,8 +1891,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1954,7 +1954,7 @@
       "receipt": {
         "model_identity": "deribit::OptionsChains",
         "path": "docs/evidence/C101/receipts/deribit/OptionsChains/service.json",
-        "sha256": "4b6b5f6e688b2ed9a58c68613cd0676943473835883e5428dfa9020a7bbd1957"
+        "sha256": "07d9cb244e84d52c833dcde1c536fc823f86387319c4864f996b9999275b710c"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -1962,7 +1962,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model OptionsChains --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T20:59:22.521330+00:00",
+      "executed_at_utc": "2026-10-18T23:21:06.615871+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1974,8 +1974,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2037,7 +2037,7 @@
       "receipt": {
         "model_identity": "deribit::OptionsChains",
         "path": "docs/evidence/C101/receipts/deribit/OptionsChains/contract.json",
-        "sha256": "a9061a202eb8b9ba4efbba81ac3ec64d847be92a5b7428ed95dd002b0e70c0aa"
+        "sha256": "0299ad2b7a710ade3b3327a2c967e55417630dd98f3b0d9985e15aee70e23bbe"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -2045,7 +2045,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider deribit --model OptionsChains --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T20:59:24.285276+00:00",
+      "executed_at_utc": "2026-10-18T23:21:08.385331+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2057,8 +2057,8 @@
             "path": "opendata/data/models/deribit.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2120,13 +2120,13 @@
       "receipt": {
         "model_identity": "deribit::OptionsChains",
         "path": "docs/evidence/C101/receipts/deribit/OptionsChains/counterfact.json",
-        "sha256": "b92d279034e17db760ab5b4f54d66a044d2549707ececf69ded1a35776f097e4"
+        "sha256": "c3c50b6071e8ac0b5aa2fd08eebbda2fd7eceadc4c08c5c6a122c8a4c3f7bc6d"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
     }
   ],
-  "generated_at_utc": "2026-10-18T20:59:25.647311+00:00",
+  "generated_at_utc": "2026-10-18T23:21:09.804331+00:00",
   "generated_by": "scripts/quality/iter2_claims_producer.py",
   "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
   "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",

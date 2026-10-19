@@ -1,0 +1,30 @@
+# carrier for producer_alpha_vantage
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider alpha_vantage --output docs/evidence/C101/alpha_vantage/claims.json
+# note: five-phase producer for alpha_vantage
+# started_utc: 2026-10-18T23:17:50+00:00
+# exit: 0
+# stdout_chars: 4268 stderr_chars: 0
+
+== provider alpha_vantage: 3 inventory row(s) of 350 total ==
+EquityHistorical implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase implementation --evidence-root docs/evidence/C101
+EquityHistorical direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase direct --evidence-root docs/evidence/C101
+EquityHistorical service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase service --evidence-root docs/evidence/C101
+EquityHistorical contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase contract --evidence-root docs/evidence/C101
+EquityHistorical counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101
+HistoricalEps implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase implementation --evidence-root docs/evidence/C101
+HistoricalEps direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase direct --evidence-root docs/evidence/C101
+HistoricalEps service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase service --evidence-root docs/evidence/C101
+HistoricalEps contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase contract --evidence-root docs/evidence/C101
+HistoricalEps counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase counterfact --evidence-root docs/evidence/C101
+EtfHistorical implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase implementation --evidence-root docs/evidence/C101
+EtfHistorical direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase direct --evidence-root docs/evidence/C101
+EtfHistorical service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase service --evidence-root docs/evidence/C101
+EtfHistorical contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase contract --evidence-root docs/evidence/C101
+EtfHistorical counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase counterfact --evidence-root docs/evidence/C101
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=336/350; provider rows covered=3 of provider inventory rows=3, of which bound now=3/336 resolvable; claims emitted=15 (15 PASS, 0 FAIL, 0 BLOCKED) = 3 row(s) x 5 phases; phases actually executed as subprocesses=15
+wrote docs/evidence/C101/alpha_vantage/claims.json
+
+---- stderr ----
+
+
+chain_producer_alpha_vantage_exit=0

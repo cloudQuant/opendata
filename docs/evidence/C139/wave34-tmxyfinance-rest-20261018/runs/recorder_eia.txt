@@ -1,0 +1,16 @@
+# carrier for recorder_eia
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/eia/claims.json --output docs/evidence/C101/eia/claims.reviewed.json --provider eia --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over eia's regenerated shard
+# started_utc: 2026-10-18T23:22:20+00:00
+# exit: 0
+# stdout_chars: 304 stderr_chars: 0
+
+re-signing: dropped 2 earlier review(s) for the addressed identities
+REVIEW_SIGNED: eia::PetroleumStatusReport
+REVIEW_SIGNED: eia::ShortTermEnergyOutlook
+recorder_exit=0 signed=2 refused=0 reviews_total=2 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/eia/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_eia_exit=0

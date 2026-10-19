@@ -1,0 +1,19 @@
+# carrier for recorder_deribit
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims docs/evidence/C101/deribit/claims.json --output docs/evidence/C101/deribit/claims.reviewed.json --provider deribit --decision ACCEPT --reviewer-type primary_model --reviewer-id iter2-acceptance-reviewer --reviewer-model qoder-cli-agent --reviewer-role acceptance_reviewer
+# note: primary reviews over deribit's regenerated shard
+# started_utc: 2026-10-18T23:21:10+00:00
+# exit: 0
+# stdout_chars: 419 stderr_chars: 0
+
+re-signing: dropped 5 earlier review(s) for the addressed identities
+REVIEW_SIGNED: deribit::FuturesCurve
+REVIEW_SIGNED: deribit::FuturesHistorical
+REVIEW_SIGNED: deribit::FuturesInfo
+REVIEW_SIGNED: deribit::FuturesInstruments
+REVIEW_SIGNED: deribit::OptionsChains
+recorder_exit=0 signed=5 refused=0 reviews_total=5 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/deribit/claims.reviewed.json
+
+---- stderr ----
+
+
+chain_recorder_deribit_exit=0

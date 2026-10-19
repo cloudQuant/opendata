@@ -1,0 +1,25 @@
+# carrier for producer_cftc
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider cftc --output docs/evidence/C101/cftc/claims.json
+# note: five-phase producer for cftc
+# started_utc: 2026-10-18T23:19:42+00:00
+# exit: 0
+# stdout_chars: 2724 stderr_chars: 0
+
+== provider cftc: 2 inventory row(s) of 350 total ==
+COT implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COT --phase implementation --evidence-root docs/evidence/C101
+COT direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COT --phase direct --evidence-root docs/evidence/C101
+COT service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COT --phase service --evidence-root docs/evidence/C101
+COT contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COT --phase contract --evidence-root docs/evidence/C101
+COT counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COT --phase counterfact --evidence-root docs/evidence/C101
+COTSearch implementation exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COTSearch --phase implementation --evidence-root docs/evidence/C101
+COTSearch direct         exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COTSearch --phase direct --evidence-root docs/evidence/C101
+COTSearch service        exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COTSearch --phase service --evidence-root docs/evidence/C101
+COTSearch contract       exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COTSearch --phase contract --evidence-root docs/evidence/C101
+COTSearch counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cftc --model COTSearch --phase counterfact --evidence-root docs/evidence/C101
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=336/350; provider rows covered=2 of provider inventory rows=2, of which bound now=2/336 resolvable; claims emitted=10 (10 PASS, 0 FAIL, 0 BLOCKED) = 2 row(s) x 5 phases; phases actually executed as subprocesses=10
+wrote docs/evidence/C101/cftc/claims.json
+
+---- stderr ----
+
+
+chain_producer_cftc_exit=0

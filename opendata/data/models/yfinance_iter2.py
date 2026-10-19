@@ -650,3 +650,39 @@ class YfinancePriceTargetConsensus(ContractModel):
     def median(self) -> float | None:
         """Read-only compatibility name for the SDK's median target key."""
         return self.target_median
+
+
+class YfinanceFuturesCurve(ContractModel):
+    """One dated future's price in the current futures curve for one symbol.
+
+    The upstream declared output contract of ``openbb_yfinance/models/futures_curve.py``
+    (spec sheet sha256 ``5c3eefd5820916661a73f9c41aa5bb0db3253f06659698811e5dfc441674e52b``)
+    is three melted columns -- ``date``, ``expiration``, ``price`` -- and that is what the
+    SDK's ``futuresChain`` publishes.  ``symbol`` is the fourth field and the only one not
+    in upstream's frame: yfinance returns one chain per requested contract root and labels
+    nothing, so a curve row without the requested symbol cannot be told apart from another
+    symbol's curve once both are stored.  It is therefore declared here as the request echo
+    this provider must stamp, the same way ``TmxEtfHistorical`` echoes its requested symbol;
+    no source column is claimed for it.
+
+    ``price`` is required-but-nullable because a chain row can legitimately carry no mark:
+    an expiry with no traded contract yields an empty price cell, and the mapper must say so
+    rather than drop the expiry or invent a zero.
+    """
+
+    symbol: StrictStr
+    date: date_type
+    expiration: date_type
+    price: float | None
+
+    @field_validator("price", mode="before")
+    @classmethod
+    def _validate_price(cls, value: object) -> object:
+        if value is None:
+            return None
+        if isinstance(value, bool) or not isinstance(value, Real):
+            raise ValueError("curve price must be a finite number or None")
+        converted = float(value)
+        if not math.isfinite(converted):
+            raise ValueError("curve price must be a finite number or None")
+        return converted

@@ -1048,6 +1048,36 @@ domains:
     storage_mode: transient
     permissions:
     - query
+  tmx_options_chains:
+    display_name: TMX期权链
+    rest_path: derivatives/tmx/options-chains
+    contract: TmxOptionsChains
+    temporal_kind: snapshot
+    time_field: expiration
+    natural_key:
+    - contract_symbol
+    - expiration
+    filter_dims:
+    - underlying_symbol
+    - expiration
+    - option_type
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_index_snapshots:
+    display_name: TMX指数快照
+    rest_path: index/tmx/index-snapshots
+    contract: TmxIndexSnapshots
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - currency
+    storage_mode: transient
+    permissions:
+    - query
   deribit_futures_curve:
     display_name: Deribit current futures curve
     rest_path: derivatives/deribit/futures-curve
@@ -2049,6 +2079,23 @@ domains:
     - retrieved_at_utc
     filter_dims:
     - symbol
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_futures_curve:
+    display_name: yfinance current futures curve
+    rest_path: derivatives/yfinance/futures-curve
+    contract: YfinanceFuturesCurve
+    temporal_kind: snapshot
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    - expiration
+    filter_dims:
+    - symbol
+    - date
+    - expiration
     storage_mode: transient
     permissions:
     - query

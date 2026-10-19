@@ -103,6 +103,35 @@ import base64
 import copy
 from typing import Any, Final
 
+from opendata.data.providers.government_us.models.commodity_psd_data import (
+    USDA_HOSTS as USDA_DATA_HOSTS,
+)
+from opendata.data.providers.government_us.models.commodity_psd_report import (
+    USDA_HOSTS as USDA_REPORT_HOSTS,
+)
+from opendata.data.providers.government_us.models.treasury_auctions import TREASURY_HOSTS
+from opendata.data.providers.government_us.models.treasury_prices import TREASURY_PRICE_HOSTS
+from opendata.data.providers.government_us.models.weather_bulletin import NWS_HOSTS
+
+#: The grant, read from each fetcher's own host constant rather than retyped here.  The runner
+#: installs this list as every model entry's grant
+#: (``iter2_claims_probe_runner.py:1039`` ``entry["hosts"] = config["allowed_hosts"]``), so a host a
+#: row actually names but this list omits under-describes the auditable claim
+#: "``government_us`` may only talk to these hosts".  ``TreasuryPrices`` guards its URL against
+#: ``TREASURY_PRICE_HOSTS`` (``models/treasury_prices.py:192``), so that host is part of the grant.
+#: ``www.usa.gov`` is deliberately absent: it is ``provider.py`` metadata, never a request target.
+_ALLOWED_HOSTS: Final[list[str]] = list(
+    dict.fromkeys(
+        [
+            *sorted(TREASURY_HOSTS),
+            *sorted(NWS_HOSTS),
+            *sorted(USDA_DATA_HOSTS),
+            *sorted(USDA_REPORT_HOSTS),
+            *sorted(TREASURY_PRICE_HOSTS),
+        ]
+    )
+)
+
 #: The one attribute both fetchers' transport reads per request; the runner patches it in
 #: ``models/_client.py`` only.
 _SEAM: Final[dict[str, Any]] = {
@@ -308,12 +337,7 @@ def _download_document() -> dict[str, Any]:
 
 CONFIG: Final[dict[str, Any]] = {
     "registration_module": "opendata.data.providers.government_us.registration",
-    "allowed_hosts": [
-        "api.fiscaldata.treasury.gov",
-        "api.weather.gov",
-        "api.fas.usda.gov",
-        "apps.fas.usda.gov",
-    ],
+    "allowed_hosts": list(_ALLOWED_HOSTS),
     "credential_env": {"USDA_FAS_API_KEY": "fixture-key-never-sent"},
     "models": {
         "TreasuryAuctions": {

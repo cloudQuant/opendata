@@ -9,14 +9,14 @@
       "non_base_contract_model_classes": 325
     },
     "live_counts": {
-      "all_symbols": 329,
-      "contract_model_classes_including_base": 325,
-      "non_base_contract_model_classes": 324
+      "all_symbols": 347,
+      "contract_model_classes_including_base": 343,
+      "non_base_contract_model_classes": 342
     },
     "delta_vs_adjudication": {
-      "all_symbols": -1,
-      "contract_model_classes_including_base": -1,
-      "non_base_contract_model_classes": -1
+      "all_symbols": 17,
+      "contract_model_classes_including_base": 17,
+      "non_base_contract_model_classes": 17
     },
     "attribution": {
       "removed_by_iteration2": [
@@ -337,9 +337,9 @@
     "fixed_identities": 351,
     "fixed_unbound": 33,
     "provider_model_legs": 351,
-    "all_symbols": 329,
-    "contract_model_classes_including_base": 325,
-    "non_base_contract_model_classes": 324,
+    "all_symbols": 347,
+    "contract_model_classes_including_base": 343,
+    "non_base_contract_model_classes": 342,
     "non_contract_exports": [
       {
         "name": "BlsCatalogPage",
@@ -427,19 +427,19 @@
     "ods_legs": "The 33 registered source/domain legs on the 20 legacy domains remain split by the 10 explicit legacy freshness-field mappings present in the pinned AkShare/THS mapping YAMLs; the remaining 23 are explicitly unmapped."
   },
   "counts": {
-    "deferred_domain_count": 333,
-    "deferred_source_domain_leg_count": 333,
-    "domain_count": 353,
+    "deferred_domain_count": 336,
+    "deferred_source_domain_leg_count": 336,
+    "domain_count": 356,
     "legacy_dwd_domain_count": 20,
     "legacy_source_domain_leg_count": 33,
     "mapped_ods_leg_count": 10,
-    "provider_model_identity_count": 351,
+    "provider_model_identity_count": 369,
     "queried_table_count": 30,
-    "query_semantic_domain_count": 318,
-    "registered_source_domain_leg_count": 366,
+    "query_semantic_domain_count": 336,
+    "registered_source_domain_leg_count": 369,
     "unmapped_ods_leg_count": 23,
     "warehouse_table_catalog_count": 53,
-    "descriptor_eligible_identity_count": 329,
+    "descriptor_eligible_identity_count": 347,
     "model_key_only_identity_count": 22,
     "descriptor_eligible_legacy_identity_count": 11
   },
@@ -741,7 +741,9 @@
     "tmx_historical_dividends",
     "tmx_index_constituents",
     "tmx_index_sectors",
+    "tmx_index_snapshots",
     "tmx_insider_trading",
+    "tmx_options_chains",
     "tmx_price_target_consensus",
     "tmx_treasury_prices",
     "tradier_equity_historical",
@@ -767,6 +769,7 @@
     "yfinance_equity_undervalued_large_caps",
     "yfinance_etf_historical",
     "yfinance_etf_info",
+    "yfinance_futures_curve",
     "yfinance_futures_historical",
     "yfinance_growth_tech_equities",
     "yfinance_income_statement",
@@ -1976,6 +1979,14 @@
       "source": "tmx"
     },
     {
+      "domain": "tmx_index_snapshots",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_options_chains",
+      "source": "tmx"
+    },
+    {
       "domain": "tmx_price_target_consensus",
       "source": "tmx"
     },
@@ -2073,6 +2084,10 @@
     },
     {
       "domain": "yfinance_etf_info",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_futures_curve",
       "source": "yfinance"
     },
     {
@@ -2429,7 +2444,9 @@
     "tmx_historical_dividends",
     "tmx_index_constituents",
     "tmx_index_sectors",
+    "tmx_index_snapshots",
     "tmx_insider_trading",
+    "tmx_options_chains",
     "tmx_price_target_consensus",
     "tmx_treasury_prices",
     "tradier_equity_historical",
@@ -2456,6 +2473,7 @@
     "yfinance_equity_undervalued_large_caps",
     "yfinance_etf_historical",
     "yfinance_etf_info",
+    "yfinance_futures_curve",
     "yfinance_futures_historical",
     "yfinance_growth_tech_equities",
     "yfinance_income_statement",
@@ -4637,6 +4655,16 @@
       "canonical_ids_declared": true
     },
     {
+      "binding": "opendata.data.providers.government_us.models.treasury_prices:TreasuryPricesFetcher",
+      "contract": "TreasuryPrice",
+      "domain": "government_us_treasury_prices",
+      "model": "TreasuryPrices",
+      "scenario_present": true,
+      "source": "government_us",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
       "binding": "opendata.data.providers.government_us.models.weather_bulletin:WeatherBulletinFetcher",
       "contract": "WeatherBulletin",
       "domain": "government_us_weather_bulletin",
@@ -5767,10 +5795,60 @@
       "canonical_ids_declared": true
     },
     {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:AvailableIndicesFetcher",
+      "contract": "TmxAvailableIndices",
+      "domain": "tmx_available_indices",
+      "model": "AvailableIndices",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:BondPricesFetcher",
+      "contract": "TmxBondPrices",
+      "domain": "tmx_bond_prices",
+      "model": "BondPrices",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_graphql:CalendarEarningsFetcher",
+      "contract": "TmxCalendarEarnings",
+      "domain": "tmx_calendar_earnings",
+      "model": "CalendarEarnings",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
       "binding": "opendata.data.providers.tmx.models.fetchers:CompanyFilingsFetcher",
       "contract": "TmxCompanyFiling",
       "domain": "tmx_company_filings",
       "model": "CompanyFilings",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_graphql:CompanyNewsFetcher",
+      "contract": "TmxCompanyNews",
+      "domain": "tmx_company_news",
+      "model": "CompanyNews",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_graphql:EquityGainersFetcher",
+      "contract": "TmxEquityGainers",
+      "domain": "tmx_equity_gainers",
+      "model": "EquityGainers",
       "scenario_present": true,
       "source": "tmx",
       "verified": false,
@@ -5817,6 +5895,66 @@
       "canonical_ids_declared": true
     },
     {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:EtfCountriesFetcher",
+      "contract": "TmxEtfCountries",
+      "domain": "tmx_etf_countries",
+      "model": "EtfCountries",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_graphql:EtfHistoricalFetcher",
+      "contract": "TmxEtfHistorical",
+      "domain": "tmx_etf_historical",
+      "model": "EtfHistorical",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:EtfHoldingsFetcher",
+      "contract": "TmxEtfHoldings",
+      "domain": "tmx_etf_holdings",
+      "model": "EtfHoldings",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:EtfInfoFetcher",
+      "contract": "TmxEtfInfo",
+      "domain": "tmx_etf_info",
+      "model": "EtfInfo",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:EtfSearchFetcher",
+      "contract": "TmxEtfSearch",
+      "domain": "tmx_etf_search",
+      "model": "EtfSearch",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:EtfSectorsFetcher",
+      "contract": "TmxEtfSectors",
+      "domain": "tmx_etf_sectors",
+      "model": "EtfSectors",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
       "binding": "opendata.data.providers.tmx.models.fetchers:HistoricalDividendsFetcher",
       "contract": "TmxHistoricalDividend",
       "domain": "tmx_historical_dividends",
@@ -5837,10 +5975,60 @@
       "canonical_ids_declared": true
     },
     {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:IndexSectorsFetcher",
+      "contract": "TmxIndexSectors",
+      "domain": "tmx_index_sectors",
+      "model": "IndexSectors",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w34_envelope:IndexSnapshotsFetcher",
+      "contract": "TmxIndexSnapshots",
+      "domain": "tmx_index_snapshots",
+      "model": "IndexSnapshots",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_graphql:InsiderTradingFetcher",
+      "contract": "TmxInsiderTrading",
+      "domain": "tmx_insider_trading",
+      "model": "InsiderTrading",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w34_envelope:OptionsChainsFetcher",
+      "contract": "TmxOptionsChains",
+      "domain": "tmx_options_chains",
+      "model": "OptionsChains",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
       "binding": "opendata.data.providers.tmx.models.fetchers:PriceTargetConsensusFetcher",
       "contract": "TmxPriceTargetConsensus",
       "domain": "tmx_price_target_consensus",
       "model": "PriceTargetConsensus",
+      "scenario_present": true,
+      "source": "tmx",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:TreasuryPricesFetcher",
+      "contract": "TmxTreasuryPrices",
+      "domain": "tmx_treasury_prices",
+      "model": "TreasuryPrices",
       "scenario_present": true,
       "source": "tmx",
       "verified": false,
@@ -6071,6 +6259,16 @@
       "contract": "YfinancePayloadObservation",
       "domain": "yfinance_etf_info",
       "model": "EtfInfo",
+      "scenario_present": true,
+      "source": "yfinance",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.yfinance.models.futures_curve_iter2:YfinanceFuturesCurveFetcher",
+      "contract": "YfinanceFuturesCurve",
+      "domain": "yfinance_futures_curve",
+      "model": "FuturesCurve",
       "scenario_present": true,
       "source": "yfinance",
       "verified": false,
@@ -6375,6 +6573,7 @@
     "government_us_commodity_psd_data",
     "government_us_commodity_psd_report",
     "government_us_treasury_auctions",
+    "government_us_treasury_prices",
     "government_us_weather_bulletin",
     "government_us_weather_bulletin_download",
     "hqm_corporate_bond",
@@ -6465,14 +6664,30 @@
     "tiingo_etf_historical",
     "tiingo_trailing_dividend_yield",
     "tiingo_world_news",
+    "tmx_available_indices",
+    "tmx_bond_prices",
+    "tmx_calendar_earnings",
     "tmx_company_filings",
+    "tmx_company_news",
+    "tmx_equity_gainers",
     "tmx_equity_historical",
     "tmx_equity_info",
     "tmx_equity_quote",
     "tmx_equity_search",
+    "tmx_etf_countries",
+    "tmx_etf_historical",
+    "tmx_etf_holdings",
+    "tmx_etf_info",
+    "tmx_etf_search",
+    "tmx_etf_sectors",
     "tmx_historical_dividends",
     "tmx_index_constituents",
+    "tmx_index_sectors",
+    "tmx_index_snapshots",
+    "tmx_insider_trading",
+    "tmx_options_chains",
     "tmx_price_target_consensus",
+    "tmx_treasury_prices",
     "tradier_equity_historical",
     "tradier_equity_quote",
     "tradier_equity_search",
@@ -6496,6 +6711,7 @@
     "yfinance_equity_undervalued_large_caps",
     "yfinance_etf_historical",
     "yfinance_etf_info",
+    "yfinance_futures_curve",
     "yfinance_futures_historical",
     "yfinance_growth_tech_equities",
     "yfinance_income_statement",
@@ -7828,7 +8044,15 @@
       "source": "tmx"
     },
     {
+      "domain": "tmx_index_snapshots",
+      "source": "tmx"
+    },
+    {
       "domain": "tmx_insider_trading",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_options_chains",
       "source": "tmx"
     },
     {
@@ -7940,6 +8164,10 @@
       "source": "yfinance"
     },
     {
+      "domain": "yfinance_futures_curve",
+      "source": "yfinance"
+    },
+    {
       "domain": "yfinance_futures_historical",
       "source": "yfinance"
     },
@@ -7993,13 +8221,13 @@
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/receipt.json": "f2e3eb877e7a1ec4f6a080ebbe60137330e50b38d8d5224ac186e0950191bef3",
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/smoke.json": "224c2475432ea6fca4b2c6e1442718ae2b0b829386530bf97a5361fb79897dc9",
     "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5",
-    "opendata/data/domains.yaml": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+    "opendata/data/domains.yaml": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
     "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
     "opendata/data/mappings/ths.yaml": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418",
-    "opendata/data/models/__init__.py": "e4e8d51235c3a74a2c0e07c521fef6c6bc7d277e522756e633190c4e9c6be02f",
+    "opendata/data/models/__init__.py": "2e7c67651ebab942f02138bb56266973435ed4e1008f6e470389a535110725e3",
     "opendata/data/models/finviz_performance.py": "1c0df807da91d8cb2fb1b5720431ce7d68bbacd3d4eb746fa2ff34ca5bf07b86",
     "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
-    "opendata/data/models/yfinance_iter2.py": "7f7091ebbe366457446a31d8c12068d8b0a2f5dc96d48be1abce60554e68009c",
+    "opendata/data/models/yfinance_iter2.py": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
     "opendata/data/providers/finviz/models/price_performance.py": "2881070564803fee5b53d71f745846f2a95abb801e5d666285b6ae42d8138c8e",
     "opendata/data/providers/fred/models/sloos.py": "639a81178ecb23bb7e2876096c7d2c74c03321bb25b3bf2c980a6f2e9466f741",
     "opendata/data/providers/fred/provider.py": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
@@ -8298,5 +8526,336 @@
       }
     },
     "identities": "known 353 == legacy 20 | deferred 333 (disjoint); legs 366 == legacy 33 | deferred_legs 333; ods 33 + deferred_legs 333 == 366"
+  },
+  "wave34_census_rebase": {
+    "scope": "the 3 wave-34 model domains and the 3 drifted source pins only; the legacy/measured cohort, the ods mapped+unmapped split and the warehouse table catalog are byte-frozen",
+    "measured_by": "live: opendata.data.domains.load_domains + opendata.pipeline.alert_matrix.registered_legs/warehouse_tables after register_providers(); classification authority = dwd_/ods_ warehouse presence, the rule wave33_census_rebase established",
+    "source_pin_delta": {
+      "entries_pinned": 31,
+      "entries_changed": 3,
+      "entries_untouched": 28,
+      "changed": [
+        {
+          "path": "opendata/data/domains.yaml",
+          "from": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+          "to": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+          "git_diff_numstat_HEAD": "47 0"
+        },
+        {
+          "path": "opendata/data/models/__init__.py",
+          "from": "e4e8d51235c3a74a2c0e07c521fef6c6bc7d277e522756e633190c4e9c6be02f",
+          "to": "2e7c67651ebab942f02138bb56266973435ed4e1008f6e470389a535110725e3",
+          "git_diff_numstat_HEAD": "6 0"
+        },
+        {
+          "path": "opendata/data/models/yfinance_iter2.py",
+          "from": "7f7091ebbe366457446a31d8c12068d8b0a2f5dc96d48be1abce60554e68009c",
+          "to": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+          "git_diff_numstat_HEAD": "36 0"
+        }
+      ],
+      "note": "the 28 untouched pins were re-hashed from disk and matched; opendata/data/models/tmx.py and the two provider.py files changed on disk but are not in source_hashes_sha256, so nothing moved for them here"
+    },
+    "delta": {
+      "domain_count": {
+        "from": 353,
+        "to": 356,
+        "components": "+3"
+      },
+      "deferred_domain_count": {
+        "from": 333,
+        "to": 336,
+        "components": "+3"
+      },
+      "deferred_source_domain_leg_count": {
+        "from": 333,
+        "to": 336,
+        "components": "+3"
+      },
+      "registered_source_domain_leg_count": {
+        "from": 366,
+        "to": 369,
+        "components": "+3"
+      }
+    },
+    "unmoved": {
+      "legacy_dwd_domain_count": 20,
+      "legacy_source_domain_leg_count": 33,
+      "mapped_ods_leg_count": 10,
+      "unmapped_ods_leg_count": 23,
+      "warehouse_table_catalog_count": 53,
+      "query_semantic_domain_ids": 318,
+      "provider_model_identities": 351
+    },
+    "identities": {
+      "known_equals_legacy_union_deferred": "356 = 20 measured + 336 deferred",
+      "legacy_disjoint_deferred": true,
+      "legs_equals_legacy_plus_deferred": "369 = 33 + 336",
+      "each_new_domain_counted_exactly_once": true
+    },
+    "classification": {
+      "tmx_index_snapshots": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "classification": "DEFERRED",
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "tmx_options_chains": {
+        "legs": [
+          "tmx"
+        ],
+        "served": false,
+        "classification": "DEFERRED",
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      },
+      "yfinance_futures_curve": {
+        "legs": [
+          "yfinance"
+        ],
+        "served": false,
+        "classification": "DEFERRED",
+        "reason": "no dwd_<domain> and no ods_<domain>_<source> table in warehouse_tables()"
+      }
+    },
+    "counterfact": {
+      "pinned_forge": "appending one byte to opendata/data/domains.yaml put all four tests/test_provider_domains.py consumers back to red at :1368 with the message 'opendata/data/domains.yaml' (the per-path re-hash still bites)",
+      "non_pinned_touch": "appending one byte to opendata/data/models/tmx.py, a wave-34 file that is NOT in source_hashes_sha256, produced zero :1368 verdicts and left 90 passed with only the four pre-existing reds",
+      "census_digest_gate": "deleting yfinance_futures_curve from domain_ids went red first at tests/test_pipeline_jobs.py:1753 on the outer digest literal",
+      "census_membership_arm": "re-signing that digest and dropping yfinance_futures_curve again went red at :1798 assert known == expected_domains, naming only 'yfinance_futures_curve'",
+      "authority_arms": "in-memory only, no file edit: drop tmx_options_chains -> red with Extra items in the left set 'tmx_options_chains'; inject totally_unregistered_domain_xyz -> red naming only that name in the right set; pop tmx_index_snapshots from served -> red with Extra items in the right set 'tmx_index_snapshots'; no arm -> 1 passed",
+      "residual_after_rebase": "the four pre-existing provider_domains reds no longer trip the pin check; they trip :1414 assert snapshot['counts']['domain_count'] == 338, which was already false at HEAD (353 != 338)"
+    }
+  },
+  "identity_list_census_rebase": {
+    "scope": "the provider_model_identities membership list, its two identity counts and the export census only; the batch5 candidate semantics, the batch5 count adjudication, the legacy/measured cohort, the ods mapped+unmapped split, the warehouse table catalog and both wave33/wave34 census blocks stay byte-frozen",
+    "measured_by": "live: opendata.data.providers.catalog.list_providers() bindings + ProviderRegistry().list_model_descriptors() after register_providers() + opendata.pipeline.alert_matrix.registered_legs() + opendata.data.models.__all__; every appended row field was read off the live binding/descriptor, none was authored",
+    "command": "PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python - <<'PY' : legs={(l['source'],l['domain']) for l in snapshot['source_domain_legs']}; missing=sorted(legs-{(r['source'],r['domain']) for r in snapshot['provider_model_identities']}); row.model=descriptor(source,domain).model, row.binding=f'{binding.module}:{binding.class_name}', row.scenario_present=(binding.scenario is not None), row.canonical_ids_declared=bool(binding.canonical_model_ids), row.contract=contract_model(domain).__name__, row.verified=descriptor.verified PY",
+    "wave33_domains_absorbed": [
+      "government_us_treasury_prices",
+      "tmx_available_indices",
+      "tmx_bond_prices",
+      "tmx_calendar_earnings",
+      "tmx_company_news",
+      "tmx_equity_gainers",
+      "tmx_etf_countries",
+      "tmx_etf_historical",
+      "tmx_etf_holdings",
+      "tmx_etf_info",
+      "tmx_etf_search",
+      "tmx_etf_sectors",
+      "tmx_index_sectors",
+      "tmx_insider_trading",
+      "tmx_treasury_prices"
+    ],
+    "wave34_domains_absorbed": [
+      "tmx_index_snapshots",
+      "tmx_options_chains",
+      "yfinance_futures_curve"
+    ],
+    "entries_appended": 18,
+    "appended_identities": [
+      {
+        "source": "government_us",
+        "domain": "government_us_treasury_prices",
+        "model": "TreasuryPrices",
+        "binding": "opendata.data.providers.government_us.models.treasury_prices:TreasuryPricesFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_available_indices",
+        "model": "AvailableIndices",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:AvailableIndicesFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_bond_prices",
+        "model": "BondPrices",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:BondPricesFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_calendar_earnings",
+        "model": "CalendarEarnings",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_graphql:CalendarEarningsFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_company_news",
+        "model": "CompanyNews",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_graphql:CompanyNewsFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_equity_gainers",
+        "model": "EquityGainers",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_graphql:EquityGainersFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_etf_countries",
+        "model": "EtfCountries",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:EtfCountriesFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_etf_historical",
+        "model": "EtfHistorical",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_graphql:EtfHistoricalFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_etf_holdings",
+        "model": "EtfHoldings",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:EtfHoldingsFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_etf_info",
+        "model": "EtfInfo",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:EtfInfoFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_etf_search",
+        "model": "EtfSearch",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:EtfSearchFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_etf_sectors",
+        "model": "EtfSectors",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:EtfSectorsFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_index_sectors",
+        "model": "IndexSectors",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:IndexSectorsFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_index_snapshots",
+        "model": "IndexSnapshots",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w34_envelope:IndexSnapshotsFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_insider_trading",
+        "model": "InsiderTrading",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_graphql:InsiderTradingFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_options_chains",
+        "model": "OptionsChains",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w34_envelope:OptionsChainsFetcher"
+      },
+      {
+        "source": "tmx",
+        "domain": "tmx_treasury_prices",
+        "model": "TreasuryPrices",
+        "binding": "opendata.data.providers.tmx.models.fetchers_w33_etf_loaders:TreasuryPricesFetcher"
+      },
+      {
+        "source": "yfinance",
+        "domain": "yfinance_futures_curve",
+        "model": "FuturesCurve",
+        "binding": "opendata.data.providers.yfinance.models.futures_curve_iter2:YfinanceFuturesCurveFetcher"
+      }
+    ],
+    "live_vs_pinned_before": {
+      "provider_model_identities_pinned": 351,
+      "registered_source_domain_legs_live": 369,
+      "membership_missing": 18,
+      "membership_unexpected": 0,
+      "descriptors_live": 347,
+      "descriptor_eligible_identity_count_pinned": 329,
+      "all_symbols_live": 347,
+      "all_symbols_pinned": 329,
+      "contract_model_classes_including_base_live": 343,
+      "pinned": 324,
+      "non_base_contract_model_classes_live": 342
+    },
+    "live_vs_pinned_after": {
+      "provider_model_identities_pinned": 369,
+      "registered_source_domain_legs_live": 369,
+      "membership_missing": 0,
+      "membership_unexpected": 0,
+      "descriptors_live": 347,
+      "descriptor_eligible_identity_count_pinned": 347,
+      "all_symbols_pinned": 347,
+      "contract_model_classes_including_base_pinned": 343,
+      "non_base_contract_model_classes_pinned": 342
+    },
+    "removals": {
+      "entries": [],
+      "verdict": "none - all 351 previously pinned rows still resolve to a live (source, model) binding with a matching module:class and scenario presence, and every pinned leg still appears in registered_legs(); no identity vanished, so nothing is dropped"
+    },
+    "identities": {
+      "list_equals_legs": "369 provider_model_identities rows = 369 registered source/domain legs = 33 legacy + 336 deferred",
+      "eligible_plus_model_key_only": "347 descriptor-eligible + 22 model-key-only = 369",
+      "deferred_rows_equals_deferred_legs": "336",
+      "descriptor_rows_equals_live_descriptors": "347"
+    },
+    "unmoved": {
+      "counts.domain_count": 356,
+      "counts.query_semantic_domain_count": 318,
+      "counts.legacy_dwd_domain_count": 20,
+      "counts.legacy_source_domain_leg_count": 33,
+      "counts.deferred_source_domain_leg_count": 336,
+      "counts.registered_source_domain_leg_count": 369,
+      "counts.model_key_only_identity_count": 22,
+      "counts.descriptor_eligible_legacy_identity_count": 11,
+      "candidate_counts.domain_specs": 338,
+      "candidate_counts.fixed_bound": 318,
+      "candidate_counts.fixed_unbound": 33,
+      "candidate_counts.fixed_identities": 351,
+      "candidate_counts.provider_model_legs": 351,
+      "batch5_count_adjudication.counts": "330/326/325 stay hashed unchanged at 2a929fd8614af09e28aa2ae16fa781c7da49d7692dcd6a3b6c78f2118c0906de",
+      "source_hashes_sha256": "31 entries unchanged"
+    },
+    "delta_vs_adjudication_note": "the export census moved from one below the batch5 adjudication (-1 each) to 17 above it (+17 each), because waves 33 and 34 shipped 18 contract models onto the 330/326/325 baseline; the adjudication record itself is not rewritten",
+    "counterfact": {
+      "identity_removed": "dropping ('government_us','government_us_treasury_prices') from an in-memory copy reddens the membership test naming only that leg",
+      "identity_added": "adding a fabricated ('tmx','tmx_not_a_domain') identity reddens it in both directions",
+      "pinned_source_forged": "appending one byte to opendata/data/domains.yaml redds the digest/source-hash comparison naming that path",
+      "non_pinned_touched": "appending one comment to opendata/data/models/tmx.py (not in source_hashes_sha256) keeps the pinned comparison green"
+    }
+  },
+  "query_semantic_list_census_rebase": {
+    "scope": "the query_semantic_domain_ids membership list and counts.query_semantic_domain_count only; deferred_domain_ids, deferred_source_domain_legs, legacy/measured cohorts, the ods split, the warehouse table catalog, provider_model_identities and both wave33/wave34 census blocks stay byte-frozen",
+    "measured_by": "live: opendata.data.domains.require_domain_semantics(domain).permissions contains 'query' over alert_matrix.registered_legs() after register_providers()",
+    "predicate": "alert_matrix._deferred_model_domains() = query-semantic domains with an exact canonical provider/model binding; measured live_query_set == live_deferred_set (336), so the 18 wave33/34 domains are deferred AND query-semantic",
+    "finding": "waves 33/34 grew deferred_domain_ids/deferred_source_domain_legs 318->336 but left query_semantic_domain_ids at 318; the stale side is the query list, not the deferred lists",
+    "delta": {
+      "query_semantic_domain_count": {
+        "from": 318,
+        "to": 336,
+        "components": "+18"
+      }
+    },
+    "added_domain_ids": [
+      "government_us_treasury_prices",
+      "tmx_available_indices",
+      "tmx_bond_prices",
+      "tmx_calendar_earnings",
+      "tmx_company_news",
+      "tmx_equity_gainers",
+      "tmx_etf_countries",
+      "tmx_etf_historical",
+      "tmx_etf_holdings",
+      "tmx_etf_info",
+      "tmx_etf_search",
+      "tmx_etf_sectors",
+      "tmx_index_sectors",
+      "tmx_index_snapshots",
+      "tmx_insider_trading",
+      "tmx_options_chains",
+      "tmx_treasury_prices",
+      "yfinance_futures_curve"
+    ],
+    "digest_before": "c2562d2db3d61ac81b3f1394df806d55c3e44f1e824b3ffc6c43ffd26aa160b5"
   }
 }

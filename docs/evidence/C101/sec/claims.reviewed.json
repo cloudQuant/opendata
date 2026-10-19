@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model BalanceSheet --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:21:57.275947+00:00",
+      "executed_at_utc": "2026-10-18T23:44:02.945304+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -98,7 +98,7 @@
       "receipt": {
         "model_identity": "sec::BalanceSheet",
         "path": "docs/evidence/C101/receipts/sec/BalanceSheet/implementation.json",
-        "sha256": "e5999a2287fe673e613ac8a5b32c54818a4dae328f2fe8f2637edc5ea309c7e8"
+        "sha256": "c47ecade2d6afe73870a0fe4990267e4f2e5801a0c3ba3cc3b9635ae404528b6"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheet"
@@ -106,7 +106,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model BalanceSheet --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:21:58.220952+00:00",
+      "executed_at_utc": "2026-10-18T23:44:03.892565+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -118,8 +118,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -186,7 +186,7 @@
       "receipt": {
         "model_identity": "sec::BalanceSheet",
         "path": "docs/evidence/C101/receipts/sec/BalanceSheet/direct.json",
-        "sha256": "b8be453e88b7cb623f4047c527cbd7e7b53df6aba8258992ac5ab38dd07e7254"
+        "sha256": "2733a8a7f9c69e248edd004166914ee0e350dd151d5f216a42a05ff6150602b8"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheet"
@@ -194,7 +194,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model BalanceSheet --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:21:59.255115+00:00",
+      "executed_at_utc": "2026-10-18T23:44:04.926760+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -206,8 +206,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -274,7 +274,7 @@
       "receipt": {
         "model_identity": "sec::BalanceSheet",
         "path": "docs/evidence/C101/receipts/sec/BalanceSheet/service.json",
-        "sha256": "6a4d0f715e8b80f358e86f9a857a22bbac150495571f96a94ce844b690de6db1"
+        "sha256": "26d83fdab513180a4f7983095425a9299709ae726794011e9c79442399fac6f9"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheet"
@@ -282,7 +282,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model BalanceSheet --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:22:00.189608+00:00",
+      "executed_at_utc": "2026-10-18T23:44:05.874351+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -294,8 +294,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -362,7 +362,7 @@
       "receipt": {
         "model_identity": "sec::BalanceSheet",
         "path": "docs/evidence/C101/receipts/sec/BalanceSheet/contract.json",
-        "sha256": "057dcd2d9f674517d8f990d239e1a57e829b1a6f0c590e0cb7609223b34a6ba1"
+        "sha256": "d542fddfcc8bc4ad250075110407f87731af512dc081d1fde671642678349a77"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheet"
@@ -370,7 +370,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model BalanceSheet --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:22:02.001260+00:00",
+      "executed_at_utc": "2026-10-18T23:44:07.703232+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -382,8 +382,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -450,7 +450,7 @@
       "receipt": {
         "model_identity": "sec::BalanceSheet",
         "path": "docs/evidence/C101/receipts/sec/BalanceSheet/counterfact.json",
-        "sha256": "ef5845f9766e4450ec9436cfa8b1527f351baae3c09e9aa51251cb84ecabb644"
+        "sha256": "bb700b5412a550837aee08c0661789ccaaebeb70c506c499aa60f88ce9998ae4"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheet"
@@ -458,7 +458,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model BalanceSheetGrowth --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:22:02.870195+00:00",
+      "executed_at_utc": "2026-10-18T23:44:08.578958+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -470,8 +470,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -553,7 +553,7 @@
       "receipt": {
         "model_identity": "sec::BalanceSheetGrowth",
         "path": "docs/evidence/C101/receipts/sec/BalanceSheetGrowth/implementation.json",
-        "sha256": "74b634f9871cf7289859844c5f95e6377cd15ade8dcf849b3ecae939ed5f8e87"
+        "sha256": "f19d98c0b54185fb2677505a4ac828d1f62227b9455f7e6fe43c07aadfce9923"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheetGrowth"
@@ -561,7 +561,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model BalanceSheetGrowth --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:22:03.773554+00:00",
+      "executed_at_utc": "2026-10-18T23:44:09.479523+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -573,8 +573,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -641,7 +641,7 @@
       "receipt": {
         "model_identity": "sec::BalanceSheetGrowth",
         "path": "docs/evidence/C101/receipts/sec/BalanceSheetGrowth/direct.json",
-        "sha256": "50a8df53c78eaac3738aad71bbe81a891e7187255fdc332e8db22990462fb125"
+        "sha256": "2c405d5ac26f75051f500a8800fed2e8840cff3b7840564ca93c0bfadc9b61c3"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheetGrowth"
@@ -649,7 +649,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model BalanceSheetGrowth --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:22:04.831866+00:00",
+      "executed_at_utc": "2026-10-18T23:44:10.539154+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -661,8 +661,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -729,7 +729,7 @@
       "receipt": {
         "model_identity": "sec::BalanceSheetGrowth",
         "path": "docs/evidence/C101/receipts/sec/BalanceSheetGrowth/service.json",
-        "sha256": "d14c8d350b1bfca7fef915307a45a2d0f741d233efeeda6bd223a185db457c20"
+        "sha256": "193bd7b5f585f5c163f17e7c57a662d695db7c75b859d46856bbcc94f7ee23d4"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheetGrowth"
@@ -737,7 +737,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model BalanceSheetGrowth --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:22:05.692874+00:00",
+      "executed_at_utc": "2026-10-18T23:44:11.420023+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -749,8 +749,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -817,7 +817,7 @@
       "receipt": {
         "model_identity": "sec::BalanceSheetGrowth",
         "path": "docs/evidence/C101/receipts/sec/BalanceSheetGrowth/contract.json",
-        "sha256": "96a1b9ba5518ed7044a29e618aff994d6654a17078af01c2d2fd4b45f707189f"
+        "sha256": "b56aff57957f65fb7813ab1ab5543842a295c4c355e9933dd76fd306611cb423"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheetGrowth"
@@ -825,7 +825,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model BalanceSheetGrowth --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:22:07.553305+00:00",
+      "executed_at_utc": "2026-10-18T23:44:13.299332+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -837,8 +837,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -905,7 +905,7 @@
       "receipt": {
         "model_identity": "sec::BalanceSheetGrowth",
         "path": "docs/evidence/C101/receipts/sec/BalanceSheetGrowth/counterfact.json",
-        "sha256": "fbc5c9f1abdf7bae6421d6bb4e890c4113fa46d0bc1676d51581c455d93d0c90"
+        "sha256": "2250defa0a2b4db63ccf31d2e42c730beecf85fe03ad1157a0cc637b9883dbb8"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheetGrowth"
@@ -913,7 +913,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CashFlowStatement --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:22:08.466022+00:00",
+      "executed_at_utc": "2026-10-18T23:44:14.222586+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -925,8 +925,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1008,7 +1008,7 @@
       "receipt": {
         "model_identity": "sec::CashFlowStatement",
         "path": "docs/evidence/C101/receipts/sec/CashFlowStatement/implementation.json",
-        "sha256": "87427a435db92fe9224ded496a3484f4ff0ee4f7bbf49d56fe763e54e1a59912"
+        "sha256": "c888fcc322a151c363e913b8ff1bff7129b04a9ec0ef12d309f14450af3bb30e"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatement"
@@ -1016,7 +1016,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CashFlowStatement --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:22:09.416174+00:00",
+      "executed_at_utc": "2026-10-18T23:44:15.173314+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1028,8 +1028,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1096,7 +1096,7 @@
       "receipt": {
         "model_identity": "sec::CashFlowStatement",
         "path": "docs/evidence/C101/receipts/sec/CashFlowStatement/direct.json",
-        "sha256": "e1ceff1a29c2bca1a13f3c1b8557e244353b98ac7924f0dc72b1910ab5d46cfb"
+        "sha256": "6dbe51a7b3ce25a3103b2112cd4d840a6c42d88092ea45cfb6ad6fd964165c89"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatement"
@@ -1104,7 +1104,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CashFlowStatement --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:22:10.444400+00:00",
+      "executed_at_utc": "2026-10-18T23:44:16.216834+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1116,8 +1116,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1184,7 +1184,7 @@
       "receipt": {
         "model_identity": "sec::CashFlowStatement",
         "path": "docs/evidence/C101/receipts/sec/CashFlowStatement/service.json",
-        "sha256": "f19af3107f876b4d2a571f8b67905d15e44f43d72cb673f44eca7add32c20e16"
+        "sha256": "73c50fa5289dc970707ffbc4f97523b114bed9311486bbe0ba82322f9c68991d"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatement"
@@ -1192,7 +1192,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CashFlowStatement --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:22:11.390774+00:00",
+      "executed_at_utc": "2026-10-18T23:44:17.147210+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1204,8 +1204,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1272,7 +1272,7 @@
       "receipt": {
         "model_identity": "sec::CashFlowStatement",
         "path": "docs/evidence/C101/receipts/sec/CashFlowStatement/contract.json",
-        "sha256": "d5fdeef6ec0dfaabf9e67830d34b5fd14b7bddf087f138ec9d359ed1d407951a"
+        "sha256": "e9c0c55b0ddc70959cad1e821a26f34618530b37251c09dce06c35ed6785d2f1"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatement"
@@ -1280,7 +1280,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CashFlowStatement --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:22:13.192823+00:00",
+      "executed_at_utc": "2026-10-18T23:44:18.976787+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1292,8 +1292,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1360,7 +1360,7 @@
       "receipt": {
         "model_identity": "sec::CashFlowStatement",
         "path": "docs/evidence/C101/receipts/sec/CashFlowStatement/counterfact.json",
-        "sha256": "27723cd7b3d99fa6bd72995d2a224a01b9378c2bcc91a603d93edde31997d22c"
+        "sha256": "6d1828ce16d6cfa506a8c511ada68122fda64397a4da6c7a0b586b8298fc9e1f"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatement"
@@ -1368,7 +1368,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CashFlowStatementGrowth --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:22:14.074879+00:00",
+      "executed_at_utc": "2026-10-18T23:44:19.856043+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1380,8 +1380,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1463,7 +1463,7 @@
       "receipt": {
         "model_identity": "sec::CashFlowStatementGrowth",
         "path": "docs/evidence/C101/receipts/sec/CashFlowStatementGrowth/implementation.json",
-        "sha256": "83331f5f73915e88e71038e5c545bb938f01dbbef77331b9a27d06e6f8141b2e"
+        "sha256": "8fb3ce50761106d25b36c66efa8db5386245cce3a2d6143e8cc25888c06bc77c"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatementGrowth"
@@ -1471,7 +1471,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CashFlowStatementGrowth --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:22:14.972242+00:00",
+      "executed_at_utc": "2026-10-18T23:44:20.771960+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1483,8 +1483,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1551,7 +1551,7 @@
       "receipt": {
         "model_identity": "sec::CashFlowStatementGrowth",
         "path": "docs/evidence/C101/receipts/sec/CashFlowStatementGrowth/direct.json",
-        "sha256": "50f909305c41944356e6e51c71c05cff7042b7ebaf0b033b672d4fbabf02950f"
+        "sha256": "43848e5b4d797d84b12f334f4a47d410e7fe46eece8eb9180a567819135e47d4"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatementGrowth"
@@ -1559,7 +1559,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CashFlowStatementGrowth --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:22:16.036612+00:00",
+      "executed_at_utc": "2026-10-18T23:44:21.828549+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1571,8 +1571,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1639,7 +1639,7 @@
       "receipt": {
         "model_identity": "sec::CashFlowStatementGrowth",
         "path": "docs/evidence/C101/receipts/sec/CashFlowStatementGrowth/service.json",
-        "sha256": "907566dfef891581aeb85b80746679dd0e517a29c7d00e9cb762efb25dbc9b69"
+        "sha256": "c89abd94648ff64d9edac70788c1f511a07a7576dcb533653def908b0cd1079c"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatementGrowth"
@@ -1647,7 +1647,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CashFlowStatementGrowth --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:22:16.896866+00:00",
+      "executed_at_utc": "2026-10-18T23:44:22.706635+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1659,8 +1659,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1727,7 +1727,7 @@
       "receipt": {
         "model_identity": "sec::CashFlowStatementGrowth",
         "path": "docs/evidence/C101/receipts/sec/CashFlowStatementGrowth/contract.json",
-        "sha256": "b9a85840d85d78afdd9b8d4cd25d143c9f845172f4d2780a66adcbf4951e1843"
+        "sha256": "ef2716d59a71fd08fa27e4355c33963a12aa290a2633d83721651c7b0b9d69a3"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatementGrowth"
@@ -1735,7 +1735,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CashFlowStatementGrowth --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:22:18.758836+00:00",
+      "executed_at_utc": "2026-10-18T23:44:24.576452+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1747,8 +1747,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1815,7 +1815,7 @@
       "receipt": {
         "model_identity": "sec::CashFlowStatementGrowth",
         "path": "docs/evidence/C101/receipts/sec/CashFlowStatementGrowth/counterfact.json",
-        "sha256": "8d87369d9c785874f1a4724949b7243c3b3a82162695c96408d314d81717bad8"
+        "sha256": "536bca62a26237e1098c053ae4aecbdfa98e3dede749b23d281836842bbfbc06"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatementGrowth"
@@ -1823,7 +1823,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CikMap --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:22:19.668745+00:00",
+      "executed_at_utc": "2026-10-18T23:44:25.491000+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1835,8 +1835,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1918,7 +1918,7 @@
       "receipt": {
         "model_identity": "sec::CikMap",
         "path": "docs/evidence/C101/receipts/sec/CikMap/implementation.json",
-        "sha256": "d3822868361601cb1a690a5789fdda15f216dc8cb2c0d6b83a9cd10fc56da564"
+        "sha256": "21f1e3ec969a8aea9d79a923c7e4c7e2e9730ad301edc808948005fd662d6fab"
       },
       "status": "PASS",
       "upstream_model": "CikMap"
@@ -1926,7 +1926,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CikMap --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:22:20.604675+00:00",
+      "executed_at_utc": "2026-10-18T23:44:26.443345+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1938,8 +1938,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2006,7 +2006,7 @@
       "receipt": {
         "model_identity": "sec::CikMap",
         "path": "docs/evidence/C101/receipts/sec/CikMap/direct.json",
-        "sha256": "4f6f46638c50c04c2866b32de3095cc162ae41946ad4d104c3dec52071dae6c6"
+        "sha256": "d9ebdc7dedf630f82ce8b73cd73338e97402cc6fef639df2b8d1794b6c4b6568"
       },
       "status": "PASS",
       "upstream_model": "CikMap"
@@ -2014,7 +2014,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CikMap --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:22:21.635220+00:00",
+      "executed_at_utc": "2026-10-18T23:44:27.485734+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2026,8 +2026,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2094,7 +2094,7 @@
       "receipt": {
         "model_identity": "sec::CikMap",
         "path": "docs/evidence/C101/receipts/sec/CikMap/service.json",
-        "sha256": "c334881c059d73d4068f5bf51280c0b77d4071deb841c0f3d2df55ac734ffd33"
+        "sha256": "258a8f084ab90f48aeae5628ea0468c87432f2db98af73052a958e2bb1f045c6"
       },
       "status": "PASS",
       "upstream_model": "CikMap"
@@ -2102,7 +2102,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CikMap --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:22:22.571995+00:00",
+      "executed_at_utc": "2026-10-18T23:44:28.427251+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2114,8 +2114,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2182,7 +2182,7 @@
       "receipt": {
         "model_identity": "sec::CikMap",
         "path": "docs/evidence/C101/receipts/sec/CikMap/contract.json",
-        "sha256": "17f74416709c72f2c9069d6d86722b0d9900ae349fd0fcef2c87aced7c624880"
+        "sha256": "3ef062668eca5c055c5227bb7d574a9efaa7230a78922568bba16c887a5fb120"
       },
       "status": "PASS",
       "upstream_model": "CikMap"
@@ -2190,7 +2190,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CikMap --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:22:24.389315+00:00",
+      "executed_at_utc": "2026-10-18T23:44:30.246436+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2202,8 +2202,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2270,7 +2270,7 @@
       "receipt": {
         "model_identity": "sec::CikMap",
         "path": "docs/evidence/C101/receipts/sec/CikMap/counterfact.json",
-        "sha256": "fc40a6a145ea8ceb8f9aab070c27ae7d60405619184d74fdb8041a806eb9b97d"
+        "sha256": "5876f4f2abae8bd8ae1e85cddac69fbcd70cf50c696cf97281dcc09b3aab30b3"
       },
       "status": "PASS",
       "upstream_model": "CikMap"
@@ -2278,7 +2278,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CompanyFilings --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:22:25.259381+00:00",
+      "executed_at_utc": "2026-10-18T23:44:31.116455+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2290,8 +2290,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2373,7 +2373,7 @@
       "receipt": {
         "model_identity": "sec::CompanyFilings",
         "path": "docs/evidence/C101/receipts/sec/CompanyFilings/implementation.json",
-        "sha256": "4ecac2f7d4f70543fb0c4ee452196f10fae1b8fe0ef4b259d9da7ae865160639"
+        "sha256": "bf53dd14203b5ee53ffec8799758b7835c6c1bae5c1efb9c00ae28b6938c0152"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -2381,7 +2381,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CompanyFilings --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:22:26.159190+00:00",
+      "executed_at_utc": "2026-10-18T23:44:32.011468+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2393,8 +2393,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2461,7 +2461,7 @@
       "receipt": {
         "model_identity": "sec::CompanyFilings",
         "path": "docs/evidence/C101/receipts/sec/CompanyFilings/direct.json",
-        "sha256": "6a4f7952c19cd9cdba430fe7d2d8a308e9748d66ee88b15c527c090bf2dd8667"
+        "sha256": "70919f6db49ddf8af3f762e5b68eaf0d1eed19715f6f22b38515e2684571166f"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -2469,7 +2469,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CompanyFilings --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:22:27.221383+00:00",
+      "executed_at_utc": "2026-10-18T23:44:33.074977+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2481,8 +2481,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2549,7 +2549,7 @@
       "receipt": {
         "model_identity": "sec::CompanyFilings",
         "path": "docs/evidence/C101/receipts/sec/CompanyFilings/service.json",
-        "sha256": "98c7bcd01c047a73aeca164ced7036d31f006610e834441c526bfacf3ff0b6f3"
+        "sha256": "8c7677784a9ddf3f8d99394b2c6cac1bf02351e174b6897016a82acf12515c13"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -2557,7 +2557,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CompanyFilings --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:22:28.085945+00:00",
+      "executed_at_utc": "2026-10-18T23:44:33.952801+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2569,8 +2569,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2637,7 +2637,7 @@
       "receipt": {
         "model_identity": "sec::CompanyFilings",
         "path": "docs/evidence/C101/receipts/sec/CompanyFilings/contract.json",
-        "sha256": "1a3a2562bd5af86c2846149bd1a0f915038d53d0964c262eb97058d45bc17b1a"
+        "sha256": "3ee7f9bfd6efe81a573599448ca7f8728c4f870cc6972866e424457dc9d0c5ed"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -2645,7 +2645,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CompanyFilings --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:22:29.946967+00:00",
+      "executed_at_utc": "2026-10-18T23:44:35.834667+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2657,8 +2657,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2725,7 +2725,7 @@
       "receipt": {
         "model_identity": "sec::CompanyFilings",
         "path": "docs/evidence/C101/receipts/sec/CompanyFilings/counterfact.json",
-        "sha256": "a0047397134fe441e49170a1a897ec26a8e53ee02b32fe86f0ee48f33605081b"
+        "sha256": "ad2b1e50fad64f1cfa99e051169d2a8230a93ad73f7ff3100abf6019e4428343"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -2733,7 +2733,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CompareCompanyFacts --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:22:30.850994+00:00",
+      "executed_at_utc": "2026-10-18T23:44:36.749928+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2745,8 +2745,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2828,7 +2828,7 @@
       "receipt": {
         "model_identity": "sec::CompareCompanyFacts",
         "path": "docs/evidence/C101/receipts/sec/CompareCompanyFacts/implementation.json",
-        "sha256": "13aa9e543891322e82bb12a94818690ad77a69634536c365f316172c002c428e"
+        "sha256": "d767aef760d7ef687b7e6c354108ae9365b79cd6475cc18e881abacdb56668b2"
       },
       "status": "PASS",
       "upstream_model": "CompareCompanyFacts"
@@ -2836,7 +2836,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CompareCompanyFacts --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:22:31.788744+00:00",
+      "executed_at_utc": "2026-10-18T23:44:37.694471+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2848,8 +2848,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2916,7 +2916,7 @@
       "receipt": {
         "model_identity": "sec::CompareCompanyFacts",
         "path": "docs/evidence/C101/receipts/sec/CompareCompanyFacts/direct.json",
-        "sha256": "162a2f95a81c4920d3b5014afbac1977de7e6918135702af0da9dad6ce721f0c"
+        "sha256": "b273048dab8b42f0141caad71c76a23a193b30a6340ea1694334dc194163f1f6"
       },
       "status": "PASS",
       "upstream_model": "CompareCompanyFacts"
@@ -2924,7 +2924,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CompareCompanyFacts --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:22:32.830568+00:00",
+      "executed_at_utc": "2026-10-18T23:44:38.728702+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2936,8 +2936,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3004,7 +3004,7 @@
       "receipt": {
         "model_identity": "sec::CompareCompanyFacts",
         "path": "docs/evidence/C101/receipts/sec/CompareCompanyFacts/service.json",
-        "sha256": "b68d4adad40767efdf462b126890e4117f1629b5e410982b8f9ec8eac55d7d94"
+        "sha256": "436769cb8a79c795b165aa58fbc527dc0434b76d790dc9b2334178571bd2361d"
       },
       "status": "PASS",
       "upstream_model": "CompareCompanyFacts"
@@ -3012,7 +3012,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CompareCompanyFacts --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:22:33.771471+00:00",
+      "executed_at_utc": "2026-10-18T23:44:39.664665+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3024,8 +3024,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3092,7 +3092,7 @@
       "receipt": {
         "model_identity": "sec::CompareCompanyFacts",
         "path": "docs/evidence/C101/receipts/sec/CompareCompanyFacts/contract.json",
-        "sha256": "a3e3ae18396528f642a1e2e1d597fe4bd240f136833fe0658f5127fd67016ddf"
+        "sha256": "f95844616e50c0e773f1dd6d991d0a3eefe7037c25059418f7ad369d82ec0794"
       },
       "status": "PASS",
       "upstream_model": "CompareCompanyFacts"
@@ -3100,7 +3100,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model CompareCompanyFacts --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:22:35.579123+00:00",
+      "executed_at_utc": "2026-10-18T23:44:41.484654+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3112,8 +3112,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3180,7 +3180,7 @@
       "receipt": {
         "model_identity": "sec::CompareCompanyFacts",
         "path": "docs/evidence/C101/receipts/sec/CompareCompanyFacts/counterfact.json",
-        "sha256": "e2e5e0ad104af05f2c7a6999c07f92af4edbbbfbede39ed1ef291da5609a80ec"
+        "sha256": "77022d84f0744bd0be1e00d87960a424863f824955273e86fd655764ea535372"
       },
       "status": "PASS",
       "upstream_model": "CompareCompanyFacts"
@@ -3188,7 +3188,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model EquityFTD --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:22:36.460078+00:00",
+      "executed_at_utc": "2026-10-18T23:44:42.364825+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -3200,8 +3200,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3283,7 +3283,7 @@
       "receipt": {
         "model_identity": "sec::EquityFTD",
         "path": "docs/evidence/C101/receipts/sec/EquityFTD/implementation.json",
-        "sha256": "81db3ba104418e2cd6aad571731d9385657bc0e349b65013cf49a0fd2c19f8da"
+        "sha256": "5e176a0fe54d05fc0104a014d820212b67bed0d107ff3d369a49f87b913b9ff8"
       },
       "status": "PASS",
       "upstream_model": "EquityFTD"
@@ -3291,7 +3291,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model EquityFTD --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:22:37.571433+00:00",
+      "executed_at_utc": "2026-10-18T23:44:43.470221+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3303,8 +3303,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3371,7 +3371,7 @@
       "receipt": {
         "model_identity": "sec::EquityFTD",
         "path": "docs/evidence/C101/receipts/sec/EquityFTD/direct.json",
-        "sha256": "be58ea0c3d494bc78bb5e369c60d8d48b0722cca7c5c647f59e7dd41b66fa6fc"
+        "sha256": "4bbd0732edda32685ac5ad413d8eb060716a572d4aad1556f17507d31fda553b"
       },
       "status": "PASS",
       "upstream_model": "EquityFTD"
@@ -3379,7 +3379,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model EquityFTD --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:22:38.846827+00:00",
+      "executed_at_utc": "2026-10-18T23:44:44.764391+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3391,8 +3391,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3459,7 +3459,7 @@
       "receipt": {
         "model_identity": "sec::EquityFTD",
         "path": "docs/evidence/C101/receipts/sec/EquityFTD/service.json",
-        "sha256": "a485d431632d69418ed142b2208b7fb8ead855e0bb461800bb4711f22d6a351f"
+        "sha256": "450ff00f92481ae3759970044c4296e33b639294ab85a74cc5d3e68e27d68e8c"
       },
       "status": "PASS",
       "upstream_model": "EquityFTD"
@@ -3467,7 +3467,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model EquityFTD --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:22:40.038879+00:00",
+      "executed_at_utc": "2026-10-18T23:44:45.931369+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3479,8 +3479,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3547,7 +3547,7 @@
       "receipt": {
         "model_identity": "sec::EquityFTD",
         "path": "docs/evidence/C101/receipts/sec/EquityFTD/contract.json",
-        "sha256": "f078eec5ca1931f4fcc7045277fbee1ef9ab8a5ffc534ef2ed46a7e01e578019"
+        "sha256": "a2b2c828f7dd38473e90a29f504427c52b77d85db5fe15a3fb4ec4589412f589"
       },
       "status": "PASS",
       "upstream_model": "EquityFTD"
@@ -3555,7 +3555,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model EquityFTD --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:22:42.115604+00:00",
+      "executed_at_utc": "2026-10-18T23:44:48.039928+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3567,8 +3567,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3635,7 +3635,7 @@
       "receipt": {
         "model_identity": "sec::EquityFTD",
         "path": "docs/evidence/C101/receipts/sec/EquityFTD/counterfact.json",
-        "sha256": "fe1403532a0c70fc17c269f4b054800c4c2afef733864d8f9cad6820b010f494"
+        "sha256": "9aa015fbf7fb0663bba3efeae94b75085238e9f6a456d759afe9ac938e98a042"
       },
       "status": "PASS",
       "upstream_model": "EquityFTD"
@@ -3643,7 +3643,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model EquitySearch --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:22:42.977258+00:00",
+      "executed_at_utc": "2026-10-18T23:44:48.928751+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -3655,8 +3655,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3738,7 +3738,7 @@
       "receipt": {
         "model_identity": "sec::EquitySearch",
         "path": "docs/evidence/C101/receipts/sec/EquitySearch/implementation.json",
-        "sha256": "09fe49eb23e9a4535f09dc2ab1a7121d3320b1a8077aa9d288eb7efc3a770cbc"
+        "sha256": "cc458be0b07426179248e4ec00b88ae5c2fbfae516ba9478d7b7df4e1926512a"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -3746,7 +3746,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model EquitySearch --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:22:43.896060+00:00",
+      "executed_at_utc": "2026-10-18T23:44:49.801727+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3758,8 +3758,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3826,7 +3826,7 @@
       "receipt": {
         "model_identity": "sec::EquitySearch",
         "path": "docs/evidence/C101/receipts/sec/EquitySearch/direct.json",
-        "sha256": "422927dbd545733a50bebf0825f08247f3e33234037271f249be411eb37d33bd"
+        "sha256": "6434f46cf6b3e9d422a17406096852d3b59201962d4f90b8bb1996a42a806bc6"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -3834,7 +3834,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model EquitySearch --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:22:44.961411+00:00",
+      "executed_at_utc": "2026-10-18T23:44:50.884208+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3846,8 +3846,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3914,7 +3914,7 @@
       "receipt": {
         "model_identity": "sec::EquitySearch",
         "path": "docs/evidence/C101/receipts/sec/EquitySearch/service.json",
-        "sha256": "4aea481e5b27d61f7995c37306d3a2172ca7f15cb3d342a3b294514283ec859b"
+        "sha256": "cd06be8945fcb2083fccbf4f7502ebb3e04ac41050dc6923b70de40b2fc1a6b7"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -3922,7 +3922,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model EquitySearch --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:22:45.893361+00:00",
+      "executed_at_utc": "2026-10-18T23:44:51.772748+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3934,8 +3934,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4002,7 +4002,7 @@
       "receipt": {
         "model_identity": "sec::EquitySearch",
         "path": "docs/evidence/C101/receipts/sec/EquitySearch/contract.json",
-        "sha256": "3daee62fafce32acb2bca3c4509cab78aed4c35a6791231a8c7e46acffdc5f3c"
+        "sha256": "8051ec3507b5d91cb97518fc78fe480335e9b553e1cd7c5de37225d708c56b21"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -4010,7 +4010,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model EquitySearch --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:22:47.708470+00:00",
+      "executed_at_utc": "2026-10-18T23:44:53.596083+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -4022,8 +4022,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4090,7 +4090,7 @@
       "receipt": {
         "model_identity": "sec::EquitySearch",
         "path": "docs/evidence/C101/receipts/sec/EquitySearch/counterfact.json",
-        "sha256": "f4c8b4ec70d2ef8cb45dc4ef73f46c0f11a2db2fd75aadb3ba71db11817dd65d"
+        "sha256": "557bafb46500b29ebaf4b523825061e7aa77452414544683741366753cb03e0a"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -4098,7 +4098,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model Filings --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:22:48.584309+00:00",
+      "executed_at_utc": "2026-10-18T23:44:54.470653+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -4110,8 +4110,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4193,7 +4193,7 @@
       "receipt": {
         "model_identity": "sec::Filings",
         "path": "docs/evidence/C101/receipts/sec/Filings/implementation.json",
-        "sha256": "6fba033f28fdf1c252492aabf9866bf55ac200ef14b33cf7f4f3fcfbab007048"
+        "sha256": "2fd67e40c02d6cfad6c67d7b7fac60bc4fead8cd7e302a562315444b5bbbdd4c"
       },
       "status": "PASS",
       "upstream_model": "Filings"
@@ -4201,7 +4201,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model Filings --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:22:49.473188+00:00",
+      "executed_at_utc": "2026-10-18T23:44:55.387781+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -4213,8 +4213,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4281,7 +4281,7 @@
       "receipt": {
         "model_identity": "sec::Filings",
         "path": "docs/evidence/C101/receipts/sec/Filings/direct.json",
-        "sha256": "cfd1cd526560fedc49e512c23c6977fdf343f6fcc15bb210a9e4cd2eb929e823"
+        "sha256": "a5af3ada6bba192d81cb14f989c477a9317ed63f798398ae2e87b751d5293261"
       },
       "status": "PASS",
       "upstream_model": "Filings"
@@ -4289,7 +4289,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model Filings --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:22:50.529625+00:00",
+      "executed_at_utc": "2026-10-18T23:44:56.473260+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -4301,8 +4301,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4369,7 +4369,7 @@
       "receipt": {
         "model_identity": "sec::Filings",
         "path": "docs/evidence/C101/receipts/sec/Filings/service.json",
-        "sha256": "603d382fa8e89eff23ad4d8ab8165020a2acabea27ee43ed5e700827ab18f1fd"
+        "sha256": "b006bcafb6b3c67420b98fe4bf4433d3a97061bef4f7da223df4ceb78824baba"
       },
       "status": "PASS",
       "upstream_model": "Filings"
@@ -4377,7 +4377,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model Filings --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:22:51.392088+00:00",
+      "executed_at_utc": "2026-10-18T23:44:57.405383+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -4389,8 +4389,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4457,7 +4457,7 @@
       "receipt": {
         "model_identity": "sec::Filings",
         "path": "docs/evidence/C101/receipts/sec/Filings/contract.json",
-        "sha256": "71e3077089cb3278416e6936da4300ae3005a1785aff0f99a77436a1ed6820c2"
+        "sha256": "76a291036205607a515041e2d13b7c8727947b80284c7dc8260ecbd6a4cc8beb"
       },
       "status": "PASS",
       "upstream_model": "Filings"
@@ -4465,7 +4465,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model Filings --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:22:53.248220+00:00",
+      "executed_at_utc": "2026-10-18T23:44:59.220651+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -4477,8 +4477,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4545,7 +4545,7 @@
       "receipt": {
         "model_identity": "sec::Filings",
         "path": "docs/evidence/C101/receipts/sec/Filings/counterfact.json",
-        "sha256": "f6900ff2611e0e3dd2a50145105661af31b18e1c1df9b46cf0aefa8c06d1ea54"
+        "sha256": "2732d569052cd8d011ffefe0fda85d54c3a22dfc4bb6278ad1b37e0c0794fc4c"
       },
       "status": "PASS",
       "upstream_model": "Filings"
@@ -4553,7 +4553,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model Form13FHR --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:22:54.153916+00:00",
+      "executed_at_utc": "2026-10-18T23:45:00.094606+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -4565,8 +4565,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4648,7 +4648,7 @@
       "receipt": {
         "model_identity": "sec::Form13FHR",
         "path": "docs/evidence/C101/receipts/sec/Form13FHR/implementation.json",
-        "sha256": "44005cd98d0f9eea7c21bae98d98bccfdfb3c11c35f9617b77c6bff9c442a5fe"
+        "sha256": "2e67125bec6654b0c9137d932646b6915ab7f0fe099e07992fcb2b04aeeb44f0"
       },
       "status": "PASS",
       "upstream_model": "Form13FHR"
@@ -4656,7 +4656,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model Form13FHR --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:22:55.539301+00:00",
+      "executed_at_utc": "2026-10-18T23:45:01.411913+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -4668,8 +4668,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4736,7 +4736,7 @@
       "receipt": {
         "model_identity": "sec::Form13FHR",
         "path": "docs/evidence/C101/receipts/sec/Form13FHR/direct.json",
-        "sha256": "92449a55429cbaeb438d67083d05d67b507e7259783e9f4e433091e76945b6a6"
+        "sha256": "80382cde0c74969423e405b4104a40c4b706da089de159b18da27f4c649e4c5b"
       },
       "status": "PASS",
       "upstream_model": "Form13FHR"
@@ -4744,7 +4744,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model Form13FHR --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:22:56.976277+00:00",
+      "executed_at_utc": "2026-10-18T23:45:02.867849+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -4756,8 +4756,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4824,7 +4824,7 @@
       "receipt": {
         "model_identity": "sec::Form13FHR",
         "path": "docs/evidence/C101/receipts/sec/Form13FHR/service.json",
-        "sha256": "b27228980eae41aca32ebca6c6c300486b2d6cb6c19ddede1f2b04844eb60a31"
+        "sha256": "002bdf4cbf1c18a6cbdf560d705246bd790bfe21a3faa07770263fe0c27bb5c9"
       },
       "status": "PASS",
       "upstream_model": "Form13FHR"
@@ -4832,7 +4832,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model Form13FHR --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:22:58.321498+00:00",
+      "executed_at_utc": "2026-10-18T23:45:04.203616+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -4844,8 +4844,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4912,7 +4912,7 @@
       "receipt": {
         "model_identity": "sec::Form13FHR",
         "path": "docs/evidence/C101/receipts/sec/Form13FHR/contract.json",
-        "sha256": "07ec7b24fe19e7fc4689bec28dd482ea89838ed4f89b28fd0c5cf45d506d7895"
+        "sha256": "949303c9a3265b4d038db883083260a074957756e926df31e81f2f2c8be7ea29"
       },
       "status": "PASS",
       "upstream_model": "Form13FHR"
@@ -4920,7 +4920,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model Form13FHR --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:23:01.042488+00:00",
+      "executed_at_utc": "2026-10-18T23:45:06.928774+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -4932,8 +4932,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5000,7 +5000,7 @@
       "receipt": {
         "model_identity": "sec::Form13FHR",
         "path": "docs/evidence/C101/receipts/sec/Form13FHR/counterfact.json",
-        "sha256": "7bf695cd725a8030a6d528f9ed947f3cfe67e1db376a78e9f1996c6c50956a7a"
+        "sha256": "e62d0c9fc51a5c9be6238a13b4ceac6bc578b7174b72b096ac5e7d8e7d9358c8"
       },
       "status": "PASS",
       "upstream_model": "Form13FHR"
@@ -5008,7 +5008,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SecHtmFile --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:23:01.964347+00:00",
+      "executed_at_utc": "2026-10-18T23:45:07.856140+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -5020,8 +5020,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5103,7 +5103,7 @@
       "receipt": {
         "model_identity": "sec::SecHtmFile",
         "path": "docs/evidence/C101/receipts/sec/SecHtmFile/implementation.json",
-        "sha256": "d06ee1c8aadae89aa849a8ecedf0431dba499d4775e927c531deeb025e516cb4"
+        "sha256": "c15ddfda1d6c74120ed7a98fb8a08a94ef2c9f03ab3afa96423360101b4f96ab"
       },
       "status": "PASS",
       "upstream_model": "SecHtmFile"
@@ -5111,7 +5111,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SecHtmFile --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:23:02.909787+00:00",
+      "executed_at_utc": "2026-10-18T23:45:08.802007+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -5123,8 +5123,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5191,7 +5191,7 @@
       "receipt": {
         "model_identity": "sec::SecHtmFile",
         "path": "docs/evidence/C101/receipts/sec/SecHtmFile/direct.json",
-        "sha256": "7b5223055bda77bbc991ff8ed55148aa8df427ce186cd93e273b396d1253beea"
+        "sha256": "2682776a3251db218f0b6c863ddb8a794e765bcde58da339ecb46c61521dd4ef"
       },
       "status": "PASS",
       "upstream_model": "SecHtmFile"
@@ -5199,7 +5199,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SecHtmFile --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:23:03.944113+00:00",
+      "executed_at_utc": "2026-10-18T23:45:09.832807+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -5211,8 +5211,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5279,7 +5279,7 @@
       "receipt": {
         "model_identity": "sec::SecHtmFile",
         "path": "docs/evidence/C101/receipts/sec/SecHtmFile/service.json",
-        "sha256": "bf0973841abd7533eeb3a2744266885789702e4e7499e53d5a4384c132a0faad"
+        "sha256": "227e77999b7e9b5191bdb159e91c5bc40ca99ba2c13744d12c72af50a4d705da"
       },
       "status": "PASS",
       "upstream_model": "SecHtmFile"
@@ -5287,7 +5287,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SecHtmFile --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:23:04.878627+00:00",
+      "executed_at_utc": "2026-10-18T23:45:10.773578+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -5299,8 +5299,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5367,7 +5367,7 @@
       "receipt": {
         "model_identity": "sec::SecHtmFile",
         "path": "docs/evidence/C101/receipts/sec/SecHtmFile/contract.json",
-        "sha256": "9abc57241c037574d15ecf6726422745c8a8d2bd55a8d15f86cd48c91fb4f113"
+        "sha256": "3aac2b52ed949f74d84faaf64d858d8ff3c193f36b201d4907e1ec5f39b2df7f"
       },
       "status": "PASS",
       "upstream_model": "SecHtmFile"
@@ -5375,7 +5375,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SecHtmFile --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:23:06.677847+00:00",
+      "executed_at_utc": "2026-10-18T23:45:12.603429+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -5387,8 +5387,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5455,7 +5455,7 @@
       "receipt": {
         "model_identity": "sec::SecHtmFile",
         "path": "docs/evidence/C101/receipts/sec/SecHtmFile/counterfact.json",
-        "sha256": "8c95f5ce702a6313f5a7342708d5376db5228558c22ee8f368ae187801c4c710"
+        "sha256": "e1ac5623e438d039f612909771d997ecdca691188b8ebd8ed6d46dc208183fb6"
       },
       "status": "PASS",
       "upstream_model": "SecHtmFile"
@@ -5463,7 +5463,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model IncomeStatement --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:23:07.549270+00:00",
+      "executed_at_utc": "2026-10-18T23:45:13.482038+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -5475,8 +5475,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5558,7 +5558,7 @@
       "receipt": {
         "model_identity": "sec::IncomeStatement",
         "path": "docs/evidence/C101/receipts/sec/IncomeStatement/implementation.json",
-        "sha256": "1198734baaa4c19c8efcf2b303f179e4446544de75c298c44f629e7592c94ed5"
+        "sha256": "10e684ddc9a85a7cc310677a2158dcbb6f24fe281a639825d7e9465a83c37be6"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatement"
@@ -5566,7 +5566,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model IncomeStatement --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:23:08.449862+00:00",
+      "executed_at_utc": "2026-10-18T23:45:14.392600+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -5578,8 +5578,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5646,7 +5646,7 @@
       "receipt": {
         "model_identity": "sec::IncomeStatement",
         "path": "docs/evidence/C101/receipts/sec/IncomeStatement/direct.json",
-        "sha256": "0f9d7ee6faf243a1016826291c469aa36f5cabb3297b5e0e2fef7db0809e1546"
+        "sha256": "5c7b188d89ae854599304758fc1e764d4e70c6a566aef1225217b9059fdfb5fd"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatement"
@@ -5654,7 +5654,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model IncomeStatement --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:23:09.503506+00:00",
+      "executed_at_utc": "2026-10-18T23:45:15.463886+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -5666,8 +5666,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5734,7 +5734,7 @@
       "receipt": {
         "model_identity": "sec::IncomeStatement",
         "path": "docs/evidence/C101/receipts/sec/IncomeStatement/service.json",
-        "sha256": "9073114d94c49d3dc332fb92bc76a4c7f00ab294426cd5169bc317c7732f702c"
+        "sha256": "f783c81dd1ad6bd98af00e9bce00435105a396f13bd484369cbf2e4dc4b46b28"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatement"
@@ -5742,7 +5742,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model IncomeStatement --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:23:10.369351+00:00",
+      "executed_at_utc": "2026-10-18T23:45:16.330374+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -5754,8 +5754,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5822,7 +5822,7 @@
       "receipt": {
         "model_identity": "sec::IncomeStatement",
         "path": "docs/evidence/C101/receipts/sec/IncomeStatement/contract.json",
-        "sha256": "5e4c121dc6e542c9593807d96a95504156771fcaa6a4aaf05cee8f92c78faed5"
+        "sha256": "065ce908de56f196f487e84c6a4ffd3cbd79dcdbd2edf58abaf7d4821ac775f3"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatement"
@@ -5830,7 +5830,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model IncomeStatement --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:23:12.229183+00:00",
+      "executed_at_utc": "2026-10-18T23:45:18.205229+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -5842,8 +5842,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5910,7 +5910,7 @@
       "receipt": {
         "model_identity": "sec::IncomeStatement",
         "path": "docs/evidence/C101/receipts/sec/IncomeStatement/counterfact.json",
-        "sha256": "9cec8193555af91ba0863398144d84dd21b92a8cb0cc3badf4502ef7071698d2"
+        "sha256": "03d57b6cc015625338d975da8f8b3f227ced784a1adc387a3ecceb66abc324c6"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatement"
@@ -5918,7 +5918,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model IncomeStatementGrowth --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:23:13.132813+00:00",
+      "executed_at_utc": "2026-10-18T23:45:19.135586+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -5930,8 +5930,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6013,7 +6013,7 @@
       "receipt": {
         "model_identity": "sec::IncomeStatementGrowth",
         "path": "docs/evidence/C101/receipts/sec/IncomeStatementGrowth/implementation.json",
-        "sha256": "7b3064ca367225e310b83bc89bd6888c267728977b6eb00717a30fd4ba00f3b4"
+        "sha256": "1562ea8790491ba5c14648b166d12385262fe74e6e1f73ea691e3b2db1962806"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatementGrowth"
@@ -6021,7 +6021,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model IncomeStatementGrowth --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:23:14.070909+00:00",
+      "executed_at_utc": "2026-10-18T23:45:20.094344+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -6033,8 +6033,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6101,7 +6101,7 @@
       "receipt": {
         "model_identity": "sec::IncomeStatementGrowth",
         "path": "docs/evidence/C101/receipts/sec/IncomeStatementGrowth/direct.json",
-        "sha256": "a715ccc920518fcb0996cb2d688fcc340f37259fab31ff3cd30eca4447ac5260"
+        "sha256": "bdb31270cc55cc46f616a95f47dc477c15f9fb3ccddbfad3ab170134d6a122de"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatementGrowth"
@@ -6109,7 +6109,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model IncomeStatementGrowth --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:23:15.108044+00:00",
+      "executed_at_utc": "2026-10-18T23:45:21.129014+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -6121,8 +6121,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6189,7 +6189,7 @@
       "receipt": {
         "model_identity": "sec::IncomeStatementGrowth",
         "path": "docs/evidence/C101/receipts/sec/IncomeStatementGrowth/service.json",
-        "sha256": "a62b01e430df4037928fec437f9e9331eb4cbb5334fad72c193f8869518479a9"
+        "sha256": "04cfc7f47ca9ba5b36b706ceea02ce4df3eeeb4f75151f71549fa998344a6fc5"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatementGrowth"
@@ -6197,7 +6197,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model IncomeStatementGrowth --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:23:16.048969+00:00",
+      "executed_at_utc": "2026-10-18T23:45:22.069490+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -6209,8 +6209,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6277,7 +6277,7 @@
       "receipt": {
         "model_identity": "sec::IncomeStatementGrowth",
         "path": "docs/evidence/C101/receipts/sec/IncomeStatementGrowth/contract.json",
-        "sha256": "ac53b8785545ee4dbc970d103d18aa124c23371fafa12e9a552481088a70b63f"
+        "sha256": "1449be601fda9395964484d5771477ea37ddd046f66dbf80cb49e39f87a43733"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatementGrowth"
@@ -6285,7 +6285,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model IncomeStatementGrowth --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:23:17.860354+00:00",
+      "executed_at_utc": "2026-10-18T23:45:23.895006+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -6297,8 +6297,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6365,7 +6365,7 @@
       "receipt": {
         "model_identity": "sec::IncomeStatementGrowth",
         "path": "docs/evidence/C101/receipts/sec/IncomeStatementGrowth/counterfact.json",
-        "sha256": "45604bd3c439c73bf1ae8797f82a1074375e8ac655cdc72d7a912115e4c28d6a"
+        "sha256": "e61b3ed9a6f9a243db74b05d465d259225ae6ba93238022b5e96b3cc427534f6"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatementGrowth"
@@ -6373,7 +6373,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InsiderTrading --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:23:18.752611+00:00",
+      "executed_at_utc": "2026-10-18T23:45:24.768322+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -6385,8 +6385,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6468,7 +6468,7 @@
       "receipt": {
         "model_identity": "sec::InsiderTrading",
         "path": "docs/evidence/C101/receipts/sec/InsiderTrading/implementation.json",
-        "sha256": "3070a415a14c84ab465f364d5fe683ef83cb0e1f210cd6d063747d0e2fdbb1b3"
+        "sha256": "dd7c2e408ebef290c7fd44112267b283620b21407f06f577aa30248acbb1a4ee"
       },
       "status": "PASS",
       "upstream_model": "InsiderTrading"
@@ -6476,7 +6476,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InsiderTrading --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:23:24.451902+00:00",
+      "executed_at_utc": "2026-10-18T23:45:30.451894+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -6488,8 +6488,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6556,7 +6556,7 @@
       "receipt": {
         "model_identity": "sec::InsiderTrading",
         "path": "docs/evidence/C101/receipts/sec/InsiderTrading/direct.json",
-        "sha256": "d4dba00f3b54cd0456e0979a0772a6f56d58d7450e9693483b42c0f444912d31"
+        "sha256": "5a398b77c5853b5a7d5cf67ccd79cc80fe7f1cd3755ba495e38f25a1fea736bb"
       },
       "status": "PASS",
       "upstream_model": "InsiderTrading"
@@ -6564,7 +6564,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InsiderTrading --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:23:30.255116+00:00",
+      "executed_at_utc": "2026-10-18T23:45:36.283999+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -6576,8 +6576,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6644,7 +6644,7 @@
       "receipt": {
         "model_identity": "sec::InsiderTrading",
         "path": "docs/evidence/C101/receipts/sec/InsiderTrading/service.json",
-        "sha256": "95d2132d476c3a4d7b988dd22dd31584562bd23a6d9c7f036a08ccb747742ca3"
+        "sha256": "bb98aaa687352f9a14e4dc7619a9936a4230bcd31ec87a0f19cc3b8e842cb4b0"
       },
       "status": "PASS",
       "upstream_model": "InsiderTrading"
@@ -6652,7 +6652,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InsiderTrading --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:23:35.918431+00:00",
+      "executed_at_utc": "2026-10-18T23:45:41.938471+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -6664,8 +6664,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6732,7 +6732,7 @@
       "receipt": {
         "model_identity": "sec::InsiderTrading",
         "path": "docs/evidence/C101/receipts/sec/InsiderTrading/contract.json",
-        "sha256": "f47098097a52185d2e5ae536ba5d03270250ddfa43a82026bca873e5bf17d9c6"
+        "sha256": "4930b9da87c514e778d20c3404bdd1f4d3306f1dd99bfd8578caf37834673b30"
       },
       "status": "PASS",
       "upstream_model": "InsiderTrading"
@@ -6740,7 +6740,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InsiderTrading --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:23:43.300630+00:00",
+      "executed_at_utc": "2026-10-18T23:45:49.347928+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -6752,8 +6752,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6820,7 +6820,7 @@
       "receipt": {
         "model_identity": "sec::InsiderTrading",
         "path": "docs/evidence/C101/receipts/sec/InsiderTrading/counterfact.json",
-        "sha256": "bab3d958edcd87b6dcceffe975069d32607664b7b7507d91bdef1a7c568ab23d"
+        "sha256": "3b60f9f354542375973649d635b7968851544cfbe93f069ae5439df99f8972e7"
       },
       "status": "PASS",
       "upstream_model": "InsiderTrading"
@@ -6828,7 +6828,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InstitutionsSearch --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:23:44.171445+00:00",
+      "executed_at_utc": "2026-10-18T23:45:50.222464+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -6840,8 +6840,8 @@
             "path": "opendata/data/models/sec_institutions.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -6923,7 +6923,7 @@
       "receipt": {
         "model_identity": "sec::InstitutionsSearch",
         "path": "docs/evidence/C101/receipts/sec/InstitutionsSearch/implementation.json",
-        "sha256": "304c5bfb2923d7eeca0e1058e8b4e2c60841b017a24d6537f676d31c416b7d83"
+        "sha256": "4444751a0b651cd564904b5325cecb047a3e4fc9f803adce61905fd0505803f7"
       },
       "status": "PASS",
       "upstream_model": "InstitutionsSearch"
@@ -6931,7 +6931,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InstitutionsSearch --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:23:45.263414+00:00",
+      "executed_at_utc": "2026-10-18T23:45:51.330272+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -6943,8 +6943,8 @@
             "path": "opendata/data/models/sec_institutions.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7011,7 +7011,7 @@
       "receipt": {
         "model_identity": "sec::InstitutionsSearch",
         "path": "docs/evidence/C101/receipts/sec/InstitutionsSearch/direct.json",
-        "sha256": "9a06ebc24a63559a592dbef3ef53543d768bbc1d689f874e1af7748d6a183b1d"
+        "sha256": "3ab1a802ec5c55c166c95350015bc0163d0cca7b6d1eba25bba9627c8a2b14c2"
       },
       "status": "PASS",
       "upstream_model": "InstitutionsSearch"
@@ -7019,7 +7019,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InstitutionsSearch --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:23:46.586471+00:00",
+      "executed_at_utc": "2026-10-18T23:45:52.674809+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -7031,8 +7031,8 @@
             "path": "opendata/data/models/sec_institutions.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7099,7 +7099,7 @@
       "receipt": {
         "model_identity": "sec::InstitutionsSearch",
         "path": "docs/evidence/C101/receipts/sec/InstitutionsSearch/service.json",
-        "sha256": "271076ea5c97fc0cd70d5cadc10be2e647318a438dc3a4861096478061b6c6bb"
+        "sha256": "dcc611bece4a9f85eeb319d639a3f2c6b6b26077547f7ce2ff05027d8d2cdce3"
       },
       "status": "PASS",
       "upstream_model": "InstitutionsSearch"
@@ -7107,7 +7107,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InstitutionsSearch --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:23:47.734393+00:00",
+      "executed_at_utc": "2026-10-18T23:45:53.850106+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -7119,8 +7119,8 @@
             "path": "opendata/data/models/sec_institutions.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7187,7 +7187,7 @@
       "receipt": {
         "model_identity": "sec::InstitutionsSearch",
         "path": "docs/evidence/C101/receipts/sec/InstitutionsSearch/contract.json",
-        "sha256": "6d0ec0c6781a8e734d3c21e24c184b8303cd7aaef24f5f7acfe2684bda748923"
+        "sha256": "7dac760e8241d972c74f01adb5d476a8a1ec5de2e692f07273fc86d0899ef0f0"
       },
       "status": "PASS",
       "upstream_model": "InstitutionsSearch"
@@ -7195,7 +7195,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model InstitutionsSearch --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:23:49.867083+00:00",
+      "executed_at_utc": "2026-10-18T23:45:55.987151+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -7207,8 +7207,8 @@
             "path": "opendata/data/models/sec_institutions.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7275,7 +7275,7 @@
       "receipt": {
         "model_identity": "sec::InstitutionsSearch",
         "path": "docs/evidence/C101/receipts/sec/InstitutionsSearch/counterfact.json",
-        "sha256": "9301a198d2069688c361f3f71b9007281867bf8b9dc47209e899650bc54b55aa"
+        "sha256": "6c51edb9c942dca66311c4359e72f11a2cf1d1f8681d9c66e81937d84477a56e"
       },
       "status": "PASS",
       "upstream_model": "InstitutionsSearch"
@@ -7283,7 +7283,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model LatestFinancialReports --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:23:50.740685+00:00",
+      "executed_at_utc": "2026-10-18T23:45:56.868463+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -7295,8 +7295,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7378,7 +7378,7 @@
       "receipt": {
         "model_identity": "sec::LatestFinancialReports",
         "path": "docs/evidence/C101/receipts/sec/LatestFinancialReports/implementation.json",
-        "sha256": "b59d83d4a92da1540db0ee328016e88cacfc74bd16f33c0855366b2e796313c8"
+        "sha256": "d9007ecfd6e7fd0deb90d0ddb89aa1231acfc6eea330f680de6cd766d587cbc2"
       },
       "status": "PASS",
       "upstream_model": "LatestFinancialReports"
@@ -7386,7 +7386,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model LatestFinancialReports --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:23:51.601592+00:00",
+      "executed_at_utc": "2026-10-18T23:45:57.743706+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -7398,8 +7398,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7466,7 +7466,7 @@
       "receipt": {
         "model_identity": "sec::LatestFinancialReports",
         "path": "docs/evidence/C101/receipts/sec/LatestFinancialReports/direct.json",
-        "sha256": "5c20a37e0e0f655e4820221b45e5ba080d697086e475f6f8bdcc0ec1cfd916d8"
+        "sha256": "87eceb4ef3a9f24bd704bdb1e8e7a678d38fcc768bca440a4b6ddbc2dbb4045e"
       },
       "status": "PASS",
       "upstream_model": "LatestFinancialReports"
@@ -7474,7 +7474,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model LatestFinancialReports --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:23:52.661326+00:00",
+      "executed_at_utc": "2026-10-18T23:45:58.831882+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -7486,8 +7486,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7554,7 +7554,7 @@
       "receipt": {
         "model_identity": "sec::LatestFinancialReports",
         "path": "docs/evidence/C101/receipts/sec/LatestFinancialReports/service.json",
-        "sha256": "43effdbd55facdc2722bbab00929b1dbab32b8cbe9a8b48a11f3fec6ff88bb53"
+        "sha256": "0c8af1e9c17197bdd001782bca90ca7934fbbdad14f7a034c85600140c68d2b0"
       },
       "status": "PASS",
       "upstream_model": "LatestFinancialReports"
@@ -7562,7 +7562,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model LatestFinancialReports --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:23:53.541042+00:00",
+      "executed_at_utc": "2026-10-18T23:45:59.711681+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -7574,8 +7574,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7642,7 +7642,7 @@
       "receipt": {
         "model_identity": "sec::LatestFinancialReports",
         "path": "docs/evidence/C101/receipts/sec/LatestFinancialReports/contract.json",
-        "sha256": "49ec23f3a709cb3e424a8c81dc74a2a454c3494e8235b80b799712e27a9c653f"
+        "sha256": "cedb02cd5e29738a16131259c2c2d40aeb04c08b1d82d74e893bb4b58306bc6a"
       },
       "status": "PASS",
       "upstream_model": "LatestFinancialReports"
@@ -7650,7 +7650,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model LatestFinancialReports --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:23:55.373336+00:00",
+      "executed_at_utc": "2026-10-18T23:46:01.536210+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -7662,8 +7662,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7730,7 +7730,7 @@
       "receipt": {
         "model_identity": "sec::LatestFinancialReports",
         "path": "docs/evidence/C101/receipts/sec/LatestFinancialReports/counterfact.json",
-        "sha256": "6a4d2f69d47bebe04b1ac49fd9a87159e8c3bd44f43825c6ed3ec21e16477440"
+        "sha256": "ce71aa724adef7775084fa1cc784caf9b5a6b3c56adfd7ce6843173f89f6f99c"
       },
       "status": "PASS",
       "upstream_model": "LatestFinancialReports"
@@ -7738,7 +7738,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model ManagementDiscussionAnalysis --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:23:56.237602+00:00",
+      "executed_at_utc": "2026-10-18T23:46:02.401365+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -7750,8 +7750,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7833,7 +7833,7 @@
       "receipt": {
         "model_identity": "sec::ManagementDiscussionAnalysis",
         "path": "docs/evidence/C101/receipts/sec/ManagementDiscussionAnalysis/implementation.json",
-        "sha256": "08fa62f3ff5c8ad3c3d2be8afcf04a61f9604c30d9667a7172d7d83a88251753"
+        "sha256": "d97dd5813624ea15c060f18f7c20d0f35a54385eadf5dacc92c3341d02d189b0"
       },
       "status": "PASS",
       "upstream_model": "ManagementDiscussionAnalysis"
@@ -7841,7 +7841,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model ManagementDiscussionAnalysis --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:23:57.570215+00:00",
+      "executed_at_utc": "2026-10-18T23:46:03.739099+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -7853,8 +7853,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -7921,7 +7921,7 @@
       "receipt": {
         "model_identity": "sec::ManagementDiscussionAnalysis",
         "path": "docs/evidence/C101/receipts/sec/ManagementDiscussionAnalysis/direct.json",
-        "sha256": "7e8af3a48c7ec3c4cf23efb4a402b662f1272b63ba2a35fe50fb667684375e30"
+        "sha256": "2b49bdd19ec190fc1a7178d6c8f69f5f1875d7b609509f94ef7d993ccf6a1c88"
       },
       "status": "PASS",
       "upstream_model": "ManagementDiscussionAnalysis"
@@ -7929,7 +7929,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model ManagementDiscussionAnalysis --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:23:59.020057+00:00",
+      "executed_at_utc": "2026-10-18T23:46:05.189981+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -7941,8 +7941,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8009,7 +8009,7 @@
       "receipt": {
         "model_identity": "sec::ManagementDiscussionAnalysis",
         "path": "docs/evidence/C101/receipts/sec/ManagementDiscussionAnalysis/service.json",
-        "sha256": "6dfa72c2e5c69ca4821e377060c673fe5392907454a7a0a58635e32f6615e101"
+        "sha256": "392d03bb1d3b697780d3b4c63c8769f2c5305e60e1cdeb5644673e3c85500882"
       },
       "status": "PASS",
       "upstream_model": "ManagementDiscussionAnalysis"
@@ -8017,7 +8017,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model ManagementDiscussionAnalysis --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:24:00.361118+00:00",
+      "executed_at_utc": "2026-10-18T23:46:06.528675+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -8029,8 +8029,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8097,7 +8097,7 @@
       "receipt": {
         "model_identity": "sec::ManagementDiscussionAnalysis",
         "path": "docs/evidence/C101/receipts/sec/ManagementDiscussionAnalysis/contract.json",
-        "sha256": "3436e1a61ba30ef66d0703cf3eadab1c2f4b29f7cf7f1cfc027f4ac81aa8c8f8"
+        "sha256": "91fef7fc25ccdef3af525b00adbf20c9421ffa252c2723381d758fcf8e8ffc5e"
       },
       "status": "PASS",
       "upstream_model": "ManagementDiscussionAnalysis"
@@ -8105,7 +8105,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model ManagementDiscussionAnalysis --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:24:03.067947+00:00",
+      "executed_at_utc": "2026-10-18T23:46:09.247567+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -8117,8 +8117,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8185,7 +8185,7 @@
       "receipt": {
         "model_identity": "sec::ManagementDiscussionAnalysis",
         "path": "docs/evidence/C101/receipts/sec/ManagementDiscussionAnalysis/counterfact.json",
-        "sha256": "a42d7abc10fcc76815b9e28f1ca5acc903c0fd9aab521f9f967236bea4ba74cf"
+        "sha256": "253983622d348c2df49b1a8ef33f0ac0d7d2e4a9837513aba3b93dbd604ce6cf"
       },
       "status": "PASS",
       "upstream_model": "ManagementDiscussionAnalysis"
@@ -8193,7 +8193,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model NportDisclosure --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:24:03.983484+00:00",
+      "executed_at_utc": "2026-10-18T23:46:10.173214+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -8205,8 +8205,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8288,7 +8288,7 @@
       "receipt": {
         "model_identity": "sec::NportDisclosure",
         "path": "docs/evidence/C101/receipts/sec/NportDisclosure/implementation.json",
-        "sha256": "ff641fb9f078d22b9ec6adb13e65fc88622353bdee3b3ea9d395c5b4e2f7ad22"
+        "sha256": "40cf5ca01f9e2ae383e055b64ca5095b147a08b02473ee4a7dbaa520a4e31996"
       },
       "status": "PASS",
       "upstream_model": "NportDisclosure"
@@ -8296,7 +8296,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model NportDisclosure --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:24:05.361704+00:00",
+      "executed_at_utc": "2026-10-18T23:46:11.568168+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -8308,8 +8308,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8376,7 +8376,7 @@
       "receipt": {
         "model_identity": "sec::NportDisclosure",
         "path": "docs/evidence/C101/receipts/sec/NportDisclosure/direct.json",
-        "sha256": "29a7c10a4004f89504a50268d46506e6b7650fb101b9edcd099f916e9a6aa72a"
+        "sha256": "699edf0e80265bc739b0526e0f68467dbfed88194774bb4380cf7b5e09c0050c"
       },
       "status": "PASS",
       "upstream_model": "NportDisclosure"
@@ -8384,7 +8384,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model NportDisclosure --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:24:06.797768+00:00",
+      "executed_at_utc": "2026-10-18T23:46:13.123839+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -8396,8 +8396,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8464,7 +8464,7 @@
       "receipt": {
         "model_identity": "sec::NportDisclosure",
         "path": "docs/evidence/C101/receipts/sec/NportDisclosure/service.json",
-        "sha256": "e61a40a06dc7680012917b34264a2dd34c5ea91de7cb59ce69e0c6f0c01299c7"
+        "sha256": "0d07757fefcb85beec5a42d04a66de75794ed13df26f58d31185e4968c83b30b"
       },
       "status": "PASS",
       "upstream_model": "NportDisclosure"
@@ -8472,7 +8472,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model NportDisclosure --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:24:08.127473+00:00",
+      "executed_at_utc": "2026-10-18T23:46:14.492714+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -8484,8 +8484,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8552,7 +8552,7 @@
       "receipt": {
         "model_identity": "sec::NportDisclosure",
         "path": "docs/evidence/C101/receipts/sec/NportDisclosure/contract.json",
-        "sha256": "824b8859b20bd0fffda86eff437828c6fc7837f28da7a2c5aebff9b656e6e137"
+        "sha256": "3cc6b482ac3ad5f89fcddb9a3ecc889323748e6b18ca8a122ba5aa5893c4c1c1"
       },
       "status": "PASS",
       "upstream_model": "NportDisclosure"
@@ -8560,7 +8560,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model NportDisclosure --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:24:10.842332+00:00",
+      "executed_at_utc": "2026-10-18T23:46:17.234193+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -8572,8 +8572,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8640,7 +8640,7 @@
       "receipt": {
         "model_identity": "sec::NportDisclosure",
         "path": "docs/evidence/C101/receipts/sec/NportDisclosure/counterfact.json",
-        "sha256": "830bc0a91dac4f1dccde4976e8d7a1ce17c5bb2780e7c120ac9333c11b734763"
+        "sha256": "34e081b51d8c95feed72f1bd53936ba25ad573126f212132ba383d4505e4d311"
       },
       "status": "PASS",
       "upstream_model": "NportDisclosure"
@@ -8648,7 +8648,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model RssLitigation --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:24:11.762257+00:00",
+      "executed_at_utc": "2026-10-18T23:46:18.155738+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -8660,8 +8660,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8743,7 +8743,7 @@
       "receipt": {
         "model_identity": "sec::RssLitigation",
         "path": "docs/evidence/C101/receipts/sec/RssLitigation/implementation.json",
-        "sha256": "7befe4c3a07671ae7221a0fb4d982135781a395fbdf72187f46ea1034038396a"
+        "sha256": "5af127e31673bb7256529bb8a0184feb265d65598ca00eebff4cd4912a94e44e"
       },
       "status": "PASS",
       "upstream_model": "RssLitigation"
@@ -8751,7 +8751,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model RssLitigation --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:24:12.702803+00:00",
+      "executed_at_utc": "2026-10-18T23:46:19.117913+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -8763,8 +8763,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8831,7 +8831,7 @@
       "receipt": {
         "model_identity": "sec::RssLitigation",
         "path": "docs/evidence/C101/receipts/sec/RssLitigation/direct.json",
-        "sha256": "0235efa1a404340a4445598e051a8997941d1c885c3f2120fff44664eafb2a8e"
+        "sha256": "55d536c39b08bb95768fb43688c84be59d4ab8fe70dd06b8ae12e9f1bcc551d1"
       },
       "status": "PASS",
       "upstream_model": "RssLitigation"
@@ -8839,7 +8839,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model RssLitigation --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:24:13.736596+00:00",
+      "executed_at_utc": "2026-10-18T23:46:20.148717+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -8851,8 +8851,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -8919,7 +8919,7 @@
       "receipt": {
         "model_identity": "sec::RssLitigation",
         "path": "docs/evidence/C101/receipts/sec/RssLitigation/service.json",
-        "sha256": "ab5593141d6f467abe6eb2179f6c97e06b48059c010624fa7d52afcff6fc9c39"
+        "sha256": "61d49ac48499bb1cadda8d9990aac00128e797004956aa75126de3f34fd29c86"
       },
       "status": "PASS",
       "upstream_model": "RssLitigation"
@@ -8927,7 +8927,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model RssLitigation --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:24:14.672882+00:00",
+      "executed_at_utc": "2026-10-18T23:46:21.103880+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -8939,8 +8939,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9007,7 +9007,7 @@
       "receipt": {
         "model_identity": "sec::RssLitigation",
         "path": "docs/evidence/C101/receipts/sec/RssLitigation/contract.json",
-        "sha256": "2a2c94ce33362f41573427d13674325a3b64d2299aae5b1591a557213ad28b5e"
+        "sha256": "64b9eafebede7e61952d636188450ee5c836a4a3a685d171991b3f84bfe7dd65"
       },
       "status": "PASS",
       "upstream_model": "RssLitigation"
@@ -9015,7 +9015,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model RssLitigation --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:24:16.489470+00:00",
+      "executed_at_utc": "2026-10-18T23:46:22.931091+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -9027,8 +9027,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9095,7 +9095,7 @@
       "receipt": {
         "model_identity": "sec::RssLitigation",
         "path": "docs/evidence/C101/receipts/sec/RssLitigation/counterfact.json",
-        "sha256": "9206c38c4fe3cb3bc7a700744b71a60ad36aedc8cb03cef00fc665d90d162a70"
+        "sha256": "912ec761bf94d3cefe304228e4b86c2fc7193d3667d2a9c6ee512d7c144aeb26"
       },
       "status": "PASS",
       "upstream_model": "RssLitigation"
@@ -9103,7 +9103,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SchemaFiles --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:24:17.361367+00:00",
+      "executed_at_utc": "2026-10-18T23:46:23.813146+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -9115,8 +9115,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9198,7 +9198,7 @@
       "receipt": {
         "model_identity": "sec::SchemaFiles",
         "path": "docs/evidence/C101/receipts/sec/SchemaFiles/implementation.json",
-        "sha256": "723399d89da395c8f6ad996f68c3f2ded5c55190224e3daa07dc46f617e49fa4"
+        "sha256": "e4aa442e1ebfa2065f1a2cf9f825450be7d642aa199d39c8eb490bc75cb9feed"
       },
       "status": "PASS",
       "upstream_model": "SchemaFiles"
@@ -9206,7 +9206,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SchemaFiles --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:24:18.255786+00:00",
+      "executed_at_utc": "2026-10-18T23:46:24.718727+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -9218,8 +9218,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9286,7 +9286,7 @@
       "receipt": {
         "model_identity": "sec::SchemaFiles",
         "path": "docs/evidence/C101/receipts/sec/SchemaFiles/direct.json",
-        "sha256": "003c0cbaa79012b7b85211b50799c90b4c6769ceca9fe3efec027d43a7131b8e"
+        "sha256": "b86437a5c5f65c2600f672396ecef0770b2a0ea4a905ab603c9b3a5ed1f8b812"
       },
       "status": "PASS",
       "upstream_model": "SchemaFiles"
@@ -9294,7 +9294,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SchemaFiles --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:24:19.312878+00:00",
+      "executed_at_utc": "2026-10-18T23:46:25.778223+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -9306,8 +9306,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9374,7 +9374,7 @@
       "receipt": {
         "model_identity": "sec::SchemaFiles",
         "path": "docs/evidence/C101/receipts/sec/SchemaFiles/service.json",
-        "sha256": "6819985cc0d2a25f95010dd185faea72152002b7102844e62da9cb6116784feb"
+        "sha256": "d342e5c90fea766da23b34202ff5810fd976ef565089b65a2a3e888826499328"
       },
       "status": "PASS",
       "upstream_model": "SchemaFiles"
@@ -9382,7 +9382,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SchemaFiles --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:24:20.178018+00:00",
+      "executed_at_utc": "2026-10-18T23:46:26.647293+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -9394,8 +9394,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9462,7 +9462,7 @@
       "receipt": {
         "model_identity": "sec::SchemaFiles",
         "path": "docs/evidence/C101/receipts/sec/SchemaFiles/contract.json",
-        "sha256": "a3a94a65ba7126986a605375500d408da16ba3f01f80e8318ff99b1ddbbb705f"
+        "sha256": "573c74b72ba76128de944f8212ffb9c72ac603a4c23eb03fba2022b7329ad664"
       },
       "status": "PASS",
       "upstream_model": "SchemaFiles"
@@ -9470,7 +9470,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SchemaFiles --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:24:22.032216+00:00",
+      "executed_at_utc": "2026-10-18T23:46:28.530769+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -9482,8 +9482,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9550,7 +9550,7 @@
       "receipt": {
         "model_identity": "sec::SchemaFiles",
         "path": "docs/evidence/C101/receipts/sec/SchemaFiles/counterfact.json",
-        "sha256": "cc00c4e8ebc0e6e9cb121ef5f6b83f06ef9713064bf342151637b79f76c9acc9"
+        "sha256": "80ca0ed09c6e183e144e6e25734521c944248a20c92b119406b001d00bdc1c3e"
       },
       "status": "PASS",
       "upstream_model": "SchemaFiles"
@@ -9558,7 +9558,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SecFiling --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:24:22.936614+00:00",
+      "executed_at_utc": "2026-10-18T23:46:29.445737+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -9570,8 +9570,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9653,7 +9653,7 @@
       "receipt": {
         "model_identity": "sec::SecFiling",
         "path": "docs/evidence/C101/receipts/sec/SecFiling/implementation.json",
-        "sha256": "956f3df1159390cc3172a96bea974e1484333c08cd63b7e23f7233a825900684"
+        "sha256": "cf71a274da67f50b184c68fb5350e536df12665f062dab5d0bd4ba6b07c7bb6d"
       },
       "status": "PASS",
       "upstream_model": "SecFiling"
@@ -9661,7 +9661,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SecFiling --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:24:23.873982+00:00",
+      "executed_at_utc": "2026-10-18T23:46:30.390804+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -9673,8 +9673,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9741,7 +9741,7 @@
       "receipt": {
         "model_identity": "sec::SecFiling",
         "path": "docs/evidence/C101/receipts/sec/SecFiling/direct.json",
-        "sha256": "ac9223369b303f65de1d153263977363e923cb6a85cf5d18f95136d69b005893"
+        "sha256": "5b6a740d362265c3e3f5c403e375f441d50d89a41caa6b49a87300a59fcdbd69"
       },
       "status": "PASS",
       "upstream_model": "SecFiling"
@@ -9749,7 +9749,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SecFiling --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:24:24.907440+00:00",
+      "executed_at_utc": "2026-10-18T23:46:31.438523+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -9761,8 +9761,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9829,7 +9829,7 @@
       "receipt": {
         "model_identity": "sec::SecFiling",
         "path": "docs/evidence/C101/receipts/sec/SecFiling/service.json",
-        "sha256": "5e243f426b1ade72235625d96a3ce6ea2fddb1368a86831272a323e428148839"
+        "sha256": "e285840f9220fb97d6d24b31ab1750a6439aa0dcb2ced1d72ed78c2f0ece4598"
       },
       "status": "PASS",
       "upstream_model": "SecFiling"
@@ -9837,7 +9837,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SecFiling --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:24:25.841551+00:00",
+      "executed_at_utc": "2026-10-18T23:46:32.369992+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -9849,8 +9849,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -9917,7 +9917,7 @@
       "receipt": {
         "model_identity": "sec::SecFiling",
         "path": "docs/evidence/C101/receipts/sec/SecFiling/contract.json",
-        "sha256": "e2a48d341e2b483b1af0c1a54afc93295ddcc3b18f9c1d34f91d178ec252a177"
+        "sha256": "4b93e33274d36acaf7edb6789c1dff3956571a48b910c5ff5033db32f70a1f0c"
       },
       "status": "PASS",
       "upstream_model": "SecFiling"
@@ -9925,7 +9925,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SecFiling --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:24:27.648775+00:00",
+      "executed_at_utc": "2026-10-18T23:46:34.192645+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -9937,8 +9937,8 @@
             "path": "opendata/data/models/sec_documents.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10005,7 +10005,7 @@
       "receipt": {
         "model_identity": "sec::SecFiling",
         "path": "docs/evidence/C101/receipts/sec/SecFiling/counterfact.json",
-        "sha256": "40dac7ead63b8325600f9a6df9799eb4111774566c66fa75b225e2ff062a93fe"
+        "sha256": "384f266005e838fc9c8ad06d9733411630bdc7e8608a0f48d2b4b1d06ffd553e"
       },
       "status": "PASS",
       "upstream_model": "SecFiling"
@@ -10013,7 +10013,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SicSearch --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:24:28.523161+00:00",
+      "executed_at_utc": "2026-10-18T23:46:35.067445+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -10025,8 +10025,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10108,7 +10108,7 @@
       "receipt": {
         "model_identity": "sec::SicSearch",
         "path": "docs/evidence/C101/receipts/sec/SicSearch/implementation.json",
-        "sha256": "2ac3e3a401b3e43941f5fdcdc35f31dc731ceb1cdc831c95be6e133698c3c728"
+        "sha256": "e97dcb0ea3c8889d093baf18c3f325fb294aab63660c3a94e2bf34b7c6d076f0"
       },
       "status": "PASS",
       "upstream_model": "SicSearch"
@@ -10116,7 +10116,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SicSearch --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:24:29.411295+00:00",
+      "executed_at_utc": "2026-10-18T23:46:35.964631+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -10128,8 +10128,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10196,7 +10196,7 @@
       "receipt": {
         "model_identity": "sec::SicSearch",
         "path": "docs/evidence/C101/receipts/sec/SicSearch/direct.json",
-        "sha256": "40311f02852963bed49c6d397b64fce4818b6726971a0ad9e9680c53369dea1b"
+        "sha256": "64363d219bfcb1d6635a1c531af1ec217a6abd7e208f20680faa277079771aa2"
       },
       "status": "PASS",
       "upstream_model": "SicSearch"
@@ -10204,7 +10204,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SicSearch --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:24:30.463810+00:00",
+      "executed_at_utc": "2026-10-18T23:46:37.029543+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -10216,8 +10216,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10284,7 +10284,7 @@
       "receipt": {
         "model_identity": "sec::SicSearch",
         "path": "docs/evidence/C101/receipts/sec/SicSearch/service.json",
-        "sha256": "04c96bb95ed3ba4be73842e3ebee59dae91624fd7e91fe7a66bf77151842e46a"
+        "sha256": "fbcae7880ebff5f2e7cfa3d3ef7ca815581be5fc1f754b259023c3548ab186aa"
       },
       "status": "PASS",
       "upstream_model": "SicSearch"
@@ -10292,7 +10292,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SicSearch --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:24:31.328494+00:00",
+      "executed_at_utc": "2026-10-18T23:46:37.896898+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -10304,8 +10304,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10372,7 +10372,7 @@
       "receipt": {
         "model_identity": "sec::SicSearch",
         "path": "docs/evidence/C101/receipts/sec/SicSearch/contract.json",
-        "sha256": "c0fe3f327e1d66ddd09ca1c4a978c24b8f5a617c7bb4e0761fc3396620df3800"
+        "sha256": "47bdd739e0738758bf09c79bf31f6014d1b87e4716c0c0ea735d7f3f94cd84c2"
       },
       "status": "PASS",
       "upstream_model": "SicSearch"
@@ -10380,7 +10380,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SicSearch --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:24:33.178137+00:00",
+      "executed_at_utc": "2026-10-18T23:46:39.756700+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -10392,8 +10392,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10460,7 +10460,7 @@
       "receipt": {
         "model_identity": "sec::SicSearch",
         "path": "docs/evidence/C101/receipts/sec/SicSearch/counterfact.json",
-        "sha256": "6705d77f0234ebe50ea4a0dabf45c93196f60085b2d62772a5ac68225f7de9d7"
+        "sha256": "c979d346902211cb86c2f48e469d54dee25e0723c42d2f95b7e8186c93bc5ad8"
       },
       "status": "PASS",
       "upstream_model": "SicSearch"
@@ -10468,7 +10468,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SymbolMap --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-18T21:24:34.094253+00:00",
+      "executed_at_utc": "2026-10-18T23:46:40.675737+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -10480,8 +10480,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10563,7 +10563,7 @@
       "receipt": {
         "model_identity": "sec::SymbolMap",
         "path": "docs/evidence/C101/receipts/sec/SymbolMap/implementation.json",
-        "sha256": "dff429547f5a5cefffef2bb3a5d946029e19cf6e7f3d5b7fd63ac3c2c3c2e6f1"
+        "sha256": "dde6c3b0901ba98523a14c5c4d61aa63a4bd5b3567a53f8bb4a58ae81a01183e"
       },
       "status": "PASS",
       "upstream_model": "SymbolMap"
@@ -10571,7 +10571,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SymbolMap --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-18T21:24:35.035659+00:00",
+      "executed_at_utc": "2026-10-18T23:46:41.634277+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -10583,8 +10583,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10651,7 +10651,7 @@
       "receipt": {
         "model_identity": "sec::SymbolMap",
         "path": "docs/evidence/C101/receipts/sec/SymbolMap/direct.json",
-        "sha256": "f4f68da85b7cb43255c0d054dc2de1032fec99b20dce476236348ce45716ce88"
+        "sha256": "1da4ca9340d8e87e1f91671103c92173591ac290d3ef792cbcd4ae3473f00778"
       },
       "status": "PASS",
       "upstream_model": "SymbolMap"
@@ -10659,7 +10659,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SymbolMap --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-18T21:24:36.066407+00:00",
+      "executed_at_utc": "2026-10-18T23:46:42.671200+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -10671,8 +10671,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10739,7 +10739,7 @@
       "receipt": {
         "model_identity": "sec::SymbolMap",
         "path": "docs/evidence/C101/receipts/sec/SymbolMap/service.json",
-        "sha256": "7dfc94a78b1429b2ea467d32543bfa12ee88bb9db3e97f98f91e0e77d1844ecb"
+        "sha256": "008c6e6c9482fddc1b931c840bdacf5dab441f40fc76c34fa6c3feec6ae366f1"
       },
       "status": "PASS",
       "upstream_model": "SymbolMap"
@@ -10747,7 +10747,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SymbolMap --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-18T21:24:37.016826+00:00",
+      "executed_at_utc": "2026-10-18T23:46:43.607123+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -10759,8 +10759,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10827,7 +10827,7 @@
       "receipt": {
         "model_identity": "sec::SymbolMap",
         "path": "docs/evidence/C101/receipts/sec/SymbolMap/contract.json",
-        "sha256": "d882d7368275be5983736b81ba2d291caaffd21f544e25dfcee1c15236660422"
+        "sha256": "7fa8764f5ff0e7b6a6f0b9296f4b5ebd309c1e94149eaf4787e4b860f6c55478"
       },
       "status": "PASS",
       "upstream_model": "SymbolMap"
@@ -10835,7 +10835,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider sec --model SymbolMap --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-18T21:24:38.818957+00:00",
+      "executed_at_utc": "2026-10-18T23:46:45.430106+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -10847,8 +10847,8 @@
             "path": "opendata/data/models/sec_iter2.py"
           },
           {
-            "after_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
-            "before_sha256": "f6db71bc05a1b22689a6fa3ae35342cc828e59d4d5dc305c41e8255a6dc606b4",
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -10915,7 +10915,7 @@
       "receipt": {
         "model_identity": "sec::SymbolMap",
         "path": "docs/evidence/C101/receipts/sec/SymbolMap/counterfact.json",
-        "sha256": "1b52fd7acd7fc37e280ca58c4d7931ba18b39228a3c51529d1d9eed30ff9af59"
+        "sha256": "eb68f2c077db5132c75dc67e78d58297f3c889efcb5f444b873694ce42c91469"
       },
       "status": "PASS",
       "upstream_model": "SymbolMap"
@@ -10929,9 +10929,9 @@
       "receipt": {
         "model_identity": "sec::BalanceSheet",
         "path": "docs/evidence/C101/primary-reviews/sec__BalanceSheet.review.json",
-        "sha256": "e9b1dc31d19fcd6b9fd6e0fe9a7586175fa1d4b18e3e621657901dc2496c64ca"
+        "sha256": "438cec9e2ea4092492d5b2ad6893b24525625a10f72f0086cc4d43a774ae97f6"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -10944,9 +10944,9 @@
       "receipt": {
         "model_identity": "sec::BalanceSheetGrowth",
         "path": "docs/evidence/C101/primary-reviews/sec__BalanceSheetGrowth.review.json",
-        "sha256": "be403fa0fbdaeb62b2cb2cb171f6355e24b132fdd48585d5c895aaceb78feebc"
+        "sha256": "ad860ec2b1a944168823514d8c4425c92260a5b529c77d95714652fb764aa2c0"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -10959,9 +10959,9 @@
       "receipt": {
         "model_identity": "sec::CashFlowStatement",
         "path": "docs/evidence/C101/primary-reviews/sec__CashFlowStatement.review.json",
-        "sha256": "7afdf7882ac851b8e1e8014c2d83c5c8e233678152877c5f5c6c8fa29a0101a3"
+        "sha256": "7ac7135b4056370396c306f985f81c79fe17827b84c0aa27bdafcdc071bd06d6"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -10974,9 +10974,9 @@
       "receipt": {
         "model_identity": "sec::CashFlowStatementGrowth",
         "path": "docs/evidence/C101/primary-reviews/sec__CashFlowStatementGrowth.review.json",
-        "sha256": "0eb2cfbe704e78b160baf2a389e71403affbc79024dd3138d4abf6de33768688"
+        "sha256": "3f4f0a96bc1e156eb077f1d5e3ad0e1f0a4e971f8a44c0f4bc5cbc95ac8f204d"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -10989,9 +10989,9 @@
       "receipt": {
         "model_identity": "sec::CikMap",
         "path": "docs/evidence/C101/primary-reviews/sec__CikMap.review.json",
-        "sha256": "42c92faf9bd4225dbfdf0bf9351852555e0267851e41d22475c39f2158afdf1a"
+        "sha256": "4c5878a5229379aa583a0ef2cd1e2b875fb51000c4bd14dce13b1ea8649bf254"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11004,9 +11004,9 @@
       "receipt": {
         "model_identity": "sec::CompanyFilings",
         "path": "docs/evidence/C101/primary-reviews/sec__CompanyFilings.review.json",
-        "sha256": "648cab9477cd98e46111877c984b6ef63ef96231585ada7842f7ae994edd1350"
+        "sha256": "13e3789de3859ea0082ba128a8ed18144f8c8d2cb4a5aad61fed34e52edd68dd"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11019,9 +11019,9 @@
       "receipt": {
         "model_identity": "sec::CompareCompanyFacts",
         "path": "docs/evidence/C101/primary-reviews/sec__CompareCompanyFacts.review.json",
-        "sha256": "4cc51ec59d1065d0205080b698294ae0df01c5dfd7bca96b3138c096cb9d1069"
+        "sha256": "9a7f86cdc173df2844cc5f257da2c03f4272ffa16b95bf0fd4a38ec085a81293"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11034,9 +11034,9 @@
       "receipt": {
         "model_identity": "sec::EquityFTD",
         "path": "docs/evidence/C101/primary-reviews/sec__EquityFTD.review.json",
-        "sha256": "a58207e1cfab87b5f25c45812f18bb67097b10fbffd4ef43d17fe7a17884fe3a"
+        "sha256": "f7a13d15e6a5d0670217893983205aad17a17cde97acfbef99bafd308ccc7ffb"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11049,9 +11049,9 @@
       "receipt": {
         "model_identity": "sec::EquitySearch",
         "path": "docs/evidence/C101/primary-reviews/sec__EquitySearch.review.json",
-        "sha256": "1758d2c185ed5988eb9051e0778230f786e6c5713a31950b6c90ad1e7f99d14f"
+        "sha256": "922e7b91b696b2c16ad360f4e961f62ed25936b633a02db9a902fb85a1340f4d"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11064,9 +11064,9 @@
       "receipt": {
         "model_identity": "sec::Filings",
         "path": "docs/evidence/C101/primary-reviews/sec__Filings.review.json",
-        "sha256": "c60d93518703ce1233ac1ef3a7e942637952e9e2fca19494b0d3e94287ab595b"
+        "sha256": "ddcd85d46c57bb2e730a1a602b53fc2cfa9115038bdcf3a41feca1b60c88b680"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11079,9 +11079,9 @@
       "receipt": {
         "model_identity": "sec::Form13FHR",
         "path": "docs/evidence/C101/primary-reviews/sec__Form13FHR.review.json",
-        "sha256": "a77d6f95c1f9f9a997c446137513ce7159b84c4f911f4a583cd945bba5ffd404"
+        "sha256": "e328e8c64e7e911e0e8d7d45c1a5cc12dd5e1ef2f580ff4d8b53376349ac6fe1"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11094,9 +11094,9 @@
       "receipt": {
         "model_identity": "sec::IncomeStatement",
         "path": "docs/evidence/C101/primary-reviews/sec__IncomeStatement.review.json",
-        "sha256": "f4c5d35761985a6c9b96769e0e8effb6f4084e787cd90a714dde6b9f02d6ca67"
+        "sha256": "49ea8642b30d24416cd777b205b2e8583f1b95a026e554e6bfd97c0be404f076"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11109,9 +11109,9 @@
       "receipt": {
         "model_identity": "sec::IncomeStatementGrowth",
         "path": "docs/evidence/C101/primary-reviews/sec__IncomeStatementGrowth.review.json",
-        "sha256": "0b923f4ad51fddf0cd2643e564fc6ce6773a146bbd075a5078ba9ceda45a160e"
+        "sha256": "c86deca9ea19a5c4a9957978d0b1d247ed3aa7c4d776857ba1d3dee4c3788d44"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11124,9 +11124,9 @@
       "receipt": {
         "model_identity": "sec::InsiderTrading",
         "path": "docs/evidence/C101/primary-reviews/sec__InsiderTrading.review.json",
-        "sha256": "967d5f0bcbb9e3c0fc2ce8fffe9c079be34f8b985a851a47234c6bc19a7283b2"
+        "sha256": "204978cb69357aedca78da330a4473d2149d38376367c0d9c811b8070b05f420"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11139,9 +11139,9 @@
       "receipt": {
         "model_identity": "sec::InstitutionsSearch",
         "path": "docs/evidence/C101/primary-reviews/sec__InstitutionsSearch.review.json",
-        "sha256": "c87d535e4df08d3ff93dc92c7cf95a8c7ddf56f1773fab9e2393e9c174c5f683"
+        "sha256": "ea71cbe054e0f3dac43521f3c97f69d6eecc3255958a789cfd3ae86e9660857b"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11154,9 +11154,9 @@
       "receipt": {
         "model_identity": "sec::LatestFinancialReports",
         "path": "docs/evidence/C101/primary-reviews/sec__LatestFinancialReports.review.json",
-        "sha256": "c409c2ab273c596fb1fe3b5c4fa4345e6d265ac237ba858b54e4b080cac8ee63"
+        "sha256": "01631f342a1a2fde657a9955215a5de2497c3e2ee5d054568cbd836d54a1d607"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11169,9 +11169,9 @@
       "receipt": {
         "model_identity": "sec::ManagementDiscussionAnalysis",
         "path": "docs/evidence/C101/primary-reviews/sec__ManagementDiscussionAnalysis.review.json",
-        "sha256": "a470ed5810492f6b085323fd557073208d43c6d1011531ba8baa23d9abdc6090"
+        "sha256": "7d60408a66ae97bd100c4e8c0151cae824e9ddd5e35d9c6428ae704a5e1d4317"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11184,9 +11184,9 @@
       "receipt": {
         "model_identity": "sec::NportDisclosure",
         "path": "docs/evidence/C101/primary-reviews/sec__NportDisclosure.review.json",
-        "sha256": "5875ec8a1cdfc273839fa9be5b71adaf83ef29d74528a8fd501ff02a261d7b3e"
+        "sha256": "63d3a1a29c28b51fc209bd50d2c1ed3ed47795522adc2dd665fa28d212a22ab9"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11199,9 +11199,9 @@
       "receipt": {
         "model_identity": "sec::RssLitigation",
         "path": "docs/evidence/C101/primary-reviews/sec__RssLitigation.review.json",
-        "sha256": "bb14e980d0b7e569dccc44b297260a3ac2f72d21c6964709e0058349887b4a40"
+        "sha256": "fa22f7cc411c4d1743a5ba42a6243178a496f99231bfcb6643654e6ddf8bdc96"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11214,9 +11214,9 @@
       "receipt": {
         "model_identity": "sec::SchemaFiles",
         "path": "docs/evidence/C101/primary-reviews/sec__SchemaFiles.review.json",
-        "sha256": "721014b790bd8ab37701490f52e6c6976e884716de838ba785f5ed686fddf1eb"
+        "sha256": "11d60fc95122776d3a64a3afe5ccdb68b610bdf8fd70b70c123a15ef2cce7705"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11229,9 +11229,9 @@
       "receipt": {
         "model_identity": "sec::SecFiling",
         "path": "docs/evidence/C101/primary-reviews/sec__SecFiling.review.json",
-        "sha256": "86c2afaec278ac8c1b28be3131ea68f28e9e8a1cbdf489942fc1fda0f98f4d17"
+        "sha256": "1df27417d8cd5f274413fc384fc506bc3096fe4acc6c017d091c5237dfd33ae1"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11244,9 +11244,9 @@
       "receipt": {
         "model_identity": "sec::SecHtmFile",
         "path": "docs/evidence/C101/primary-reviews/sec__SecHtmFile.review.json",
-        "sha256": "f8e1dc01ea426be8418d4648eb89aaab615779416cebd5fc40dea0d378193a3c"
+        "sha256": "5977a5892dc828be859645cff392609906a6553eb5ff12f4bdaff7694395d5a1"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11259,9 +11259,9 @@
       "receipt": {
         "model_identity": "sec::SicSearch",
         "path": "docs/evidence/C101/primary-reviews/sec__SicSearch.review.json",
-        "sha256": "02428ae636147e9019f6dd3db4634afcf7147cc0385e312b7b364bb5cde32620"
+        "sha256": "c9884f797a9bfeafdebb33ca0342b06faa9a51fc3d751ca5fd7d088241a1e035"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -11274,9 +11274,9 @@
       "receipt": {
         "model_identity": "sec::SymbolMap",
         "path": "docs/evidence/C101/primary-reviews/sec__SymbolMap.review.json",
-        "sha256": "031bb539f76391bcd9c5fea922030af85498a978bc1c852638b5d3e7b047fec2"
+        "sha256": "303f0350b55fdd8e17e3acbf456625d699b7e8b077207f68ad86572a60a3a2bc"
       },
-      "reviewed_at_utc": "2026-10-18T21:24:39Z",
+      "reviewed_at_utc": "2026-10-18T23:46:46Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
