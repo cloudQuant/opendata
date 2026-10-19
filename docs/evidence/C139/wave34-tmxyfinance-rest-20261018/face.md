@@ -164,3 +164,19 @@ timeseries/{symbol}`，`type=<prefix><Measure>` 列表 + period1/period2），�
 **若 owner 改判其中若干行为"接受"**：平面 1 从 336 起按行数增，代价不是每行而是全树——`domains.yaml` 新增键会重签当时全部已验收行（本代行集 336，读数形式是 `stale=336` 而非 `stale=行数`）；`domains_total` 只随**键数**增长，新增行数与新增键数不一定相等，二者之差必须显式列出。
 
 **若 biztoc::WorldNews / stockgrid::ShortVolume 完成 rights 注册**：与本臂无关（它们是 `new_provider_package`），预测 `census_actions` 里 `new_provider_package` 从 2 降、`residue` 分母随之降，而 `ledger_ruled_out=11` 不动。最后一行 `implement_missing_model`（`yfinance::AvailableIndices`）仍需要"参考输入"机制，本面测过它 0 端点、没有可让篡改抵达的请求站点。
+
+### 13.7 提交后对账（1aeef2791 的载荷在 HEAD 的字节面）
+
+`probes/w36_committed_payload_face.py`（clone 自本波上一代的 `w35_committed_payload_face.py`，只改 SHA / 载档名 / `/tmp` scratch 路径，改后 ruff+mypy+bandit 全绿）跑在 `1aeef2791` 之上：
+
+* `commit_paths=8 worktree_drift_vs_commit=0 list=[] byte_identical=True`（`runs/committed_payload_scan_1aeef2791.txt:4-6`）——HEAD 里那 8 档与工作树逐字节相同，所以对账对象是提交携带的字节而不是散文。
+* `payload_sha256=7743f5b596053a0fe9e8989fa5342b14b57a049430b231252316a5d8d5180e20` 与提交前扫描自己打的 `payload_index_sha256` **同值**（两份载档互相印证同一 payload 代），所以"提交带出去的字节 == 被凭证扫描读过的字节"是可核对的而不是推断。
+* `note: the pre-commit scan read staged_files=8 payload paths, taken from its own carrier line (w36_staged_payload_credential_scan.take1.txt)`——这一句在第一代 clone 里是硬写的 `221 index paths`（上一波的整体索引普查数），对本载荷是假数；已改成从被试自己的载档行里取，取不到会读 `-1` 而不是留在 221。
+* 反例计数照打：`CONTROL_paths_absent_at_parent=7 CONTROL_changed_vs_parent=1 CONTROL_drift_vs_parent=8 bites=True`，即这 8 档相对父提交确实都是新增/改动，对账不是拿旧树糊过去。
+* `gitleaks git --log-opts=-1 --config .gitleaks.toml`：`gitleaks_rc=0 findings=0`，`head_commit_count=447`；出货闸门 `scripts/quality/secret_scan_check.py` `rc=0`（`no leaks found`，47 个提交 / 315.43 MB），载档 `runs/post_commit_secret_check_1aeef2791.txt`，出口行 `post_commit_secret_check_1aeef2791_exit=0`。
+* 自指上限照旧披露，不假装闭合。逐档写清各自被谁读过：`committed_payload_scan_1aeef2791.txt` 与
+  `post_commit_secret_check_1aeef2791.txt` 的字节被 §13.7 上面那两条扫描（HEAD 级 gitleaks 与出货闸门）读过；
+  本 commit 里新加入的"提交前扫描"载档 `w36_staged_payload_credential_scan.take2.txt` 与 dir-mode 载档
+  `w36_dir_mode_gitleaks_runs_dir.txt` 不在**它们自己那次**运行的读取集合里（一个扫描读不到自己尚未写出的字节），
+  所以它们的覆盖由"对下一个提交再跑 `gitleaks git --log-opts=-1 --config .gitleaks.toml`"闭合，
+  命令与配置就写在这里，读者可原样重跑；我不会把"扫描"说成覆盖了它自身。

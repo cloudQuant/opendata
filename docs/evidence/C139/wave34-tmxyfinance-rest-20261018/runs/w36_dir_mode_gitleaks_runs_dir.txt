@@ -1,0 +1,15 @@
+# carrier for the dir-mode gitleaks closure over this bundle's runs/ directory
+argv: /opt/homebrew/bin/gitleaks detect --no-git --source docs/evidence/C139/wave34-tmxyfinance-rest-20261018/runs --config .gitleaks.toml --redact -f json --report-path /tmp/w36_dirmode.json
+
+baseline_findings=0
+baseline_rc=0
+scanned_bytes=686844
+note_scanned_bytes: printed by gitleaks on stderr for the baseline run (686.84 KB in 129ms); it is the runs/ directory as it stood after take1 and take2 were written, so both scan carriers are inside the population
+planted_argv: same binary, same --config, --source /tmp/w36_dirmode_planted (a copy of w35_refusal_evidence_face.txt plus one runtime-assembled fake token, never printed here)
+planted_findings=2
+planted_rules=['generic-api-key', 'github-pat']
+planted_rc=1
+two_sided_control=True (baseline 0 and planted 2 come from the same predicate, so the zero is a scan result, not an unrun scanner -- an earlier generation of this closure read an empty stdout as findings=0 after a flag error, which is why rc and report bytes are recorded here)
+first_attempt_defect: `-o` is not a gitleaks 8.30 shorthand; that run exited 1 with usage text and wrote no report file, so the JSON parse failed loudly instead of reporting zero findings
+
+w36_dir_mode_gitleaks_runs_dir_exit=0
