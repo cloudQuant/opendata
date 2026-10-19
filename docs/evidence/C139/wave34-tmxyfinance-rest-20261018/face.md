@@ -201,3 +201,17 @@ timeseries/{symbol}`，`type=<prefix><Measure>` 列表 + period1/period2），�
 4. **子代理约束**：实测 34 次派发 > 上限 30（§13.4 第 7 条给了复算口径），且本目标后半程我没有再派发——这条是既成事实的记录，不是达成项。
 
 结论：目标**未完成**。已达成的是"336 行逐条有可复算五相 + 反例"与"14 行未达成部分现在有了逐行证据等级"；未完成的是那 14 行（需要 owner 裁决与一次授权的网络/权利动作）与范围口径 2 里那两家（akshare/ths）在本目标平面上无行可验。
+
+### 13.9 范围面：平面 1 "看得见几个 provider" 是钉死在判定器里的两个常量，不是实现进度
+
+§13.8 第 2 条把两个总体的差异写清了，但那是散文。`probes/w37_scope_pinning_face.py`（251 行，10741 B，sha16 `4824ccfabffeea7c`；载档 `runs/w37_scope_pinning_face.txt` 17 行，7 臂全绿 `:15`，出口 `:17`）把它变成读数，并且每臂都能红：
+
+* `A_populations registry=34 inventory=32 disk_dirs=32 inventory_rows=350`（`:5-8`）：出货注册表的 provider 集是**清单集的严格超集**，多出来的正是 `akshare` 与 `ths`；`inventory_minus_registry=[]`，即清单里没有注册表不认识的名字。
+* `B_rowless_implementations providers=[akshare, ths] fetchers={'akshare': 10, 'ths': 11} total=21`（`:9`）：**21 个已注册、已实现的 fetcher 在平面 1 里没有对应行**。这是验收口径的盲区，不是实现缺口——所以"32 个 provider 全部实现"要指明用哪个总体：按注册表是 34 家（其中 2 家无行），按 350 行清单是 32 家（其中 biztoc/stockgrid 无包）。
+* `D_widening_is_refused real_load=rows=350 forged_load=EvidenceIndexError:inventory identity count changed: expected 350, got 351`（`:11`）：把同一份 CSV 加一行合成行后，**出货判定器直接拒**（合成 CSV 只写在 `/tmp`，跑完即删，仓内零写入）。也就是说"把 akshare/ths 纳进来"不是写代码，是改 `EXPECTED_MODEL_COUNT` 与 `EXPECTED_IDENTITY_SHA256` 这两个钉在 `iter2_model_evidence.py` 里的常量——按本目标的纪律，改判定器不在我的处置权内。
+* `E_identity_projection current=5168e1e723999312 widened=17571ac4ca476329 differs=True`（`:12`）+ `G_revert_is_exact revert=5168e1e723999312 equals_pinned=True`（`:14`）：用判定器自己的 `identity_projection_sha256` 算，加一行就换身份摘要，撤掉那行就逐字回到钉住的摘要——差异是那一行造成的，不是哈希不稳定。
+* `F_re_sign_radius accepted_rows=336 report_claims=1705 identity_field_occurrences=1 document_identity_matches_pinned=True`（`:13`）：身份戳在合并文档**根上一处**，1705 条 claim 与 336 行验收都被这一个字段管着，所以改范围的重签半径是"整份文档"，而不是某一行的 pin。
+
+两条本回合自捕（都改成了读数而不是补一句解释）：第一版 arm A 要求"两侧差集不相等"，对**单向**超集是错的，被真实读数 `registry_minus_inventory=[akshare, ths] / inventory_minus_registry=[]` 判红；第一版 arm F 去找"每条 claim 各自的身份字段"，读到 `stamped=0`，那是我猜了生产者的形状——实际是文档级一处。
+
+**预测判据（这一决策被 owner 采纳时下一代必须读到）**：若 owner 决定把 akshare/ths 纳入平面 1，先决条件是同时改判定器的 `EXPECTED_MODEL_COUNT`——**新增几行取决于用哪个通道数模型**：注册表 fetcher 给 10+11=21（`:9`），而盘上 `models/*.py` 给 12+13=25（§13.8 实测），两条都是读数而不是估计；所以 owner 第一步要定"以注册表为准还是以模块为准"，定了之后 `EXPECTED_MODEL_COUNT` 才是 371 或 375与 `EXPECTED_IDENTITY_SHA256`，然后重跑 producer→recorder→merge→judge 全树；预测下一代的 `A_populations` 读 `registry_minus_inventory=[]`、`B_rowless_implementations total=0`、`inventory_rows=371`，且 `residue + accepted == 371`。**失效条件**：只改 CSV 不改常量（`D` 臂会从 `rows=350` 变成抛错，面直接红），或只改常量不重签（`C` 臂读 `claims_match_pinned=False`，因为 336 行仍带旧身份）。

@@ -1,0 +1,17 @@
+# carrier for w37_scope_pinning_face.py
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C139/wave34-tmxyfinance-rest-20261018/probes/w37_scope_pinning_face.py
+# claims_sha256=9ebbe59602b07f5b
+
+A_populations registry=34 inventory=32 disk_dirs=32 inventory_rows=350
+  registry_minus_inventory=['akshare', 'ths']
+  inventory_minus_registry=[]
+  disk_minus_inventory=['akshare', 'ths']
+B_rowless_implementations providers=['akshare', 'ths'] fetchers={'akshare': 10, 'ths': 11} total=21
+C_pinned_constants expected_model_count=350 pinned_identity=5168e1e723999312 claims_identity_values=1 claims_match_pinned=True
+D_widening_is_refused real_load=rows=350 forged_load=EvidenceIndexError:inventory identity count changed: expected 350, got 351
+E_identity_projection current=5168e1e723999312 widened=17571ac4ca476329 differs=True rows=350->351
+F_re_sign_radius accepted_rows=336 report_claims=1705 claims_shape_count=1705 identity_field_occurrences=1 document_identity_matches_pinned=True
+G_revert_is_exact revert=5168e1e723999312 equals_pinned=True
+scope_pinning_face arms=7 arms_passed=7 arms_failed=0 failed=[] PASS=True
+
+w37_scope_pinning_face_exit=0
