@@ -330,3 +330,21 @@ census 自身的臂读数也被核：`green=['A_landed_positive','C_population_i
 * **出货闸门**：仓内自带的 `secret_scan_check` `rc=0`。
 * **代次摘要**：`claims_sha256=832268d0eb1dc8e8`、`judge_report_sha256=1ba70159c25af361`
   ——与 §1 的 338/1725 是同一代。
+
+### 13.1 收口提交之后的树面对账（`--scope tree`）
+
+`probes/w47_closure_face.py --commit 39eed1e0c --scope tree`（父 `dffa64969`），读数
+`runs/w47_closure_face.tree_scope.txt` 与 `runs/w47_closure_face.tree_scope.stdout.txt`：
+
+- `commit_paths=7262`（该提交树里本波全部前缀下的每一条路径，不只是那一次改动的 10 条）、
+  `worktree_drift_vs_commit=0`、`missing_in_commit=0`、`moved_vs_parent=10` ——
+  也就是说"提交里的字节 == 工作树的字节"这一条，在本波最后一个提交上是对 7262 条路径同时成立的；
+  上面那条 2262 条里的 2 条漂移因此被这条面收口，而不是被解释掉；
+- git 模式扫 `39eed1e0c` 本身 `findings=0`，同一 argv 的投毒对照 `findings=2`（`arm_can_move=True`）；
+  `secret_scan_check rc=0`（455 个提交、359.17 MB）；
+- 一处必须说清的窄处：这一跑的目录面只物化了该提交自带的 10 个路径
+  （`dir_mode_tree copied_from_commit=10`，`local_only_files=5798` 点名了未被扫的其余文件），
+  所以"bundle 全量目录扫描"是 §13 那一次（`copied_from_commit=2242`）的读数，
+  两次合起来才是完整的：全量目录面在载荷提交上，树面字节对账在收口提交上；
+- 代次摘要与 §1、§13 相同（`claims_sha256=832268d0eb1dc8e8`、
+  `judge_report_sha256=1ba70159c25af361`），三次取面（13 / 13.1 / §11 的收口索引面）说的是同一代载荷。

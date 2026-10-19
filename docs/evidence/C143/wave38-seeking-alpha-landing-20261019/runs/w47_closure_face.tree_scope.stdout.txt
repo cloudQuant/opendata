@@ -1,0 +1,16 @@
+reconcile commit=39eed1e0c parent=dffa64969 commit_paths=7262 worktree_drift_vs_commit=0 moved_vs_parent=10 missing_in_commit=0
+drift_list=[]
+commit_paths_by_root={'docs/evidence/C101': 5676, 'opendata': 933, 'tests': 485, 'docs/evidence/C143': 96, 'scripts': 59, 'docs/evidence/C142': 13}
+
+---- payload scan ----
+pre_commit_gate payload_index_sha256=ba0e6a2ddc49c347fc636880db8bba5aea305c2dc9123e19182cf6724210278c
+staged_files_from_scan_carrier=2262 committed_paths=7262 gate_scope_note=the pre-commit gate read the index before its own carrier was staged, so this face is the arm that scans the commit
+gitleaks_git_mode commit=39eed1e0c rc=0 findings=0 rules=[] planted_control rc=0 findings=2 arm_can_move=True
+dir_mode_tree copied_from_commit=10 local_only_files=5798 local_only_sample=['docs/evidence/C101/README.md', 'docs/evidence/C101/alpha_vantage/claims.json', 'docs/evidence/C101/alpha_vantage/claims.reviewed.json', 'docs/evidence/C101/alpha_vantage/primary-reviews/alpha_vantage__EquityHistorical.review.json'] bytecode_skipped=3
+gitleaks_dir_mode bundles rc=0 findings=0 rules=[] planted rc=0 findings=2 arm_can_move=True
+secret_scan_check rc=0 tail=[90m5:07PM[0m [32mINF[0m [1m455 commits scanned.[0m | [90m5:07PM[0m [32mINF[0m [1mscanned ~359172829 bytes (359.17 MB) in 4m3s[0m | [90m5:07PM[0m [32mINF[0m [1mno leaks found[0m
+generation claims_sha256=832268d0eb1dc8e8 judge_report_sha256=1ba70159c25af361
+
+closure_face commit=39eed1e0c paths=7262 arms=8 arms_passed=8 arms_failed=0 failed=[] PASS=True
+w47_closure_face_exit=0
+w47_tree_scope_exit=0
