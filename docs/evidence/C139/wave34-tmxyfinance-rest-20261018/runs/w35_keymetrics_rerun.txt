@@ -1,0 +1,41 @@
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_producer.py --provider ...
+hareStatistics --phase contract --evidence-root docs/evidence/C101
+ShareStatistics counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model ShareStatistics --phase counterfact --evidence-root docs/evidence/C101
+denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=336/350; provider rows covered=28 of provider inventory rows=29, of which bound now=28/336 resolvable; claims emitted=140 (140 PASS, 0 FAIL, 0 BLOCKED) = 28 row(s) x 5 phases; phases actually executed as subprocesses=140
+wrote docs/evidence/C101/yfinance/claims.json
+chain_producer_yfinance28_exit=0
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_primary_review_recorder.py --claims ...
+dervaluedLargeCaps
+REVIEW_SIGNED: yfinance::EtfHistorical
+REVIEW_SIGNED: yfinance::EtfInfo
+REVIEW_SIGNED: yfinance::FuturesCurve
+REVIEW_SIGNED: yfinance::FuturesHistorical
+REVIEW_SIGNED: yfinance::GrowthTechEquities
+REVIEW_SIGNED: yfinance::HistoricalDividends
+REVIEW_SIGNED: yfinance::IncomeStatement
+REVIEW_SIGNED: yfinance::IndexHistorical
+REVIEW_SIGNED: yfinance::KeyExecutives
+REVIEW_SIGNED: yfinance::KeyMetrics
+REVIEW_SIGNED: yfinance::OptionsChains
+REVIEW_SIGNED: yfinance::PriceTargetConsensus
+REVIEW_SIGNED: yfinance::ShareStatistics
+recorder_exit=0 signed=28 refused=0 reviews_total=28 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/yfinance/claims.reviewed.json
+chain_recorder_yfinance28_exit=0
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_merge.py
+idence/C101/imf/claims.reviewed.json
+  shard docs/evidence/C101/intrinio/claims.reviewed.json
+  shard docs/evidence/C101/multpl/claims.reviewed.json
+  shard docs/evidence/C101/nasdaq/claims.reviewed.json
+  shard docs/evidence/C101/oecd/claims.reviewed.json
+  shard docs/evidence/C101/sec/claims.reviewed.json
+  shard docs/evidence/C101/tiingo/claims.reviewed.json
+  shard docs/evidence/C101/tmx/claims.reviewed.json
+  shard docs/evidence/C101/tradier/claims.reviewed.json
+  shard docs/evidence/C101/tradingeconomics/claims.reviewed.json
+  shard docs/evidence/C101/yfinance/claims.reviewed.json
+claims=1705 identities=341 reviews=336 accepted_identities=336
+wrote docs/evidence/C101/claims.merged.json
+chain_merge_yfinance28_exit=0
+argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_model_evidence.py --inventory ...
+wrote docs/evidence/C101/judge/claims.merged.report.json and docs/evidence/C101/judge/claims.merged.report.md: 350 identities, 336 offline accepted
+chain_judge_yfinance28_exit=0

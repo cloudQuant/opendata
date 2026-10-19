@@ -17,7 +17,7 @@ from contextvars import ContextVar, Token
 from datetime import timedelta
 from functools import wraps
 from types import SimpleNamespace
-from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Final, ParamSpec, TypeVar, cast
 
 import pandas as pd
 
@@ -37,6 +37,32 @@ _ACTIVE_SDK: ContextVar[tuple[Any, Any | None] | None] = ContextVar(
 _SdkArgs = ParamSpec("_SdkArgs")
 _SdkResult = TypeVar("_SdkResult")
 _SDK_IMPORT_UNAVAILABLE = False
+
+#: The public ``frequency`` value mapped to the series type's name. The endpoint calls the
+#: yearly series ``annual``, which is why this is a table rather than a pass-through.
+_VALUATION_FREQ_PREFIX: Final[dict[str, str]] = {
+    "quarterly": "quarterly",
+    "monthly": "monthly",
+    "yearly": "annual",
+    "trailing": "trailing",
+}
+#: ``(series type suffix, contract display label)`` in the order the source lists the measures.
+#: The display label is the key the row mapper already uses, so the frame this builds is the
+#: same shape ``Ticker.get_valuation_measures`` returns on the newer SDK generation.
+_VALUATION_MEASURE_TYPES: Final[tuple[tuple[str, str], ...]] = (
+    ("MarketCap", "Market Cap"),
+    ("EnterpriseValue", "Enterprise Value"),
+    ("PeRatio", "Trailing P/E"),
+    ("ForwardPeRatio", "Forward P/E"),
+    ("PegRatio", "PEG Ratio (5yr expected)"),
+    ("PsRatio", "Price/Sales"),
+    ("PbRatio", "Price/Book"),
+    ("EnterprisesValueRevenueRatio", "Enterprise Value/Revenue"),
+    ("EnterprisesValueEBITDARatio", "Enterprise Value/EBITDA"),
+)
+#: Documented floor of the valuation series: 2016-12-31 UTC.
+_VALUATION_PERIOD1: Final = 1483113600
+_VALUATION_TIMEOUT: Final = 30.0
 
 
 def _ensure_sdk_config_seam() -> None:
@@ -440,19 +466,93 @@ def require_screen(
 
 @_governed_sdk_call
 def require_valuation_measures(symbol: str, *, frequency: str, periods: int) -> pd.DataFrame | None:
-    """Fetch documented current and historical valuation measures."""
+    """Fetch the documented current and historical valuation measures.
+
+    The reviewed 0.2.66 pin publishes no ``Ticker.get_valuation_measures`` (that method belongs
+    to the 1.7.0 generation), so the request is built here against the fundamentals-timeseries
+    endpoint the statements already use rather than asking the SDK for a method it does not
+    have. ``get_raw_json`` is deliberately chosen over the URL-keyed ``cache_get``: a cached
+    series answer would be replayed to the next leg of the same process, which is how the
+    counterfact leg was once served the control leg's data.
+    """
     yfinance = _require_sdk()
+    prefix = _VALUATION_FREQ_PREFIX.get(frequency)
+    if prefix is None:
+        raise YfinanceProviderError("YFINANCE_METRICS_FREQ_UNSUPPORTED")
+    active = _ACTIVE_SDK.get()
+    if active is None:
+        raise YfinanceProviderError("YFINANCE_SESSION_NOT_GOVERNED")
+    _ensure_yfdata_session(yfinance, active[1], initialize=True)
+    data = yfinance.data.YfData._instances.get(yfinance.data.YfData)
+    if data is None:
+        raise YfinanceProviderError("YFINANCE_SESSION_SINGLETON_UNAVAILABLE")
+    prefixes = sorted({prefix, "trailing"})
+    type_names = ",".join(
+        f"{name}{key}" for key, _ in _VALUATION_MEASURE_TYPES for name in prefixes
+    )
+    url = f"{yfinance.const._BASE_URL_}/ws/fundamentals-timeseries/v1/finance/timeseries/{symbol}"
+    params = {
+        "symbol": symbol,
+        "type": type_names,
+        "period1": _VALUATION_PERIOD1,
+        "period2": int(pd.Timestamp.now("UTC").ceil("D").timestamp()),
+    }
     try:
-        response = _ticker(yfinance, symbol).get_valuation_measures(freq=frequency, periods=periods)
+        payload: object = data.get_raw_json(url, params=params, timeout=_VALUATION_TIMEOUT)
     except RequestBudgetError:
         raise
     except Exception as exc:
         raise YfinanceProviderError("YFINANCE_REQUEST_FAILED") from exc
-    if response is None:
-        return None
-    if not isinstance(response, pd.DataFrame):
+    timeseries = payload.get("timeseries") if isinstance(payload, Mapping) else None
+    result = timeseries.get("result") if isinstance(timeseries, Mapping) else None
+    if not isinstance(result, list):
         raise YfinanceProviderError("YFINANCE_METRICS_SHAPE_INVALID")
-    return response
+
+    dated: dict[str, dict[pd.Timestamp, object]] = {}
+    trailing: dict[str, dict[pd.Timestamp, object]] = {}
+    for item in result:
+        if not isinstance(item, Mapping):
+            continue
+        for type_name, points in item.items():
+            if type_name in ("meta", "timestamp") or not isinstance(points, list):
+                continue
+            if prefix != "trailing" and type_name.startswith(prefix):
+                base, target = type_name[len(prefix) :], dated
+            elif type_name.startswith("trailing"):
+                base, target = type_name[len("trailing") :], trailing
+            else:
+                continue
+            label = next((text for key, text in _VALUATION_MEASURE_TYPES if key == base), None)
+            if label is None:
+                continue
+            for point in points:
+                if not isinstance(point, Mapping):
+                    continue
+                as_of = point.get("asOfDate")
+                reported = point.get("reportedValue")
+                value = reported.get("raw") if isinstance(reported, Mapping) else None
+                if as_of is not None and value is not None:
+                    target.setdefault(label, {})[pd.Timestamp(as_of).normalize()] = value
+    if not dated and not trailing:
+        return None
+
+    current = {label: series[max(series)] for label, series in trailing.items() if series}
+    dates = sorted({stamp for series in dated.values() for stamp in series}, reverse=True)
+    cap = len(dates) if periods is None or periods < 0 else periods
+    kept = dates[:cap]
+    columns = ["Current"] + [f"{d.month}/{d.day}/{d.year}" for d in kept]
+    frame = pd.DataFrame(
+        {
+            column: [
+                current.get(label) if column == "Current" else dated.get(label, {}).get(stamp)
+                for _, label in _VALUATION_MEASURE_TYPES
+            ]
+            for column, stamp in zip(columns, [None, *kept], strict=True)
+        },
+        index=[text for _, text in _VALUATION_MEASURE_TYPES],
+        dtype=object,
+    )
+    return frame.where(frame.notna(), None)
 
 
 @_governed_sdk_call

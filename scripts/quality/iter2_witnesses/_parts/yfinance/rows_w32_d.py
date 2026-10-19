@@ -156,16 +156,47 @@ def _income_statement_document() -> dict[str, Any]:
 
 
 def _key_metrics_document() -> dict[str, Any]:
-    # Inert for this SDK generation (Ticker has no get_valuation_measures, so the fetch refuses
-    # before any leg is asked); shaped as the timeseries envelope of the generation the fetcher
-    # was written against, with an empty result.
+    """The fundamentals-timeseries valuation envelope this row's request actually receives.
+
+    Two series per measure: the requested ``quarterly*`` series (dated columns) and the
+    ``trailing*`` series, whose newest point is what the fetcher labels ``Current``. Only two
+    measures carry values; the frame still emits all nine rows, so the row mapper has to mark the
+    rest ``source_missing`` rather than invent them.
+    """
     return {
         "responses": [
             {"url_contains": "fc.yahoo.com", "body": ""},
             {"url_contains": "v1/test/getcrumb", "body": _CRUMB},
             {
-                "url_contains": "valuation-measures",
-                "body": {"timeseries": {"result": [], "error": None}},
+                "url_contains": "fundamentals-timeseries/v1/finance/timeseries",
+                "body": {
+                    "timeseries": {
+                        "result": [
+                            {
+                                "meta": {"symbol": ["AAPL"]},
+                                "trailingMarketCap": [
+                                    {
+                                        "asOfDate": "2024-12-31",
+                                        "reportedValue": {"raw": 3_700_000_000_000},
+                                    }
+                                ],
+                                "quarterlyMarketCap": [
+                                    {
+                                        "asOfDate": "2024-09-30",
+                                        "reportedValue": {"raw": 3_400_000_000_000},
+                                    }
+                                ],
+                                "trailingPeRatio": [
+                                    {"asOfDate": "2024-12-31", "reportedValue": {"raw": 32.1}}
+                                ],
+                                "quarterlyPeRatio": [
+                                    {"asOfDate": "2024-09-30", "reportedValue": {"raw": 30.4}}
+                                ],
+                            }
+                        ],
+                        "error": None,
+                    }
+                },
             },
         ]
     }
@@ -206,21 +237,17 @@ _STATEMENT_TAMPER_REASON: Final[str] = (
 )
 
 _KEY_METRICS_TAMPER_REASON: Final[str] = (
-    "declared only as the measured standing refusal of this row's extract leg: the installed "
-    "yfinance 0.2.66 Ticker publishes no get_valuation_measures (hasattr False on the class and "
-    "on an instance, and the string 'valuation-measures' appears nowhere in the package), so "
-    "_sdk.require_valuation_measures raises YfinanceProviderError/YFINANCE_REQUEST_FAILED from the "
-    "AttributeError before any fixture document is consumed -- measured verbatim as "
-    "FAIL reason=unclassified witness crash YfinanceProviderError: YFINANCE_REQUEST_FAILED on "
-    "direct, service, contract and counterfact, while implementation passes "
-    "(row_model=YfinanceKeyMetricObservation is the contract class). No tamper of this row's own "
-    "document can be witnessed, because the untampered control leg already refuses. Alternative "
-    "surface check (determination a, not b): the only measure-bearing surface in 0.2.66 is "
-    "Ticker.info, measured offline through this seam on the shipped EquityInfo fixture as a dict "
-    "of 14 keys ('quoteType', 'trailingPegRatio' being the only valuation-ish ones), never a "
-    "DataFrame and with no per-period rows for period_ending/period_kind/fiscal_year; "
-    "const.fundamentals_keys names only financials/balance-sheet/cash-flow. The row is therefore "
-    "blocked by an upstream SDK capability gap, not by evidence machinery"
+    "a real upstream defect -- the fundamentals-timeseries endpoint answering with an empty "
+    "result array, which is what Yahoo returns while a symbol's measure series is being rebuilt -- "
+    "leaves this row with no trailing point to label Current and no dated column to emit, so the "
+    "fetch returns None and the row mapper refuses with YfinanceProviderError/"
+    "YFINANCE_METRICS_SHAPE_INVALID rather than publish a metrics row whose values were never "
+    "served. This entry replaces the wave-32/33 claim that the row was blocked by an upstream SDK "
+    "capability gap: that was measured against a transport targeting Ticker.get_valuation_measures "
+    "(the 1.7.0 generation's method, indeed absent here), while the same nine measures are served "
+    "by the fundamentals-timeseries endpoint the statements already use, which the pinned 0.2.66 "
+    "can request through its own data layer. Measured on this row's own document: control leg "
+    "emits 2 rows (Current + one dated period), tampered leg refuses."
 )
 
 
@@ -261,10 +288,10 @@ MODELS: Final[dict[str, Any]] = {
     "KeyMetrics": {
         "fixture_document": _key_metrics_document,
         "client_seam": _SEAM,
-        "query": {"symbol": _SYMBOL},
+        "query": {"symbol": _SYMBOL, "frequency": "quarterly", "periods": 1},
         "tamper": _TAMPER_EMPTY_RESULT,
         "refusal_class": "YfinanceProviderError",
-        "refusal_code": "YFINANCE_REQUEST_FAILED",
+        "refusal_code": "YFINANCE_METRICS_SHAPE_INVALID",
         "tamper_reason": _KEY_METRICS_TAMPER_REASON,
         "source_files": [
             "opendata/data/providers/yfinance/models/market_iter2.py",

@@ -1931,7 +1931,7 @@ def test_yfinance_query_wrappers_call_documented_methods_and_normalize_shape(
             return Funds()
 
         def get_valuation_measures(self, **kwargs: object) -> pd.DataFrame:
-            calls["valuation"] = kwargs
+            calls["valuation_method"] = kwargs
             return pd.DataFrame({"Current": [1.0]}, index=["P/E"])
 
         def option_chain(self, expiration: str) -> Chain:
@@ -1942,7 +1942,51 @@ def test_yfinance_query_wrappers_call_documented_methods_and_normalize_shape(
             calls["targets"] = True
             return {"current": 10, "low": 9, "high": 12, "mean": 11, "median": 11}
 
-    monkeypatch.setattr(_sdk, "_require_sdk", lambda: types.SimpleNamespace(Ticker=Ticker))
+    class YfData:
+        """The data layer the pinned 0.2.66 generation actually offers.
+
+        ``require_valuation_measures`` builds its own fundamentals-timeseries request through
+        this object because ``Ticker.get_valuation_measures`` is the newer generation's method;
+        the assertion below is that the request carries the documented measure types and that the
+        answer is normalized into Current-plus-dated columns, which is what the row mapper needs.
+        """
+
+        _instances: dict[type, object] = {}
+
+        def __init__(self, session: object = None, **_kwargs: object) -> None:
+            self._session = session
+            YfData._instances[YfData] = self
+
+        def get_raw_json(
+            self, url: str, params: dict[str, object] | None = None, timeout: float = 30.0
+        ) -> dict[str, object]:
+            calls["valuation_url"] = url
+            calls["valuation"] = params or {}
+            return {
+                "timeseries": {
+                    "result": [
+                        {
+                            "meta": {"symbol": ["AAPL"]},
+                            "trailingMarketCap": [
+                                {"asOfDate": "2025-01-02", "reportedValue": {"raw": 1.0}},
+                            ],
+                            "quarterlyMarketCap": [
+                                {"asOfDate": "2024-09-30", "reportedValue": {"raw": 2.0}},
+                            ],
+                        }
+                    ]
+                }
+            }
+
+    monkeypatch.setattr(
+        _sdk,
+        "_require_sdk",
+        lambda: types.SimpleNamespace(
+            Ticker=Ticker,
+            data=types.SimpleNamespace(YfData=YfData),
+            const=types.SimpleNamespace(_BASE_URL_="https://query1.finance.yahoo.com"),
+        ),
+    )
     monkeypatch.setattr(
         _sdk,
         "governed_yfinance_session",
@@ -1952,9 +1996,21 @@ def test_yfinance_query_wrappers_call_documented_methods_and_normalize_shape(
     assert _sdk.require_info("AAPL")["longName"] == "Fixture"
     assert _sdk.require_fast_info("AAPL")["lastPrice"] == 10.0
     assert _sdk.require_fund_sections("SPY")["asset_classes"] == {"stock": 1.0}
-    assert _sdk.require_valuation_measures("AAPL", frequency="quarterly", periods=2).iloc[0, 0] == 1
+    measures = _sdk.require_valuation_measures("AAPL", frequency="quarterly", periods=2)
+    assert measures is not None
+    assert measures.loc["Market Cap", "Current"] == 1.0
+    assert measures.loc["Market Cap", "9/30/2024"] == 2.0
+    assert "P/E" not in list(measures.index)
     assert _sdk.require_options_chain("AAPL", "2027-01-15")[0].empty
     assert _sdk.require_price_targets("AAPL")["mean"] == 11
     assert calls["news"] == {"count": 6, "tab": "news"}
-    assert calls["valuation"] == {"freq": "quarterly", "periods": 2}
+    assert calls.get("valuation_method") is None
+    assert str(calls["valuation_url"]).endswith(
+        "/ws/fundamentals-timeseries/v1/finance/timeseries/AAPL"
+    )
+    requested = str(calls["valuation"]["type"]).split(",")
+    assert requested[:2] == ["quarterlyMarketCap", "trailingMarketCap"]
+    assert len(requested) == 18
+    assert calls["valuation"]["symbol"] == "AAPL"
+    assert calls["valuation"]["period1"] == _sdk._VALUATION_PERIOD1
     assert calls["option_chain"] == "2027-01-15"

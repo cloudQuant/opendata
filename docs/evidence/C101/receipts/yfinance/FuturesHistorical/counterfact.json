@@ -1,9 +1,9 @@
 {
   "capture": {
     "path": "docs/evidence/C101/captures/yfinance/FuturesHistorical/counterfact-exit0.txt",
-    "sha256": "48eeecd7589f7935816dcf7ab2a66cbc94d50f58424072716ed58728af785757",
+    "sha256": "507d96361f76e4d3ec14de3554005e015b9f2e5d814bb2cc71bb6003e3cf50f8",
     "size_bytes": 1096,
-    "stdout_excerpt": "COUNTERFACT_JSON={\"expected\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"YfinanceProviderError\", \"refusal_code\": \"YFINANCE_EMPTY_RESPONSE\", \"rejected\": [], \"status\": null}, \"observed\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"YfinanceProviderError\", \"refusal_code\": \"YFINANCE_EMPTY_RESPONSE\", \"rejected\": [], \"status\": null}, \"reason\": \"an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceFuturesHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam\"}\nVERDICT=PASS\n"
+    "stdout_excerpt": "COUNTERFACT_JSON={\"expected\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"YfinanceProviderError\", \"refusal_code\": \"YFINANCE_EMPTY_RESPONSE\", \"rejected\": [], \"status\": null}, \"observed\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"YfinanceProviderError\", \"refusal_code\": \"YFINANCE_EMPTY_RESPONSE\", \"rejected\": [], \"status\": null}, \"reason\": \"an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceFuturesHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 20 row(s) through the same seam\"}\nVERDICT=PASS\n"
   },
   "counterfact": {
     "expected": {
@@ -22,11 +22,11 @@
       "rejected": [],
       "status": null
     },
-    "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceFuturesHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam"
+    "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceFuturesHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 20 row(s) through the same seam"
   },
   "machine_execution": {
     "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model FuturesHistorical --phase counterfact --evidence-root docs/evidence/C101",
-    "executed_at_utc": "2026-10-18T23:58:22.929093+00:00",
+    "executed_at_utc": "2026-10-19T01:35:14.080900+00:00",
     "exit_code": 0,
     "pins": {
       "contract": [
@@ -44,8 +44,8 @@
       "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
       "fixture": [
         {
-          "after_sha256": "33282b9e2dd91336e1269d46e46c61c3ac60b313c5765e14ad63e9b6778e5e01",
-          "before_sha256": "33282b9e2dd91336e1269d46e46c61c3ac60b313c5765e14ad63e9b6778e5e01",
+          "after_sha256": "606a692b1662a6739a97d945c144cbabacea39f2d4391b428a65ffd89907de48",
+          "before_sha256": "606a692b1662a6739a97d945c144cbabacea39f2d4391b428a65ffd89907de48",
           "path": "docs/evidence/C101/fixtures/yfinance/FuturesHistorical.json"
         }
       ],
@@ -81,8 +81,8 @@
           "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_c.py"
         },
         {
-          "after_sha256": "577755ea168de5f7f1ea78c5217e4d74992b4d62b7dabf757921d4d9bb92df99",
-          "before_sha256": "577755ea168de5f7f1ea78c5217e4d74992b4d62b7dabf757921d4d9bb92df99",
+          "after_sha256": "561e1ef1f7055395fc74a97f142cc3e29c74e83074b499b972043103c4f29a61",
+          "before_sha256": "561e1ef1f7055395fc74a97f142cc3e29c74e83074b499b972043103c4f29a61",
           "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_d.py"
         },
         {
@@ -118,8 +118,8 @@
           "path": "opendata/data/providers/yfinance/models/market_iter2.py"
         },
         {
-          "after_sha256": "00e37fe7317c102be85911ba068d1a17e83d60a7e548bba9aac21e6fcf9c3f53",
-          "before_sha256": "00e37fe7317c102be85911ba068d1a17e83d60a7e548bba9aac21e6fcf9c3f53",
+          "after_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
+          "before_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
           "path": "opendata/data/providers/yfinance/models/_sdk.py"
         },
         {
@@ -155,8 +155,8 @@
     "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
     "fixture": [
       {
-        "after_sha256": "33282b9e2dd91336e1269d46e46c61c3ac60b313c5765e14ad63e9b6778e5e01",
-        "before_sha256": "33282b9e2dd91336e1269d46e46c61c3ac60b313c5765e14ad63e9b6778e5e01",
+        "after_sha256": "606a692b1662a6739a97d945c144cbabacea39f2d4391b428a65ffd89907de48",
+        "before_sha256": "606a692b1662a6739a97d945c144cbabacea39f2d4391b428a65ffd89907de48",
         "path": "docs/evidence/C101/fixtures/yfinance/FuturesHistorical.json"
       }
     ],
@@ -192,8 +192,8 @@
         "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_c.py"
       },
       {
-        "after_sha256": "577755ea168de5f7f1ea78c5217e4d74992b4d62b7dabf757921d4d9bb92df99",
-        "before_sha256": "577755ea168de5f7f1ea78c5217e4d74992b4d62b7dabf757921d4d9bb92df99",
+        "after_sha256": "561e1ef1f7055395fc74a97f142cc3e29c74e83074b499b972043103c4f29a61",
+        "before_sha256": "561e1ef1f7055395fc74a97f142cc3e29c74e83074b499b972043103c4f29a61",
         "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_d.py"
       },
       {
@@ -229,8 +229,8 @@
         "path": "opendata/data/providers/yfinance/models/market_iter2.py"
       },
       {
-        "after_sha256": "00e37fe7317c102be85911ba068d1a17e83d60a7e548bba9aac21e6fcf9c3f53",
-        "before_sha256": "00e37fe7317c102be85911ba068d1a17e83d60a7e548bba9aac21e6fcf9c3f53",
+        "after_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
+        "before_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
         "path": "opendata/data/providers/yfinance/models/_sdk.py"
       },
       {

@@ -1,0 +1,259 @@
+{
+  "claims_document": {
+    "path": "docs/evidence/C101/yfinance/claims.json",
+    "sha256": "69cff89ed1fdbc1402d6da5a26af515d6e9c4cfb3e58707be383ab6ff75463b0"
+  },
+  "decision": "ACCEPT",
+  "evidence_snapshot": {
+    "phases": {
+      "contract": {
+        "contract_pins": [
+          {
+            "after_sha256": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+            "before_sha256": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+            "path": "opendata/data/models/yfinance_iter2.py"
+          },
+          {
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/yfinance/KeyMetrics/contract.json",
+          "sha256": "102ce88ebf670f660b0fa1038366ad7c231cf01510be0556ba8945c9cbff1cca"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
+            "before_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
+            "path": "opendata/data/providers/yfinance/provider.py"
+          },
+          {
+            "after_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+            "before_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+            "path": "opendata/data/providers/yfinance/models/market_iter2.py"
+          },
+          {
+            "after_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
+            "before_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
+            "path": "opendata/data/providers/yfinance/models/_sdk.py"
+          },
+          {
+            "after_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+            "before_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+            "path": "opendata/data/providers/yfinance/models/_session.py"
+          }
+        ]
+      },
+      "counterfact": {
+        "contract_pins": [
+          {
+            "after_sha256": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+            "before_sha256": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+            "path": "opendata/data/models/yfinance_iter2.py"
+          },
+          {
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/yfinance/KeyMetrics/counterfact.json",
+          "sha256": "2738ecbcca120e3000c2002428219579aa20b82580995009b6382fb532b2c034"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
+            "before_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
+            "path": "opendata/data/providers/yfinance/provider.py"
+          },
+          {
+            "after_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+            "before_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+            "path": "opendata/data/providers/yfinance/models/market_iter2.py"
+          },
+          {
+            "after_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
+            "before_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
+            "path": "opendata/data/providers/yfinance/models/_sdk.py"
+          },
+          {
+            "after_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+            "before_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+            "path": "opendata/data/providers/yfinance/models/_session.py"
+          }
+        ]
+      },
+      "direct": {
+        "contract_pins": [
+          {
+            "after_sha256": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+            "before_sha256": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+            "path": "opendata/data/models/yfinance_iter2.py"
+          },
+          {
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/yfinance/KeyMetrics/direct.json",
+          "sha256": "9b9329c79c69f80cc05a11c4d2f719e6a9c8d5208195e66a686c0d8ab18ad833"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
+            "before_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
+            "path": "opendata/data/providers/yfinance/provider.py"
+          },
+          {
+            "after_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+            "before_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+            "path": "opendata/data/providers/yfinance/models/market_iter2.py"
+          },
+          {
+            "after_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
+            "before_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
+            "path": "opendata/data/providers/yfinance/models/_sdk.py"
+          },
+          {
+            "after_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+            "before_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+            "path": "opendata/data/providers/yfinance/models/_session.py"
+          }
+        ]
+      },
+      "implementation": {
+        "contract_pins": [
+          {
+            "after_sha256": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+            "before_sha256": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+            "path": "opendata/data/models/yfinance_iter2.py"
+          },
+          {
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/yfinance/KeyMetrics/implementation.json",
+          "sha256": "04900c5bd84010513c356f2c67ab46444b46d019a5e9176c5ae99ab8ae593f79"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
+            "before_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
+            "path": "opendata/data/providers/yfinance/provider.py"
+          },
+          {
+            "after_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+            "before_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+            "path": "opendata/data/providers/yfinance/models/market_iter2.py"
+          },
+          {
+            "after_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
+            "before_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
+            "path": "opendata/data/providers/yfinance/models/_sdk.py"
+          },
+          {
+            "after_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+            "before_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+            "path": "opendata/data/providers/yfinance/models/_session.py"
+          }
+        ]
+      },
+      "service": {
+        "contract_pins": [
+          {
+            "after_sha256": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+            "before_sha256": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+            "path": "opendata/data/models/yfinance_iter2.py"
+          },
+          {
+            "after_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "before_sha256": "c4005525174644ed9f7a20be7d75a4b67f533271a92db9ee503db08dd26f438c",
+            "path": "opendata/data/domains.yaml"
+          }
+        ],
+        "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
+        "receipt": {
+          "path": "docs/evidence/C101/receipts/yfinance/KeyMetrics/service.json",
+          "sha256": "63584e1b4c81cbb02cc850d783397a1455e17494592483d5c4d4002041019e5a"
+        },
+        "source_pins": [
+          {
+            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "path": "opendata/data/providers/catalog.py"
+          },
+          {
+            "after_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
+            "before_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
+            "path": "opendata/data/providers/yfinance/provider.py"
+          },
+          {
+            "after_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+            "before_sha256": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+            "path": "opendata/data/providers/yfinance/models/market_iter2.py"
+          },
+          {
+            "after_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
+            "before_sha256": "4a37eba1d24ff28dfc9575e5909c085dbcff5af18446fa5c2820ef53713ce3b3",
+            "path": "opendata/data/providers/yfinance/models/_sdk.py"
+          },
+          {
+            "after_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+            "before_sha256": "fc37741cea77ed7c400ab1113eebcb993f4bd6e0dc636a5857dea7b6f15d17eb",
+            "path": "opendata/data/providers/yfinance/models/_session.py"
+          }
+        ]
+      }
+    }
+  },
+  "model": "KeyMetrics",
+  "model_identity": "yfinance::KeyMetrics",
+  "phases_reviewed": [
+    "implementation",
+    "direct",
+    "service",
+    "contract",
+    "counterfact"
+  ],
+  "provider": "yfinance",
+  "receipt_schema_version": 1,
+  "record_type": "primary_review",
+  "reviewed_at_utc": "2026-10-19T01:36:24Z",
+  "reviewer_id": "iter2-acceptance-reviewer",
+  "reviewer_model": "qoder-cli-agent",
+  "reviewer_role": "acceptance_reviewer",
+  "reviewer_type": "primary_model",
+  "upstream_model": "KeyMetrics"
+}

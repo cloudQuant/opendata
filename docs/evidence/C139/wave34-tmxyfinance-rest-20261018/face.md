@@ -66,3 +66,39 @@
 本波改动的静态面（`ruff check` / `ruff format --check` / `mypy` / `bandit -c bandit.yaml`，一律仓根相对路径）在 agent 面与我的复核下为 0 finding：产品 `providers/tmx/models/{fetchers_w34_envelope.py,client.py}`、`providers/yfinance/models/futures_curve_iter2.py`、`models/{tmx.py,yfinance_iter2.py,__init__.py}`、`domains.yaml`、witness `_parts/{tmx,yfinance}/rows_w34_*.py`、父 witness `tmx.py`/`government_us.py`、以及 `tests/` 的四份钉表。测试面（`-o addopts= -p no:cacheprovider`）：`tests/test_yfinance_iter2_market.py` 112 passed（回退后）、七个 census/authority/alert 模块 **165 passed / 0 failed**、`tests -k "tmx or government_us"` 140 passed。
 
 提交载荷与凭证收口按本仓规矩：扫的是 index 里的 staged blob；权威档数由终端那把扫描自己的 `staged_files=` 给出，本节不替它自数；提交之后紧跟的证据提交带对 HEAD 的逐档 digest 对账与针对该提交的 gitleaks + 出货 `secret_scan_check`。仪器沿用 wave-33 那把并把 `WAVE_PREFIXES` 扩到本波的前缀集（`opendata/data/models/`、`providers/{tmx,government_us,yfinance}/`、`docs/evidence/C139/` 与四个测试文件）。
+
+
+## 12. wave-35 追加：§3 那行现在落了，而且是被我自己算错的归因挡住的
+
+§3 记录了我撤回 KeyMetrics 的快照替代实现，当时给这一行的定性是"需要 SDK 版本决策"。**那句归因错了半句**，
+现已实测纠正：0.2.66 缺的是 `Ticker.get_valuation_measures` 这个方法名，缺的不是数据——那九个 measure 由
+statements 早已在用的 fundamentals-timeseries 端点提供（`{base}/ws/fundamentals-timeseries/v1/finance/
+timeseries/{symbol}`，`type=<prefix><Measure>` 列表 + period1/period2），而 `Ticker.info` 给不出按期次的行。
+于是 `_sdk.require_valuation_measures` 改成自己发这一请求（走 SDK 自己的 `YfData.get_raw_json`，
+经 `_ensure_yfdata_session` 校验过的受治理 session），并把期次列从被请求前缀的 series 组装、
+`Current` 列取 trailing series 的最新点——这正是钉住这一行语义的两档测试要的形态。平面 1 **335 → 336 / 350**
+（claim 1700 → 1705，`{'INCOMPLETE': 5, 'OFFLINE_ACCEPTED': 336, 'UNREVIEWED': 9}`），
+逐身份对账 `gained=['yfinance::KeyMetrics']`、`lost=[]`（载档 `runs/w35_keymetrics_rerun.txt`：
+四个 `chain_*_exit=0`、`recorder_exit=0 signed=28 refused=0`）。
+
+四条必须留下的过程事实：
+
+1. **测试的假 SDK 面被迫跟着长了一层，断言同时收紧**：`test_yfinance_query_wrappers_call_documented_methods_and_normalize_shape`
+   原来的假 `Ticker` 提供 `get_valuation_measures`；我给它加了 `data.YfData`（带 `get_raw_json`）与 `const` 两层，
+   并把断言从"`freq/periods` 透传"换成三条更强的读数：`Ticker.get_valuation_measures` **一次都不许被调**
+   （`calls.get("valuation_method") is None` 作线头）、请求 type 列表长度 18 且以
+   `quarterlyMarketCap,trailingMarketCap` 开头、URL 路径落到 `…/timeseries/AAPL`、`period1` 等于常量，
+   外加帧值断言 `Market Cap/Current == 1.0` 与 `Market Cap/9/30/2024 == 2.0`。这一步是我在改被试也在改判据，
+   所以留下"为什么原来的断言不再适用"的实测：`130 passed / 0 failed`。
+2. **默认 query 只走 Current 一条腿**：`ttm` 默认 `"only"`、`frequency` 默认按 `period` 推成 yearly、
+   `periods=0`，于是"忠实文档 → 1 行"，date 路径完全没被 witness 触及。把 entry 的 query 显式写成
+   `{"frequency": "quarterly", "periods": 1}` 之后实测两行（`current` + `historical 2024-09-30`，
+   market_cap 3.7e12 / 3.4e12）。我第一版 reason 里"control leg 发 2 行"当时是**未证的**，现在才是读数。
+3. **改 shard 里的 builder 不等于改盘上的 fixture**：runner 读的是
+   `docs/evidence/C101/fixtures/yfinance/KeyMetrics.json`，我先改 builder 后跑五相，direct 读到旧文档
+   （旧针脚 `valuation-measures` 对不上我的 URL）；而 `_sdk` 那圈 `except Exception` 把 carrier 自己的
+   "covers no response" 洗成了 `YFINANCE_REQUEST_FAILED`，白绕了一轮。用出货的
+   `iter2_claims_producer._materialize_fixture` 物化后五相全绿。**这条对全部 12 个 `require_*` 兄弟函数成立**
+   （同一形态的宽 except 会把仪器拒绝伪装成产品错误码），本波不改那 12 处，只把它记成待裁决的仪器缺陷。
+4. 上一轮的两条自捕（链与磁盘伪造抢树、复用驱动覆盖载档）在本轮同样被规避：这次重跑写的是
+   **新载档名** `w35_keymetrics_rerun.txt`，且对照臂全在 /tmp 与内存里，被钉路径零写入。
