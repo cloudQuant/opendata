@@ -82,10 +82,11 @@ class _CapabilityOnlyFetcher:
         self.capability = capability
 
 
-def test_catalog_contains_34_sources_and_only_66_fetcher_bindings() -> None:
-    """The frozen catalog denominator, split into the two populations that make it up.
+def test_catalog_contains_34_sources_and_the_live_fetcher_binding_census() -> None:
+    """The catalog binding census, split into the two populations that make it up.
 
-    66 bindings are 48 hand-written fetchers plus 18 declarative engine models. The split is counted
+    The freeze started at 66 bindings (48 hand-written + 18 declarative engine models); today it is
+    372 (355 hand-written + 17 engine). The split is counted
     apart and the sum is still frozen, because the two kinds of source work grow for different
     reasons: a new hand-written fetcher is one provider's own module, while a declaration adds a
     binding *and* a generated fetcher, and an engine model that registered without a binding
@@ -110,6 +111,9 @@ def test_catalog_contains_34_sources_and_only_66_fetcher_bindings() -> None:
     intrinio's third
     candidate row (``HistoricalDividends``) is no longer withheld -- its spec keeps it in
     ``providers/intrinio/specs.py`` as ``HISTORICAL_DIVIDENDS`` with an empty ``NOT_DECLARABLE`` --
+    Waves 33-39 added 30 hand-written bindings on top of that freeze (355 hand + 17 engine
+    today), so the literal below is the live census with its per-provider breakdown in the
+    comment above the assertions rather than a hand-kept budget.
     and its fourth row adds the binding plus the fetcher the engine generates for each of them.
     """
     providers = list_providers()
@@ -123,8 +127,15 @@ def test_catalog_contains_34_sources_and_only_66_fetcher_bindings() -> None:
     assert {provider.source for provider in providers} == EXPECTED_SOURCES
     # Re-pinned after 360c61d (32-provider implementation surface): 14 sources moved from
     # reserved to implemented, and the binding census grew 66 -> 342 with that wave plus the
-    # iter2 declarative/engine rows (live split: 325 hand-written facade fetchers + 17 engine).
+    # iter2 declarative/engine rows (split then: 325 hand-written facade fetchers + 17 engine).
     # Wave 38 moves one name from reserved to implemented: seeking_alpha's calendar leg.
+    # Re-pinned after waves 33-39: +30 hand-written bindings from those waves' landed rows, so the
+    # live split is 355 hand-written + 17 engine = 372. Per-provider census today:
+    # fmp 69, fred 39, intrinio 37, yfinance 29, sec 24, tmx 24, federal_reserve 13, imf 11,
+    # oecd 11, cboe 11, ths 11, akshare 10, nasdaq 9, congress_gov 8, tiingo 7, finviz 7, ecb 6,
+    # econdb 6, famafrench 6, government_us 6, deribit 5, tradier 5, benzinga 4, alpha_vantage 3,
+    # bls 2, eia 2, cftc 2, finra 2, multpl 1, seeking_alpha 1, tradingeconomics 1,
+    # biztoc 0, stockgrid 0, wsj 0.
 
     assert {provider.source for provider in providers if provider.is_implemented} == {
         "akshare",
@@ -170,9 +181,9 @@ def test_catalog_contains_34_sources_and_only_66_fetcher_bindings() -> None:
         f"{source}::{binding.canonical_model_ids[0]}" for source, binding in engine_bindings
     }
     assert engine_ids == declared_ids, "an engine binding's canonical id is the model it generates"
-    assert len(bindings) == 342
-    assert len(bindings) - len(engine_bindings) == 325
-    assert len(engine_bindings) == len(bindings) - 325
+    assert len(bindings) == 372
+    assert len(bindings) - len(engine_bindings) == 355
+    assert len(engine_bindings) == len(bindings) - 355
     print(
         f"\ncatalog bindings: total={len(bindings)} engine={len(engine_bindings)} "
         f"hand_written={len(bindings) - len(engine_bindings)} engine_ids={sorted(engine_ids)}"
@@ -183,7 +194,9 @@ def test_catalog_contains_34_sources_and_only_66_fetcher_bindings() -> None:
     )
 
     reserved = [provider for provider in providers if not provider.is_implemented]
-    assert len(reserved) == 4
+    # 3, not 4: seeking_alpha moved from reserved to implemented in wave 38, leaving
+    # biztoc / stockgrid / wsj as the headless packages.
+    assert len(reserved) == 3
     assert all(provider.health_check().status == "not_implemented" for provider in reserved)
     assert all(not provider.fetcher_bindings for provider in reserved)
 
@@ -269,13 +282,16 @@ def test_registration_and_legacy_fetchers_project_the_same_capabilities() -> Non
     expected_counts = {
         # Re-pinned after 360c61d: hand-written facade FETCHERS grew additively for fred
         # (7->39), imf (3->11), yfinance (1->28) and fmp (2->69); the other five are unchanged.
+        # Re-pinned again after waves 33-39: oecd 2->11 and yfinance 28->29; both providers'
+        # inventory rows are served by hand-written adapters now, and the measured facade counts
+        # are 11 and 29. The other seven are unchanged.
         "akshare": 10,
         "ecb": 6,
         "fred": 39,
         "imf": 11,
-        "oecd": 2,
+        "oecd": 11,
         "ths": 11,
-        "yfinance": 28,
+        "yfinance": 29,
         "bls": 2,
         "fmp": 69,
     }
