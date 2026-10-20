@@ -203,6 +203,34 @@ live verified」「retraction 后域未注册」直接触及 retraction policy �
 first_model_bindings ×1），已入计划 DEC-41-07，需 owner 逐条审阅后重写；机械替换会把"撤回仍然有效"
 和"这些行未经验证"这两类声明一起改掉，那正是不能用计数抹平的东西。
 
+## 12. 一条活体基础设施测试按仓库自己的 e2e 契约收口（24 → 22）
+
+`test_e2e_opt_in_guard::test_no_test_outside_the_live_plane_builds_a_database_engine` 命中的正是
+`tests/test_script_download_backend_iter2.py::test_real_browser_download_chain_against_owned_mysql`：
+它用 `settings.*database_url*` 建引擎，却只带 `integration` 标记；仓库判据是 live plane（`e2e`，
+无 `OPENDATA_ALLOW_LIVE_E2E` 不跑）之外不得建库引擎。
+
+修法一行：给该测试加 `@pytest.mark.e2e`（保留 `integration`），测试体不动。读数：guard `1 passed`、
+该测试 `1 skipped`；全量平面 `24 → 22 failed`（26340 passed、272 skipped、collected 26634 不变），
+相对 wave 39 final 累计 `fixed=6 shared=22 new=0`。这不是"跳过一条失败"——它本来就要求 owned MySQL，
+仓库契约就是基础设施测试必须在 e2e 闸门后；带 token 时仍可运行。
+
+## 13. 剩余 22 条红的完整分类（每条都有归属）
+
+| 类别 | 条数 | 节点 | 归属 |
+| --- | --- | --- | --- |
+| 实现前契约被落地反证 | 11 | congress_gov ×5、oecd ×3、ecb ×1、federal_reserve ×1、first_model_bindings ×1 | DEC-41-07（owner 逐条审阅） |
+| rights registry | 4 | `test_openbb_inventory_guard` ×4 | 权利登记（owner） |
+| P0 集成面差一个模块 | 2 | `test_acceptance_probe_gate`、`test_p0_integration_surface` | DEC-41-03 |
+| query 注解通道精度 | 1 | `test_data_catalog::…publish_exact_query_service_metadata` | DEC-41-01 |
+| 墙钟缓存掩码 | 2 | `test_port_fidelity[bond_daily_sina]`、`test_c65_evidence_probes::test_ac6_02…` | DEC-41-04 |
+| 域优先级档 | 1 | `test_scheduled_patrol::…requirement_defined_eight` | DEC-41-05 |
+| AC 自测真阴性 | 1（节点内含 AC2-02/04/07 三项） | `test_ac2_case_probe::test_self_test_closes…` | 无需动作，不得改判定 |
+
+合计 22，与 `w105` 的 `plane_after=22` 对齐。wave41k 提交信息里那句"13/4/3/2/2"的分类是粗略估计，
+以本表为准。
+
+
 
 
 
