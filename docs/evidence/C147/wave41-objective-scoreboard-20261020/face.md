@@ -368,6 +368,31 @@ by-construction 的 pinned gitleaks。
 教训：提交前的 lint population 必须按**波次载荷**（本波所有改过的文件），不是按"当次手改的那几个"；
 否则先落的红会在后面的提交里静默穿过闸门。
 
+## 20. rights-registry 那 4 条红：不是"补链接"，而是 14 个 provider 没有可引用的权利行
+
+用仓库自己的 guard（`scripts/quality/openbb_inventory_plane.findings`）在 shipped record + registry +
+live legs 上重算，红的构成是 **24 条 finding**，不是一个布尔：
+
+```
+RIGHTS LINK      16 个 provider 有 capabilities 但 record 里没有 rights_rows:
+                 alpha_vantage eia famafrench multpl seeking_alpha tradingeconomics cftc
+                 congress_gov deribit finra finviz government_us nasdaq sec tmx tradier
+STALE STATUS      1  seeking_alpha 记录写「待实现」，registry 说「已实现未对照」
+CAPABILITY COUNT  7  registered_source_count 30→31、capability 351→372，
+                   以及 yfinance 28→29、seeking_alpha 0→1、cboe 9→11、government_us 5→6、tmx 8→24
+```
+
+关键在最后一行之外的配比：`docs/data-rights-registry.md` 现已声明 **19** 条权利行，但把行名与 16 个
+provider 对一遍，**只有 2 个**能引到现成行（alpha_vantage、tradier → 「商业源（FMP/Tiingo/Alpha
+Vantage/Intrinio/Tradier…）」）；其余 **14 个**（eia、famafrench、multpl、seeking_alpha、
+tradingeconomics、cftc、congress_gov、deribit、finra、finviz、government_us、nasdaq、sec、tmx）
+在登记表里没有任何可引用的行，需要逐条新写「权利行 + 原文引用」。
+
+所以这 4 条红不能由"补 `rights_rows:` 字段"清掉；7 条 CAPABILITY COUNT 可以由 live registry 机械重钉，
+但在 16 条 RIGHTS LINK 与 1 条 STALE STATUS 解决前，测试仍会红——先重钉计数没有意义。已入计划
+DEC-41-08。
+
+
 
 
 
