@@ -30,6 +30,7 @@ import json
 import re
 import subprocess  # nosec B404  # fixed argv child process, no shell
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -153,6 +154,48 @@ def _recheck_judge() -> tuple[dict[str, Any], int]:
     return json.loads(output.read_text(encoding="utf-8")), proc.returncode
 
 
+def _claim_map() -> tuple[
+    dict[tuple[str, str], Counter[str]],
+    dict[tuple[str, str], set[str]],
+    dict[str, list[tuple[str, str]]],
+]:
+    """Group merged claims by (provider, model) and bucket judge rows by status."""
+    claims = json.loads(MERGED.read_text(encoding="utf-8")).get("claims") or []
+    by_row: dict[tuple[str, str], Counter[str]] = {}
+    phases: dict[tuple[str, str], set[str]] = {}
+    for claim in claims:
+        key = (str(claim.get("provider")), str(claim.get("upstream_model")))
+        by_row.setdefault(key, Counter())[str(claim.get("status"))] += 1
+        phases.setdefault(key, set()).add(str(claim.get("phase")))
+    report = json.loads(JUDGE_REPORT.read_text(encoding="utf-8"))
+    rows: dict[str, list[tuple[str, str]]] = {"accepted": [], "incomplete": [], "unreviewed": []}
+    for model in report["models"]:
+        key = (str(model["provider"]), str(model["upstream_model"]))
+        status = str(model["status"])
+        if status == "OFFLINE_ACCEPTED":
+            rows["accepted"].append(key)
+        elif status == "INCOMPLETE":
+            rows["incomplete"].append(key)
+        else:
+            rows["unreviewed"].append(key)
+    return by_row, phases, rows
+
+
+def _bad_rows(
+    by_row: dict[tuple[str, str], Counter[str]],
+    phases: dict[tuple[str, str], set[str]],
+    rows: list[tuple[str, str]],
+    status: str,
+    count: int,
+) -> list[tuple[str, str]]:
+    """Rows whose claims are not exactly ``count`` claims of ``status`` across five phases."""
+    return [
+        key
+        for key in rows
+        if dict(by_row.get(key, {})) != {status: count} or len(phases.get(key, ())) != 5
+    ]
+
+
 def _provider_split() -> dict[str, Any]:
     """How many providers are fully landed, partially landed, or untouched, from CSV + report."""
     lines = [line for line in INVENTORY.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -201,6 +244,22 @@ def main() -> int:
         model["status"] = "FORGED"
         break
     forged_differing, _forged_missing, _forged_extra = _judge_diff(forged_report, shipped)
+    by_row, phases, claim_rows = _claim_map()
+    bad_accepted = _bad_rows(by_row, phases, claim_rows["accepted"], "PASS", 5)
+    bad_incomplete = _bad_rows(by_row, phases, claim_rows["incomplete"], "BLOCKED", 5)
+    unreviewed_with_claims = [key for key in claim_rows["unreviewed"] if by_row.get(key)]
+    orphan_claim_rows = (
+        set(by_row)
+        - set(claim_rows["accepted"])
+        - set(claim_rows["incomplete"])
+        - set(claim_rows["unreviewed"])
+    )
+    forged_by_row = copy.deepcopy(by_row)
+    if claim_rows["accepted"]:
+        forged_by_row[claim_rows["accepted"][0]]["PASS"] = 4
+    forged_bad = _bad_rows(forged_by_row, phases, claim_rows["accepted"], "PASS", 5)
+    accepted_claims = sum(counter.get("PASS", 0) for counter in by_row.values())
+    blocked_claims = sum(counter.get("BLOCKED", 0) for counter in by_row.values())
     before, before_counts = _plane(W39_RUNS / "test_plane_w39_worktree_final.xml")
     after_xml = next(
         (
@@ -250,6 +309,15 @@ def main() -> int:
         "live_judge_missing": missing,
         "live_judge_extra": extra,
         "live_judge_identity_set": recheck_identity,
+        "claim_rows_accepted": len(claim_rows["accepted"]),
+        "claim_rows_incomplete": len(claim_rows["incomplete"]),
+        "claim_rows_unreviewed": len(claim_rows["unreviewed"]),
+        "accepted_claims": accepted_claims,
+        "blocked_claims": blocked_claims,
+        "bad_accepted_claim_rows": len(bad_accepted),
+        "bad_incomplete_claim_rows": len(bad_incomplete),
+        "unreviewed_with_claims": len(unreviewed_with_claims),
+        "orphan_claim_rows": len(orphan_claim_rows),
         "w57_accepted": int(_grab(w57, r"after_accepted=(\d+)")),
         "w57_claims": int(_grab(w57, r"after_claims=(\d+)")),
         "w67_residue_sums": int(_grab(w67, r"sums=(\d+)")),
@@ -279,6 +347,14 @@ def main() -> int:
         f"live_judge rc={recheck_rc} accepted={recheck_accepted} "
         f"statuses={len(_status_map(recheck))} differing={differing} missing={missing} "
         f"extra={extra} identity_set={recheck_identity} forged_differing={forged_differing}"
+    )
+    lines.append(
+        f"claim_row_map accepted={len(claim_rows['accepted'])}x5PASS={accepted_claims} "
+        f"incomplete={len(claim_rows['incomplete'])}x5BLOCKED={blocked_claims} "
+        f"unreviewed={len(claim_rows['unreviewed'])}x0 bad_accepted={len(bad_accepted)} "
+        f"bad_incomplete={len(bad_incomplete)} "
+        f"unreviewed_with_claims={len(unreviewed_with_claims)} "
+        f"orphan={len(orphan_claim_rows)} forged_bad={len(forged_bad)}"
     )
     arms: dict[str, bool] = {}
     arms["A_judge_is_the_primary_and_agrees_with_its_carrier"] = (
@@ -333,6 +409,16 @@ def main() -> int:
     ) == split["providers"] == 32 and live["providers_with_rows"] == split["full"] + len(
         split["partial"]
     )
+    arms["O_claim_rows_map_onto_the_judge"] = (
+        not bad_accepted
+        and not bad_incomplete
+        and not unreviewed_with_claims
+        and not orphan_claim_rows
+        and accepted_claims == 5 * len(claim_rows["accepted"])
+        and blocked_claims == 5 * len(claim_rows["incomplete"])
+        and accepted_claims + blocked_claims == live["claims"]
+    )
+    arms["P_claim_row_mapper_can_bite"] = bool(forged_bad)
     forged = live["accepted"] + 1
     arms["J_equality_arm_can_bite"] = not (
         forged == reasoned["w57_accepted"] == EXPECTED["accepted"]

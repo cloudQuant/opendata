@@ -704,3 +704,24 @@ closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
 载体：固定名保持 a287 代（`d2b6f2…`），本次读数另存 `runs/w47_closure_face_bfcb42d48.txt`
 （`6392de…`）。复制行仍是 `w99` 的旧值（`02dfea…`、`staged=4`）；本提交的闸门是
 `runs/w108_staged_scan_plan_gate_w41ff.txt`（`payload_index_sha256=8d786daa…`、`staged=5`）。
+
+## 32. claim ↔ row 映射：339×5 PASS + 6×5 BLOCKED + 5×0 = 1725
+
+记分板此前只对总数（1725）负责，没有断言每条 claim 落在**正确的那一行**上。claims 文档里没有
+`task_id` 字段（按 `task_id` 连接会得到全零——行身份是 `(provider, upstream_model)`）；`w105`
+新增映射臂，把 339 个 accepted、11 个残差行与 claim 的状态/相位数逐行对齐，并在深拷贝里把一条
+accepted 行的 PASS 计数改成 4 证明比较器可咬：
+
+```
+claim_row_map accepted=339x5PASS=1695 incomplete=6x5BLOCKED=30 unreviewed=5x0
+               bad_accepted=0 bad_incomplete=0 unreviewed_with_claims=0 orphan=0 forged_bad=1
+arms=16 arms_passed=16 PASS=True   objective_complete 的三条原因不变
+```
+
+* 每个 accepted 行恰好 5 条 PASS，且覆盖 5 个不同相位；
+* 6 个 INCOMPLETE 行各 5 条 BLOCKED；5 个 UNREVIEWED 行 0 条；
+* 没有落在报告之外的 claim 行，也没有缺 claim 的 accepted 行；
+* 1695 + 30 = 1725，残差行与 claim 计数闭合。
+
+载体分代：固定名 `runs/w105_objective_scoreboard.txt` 是本次 take；上一代另存
+`w105_objective_scoreboard_edda26aaa.txt`，未覆盖。
