@@ -83,6 +83,7 @@ def main() -> int:
         return 1
     tee = _Tee(sys.stdout)
     sys.stdout = tee
+    rc = 1
     try:
         rc = int(instrument.main())
     finally:

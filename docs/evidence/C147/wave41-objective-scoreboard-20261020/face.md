@@ -18,8 +18,42 @@
 | clean-room | **0 个 OpenBB import / 445 模块** | `w73`（6/6 arms，含注入 import 的反例臂） |
 | AC2-10 `dev_done` | **17 == engine_declared_rows** | `w70`，即该谓词自身天花板（owner 裁定见 C145 §15） |
 | query-schema 分叉 | **114 行 / 740 pin 站点 / 9 provider** | `w95`（7/7 arms） |
-| 测试平面 | **28 failed，与 wave 39 逐 id 相同（new=0）** | 两份 junit 经 `w51` reader 取集合，且与 `w103` 载体相等 |
+| 测试平面 | **27 failed（wave 39 的 28 条里修好 1 条，new=0）** | 两份 junit 经 `w51` reader 取集合；见 §2 |
 | 子代理 | **34 次 / 上限 30** | `w74`（7/7 arms），超 4 次记为违反 |
+
+## 2. 修掉一条 pre-existing 红：immutable-evidence 围栏整整落后了一个分类世代
+
+`tests/test_immutable_evidence.py` 原先断言 `snapshot_paths == 172`、`excluded_paths == 172`、
+`historical_ruff_count == 3974`、`active_entrypoints == 18`。而 `scripts/quality/immutable_evidence.py`
+钉住的分类件路径字面就是 `immutable-wave9-exact5055/classification.json`，其 SHA-256 等于模块里的
+`CLASSIFICATION_SHA256`（`w109` 的 A 臂）。也就是说：**源真值是那个被代码钉住 sha 的分类件，而测试的
+四个字面量还停在上一代 exact172**。本次把测试对齐到钉住的分类件，不是放宽判定——同一文件仍要求
+`errors == ()`、仍逐字面量相等，分类件一变就还会红。
+
+实测（`runs/w109_immutable_fence_rebase.txt`，7/7 arms）：
+
+```
+artifact_sha_matches_pin=True   validation_errors=0 blocked=0
+live={snapshot_paths: 5055, excluded_paths: 5055, ruff: 149323, entrypoints: 343}
+partition tools=343 excluded=5055 tools_are_entrypoints=True
+pytest exit=0  summary=18 passed in 79.32s
+```
+
+四个数字不是从记忆里填的：`w109` 从 `validate_manifest()` 读出 live 值，再把测试源码里的字面量
+正则读回来逐项比较（D 臂），并伪造一条 +1 证明比较能失败（E 臂）；分区臂证明 9 个命名入口点仍留在
+工具集、没有落进 5055 的排除集（F 臂）。
+
+对测试平面的影响（`runs/test_plane_w41b_final.txt` + 重跑后的 `w105`）：
+
+```
+wave 39 final = 28 failed / 26335 passed / 271 skipped
+wave 41b      = 27 failed / 26336 passed / 271 skipped   collected 同为 26634
+集合：shared=27  new=0  fixed=1      fixed 的正是这一条断言
+```
+
+`w105` 的 I 臂因此改成集合算术（`shared+fixed==before`、`shared+new==after`、`new==0`），既允许
+"修好一条"，又仍然禁止任何新增红。
+
 
 ## 判定
 

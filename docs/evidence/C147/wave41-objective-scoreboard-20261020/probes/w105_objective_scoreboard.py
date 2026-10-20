@@ -114,7 +114,15 @@ def main() -> int:
     RUNS.mkdir(parents=True, exist_ok=True)
     live = _judge()
     before, before_counts = _plane(W39_RUNS / "test_plane_w39_worktree_final.xml")
-    after, after_counts = _plane(W40_RUNS / "test_plane_w40_final.xml")
+    after_xml = (
+        RUNS / "test_plane_w41b_final.xml"
+        if (RUNS / "test_plane_w41b_final.xml").is_file()
+        else W40_RUNS / "test_plane_w40_final.xml"
+    )
+    after, after_counts = _plane(after_xml)
+    shared_nodes = set(before) & set(after)
+    new_nodes = set(after) - set(before)
+    fixed_nodes = set(before) - set(after)
     w57 = _carrier("w57_landing_face.txt")
     w67 = _carrier("w67_residue_gating_face.txt")
     w70 = _carrier("w70_ac2_10_current_reading.txt")
@@ -123,7 +131,6 @@ def main() -> int:
     w74 = _carrier("w74_dispatch_ledger_face.txt")
     w75 = _carrier("w75_witness_completeness_face.txt")
     w95 = (W40_RUNS / "w95_query_annotation_face.txt").read_text(encoding="utf-8")
-    w103 = (W40_RUNS / "w103_test_plane_attribution.txt").read_text(encoding="utf-8")
 
     reasoned = {
         "accepted": live["accepted"],
@@ -147,9 +154,10 @@ def main() -> int:
         "w70_engine_declared": int(_grab(w70, r"engine_declared_rows=(\d+)")),
         "w95_divergence": int(_grab(w95, r'"diverge": (\d+)')),
         "w95_pin_sites": int(_grab(w95, r'"pin_sites": (\d+)')),
-        "w103_shared": int(_grab(w103, r"shared=(\d+)")),
-        "w103_new": int(_grab(w103, r"new=(\d+)")),
-        "w103_fixed": int(_grab(w103, r"fixed=(\d+)")),
+        "plane_shared": len(shared_nodes),
+        "plane_new": len(new_nodes),
+        "plane_fixed": len(fixed_nodes),
+        "plane_after_source": after_xml.name,
         "plane_before": len(before),
         "plane_after": len(after),
         "plane_collected": int(after_counts.get("tests", 0)),
@@ -185,9 +193,10 @@ def main() -> int:
         reasoned["w95_divergence"] == EXPECTED["divergence_rows"]
         and reasoned["w95_pin_sites"] == EXPECTED["divergence_pin_sites"]
     )
-    arms["I_test_plane_did_not_move"] = (
-        reasoned["w103_new"] == EXPECTED["test_plane_new_reds"]
-        and reasoned["w103_shared"] == len(before) == len(after) == reasoned["plane_before"]
+    arms["I_test_plane_gains_no_red"] = (
+        reasoned["plane_new"] == EXPECTED["test_plane_new_reds"]
+        and reasoned["plane_shared"] + reasoned["plane_fixed"] == reasoned["plane_before"]
+        and reasoned["plane_shared"] + reasoned["plane_new"] == reasoned["plane_after"]
         and reasoned["plane_collected"] == int(before_counts.get("tests", -1))
     )
     forged = live["accepted"] + 1

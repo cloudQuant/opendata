@@ -210,16 +210,16 @@ def _approve(fixture: EvidenceFixture) -> str:
     return digest
 
 
-def test_repository_manifest_sums_all_exact172_classification_findings() -> None:
-    """The exact172 manifest accounts for findings and keeps live A2 code."""
+def test_repository_manifest_sums_all_exact5055_classification_findings() -> None:
+    """The exact5055 manifest accounts for findings and keeps live A2 code."""
     root = Path(__file__).resolve().parents[1]
     validation = evidence.validate_manifest(root)
 
     assert not validation.errors
     assert not validation.blocked_paths
-    assert len(validation.snapshot_paths) == 172
-    assert len(validation.excluded_paths) == 172
-    assert validation.historical_ruff_count == 3974
+    assert len(validation.snapshot_paths) == 5055
+    assert len(validation.excluded_paths) == 5055
+    assert validation.historical_ruff_count == 149323
     source_trio_probe = (
         "docs/evidence/C100/acceptance-quality-preservation/source-trio/probe_source_trio.py"
     )
@@ -234,14 +234,14 @@ def test_repository_manifest_sums_all_exact172_classification_findings() -> None
         "docs/evidence/C100/acceptance-quality-preservation/shared-contract-probe-maintenance/review_shared_contract_probe_maintenance.py",
         "docs/evidence/C100/acceptance-quality-preservation/tmx-contract-typing/offline_probe.py",
     ]
-    assert len(validation.active_entrypoints) == 18
+    assert len(validation.active_entrypoints) == 343
     assert all(path in validation.active_entrypoints for path in active_examples)
     assert all(path not in validation.excluded_paths for path in active_examples)
     tool_files, excluded = evidence.partition_static_files(
         [*active_examples, *validation.snapshot_paths], validation
     )
     assert tool_files == active_examples
-    assert len(excluded) == 172
+    assert len(excluded) == 5055
 
 
 def test_historical_ruff_count_matches_typed_classification_row_sum(tmp_path: Path) -> None:

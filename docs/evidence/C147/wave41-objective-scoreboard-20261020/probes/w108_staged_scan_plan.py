@@ -10,6 +10,7 @@ backup/restore instead of a manual ``git restore`` afterwards.
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import sys
 from pathlib import Path
@@ -28,8 +29,17 @@ PRODUCED_NAME = "w99_staged_credential_scan.txt"
 OWN_NAME = "w108_staged_scan_plan.txt"
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     """Run the scan, archive its carrier under this probe's name, and restore the prior carrier."""
+    parser = argparse.ArgumentParser(description="wave-41 staged credential scan driver")
+    parser.add_argument(
+        "--prefix",
+        action="append",
+        default=[],
+        help="declared write-set prefix; repeatable, defaults to this bundle's two prefixes",
+    )
+    args = parser.parse_args(argv)
+    prefixes = tuple(args.prefix) if args.prefix else WAVE_PREFIXES
     spec = importlib.util.spec_from_file_location("w99_scan_wave41_plan", W99)
     if spec is None or spec.loader is None:
         raise SystemExit(f"cannot import scanner wrapper {W99}")
@@ -37,14 +47,19 @@ def main() -> int:
     sys.modules["w99_scan_wave41_plan"] = module
     spec.loader.exec_module(module)
     module.RUNS = RUNS
-    module.WAVE_PREFIXES = WAVE_PREFIXES
+    module.WAVE_PREFIXES = prefixes
     print(f"re_point runs={module.RUNS} prefixes={module.WAVE_PREFIXES}", flush=True)
     prior_path = RUNS / PRODUCED_NAME
     prior = prior_path.read_bytes() if prior_path.is_file() else None
+    # The shipped scanner parses ``sys.argv`` when called without an argv list, so this driver's own
+    # flags must not leak into it -- that leak surfaced as an argparse SystemExit inside ``main()``.
+    saved_argv = sys.argv
+    sys.argv = [saved_argv[0]]
     rc = 1
     try:
         rc = int(module.main())
     finally:
+        sys.argv = saved_argv
         produced = RUNS / PRODUCED_NAME
         archived = RUNS / OWN_NAME
         if produced.is_file():
