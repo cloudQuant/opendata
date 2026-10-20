@@ -1,0 +1,7 @@
+upstream_windows=100974 our_files=380 window=6
+table_windows=260 logic_windows=0 expected_table=260
+strict_literal_only=254 expressive=6
+expressive_samples=['opendata/data/providers/fred/models/_sonia_query.py:31 -> fred/openbb_fred/models/sonia_rates.py:25', 'opendata/data/providers/fred/models/iter2_macro.py:602 -> fred/openbb_fred/models/non_farm_payrolls.py:190', 'opendata/data/providers/fred/models/iter2_macro.py:626 -> fred/openbb_fred/models/personal_consumption_expenditures.py:35', 'opendata/data/providers/fred/models/iter2_macro.py:846 -> fred/openbb_fred/models/senior_loan_officer_survey.py:34', 'opendata/data/providers/fred/models/iter2_rates_extra.py:504 -> fred/openbb_fred/models/yield_curve.py:23']
+control literal_block_clean=True call_block_flagged=True w132_regex_misses_call=True
+strict_table_audit arms=6 arms_passed=5 PASS=False red=['B_all_table_windows_are_literal_only']
+w133_strict_table_audit_exit=1

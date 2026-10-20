@@ -655,3 +655,36 @@ closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
 `staged_files_from_scan_carrier=4` 仍是 `w99` 的旧值；edda26aaa 的闸门在
 `runs/w108_staged_scan_plan_gate_w41bb.txt`（`payload_index_sha256=e1c9e5ae…`、`staged=8`、
 三前缀扫描 11/11 arms PASS）。§25 已说明该仪器的固有上限。
+
+## 30. 更严的 tokenizer 审计：260/260 仍是字面量；首跑的 6 个红是 `param: Literal[` 头
+
+`w132` 的 table/logic 分界用关键词正则，理论上会漏掉调用或算术。`w133` 用 `w132` 自己的读取器
+重算同一批窗口，再按 tokenize 后的词法判：字符串/注释/容器脚手架之外不得出现
+`True`/`False`/`None` 以外的标识符，也不得出现算术/比较运算符（调用、属性、引用都会被抓）。
+
+**首跑（窄脚手架）是红的**：260 个共享 table 窗口里 **6 个**带非字面 token。逐个查看后，六个都是同一
+形状——一个查询参数声明头 `param: Literal[` 加五条契约字符串（本仓位置：
+`fred/models/_sonia_query.py:31`、`iter2_macro.py:602/626/846`、`iter2_rates_extra.py:504`、
+`search.py:35`）。这不是可执行逻辑，而是**输入契约的枚举词汇**；窄脚手架没有把带类型的容器头算作
+脚手架，才把它们标红。载体保留为 `runs/w133_strict_table_audit.take1.txt`（sha256 `1ca27d…`）。
+
+**修正**：脚手架规则增加一条窄例外——右侧是 `Literal[`/`Optional[`/`Union[`/`tuple[`/`list[`/
+`dict[`/`set[`/`Sequence[`/`Mapping[` 的带类型头。它不是放行一切带注解的行，两臂证明：
+
+```
+C forged_call_block_is_expressive=True        （六行 "k": build_i(1), 被抓；W132 的正则不抓）
+G typing_header_is_scaffolding=True           （parameter: Literal[ 不计）
+H annotated_expression_is_still_expressive=True（value: compute([ 仍被抓）
+D literal_block_is_not_expressive=True
+```
+
+**绿档**：`table_windows=260 logic_windows=0 strict_literal_only=260 expressive=0`，
+`strict_table_audit arms=8 arms_passed=8 PASS=True`。窄档可按原样复跑：
+
+```
+w133_strict_table_audit.py --narrow-scaffold --output /tmp/w133_narrow_repro.txt
+  -> strict_literal_only=254 expressive=6，前 5 个样本与 take1 逐字相同（B 臂红，符合预期）
+```
+
+结论：260 个共享窗口在更严的谓词下仍全是字面量/契约词汇，`w132` 的 `shared_logic_windows=0`
+不是关键词正则的假象。这支持但不替 owner 裁定 DEC-41-09（参数/ID 表属输入契约还是受保护表达）。
