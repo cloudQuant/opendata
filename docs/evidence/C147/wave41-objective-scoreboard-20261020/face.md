@@ -90,6 +90,22 @@ AC2-02 / AC2-04 / AC2-07 三条的 closure 读数是 `gap`（`breaks=N flipped=N
 读数变化，而当前事实面并不成立。本轮**没有**动它们；把 `gap` 改成 `holds_offline` 或把自测改成
 "允许 gap" 都是改判定，须 owner 签。
 
+## 6. 另外两组红：一组是 review 步骤，一组是真缺陷——都不许用数字抹平
+
+**(a) P0 集成面差一个模块。** `test_acceptance_probe_gate` 与 `test_p0_integration_surface` 都红，
+原因是 live 选择器（`integration and not e2e`）选中了 `tests/test_financial_pit_api.py`（该文件
+`pytestmark = pytest.mark.integration` 且 `create_engine(...)`），而
+`tests/test_p0_integration_surface.py` 的 `P0_INTEGRATION_MODULES` 冻结列表里没有它。该文件自己的注释
+写着 **"Adding one is a review step"**——所以这不是过期围栏，是把一个模块纳入 P0 集成面的评审决定；
+两条红来自同一个缺口。已入计划 §7 DEC-41-03，本轮不动列表。
+
+**(b) `bond_daily_sina` 是真请求不匹配，不是计数过期。** AC6 的 `case_pass_count == 14` 现在读到 13，
+差的正是 `bond_daily_sina`；同一个 case 在 `test_port_fidelity[bond_daily_sina]` 里抛
+`ReplayRequestMismatchError: request mismatch before replay cursor advance at call 1: query/params`——
+适配器第 1 次调用的 query/params 与录制请求不一致。因此把 14 改成 13 会把一个**真实的产品/录制不一致**
+抹成"统计更新"。正确方向是先定谁错（适配器还是录制件），再让两个面同时变绿。已入计划 §7 DEC-41-04。
+
+
 
 
 
