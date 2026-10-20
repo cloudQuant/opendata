@@ -1090,6 +1090,7 @@ def test_mysql_loopback_port_rejects_reserved_ports(port: int) -> None:
         OwnedMysql._parse_loopback_port(f"127.0.0.1:{port}")
 
 
+@pytest.mark.e2e
 @pytest.mark.integration
 def test_real_browser_download_chain_against_owned_mysql(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
