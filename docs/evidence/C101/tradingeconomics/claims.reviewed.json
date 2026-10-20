@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradingeconomics --model EconomicCalendar --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-19T10:20:13.829038+00:00",
+      "executed_at_utc": "2026-10-20T04:00:45.555686+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -72,8 +72,8 @@
             "path": "opendata/data/providers/tradingeconomics/provider.py"
           },
           {
-            "after_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
-            "before_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "after_sha256": "8acdd7689980358becb9d623bcfa8485fa919182b77afafcf8c64bdf4ab2e7a7",
+            "before_sha256": "8acdd7689980358becb9d623bcfa8485fa919182b77afafcf8c64bdf4ab2e7a7",
             "path": "opendata/data/providers/tradingeconomics/models/economic_calendar.py"
           },
           {
@@ -93,7 +93,7 @@
       "receipt": {
         "model_identity": "tradingeconomics::EconomicCalendar",
         "path": "docs/evidence/C101/receipts/tradingeconomics/EconomicCalendar/implementation.json",
-        "sha256": "a277246badb775e813e1856dc4809b55ef1eeeb14edcfda95115daf321da5103"
+        "sha256": "784f515a95042611bdb5ad8b3853e2affc40766b791f27bd819e1f079ea8deba"
       },
       "status": "PASS",
       "upstream_model": "EconomicCalendar"
@@ -101,7 +101,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradingeconomics --model EconomicCalendar --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-19T10:20:14.775156+00:00",
+      "executed_at_utc": "2026-10-20T04:00:46.817834+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -160,8 +160,8 @@
             "path": "opendata/data/providers/tradingeconomics/provider.py"
           },
           {
-            "after_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
-            "before_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "after_sha256": "8acdd7689980358becb9d623bcfa8485fa919182b77afafcf8c64bdf4ab2e7a7",
+            "before_sha256": "8acdd7689980358becb9d623bcfa8485fa919182b77afafcf8c64bdf4ab2e7a7",
             "path": "opendata/data/providers/tradingeconomics/models/economic_calendar.py"
           },
           {
@@ -181,7 +181,7 @@
       "receipt": {
         "model_identity": "tradingeconomics::EconomicCalendar",
         "path": "docs/evidence/C101/receipts/tradingeconomics/EconomicCalendar/direct.json",
-        "sha256": "3b99db9bccca3ff3c6e2ea8ff518cf8370d016b58c4f6c2a4d8a04721f919b97"
+        "sha256": "4a46b96d02e556b1246ab597852c917ee5b83134326d31759afdac36b8224741"
       },
       "status": "PASS",
       "upstream_model": "EconomicCalendar"
@@ -189,7 +189,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradingeconomics --model EconomicCalendar --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-19T10:20:15.719998+00:00",
+      "executed_at_utc": "2026-10-20T04:00:48.103840+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -248,8 +248,8 @@
             "path": "opendata/data/providers/tradingeconomics/provider.py"
           },
           {
-            "after_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
-            "before_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "after_sha256": "8acdd7689980358becb9d623bcfa8485fa919182b77afafcf8c64bdf4ab2e7a7",
+            "before_sha256": "8acdd7689980358becb9d623bcfa8485fa919182b77afafcf8c64bdf4ab2e7a7",
             "path": "opendata/data/providers/tradingeconomics/models/economic_calendar.py"
           },
           {
@@ -269,7 +269,7 @@
       "receipt": {
         "model_identity": "tradingeconomics::EconomicCalendar",
         "path": "docs/evidence/C101/receipts/tradingeconomics/EconomicCalendar/service.json",
-        "sha256": "513d322c7e376c28393ed8d7ee972089784309d5956a3c133c58628e52f53564"
+        "sha256": "254b1d339420ecfc3f7d80d027b9c0aebb4730f93f46d69e5ae24c7b68f6bd59"
       },
       "status": "PASS",
       "upstream_model": "EconomicCalendar"
@@ -277,7 +277,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradingeconomics --model EconomicCalendar --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-19T10:20:16.687465+00:00",
+      "executed_at_utc": "2026-10-20T04:00:49.358073+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -336,8 +336,8 @@
             "path": "opendata/data/providers/tradingeconomics/provider.py"
           },
           {
-            "after_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
-            "before_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "after_sha256": "8acdd7689980358becb9d623bcfa8485fa919182b77afafcf8c64bdf4ab2e7a7",
+            "before_sha256": "8acdd7689980358becb9d623bcfa8485fa919182b77afafcf8c64bdf4ab2e7a7",
             "path": "opendata/data/providers/tradingeconomics/models/economic_calendar.py"
           },
           {
@@ -357,7 +357,7 @@
       "receipt": {
         "model_identity": "tradingeconomics::EconomicCalendar",
         "path": "docs/evidence/C101/receipts/tradingeconomics/EconomicCalendar/contract.json",
-        "sha256": "5dced42515b39e4658dd85d0662d27155f560e2e0746f7bff5c704249920d3d6"
+        "sha256": "87a074683ef8a9b5785c0af35b06017e1eb64c815fccceded4f9f4d99595cdc1"
       },
       "status": "PASS",
       "upstream_model": "EconomicCalendar"
@@ -365,7 +365,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tradingeconomics --model EconomicCalendar --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-19T10:20:18.588763+00:00",
+      "executed_at_utc": "2026-10-20T04:00:51.924035+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -424,8 +424,8 @@
             "path": "opendata/data/providers/tradingeconomics/provider.py"
           },
           {
-            "after_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
-            "before_sha256": "55e8570ed77246bb18d7ffbbf110758c074d40687abfc5b32cb9e092a764fd76",
+            "after_sha256": "8acdd7689980358becb9d623bcfa8485fa919182b77afafcf8c64bdf4ab2e7a7",
+            "before_sha256": "8acdd7689980358becb9d623bcfa8485fa919182b77afafcf8c64bdf4ab2e7a7",
             "path": "opendata/data/providers/tradingeconomics/models/economic_calendar.py"
           },
           {
@@ -445,7 +445,7 @@
       "receipt": {
         "model_identity": "tradingeconomics::EconomicCalendar",
         "path": "docs/evidence/C101/receipts/tradingeconomics/EconomicCalendar/counterfact.json",
-        "sha256": "18b30e2817546008c4dc643b6a80467af61a6f8989275be19f9a0fd2b1e4dd75"
+        "sha256": "6537902472b3779db47d02ca93e9463cd495403dab32b354f60213915e6922e2"
       },
       "status": "PASS",
       "upstream_model": "EconomicCalendar"
@@ -459,9 +459,9 @@
       "receipt": {
         "model_identity": "tradingeconomics::EconomicCalendar",
         "path": "docs/evidence/C101/primary-reviews/tradingeconomics__EconomicCalendar.review.json",
-        "sha256": "a38b91e60bbebcf5504b68adf59990f0eb42d686bf99c9027637bdd8a657bc6e"
+        "sha256": "033ae4ba23a1d372c0940085dc4b2d45ebf51f39a870c0da27490c9f42ff8c68"
       },
-      "reviewed_at_utc": "2026-10-19T10:20:20Z",
+      "reviewed_at_utc": "2026-10-20T04:00:54Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

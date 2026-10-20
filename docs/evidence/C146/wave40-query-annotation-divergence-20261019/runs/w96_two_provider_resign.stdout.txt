@@ -1,0 +1,79 @@
+re_point bundle=docs/evidence/C146/wave40-query-annotation-divergence-20261019 write_targets={'RUNS': '/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C146/wave40-query-annotation-divergence-20261019/runs', 'PRE_CHAIN_OUTPUT': '/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C146/wave40-query-annotation-divergence-20261019/runs/judge_pre_chain.wave40.report.json'} outside_bundle=[]
+stale_face_before={"claims_touching_targets": {"benzinga": 5, "tradingeconomics": 5}, "pin_entries_without_digest": 0, "pin_sites_by_target": {"opendata/data/providers/benzinga/models/price_target.py": 5, "opendata/data/providers/tradingeconomics/models/economic_calendar.py": 5}, "stale_claims_by_provider": {"benzinga": 5, "tradingeconomics": 5}, "stale_groups": {"benzinga:source": 5, "tradingeconomics:source": 5}, "stale_sites_by_provider": {"benzinga": 5, "tradingeconomics": 5}, "stale_sites_total": 10, "total_claims": 1725}
+{
+  "stale_face_before": {
+    "total_claims": 1725,
+    "pin_sites_by_target": {
+      "opendata/data/providers/benzinga/models/price_target.py": 5,
+      "opendata/data/providers/tradingeconomics/models/economic_calendar.py": 5
+    },
+    "claims_touching_targets": {
+      "benzinga": 5,
+      "tradingeconomics": 5
+    },
+    "stale_sites_by_provider": {
+      "benzinga": 5,
+      "tradingeconomics": 5
+    },
+    "stale_claims_by_provider": {
+      "benzinga": 5,
+      "tradingeconomics": 5
+    },
+    "stale_sites_total": 10,
+    "stale_groups": {
+      "benzinga:source": 5,
+      "tradingeconomics:source": 5
+    },
+    "pin_entries_without_digest": 0
+  },
+  "stale_face_after": {
+    "total_claims": 1725,
+    "pin_sites_by_target": {
+      "opendata/data/providers/benzinga/models/price_target.py": 5,
+      "opendata/data/providers/tradingeconomics/models/economic_calendar.py": 5
+    },
+    "claims_touching_targets": {
+      "benzinga": 5,
+      "tradingeconomics": 5
+    },
+    "stale_sites_by_provider": {},
+    "stale_claims_by_provider": {},
+    "stale_sites_total": 0,
+    "stale_groups": {},
+    "pin_entries_without_digest": 0
+  },
+  "arms": {
+    "A_stale_before_is_nonzero_and_provider_local": true,
+    "B_stale_after_is_zero": true,
+    "C_merge_is_idempotent": true,
+    "D_every_member_exited_zero": true,
+    "E_plane_one_back_at_339": true,
+    "F_identity_set_unchanged": true,
+    "G_no_pin_entries_without_digest": true
+  },
+  "exits": {
+    "producer_benzinga": 0,
+    "recorder_benzinga": 0,
+    "producer_tradingeconomics": 0,
+    "recorder_tradingeconomics": 0,
+    "merge_take1": 0,
+    "merge_take2": 0,
+    "judge": 0
+  },
+  "merged_stable_sha_first": "d7d7b21f9e9559b0",
+  "merged_stable_sha_second": "d7d7b21f9e9559b0",
+  "post_resign_reading": {
+    "post_resign_wave40_identities": 350,
+    "post_resign_wave40_accepted": 339,
+    "post_resign_wave40_claims": 1725,
+    "post_resign_wave40_status_counts": {
+      "INCOMPLETE": 6,
+      "OFFLINE_ACCEPTED": 339,
+      "UNREVIEWED": 5
+    }
+  },
+  "identity_set": "5168e1e723999312",
+  "nonzero_members": []
+}
+w96_two_provider_resign_exit=0
+w96_wrapper_exit=0
