@@ -633,3 +633,25 @@ objective_complete=False reasons=['residue_owner_gated=11','providers_without_ro
 `runs/w105_objective_scoreboard.txt` 是本次 take，6eca 那一代另存
 `runs/w105_objective_scoreboard_6eca52ba2.txt`，未覆盖。决策清单 DEC-41-05 已标为
 「执行记录，非 owner 新裁定」。
+
+## 29. edda26aaa 的收口面：9 路径、0 漂移、8/8 arms
+
+`w117` 对 DEC-41-05 修复提交跑收口：
+
+```
+reconcile commit=edda26aaa parent=871d26592 commit_paths=9
+          worktree_drift_vs_commit=0 moved_vs_parent=9 missing_in_commit=0
+commit_paths_by_root={'docs/evidence/C147': 7, 'docs/迭代计划/迭代2-…': 1, 'tests': 1}
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）
+gitleaks dir-mode findings=0（planted 2）；copied_from_commit=9 bytecode_skipped=1407
+secret_scan_check rc=0  504 commits / 434.57 MB / no leaks found（载体里带终端色码，读数按纯文本引）
+closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
+```
+
+载体分代同 §25：固定名 `runs/w47_closure_face.txt` 保持 HEAD 上的 a287 那一代（`d2b6f2…`），本次读数
+另存 `runs/w47_closure_face_edda26aaa.txt`（`94d617…`）。
+
+**复制行仍不描述本次提交**：载体里的 `pre_commit_gate payload_index_sha256=02dfea…` 与
+`staged_files_from_scan_carrier=4` 仍是 `w99` 的旧值；edda26aaa 的闸门在
+`runs/w108_staged_scan_plan_gate_w41bb.txt`（`payload_index_sha256=e1c9e5ae…`、`staged=8`、
+三前缀扫描 11/11 arms PASS）。§25 已说明该仪器的固有上限。
