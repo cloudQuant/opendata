@@ -83,6 +83,19 @@ claims_by_provider={"benzinga": 20, "econdb": 25, "finviz": 25, "fmp": 210,
 的产品改动，**本轮没有做**：它需要逐行确认注解与 fetcher 实际验证的模型一致，而不是批量替换。D 臂里那个
 "如果一个 provider 独占全部 pin 站点就该读出 tree_wide"的伪造臂，就是防止把"provider-local"写成一句猜测。
 
+**复查（2026-10-20，逐行看过 11 个 `missing_fields` 之后，前面的"待统一"判断要收窄）：** 这 11 行不是
+"注解撒谎"，而是**共享基类方法**的注解只报了基类模型。以 fred 为例：
+`_FixedFredRateFetcher.transform_query -> _FixedRateQuery`，而三个子类各自 `query_model =
+TreasuryConstantMaturityQuery / SelectedTreasuryBillQuery / SelectedTreasuryConstantMaturityQuery`
+（都继承 `_FixedRateQuery` 并各自多一个 `maturity`）。返回子类实例给"基类"注解是**类型正确**的，
+只是不如发布面具体；一个被三个 binding 共用的方法，任何单一注解都不可能同时等于三个不同的发布模型。
+所以 11 行若要"修"，只能在每个子类里重写一遍 `transform_query` 只为换一个更具体的返回注解——那是
+type-only 噪音，不是缺陷修复。103 行 `BaseModel` 同理（引擎构建的模型没有静态名字）。
+
+因此 owner 要决定的不是"要不要改 114 个适配器"，而是：**AC-18 的第二条通道要不要要求 per-binding 的
+具体注解**。要，就得接受上面那种逐子类重写；不要，就让该断言改为与产品同源（那是改判定，必须 owner 签）。
+在这条裁定之前，任何一边都不该由我默默改掉。
+
 ## 4. 重签半径：10 个 pin 站点，两个 provider，平面 1 回到 339
 
 两个适配器文件都是被 pin 的输入，改字节就让钉它们 claim 失效。半径是量出来的（`w95` F 臂）：
