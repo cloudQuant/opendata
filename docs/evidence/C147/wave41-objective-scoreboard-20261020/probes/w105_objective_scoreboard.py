@@ -114,10 +114,17 @@ def main() -> int:
     RUNS.mkdir(parents=True, exist_ok=True)
     live = _judge()
     before, before_counts = _plane(W39_RUNS / "test_plane_w39_worktree_final.xml")
-    after_xml = (
-        RUNS / "test_plane_w41b_final.xml"
-        if (RUNS / "test_plane_w41b_final.xml").is_file()
-        else W40_RUNS / "test_plane_w40_final.xml"
+    after_xml = next(
+        (
+            candidate
+            for candidate in (
+                RUNS / "test_plane_w41c_final.xml",
+                RUNS / "test_plane_w41b_final.xml",
+                W40_RUNS / "test_plane_w40_final.xml",
+            )
+            if candidate.is_file()
+        ),
+        W40_RUNS / "test_plane_w40_final.xml",
     )
     after, after_counts = _plane(after_xml)
     shared_nodes = set(before) & set(after)

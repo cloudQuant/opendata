@@ -66,6 +66,31 @@ wave 41b      = 27 failed / 26336 passed / 271 skipped   collected 同为 26634
 的是整个已暂存集**，所以"只提交这一个文件"必须靠分批 stage 或显式路径来实现。凭证面覆盖的是这两批的
 **并集**（11 文件、11/11 arms），所以扫描范围没有缺口。
 
+## 4. 第二条 pre-existing 红：CongressAmendments 的 expected 夹具停在字符串世代
+
+`tests/test_congress_cboe_iter2.py` 的 CongressAmendments 期望夹具写 `"number": "42"`（字符串），
+而契约模型的字段是 `StrictInt`（`opendata/data/models/congress_cboe_iter2.py`），适配器在映射时已经
+`_int_or_none(_first(row, "amendmentNumber", "number"))` 转成整数（`congress_gov/models/iter2.py:1436`）。
+测试自己对 `expected` 调 `contract.model_validate(...)`，所以夹具里的字符串直接被 pydantic 拒掉：
+
+```
+E  number  Input should be a valid integer [type=int_type, input_value='42', input_type=str]
+```
+
+**产品侧没有改**（模型和适配器都不动，二者本来就是对的），只把夹具改为 `42`。读数：该文件
+`1 failed / 33 passed` → **34 passed**；全量平面 `27 → 26 failed`，26337 passed，collected 不变。
+与 §2 合起来，wave 39 final 的 28 条红里已 `fixed=2`、`shared=26`、`new=0`（`w105` 复跑，
+`plane_after_source=test_plane_w41c_final.xml`）。
+
+## 5. 三条 AC 自测红是**真阴性**，不要"修"
+
+同批里 `test_ac2_case_probe.py::test_self_test_closes_and_every_break_flips` 仍红，`--self-test` 指出
+AC2-02 / AC2-04 / AC2-07 三条的 closure 读数是 `gap`（`breaks=N flipped=N`，反例臂全部咬住，但闭包
+本身不成立）。这是"这三个验收项确实未闭合"的信号，不是夹具过期：它们的 closure facts 一旦成立就会
+读数变化，而当前事实面并不成立。本轮**没有**动它们；把 `gap` 改成 `holds_offline` 或把自测改成
+"允许 gap" 都是改判定，须 owner 签。
+
+
 
 
 ## 判定

@@ -1,0 +1,69 @@
+# carrier for test_plane_w41c_final
+# cwd: /Users/yunjinqi/Documents/new_projects/opendata
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests -q --continue-on-collection-errors -o addopts= -p no:cacheprovider --junitxml=docs/evidence/C147/wave41-objective-scoreboard-20261020/runs/test_plane_w41c_final.xml
+# started_utc: 2026-10-20T09:30:01+00:00
+# exit: 1
+te-packages/pydantic/main.py:464: UserWarning: Pydantic serializer warnings:
+    PydanticSerializationUnexpectedValue(Expected `bool` - serialized value may not be as expected [field_name='latest', input_value=1, input_type=int])
+    return self.__pydantic_serializer__.to_python(
+
+tests/test_provider_model_query.py::test_unapproved_output_shapes_and_construct_bypass_are_rejected[constructed_row]
+  /Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pydantic/main.py:464: UserWarning: Pydantic serializer warnings:
+    PydanticSerializationUnexpectedValue(Expected `float` - serialized value may not be as expected [field_name='value', input_value='not-a-number', input_type=str])
+    return self.__pydantic_serializer__.to_python(
+
+tests/test_runtime_package_probe.py::test_archive_checker_rejects_removed_required_resource_copy
+tests/test_runtime_package_probe.py::test_archive_checker_rejects_replaced_license_bytes_in_copy
+tests/test_runtime_package_probe.py::test_archive_checker_compares_full_requires_dist_contract
+tests/test_runtime_package_probe.py::test_archive_checker_rejects_full_bsl_text_but_allows_a_license_reference
+tests/test_runtime_package_probe.py::test_sdist_checker_validates_pyproject_distribution_metadata_and_license_tree
+tests/test_runtime_package_probe.py::test_archive_counterfactuals_record_positive_baseline_and_negative_rejections
+tests/test_runtime_package_probe.py::test_archive_counterfactuals_include_sdist_dependency_and_license_mutations
+  /Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/zipfile/__init__.py:1642: UserWarning: Duplicate name: 'opendata/data/providers/akshare/_vendor/LICENSE-AKSHARE'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+tests/test_scheduler_details.py::TestSchedulerServiceJobManagement::test_add_job
+  /Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/threading.py:139: RuntimeWarning: coroutine 'TaskScheduler.trigger_task.<locals>._bg_execute' was never awaited
+    return _CRLock(*args, **kwargs)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_settings_coverage.py::TestDatabaseConnection::test_aiomysql_success
+tests/test_settings_coverage.py::TestDatabaseConnection::test_aiomysql_bad_result
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/api/settings.py:161: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    conn.close()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C147/wave41-objective-scoreboard-20261020/runs/test_plane_w41c_final.xml -
+=========================== short test summary info ============================
+FAILED tests/test_ac2_case_probe.py::test_self_test_closes_and_every_break_flips
+FAILED tests/test_acceptance_probe_gate.py::TestC51ZeroDepCells::test_the_judge_and_the_guard_module_count_the_same_surface
+FAILED tests/test_c65_evidence_probes.py::test_ac6_02_reads_proven_on_the_repaired_tree_with_every_break_firing
+FAILED tests/test_congress_gov_engine_provider.py::TestCongressGovIsARealProvider::test_a_provider_with_no_bindings_stays_unimplemented
+FAILED tests/test_congress_gov_engine_provider.py::TestTheEightRowAccounting::test_provider_bindings_and_declarations_stay_in_step
+FAILED tests/test_congress_gov_engine_provider.py::TestNothingHereIsLiveVerified::test_the_package_constructs_no_declaration
+FAILED tests/test_congress_gov_engine_provider.py::TestNothingHereIsLiveVerified::test_models_ships_no_fetcher_module
+FAILED tests/test_congress_gov_engine_provider.py::TestNothingHereIsLiveVerified::test_registration_verifies_nothing
+FAILED tests/test_data_catalog.py::TestFiveReadings::test_ready_provider_domains_publish_exact_query_service_metadata
+FAILED tests/test_e2e_opt_in_guard.py::test_no_test_outside_the_live_plane_builds_a_database_engine
+FAILED tests/test_ecb_reference_registration.py::test_real_ecb_bindings_register_three_canonical_models_without_auto_promotion
+FAILED tests/test_federal_reserve_domains.py::TestTheDomainsAreRegistered::test_the_retracted_yield_curve_domain_was_not_registered
+FAILED tests/test_first_model_bindings.py::test_registration_preserves_legacy_order_and_binds_eleven_models_exactly
+FAILED tests/test_oecd_engine_provider.py::TestProviderDescriptor::test_oecd_binds_only_its_two_hand_written_fetchers
+FAILED tests/test_oecd_engine_provider.py::TestProviderDescriptor::test_the_two_shipped_legs_stay_registered_and_verified
+FAILED tests/test_oecd_engine_provider.py::TestProviderDescriptor::test_the_retracted_model_identities_resolve_to_nothing
+FAILED tests/test_openbb_inventory_guard.py::test_shipped_record_agrees_with_the_tree
+FAILED tests/test_openbb_inventory_guard.py::test_report_exit_code_differs_between_the_two_records
+FAILED tests/test_openbb_inventory_guard.py::test_new_provider_specific_rights_rows_must_exist_in_registration_table
+FAILED tests/test_openbb_inventory_guard.py::test_every_declared_rights_row_is_load_bearing
+FAILED tests/test_p0_integration_surface.py::test_the_marked_set_is_the_reviewed_set
+FAILED tests/test_port_fidelity.py::test_ported_output_matches_upstream[bond_daily_sina]
+FAILED tests/test_provider_catalog.py::test_catalog_contains_34_sources_and_only_66_fetcher_bindings
+FAILED tests/test_provider_catalog.py::test_registration_and_legacy_fetchers_project_the_same_capabilities
+FAILED tests/test_scheduled_patrol.py::TestScheduledPatrolExecution::test_production_domain_priority_is_the_requirement_defined_eight
+FAILED tests/test_script_download_backend_iter2.py::test_real_browser_download_chain_against_owned_mysql
+26 failed, 26337 passed, 271 skipped, 21 warnings in 555.98s (0:09:15)
+
+test_plane_w41c_final_exit=1
