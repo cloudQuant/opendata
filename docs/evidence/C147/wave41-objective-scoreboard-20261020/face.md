@@ -479,3 +479,24 @@ PYTHONPATH=. /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python \
 
 任何一项漂移都会让对应的 A–J arm 变红；`J_equality_arm_can_bite` 用内存里 +1 的 accepted 证明
 "相等"这个谓词不是恒真。
+
+## 23. clean-room 进阶：与参考实现的 6 行同文窗口——逻辑 0 个、参数/ID 表 260 个
+
+`w73`/`w112` 只证明「没有 import、没有绝对路径引用」。`w132`（5/5 arms）问的是「有没有不 import 的抄写」：
+把本仓 380 个 provider 文件（排除 `_vendor`）与参考 checkout 的 635 个文件都归一化成非平凡行，找
+**连续 6 行、同序** 的窗口，再按窗口内容分两类——含语句行（def/return/if/for/raise/调用）的算 **logic**，
+只有参数与标识行的算 **table**：
+
+```
+upstream_files=635 upstream_windows=100974   our_files=380 window=6
+shared_logic_windows=0
+shared_table_windows=260   table_pairs=27
+  top: eia/.../constants.py 40、fred/.../retail_prices.py 33、fred/.../mortgage_indices.py 27、
+       fred/.../non_farm_payrolls.py 25、yfinance/.../references.py 20、imf/.../constants.py 19
+control: 未改动副本 0；把参考的一段 logic 窗口拼进副本后检测到 1
+```
+
+两类窗口的含义不同：**logic 窗口是抄代码，table 窗口是复用同一 API 的参数词表**（FRED series id、
+EIA topic slug、yfinance interval 名、字段映射）。本仓的 logic 共享是 **0**；260 个 table 窗口集中在 27
+个参考文件上（涉及本仓 19 个文件）。这属于「输入契约数据」还是「受保护表达」，是 owner/合规问题，
+已入计划 DEC-41-09；载体只记位置，不复制参考源码。
