@@ -100,6 +100,28 @@ def _judge() -> dict[str, Any]:
     }
 
 
+def _provider_split() -> dict[str, Any]:
+    """How many providers are fully landed, partially landed, or untouched, from CSV + report."""
+    lines = [line for line in INVENTORY.read_text(encoding="utf-8").splitlines() if line.strip()]
+    totals: dict[str, int] = {}
+    for line in lines[1:]:
+        provider = line.split(",")[1]
+        totals[provider] = totals.get(provider, 0) + 1
+    report = json.loads(JUDGE_REPORT.read_text(encoding="utf-8"))
+    accepted: dict[str, int] = {}
+    for model in report["models"]:
+        if model["status"] == "OFFLINE_ACCEPTED":
+            accepted[model["provider"]] = accepted.get(model["provider"], 0) + 1
+    full = sum(1 for provider, total in totals.items() if accepted.get(provider, 0) == total)
+    partial = sorted(
+        [provider, accepted.get(provider, 0), total]
+        for provider, total in totals.items()
+        if 0 < accepted.get(provider, 0) < total
+    )
+    none = sorted(provider for provider, total in totals.items() if accepted.get(provider, 0) == 0)
+    return {"providers": len(totals), "full": full, "partial": partial, "none": none}
+
+
 def _plane(xml: Path) -> tuple[dict[str, str], dict[str, str]]:
     spec = importlib.util.spec_from_file_location("w38_plane_readers_scoreboard", READERS)
     if spec is None or spec.loader is None:
@@ -154,6 +176,7 @@ def main() -> int:
         "providers_with_rows": live["providers_with_rows"],
         "zero_providers": live["zero_providers"],
         "residue": live["identities"] - live["accepted"],
+        "provider_split": _provider_split(),
         "inventory_rows": _inventory_rows(),
         "w57_accepted": int(_grab(w57, r"after_accepted=(\d+)")),
         "w57_claims": int(_grab(w57, r"after_claims=(\d+)")),
@@ -219,6 +242,12 @@ def main() -> int:
         reasoned["w130_observed_mismatch"] == 0
         and reasoned["w130_declared_mismatch"] == 0
         and "PASS=True" in w130
+    )
+    split = reasoned["provider_split"]
+    arms["L_provider_split_is_a_partition"] = split["full"] + len(split["partial"]) + len(
+        split["none"]
+    ) == split["providers"] == 32 and live["providers_with_rows"] == split["full"] + len(
+        split["partial"]
     )
     forged = live["accepted"] + 1
     arms["J_equality_arm_can_bite"] = not (

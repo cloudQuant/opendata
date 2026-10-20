@@ -500,3 +500,18 @@ control: 未改动副本 0；把参考的一段 logic 窗口拼进副本后检�
 EIA topic slug、yfinance interval 名、字段映射）。本仓的 logic 共享是 **0**；260 个 table 窗口集中在 27
 个参考文件上（涉及本仓 19 个文件）。这属于「输入契约数据」还是「受保护表达」，是 owner/合规问题，
 已入计划 DEC-41-09；载体只记位置，不复制参考源码。
+
+## 24. 「32 个 provider」的两种口径：25 全部落地 / 4 部分 / 3 无行
+
+记分板此前报「29/32 有 ≥1 accepted 行」，那会把部分落地也算成实现。从台账 CSV 与判定报告重算一个
+三分区（`w105` 新增 L 臂，12/12 arms）：
+
+```
+full   = 25   （该 provider 的全部台账行都 OFFLINE_ACCEPTED）
+partial= 4    econdb 6/8、intrinio 37/38、seeking_alpha 1/3、yfinance 28/29
+none   = 3    biztoc、stockgrid、wsj（无包无行）
+缺行     = partial 的 6 行 + none 的 5 行 = 11，与残差口径一致
+```
+
+因此目标第一条按两种读法给出两个数：**「每个 provider 至少一行可服务」是 29/32**；**「每个 provider 的
+台账行全部落地」是 25/32**。两种都写在这里，是为了不让较松的那个口径被当成完成。
