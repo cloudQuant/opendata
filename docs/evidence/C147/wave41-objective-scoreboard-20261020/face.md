@@ -542,3 +542,28 @@ a287 那一代逐字相同，不是巧合，也不描述 b342 的载荷。b342 �
 
 **自覆盖边界**：本节与它引用的新载体只能进入下一个提交，其自身只由那次提交的预提交 staged 扫描覆盖；
 closure 的 git/dir 两臂扫不到自己的载体——这是该仪器的固有上限，不是新增缺口。
+
+## 26. 判定器现场重跑：350/350 状态一致，339 不是一份陈旧报告里的数
+
+此前的记分板把 `docs/evidence/C101/judge/claims.merged.report.json` 当成"主证据"来读；报告可能是旧的，
+"可复算"就打了折扣。`w105` 现在先**现场重跑**仓内判定器（`scripts/quality/iter2_model_evidence.py`，
+输入为台账 CSV 与 `claims.merged.json`，输出落在 `/tmp/w105_live_judge`），再按 `task_id → status`
+与已入档报告逐行比对；判定器会读盘上的 pin/receipt 并核摘要，所以这不是对缓存报告的重放：
+
+```
+live_judge rc=0 accepted=339 statuses=350 differing=0 missing=0 extra=0
+           identity_set=5168e1e723999312 forged_differing=1
+objective_complete=False reasons=['residue_owner_gated=11','providers_without_rows=3','subagent_over_cap=4']
+arms=14 arms_passed=14 PASS=True red=[]
+```
+
+* 350 行状态**逐行相同**，0 缺失、0 多余，身份集不变 ⇒ 339/350 是当前工作树重算出来的，不是被引用的旧数；
+* `forged_differing=1`：把已入档报告的第一个状态在深拷贝里改成 `FORGED`，同一比较器必须报 1 处不同——
+  "相同"这个谓词不是恒真；
+* A–L 十二条实质读数全部未变（339 / 350 / 1725 / 29 / 11 / 25-4-3 / `plane_new=0`），新增的 M/N 两条
+  只是把"报告可信"换成"报告可复现"；
+* 判定器自己的两个常量（`EXPECTED_MODEL_COUNT=350`、身份集 sha）是 owner 决定，本臂只断言复现，
+  不重开这两个范围。
+
+载体：固定名 `runs/w105_objective_scoreboard.txt` 是本次 take（sha256 `d73c57…`）；b342 那一代另存为
+`runs/w105_objective_scoreboard_b342a2a54.txt`（sha256 `8af891…`，与 HEAD 上那一代逐字节相同），未覆盖。

@@ -1,12 +1,14 @@
 """Iteration-2 objective scoreboard: every clause recomputed from primary artefacts, not restated.
 
-The goal's completion audit needs one page that a reviewer can re-run. So this face reads the
-shipped judge report, the merged claims document, the task ledger, the two junit planes and the
-wave-39/40 carriers, **recomputes** what can be recomputed, and compares the rest against the value
-its carrier printed. Any drift turns into a red arm; a clause that is not met turns into a line in
+The goal's completion audit needs one page that a reviewer can re-run. So this face re-runs the
+repo's judge into scratch and compares its status map to the shipped report, reads the merged
+claims document, the task ledger, the two junit planes and the wave-39/40 carriers, **recomputes**
+what can be recomputed, and compares the rest against the value its carrier printed. Any drift
+turns into a red arm; a clause that is not met turns into a line in
 ``objective_complete=False reasons=...`` rather than into prose.
 
-What is recomputed (primary): accepted rows and the identity set come from the judge report; the
+What is recomputed (primary): accepted rows and the identity set come from a fresh judge run, whose
+350 row statuses must equal the shipped report's (a forged status proves the comparator bites); the
 claim total from ``claims.merged.json``; the identity population from the inventory CSV; the
 provider coverage from the report itself; the residue as ``identities - accepted``; the test-plane
 failure set from the junit readers.
@@ -22,9 +24,11 @@ and the same comparison must fail.
 
 from __future__ import annotations
 
+import copy
 import importlib.util
 import json
 import re
+import subprocess  # nosec B404  # fixed argv child process, no shell
 import sys
 from pathlib import Path
 from typing import Any
@@ -34,6 +38,8 @@ BUNDLE = "docs/evidence/C147/wave41-objective-scoreboard-20261020"
 RUNS = REPO / BUNDLE / "runs"
 CARRIER = RUNS / "w105_objective_scoreboard.txt"
 W130 = RUNS / "w130_counterfact_codes.txt"
+JUDGE_TOOL = REPO / "scripts/quality/iter2_model_evidence.py"
+LIVE_JUDGE_DIR = Path("/tmp/w105_live_judge")  # nosec B108  # noqa: S108
 JUDGE_REPORT = REPO / "docs/evidence/C101/judge/claims.merged.report.json"
 MERGED = REPO / "docs/evidence/C101/claims.merged.json"
 INVENTORY = REPO / "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv"
@@ -100,6 +106,53 @@ def _judge() -> dict[str, Any]:
     }
 
 
+def _status_map(report: dict[str, Any]) -> dict[str, str]:
+    """Map each ledger row's task id to the judge's status label."""
+    return {
+        str(model.get("task_id")): str(model.get("status")) for model in report.get("models") or []
+    }
+
+
+def _judge_diff(left: dict[str, Any], right: dict[str, Any]) -> tuple[int, int, int]:
+    """Return (differing shared task ids, missing from left, extra in left)."""
+    left_map, right_map = _status_map(left), _status_map(right)
+    differing = sum(
+        1 for key in left_map.keys() & right_map.keys() if left_map[key] != right_map[key]
+    )
+    missing = len(right_map.keys() - left_map.keys())
+    extra = len(left_map.keys() - right_map.keys())
+    return differing, missing, extra
+
+
+def _recheck_judge() -> tuple[dict[str, Any], int]:
+    """Re-run the repo's judge into scratch; return its report and exit code (empty on failure)."""
+    LIVE_JUDGE_DIR.mkdir(parents=True, exist_ok=True)
+    output = LIVE_JUDGE_DIR / "claims.merged.report.json"
+    proc = subprocess.run(  # nosec B603  # noqa: S603
+        [
+            sys.executable,
+            str(JUDGE_TOOL),
+            "--inventory",
+            str(INVENTORY),
+            "--claims",
+            str(MERGED),
+            "--output",
+            str(output),
+        ],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0 or not output.is_file():
+        print(
+            f"live_judge_failure rc={proc.returncode} stderr_tail={proc.stderr[-400:]!r}",
+            flush=True,
+        )
+        return {}, proc.returncode
+    return json.loads(output.read_text(encoding="utf-8")), proc.returncode
+
+
 def _provider_split() -> dict[str, Any]:
     """How many providers are fully landed, partially landed, or untouched, from CSV + report."""
     lines = [line for line in INVENTORY.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -136,6 +189,18 @@ def main() -> int:
     """Recompute what is primary, cite the rest, and print whether the objective is met."""
     RUNS.mkdir(parents=True, exist_ok=True)
     live = _judge()
+    recheck, recheck_rc = _recheck_judge()
+    shipped = json.loads(JUDGE_REPORT.read_text(encoding="utf-8"))
+    differing, missing, extra = _judge_diff(recheck, shipped)
+    recheck_accepted = sum(
+        1 for model in recheck.get("models") or [] if model.get("status") == "OFFLINE_ACCEPTED"
+    )
+    recheck_identity = str((recheck.get("inventory") or {}).get("identity_set_sha256") or "")[:16]
+    forged_report = copy.deepcopy(shipped)
+    for model in forged_report.get("models") or []:
+        model["status"] = "FORGED"
+        break
+    forged_differing, _forged_missing, _forged_extra = _judge_diff(forged_report, shipped)
     before, before_counts = _plane(W39_RUNS / "test_plane_w39_worktree_final.xml")
     after_xml = next(
         (
@@ -178,6 +243,12 @@ def main() -> int:
         "residue": live["identities"] - live["accepted"],
         "provider_split": _provider_split(),
         "inventory_rows": _inventory_rows(),
+        "live_judge_rc": recheck_rc,
+        "live_judge_accepted": recheck_accepted,
+        "live_judge_status_differing": differing,
+        "live_judge_missing": missing,
+        "live_judge_extra": extra,
+        "live_judge_identity_set": recheck_identity,
         "w57_accepted": int(_grab(w57, r"after_accepted=(\d+)")),
         "w57_claims": int(_grab(w57, r"after_claims=(\d+)")),
         "w67_residue_sums": int(_grab(w67, r"sums=(\d+)")),
@@ -203,6 +274,11 @@ def main() -> int:
     }
 
     lines = [f"scoreboard {json.dumps(reasoned, sort_keys=True, ensure_ascii=False)}"]
+    lines.append(
+        f"live_judge rc={recheck_rc} accepted={recheck_accepted} "
+        f"statuses={len(_status_map(recheck))} differing={differing} missing={missing} "
+        f"extra={extra} identity_set={recheck_identity} forged_differing={forged_differing}"
+    )
     arms: dict[str, bool] = {}
     arms["A_judge_is_the_primary_and_agrees_with_its_carrier"] = (
         live["accepted"] == reasoned["w57_accepted"] == EXPECTED["accepted"]
@@ -243,6 +319,13 @@ def main() -> int:
         and reasoned["w130_declared_mismatch"] == 0
         and "PASS=True" in w130
     )
+    arms["M_live_judge_reproduces_the_shipped_report"] = (
+        recheck_rc == 0
+        and recheck_accepted == live["accepted"] == EXPECTED["accepted"]
+        and differing == missing == extra == 0
+        and recheck_identity == EXPECTED["identity_set"]
+    )
+    arms["N_live_judge_comparator_can_bite"] = forged_differing == 1
     split = reasoned["provider_split"]
     arms["L_provider_split_is_a_partition"] = split["full"] + len(split["partial"]) + len(
         split["none"]
