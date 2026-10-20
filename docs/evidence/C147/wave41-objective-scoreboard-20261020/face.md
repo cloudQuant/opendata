@@ -248,6 +248,42 @@ wave 32 之后手写人口接管了总数」。读数：该文件 `1 failed / 4 
 同族里 `test_first_model_bindings` **没有**照此处理：它的 `_MODEL_CASES` 是首轮迭代 2 的冻结清单，
 重钉等于按 350 身份集重新枚举整张表，属重写而非替换，已并入 DEC-41-07。
 
+## 15. wave-41 收口面与剩余契约测试的逐条对照
+
+**收口（`w117`，对 `9e637ec32`，8/8 arms PASS）**：
+
+```
+reconcile commit_paths=7 moved_vs_parent=7 worktree_drift_vs_commit=0 missing_in_commit=0
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）
+gitleaks dir-mode findings=0（planted 2）
+secret_scan_check rc=0  486 commits / 420.30 MB / no leaks found
+```
+
+第一次跑时 `worktree_matches_commit` 红：`commit_paths_by_root={'docs/evidence/C147': 6, '"docs': 1}`、
+`missing_in_commit=1`——载荷里的中文计划文档路径被默认 quotepath 转义，正是 wave 39 §20 那个缺陷的
+复现（`w117` 起初直接 import wave 38 的仪器，没带 wave 39 包装器里的进程级覆盖）。加上
+`GIT_CONFIG_COUNT/KEY/VALUE` 后 `quotepath_off paths=7 nonascii=1`，同一提交 8/8 全绿；
+红的那次留在 `runs/w47_closure_face.quotepath_red.txt`。
+
+**剩余 10 条契约测试（DEC-41-07）的逐条对照**——live 值都实测，提议的重写保留原意：
+
+| 测试 | 现在的断言 | live | 提议 |
+| --- | --- | --- | --- |
+| congress_gov `…no_bindings_stays_unimplemented` | `is_implemented is False` | True | 改为断言已实现且 8 个绑定（名字随之改） |
+| congress_gov `…bindings_and_declarations_stay_in_step` | `len(bindings) == len(DECLARED_MODELS)` | 8 vs 0 | 拆成 `bindings==8` 且 `DECLARED_MODELS==()`（保留"无引擎声明"之意） |
+| congress_gov `…models_ships_no_fetcher_module` | 模块清单 == `['__init__.py']` | `['__init__.py','iter2.py']` | 与模块清单同步 |
+| congress_gov `…registration_verifies_nothing` | `capabilities == []` | 8 条 | 改为 `all(not c.verified)`（verified 标签冻结，只改"空集"这个前提） |
+| congress_gov `…package_constructs_no_declaration` | `fetcher_bindings == ()` | 8 | 改为断言 `engine_declared_models()==[]` |
+| oecd `…binds_only_its_two_hand_written_fetchers` | 2 个绑定、两个类名 | 11 | 需 owner：新增 9 条手写行是否算"该 provider 的绑定"，属登记口径 |
+| oecd `…two_shipped_legs_stay_registered_and_verified` | 2 域、全 True | 11 域、仅 2 域 True | **verified 标签冻结**，须 owner |
+| oecd `…retracted_model_identities_resolve_to_nothing` | 两个身份解析为空 | 都能解析 | **retraction 契约**，须 owner |
+| federal_reserve `…retracted_yield_curve_domain_was_not_registered` | `federal_reserve_yield_curve` 不在域表 | 在域表 | **retraction 契约**，须 owner |
+| first_model_bindings `…preserves_legacy_order…` | 冻结的 `_MODEL_CASES` 分布 | 350 身份 | 需按 350 重新枚举，属重写 |
+
+也就是说：congress_gov 的 5 条可以在保留"无引擎声明 / verified=False"之意的条件下重写；oecd 的 3 条、
+federal_reserve 的 1 条触及 retraction/verified 冻结项；first_model_bindings 需要重新枚举。
+
+
 
 
 
