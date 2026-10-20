@@ -392,6 +392,27 @@ tradingeconomics、cftc、congress_gov、deribit、finra、finviz、government_u
 但在 16 条 RIGHTS LINK 与 1 条 STALE STATUS 解决前，测试仍会红——先重钉计数没有意义。已入计划
 DEC-41-08。
 
+## 21. counterfact 不只是"文本里有拒绝"：339 行的 observed 码 == expected 码 == 见证声明
+
+`w75` 对每行核的是「反例文本里出现拒绝令牌」——那是文本证据。`w130` 在同一批载体上把更强的一圈闭掉
+（6/6 arms）：
+
+```
+accepted_rows=339  receipts_parsed=339
+missing_receipt=0  missing_expected=0
+observed_mismatch=0        ← 探针实际抛出的码 与 receipt 的 expected 完全一致
+declared_mismatch=0        ← expected 与仓内见证声明的 refusal_code 完全一致
+witness_without_declared_code=0
+nonzero_exit=0             ← machine_execution.exit_code 全为 0
+forge_probe: 篡改一条 expected 后比较立刻失败
+```
+
+三个等式的方向各不相同：**observed==expected** 证明反例真的被执行并抛出了声明的代码（不是抄的）；
+**expected==witness 声明**把 receipt 绑到仓内的见证文件上，而不是自洽；**exit_code==0** 证明该相位真的
+跑过。伪造臂在场，所以三个 0 不是空谓词。复跑：
+`python docs/evidence/C147/.../probes/w130_counterfact_codes.py`。
+
+
 
 
 

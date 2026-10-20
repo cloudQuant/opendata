@@ -33,6 +33,7 @@ REPO = Path("/Users/yunjinqi/Documents/new_projects/opendata")
 BUNDLE = "docs/evidence/C147/wave41-objective-scoreboard-20261020"
 RUNS = REPO / BUNDLE / "runs"
 CARRIER = RUNS / "w105_objective_scoreboard.txt"
+W130 = RUNS / "w130_counterfact_codes.txt"
 JUDGE_REPORT = REPO / "docs/evidence/C101/judge/claims.merged.report.json"
 MERGED = REPO / "docs/evidence/C101/claims.merged.json"
 INVENTORY = REPO / "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv"
@@ -143,6 +144,7 @@ def main() -> int:
     w74 = _carrier("w74_dispatch_ledger_face.txt")
     w75 = _carrier("w75_witness_completeness_face.txt")
     w95 = (W40_RUNS / "w95_query_annotation_face.txt").read_text(encoding="utf-8")
+    w130 = W130.read_text(encoding="utf-8")
 
     reasoned = {
         "accepted": live["accepted"],
@@ -162,6 +164,8 @@ def main() -> int:
         "w74_subagent_total": int(_grab(w74, r"this_thread_total=(\d+)")),
         "w74_subagent_cap": int(_grab(w74, r"cap=(\d+)")),
         "w75_stale_pin_rows": int(_grab(w75, r"stale_pin_files_across_accepted_rows=(\d+)")),
+        "w130_observed_mismatch": int(_grab(w130, r"observed_mismatch=(\d+)")),
+        "w130_declared_mismatch": int(_grab(w130, r"declared_mismatch=(\d+)")),
         "w70_dev_done": int(_grab(w70, r"dev_done=(\d+)")),
         "w70_engine_declared": int(_grab(w70, r"engine_declared_rows=(\d+)")),
         "w95_divergence": int(_grab(w95, r'"diverge": (\d+)')),
@@ -210,6 +214,11 @@ def main() -> int:
         and reasoned["plane_shared"] + reasoned["plane_fixed"] == reasoned["plane_before"]
         and reasoned["plane_shared"] + reasoned["plane_new"] == reasoned["plane_after"]
         and reasoned["plane_collected"] == int(before_counts.get("tests", -1))
+    )
+    arms["K_counterfact_codes_landed_and_match_the_witness"] = (
+        reasoned["w130_observed_mismatch"] == 0
+        and reasoned["w130_declared_mismatch"] == 0
+        and "PASS=True" in w130
     )
     forged = live["accepted"] + 1
     arms["J_equality_arm_can_bite"] = not (
