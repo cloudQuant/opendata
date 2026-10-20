@@ -1,0 +1,22 @@
+# carrier for w122_ac2_10_take2 (scripts/quality/ac2_case_probe.py --item AC2-10)
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/ac2_case_probe.py --item AC2-10
+# started_utc: 2026-10-20T13:41:57+00:00
+AC2-10 state=gap offline=holds_offline
+  summary: 350 个模型实例各有实现、离线正反例、标准契约与服务入口，真实对照另记。
+  reason:  failed: all 350 are DEV_DONE with an executed witness; no row left at NOT_RUN
+  leg:     live_upstream -- 真实上游对照需要授权后的 e2e 腿
+  contract_test_files=test_cboe_engine_provider.py,test_congress_gov_engine_provider.py,test_ecb_reference_registration.py,test_engine_contract_fixture_arms.py,test_engine_null_sentinel.py,test_engine_row_expansion_spec.py,test_engine_row_filters.py,test_engine_row_order.py,test_engine_serialised_param_spec.py,test_engine_value_map_and_composite_path.py,test_engine_value_transform.py,test_federal_reserve_domains.py,test_federal_reserve_obfr_spec.py,test_federal_reserve_rate_specs.py,test_intrinio_engine_provider.py,test_intrinio_insider_trading_spec.py,test_intrinio_not_declarable.py,test_model_capability_census.py,test_oecd_engine_provider.py,test_provider_catalog.py,test_provider_engine_contract.py,test_provider_engine_decoders.py,test_provider_federal_reserve.py,test_provider_model_contracts.py,test_sec_engine_provider.py
+  contract_test_functions=606
+  dev_done=17
+  dev_done_label=5
+  e2e_marker_declared=True
+  engine_declared_rows=17
+  gate_live_confirmation=True
+  in_progress=13
+  label_without_witness=0
+  label_without_witness_ids=-
+  ledger_rows=350
+  live_verification_run=0
+  not_run=332
+  obb2_task_ids=350
+ac2_10_take2_exit=0

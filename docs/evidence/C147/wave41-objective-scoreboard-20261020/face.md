@@ -328,6 +328,28 @@ collected 26634 不变），相对 wave 39 final 累计 `fixed=17 shared=11 new=
 `.gitleaks.toml` 允许列表覆盖它们，**出货配置（A 臂）读数是 0**。载体
 `runs/w108_staged_scan_plan.txt` 保留了这次红。教训：扫描的退出码必须真正闸住提交，不能用 `;` 串行。
 
+## 18. wave-41p 收口面，以及 AC2-10 在 wave 40 之后重测
+
+`w117` 对 `a2874661e`（wave-41p 的 docs 提交，7 个路径）跑收口（8/8 arms PASS）：
+
+```
+reconcile commit_paths=7 moved_vs_parent=7 worktree_drift_vs_commit=0 missing_in_commit=0
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）
+gitleaks dir-mode findings=0（planted 2）
+secret_scan_check rc=0  491 commits / 429.73 MB / no leaks found
+```
+
+AC2-10 在 wave 40 的两处产品修复之后重测（`runs/w122_ac2_10_take2.txt`）：
+
+```
+dev_done=17  engine_declared_rows=17  contract_test_functions=606
+in_progress=13  not_run=332  label_without_witness=0  state=gap
+```
+
+与 wave 39 的记录逐项相同——两处运行时注解修复没有移动这条判定；`dev_done=17` 仍是该谓词自己的天花板
+（owner 裁定见 C145 §15）。
+
+
 
 
 
