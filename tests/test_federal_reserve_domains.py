@@ -39,7 +39,7 @@ from opendata.data.providers._engine.testing import (
     synthetic_raw_page,
     valid_query_kwargs,
 )
-from opendata.data.providers.catalog import register_provider
+from opendata.data.providers.catalog import engine_declared_models, register_provider
 from opendata.data.providers.federal_reserve import specs
 from opendata.data.providers.federal_reserve._source import SOURCE
 from opendata.data.registry import ProviderRegistry
@@ -154,11 +154,29 @@ class TestTheDomainsAreRegistered:
         assert "store" not in resolved.permissions
         assert "query" in resolved.permissions
 
-    def test_the_retracted_yield_curve_domain_was_not_registered(self) -> None:
-        """Retracting a declaration must not leave a domain behind (the oecd precedent)."""
-        assert "federal_reserve_yield_curve" not in load_domains()
-        with pytest.raises(LookupError):
-            require_domain_semantics("federal_reserve_yield_curve")
+    def test_the_yield_curve_domain_is_served_by_the_hand_written_row(self) -> None:
+        """The retracted declaration stays out of the engine; the landed row owns the domain now.
+
+        The oecd precedent this test used to encode -- a retraction leaves no *generated* domain --
+        still holds: ``YieldCurve`` is not among federal_reserve's engine declarations. What changed
+        is that an iteration-2 hand-written row serves the same domain, which is a different act
+        from re-declaring it.
+        """
+        assert "federal_reserve_yield_curve" in load_domains()
+        semantics = require_domain_semantics("federal_reserve_yield_curve")
+        assert semantics.contract == "FederalReserveYieldCurveObservation"
+        declared = {
+            spec.model for source, spec in engine_declared_models() if source == "federal_reserve"
+        }
+        assert "YieldCurve" not in declared
+        registry = ProviderRegistry()
+        register_provider("federal_reserve", registry)
+        served = [
+            descriptor.model
+            for descriptor in registry.list_model_descriptors()
+            if descriptor.domain == "federal_reserve_yield_curve"
+        ]
+        assert served == ["YieldCurve"]
 
 
 class TestContractNamesExactlyTheDeclaredColumns:

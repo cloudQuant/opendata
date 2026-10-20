@@ -2,9 +2,9 @@
 
 The engine's promise is that a model is either declared or recorded as inexpressible, and this file
 judges the second half for oecd. The package must account for exactly the rows
-``模型级任务清单.csv`` binds under ``OBB2-oecd-<model>``, refuse a row that is neither declared nor
-recorded, refuse one that is both, and refuse a recorded row whose blocker is a claim about effort
-rather than a capability the declaration format lacks.
+``模型级任务清单.csv`` binds under ``OBB2-oecd-<model>``, refuse a row that is neither
+declared nor recorded, refuse one that is both, and refuse a recorded row whose blocker is a
+claim about effort rather than a capability the declaration format lacks.
 
 Two of the nine were declared last round -- ``ConsumerPriceIndex`` and ``Unemployment`` -- and
 :mod:`opendata.data.providers.oecd.specs` retracts them:
@@ -152,7 +152,7 @@ def _key_spec(**overrides: Any) -> ModelSpec:
         "path": f"/data/{UPSTREAM_DATAFLOW}/{{series_key}}",
         "columns": (ColumnSpec("country"),),
         "params": (ParamSpec("series_key", "str", required=True),),
-        "scenario": "宏观通胀观测探针：按 SDMX 序列键取回消费价格指数观测值",
+        "scenario": ("宏观通胀观测探针：按 SDMX 序列键取回消费价格指数观测值"),
         "error_prefix": "OECD",
     }
     fields.update(overrides)
@@ -248,40 +248,70 @@ class TestTheNineRowAccounting:
 class TestProviderDescriptor:
     """The retraction reached the descriptor, the registry and the domain table."""
 
-    def test_oecd_binds_only_its_two_hand_written_fetchers(self) -> None:
+    def test_oecd_binds_its_hand_written_fetchers(self) -> None:
         provider = get_provider("oecd")
-        assert len(provider.fetcher_bindings) == 2
-        for binding in provider.fetcher_bindings:
+        assert len(provider.fetcher_bindings) == 11
+        # A binding without canonical model ids is a legacy fetcher, not an engine declaration.
+        legacy = [b for b in provider.fetcher_bindings if not b.canonical_model_ids]
+        assert len(legacy) == 2
+        for binding in legacy:
             assert isinstance(binding, LazyFetcherBinding)
-            # A binding without canonical model ids is a legacy fetcher, not an engine declaration.
-            assert binding.canonical_model_ids == ()
-            assert binding.scenario is None
+            assert isinstance(binding.scenario, str) and binding.scenario
         assert {binding.class_name for binding in provider.fetcher_bindings} == {
             "OecdCpiFetcher",
             "OecdUnemploymentFetcher",
+            "OecdCompositeLeadingIndicatorFetcher",
+            "OecdConsumerPriceIndexFetcher",
+            "OecdCountryInterestRateFetcher",
+            "OecdGdpNominalFetcher",
+            "OecdGdpRealFetcher",
+            "OecdGdpForecastFetcher",
+            "OecdHousePriceIndexFetcher",
+            "OecdSharePriceIndexFetcher",
         }
 
     def test_oecd_publishes_no_engine_declaration(self) -> None:
         declared = [model for source, model in engine_declared_models() if source == "oecd"]
         assert declared == []
 
-    def test_the_two_shipped_legs_stay_registered_and_verified(self) -> None:
+    def test_the_legacy_legs_stay_verified_and_the_new_rows_do_not(self) -> None:
         registry = ProviderRegistry()
         capabilities = register_provider("oecd", registry)
         by_domain = {capability.domain: capability for capability in capabilities}
-        assert set(by_domain) == {"economy_cpi", "economy_unemployment"}
+        assert set(by_domain) == {
+            "economy_cpi",
+            "economy_unemployment",
+            "economy_oecd_cli",
+            "economy_oecd_cpi",
+            "economy_oecd_gdp_forecast",
+            "economy_oecd_gdp_nominal",
+            "economy_oecd_gdp_real",
+            "economy_oecd_house_price_index",
+            "economy_oecd_interest_rates",
+            "economy_oecd_share_price_index",
+            "economy_oecd_unemployment",
+        }
         assert all(capability.source == "oecd" for capability in capabilities)
-        # These two are hand-written fetchers verified in iteration 1; retracting a declaration must
-        # not silently un-verify what was already standing.
-        assert [by_domain[domain].verified for domain in sorted(by_domain)] == [True, True]
+        # The two iteration-1 legs stay verified; the nine rows landed later do not claim it.
+        assert {domain for domain, capability in by_domain.items() if capability.verified} == {
+            "economy_cpi",
+            "economy_unemployment",
+        }
+        assert not any(
+            capability.verified
+            for domain, capability in by_domain.items()
+            if domain.startswith("economy_oecd_")
+        )
 
-    def test_the_retracted_model_identities_resolve_to_nothing(self) -> None:
+    def test_the_retracted_declarations_stay_empty_while_the_rows_resolve(self) -> None:
         registry = ProviderRegistry()
         register_provider("oecd", registry)
+        # Declarations stay retracted; the two identities are served by hand-written rows.
+        assert [spec.model for source, spec in engine_declared_models() if source == "oecd"] == []
         for model in ("ConsumerPriceIndex", "Unemployment"):
-            with pytest.raises(LookupError) as caught:
-                registry.resolve_model("oecd", model)
-            assert f"oecd/{model}" in str(caught.value)
+            fetcher = registry.resolve_model("oecd", model)
+            assert fetcher.capability.source == "oecd"
+            assert fetcher.capability.verified is False
 
     def test_no_oecd_domain_was_registered_for_a_retracted_declaration(self) -> None:
         domains = load_domains()
@@ -304,7 +334,7 @@ class TestProviderDescriptor:
         }
         assert named_by_provider <= set(domains), sorted(named_by_provider - set(domains))
         # Census re-base 2026-10-14: membership derives from the parsed domains.yaml, cross-checked
-        # against the cboe provider's live registrations (the 4-id pin predates 360c61d's five legs).
+        # against the cboe provider's live registrations (the pin predates 360c61d's five legs).
         pinned_four = {
             "cboe_available_indices",
             "cboe_equity_search",
@@ -315,7 +345,10 @@ class TestProviderDescriptor:
         registered_cboe = {
             capability.domain for capability in register_provider("cboe", ProviderRegistry())
         }
-        print(f"cboe_* census delta: live={len(live_cboe)} pinned={len(pinned_four)} added={sorted(live_cboe - pinned_four)}")
+        print(
+            f"cboe_* census delta: live={len(live_cboe)} pinned={len(pinned_four)} "
+            f"added={sorted(live_cboe - pinned_four)}"
+        )
         assert live_cboe == registered_cboe
         # live counterfact: a coined domain id must be rejected by the same comparison.
         assert live_cboe | {"cboe_zz_does_not_exist"} != registered_cboe

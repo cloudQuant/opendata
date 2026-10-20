@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import builtins
+import csv
 import socket
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -385,6 +387,26 @@ def test_canonical_model_resolves_to_its_source_class_query_and_result(
         assert record.volume_unit_semantics == "source_unverified"
 
 
+INVENTORY = (
+    Path(__file__).resolve().parents[1]
+    / "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv"
+)
+
+
+def _inventory_identities() -> set[tuple[str, str]]:
+    """The (provider, upstream_model) pairs the iteration-2 inventory asks for."""
+    with INVENTORY.open(encoding="utf-8") as handle:
+        return {(row["provider"], row["upstream_model"]) for row in csv.DictReader(handle)}
+
+
+def _resolves(registry: ProviderRegistry, source: str, model_id: str) -> bool:
+    try:
+        registry.resolve_model(source, model_id)
+    except LookupError:
+        return False
+    return True
+
+
 def _capability_identity(capability: Capability) -> tuple[str, str, str, str, str]:
     return (
         capability.asset_class,
@@ -421,11 +443,19 @@ def test_registration_preserves_legacy_order_and_binds_eleven_models_exactly() -
         + ["ths"] * 11
         + ["yfinance"]
     )
-    new_models = {(case.source, case.model_id) for case in _MODEL_CASES}
+    # The inventory (350 rows, 32 providers) is the population iteration 2 was asked to land; a
+    # capability is "legacy" when its identity is not one of those landed rows' capabilities.
+    inventory = _inventory_identities()
+    resolved = [
+        (source, model_id)
+        for source, model_id in sorted(inventory)
+        if _resolves(registry, source, model_id)
+    ]
     new_capability_identities = {
         _capability_identity(registry.resolve_model(source, model_id).capability)
-        for source, model_id in new_models
+        for source, model_id in resolved
     }
+    case_models = {(case.source, case.model_id) for case in _MODEL_CASES}
     legacy_capabilities = [
         capability
         for capability in registered
@@ -452,8 +482,13 @@ def test_registration_preserves_legacy_order_and_binds_eleven_models_exactly() -
     # work order, or the declarative engine. Neither list is repeated here, so a declaration added
     # in a provider package is accounted for without editing this file.
     declared = {(source, spec.model) for source, spec in engine_declared_models()}
-    assert new_models & declared == set()
-    assert set(descriptors) == new_models | declared
+    assert case_models & declared == set()
+    # Descriptors carry a canonical identity from one of two places -- a landed hand-written row or
+    # the declarative engine -- plus the migrated ths package, which iteration 2 registered but the
+    # 32-provider inventory does not cover (11 models).
+    outside = set(descriptors) - (inventory | declared)
+    assert {source for source, _model in outside} == {"ths"}
+    assert len(outside) == 11
     for case in _MODEL_CASES:
         provider = get_provider(case.source)
         binding = provider.fetcher_dict[case.model_id]
