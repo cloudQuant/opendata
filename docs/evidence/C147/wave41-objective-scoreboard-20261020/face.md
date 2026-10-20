@@ -150,6 +150,21 @@ judge_accepted=339（另一台仪器）
 5/5 arms；`E` 臂把解析到的 `accepted` 改成 338，比较随即失败，证明"相同"不是恒真。两张 census 的
 引用因此也是当前的，而不是 wave 39 的快照。
 
+## 9. 残差门也在交付树上重算：11 行的分档逐字相同
+
+`w113` 以同一方式复用 `w67`，`ledger_population` 行与 wave 39 的记录**逐字相同**：
+
+```
+rows=350 credential_bearing=195 probed_rows_this_round=5
+census={'CREDENTIAL_GATED': 4, 'PROBED_UNANSWERED': 5, 'NOT_PROBED_THIS_ROUND': 2}
+sums=11 of=11 residue_with_no_credential=7
+```
+
+4/4 arms；`D` 臂把 `sums=11 of=11` 改成 `sums=10 of=11` 后比较失败。至此记分板引用的四张面
+（逐行验收 `w75`、provider 覆盖 `w72`、clean-room `w73`、残差门 `w67`）**全部**在当前交付树上重跑过，
+并且与 wave 39 的记录逐项相同——引用不是历史快照。
+
+
 
 
 

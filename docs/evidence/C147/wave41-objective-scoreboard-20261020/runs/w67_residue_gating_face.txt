@@ -1,0 +1,16 @@
+row biztoc::WorldNews                      gate=CREDENTIAL_GATED       ledger_cred=api_key    ref_cred=['api_key']    key=PENDING_DECISION           rights=NOT_REGISTERED
+row econdb::CountryProfile                 gate=CREDENTIAL_GATED       ledger_cred=api_key    ref_cred=['api_key']    key=PENDING_DECISION           rights=NOT_REGISTERED
+row econdb::ExportDestinations             gate=CREDENTIAL_GATED       ledger_cred=api_key    ref_cred=['api_key']    key=PENDING_DECISION           rights=NOT_REGISTERED
+row intrinio::OptionsSnapshots             gate=CREDENTIAL_GATED       ledger_cred=api_key    ref_cred=['api_key']    key=PENDING_DECISION           rights=NOT_REGISTERED
+row seeking_alpha::ForwardEpsEstimates     gate=PROBED_UNANSWERED      ledger_cred=<empty>    ref_cred=<none declared> key=PENDING_ACCESS_ASSESSMENT  rights=NOT_REGISTERED
+row seeking_alpha::ForwardSalesEstimates   gate=PROBED_UNANSWERED      ledger_cred=<empty>    ref_cred=<none declared> key=PENDING_ACCESS_ASSESSMENT  rights=NOT_REGISTERED
+row stockgrid::ShortVolume                 gate=NOT_PROBED_THIS_ROUND  ledger_cred=<empty>    ref_cred=<none declared> key=PENDING_ACCESS_ASSESSMENT  rights=NOT_REGISTERED
+row wsj::ETFActive                         gate=PROBED_UNANSWERED      ledger_cred=<empty>    ref_cred=<none declared> key=PENDING_ACCESS_ASSESSMENT  rights=NOT_REGISTERED
+row wsj::ETFGainers                        gate=PROBED_UNANSWERED      ledger_cred=<empty>    ref_cred=<none declared> key=PENDING_ACCESS_ASSESSMENT  rights=NOT_REGISTERED
+row wsj::ETFLosers                         gate=PROBED_UNANSWERED      ledger_cred=<empty>    ref_cred=<none declared> key=PENDING_ACCESS_ASSESSMENT  rights=NOT_REGISTERED
+row yfinance::AvailableIndices             gate=NOT_PROBED_THIS_ROUND  ledger_cred=<empty>    ref_cred=<none declared> key=PENDING_ACCESS_ASSESSMENT  rights=EXISTING_SOURCE_REVIEW_MODEL_PENDING
+ledger_population rows=350 credential_bearing=195 probed_rows_this_round=5 census={'CREDENTIAL_GATED': 4, 'PROBED_UNANSWERED': 5, 'NOT_PROBED_THIS_ROUND': 2} sums=11 of=11 residue_with_no_credential=7
+c144 capture_families=['cboe', 'control', 'seeking_alpha', 'wsj'] captures=23 dispositions=6
+stockgrid reference_credentials=<none declared> ledger_credential_fields=<empty> package_in_this_repo=False upstream_provider_dir=True
+residue_gating_face arms=9 arms_passed=9 PASS=True red=[]
+w67_residue_gating_face_exit=0
