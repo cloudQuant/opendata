@@ -65,6 +65,11 @@ if TYPE_CHECKING:
 
 else:
     _GeneratedCalendarFetcher = make_http_json_fetcher(SOURCE, ECONOMIC_CALENDAR)
+    # ``/api/v1/data/catalog`` resolves this fetcher's annotations with ``get_type_hints``, which
+    # evaluates the forward reference in this module's namespace -- so the query model needs a
+    # runtime binding here, not only the static view above. Naming the engine-built class keeps the
+    # resolved annotation identical to the model the fetcher actually validates against.
+    _EconomicCalendarQuery = _GeneratedCalendarFetcher.query_model
 
 _INTEGER_LIST = re.compile(r"[0-9]+(?:,[0-9]+)*\Z")
 _GROUP_API_VALUE = dict(GROUP_VALUES)

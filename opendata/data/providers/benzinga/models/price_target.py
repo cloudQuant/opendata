@@ -10,6 +10,8 @@ from datetime import time as time_type
 from datetime import timezone
 from typing import TYPE_CHECKING
 
+from pydantic import BaseModel  # noqa: TC002  # get_type_hints resolves this annotation at runtime
+
 from opendata.data.capability import Capability
 from opendata.data.models.benzinga import BenzingaPriceTarget
 from opendata.data.providers._engine.http_json import (
@@ -24,8 +26,6 @@ from opendata.data.providers.benzinga.models.iter2 import BenzingaAPIModelFetche
 from opendata.data.providers.benzinga.specs import PRICE_TARGET as _REQUEST_PLAN
 
 if TYPE_CHECKING:
-    from pydantic import BaseModel
-
     from opendata.data.protocol import FetchContext
 
 # The model declaration supplies request parameters, URL, credentials, and row envelope only.
