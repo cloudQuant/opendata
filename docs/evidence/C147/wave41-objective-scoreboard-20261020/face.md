@@ -590,3 +590,7 @@ generation claims_sha256=87edaa36… judge_report_sha256=12feefc0…（与 b342 
 `staged_files_from_scan_carrier=4` 是仪器从 `w99` 逐字复制的旧读数，**不描述本次提交**；本提交的
 预提交闸门在 `runs/w108_staged_scan_plan_gate_w41y.txt`（`payload_index_sha256=21b983…`、
 `staged=5`、11/11 arms PASS）。§25 已披露该仪器的这一上限；这里只确认该行仍是复制值，避免被当成新读数。
+
+**订正（保留原错值）**：收口提交 `19454f49d` 的信息把本页闸门 `w108_staged_scan_plan_gate_w41z.txt`
+的 `payload_index_sha256` 写成了 `f8f1b8…`；载体实测为 **`17890e60…`**（该文件 sha256 `e612ff…`，
+`staged=2`、11/11 arms PASS）。以载体为准，提交信息里的值不作数。
