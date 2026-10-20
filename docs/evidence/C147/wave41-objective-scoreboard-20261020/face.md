@@ -300,6 +300,36 @@ federal_reserve 的 1 条触及 retraction/verified 冻结项；first_model_bind
 读数：该文件 `5 failed / 42 passed → 47 passed`；全量平面 `21 → 16 failed`（26346 passed、272 skipped、
 collected 26634 不变），相对 wave 39 final 累计 `fixed=12 shared=16 new=0`。
 
+## 17. owner 批准后的最后 5 条契约重写（16 → 11）
+
+裁定见计划 §6b `CONTRACT-REWRITE-01`：按落地现实重写、保留语义。逐条：
+
+* **oecd（3 条）**：绑定 2 → 11（2 条 legacy 无 canonical id、9 条落地行带 canonical id；类名集合 10 个，
+  `OecdUnemploymentFetcher` 被绑两次）；`two_shipped_legs` 改为「verified 集恰为
+  `{economy_cpi, economy_unemployment}`，`economy_oecd_*` 一律未验证」并枚举 11 个域；retraction 那条
+  改为「引擎声明仍为空，两个身份解析到手写行且 verified=False」——撤回的是**声明**，不是行。
+* **federal_reserve（1 条）**：`federal_reserve_yield_curve` 已在域表、契约名为
+  `FederalReserveYieldCurveObservation`；被撤回的 **声明** 仍然缺席（`YieldCurve` 不在 federal_reserve
+  的 engine 声明里），域由手写 `YieldCurve` 行服务。
+* **first_model_bindings（1 条）**：legacy 人口不再由 11 条 `_MODEL_CASES` 推出，而由 **350 行台账**里
+  可解析到 registry 的行推出。实测 legacy = **33** 条，分布与顺序恰为 akshare×10 / ecb×3 / fred×3 /
+  imf×3 / oecd×2 / ths×11 / yfinance×1（与原有冻结列表逐项相同）；`(inventory ∪ declared)` 之外的
+  descriptor 恰为 **11 个 ths 模型**（迭代 2 注册、但不在 32-provider 台账内）；11 条 case 与声明的
+  不相交断言保留在 `_MODEL_CASES` 范围内。
+
+读数：三个文件一起 `66 passed`（各自 lint 全绿）；全量平面 `16 → 11 failed`（26351 passed / 272 skipped /
+collected 26634 不变），相对 wave 39 final 累计 `fixed=17 shared=11 new=0`。这些重写**没有改任何产品文件**，
+只改测试；verified=False 与「引擎声明为空」的断言全部保留。
+
+**一处流程错误要留档**：这次提交的命令把「扫描」和「提交」用 `;` 串在一条链里，所以提交在扫描判红
+之后仍然发生了（`421106386`）。红的原因查清了、不是新凭证：`B_allowlist_stripped` / `C_builtin` 两臂在
+`test_first_model_bindings.py` 命中 **4 个 `generic-api-key`**，位置是 290/293/321/327 行的
+`series_key`——它们是 OECD SDMX 序列键（34/52 字符，entropy 3.65–3.82），HEAD 上原文就在，仓库的
+`.gitleaks.toml` 允许列表覆盖它们，**出货配置（A 臂）读数是 0**。载体
+`runs/w108_staged_scan_plan.txt` 保留了这次红。教训：扫描的退出码必须真正闸住提交，不能用 `;` 串行。
+
+
+
 
 
 

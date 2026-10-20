@@ -1,0 +1,76 @@
+# carrier for test_plane_w41h_final
+# cwd: /Users/yunjinqi/Documents/new_projects/opendata
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests -q --continue-on-collection-errors -o addopts= -p no:cacheprovider --junitxml=docs/evidence/C147/wave41-objective-scoreboard-20261020/runs/test_plane_w41h_final.xml
+# started_utc: 2026-10-20T13:29:17+00:00
+# exit: 1
+ch will be terminated.  Please ensure that SQLAlchemy pooled connections are returned to the pool explicitly, either by calling ``close()`` or by using appropriate context managers to manage their lifecycle.
+
+tests/test_database_coverage.py::TestInitDb::test_already_initialized
+tests/test_database_coverage.py::TestInitDb::test_fresh_init
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/core/database.py:203: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    session.add_all(missing_categories)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_database_coverage.py::TestInitDb::test_fresh_init
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/core/database.py:183: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    session.add(admin_user)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_interface_loader_coverage.py::TestEnsureCategory::test_missing_category_is_created
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/services/interface_loader.py:119: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    db.add(category)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_provider_model_codec.py::test_bls_encode_still_requires_central_boolean_contract
+  /Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pydantic/main.py:464: UserWarning: Pydantic serializer warnings:
+    PydanticSerializationUnexpectedValue(Expected `bool` - serialized value may not be as expected [field_name='latest', input_value=1, input_type=int])
+    return self.__pydantic_serializer__.to_python(
+
+tests/test_provider_model_query.py::test_unapproved_output_shapes_and_construct_bypass_are_rejected[constructed_row]
+  /Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pydantic/main.py:464: UserWarning: Pydantic serializer warnings:
+    PydanticSerializationUnexpectedValue(Expected `float` - serialized value may not be as expected [field_name='value', input_value='not-a-number', input_type=str])
+    return self.__pydantic_serializer__.to_python(
+
+tests/test_runtime_package_probe.py::test_archive_checker_rejects_removed_required_resource_copy
+tests/test_runtime_package_probe.py::test_archive_checker_rejects_replaced_license_bytes_in_copy
+tests/test_runtime_package_probe.py::test_archive_checker_compares_full_requires_dist_contract
+tests/test_runtime_package_probe.py::test_archive_checker_rejects_full_bsl_text_but_allows_a_license_reference
+tests/test_runtime_package_probe.py::test_sdist_checker_validates_pyproject_distribution_metadata_and_license_tree
+tests/test_runtime_package_probe.py::test_archive_counterfactuals_record_positive_baseline_and_negative_rejections
+tests/test_runtime_package_probe.py::test_archive_counterfactuals_include_sdist_dependency_and_license_mutations
+  /Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/zipfile/__init__.py:1642: UserWarning: Duplicate name: 'opendata/data/providers/akshare/_vendor/LICENSE-AKSHARE'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+tests/test_scheduler_full.py::TestTaskSchedulerRemoveTask::test_remove_task_no_service
+  /Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/asyncio/selector_events.py:740: RuntimeWarning: coroutine 'TaskScheduler.trigger_task.<locals>._bg_execute' was never awaited
+    def _process_events(self, event_list):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_settings_coverage.py::TestDatabaseConnection::test_aiomysql_success
+tests/test_settings_coverage.py::TestDatabaseConnection::test_aiomysql_bad_result
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/api/settings.py:161: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    conn.close()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C147/wave41-objective-scoreboard-20261020/runs/test_plane_w41h_final.xml -
+=========================== short test summary info ============================
+FAILED tests/test_ac2_case_probe.py::test_self_test_closes_and_every_break_flips
+FAILED tests/test_acceptance_probe_gate.py::TestC51ZeroDepCells::test_the_judge_and_the_guard_module_count_the_same_surface
+FAILED tests/test_c65_evidence_probes.py::test_ac6_02_reads_proven_on_the_repaired_tree_with_every_break_firing
+FAILED tests/test_data_catalog.py::TestFiveReadings::test_ready_provider_domains_publish_exact_query_service_metadata
+FAILED tests/test_openbb_inventory_guard.py::test_shipped_record_agrees_with_the_tree
+FAILED tests/test_openbb_inventory_guard.py::test_report_exit_code_differs_between_the_two_records
+FAILED tests/test_openbb_inventory_guard.py::test_new_provider_specific_rights_rows_must_exist_in_registration_table
+FAILED tests/test_openbb_inventory_guard.py::test_every_declared_rights_row_is_load_bearing
+FAILED tests/test_p0_integration_surface.py::test_the_marked_set_is_the_reviewed_set
+FAILED tests/test_port_fidelity.py::test_ported_output_matches_upstream[bond_daily_sina]
+FAILED tests/test_scheduled_patrol.py::TestScheduledPatrolExecution::test_production_domain_priority_is_the_requirement_defined_eight
+11 failed, 26351 passed, 272 skipped, 22 warnings in 587.29s (0:09:47)
+
+test_plane_w41h_final_exit=1
