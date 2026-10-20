@@ -283,6 +283,24 @@ secret_scan_check rc=0  486 commits / 420.30 MB / no leaks found
 也就是说：congress_gov 的 5 条可以在保留"无引擎声明 / verified=False"之意的条件下重写；oecd 的 3 条、
 federal_reserve 的 1 条触及 retraction/verified 冻结项；first_model_bindings 需要重新枚举。
 
+## 16. congress_gov 的 5 条实现前契约重写（保留原意，21 → 16）
+
+这五条写于 congress_gov 还是占位包的时刻；迭代 2 用 **8 个手写适配器**把它实现，而 **8 个引擎声明
+仍然撤回**（`specs.DECLARED_MODELS == ()`、`NOT_DECLARABLE` 仍列全 8 行）。所以改的只是"零绑定"这个
+前提，实质断言一条没放宽：
+
+| 原测试 | 原断言 | 重写后 |
+| --- | --- | --- |
+| `…no_bindings_stays_unimplemented` | `is_implemented is False`、`fetchers == ()`、health `not_implemented` | `…with_hand_written_bindings_is_implemented`：`is_implemented is True`、`fetchers == UPSTREAM_ROWS == 8`、health `ready` |
+| `…bindings_and_declarations_stay_in_step` | `len(bindings) == len(DECLARED_MODELS)`（8 vs 0） | `DECLARED_MODELS == ()`、`bindings == 8`、`bound == set(UPSTREAM_ROWS)`、与声明集无交 |
+| `…constructs_no_declaration` | `fetcher_bindings == ()` | `engine_declared_models()` 中 congress 为空（`ModelSpec(` 计数 0 与 `DECLARED_MODELS == ()` 原样保留） |
+| `…models_ships_no_fetcher_module` | 模块清单 == `['__init__.py']` | `…ships_the_hand_written_fetcher_module`：`['__init__.py', '_client.py', 'iter2.py']`（原断言连 `_client.py` 都没算） |
+| `…registration_verifies_nothing` | `capabilities == []` | `capabilities == 8` 且 `not any(capability.verified …)`（verified=False 原样保留） |
+
+读数：该文件 `5 failed / 42 passed → 47 passed`；全量平面 `21 → 16 failed`（26346 passed、272 skipped、
+collected 26634 不变），相对 wave 39 final 累计 `fixed=12 shared=16 new=0`。
+
+
 
 
 
