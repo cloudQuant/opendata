@@ -241,7 +241,7 @@ class TestTheEightRowAccounting:
         assert len(declared) + len(recorded) == UPSTREAM_ROW_COUNT
 
     def test_provider_bindings_and_declarations_stay_in_step(self) -> None:
-        """Every upstream row is bound once by a hand-written fetcher; no engine declaration exists."""
+        """Every upstream row is bound once by a hand-written fetcher; nothing is declared."""
         assert specs.DECLARED_MODELS == ()
         assert len(PROVIDER.fetcher_bindings) == len(specs.UPSTREAM_ROWS) == 8
         bound = {
