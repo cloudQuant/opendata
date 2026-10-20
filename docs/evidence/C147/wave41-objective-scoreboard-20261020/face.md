@@ -349,6 +349,26 @@ in_progress=13  not_run=332  label_without_witness=0  state=gap
 与 wave 39 的记录逐项相同——两处运行时注解修复没有移动这条判定；`dev_done=17` 仍是该谓词自己的天花板
 （owner 裁定见 C145 §15）。
 
+## 19. 测试载荷的 A2 切片：一次真实的 ruff 红与重取
+
+本波改过的 9 个测试文件一起过 A2（`w124`）：
+
+```
+FAIL ruff check   tests/test_congress_gov_engine_provider.py:244
+  E501 Line too long (103 > 100)  ← wave41o 重写时引入的 docstring
+FAIL pinned Gitleaks file scan    ← by construction（25 个 C100 pristine 捕获）
+ok   ruff format --check
+```
+
+那行是我在 wave41o 写的，当时只对 oecd/federal_reserve/first_model_bindings 三个文件跑了 ruff，
+**漏掉了同一波次先前改过的 congress 文件**。修一行后重取 `w125`：`ruff check` ✓、`ruff format` ✓；
+A2 对纯测试切片按其自身分区规则 `skip mypy / bandit (no non-test A2 files)`；唯一红仍是
+by-construction 的 pinned gitleaks。
+
+教训：提交前的 lint population 必须按**波次载荷**（本波所有改过的文件），不是按"当次手改的那几个"；
+否则先落的红会在后面的提交里静默穿过闸门。
+
+
 
 
 
