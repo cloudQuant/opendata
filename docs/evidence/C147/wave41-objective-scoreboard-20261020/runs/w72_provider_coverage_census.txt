@@ -1,0 +1,37 @@
+source=head providers_in_ledger=32 ledger_rows=350 judge_models=350 accepted=339 identity_set=5168e1e723999312
+providers_with_at_least_one_accepted_row=29 providers_with_zero_accepted_rows=3 zero=['biztoc', 'stockgrid', 'wsj']
+provider alpha_vantage          rows=  3 accepted=  3 statuses={"OFFLINE_ACCEPTED": 3}
+provider benzinga               rows=  4 accepted=  4 statuses={"OFFLINE_ACCEPTED": 4}
+provider biztoc                 rows=  1 accepted=  0 statuses={"UNREVIEWED": 1}
+provider bls                    rows=  2 accepted=  2 statuses={"OFFLINE_ACCEPTED": 2}
+provider cboe                   rows= 11 accepted= 11 statuses={"OFFLINE_ACCEPTED": 11}
+provider cftc                   rows=  2 accepted=  2 statuses={"OFFLINE_ACCEPTED": 2}
+provider congress_gov           rows=  8 accepted=  8 statuses={"OFFLINE_ACCEPTED": 8}
+provider deribit                rows=  5 accepted=  5 statuses={"OFFLINE_ACCEPTED": 5}
+provider ecb                    rows=  3 accepted=  3 statuses={"OFFLINE_ACCEPTED": 3}
+provider econdb                 rows=  8 accepted=  6 statuses={"OFFLINE_ACCEPTED": 6, "INCOMPLETE": 2}
+provider eia                    rows=  2 accepted=  2 statuses={"OFFLINE_ACCEPTED": 2}
+provider famafrench             rows=  6 accepted=  6 statuses={"OFFLINE_ACCEPTED": 6}
+provider federal_reserve        rows= 13 accepted= 13 statuses={"OFFLINE_ACCEPTED": 13}
+provider finra                  rows=  2 accepted=  2 statuses={"OFFLINE_ACCEPTED": 2}
+provider finviz                 rows=  7 accepted=  7 statuses={"OFFLINE_ACCEPTED": 7}
+provider fmp                    rows= 69 accepted= 69 statuses={"OFFLINE_ACCEPTED": 69}
+provider fred                   rows= 36 accepted= 36 statuses={"OFFLINE_ACCEPTED": 36}
+provider government_us          rows=  6 accepted=  6 statuses={"OFFLINE_ACCEPTED": 6}
+provider imf                    rows=  8 accepted=  8 statuses={"OFFLINE_ACCEPTED": 8}
+provider intrinio               rows= 38 accepted= 37 statuses={"OFFLINE_ACCEPTED": 37, "INCOMPLETE": 1}
+provider multpl                 rows=  1 accepted=  1 statuses={"OFFLINE_ACCEPTED": 1}
+provider nasdaq                 rows=  9 accepted=  9 statuses={"OFFLINE_ACCEPTED": 9}
+provider oecd                   rows=  9 accepted=  9 statuses={"OFFLINE_ACCEPTED": 9}
+provider sec                    rows= 24 accepted= 24 statuses={"OFFLINE_ACCEPTED": 24}
+provider seeking_alpha          rows=  3 accepted=  1 statuses={"OFFLINE_ACCEPTED": 1, "INCOMPLETE": 2}
+provider stockgrid              rows=  1 accepted=  0 statuses={"UNREVIEWED": 1}
+provider tiingo                 rows=  7 accepted=  7 statuses={"OFFLINE_ACCEPTED": 7}
+provider tmx                    rows= 24 accepted= 24 statuses={"OFFLINE_ACCEPTED": 24}
+provider tradier                rows=  5 accepted=  5 statuses={"OFFLINE_ACCEPTED": 5}
+provider tradingeconomics       rows=  1 accepted=  1 statuses={"OFFLINE_ACCEPTED": 1}
+provider wsj                    rows=  3 accepted=  0 statuses={"UNREVIEWED": 3}
+provider yfinance               rows= 29 accepted= 28 statuses={"INCOMPLETE": 1, "OFFLINE_ACCEPTED": 28}
+join_accepted_to_models=True statuses_sum=350 control_can_report_a_zero_provider=True
+provider_coverage_census arms=5 arms_passed=5 PASS=True red=[]
+w72_provider_coverage_census_exit=0

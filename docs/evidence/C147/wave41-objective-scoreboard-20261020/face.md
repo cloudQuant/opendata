@@ -135,6 +135,22 @@ judge_accepted=339（另一台仪器）
 4/4 arms：重跑通过、七项读数与旧记录相同、accepted 与判定报告交叉一致、零失效/零缺反例。也就是说
 wave 40–41 的重签没有移动逐行验收面——记分板引用的不是过期快照。
 
+## 8. 两张 census 的保鲜：provider 覆盖与 clean-room 在同一棵交付树上重算
+
+`w112` 同样以 import-and-re-point 复用 `w72`/`w73`，把 `RUNS`/`CARRIER` 移进本 bundle 后重跑，并与
+wave 39 的已提交记录逐行比较：
+
+```
+w72 accepted=339 | 29 有行 | zero=['biztoc','stockgrid','wsj']        —— 三项与 wave39 相同
+w73 in_scope_files=445 | openbb_import_violations=0 | provider_packages=31
+    inventory_without_package=['biztoc','stockgrid','wsj']            —— 四项与 wave39 相同
+judge_accepted=339（另一台仪器）
+```
+
+5/5 arms；`E` 臂把解析到的 `accepted` 改成 338，比较随即失败，证明"相同"不是恒真。两张 census 的
+引用因此也是当前的，而不是 wave 39 的快照。
+
+
 
 
 
