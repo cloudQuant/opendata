@@ -210,11 +210,15 @@ class TestCongressGovIsARealProvider:
         # No binding can ask for a key yet, so health must not either.
         assert credential.required_for_health is False
 
-    def test_a_provider_with_no_bindings_stays_unimplemented(self) -> None:
-        """This is the face the catalog arithmetic reads: zero fetchers, so not implemented."""
-        assert PROVIDER.is_implemented is False
-        assert PROVIDER.fetchers == ()
-        assert health_check("congress_gov")["congress_gov"].status == "not_implemented"
+    def test_a_provider_with_hand_written_bindings_is_implemented(self) -> None:
+        """This is the face the catalog arithmetic reads: eight fetchers, so implemented.
+
+        The rows are served by hand-written adapters; the eight *engine declarations* stay
+        retracted (``specs.DECLARED_MODELS == ()``), which is a different claim from "no rows".
+        """
+        assert PROVIDER.is_implemented is True
+        assert len(PROVIDER.fetchers) == len(specs.UPSTREAM_ROWS) == 8
+        assert health_check("congress_gov")["congress_gov"].status == "ready"
 
 
 class TestTheEightRowAccounting:
@@ -237,14 +241,16 @@ class TestTheEightRowAccounting:
         assert len(declared) + len(recorded) == UPSTREAM_ROW_COUNT
 
     def test_provider_bindings_and_declarations_stay_in_step(self) -> None:
-        """The descriptor binds one generated fetcher per declaration, never a hand-written one."""
-        assert len(PROVIDER.fetcher_bindings) == len(specs.DECLARED_MODELS)
+        """Every upstream row is bound once by a hand-written fetcher; no engine declaration exists."""
+        assert specs.DECLARED_MODELS == ()
+        assert len(PROVIDER.fetcher_bindings) == len(specs.UPSTREAM_ROWS) == 8
         bound = {
             model_id
             for binding in PROVIDER.fetcher_bindings
             for model_id in binding.canonical_model_ids
         }
-        assert bound == set(specs.DECLARED_MODELS)
+        assert bound == set(specs.UPSTREAM_ROWS)
+        assert not (bound & set(specs.DECLARED_MODELS))
 
     def test_a_blocker_names_a_defined_capability_and_cites_its_source(self) -> None:
         for model, reason in specs.NOT_DECLARABLE.items():
@@ -356,15 +362,16 @@ class TestNothingHereIsLiveVerified:
         )
         assert source_text.count("ModelSpec(") == 0
         assert specs.DECLARED_MODELS == ()
-        assert PROVIDER.fetcher_bindings == ()
+        declared = {model for source, model in engine_declared_models() if source == "congress_gov"}
+        assert declared == set()
 
-    def test_models_ships_no_fetcher_module(self) -> None:
-        """A generated fetcher appears with its declaration; neither exists yet."""
+    def test_models_ships_the_hand_written_fetcher_module(self) -> None:
+        """The rows ship as hand-written adapters; no generated fetcher module exists."""
         shipped = sorted(
             path.name
             for path in (REPO_ROOT / "opendata/data/providers/congress_gov/models").glob("*.py")
         )
-        assert shipped == ["__init__.py"]
+        assert shipped == ["__init__.py", "_client.py", "iter2.py"]
 
     def test_discovery_through_the_catalog_matches_the_package(self) -> None:
         found = {
@@ -375,7 +382,7 @@ class TestNothingHereIsLiveVerified:
     def test_registration_verifies_nothing(self) -> None:
         registry = ProviderRegistry()
         capabilities = register_provider("congress_gov", registry)
-        assert capabilities == []
+        assert len(capabilities) == len(specs.UPSTREAM_ROWS) == 8
         assert not any(capability.verified for capability in capabilities)
 
     def test_no_reviewed_clause_basis_is_registered_for_congress_gov(self) -> None:
