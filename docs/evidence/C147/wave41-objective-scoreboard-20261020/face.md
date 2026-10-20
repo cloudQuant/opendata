@@ -515,3 +515,30 @@ none   = 3    biztoc、stockgrid、wsj（无包无行）
 
 因此目标第一条按两种读法给出两个数：**「每个 provider 至少一行可服务」是 29/32**；**「每个 provider 的
 台账行全部落地」是 25/32**。两种都写在这里，是为了不让较松的那个口径被当成完成。
+
+## 25. wave-41w 的收口面：b342a2a54 的 8/8 arms，以及一行"复制的旧读数"
+
+`w117` 对 `b342a2a54`（wave-41w 的 docs 提交，5 个路径）跑收口，8/8 arms PASS：
+
+```
+reconcile commit_paths=5 moved_vs_parent=5 worktree_drift_vs_commit=0 missing_in_commit=0
+commit_paths_by_root={'docs/evidence/C147': 5}   quotepath_off paths=5 nonascii=0
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）
+gitleaks dir-mode findings=0（planted 2）；copied_from_commit=5 bytecode_skipped=1407
+secret_scan_check rc=0  499 commits / 429.79 MB / no leaks found
+closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
+```
+
+**载体命名**：仪器固定写 `runs/w47_closure_face.txt`，而 HEAD 上该文件是 `a2874661e` 那一代（§18）。
+为不覆盖已提交载体，本次读数另存 `runs/w47_closure_face_b342a2a54.txt`（sha256 `81a103…`），
+固定名文件从 HEAD 恢复（`d2b6f2…`，与 a287 那代相同）；两次运行都是 `w47_closure_face_exit=0`。
+
+**一行要披露的旧读数**：上面载体里的 `pre_commit_gate payload_index_sha256=02dfea…` 是仪器从
+`runs/w99_staged_credential_scan.txt` **逐字复制**进输出的，而 b342 提交时 `w99` 并未重写——所以它与
+a287 那一代逐字相同，不是巧合，也不描述 b342 的载荷。b342 真正的预提交闸门载体是
+`runs/w108_staged_scan_plan.txt`（`payload_index_sha256=753bc1…`、`staged_files=4`、
+`worktree_differs_from_index_files=0`、11/11 arms PASS），已随该提交入档。两个 sha 各属于哪次提交，
+这里点名，避免把复制行当成对本次提交的判读。
+
+**自覆盖边界**：本节与它引用的新载体只能进入下一个提交，其自身只由那次提交的预提交 staged 扫描覆盖；
+closure 的 git/dir 两臂扫不到自己的载体——这是该仪器的固有上限，不是新增缺口。
