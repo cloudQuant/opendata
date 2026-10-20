@@ -105,6 +105,21 @@ AC2-02 / AC2-04 / AC2-07 三条的 closure 读数是 `gap`（`breaks=N flipped=N
 适配器第 1 次调用的 query/params 与录制请求不一致。因此把 14 改成 13 会把一个**真实的产品/录制不一致**
 抹成"统计更新"。正确方向是先定谁错（适配器还是录制件），再让两个面同时变绿。已入计划 §7 DEC-41-04。
 
+**根因已定位（同轮补测）**：把 `route_assessment` 包一层打印两侧请求后，读数是
+
+```
+actual   url=.../sh010107/hisdata/klc_kl.js?d=2026_10_20  params=None
+recorded url=.../sh010107/hisdata/klc_kl.js?d=2026_09_24  params=None
+```
+
+差别只有 `d` 这个 **墙钟缓存掩码**：被移植的 `bond_zh_hs_cov_daily`
+（`opendata/data/providers/akshare/_vendor/bond/bond_zh_cov.py:136`）在 URL 里拼
+`datetime.datetime.now().strftime("%Y_%m_%d")`。也就是说这不是实现接错参数，而是**请求身份里含当天日期**，
+录制日之后任何一天回放都必然不相等。三条候选修法都不是我能单方面做的：把 `d` 从请求身份里剔除（改
+comparator=改判定）、在测试/探针里把时钟冻结到录制日（改测量口径）、或重录（每日重录不可行）。
+在 owner 选定之前，这一条保持红，且**不得**把 AC6 的 14 改成 13。
+
+
 
 
 
