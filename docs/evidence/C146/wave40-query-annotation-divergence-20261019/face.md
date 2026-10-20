@@ -125,3 +125,35 @@ E 平面 1 回到 339、F 身份集不变、G 无缺摘要站点）。E 臂的�
 | `runs/w96_two_provider_resign.stdout.txt` / `runs/chain_summary.wave40.txt` | 两 provider 重签的逐成员 exit、pin 面 before/after、平面 1 读数 |
 | `runs/w97_a2_slice_two_files.txt` | 两个产品文件的 A2 切片（ruff/format/mypy/bandit；唯一红仍是 by-construction 的 pinned gitleaks） |
 | `runs/producer_*.txt`、`recorder_*.txt`、`merge_*.txt`、`judge.txt` | 重签链的逐成员输出 |
+
+## 7. 收口面与测试平面：这一轮没有移动测试面
+
+对 `742517ac9`（本波 docs 提交，53 个路径）跑 wave 39 的收口面
+（`runs/w101_closure_face.wave40.stdout.txt`，8/8 arms PASS）：
+
+```
+reconcile commit_paths=53 moved_vs_parent=53 worktree_drift_vs_commit=0 missing_in_commit=0
+gitleaks git-mode findings=0  planted findings=2  arm_can_move=True
+gitleaks dir-mode(copied_from_commit=53) findings=0  planted 2
+secret_scan_check rc=0  463 commits / 391.85 MB / no leaks found
+quotepath_off head_paths=53 nonascii_raw=0
+```
+
+最后一行要如实说明：这次载荷里**没有非 ASCII 路径**，所以 `nonascii_raw=0` 是一个空分母，
+它不证明 quotepath 覆盖生效——覆盖是否生效的证据在 wave 39 的 §20（当时载荷里真有 CJK 路径，
+读数 `nonascii_raw=1` 并打出了原始路径）。
+
+测试平面用全量跑一遍（`runs/test_plane_w40_final.txt` / `.xml`，12:39）：
+
+```
+wave 40 = 28 failed / 26335 passed / 271 skipped    collected=26634
+wave 39 = 28 failed / 26335 passed / 271 skipped    collected=26634
+节点集合：shared=28  new=0  fixed=0                 注入红臂可咬
+```
+
+两轮的失败集合**逐 id 相同**，collected 也相同（`w103` 5/5 arms）。也就是说：这一轮的两个
+运行时注解修复改变了 `get_type_hints` 的可用性（`NameError` 消失、calendar 两通道一致），
+但**没有移动测试面的任何一行**。`tests/test_data_catalog.py` 那条红在两个平面里都在，
+病因是 §3 的 114 行分叉；修复前它以 `NameError` 失败，修复后它以分叉类的字段差异失败——
+同一个 node id，不同的失败文本。这一点必须说清楚，否则"集合相同"会被误读成"什么都没修"。
+
