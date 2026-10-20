@@ -224,13 +224,27 @@ def test_real_ecb_bindings_register_three_canonical_models_without_auto_promotio
     # (docs/proposals/openbb-migration/provider-inventory.yaml) is what caught it: the shipped file
     # read 54 while ``ProviderRegistry`` reported 55, and ``--check-manifest``'s byte diff named
     # exactly those two count lines and nothing else.
-    assert len(registry.capabilities()) == 62
-    assert len(descriptors) == 29
+    #
+    # Waves 32-39 then landed the hand-written population, so the two totals are no longer the
+    # declaration wave's 62/29: measured live from the same registry call, capabilities == 372
+    # (one per binding) and descriptors == 350 (the inventory's identity population).
+    assert len(registry.capabilities()) == 372
+    assert len(descriptors) == 350
+    # The four engine declarations plus the six hand-written cboe rows landed in waves 33-39
+    # (EquityHistorical, EquityQuote, EtfHistorical, IndexHistorical, IndexSnapshots,
+    # FuturesCurve); the set is read live from the registry.
     assert {item.model for item in descriptors if item.source == "cboe"} == {
         "AvailableIndices",
-        "IndexConstituents",
-        "IndexSearch",
+        "EquityHistorical",
+        "EquityQuote",
         "EquitySearch",
+        "EtfHistorical",
+        "FuturesCurve",
+        "IndexConstituents",
+        "IndexHistorical",
+        "IndexSearch",
+        "IndexSnapshots",
+        "OptionsChains",
     }
     assert all(item.verified is False for item in descriptors if item.source == "cboe"), (
         "cboe stays outside auto routing"
