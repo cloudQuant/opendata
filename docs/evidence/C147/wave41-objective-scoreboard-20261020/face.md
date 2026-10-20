@@ -567,3 +567,26 @@ arms=14 arms_passed=14 PASS=True red=[]
 
 载体：固定名 `runs/w105_objective_scoreboard.txt` 是本次 take（sha256 `d73c57…`）；b342 那一代另存为
 `runs/w105_objective_scoreboard_b342a2a54.txt`（sha256 `8af891…`，与 HEAD 上那一代逐字节相同），未覆盖。
+
+## 27. wave41y 的收口面：6eca52ba2 的 8/8 arms
+
+`w117` 对该 docs 提交（6 个路径）跑收口：
+
+```
+reconcile commit=6eca52ba2 parent=2eb5b1d8f commit_paths=6
+          worktree_drift_vs_commit=0 moved_vs_parent=6 missing_in_commit=0
+commit_paths_by_root={'docs/evidence/C147': 6}
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）
+gitleaks dir-mode findings=0（planted 2）；copied_from_commit=6 bytecode_skipped=1407
+secret_scan_check rc=0  501 commits / 429.81 MB / no leaks found
+closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
+generation claims_sha256=87edaa36… judge_report_sha256=12feefc0…（与 b342 同一代输入）
+```
+
+载体分代同 §25：固定名 `runs/w47_closure_face.txt` 保持 HEAD 上的 a287 那一代（`d2b6f2…`），本次读数
+另存 `runs/w47_closure_face_6eca52ba2.txt`（`c164b1…`）。
+
+**同一条复制行再次点名**：载体里的 `pre_commit_gate payload_index_sha256=02dfea…` 与
+`staged_files_from_scan_carrier=4` 是仪器从 `w99` 逐字复制的旧读数，**不描述本次提交**；本提交的
+预提交闸门在 `runs/w108_staged_scan_plan_gate_w41y.txt`（`payload_index_sha256=21b983…`、
+`staged=5`、11/11 arms PASS）。§25 已披露该仪器的这一上限；这里只确认该行仍是复制值，避免被当成新读数。
