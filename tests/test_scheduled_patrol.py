@@ -593,6 +593,10 @@ class TestScheduledPatrolExecution:
         assert {name for name, spec in load_domains().items() if spec.priority == "P0"} == (
             expected
         )
+        # Requirement §6.2 (iteration 1) defines P0/P1/P2; the P1/P2 sets are frozen in
+        # tests/test_domains.py, so only the P0 set is exactly eight here.
         assert all(
-            spec.priority is None for name, spec in load_domains().items() if name not in expected
+            spec.priority is None or spec.priority in {"P1", "P2"}
+            for name, spec in load_domains().items()
+            if name not in expected
         )

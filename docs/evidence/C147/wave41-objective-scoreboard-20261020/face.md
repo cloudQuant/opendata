@@ -594,3 +594,42 @@ generation claims_sha256=87edaa36… judge_report_sha256=12feefc0…（与 b342 
 **订正（保留原错值）**：收口提交 `19454f49d` 的信息把本页闸门 `w108_staged_scan_plan_gate_w41z.txt`
 的 `payload_index_sha256` 写成了 `f8f1b8…`；载体实测为 **`17890e60…`**（该文件 sha256 `e612ff…`，
 `staged=2`、11/11 arms PASS）。以载体为准，提交信息里的值不作数。
+
+## 28. DEC-41-05 收口：§6.2 原文在仓内，陈旧的两档断言已修——平面 11 → 10
+
+计划原来写「仓内找不到 §6.2 原文」。核查发现它在
+`docs/迭代计划/迭代1-重构数据中台/需求文档.md` §6.2「数据域优先级」：P0（A 股核心四件套 + 期货）、
+P1（分钟线 / 海外+宏观 / 商业源）、P2（基金期权扩展 / 其余 / akshare 冷门）三档；
+`opendata/data/domains.py` 的 `priority` 字段注释正是引用这一节。
+
+三档不是新主张：`360c61dd0`（2026-10-14）已落 P1/P2 标签，`tests/test_domains.py:104-113` 冻结
+P1={energy_petroleum_status_report, energy_short_term_energy_outlook}、P2={cftc_commitment_of_traders,
+cftc_market_directory}，并允许 `priority ∈ {None, P0, P1, P2}`，该文件全绿。要求「非八者一律 None」的
+断言来自更晚的 `3f05f636c`（C66），是后写下的陈旧前提，不是有意的冻结。按 DEC-41-05 的第一选项改为
+`is None or in {P1, P2}` 并注明依据；产品、台账、身份集均未改。
+
+判据：
+
+```
+pytest tests/test_scheduled_patrol.py -k test_production_domain_priority   -> 1 passed
+pytest tests/test_scheduled_patrol.py tests/test_domains.py                -> 79 passed
+A2 切片 tests/test_scheduled_patrol.py: ruff ok / format ok；mypy、bandit 按规则跳过
+全量平面 test_plane_w41i_final.xml（同一 argv，588.65s）
+  10 failed, 26352 passed, 272 skipped（collected 26634 不变）
+  与 w41h 的失败集合逐 id 相减：before=11 after=10，只少
+  test_scheduled_patrol.py::TestScheduledPatrolExecution::test_production_domain_priority_is_the_requirement_defined_eight
+```
+
+`w105` 重跑（现场判定器 + 新平面）：
+
+```
+arms=14 arms_passed=14 PASS=True
+plane_after=10 plane_shared=10 plane_fixed=18 plane_new=0 plane_collected=26634
+objective_complete=False reasons=['residue_owner_gated=11','providers_without_rows=3','subagent_over_cap=4']
+```
+
+三条未达成原因与残差口径均未变；剩余 10 条红归属不变：权利链 4、P0 集成 2、wall-clock 2、AC-18 1、
+真负 1（§15 里的「11 条」是本次修复前的读数）。载体分代：固定名
+`runs/w105_objective_scoreboard.txt` 是本次 take，6eca 那一代另存
+`runs/w105_objective_scoreboard_6eca52ba2.txt`，未覆盖。决策清单 DEC-41-05 已标为
+「执行记录，非 owner 新裁定」。
