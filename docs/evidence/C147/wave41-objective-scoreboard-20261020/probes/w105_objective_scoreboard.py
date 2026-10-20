@@ -118,6 +118,7 @@ def main() -> int:
         (
             candidate
             for candidate in (
+                RUNS / "test_plane_w41d_final.xml",
                 RUNS / "test_plane_w41c_final.xml",
                 RUNS / "test_plane_w41b_final.xml",
                 W40_RUNS / "test_plane_w40_final.xml",

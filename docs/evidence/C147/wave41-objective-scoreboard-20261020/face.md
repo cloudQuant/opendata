@@ -164,6 +164,27 @@ sums=11 of=11 residue_with_no_credential=7
 （逐行验收 `w75`、provider 覆盖 `w72`、clean-room `w73`、残差门 `w67`）**全部**在当前交付树上重跑过，
 并且与 wave 39 的记录逐项相同——引用不是历史快照。
 
+## 10. 两条 catalog census 红：冻结的计数落后于历次落地，按 live registry 重钉
+
+`tests/test_provider_catalog.py` 的两条红都是**过期的 census**，不是新的产品缺陷；判据是它们断言的
+对象可由运行时注册表直接重算：
+
+* `expected_counts`（每个 provider 的 facade 手写 fetcher 数）：**oecd 2 → 11**、**yfinance 28 → 29**
+  （其余七个不变；实测 10/6/39/11/11/11/29/2/69）。oecd 的 11 对应它已落地的 9 行 + 2 个非台账绑定，
+  yfinance 的 29 对应它 29 行的 inventory。拆分仍按运行时同一判据（fetcher 是否带 `model_spec`）。
+* 绑定总数：**342 → 372**（手写 **325 → 355**，engine 17 不变）；reserved provider **4 → 3**
+  （wave 38 把 seeking_alpha 从 reserved 移到 implemented，剩 biztoc/stockgrid/wsj）。
+  372 的逐 provider 明细写进测试注释，下一次只需机械对照。
+
+为什么这是重钉而不是放宽：`engine_bindings` 由运行时 `model_spec` 识别（不是手维护名单），
+`engine_ids == declared_ids` 仍断言绑定 id 与生成模型一一对应；facade == registration、
+reserved 无任何绑定、实现源都有 https 站点这些语义断言全部保留。
+
+读数：该文件 `2 failed / 7 passed → 9 passed`；全量平面 `26 → 24 failed`（26339 passed，collected
+26634 不变），相对 wave 39 final 的 28 条红累计 `fixed=4 shared=24 new=0`（`w105`，
+`plane_after_source=test_plane_w41d_final.xml`）。
+
+
 
 
 
