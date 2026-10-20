@@ -184,6 +184,26 @@ reserved 无任何绑定、实现源都有 https 站点这些语义断言全部�
 26634 不变），相对 wave 39 final 的 28 条红累计 `fixed=4 shared=24 new=0`（`w105`，
 `plane_after_source=test_plane_w41d_final.xml`）。
 
+## 11. 剩下 11 条 census 红不是"过期计数"，而是**被落地反证的实现前契约**
+
+继续按 §10 的判据逐条量，oecd 与 congress_gov 给出的是另一种结果：
+
+```
+oecd        bindings 2->11；domains 2->11；engine 声明仍为空
+            ConsumerPriceIndex / Unemployment 现在**能解析**（旧测试断言它们必须解析为空）
+            11 个域里仅两条旧腿 verified=True，九个新域 False
+congress_gov is_implemented False->True；bindings 0->8；包内已有 models/iter2.py
+            旧测试断言 PROVIDER.is_implemented is False、len(bindings)==len(DECLARED_MODELS)==0
+```
+
+这些文件写于「该 provider 未实现 / 已撤回」的时刻，而迭代 2 的任务正是把行落地——落地必然让这些断言
+为假。它们不是计数写错，而是**契约前提变了**；其中「retracted identity 解析为空」「nothing here is
+live verified」「retraction 后域未注册」直接触及 retraction policy 与 verified 标签，这两类是冻结项。
+因此本轮**没有**改写这 11 条（oecd ×3、congress_gov ×5、ecb ×1、federal_reserve ×1、
+first_model_bindings ×1），已入计划 DEC-41-07，需 owner 逐条审阅后重写；机械替换会把"撤回仍然有效"
+和"这些行未经验证"这两类声明一起改掉，那正是不能用计数抹平的东西。
+
+
 
 
 
