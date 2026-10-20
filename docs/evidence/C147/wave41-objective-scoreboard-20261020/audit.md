@@ -20,6 +20,10 @@
   `test_scheduled_patrol` 的陈旧两档断言修正，测试平面 **11 → 10**（`w41i`，`new=0`，仅少那一条；
   `face.md` §28）。
 * 两项都不改变本页结论：**未完成**——残差 11 行、3 个 provider 无行、子代理 34 > 30。
+* `w105` 另补三条行级不变量（`face.md` §32、§34、§36）：claim↔row（339×5 PASS + 6×5
+  BLOCKED + 5×0 = 1725）、claim→receipt 指针（1,695 条全部命中且摘要/任务/相位/exit 一致，
+  30 条 BLOCKED 为空指针+理由）、counterfact 对照语句（339/339 行，属 runner 输出中的声明，
+  非独立 artifact）。每条都有深拷贝伪造臂；记分板现为 **21/21 arms PASS**。
 
 ## 未达成项各自缺什么
 
