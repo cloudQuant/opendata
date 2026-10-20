@@ -230,6 +230,25 @@ first_model_bindings ×1），已入计划 DEC-41-07，需 owner 逐条审阅后
 合计 22，与 `w105` 的 `plane_after=22` 对齐。wave41k 提交信息里那句"13/4/3/2/2"的分类是粗略估计，
 以本表为准。
 
+## 14. ecb 参考注册测试：全局总数与 cboe 模型集按 live 重钉（22 → 21）
+
+`test_ecb_reference_registration` 的红不在 ecb 本身，而在它顺带冻结的两个全局数与一个 cboe 集合：
+
+* `len(registry.capabilities()) == 62` → **372**（一个绑定一条 capability；与 `len(registered)`、
+  `sum(bindings)` 的恒等式同时成立，见 `test_first_model_bindings` 里同一恒等式）；
+* `len(descriptors) == 29` → **350**（即台账的身份人口）；
+* cboe 描述符集合 4 → **11**：补上 waves 33–39 的六条手写行
+  （EquityHistorical / EquityQuote / EtfHistorical / IndexHistorical / IndexSnapshots / OptionsChains）
+  与本轮的 FuturesCurve；`all(verified is False)` 保留。
+
+三个值都由同一个 `registry` 调用当场重算，不是手填预算；注释里补了一段说明「62/29 是声明波的读数，
+wave 32 之后手写人口接管了总数」。读数：该文件 `1 failed / 4 passed → 5 passed`；全量平面
+`22 → 21 failed`（26341 passed、272 skipped、collected 26634 不变），累计 `fixed=7 shared=21 new=0`。
+
+同族里 `test_first_model_bindings` **没有**照此处理：它的 `_MODEL_CASES` 是首轮迭代 2 的冻结清单，
+重钉等于按 350 身份集重新枚举整张表，属重写而非替换，已并入 DEC-41-07。
+
+
 
 
 
