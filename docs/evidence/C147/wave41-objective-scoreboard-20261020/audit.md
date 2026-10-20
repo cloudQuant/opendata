@@ -27,6 +27,10 @@
   计划 §7 DEC-39-04 / DEC-39-05 / DEC-39-06 给出成本与默认动作。
 * **残差 11 行**：与上条同源；另 2 行（stockgrid、yfinance::AvailableIndices）分别无端点记录与 0 endpoints
   （后者若要落地需为「无 HTTP 请求的本地常量」建 reference-input 见证，改 runner ⇒ 全树重签，DEC-40-02）。
+  seeking_alpha ×2 的空信封与参数无关：15 次参数尝试里，参数齐全的 200 响应对假 ticker
+  （`ZZZZNOTREAL`）、数字 id、假 item 都返回同一个 31 字节 `{"revisions":{},"estimates":{}}`
+  （C144 `w54` D 臂 distinct=1），所以继续补参数不会产生数据；wsj ×3 是本机传输不可达
+  （3 次 timeout、0 字节 header）。
 * **子代理 34 > 30**：已发生的越界，不能通过任何后续动作变回「未发生」。
 
 ## 如果 owner 做出不同裁定，判定会怎么变
