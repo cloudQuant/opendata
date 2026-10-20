@@ -412,6 +412,22 @@ forge_probe: 篡改一条 expected 后比较立刻失败
 跑过。伪造臂在场，所以三个 0 不是空谓词。复跑：
 `python docs/evidence/C147/.../probes/w130_counterfact_codes.py`。
 
+## 22. 五相 receipt 的 machine_execution 身份：1,695 份全部 PASS/exit 0，且命令指向自己那一行与相位
+
+`w131`（6/6 arms）把每一份 receipt 的 `machine_execution` 也变成等式：
+
+```
+accepted_rows=339  expected_receipts=1695  checked=1695
+missing=0  not_pass=0  nonzero_exit=0
+wrong_command=0   ← 每条 actual_command 的 --provider/--model/--phase 与自己的行、相位一致
+wrong_task=0      ← task_id == OBB2-<provider>-<model>
+forge: 把一条命令的 --model 改成 __FORGED__ 后立刻失败
+```
+
+价值在于 D 臂：只查 status 与 exit code 时，一份**从别的行或别的相位复制来的** receipt 仍然全绿；命令
+身份必须同时对上 provider、model、phase 与 evidence-root 才算过。与 §21 合起来，每一行每一相都有
+「执行过（exit 0）、通过（PASS）、且指向自己（命令 + task_id）」的证据，不只是存在。
+
 
 
 
