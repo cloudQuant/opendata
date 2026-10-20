@@ -688,3 +688,19 @@ w133_strict_table_audit.py --narrow-scaffold --output /tmp/w133_narrow_repro.txt
 
 结论：260 个共享窗口在更严的谓词下仍全是字面量/契约词汇，`w132` 的 `shared_logic_windows=0`
 不是关键词正则的假象。这支持但不替 owner 裁定 DEC-41-09（参数/ID 表属输入契约还是受保护表达）。
+
+## 31. bfcb42d48 的收口面：6 路径、0 漂移、8/8 arms
+
+```
+reconcile commit=bfcb42d48 parent=2008e365b commit_paths=6
+          worktree_drift_vs_commit=0 moved_vs_parent=6 missing_in_commit=0
+commit_paths_by_root={'docs/evidence/C147': 5, 'docs/迭代计划/迭代2-…': 1}
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）
+gitleaks dir-mode findings=0（planted 2）；copied_from_commit=6 bytecode_skipped=1407
+secret_scan_check rc=0  508 commits / 434.59 MB / no leaks found
+closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
+```
+
+载体：固定名保持 a287 代（`d2b6f2…`），本次读数另存 `runs/w47_closure_face_bfcb42d48.txt`
+（`6392de…`）。复制行仍是 `w99` 的旧值（`02dfea…`、`staged=4`）；本提交的闸门是
+`runs/w108_staged_scan_plan_gate_w41ff.txt`（`payload_index_sha256=8d786daa…`、`staged=5`）。

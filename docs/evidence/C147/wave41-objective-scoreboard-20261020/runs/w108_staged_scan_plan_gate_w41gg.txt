@@ -1,0 +1,16 @@
+# carrier for w99_staged_credential_scan.py (scanner stdout, verbatim)
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C146/wave40-query-annotation-divergence-20261019/probes/w99_staged_credential_scan.py
+staged_files=3 wave_prefixes=1
+staged_outside_wave=0 outside_list=[]
+worktree_differs_from_index_files=0 list=[]
+payload_materialized_from_index_files=3 tree=/tmp/w41b_scan/payload
+payload_index_sha256=7311ae2a558535f7c7799c904e327e903ecf5baa1e5c0fa5cc7345594c7a8776
+A_shipped: baseline=0 baseline_rules={} planted=2 planted_rules_delta={'generic-api-key': 1, 'github-pat': 1} moved=True
+B_allowlist_stripped: baseline=0 baseline_rules={} planted=2 planted_rules_delta={'github-pat': 1, 'generic-api-key': 1} moved=True
+C_builtin: baseline=0 baseline_rules={} planted=2 planted_rules_delta={'generic-api-key': 1, 'github-pat': 1} moved=True
+allowlist_suppressed_in_this_payload=0 threshold=none
+plant_files_inside_staged_payload=0 names=[]
+gitleaks_A_shipped_base_exit=0 gitleaks_A_shipped_planted_exit=0 gitleaks_B_allowlist_stripped_base_exit=0 gitleaks_B_allowlist_stripped_planted_exit=0 gitleaks_C_builtin_base_exit=0 gitleaks_C_builtin_planted_exit=0
+credential_scan_face staged_files=3 gitleaks_runs=6 arms=11 arms_passed=11 arms_failed=0 failed=[] PASS=True
+w41b_staged_credential_scan_exit=0
+w99_staged_credential_scan_exit=0
