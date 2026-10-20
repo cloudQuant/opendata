@@ -741,3 +741,24 @@ closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
 载体：固定名保持 a287 代（`d2b6f2…`），本次读数另存 `runs/w47_closure_face_a5b7fd533.txt`
 （`a3a764…`）。复制行仍是 `w99` 的旧值（`02dfea…`）；本提交的闸门是
 `runs/w108_staged_scan_plan_gate_w41hh.txt`（`payload_index_sha256=d9835aec…`、`staged=5`）。
+
+## 34. claim → receipt 指针：1,695 条 PASS 全部命中，30 条 BLOCKED 为空指针 + 理由
+
+§32 证明 claim 落在正确的行上，但没有证明**每条 claim 的 receipt 指针能解析**。`w105` 再加一条
+链路审计：PASS claim 的 `receipt.path` 必须存在、文件 sha256 等于指针里的 sha、receipt 的
+`task_id` 等于 `OBB2-<provider>-<model>`、`phase` 与 `status` 与 claim 相同、
+`machine_execution.exit_code` 与 claim 的退出码相同；BLOCKED claim 必须是空路径、
+`"0"*64` 摘要和非空理由。
+
+```
+claim_receipt_link pass=1695 missing=0 sha_mismatch=0 field_mismatch=0
+                   blocked=30 blocked_bad=0 forged_sha_mismatch=1
+arms=19 arms_passed=19 PASS=True   objective_complete 的三条原因不变
+```
+
+深拷贝里把一条 PASS 指针的 sha 改成全零，检查器报 `sha_mismatch=1`（可咬）。
+一个连接陷阱值得记住：`receipt` 是 **dict**（`model_identity`/`path`/`sha256`），不是路径字符串；
+按字符串取路径会把 1,695 条都读成 `missing`——这正是零值需要分母与正向对照的原因。
+
+载体分代：固定名 `runs/w105_objective_scoreboard.txt` 是本次 take；上一代另存
+`w105_objective_scoreboard_a5b7fd533.txt`，未覆盖。

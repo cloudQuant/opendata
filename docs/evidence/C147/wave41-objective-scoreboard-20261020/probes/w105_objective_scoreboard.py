@@ -25,6 +25,7 @@ and the same comparison must fail.
 from __future__ import annotations
 
 import copy
+import hashlib
 import importlib.util
 import json
 import re
@@ -196,6 +197,54 @@ def _bad_rows(
     ]
 
 
+def _receipt_link(claims: Any = None) -> dict[str, int]:  # noqa: ANN401
+    """Check PASS claim receipt pointers and BLOCKED claim emptiness against the files."""
+    rows = (
+        claims
+        if claims is not None
+        else json.loads(MERGED.read_text(encoding="utf-8")).get("claims") or []
+    )
+    out = {
+        "pass_claims": 0,
+        "blocked_claims": 0,
+        "missing": 0,
+        "sha_bad": 0,
+        "field_bad": 0,
+        "blocked_bad": 0,
+    }
+    for claim in rows:
+        status = str(claim.get("status"))
+        receipt = claim.get("receipt") or {}
+        path = Path(str(receipt.get("path") or ""))
+        if status == "PASS":
+            out["pass_claims"] += 1
+            if not path.is_file():
+                out["missing"] += 1
+                continue
+            if hashlib.sha256(path.read_bytes()).hexdigest() != str(receipt.get("sha256")):
+                out["sha_bad"] += 1
+                continue
+            record = json.loads(path.read_text(encoding="utf-8"))
+            expected = f"OBB2-{claim.get('provider')}-{claim.get('upstream_model')}"
+            machine = record.get("machine_execution") or {}
+            if (
+                record.get("task_id") != expected
+                or record.get("phase") != claim.get("phase")
+                or record.get("status") != status
+                or machine.get("exit_code") != claim.get("exit_code")
+            ):
+                out["field_bad"] += 1
+        elif status == "BLOCKED":
+            out["blocked_claims"] += 1
+            if (
+                path.is_file()
+                or str(receipt.get("sha256")) != "0" * 64
+                or not str(claim.get("reason") or "").strip()
+            ):
+                out["blocked_bad"] += 1
+    return out
+
+
 def _provider_split() -> dict[str, Any]:
     """How many providers are fully landed, partially landed, or untouched, from CSV + report."""
     lines = [line for line in INVENTORY.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -260,6 +309,13 @@ def main() -> int:
     forged_bad = _bad_rows(forged_by_row, phases, claim_rows["accepted"], "PASS", 5)
     accepted_claims = sum(counter.get("PASS", 0) for counter in by_row.values())
     blocked_claims = sum(counter.get("BLOCKED", 0) for counter in by_row.values())
+    link = _receipt_link()
+    forged_claims = copy.deepcopy(
+        json.loads(MERGED.read_text(encoding="utf-8")).get("claims") or []
+    )
+    first_pass = next(claim for claim in forged_claims if claim.get("status") == "PASS")
+    first_pass["receipt"]["sha256"] = "0" * 64
+    forged_link = _receipt_link(forged_claims)
     before, before_counts = _plane(W39_RUNS / "test_plane_w39_worktree_final.xml")
     after_xml = next(
         (
@@ -318,6 +374,12 @@ def main() -> int:
         "bad_incomplete_claim_rows": len(bad_incomplete),
         "unreviewed_with_claims": len(unreviewed_with_claims),
         "orphan_claim_rows": len(orphan_claim_rows),
+        "receipt_pass_claims": link["pass_claims"],
+        "receipt_blocked_claims": link["blocked_claims"],
+        "receipt_missing": link["missing"],
+        "receipt_sha_mismatch": link["sha_bad"],
+        "receipt_field_mismatch": link["field_bad"],
+        "blocked_receipt_bad": link["blocked_bad"],
         "w57_accepted": int(_grab(w57, r"after_accepted=(\d+)")),
         "w57_claims": int(_grab(w57, r"after_claims=(\d+)")),
         "w67_residue_sums": int(_grab(w67, r"sums=(\d+)")),
@@ -355,6 +417,12 @@ def main() -> int:
         f"bad_incomplete={len(bad_incomplete)} "
         f"unreviewed_with_claims={len(unreviewed_with_claims)} "
         f"orphan={len(orphan_claim_rows)} forged_bad={len(forged_bad)}"
+    )
+    lines.append(
+        f"claim_receipt_link pass={link['pass_claims']} missing={link['missing']} "
+        f"sha_mismatch={link['sha_bad']} field_mismatch={link['field_bad']} "
+        f"blocked={link['blocked_claims']} blocked_bad={link['blocked_bad']} "
+        f"forged_sha_mismatch={forged_link['sha_bad']}"
     )
     arms: dict[str, bool] = {}
     arms["A_judge_is_the_primary_and_agrees_with_its_carrier"] = (
@@ -419,6 +487,14 @@ def main() -> int:
         and accepted_claims + blocked_claims == live["claims"]
     )
     arms["P_claim_row_mapper_can_bite"] = bool(forged_bad)
+    arms["Q_pass_claims_point_at_matching_receipts"] = (
+        link["pass_claims"] == accepted_claims
+        and link["missing"] == link["sha_bad"] == link["field_bad"] == 0
+    )
+    arms["R_blocked_claims_have_no_receipt_and_a_reason"] = (
+        link["blocked_claims"] == blocked_claims and link["blocked_bad"] == 0
+    )
+    arms["S_receipt_link_checker_can_bite"] = forged_link["sha_bad"] == 1
     forged = live["accepted"] + 1
     arms["J_equality_arm_can_bite"] = not (
         forged == reasoned["w57_accepted"] == EXPECTED["accepted"]
