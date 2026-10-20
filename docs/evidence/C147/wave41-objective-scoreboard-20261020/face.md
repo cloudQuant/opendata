@@ -119,6 +119,23 @@ recorded url=.../sh010107/hisdata/klc_kl.js?d=2026_09_24  params=None
 comparator=改判定）、在测试/探针里把时钟冻结到录制日（改测量口径）、或重录（每日重录不可行）。
 在 owner 选定之前，这一条保持红，且**不得**把 AC6 的 14 改成 13。
 
+## 7. 逐行验收面的保鲜：在交付树上重跑，读数与 wave 39 逐项相同
+
+记分板对「339 行、0 失效 pin、0 缺反例」的引用是 `w75` 的载体，而它在 wave 40 的两次 provider 重签之前
+写成。`w111` 用 import-and-re-point 复用同一台仪器（只把 `RUNS`/`CARRIER` 移进本 bundle，不覆盖 wave 39
+的已提交载体），在当前树上重跑，并与已提交记录逐项比较：
+
+```
+fresh   accepted=339 rows_in_claims=345 claims_total=1725 stale_pin_files=0
+        rows_missing_a_phase=0 receipt_digest_mismatches=0 counterfact_without_refusal_text=0
+wave39  同上，逐项相同
+judge_accepted=339（另一台仪器）
+```
+
+4/4 arms：重跑通过、七项读数与旧记录相同、accepted 与判定报告交叉一致、零失效/零缺反例。也就是说
+wave 40–41 的重签没有移动逐行验收面——记分板引用的不是过期快照。
+
+
 
 
 
