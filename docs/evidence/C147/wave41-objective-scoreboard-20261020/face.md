@@ -762,3 +762,19 @@ arms=19 arms_passed=19 PASS=True   objective_complete 的三条原因不变
 
 载体分代：固定名 `runs/w105_objective_scoreboard.txt` 是本次 take；上一代另存
 `w105_objective_scoreboard_a5b7fd533.txt`，未覆盖。
+
+## 35. 2bfc30bc5 的收口面：6 路径、0 漂移、8/8 arms
+
+```
+reconcile commit=2bfc30bc5 parent=c81c96468 commit_paths=6
+          worktree_drift_vs_commit=0 moved_vs_parent=6 missing_in_commit=0
+commit_paths_by_root={'docs/evidence/C147': 6}
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）
+gitleaks dir-mode findings=0（planted 2）；copied_from_commit=6 bytecode_skipped=1407
+secret_scan_check rc=0  512 commits / 434.62 MB / no leaks found
+closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
+```
+
+载体：固定名保持 a287 代（`d2b6f2…`），本次读数另存 `runs/w47_closure_face_2bfc30bc5.txt`
+（`7f6126…`）。复制行仍是 `w99` 的旧值（`02dfea…`）；本提交的闸门是
+`runs/w108_staged_scan_plan_gate_w41jj.txt`（`payload_index_sha256=45880450…`、`staged=5`）。
