@@ -43,6 +43,11 @@ W130 = RUNS / "w130_counterfact_codes.txt"
 JUDGE_TOOL = REPO / "scripts/quality/iter2_model_evidence.py"
 LIVE_JUDGE_DIR = Path("/tmp/w105_live_judge")  # nosec B108  # noqa: S108
 JUDGE_REPORT = REPO / "docs/evidence/C101/judge/claims.merged.report.json"
+RECEIPTS = REPO / "docs/evidence/C101/receipts"
+CONTROL = re.compile(
+    r"(untampered control|control produced|control returns|control yields|control still)", re.I
+)
+DIGIT = re.compile(r"\d")
 MERGED = REPO / "docs/evidence/C101/claims.merged.json"
 INVENTORY = REPO / "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv"
 W39_RUNS = REPO / "docs/evidence/C145/wave39-cboe-futures-curve-landing-20261019/runs"
@@ -245,6 +250,33 @@ def _receipt_link(claims: Any = None) -> dict[str, int]:  # noqa: ANN401
     return out
 
 
+def _counterfact_controls() -> dict[str, int]:
+    """Count counterfact reasons that state an untampered control and a measured number."""
+    receipts = sorted(RECEIPTS.rglob("counterfact.json"))
+    empty = claimed = numbered = 0
+    for path in receipts:
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+        reason = str((receipt.get("counterfact") or {}).get("reason") or "")
+        if not reason.strip():
+            empty += 1
+            continue
+        if CONTROL.search(reason):
+            claimed += 1
+            if DIGIT.search(reason):
+                numbered += 1
+    return {
+        "receipts": len(receipts),
+        "empty": empty,
+        "claimed": claimed,
+        "numbered": numbered,
+    }
+
+
+def _control_phrase_ok(reason: str) -> bool:
+    """Whether a counterfact reason states a control and a number."""
+    return bool(CONTROL.search(reason) and DIGIT.search(reason))
+
+
 def _provider_split() -> dict[str, Any]:
     """How many providers are fully landed, partially landed, or untouched, from CSV + report."""
     lines = [line for line in INVENTORY.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -316,6 +348,8 @@ def main() -> int:
     first_pass = next(claim for claim in forged_claims if claim.get("status") == "PASS")
     first_pass["receipt"]["sha256"] = "0" * 64
     forged_link = _receipt_link(forged_claims)
+    controls = _counterfact_controls()
+    forged_reason_ok = _control_phrase_ok("the mutation refused the input")
     before, before_counts = _plane(W39_RUNS / "test_plane_w39_worktree_final.xml")
     after_xml = next(
         (
@@ -380,6 +414,8 @@ def main() -> int:
         "receipt_sha_mismatch": link["sha_bad"],
         "receipt_field_mismatch": link["field_bad"],
         "blocked_receipt_bad": link["blocked_bad"],
+        "counterfact_control_claims": controls["claimed"],
+        "counterfact_with_number": controls["numbered"],
         "w57_accepted": int(_grab(w57, r"after_accepted=(\d+)")),
         "w57_claims": int(_grab(w57, r"after_claims=(\d+)")),
         "w67_residue_sums": int(_grab(w67, r"sums=(\d+)")),
@@ -423,6 +459,11 @@ def main() -> int:
         f"sha_mismatch={link['sha_bad']} field_mismatch={link['field_bad']} "
         f"blocked={link['blocked_claims']} blocked_bad={link['blocked_bad']} "
         f"forged_sha_mismatch={forged_link['sha_bad']}"
+    )
+    lines.append(
+        f"counterfact_controls receipts={controls['receipts']} empty={controls['empty']} "
+        f"control_claims={controls['claimed']} with_number={controls['numbered']} "
+        f"forged_rejected={not forged_reason_ok}"
     )
     arms: dict[str, bool] = {}
     arms["A_judge_is_the_primary_and_agrees_with_its_carrier"] = (
@@ -495,6 +536,13 @@ def main() -> int:
         link["blocked_claims"] == blocked_claims and link["blocked_bad"] == 0
     )
     arms["S_receipt_link_checker_can_bite"] = forged_link["sha_bad"] == 1
+    arms["T_every_counterfact_states_a_measured_control"] = (
+        controls["receipts"] == EXPECTED["accepted"]
+        and controls["empty"] == 0
+        and controls["claimed"] == controls["receipts"]
+        and controls["numbered"] == controls["receipts"]
+    )
+    arms["U_control_phrase_checker_can_bite"] = not forged_reason_ok
     forged = live["accepted"] + 1
     arms["J_equality_arm_can_bite"] = not (
         forged == reasoned["w57_accepted"] == EXPECTED["accepted"]

@@ -778,3 +778,24 @@ closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
 载体：固定名保持 a287 代（`d2b6f2…`），本次读数另存 `runs/w47_closure_face_2bfc30bc5.txt`
 （`7f6126…`）。复制行仍是 `w99` 的旧值（`02dfea…`）；本提交的闸门是
 `runs/w108_staged_scan_plan_gate_w41jj.txt`（`payload_index_sha256=45880450…`、`staged=5`）。
+
+## 36. counterfact 的对照语句：339/339 行都有「未变异对照 + 一个数」
+
+`w130` 证明 observed 码 == expected 码 == 见证声明，但没有覆盖**未变异的一侧**：如果产品在未变异时
+也拒绝同一输入，光看变异后的拒绝码说明不了什么。`w105` 再加一条只读审计，扫描 339 份
+`counterfact.json` 的 reason：
+
+```
+counterfact_controls receipts=339 empty=0 control_claims=339 with_number=339 forged_rejected=True
+arms=21 arms_passed=21 PASS=True   objective_complete 的三条原因不变
+```
+
+* 339 条 reason 全部非空、全部陈述「untampered control」（或同义措辞）并给出一个数字；
+* 造一条只写「the mutation refused the input」的 reason，检查器拒绝（可咬）。
+
+**证据形状的边界**：这条对照是 runner 在自己那次执行的 stdout 里**声明**的，并不是独立捕获的第二个
+artifact；它的强度来自「同一条被执行命令产出、其 capture 已被摘要进 receipt」（`w131`），不是来自一份
+单独的前后对照文件。这里写明上限，而不是把它说成独立对照。
+
+载体分代：固定名 `runs/w105_objective_scoreboard.txt` 是本次 take；上一代另存
+`w105_objective_scoreboard_2bfc30bc5.txt`，未覆盖。
