@@ -268,7 +268,7 @@ _CASES: tuple[dict[str, Any], ...] = (
         "expected": {
             "congress": 118,
             "amendment_type": "SAMDT",
-            "number": "42",
+            "number": 42,
             "amended_bill": "HR 1",
             "amended_bill_title": "A Test Bill",
             "description": "A test amendment",
