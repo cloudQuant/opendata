@@ -2,13 +2,13 @@
 
 本页按目标原文逐条建清单，把每条要求映射到可重跑的载体与判定。**结论：未完成**——五条里两条满足、
 一条已违反、两条被外部条件卡住。判定脚本 `probes/w105_objective_scoreboard.py`
-（`objective_complete=False reasons=['residue_owner_gated=3','providers_without_rows=1','subagent_over_cap=4']`）。
+（`objective_complete=False reasons=['residue_owner_gated=1','providers_without_rows=1','subagent_over_cap=4']`）。
 
 | # | 目标要求（原文） | 实测 | 载体 / 复算命令 | 判定 |
 | --- | --- | --- | --- | --- |
-| 1 | 32 个 OpenBB provider 的**本仓自研实现** | **30 / 32 全部行已 accepted**；1 个部分（seeking_alpha 1/3）；1 个无行（stockgrid）；intrinio 38/38（wave46 OptionsSnapshots 落地）、econdb 8/8、wsj 3/3、biztoc 1/1、yfinance 29/29 已落地；32 个 provider 包在场 | `w105` 现场读数（`providers_with_rows=31`、`zero_providers=[stockgrid]`、`provider_split={full:30, partial:[seeking_alpha 1/3], none:[stockgrid]}`）；`w73` `provider_packages=31`；inventory CSV 350 行、32 provider | **未达成**（仅 stockgrid 属 owner 闸门：端点+权利；wsj/biztoc 已按 REFERENCE-EXCEPTION-01 落地） |
-| 2 | clean-room，OpenBB 仅作输出契约对照 | 445 个在范围模块 AST 解析、**0** 个 `openbb*` import 根、0 个绝对路径引用；325 个 vendor 文件显式排除；注入 import 的反例臂可咬 | `w73`/`w112`（`openbb_import_violations=0`、`in_scope_files=445`）；`w132`/`w133`（6 行同文窗口：逻辑 0、表 260，更严 tokenizer 下仍全字面量） | **满足** |
-| 3 | 逐条验收，且以可复算证据面（判定探针 + counterfact 反例）落档 | 347 行 × 5 相 receipt；0 行失效 pin、0 行缺相、0 个无拒绝令牌的 counterfact、0 处摘要不一致；**347 个 counterfact 的 observed 码 == expected 码 == 见证声明**（0 不一致、0 非零退出）；**1,735 份五相 receipt 全部 PASS / exit 0，且命令与 task_id 指向自己那一行与相位**；3 行 residue 每行有实测闸门（2 INCOMPLETE + 1 UNREVIEWED） | `w75`/`w111`（交付树上重跑，4/4 arms）；`w130`（反例码三等式，6/6）；`w67`/`w113`；`w105`（现场重跑判定器：350/350 状态一致、0 缺失、身份集不变，A–L 读数不变；claim↔row 映射：347×5 PASS + 2×5 BLOCKED + 1×0 = 1745，forged 可咬；claim→receipt 指针：1,735 PASS 全命中且摘要/任务/相位/exit 一致、10 BLOCKED 为空指针+理由；counterfact 对照语句 347/347，均为 runner 输出中的声明而非独立 artifact）；`face.md` §7–§9、§21、§26、§32、§34、§36、§45–§46 | **机制满足、人口未满**：347/350 行有逐条证据；残差 3 行按 owner 裁定挂待办，不计入已验收 |
+| 1 | 32 个 OpenBB provider 的**本仓自研实现** | **31 / 32 全部行已 accepted**；0 个部分；1 个无行（stockgrid）；seeking_alpha 3/3（wave55 两份 estimates 落地）、intrinio 38/38（wave46）、econdb 8/8、wsj 3/3、biztoc 1/1、yfinance 29/29 已落地；32 个 provider 包在场 | `w105` 现场读数（`providers_with_rows=31`、`zero_providers=[stockgrid]`、`provider_split={full:31, partial:[], none:[stockgrid]}`）；`w73` `provider_packages=31`；inventory CSV 350 行、32 provider | **未达成**（31/32，仅 stockgrid 属 owner 闸门：端点+权利；wsj/biztoc 已按 REFERENCE-EXCEPTION-01 落地） |
+| 2 | clean-room，OpenBB 仅作输出契约对照 | wave41 代际 445 个在范围模块 AST 解析、**0** 个 `openbb*` import 根（本轮 `w73` 读数 `provider_packages=31`、`openbb_import_violations=0`）、0 个绝对路径引用；325 个 vendor 文件显式排除；注入 import 的反例臂可咬 | `w73`/`w112`（`openbb_import_violations=0`、`in_scope_files=445`）；`w132`/`w133`（6 行同文窗口：逻辑 0、表 **293**，21 个本仓文件；更严 tokenizer 下 293/293 仍全字面量，`face.md` §47） | **满足** |
+| 3 | 逐条验收，且以可复算证据面（判定探针 + counterfact 反例）落档 | 349 行 × 5 相 receipt；0 行失效 pin、0 行缺相、0 个无拒绝令牌的 counterfact、0 处摘要不一致；**349 个 counterfact 的 observed 码 == expected 码 == 见证声明**（0 不一致、0 非零退出）；**1,745 份五相 receipt 全部 PASS / exit 0，且命令与 task_id 指向自己那一行与相位**；1 行 residue 有实测闸门（**0 INCOMPLETE + 1 UNREVIEWED**） | `w75`/`w111`（交付树上重跑，4/4 arms）；`w130`（反例码三等式，6/6）；`w67`/`w113`；`w105`（现场重跑判定器：350/350 状态一致、0 缺失、身份集不变，A–L 读数不变；claim↔row 映射：349×5 PASS + 0 BLOCKED + 1×0 = 1745，forged 可咬；claim→receipt 指针：1,745 PASS 全命中且摘要/任务/相位/exit 一致（`receipt_missing=0`、`blocked=0`）；counterfact 对照语句 349/349，均为 runner 输出中的声明而非独立 artifact）；`face.md` §7–§9、§21、§26、§32、§34–§36、§45–§58 | **机制满足、人口未满**：349/350 行有逐条证据；残差 1 行（stockgrid）按 owner 裁定挂待办，不计入已验收 |
 | 4 | 禁止口头判定 | 每个数字都带 arm；本轮另修两处自家仪器缺陷（`w99` rc、argv 泄漏）并留红档 | 各载体 `arms=N arms_passed=N PASS=True`；C147 `face.md` §3 | **满足** |
 | 5 | 子代理总数 ≤ 30 | 实测 **34**（逐 transcript 去重，`w74`：`cap=30 this_thread_total=34 over_by=4`） | `w74`（7/7 arms） | **已违反**，无法回溯修复，只能留档；本 goal 不再派单 |
 
@@ -70,9 +70,14 @@
 | --- | --- |
 | ~~DEC-39-04~~ biztoc | 已离线落地（343/350）；key 只服务 live，**0 accepted rows** 受 key 影响 |
 | 为 econdb / intrinio 提供 key | **0 行**：两 provider 均已无残差（econdb 8/8、intrinio 38/38），key 只服务 live 复核 |
-| DEC-39-05 给 stockgrid 新端点与权利 | +1 行（347→348）、provider_with_rows 31 → 32（需 AXLFI 新接口；旧端点已退役） |
+| DEC-39-05 给 stockgrid 新端点与权利 | +1 行（349→**350/350**）、provider_with_rows 31 → 32（需 AXLFI 新接口；旧端点已退役） |
 | ~~DEC-39-06~~ 已关闭 | wsj 3 行已落地（342/350），不再计入待裁定 |
 | ~~DEC-40-02~~ 已关闭 | yfinance AvailableIndices 经伪 transport 的 reference-input 见证落地（343→345 同波 +2），无需改 runner |
 | DEC-41-02 扩 350 身份集 | 分母本身改变，其余口径需重算 |
 
 以上任何一条都不会改变第 5 条的违反结论。
+* 2026-10-21 wave55/56/58：`seeking_alpha::Forward{Eps,Sales}Estimates` 落地（347→**349/350**，
+  首次 **0 行 INCOMPLETE**）。第六次全树重签 + 两次局部补跑；`w105` 21/21（accepted 349、residue 1、
+  split full 31 / partial [] / none [stockgrid]）、`w111` 4/4、`w130` 6/6、`w113` 4/4；平面
+  `test_plane_w55_final.xml` 仍 10 红同集合（collected 26,779 = 26,634 + 161 − 16）。同波补跑 A2 质量面，
+  清掉落地提交漏下的 4 条 ruff 红（`face.md` §55–§58）。
