@@ -50,7 +50,9 @@
   首跑点名 2 个文件、4 条错误（biztoc `world_news.py`、yfinance `available_indices.py`，
   均为 wave43/44 落地件），已按 §48 同法改 `TRaw` 并补掉两笔 A2 顶出的既存小债（E501、D102）；
   复跑 `defect_class_files=0`。两次局部重签后判定器不变 **347/350**、`w105` 21/21
-  （`face.md` §49）。
+  （`face.md` §49）。同日按新鲜度棘轮重取：平面
+  `test_plane_w49_final.xml` 仍 **10 红**且失败集合与 `w46b` 按 id 逐条相同（`new=[] fixed=[]`），
+  `w111` 4/4、`w113` 4/4、`w130` 6/6。
 
 ## 未达成项各自缺什么
 

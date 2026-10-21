@@ -1221,5 +1221,10 @@ generation claims_sha256=b200050639d193d0 judge_report_sha256=831a781da67546d7
 收口面固定名 `runs/w47_closure_face.txt`，另存 `runs/w47_closure_face_2c4a2c8c7.txt`；
 普查载体 `runs/w148_fetcher_typing_census.py.txt`。
 
-**仍缺的仍是 owner 输入，不是代码**：seeking_alpha×2 需要不被 PerimeterX 挡住的路由，
-stockgrid 需要新端点与权利登记；子代理 34>30 无法回溯。目标在本轮之后仍是 **未完成**。
+**新鲜度棘轮（同日重取）**：本波改的是被 claim pin 的源文件，平面与验收面都要跟着重取。
+`test_plane_w49_final.xml` = `10 failed, 26,455 passed, 306 skipped`（9m25s），其失败**集合与
+`w46b` 按 id 逐条相同**（`new=[] fixed=[]`）；`w105` 以 w49 取数 **21/21**；
+`w111` 4/4（`accepted=347 claims_total=1745 rows_in_claims=349`，四项零读数不动）、
+`w113` 4/4、`w130` 6/6。载体在 `runs/` 同名文件里，命令在各自 `# argv` 首行。
+
+**仍缺的仍是 owner 输入，不是代码**：seeking_alpha×2 需要不被 PerimeterX 挡住的路由，stockgrid 需要新端点与权利登记；子代理 34>30 无法回溯。目标在本轮之后仍是 **未完成**。
