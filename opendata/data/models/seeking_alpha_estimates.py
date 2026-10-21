@@ -14,7 +14,7 @@ import math
 from datetime import date, datetime
 from typing import Annotated, Literal
 
-from pydantic import BeforeValidator, Field, StrictInt, StrictStr
+from pydantic import BeforeValidator, Field, StrictStr
 
 from opendata.data.models.base import ContractModel
 

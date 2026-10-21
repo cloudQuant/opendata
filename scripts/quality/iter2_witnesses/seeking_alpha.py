@@ -106,7 +106,11 @@ def _sa_series(items: dict[str, list[str]]) -> dict[str, object]:
     for name, values in items.items():
         series[name] = {
             str(index): [
-                {"effectivedate": _SA_EFFECTIVE, "dataitemvalue": value, "period": _sa_period(index)}
+                {
+                    "effectivedate": _SA_EFFECTIVE,
+                    "dataitemvalue": value,
+                    "period": _sa_period(index),
+                }
             ]
             for index, value in enumerate(values)
         }
@@ -120,9 +124,7 @@ def _sa_estimates_envelope(items: dict[str, list[str]]) -> dict[str, object]:
             {
                 "url_contains": "/api/v3/searches",
                 "body": {
-                    "data": [
-                        {"id": _SA_ID, "type": "ticker", "attributes": {"symbol": "AAPL"}}
-                    ]
+                    "data": [{"id": _SA_ID, "type": "ticker", "attributes": {"symbol": "AAPL"}}]
                 },
             },
             {
@@ -161,7 +163,6 @@ def _sa_sales_envelope() -> dict[str, object]:
             "revenue_num_of_estimates": ["9.0", "8.0"],
         }
     )
-
 
 
 CONFIG: Final[dict[str, Any]] = {
@@ -215,8 +216,15 @@ CONFIG: Final[dict[str, Any]] = {
             "tamper": {
                 "op": "set",
                 "path": [
-                    "responses", 1, "body", "estimates", _SA_ID,
-                    "eps_gaap_actual", "0", 0, "dataitemvalue",
+                    "responses",
+                    1,
+                    "body",
+                    "estimates",
+                    _SA_ID,
+                    "eps_gaap_actual",
+                    "0",
+                    0,
+                    "dataitemvalue",
                 ],
                 "value": True,
             },
@@ -250,8 +258,15 @@ CONFIG: Final[dict[str, Any]] = {
             "tamper": {
                 "op": "set",
                 "path": [
-                    "responses", 1, "body", "estimates", _SA_ID,
-                    "revenue_actual", "0", 0, "dataitemvalue",
+                    "responses",
+                    1,
+                    "body",
+                    "estimates",
+                    _SA_ID,
+                    "revenue_actual",
+                    "0",
+                    0,
+                    "dataitemvalue",
                 ],
                 "value": True,
             },

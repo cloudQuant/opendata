@@ -21,11 +21,11 @@ from pydantic import ConfigDict, StrictStr, ValidationError
 
 from opendata.data.capability import Capability
 from opendata.data.http_client import get_shared_http_client
+from opendata.data.models.base import ContractModel  # noqa: TC001  # row_model ClassVar
 from opendata.data.models.seeking_alpha_estimates import (
     SeekingAlphaForwardEpsEstimates,
     SeekingAlphaForwardSalesEstimates,
 )
-from opendata.data.models.base import ContractModel
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers._engine.http_json import ProviderEngineError
 from opendata.data.providers.seeking_alpha._source import SOURCE
@@ -320,9 +320,7 @@ class SeekingAlphaForwardSalesEstimatesFetcher(_SeekingAlphaForwardEstimatesFetc
 
     canonical_model: ClassVar[str | None] = "ForwardSalesEstimates"
     items: ClassVar[tuple[str, ...]] = SALES_ITEMS
-    row_model: ClassVar[type[SeekingAlphaForwardSalesEstimates]] = (
-        SeekingAlphaForwardSalesEstimates
-    )
+    row_model: ClassVar[type[SeekingAlphaForwardSalesEstimates]] = SeekingAlphaForwardSalesEstimates
     capability: ClassVar[Capability] = Capability(
         asset_class="stock",
         domain="seeking_alpha_forward_sales_estimates",

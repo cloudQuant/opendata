@@ -1413,3 +1413,19 @@ plane_collected=26,779 = 26,634 + 161 新测试名 − 16 改名   plane_new_cas
 至此 plane 1 **349/350**、`{OFFLINE_ACCEPTED:349, UNREVIEWED:1}`、0 INCOMPLETE、
 `w105` 21/21、`w111` 4/4、`w113` 4/4、`w130` 6/6、全平面 10 红同集合。
 唯一剩下的行是 `stockgrid::ShortVolume`，它要的是新数据端点与权利登记；子代理 34>30 仍是既成违反。
+
+
+## 58. `9fea1060e` 少跑了 A2 实质成员：三个新文件的 4 条 ruff 红（含一行既存 E501）补跑并修掉
+
+落地那一波我把「闸门」理解为提交前的凭据扫描，**没有**对两份新产品文件与 witness 跑 A2 的
+`ruff check` / `ruff format` / `mypy` / `bandit` 面。补跑实测：`ruff check` **4 错** ——
+模型里 `StrictInt` 未用（F401）、fetcher 的 import 顺序（I001）与 `ContractModel` 应进
+`TYPE_CHECKING`（TC001，本仓按既有 `# noqa: TC001/TC002` 先例保留运行时导入并写明原因）、
+witness 里一行 **101 字符 E501（既存，被我这次的插入顶出来）**；`ruff format` 另需重排 2 个文件。
+全部修完后：`ruff check` ok、`ruff format --check` ok、`mypy` **ok（3 targets，0 error）**、`bandit` ok。
+A2 面上仍红的只有「immutable evidence secret scan / pinned Gitleaks file scan」，作用对象是
+`docs/evidence/C100/**/inputs/pristine/akshare/*.py` 那批不可变证据输入，与本载荷无关。
+
+被 pin 的 witness 与 fetcher 改动付了一次 seeking_alpha 局部重签：`claims emitted=15 (15 PASS, 0 FAIL,
+0 BLOCKED)`、`signed=3 refused=0`，merge + judge 仍 **349/350**。
+**流程上记一条**：提交前的闸门清单里，「凭据扫描」和「A2 质量面」是两件事，之前我只做了前者。
