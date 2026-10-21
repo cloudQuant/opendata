@@ -183,9 +183,9 @@ def test_catalog_contains_34_sources_and_the_live_fetcher_binding_census() -> No
         f"{source}::{binding.canonical_model_ids[0]}" for source, binding in engine_bindings
     }
     assert engine_ids == declared_ids, "an engine binding's canonical id is the model it generates"
-    assert len(bindings) == 379
-    assert len(bindings) - len(engine_bindings) == 359
-    assert len(engine_bindings) == len(bindings) - 359
+    assert len(bindings) == 380
+    assert len(bindings) - len(engine_bindings) == 360
+    assert len(engine_bindings) == len(bindings) - 360
     print(
         f"\ncatalog bindings: total={len(bindings)} engine={len(engine_bindings)} "
         f"hand_written={len(bindings) - len(engine_bindings)} engine_ids={sorted(engine_ids)}"

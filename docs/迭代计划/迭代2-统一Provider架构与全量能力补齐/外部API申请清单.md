@@ -20,14 +20,14 @@
 |---|---|---|---|---|---|
 | `biztoc` | WorldNews（1） | `api_key` | `BIZTOC_API_KEY` | https://rapidapi.com/thma/api/biztoc | 注册/登录 RapidAPI → 订阅 Biztoc API（有免费档选免费）→ 复制 `X-RapidAPI-Key`。请求用 header；key 只用于真实来源验证 |
 
-**离线验收**不消费真实 key。biztoc（wave43）、econdb ExportDestinations 与 yfinance AvailableIndices（wave44）、econdb CountryProfile（wave45）均已离线验收（**346/350**）；key 现在只服务真实来源验证；仍无法改变子代理 34>30 的留档。
+**离线验收**不消费真实 key。biztoc（wave43）、econdb ExportDestinations 与 yfinance AvailableIndices（wave44）、econdb CountryProfile（wave45）、intrinio OptionsSnapshots（wave46）均已离线验收（**347/350**）；key 现在只服务真实来源验证；仍无法改变子代理 34>30 的留档。
 
 ## 1b. econdb / intrinio 的 key：只服务已验收行的真实来源验证
 
 | provider | 未验收行 | 为什么 key 解不了 | 申请入口 |
 |---|---|---|---|
 | `econdb` | 无未验收行 | ExportDestinations（wave44）与 CountryProfile（wave45）均已用无凭证公开路由落地，key 不改变任何判定 | https://www.econdb.com |
-| `intrinio` | OptionsSnapshots | 需要 engine 的 `flow.preflight_lookup + shape.columnar`，`NOT_DECLARABLE` | https://intrinio.com/starter-plan |
+| `intrinio` | 无未验收行 | OptionsSnapshots 已于 wave46 用两次请求的手写 fetcher 落地（38/38），key 只服务真实来源验证 | https://intrinio.com/starter-plan |
 
 ## 2. 可选：真实来源验证（12 个已离线验收的 provider）
 

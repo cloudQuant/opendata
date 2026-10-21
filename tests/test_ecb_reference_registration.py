@@ -228,8 +228,8 @@ def test_real_ecb_bindings_register_three_canonical_models_without_auto_promotio
     # Waves 32-39 then landed the hand-written population, so the two totals are no longer the
     # declaration wave's 62/29: measured live from the same registry call, capabilities == 372
     # (one per binding) and descriptors == 350 (the inventory's identity population).
-    assert len(registry.capabilities()) == 379
-    assert len(descriptors) == 357
+    assert len(registry.capabilities()) == 380
+    assert len(descriptors) == 358
     # The four engine declarations plus the six hand-written cboe rows landed in waves 33-39
     # (EquityHistorical, EquityQuote, EtfHistorical, IndexHistorical, IndexSnapshots,
     # FuturesCurve); the set is read live from the registry.

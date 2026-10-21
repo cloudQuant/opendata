@@ -9,14 +9,14 @@
       "non_base_contract_model_classes": 325
     },
     "live_counts": {
-      "all_symbols": 355,
-      "contract_model_classes_including_base": 351,
-      "non_base_contract_model_classes": 350
+      "all_symbols": 356,
+      "contract_model_classes_including_base": 352,
+      "non_base_contract_model_classes": 351
     },
     "delta_vs_adjudication": {
-      "all_symbols": 25,
-      "contract_model_classes_including_base": 25,
-      "non_base_contract_model_classes": 25
+      "all_symbols": 26,
+      "contract_model_classes_including_base": 26,
+      "non_base_contract_model_classes": 26
     },
     "attribution": {
       "removed_by_iteration2": [
@@ -337,9 +337,9 @@
     "fixed_identities": 379,
     "fixed_unbound": 33,
     "provider_model_legs": 379,
-    "all_symbols": 355,
-    "contract_model_classes_including_base": 351,
-    "non_base_contract_model_classes": 350,
+    "all_symbols": 356,
+    "contract_model_classes_including_base": 352,
+    "non_base_contract_model_classes": 351,
     "non_contract_exports": [
       {
         "name": "BlsCatalogPage",
@@ -427,19 +427,19 @@
     "ods_legs": "The 33 registered source/domain legs on the 20 legacy domains remain split by the 10 explicit legacy freshness-field mappings present in the pinned AkShare/THS mapping YAMLs; the remaining 23 are explicitly unmapped."
   },
   "counts": {
-    "deferred_domain_count": 346,
-    "deferred_source_domain_leg_count": 346,
-    "domain_count": 366,
+    "deferred_domain_count": 347,
+    "deferred_source_domain_leg_count": 347,
+    "domain_count": 367,
     "legacy_dwd_domain_count": 20,
     "legacy_source_domain_leg_count": 33,
     "mapped_ods_leg_count": 10,
-    "provider_model_identity_count": 379,
+    "provider_model_identity_count": 380,
     "queried_table_count": 30,
-    "query_semantic_domain_count": 346,
-    "registered_source_domain_leg_count": 379,
+    "query_semantic_domain_count": 347,
+    "registered_source_domain_leg_count": 380,
     "unmapped_ods_leg_count": 23,
     "warehouse_table_catalog_count": 53,
-    "descriptor_eligible_identity_count": 357,
+    "descriptor_eligible_identity_count": 358,
     "model_key_only_identity_count": 22,
     "descriptor_eligible_legacy_identity_count": 11
   },
@@ -675,6 +675,7 @@
     "intrinio_latest_attributes",
     "intrinio_market_snapshots",
     "intrinio_options_chains",
+    "intrinio_options_snapshots",
     "intrinio_options_unusual",
     "intrinio_price_target_consensus",
     "intrinio_reported_financials",
@@ -1701,6 +1702,10 @@
       "source": "intrinio"
     },
     {
+      "domain": "intrinio_options_snapshots",
+      "source": "intrinio"
+    },
+    {
       "domain": "intrinio_options_unusual",
       "source": "intrinio"
     },
@@ -2423,6 +2428,7 @@
     "intrinio_latest_attributes",
     "intrinio_market_snapshots",
     "intrinio_options_chains",
+    "intrinio_options_snapshots",
     "intrinio_options_unusual",
     "intrinio_price_target_consensus",
     "intrinio_reported_financials",
@@ -2926,13 +2932,13 @@
     },
     {
       "binding": "opendata.data.providers.biztoc.models.world_news:BiztocWorldNewsFetcher",
-      "canonical_ids_declared": true,
       "contract": "BiztocWorldNews",
       "domain": "biztoc_world_news",
       "model": "WorldNews",
       "scenario_present": true,
       "source": "biztoc",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.bls.models.search:BlsSearchFetcher",
@@ -3286,13 +3292,13 @@
     },
     {
       "binding": "opendata.data.providers.econdb.models.profiles:EconDBCountryProfileFetcher",
-      "canonical_ids_declared": true,
       "contract": "EconDBCountryProfile",
       "domain": "econdb_country_profile",
       "model": "CountryProfile",
       "scenario_present": true,
       "source": "econdb",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.econdb.models.iter2:EconDBEconomicIndicatorsFetcher",
@@ -3306,13 +3312,13 @@
     },
     {
       "binding": "opendata.data.providers.econdb.models.profiles:EconDBExportDestinationsFetcher",
-      "canonical_ids_declared": true,
       "contract": "EconDBExportDestinations",
       "domain": "econdb_export_destinations",
       "model": "ExportDestinations",
       "scenario_present": true,
       "source": "econdb",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.econdb.models.iter2:EconDBGdpNominalFetcher",
@@ -5215,6 +5221,16 @@
       "canonical_ids_declared": true
     },
     {
+      "binding": "opendata.data.providers.intrinio.models.options_snapshots:IntrinioOptionsSnapshotsFetcher",
+      "contract": "IntrinioOptionsSnapshots",
+      "domain": "intrinio_options_snapshots",
+      "model": "OptionsSnapshots",
+      "scenario_present": true,
+      "source": "intrinio",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
       "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioOptionsUnusualFetcher",
       "contract": "IntrinioOptionsUnusual",
       "domain": "intrinio_options_unusual",
@@ -6246,13 +6262,13 @@
     },
     {
       "binding": "opendata.data.providers.yfinance.models.available_indices:YFinanceAvailableIndicesFetcher",
-      "canonical_ids_declared": true,
       "contract": "YFinanceAvailableIndices",
       "domain": "yfinance_available_indices",
       "model": "AvailableIndices",
       "scenario_present": true,
       "source": "yfinance",
-      "verified": false
+      "verified": false,
+      "canonical_ids_declared": true
     },
     {
       "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceBalanceSheetFetcher",
@@ -6777,6 +6793,7 @@
     "intrinio_latest_attributes",
     "intrinio_market_snapshots",
     "intrinio_options_chains",
+    "intrinio_options_snapshots",
     "intrinio_options_unusual",
     "intrinio_price_target_consensus",
     "intrinio_reported_financials",
@@ -7882,6 +7899,10 @@
       "source": "intrinio"
     },
     {
+      "domain": "intrinio_options_snapshots",
+      "source": "intrinio"
+    },
+    {
       "domain": "intrinio_options_unusual",
       "source": "intrinio"
     },
@@ -8431,10 +8452,10 @@
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/receipt.json": "f2e3eb877e7a1ec4f6a080ebbe60137330e50b38d8d5224ac186e0950191bef3",
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/smoke.json": "224c2475432ea6fca4b2c6e1442718ae2b0b829386530bf97a5361fb79897dc9",
     "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5",
-    "opendata/data/domains.yaml": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+    "opendata/data/domains.yaml": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
     "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
     "opendata/data/mappings/ths.yaml": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418",
-    "opendata/data/models/__init__.py": "991de1307b4df364d58bdfff2de06c9a341eb1387fb0be324c1cb145a2b64f53",
+    "opendata/data/models/__init__.py": "c02f19e3f292890e759558d71299de669f68807ff9d03536fb26360f34c577fb",
     "opendata/data/models/finviz_performance.py": "1c0df807da91d8cb2fb1b5720431ce7d68bbacd3d4eb746fa2ff34ca5bf07b86",
     "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
     "opendata/data/models/yfinance_iter2.py": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
@@ -9068,83 +9089,83 @@
     ],
     "digest_before": "c2562d2db3d61ac81b3f1394df806d55c3e44f1e824b3ffc6c43ffd26aa160b5"
   },
-  "wave37_wave38_census_rebase": {
+  "wave46_intrinio_options_census_rebase": {
     "scope": "the two model domains waves 37 and 38 added; the legacy/measured cohort, the ods mapped+unmapped split, the warehouse table catalog, the model-key-only partition and the provider count are declared frozen below and each is re-checked against the live registry by this probe",
     "measured_by": "from: git show HEAD:tests/fixtures/registry_batch5_snapshot.json; to: rebase_batch5_census.py + rebase_descriptor_census.py over the live registry, read after register_providers()",
     "domains_added": [
-      "cboe_futures_curve"
+      "intrinio_options_snapshots"
     ],
     "domains_removed": [],
     "identities_added": [
       [
-        "cboe",
-        "FuturesCurve",
-        "cboe_futures_curve"
+        "intrinio",
+        "OptionsSnapshots",
+        "intrinio_options_snapshots"
       ]
     ],
     "identities_removed": [],
     "identity_fields_moved": 0,
     "legs_added": [
       [
-        "cboe",
-        "cboe_futures_curve"
+        "intrinio",
+        "intrinio_options_snapshots"
       ]
     ],
     "legs_removed": [],
     "cohort_counts": {
       "domain_ids": {
-        "from": 358,
-        "to": 359
+        "from": 366,
+        "to": 367
       },
       "deferred_domain_ids": {
-        "from": 338,
-        "to": 339
+        "from": 346,
+        "to": 347
       },
       "deferred_source_domain_legs": {
-        "from": 338,
-        "to": 339
+        "from": 346,
+        "to": 347
       },
       "source_domain_legs": {
-        "from": 371,
-        "to": 372
+        "from": 379,
+        "to": 380
       },
       "query_semantic_domain_ids": {
-        "from": 338,
-        "to": 339
+        "from": 346,
+        "to": 347
       },
       "provider_model_identities": {
-        "from": 371,
-        "to": 372
+        "from": 379,
+        "to": 380
       }
     },
     "counts": {
       "domain_count": {
-        "from": 358,
-        "to": 359
+        "from": 366,
+        "to": 367
       },
       "query_semantic_domain_count": {
-        "from": 338,
-        "to": 339
+        "from": 346,
+        "to": 347
       },
       "deferred_domain_count": {
-        "from": 338,
-        "to": 339
+        "from": 346,
+        "to": 347
       },
       "deferred_source_domain_leg_count": {
-        "from": 338,
-        "to": 339
+        "from": 346,
+        "to": 347
       },
       "registered_source_domain_leg_count": {
-        "from": 371,
-        "to": 372
+        "from": 379,
+        "to": 380
       },
       "provider_model_identity_count": {
-        "from": 371,
-        "to": 372
+        "from": 379,
+        "to": 380
       },
       "descriptor_eligible_identity_count": {
-        "from": 349,
-        "to": 350
+        "from": 357,
+        "to": 358
       },
       "descriptor_eligible_legacy_identity_count": {
         "from": 11,
@@ -9180,7 +9201,7 @@
       "registered_sources_head": 34,
       "registered_sources_live": 34,
       "query_semantic_added": [
-        "cboe_futures_curve"
+        "intrinio_options_snapshots"
       ],
       "candidate_counts_restored_keys": [
         "domain_specs",
@@ -9193,18 +9214,18 @@
       "measured_by": "live opendata.data.models.__all__ counted with the same ContractModel subclass tests tests/test_provider_domains.py:1867-1877 uses; written to both blocks the tests cross-check (candidate_counts and iter2_census_rebase.live_counts) and the delta recomputed as live minus batch5_count_adjudication.counts",
       "keys": {
         "all_symbols": {
-          "from": 349,
-          "to": 350,
+          "from": 355,
+          "to": 356,
           "adjudication": 330
         },
         "contract_model_classes_including_base": {
-          "from": 345,
-          "to": 346,
+          "from": 351,
+          "to": 352,
           "adjudication": 326
         },
         "non_base_contract_model_classes": {
-          "from": 344,
-          "to": 345,
+          "from": 350,
+          "to": 351,
           "adjudication": 325
         }
       },
@@ -9218,8 +9239,8 @@
       "entries_pinned": 31,
       "entries_changed": 2,
       "changed": [
-        "opendata/data/domains.yaml from=015edd5ca6a409f4 to=87e02b3da5277a28",
-        "opendata/data/models/__init__.py from=ea5071c658d8032d to=4429da0506fc7b88"
+        "opendata/data/domains.yaml from=a013ad24f9b6d4ad to=262c4f45c5aa82c1",
+        "opendata/data/models/__init__.py from=991de1307b4df364 to=c02f19e3f292890e"
       ]
     },
     "test_sites": "the test-side literals moved by this re-base are listed in the probe's carrier, not here: tests/test_provider_domains.py and tests/test_pipeline_jobs.py byte-pin this fixture's digest, so recording the list inside the fixture would invalidate the very digest it would have to name",

@@ -82,6 +82,7 @@ _EXPECTED_INTRINIO_MODEL_IDS = frozenset(
         "EtfSearch",
         "OptionsUnusual",
         "OptionsChains",
+        "OptionsSnapshots",
         "PriceTargetConsensus",
         "ShareStatistics",
         "CompanyNews",
@@ -272,8 +273,8 @@ class TestRegistration:
             for model_id in (binding.canonical_model_ids or (binding.model_key,))
         }
         assert binding_ids == _EXPECTED_INTRINIO_MODEL_IDS
-        assert len(provider.fetcher_bindings) == 37
-        assert "OptionsSnapshots" not in binding_ids
+        assert len(provider.fetcher_bindings) == 38
+        assert "OptionsSnapshots" in binding_ids
         assert provider.credentials[0].environment_variable == "INTRINIO_API_KEY"
 
     def test_registry_publishes_the_currently_routable_models(self) -> None:
@@ -297,6 +298,7 @@ class TestRegistration:
             "intrinio_etf_search",
             "intrinio_options_unusual",
             "intrinio_options_chains",
+            "intrinio_options_snapshots",
             "intrinio_price_target_consensus",
             "intrinio_share_statistics",
             "intrinio_company_news",

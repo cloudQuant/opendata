@@ -1044,10 +1044,6 @@ GAP_MODELS: dict[str, str] = {
         "Intrinio's snapshot response publishes expiring download URLs and file part metadata, "
         "but the public endpoint docs do not specify the CSV schema or download host/auth contract."
     ),
-    "OptionsSnapshots": (
-        "Intrinio returns expiring file URLs and metadata but does not document the flat file "
-        "row schema or download host/auth contract in the endpoint docs."
-    ),
 }
 
 

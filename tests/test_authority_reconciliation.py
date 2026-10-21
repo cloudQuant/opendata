@@ -318,6 +318,7 @@ NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
         "intrinio_latest_attributes",
         "intrinio_market_snapshots",
         "intrinio_options_chains",
+        "intrinio_options_snapshots",
         "intrinio_options_unusual",
         "intrinio_price_target_consensus",
         "intrinio_reported_financials",

@@ -1,8 +1,9 @@
 """Clean-room ETF performance and current Nasdaq snapshot adapters for Intrinio.
 
-Only public Intrinio v2 JSON endpoints are used. Option and historical security snapshots are
+Only public Intrinio v2 JSON endpoints are used. Historical security snapshots are
 deliberately not implemented because their public endpoint contracts stop at opaque download
-metadata and do not publish the downloadable row schema.
+metadata and do not publish the downloadable row schema; the option snapshot row is served by
+``models/options_snapshots.py``, which reads that row schema out of the bulk file itself.
 """
 
 from __future__ import annotations

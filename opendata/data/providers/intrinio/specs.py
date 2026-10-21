@@ -1,10 +1,11 @@
 """The Intrinio declarations and the remaining source-census refusals.
 
-Thirty-eight Intrinio model identities were recorded in the iteration-2 census. Thirty-seven are
-routable, read off ``PROVIDER.fetcher_bindings`` and grouped by the module each binding names: five
-declarative :class:`ModelSpec` models, thirteen clean-room typed market fetchers, seven typed
-news/attributes fetchers, ten typed financial fetchers and two typed snapshots fetchers. The one
-census row left in :data:`NOT_DECLARABLE` is the row no binding routes. :data:`DECLARED_MODELS` is
+Thirty-eight Intrinio model identities were recorded in the iteration-2 census and all thirty-eight
+are now routable, read off ``PROVIDER.fetcher_bindings`` and grouped by the module each binding
+names: five declarative :class:`ModelSpec` models, thirteen clean-room typed market fetchers, seven
+typed news/attributes fetchers, ten typed financial fetchers, two typed snapshots fetchers and one
+typed options-snapshot fetcher. :data:`NOT_DECLARABLE` is empty: no census row is left unbound.
+:data:`DECLARED_MODELS` is
 an accounting view derived from the ledger; runtime routing remains the provider's lazy bindings.
 """
 
@@ -770,12 +771,7 @@ ENGINE_MODELS: Final[tuple[str, ...]] = tuple(
 #: than treating cursor paging alone as unsupported.
 #:
 #: Reasons name the mechanism, never the effort: "not written yet" is not a blocker.
-NOT_DECLARABLE: dict[str, str] = {
-    "OptionsSnapshots": "flow.preflight_lookup + shape.columnar: the JSON response publishes a "
-    "file URL whose gzip bytes are parsed as CSV (options_snapshots.py:196-217), four columns are "
-    "sliced out of ``contract_symbol`` by regex (:272-291) and the answer is validated as columnar "
-    "``orient=list`` rows (:337).",
-}
+NOT_DECLARABLE: dict[str, str] = {}
 
 #: Accounting view only: the provider's source-specific bindings define runtime routing.
 DECLARED_MODELS: Final[tuple[str, ...]] = tuple(sorted(set(UPSTREAM_ROWS) - set(NOT_DECLARABLE)))

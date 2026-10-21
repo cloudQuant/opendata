@@ -3557,6 +3557,17 @@ domains:
     filter_dims: ["underlying_symbol", "expiration", "option_type", "strike"]
     storage_mode: "transient"
     permissions: ["query"]
+  intrinio_options_snapshots:
+    display_name: "Intrinio 期权快照"
+    rest_path: "intrinio/options-snapshots"
+    contract: "IntrinioOptionsSnapshots"
+    priority: null
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["contract_symbol"]
+    filter_dims: ["underlying_symbol", "expiration", "option_type", "strike"]
+    storage_mode: "transient"
+    permissions: ["query"]
   intrinio_options_unusual:
     display_name: "Intrinio 异常期权活动"
     rest_path: "intrinio/options-unusual"

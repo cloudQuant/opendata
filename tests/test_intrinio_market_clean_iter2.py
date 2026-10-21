@@ -665,11 +665,10 @@ def test_exact_endpoint_gap_bindings_match_documented_coverage() -> None:
     assert set(market.GAP_MODELS) == {
         "EtfPricePerformance",
         "MarketSnapshots",
-        "OptionsSnapshots",
     }
     assert declared & set(market.GAP_MODELS) == {
         "EtfPricePerformance",
         "MarketSnapshots",
     }
-    assert "OptionsSnapshots" not in declared
+    assert "OptionsSnapshots" in declared
     assert all(reason.strip() for reason in market.GAP_MODELS.values())

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider intrinio --model OptionsSnapshots --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "INTRINIO_OPTIONS_SNAPSHOTS_UNAVAILABLE", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "INTRINIO_OPTIONS_SNAPSHOTS_UNAVAILABLE", "rejected": [], "status": null}, "reason": "the metadata envelope names the bulk file through snapshots[].files[].url, so an envelope that lists a snapshot without any file leaves the adapter nothing to download and it must refuse with INTRINIO_OPTIONS_SNAPSHOTS_UNAVAILABLE instead of publishing an empty option table; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

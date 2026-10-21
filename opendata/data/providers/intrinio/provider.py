@@ -246,6 +246,15 @@ PROVIDER = Provider(
                 "读取纳指实时报价并仅连接已验证 XNAS 证券 ID）"
             ),
         ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.options_snapshots",
+            "IntrinioOptionsSnapshotsFetcher",
+            canonical_model_ids=("OptionsSnapshots",),
+            scenario=(
+                "Intrinio options snapshots（intrinio_options_snapshots 域，"
+                "读取元数据信封指向的 gzip CSV 并解析 OCC 合约代码）"
+            ),
+        ),
     ),
     credentials=(
         CredentialSpec(

@@ -161,8 +161,8 @@ class TestTheThirtyEightRowAccounting:
             "the package does not account for every census row: "
             f"{sorted(set(specs.UPSTREAM_ROWS) - declared - recorded)}"
         )
-        assert len(declared) == 37
-        assert len(recorded) == 1
+        assert len(declared) == 38
+        assert len(recorded) == 0
 
     def test_declared_models_are_the_runtime_bindings(self) -> None:
         """The ledger's declared half is what the runtime can actually route -- no paper model."""
@@ -333,10 +333,10 @@ class TestEveryRefusalIsAMeasurement:
             for model in specs.NOT_DECLARABLE
             if model not in silent and primary_blocker(specs.NOT_DECLARABLE[model]) is not None
         ]
-        assert len(named) == 1, (
-            f"{len(named)} of {len(specs.NOT_DECLARABLE)} refusals reconcile, not the documented 1"
+        assert len(named) == len(specs.NOT_DECLARABLE) == 0, (
+            f"{len(named)} of {len(specs.NOT_DECLARABLE)} refusals reconcile, not the documented 0"
         )
-        assert {"CompanyFilings", "WorldNews"} <= set(specs.DECLARED_MODELS)
+        assert {"CompanyFilings", "WorldNews", "OptionsSnapshots"} <= set(specs.DECLARED_MODELS)
 
     def test_no_refusal_is_about_effort(self) -> None:
         banned = re.compile(r"\b(hard|later|todo|too complex|not written yet|effort|manual)\b")
@@ -350,9 +350,7 @@ class TestEveryRefusalIsAMeasurement:
         for reason in specs.NOT_DECLARABLE.values():
             key = primary_blocker(reason) or "unnamed"
             histogram[key] = histogram.get(key, 0) + 1
-        assert histogram == {
-            "flow.preflight_lookup": 1,
-        }
+        assert histogram == {}
         assert sum(histogram.values()) == len(specs.NOT_DECLARABLE)
         assert "param.relative_default" not in histogram, (
             "the engine performs this default now, so it cannot be a primary blocker"

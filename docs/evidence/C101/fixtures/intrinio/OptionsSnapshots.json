@@ -1,0 +1,23 @@
+{
+  "responses": [
+    {
+      "body": {
+        "snapshots": [
+          {
+            "files": [
+              {
+                "url": "https://data.intrinio.example/options-snapshot.csv"
+              }
+            ]
+          }
+        ]
+      },
+      "url_contains": "/options/snapshots"
+    },
+    {
+      "body": "CONTRACT ID,OPEN INTEREST,TRADE PRICE,TRADE SIZE,TOTAL TRADE VOLUME,LAST TRADE TIMESTAMP,TRADE HIGH PRICE,TRADE LOW PRICE,ASK PRICE,ASK SIZE,LAST ASK TIMESTAMP,BID PRICE,BID SIZE,LAST BID TIMESTAMP,TOTAL ASK VOLUME,ASK HIGH PRICE,ASK LOW PRICE,TOTAL BID VOLUME,BID HIGH PRICE,BID LOW PRICE\nAAPL_240308C00170000,1200,2.35,3,45,1709906400,2.50,2.10,2.40,10,1709906400,2.30,8,1709906400,300,2.45,2.05,500,2.35,2.15\nAAPL_240308P00165000,,1.10,1,7,1709906400,1.15,1.05,1.12,4,1709906400,1.08,6,1709906400,120,1.14,1.04,200,1.10,1.02\n",
+      "content_type": "text/csv",
+      "url_contains": "options-snapshot.csv"
+    }
+  ]
+}

@@ -343,6 +343,48 @@ def _intrinio_fred_series_document() -> dict[str, Any]:
     }
 
 
+def _intrinio_options_snapshots_document() -> dict[str, Any]:
+    """Two option contracts: the metadata envelope, then the gzip CSV it names."""
+    header = (
+        "CONTRACT ID,OPEN INTEREST,TRADE PRICE,TRADE SIZE,TOTAL TRADE VOLUME,"
+        "LAST TRADE TIMESTAMP,TRADE HIGH PRICE,TRADE LOW PRICE,ASK PRICE,ASK SIZE,"
+        "LAST ASK TIMESTAMP,BID PRICE,BID SIZE,LAST BID TIMESTAMP,TOTAL ASK VOLUME,"
+        "ASK HIGH PRICE,ASK LOW PRICE,TOTAL BID VOLUME,BID HIGH PRICE,BID LOW PRICE"
+    )
+    calls = (
+        "AAPL_240308C00170000,1200,2.35,3,45,1709906400,2.50,2.10,2.40,10,1709906400,"
+        "2.30,8,1709906400,300,2.45,2.05,500,2.35,2.15"
+    )
+    puts = (
+        "AAPL_240308P00165000,,1.10,1,7,1709906400,1.15,1.05,1.12,4,1709906400,"
+        "1.08,6,1709906400,120,1.14,1.04,200,1.10,1.02"
+    )
+    return {
+        "responses": [
+            {
+                "url_contains": "/options/snapshots",
+                "body": {
+                    "snapshots": [
+                        {
+                            "files": [
+                                {
+                                    "url": "https://data.intrinio.example/"
+                                    "options-snapshot.csv"
+                                }
+                            ]
+                        }
+                    ]
+                },
+            },
+            {
+                "url_contains": "options-snapshot.csv",
+                "body": "\n".join((header, calls, puts)) + "\n",
+                "content_type": "text/csv",
+            },
+        ]
+    }
+
+
 CONFIG: Final[dict[str, Any]] = {
     "registration_module": "opendata.data.providers.intrinio.provider",
     "credential_env": {"INTRINIO_API_KEY": "fixture-token-never-sent"},
@@ -562,6 +604,34 @@ CONFIG: Final[dict[str, Any]] = {
             ),
             "source_files": list(_NEWS_SOURCE_FILES),
             "contract_files": list(_NEWS_CONTRACT_FILES),
+        },
+        "OptionsSnapshots": {
+            "client_seam": {
+                "kind": "shared_http_client",
+                "attr": "get_shared_http_client",
+                "modules": [
+                    "opendata.data.providers.intrinio.models.options_snapshots",
+                ],
+            },
+            "fixture_document": _intrinio_options_snapshots_document,
+            "query": {"date": "2024-03-08T12:15:00+0400", "only_traded": True},
+            "tamper": {"op": "drop", "path": ["responses", 0, "body", "snapshots", 0, "files"]},
+            "refusal_class": _REFUSAL_CLASS,
+            "refusal_code": "INTRINIO_OPTIONS_SNAPSHOTS_UNAVAILABLE",
+            "tamper_reason": (
+                "the metadata envelope names the bulk file through snapshots[].files[].url, so an "
+                "envelope that lists a snapshot without any file leaves the adapter nothing to "
+                "download and it must refuse with INTRINIO_OPTIONS_SNAPSHOTS_UNAVAILABLE instead "
+                "of publishing an empty option table"
+            ),
+            "source_files": [
+                "opendata/data/providers/intrinio/models/options_snapshots.py",
+                *_ENGINE_SOURCE_FILES,
+            ],
+            "contract_files": [
+                "opendata/data/models/intrinio_options_snapshots.py",
+                *_CONTRACT_FILES,
+            ],
         },
     },
 }

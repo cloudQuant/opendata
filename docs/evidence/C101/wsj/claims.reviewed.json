@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFGainers --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T07:57:58.461539+00:00",
+      "executed_at_utc": "2026-10-21T09:43:04.698808+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -93,7 +93,7 @@
       "receipt": {
         "model_identity": "wsj::ETFGainers",
         "path": "docs/evidence/C101/receipts/wsj/ETFGainers/implementation.json",
-        "sha256": "fff3b8e8c64a5c1fe86124cbe6a2759c0c93eab131bd7d666e561f760cbaa6e0"
+        "sha256": "23781e81b84d3be90d5e86006d3461c9fbafa072def4e881d75771e7235ca052"
       },
       "status": "PASS",
       "upstream_model": "ETFGainers"
@@ -101,7 +101,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFGainers --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T07:57:59.604509+00:00",
+      "executed_at_utc": "2026-10-21T09:43:05.642801+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -113,8 +113,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -181,7 +181,7 @@
       "receipt": {
         "model_identity": "wsj::ETFGainers",
         "path": "docs/evidence/C101/receipts/wsj/ETFGainers/direct.json",
-        "sha256": "64d202c167929db7f24e9658911cd5203ac4d597654a46f0d3d4a8d105121a9f"
+        "sha256": "8c6537227e95fbcbf16de8fa2e6c05f4a86f7ef935dac47da342e30537cc3d5e"
       },
       "status": "PASS",
       "upstream_model": "ETFGainers"
@@ -189,7 +189,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFGainers --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T07:58:00.665494+00:00",
+      "executed_at_utc": "2026-10-21T09:43:06.591176+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -201,8 +201,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -269,7 +269,7 @@
       "receipt": {
         "model_identity": "wsj::ETFGainers",
         "path": "docs/evidence/C101/receipts/wsj/ETFGainers/service.json",
-        "sha256": "9359d0378cdb92bf849a4d876adf58eded614a49f57386fcf546f3d8046be773"
+        "sha256": "9f6e896e910ac76a96107c3a9a20f503774dab35f0cdf802c6ebeafe40cf8b2e"
       },
       "status": "PASS",
       "upstream_model": "ETFGainers"
@@ -277,7 +277,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFGainers --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T07:58:02.076310+00:00",
+      "executed_at_utc": "2026-10-21T09:43:07.533996+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -289,8 +289,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -357,7 +357,7 @@
       "receipt": {
         "model_identity": "wsj::ETFGainers",
         "path": "docs/evidence/C101/receipts/wsj/ETFGainers/contract.json",
-        "sha256": "9a38e388a93889083f74ef6d4bba1b6a8c7ea12e5edd49ccf0b82e008caed1ff"
+        "sha256": "09f4367ee9e02f317e3012c5868b430993ee5a4fc84e8e65a8d7b6e31c60a8af"
       },
       "status": "PASS",
       "upstream_model": "ETFGainers"
@@ -365,7 +365,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFGainers --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T07:58:04.491055+00:00",
+      "executed_at_utc": "2026-10-21T09:43:09.427267+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -377,8 +377,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -445,7 +445,7 @@
       "receipt": {
         "model_identity": "wsj::ETFGainers",
         "path": "docs/evidence/C101/receipts/wsj/ETFGainers/counterfact.json",
-        "sha256": "e78c59c7716c263e6bade1e7e954e5bacc1014e4e1e768b7093c9a3f6cf91fe6"
+        "sha256": "ffb49705cffb259c44541e6b9bc81aaca62c52d72de904e93d1aedfe750c0f88"
       },
       "status": "PASS",
       "upstream_model": "ETFGainers"
@@ -453,7 +453,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFLosers --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T07:58:05.626133+00:00",
+      "executed_at_utc": "2026-10-21T09:43:10.360742+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -465,8 +465,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -543,7 +543,7 @@
       "receipt": {
         "model_identity": "wsj::ETFLosers",
         "path": "docs/evidence/C101/receipts/wsj/ETFLosers/implementation.json",
-        "sha256": "f34f41b8232496af710a2e5ad6033a1a48a4023beb903ff037c9a645a9f857f6"
+        "sha256": "5534f6bf38b8a367e0e1f202cd5f58649707316f7872af768cb2af2fbef94076"
       },
       "status": "PASS",
       "upstream_model": "ETFLosers"
@@ -551,7 +551,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFLosers --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T07:58:06.752627+00:00",
+      "executed_at_utc": "2026-10-21T09:43:11.303521+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -563,8 +563,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -631,7 +631,7 @@
       "receipt": {
         "model_identity": "wsj::ETFLosers",
         "path": "docs/evidence/C101/receipts/wsj/ETFLosers/direct.json",
-        "sha256": "ff94943dd5f6e09d4cb8a78b35935a4f41047c97cfb7b5f401b602ccaddfe507"
+        "sha256": "b137c76bc7743685cad2214e702f95cd407e6509ea5a2a39b9abde69795e2af5"
       },
       "status": "PASS",
       "upstream_model": "ETFLosers"
@@ -639,7 +639,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFLosers --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T07:58:07.759403+00:00",
+      "executed_at_utc": "2026-10-21T09:43:12.250833+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -651,8 +651,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -719,7 +719,7 @@
       "receipt": {
         "model_identity": "wsj::ETFLosers",
         "path": "docs/evidence/C101/receipts/wsj/ETFLosers/service.json",
-        "sha256": "dc9a004eb6b674cb4e1dde5347dd5ce15bb3c6d4fa17bdbca5e1c592de8b5b4f"
+        "sha256": "5d8de1a1362eb376e9be0d8b1eb23fdf706d62cd2c481a2de7928198f39846fd"
       },
       "status": "PASS",
       "upstream_model": "ETFLosers"
@@ -727,7 +727,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFLosers --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T07:58:08.913065+00:00",
+      "executed_at_utc": "2026-10-21T09:43:13.195992+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -739,8 +739,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -807,7 +807,7 @@
       "receipt": {
         "model_identity": "wsj::ETFLosers",
         "path": "docs/evidence/C101/receipts/wsj/ETFLosers/contract.json",
-        "sha256": "cb8c1a87ef2f0582cdde7856c42ddf6278933b4f3b2337f49fd89b93e3dda817"
+        "sha256": "87e153005758a8d4d3b866b035a367399eb6fa86aed58d01f22b6806c7dff7f5"
       },
       "status": "PASS",
       "upstream_model": "ETFLosers"
@@ -815,7 +815,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFLosers --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T07:58:11.280912+00:00",
+      "executed_at_utc": "2026-10-21T09:43:15.082163+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -827,8 +827,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -895,7 +895,7 @@
       "receipt": {
         "model_identity": "wsj::ETFLosers",
         "path": "docs/evidence/C101/receipts/wsj/ETFLosers/counterfact.json",
-        "sha256": "d1d55b1b4a7944dbc728cc7d4bcd4c60e364bc91861e657eded972401a63050b"
+        "sha256": "8cb785179825f7c4b8698a7bd0ba628b1bbaf9365f4e2aa8b1ccb85cffb4e89c"
       },
       "status": "PASS",
       "upstream_model": "ETFLosers"
@@ -903,7 +903,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFActive --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T07:58:12.648513+00:00",
+      "executed_at_utc": "2026-10-21T09:43:16.014524+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -915,8 +915,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -993,7 +993,7 @@
       "receipt": {
         "model_identity": "wsj::ETFActive",
         "path": "docs/evidence/C101/receipts/wsj/ETFActive/implementation.json",
-        "sha256": "5f1069190aa0729fb1c7b0ea7de17233ed915821eefb7d3c8e844ccf7dff025b"
+        "sha256": "82d9e09492c83861a4939253cb018081b7eda2c74a963ecf7a555402ca31ab0a"
       },
       "status": "PASS",
       "upstream_model": "ETFActive"
@@ -1001,7 +1001,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFActive --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T07:58:13.755519+00:00",
+      "executed_at_utc": "2026-10-21T09:43:16.963919+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1013,8 +1013,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1081,7 +1081,7 @@
       "receipt": {
         "model_identity": "wsj::ETFActive",
         "path": "docs/evidence/C101/receipts/wsj/ETFActive/direct.json",
-        "sha256": "9d0e2b91d5208826aba04203e45b0123fdbec2012511284a1e88673c7cfd8fe0"
+        "sha256": "e0568f89f8f4d57ef6b7f3e1b1200ce398ff70dfd025213fe2521f10bf4adccb"
       },
       "status": "PASS",
       "upstream_model": "ETFActive"
@@ -1089,7 +1089,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFActive --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T07:58:14.957582+00:00",
+      "executed_at_utc": "2026-10-21T09:43:17.912232+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1101,8 +1101,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1169,7 +1169,7 @@
       "receipt": {
         "model_identity": "wsj::ETFActive",
         "path": "docs/evidence/C101/receipts/wsj/ETFActive/service.json",
-        "sha256": "a7c23b8a50edd291d6aa6f6ff98084a493ef7e8e5ae5c43efed25c52837f0418"
+        "sha256": "fdbd785ad0c0f54a0c836713211168bb5db382f362c1b060609b1f80786e49e7"
       },
       "status": "PASS",
       "upstream_model": "ETFActive"
@@ -1177,7 +1177,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFActive --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T07:58:16.197804+00:00",
+      "executed_at_utc": "2026-10-21T09:43:18.853817+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1189,8 +1189,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1257,7 +1257,7 @@
       "receipt": {
         "model_identity": "wsj::ETFActive",
         "path": "docs/evidence/C101/receipts/wsj/ETFActive/contract.json",
-        "sha256": "75a17f086cd23b7aef2e99985de9433c85a9f652cb3314b322467ef0474a3f61"
+        "sha256": "e3776f29e2272e90e848acb5f39e00bf8658c99674fd083a55a541637c80ef47"
       },
       "status": "PASS",
       "upstream_model": "ETFActive"
@@ -1265,7 +1265,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFActive --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T07:58:18.664815+00:00",
+      "executed_at_utc": "2026-10-21T09:43:20.771875+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1277,8 +1277,8 @@
             "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
-            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1345,7 +1345,7 @@
       "receipt": {
         "model_identity": "wsj::ETFActive",
         "path": "docs/evidence/C101/receipts/wsj/ETFActive/counterfact.json",
-        "sha256": "3056c1c5f0a3f68b6759e715f6b8b0553eb45a1fb49ab00d69c22a42309880b4"
+        "sha256": "e6a1ecfa0c1ac548abb52801f500c9f5cef9c3a2a048af32e45fbf2733b25081"
       },
       "status": "PASS",
       "upstream_model": "ETFActive"
@@ -1359,9 +1359,9 @@
       "receipt": {
         "model_identity": "wsj::ETFActive",
         "path": "docs/evidence/C101/primary-reviews/wsj__ETFActive.review.json",
-        "sha256": "f518c5fa0d897972f0c117fc20f99428320cab042d61e15154135f35ec6f6a1a"
+        "sha256": "47bb2a894b0763411b98404661d08f283d45b7bcac4aeb078a6601b1b38b1ea4"
       },
-      "reviewed_at_utc": "2026-10-21T07:58:20Z",
+      "reviewed_at_utc": "2026-10-21T09:43:22Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -1374,9 +1374,9 @@
       "receipt": {
         "model_identity": "wsj::ETFGainers",
         "path": "docs/evidence/C101/primary-reviews/wsj__ETFGainers.review.json",
-        "sha256": "dc02bca7a8d4ad12477208488b05615cd4c556036299308fdfb8436d7a5f10e4"
+        "sha256": "780b6132a6045d19981ea51112325a723e2dfd03d45370500fbb6e5e174ff8ad"
       },
-      "reviewed_at_utc": "2026-10-21T07:58:20Z",
+      "reviewed_at_utc": "2026-10-21T09:43:22Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -1389,9 +1389,9 @@
       "receipt": {
         "model_identity": "wsj::ETFLosers",
         "path": "docs/evidence/C101/primary-reviews/wsj__ETFLosers.review.json",
-        "sha256": "6eb1156581831a8d20216d5ad5700c912d5a74477c5fd03000a8b8f5595e60ab"
+        "sha256": "e27606018112c0e2015c782b0c62391649e50b32b8bee23d9bc6d1e9d0d3cc16"
       },
-      "reviewed_at_utc": "2026-10-21T07:58:20Z",
+      "reviewed_at_utc": "2026-10-21T09:43:22Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

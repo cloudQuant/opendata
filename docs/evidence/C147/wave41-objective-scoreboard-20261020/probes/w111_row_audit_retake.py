@@ -86,8 +86,8 @@ def main() -> int:
         "stale_pin_files_across_accepted_rows",
     )
     delta = {key: int(fresh[key]) - int(old[key]) for key in counted}
-    landed_this_wave = 7
-    # 4 of the 7 landed rows (wsj x3, biztoc) carried no claims at wave 39; the other 3 already
+    landed_this_wave = 8
+    # 4 of the 8 landed rows (wsj x3, biztoc) carried no claims at wave 39; the other 4 already
     # carried five blocked claims each, so only 4 rows x 5 claims are new to the claim tree.
     new_claim_rows = 4
     lines = [f"retake_exit={rc}", f"fresh={json.dumps(fresh, sort_keys=True)}"]

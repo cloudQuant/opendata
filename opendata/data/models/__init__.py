@@ -302,6 +302,7 @@ from opendata.data.models.intrinio_news_attributes import (
     IntrinioSearchAttribute,
     IntrinioWorldNews,
 )
+from opendata.data.models.intrinio_options_snapshots import IntrinioOptionsSnapshots
 from opendata.data.models.intrinio_snapshots_clean import (
     IntrinioEtfPricePerformance,
     IntrinioMarketSnapshot,
@@ -767,6 +768,7 @@ __all__ = [
     "IntrinioWorldNews",
     "IntrinioEtfPricePerformance",
     "IntrinioMarketSnapshot",
+    "IntrinioOptionsSnapshots",
     "NasdaqCalendarDividend",
     "NasdaqCalendarEarnings",
     "NasdaqCalendarIpo",
