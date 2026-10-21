@@ -1109,3 +1109,27 @@ closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
 
 **结论**：347/350、30/32 provider 全行落地；残差 3 行全部外部阻塞（SA captcha×2、stockgrid 端点退役）；
 子代理 34>30 仍是已发生的违反，目标不可标记完成。
+
+## 47. clean-room 两面在 wave46 之后复测（logic 仍 0，table 260 → 293，+33 可逐文件归因）
+
+本波的路由与 20 个上游列名是在 REFERENCE-EXCEPTION-01 下从参考实现读出来的，所以落地后立刻复测两面：
+
+```
+w132：our_files=394 window=6 upstream_files=635 upstream_windows=100,974
+      shared_logic_windows=0  shared_table_windows=293
+      control untouched_logic=0 spliced_logic=1        → arms=5 arms_passed=5 PASS=True
+w133：strict_literal_only=293 expressive=0             → arms=8 arms_passed=8 PASS=True
+```
+
+**+33 逐文件归因**（`_matches` 的表窗口按本仓文件计数，共 21 个文件、293 窗）：
+`opendata/data/providers/econdb/models/profiles.py` **19**（wave45 的 13 个 ticker/context 元组）
++ `opendata/data/providers/intrinio/models/options_snapshots.py` **14**（本波的 20 列上游标签表）
+**= 33**，其余 19 个文件的计数与 §23 相同；最大户仍是 `fred/models/iter2_macro.py` 112。
+两处都是 REFERENCE-EXCEPTION-01 下读到的**表**，不是逻辑——所以「逻辑 0」这条在两条独立谓词下仍成立。
+
+**仪器分母重钉**：`w133` 的 `EXPECTED_TABLE` 写死 260，首跑因此报 `A_denominator_matches_w132` 一红；
+改为实测 293 后 8/8。这是分母，不是产物；260 那一代读数留在 §23 的历史记录里。
+
+**DEC-41-09 的边界仍未裁定，且现在有了更准的口径**：受保护表达 vs 输入契约数据。若裁定为前者，
+需按上游 API 文档独立重建这 21 个文件里的表（本波新增的 2 个文件在列）；若裁定为后者，
+clean-room 表述应写明「参数/ID 表按参考实现转录，逻辑零转录」。

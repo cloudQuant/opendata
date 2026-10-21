@@ -29,7 +29,7 @@ BUNDLE = "docs/evidence/C147/wave41-objective-scoreboard-20261020"
 RUNS = REPO / BUNDLE / "runs"
 CARRIER = RUNS / "w133_strict_table_audit.txt"
 W132 = REPO / BUNDLE / "probes" / "w132_clean_room_overlap.py"
-EXPECTED_TABLE = 260
+EXPECTED_TABLE = 293
 SKIP = (
     tokenize.STRING,
     tokenize.COMMENT,
