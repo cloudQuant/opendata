@@ -1133,3 +1133,26 @@ w133：strict_literal_only=293 expressive=0             → arms=8 arms_passed=8
 **DEC-41-09 的边界仍未裁定，且现在有了更准的口径**：受保护表达 vs 输入契约数据。若裁定为前者，
 需按上游 API 文档独立重建这 21 个文件里的表（本波新增的 2 个文件在列）；若裁定为后者，
 clean-room 表述应写明「参数/ID 表按参考实现转录，逻辑零转录」。
+
+## 48. §46 披露的 econdb mypy 既存红——本轮修掉（§46 的「不在本波顺手改」已被本节取代）
+
+**修前实测**（`mypy opendata/data/providers/econdb/models/profiles.py`，7 条）：
+`:76 [no-any-return]`、`:78 / :271 [override]`（`extract_data` 返回原始结构与 `TRaw` 不符）、
+`:97 / :290 [override]`（`transform_data` 入参同上）、`:339 [assignment]`（把国家名字符串写进
+`dict[str, float | int | None]`）。根因与 §46 里 intrinio 那个是同一个：`Fetcher[TQuery, TRaw]`
+被写成**行模型元组**，而 `extract_data` 返回的是**原始响应结构**。
+
+**修后**：两个类的 `TRaw` 各按真实中间结构声明
+（`tuple[list[dict[str, Any]], dict[str, Any]]` / `list[dict[str, Any]]`）；`_get` 对 `document`
+加 `isinstance(dict)` 检查并以外层 `ECONDB_SHAPE_INVALID` 拒绝非对象信封（这条是**已验收行上的行为新增**，
+由重签的五相覆盖）；`values` 加宽为 `dict[str, object]` 以容纳国家名。
+`mypy` 0 条、`ruff check` 通过、`bandit` ok、`ruff format` 已应用。A2 面上仍红的
+「immutable evidence secret scan / pinned Gitleaks file scan」两项照旧是
+`docs/evidence/C100/**/inputs/pristine/akshare/*.py` 这批不可变证据输入，与本载荷无关。
+
+**验收面不动**：econdb 局部重签 producer `claims emitted=40（40 PASS / 0 FAIL / 0 BLOCKED）`、
+recorder `signed=8 refused=0`，merge + judge 仍 **347/350**、claims 1745；`w105` **21/21**、
+`w111` 4/4、`w130` 6/6；`tests/test_*econdb*.py` **75 passed**。
+
+**同类缺陷的口径**：全仓有 **163** 个文件出现 `Fetcher[`，本轮只经由 A2 的逐文件 mypy 面在
+wave44/45 那份文件上撞到它；**没有**跑过整树 `make typecheck` 清扫，所以「其余文件干净」不是本轮实测结论。

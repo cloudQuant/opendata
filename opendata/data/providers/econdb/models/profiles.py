@@ -37,7 +37,7 @@ class EcondbExportDestinationsQuery(QueryParams):
 
 
 class EconDBExportDestinationsFetcher(
-    Fetcher[EcondbExportDestinationsQuery, tuple[EconDBExportDestinations, ...]]
+    Fetcher[EcondbExportDestinationsQuery, tuple[list[dict[str, Any]], dict[str, Any]]]
 ):
     """Fetch the public widget table and validate every destination row."""
 
@@ -73,7 +73,10 @@ class EconDBExportDestinationsFetcher(
         )
         if not 200 <= response.status < 300:
             raise ProviderEngineError("ECONDB_HTTP_ERROR", status=response.status, url=url)
-        return response.document
+        document = response.document
+        if not isinstance(document, dict):
+            raise ProviderEngineError("ECONDB_SHAPE_INVALID")
+        return document
 
     def extract_data(
         self,
@@ -227,9 +230,7 @@ def _scale(item: dict[str, Any]) -> int:
     return _SCALES.get(str(meta.get("scale") or "").lower(), 1)
 
 
-class EconDBCountryProfileFetcher(
-    Fetcher[EcondbCountryProfileQuery, tuple[EconDBCountryProfile, ...]]
-):
+class EconDBCountryProfileFetcher(Fetcher[EcondbCountryProfileQuery, list[dict[str, Any]]]):
     """Read all thirteen context series in one request and build the profile row."""
 
     async_mode = "bounded_thread"
@@ -299,7 +300,7 @@ class EconDBCountryProfileFetcher(
             raise ProviderEngineError("ECONDB_SHAPE_INVALID")
         geography = first.get("geography") or {}
         country_name = str(geography.get("name") or params.country.strip().title())
-        values: dict[str, float | int | None] = {}
+        values: dict[str, object] = {}
         for symbol, transform, field in _TICKERS:
             ticker = f"{symbol}{country}" + (f"~{transform}" if transform else "")
             item = by_id.get(ticker)
