@@ -53,6 +53,7 @@
   （`face.md` §49）。同日按新鲜度棘轮重取：平面
   `test_plane_w49_final.xml` 仍 **10 红**且失败集合与 `w46b` 按 id 逐条相同（`new=[] fixed=[]`），
   `w111` 4/4、`w113` 4/4、`w130` 6/6。
+* 2026-10-22 wave50：残差 3 行的阻塞理由按新鲜度棘轮重测（`w150_blocked_retry_face`，**5/5 arms**，含 dead-host 反例与可翻转的 verdict 谓词）。SA 今天：search **200/`{}`**、estimates **404 HTML×5 逐字节相同**；stockgrid：重定向后 **200 / 1.26 MB 落地页 HTML / 非 JSON**。结论不变（`rows_advanceable_now=0`），DEC-39-04/05 措辞已按今日读数改写（`face.md` §51）。
 
 ## 未达成项各自缺什么
 

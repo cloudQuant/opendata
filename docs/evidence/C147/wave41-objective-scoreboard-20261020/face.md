@@ -1227,4 +1227,29 @@ generation claims_sha256=b200050639d193d0 judge_report_sha256=831a781da67546d7
 `w111` 4/4（`accepted=347 claims_total=1745 rows_in_claims=349`，四项零读数不动）、
 `w113` 4/4、`w130` 6/6。载体在 `runs/` 同名文件里，命令在各自 `# argv` 首行。
 
+## 51. wave50 残差阻塞理由重测（`w150_blocked_retry_face.py`，5/5 arms，理由改写、结论不变）
+
+残差 3 行的阻塞理由上次量于 2026-10-19（C144 `w54`）/10-20，本波按新鲜度棘轮在同一台机器上重测。
+**先写下「什么算解锁」**，再看读数：
+
+```
+K   seekingalpha.com/symbol/AAPL → 403 / 4,863 B（挑战页，仍证明有路由）
+K2  故意不存在的域名             → 0 B / URLError [Errno 8]   （控制的反例：没有路由时长这样）
+A1  /api/v3/searches?phrase=AAPL → 200 但 2 字节 "{}"
+A2  estimates 路线 ×5 组参数（3 合法 + 1 假 id + 1 多余 key）
+    → 全部 404 text/html / 6,110 B / sha 逐字节相同 → distinct_bodies=1
+C   stockgrid 端点 → 重定向后 200 / 1,261,465 B / final=axlfi.com/landing / json_rows=False
+verdict sa_unblocked=False stockgrid_unblocked=False rows_advanceable_now=0
+伪造输入 forged(sa,grid)=(True,True)   ← 两个谓词在解锁形态的输入下会翻 True
+```
+
+**与旧读数的差别（这是本节要改写的部分）**：SA 的 ID 解析在 10-19 是 **403 PerimeterX**，今天是
+**200 但返回空对象 `{}`**；SA estimates 在 10-19/10-20 是 **200 + 31 字节空信封**，今天是
+**404 HTML 且 5 组参数逐字节相同**；stockgrid 在 10-19 记的是 **301 → 0 字节**，今天是
+**重定向到落地页并返回 1.26 MB HTML**。三者一致地指向「上游形态变了」，不是本机网络抖：
+同一次运行里 dead-host 反例给出 0 字节 + URLError，而 SA 与 stockgrid 都拿到了完整响应体。
+
+**结论不变**：3 行仍需 owner 输入（不被挑战页挡住的路由或凭据；新端点与权利登记）。
+`rows_advanceable_now=0` 是被测出来的，不是被引用的——DEC-39-04 / DEC-39-05 的措辞已换成今天这条。
+
 **仍缺的仍是 owner 输入，不是代码**：seeking_alpha×2 需要不被 PerimeterX 挡住的路由，stockgrid 需要新端点与权利登记；子代理 34>30 无法回溯。目标在本轮之后仍是 **未完成**。
