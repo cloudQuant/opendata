@@ -1252,4 +1252,11 @@ verdict sa_unblocked=False stockgrid_unblocked=False rows_advanceable_now=0
 **结论不变**：3 行仍需 owner 输入（不被挑战页挡住的路由或凭据；新端点与权利登记）。
 `rows_advanceable_now=0` 是被测出来的，不是被引用的——DEC-39-04 / DEC-39-05 的措辞已换成今天这条。
 
+**收口 `w117_closure 93bbae0b8`**：`reconcile commit=93bbae0b8 parent=3a480b249 commit_paths=5
+worktree_drift_vs_commit=0 drift_list=[]`；gitleaks git-mode findings=0（planted 2，arm_can_move=True）、
+dir-mode findings=0；全历史 **542 commits / 497.45 MB / no leaks found**；
+**arms=8 arms_passed=8 PASS=True**；generation `claims_sha256=b200050639d193d0`、
+`judge_report_sha256=831a781da67546d7`（与 wave49 之后同一代，本波未动 claims）。
+闸门 `runs/w108_staged_scan_plan_gate_wave50.txt`（`staged_files=5`、A/B/C 全 0、11/11 arms）。
+
 **仍缺的仍是 owner 输入，不是代码**：seeking_alpha×2 需要不被 PerimeterX 挡住的路由，stockgrid 需要新端点与权利登记；子代理 34>30 无法回溯。目标在本轮之后仍是 **未完成**。
