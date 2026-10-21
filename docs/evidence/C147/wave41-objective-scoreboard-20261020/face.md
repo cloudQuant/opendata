@@ -1291,4 +1291,10 @@ verdict sa_unblocked=False stockgrid_unblocked=False rows_advanceable_now=0 forg
 连空信封都不给。阻塞类别相同（无凭据不可解），形态更严。DEC-39-04 的措辞已换成这条，
 `rows_advanceable_now=0` 仍然是测出来的、并且两个谓词在伪造输入下会翻 True。
 
+**收口 `w117_closure 2d6779124`**：`commit_paths=5 worktree_drift_vs_commit=0 drift_list=[]`；
+gitleaks git-mode 0（planted 2）、dir-mode 0；全历史 **544 commits / 497.46 MB no leaks**；
+**arms=8 arms_passed=8 PASS=True**；generation `claims_sha256=b200050639d193d0` /
+`judge_report_sha256=831a781da67546d7`（本两波都没动 claims）；
+闸门 `runs/w108_staged_scan_plan_gate_wave51.txt`（11/11 arms、A/B/C 全 0）。
+
 **仍缺的仍是 owner 输入，不是代码**：seeking_alpha×2 需要不被 PerimeterX 挡住的路由，stockgrid 需要新端点与权利登记；子代理 34>30 无法回溯。目标在本轮之后仍是 **未完成**。
