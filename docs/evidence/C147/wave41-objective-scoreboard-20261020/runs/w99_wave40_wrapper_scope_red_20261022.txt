@@ -1,0 +1,16 @@
+# carrier for w99_staged_credential_scan.py (scanner stdout, verbatim)
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C146/wave40-query-annotation-divergence-20261019/probes/w99_staged_credential_scan.py
+staged_files=4 wave_prefixes=4
+staged_outside_wave=4 outside_list=['docs/evidence/C147/wave41-objective-scoreboard-20261020/face.md', 'docs/evidence/C147/wave41-objective-scoreboard-20261020/runs/w108_staged_scan_plan_gate_wave53.txt', 'docs/evidence/C147/wave41-objective-scoreboard-20261020/runs/w47_closure_face.txt', 'docs/evidence/C147/wave41-objective-scoreboard-20261020/runs/w47_closure_face_181d6b72e.txt']
+worktree_differs_from_index_files=0 list=[]
+payload_materialized_from_index_files=4 tree=/tmp/w41b_scan/payload
+payload_index_sha256=bac8e167481d63e38a1f5ca1baa16063b3a8e98df18c0edb810eca2f4aa4f00a
+A_shipped: baseline=0 baseline_rules={} planted=2 planted_rules_delta={'github-pat': 1, 'generic-api-key': 1} moved=True
+B_allowlist_stripped: baseline=0 baseline_rules={} planted=2 planted_rules_delta={'github-pat': 1, 'generic-api-key': 1} moved=True
+C_builtin: baseline=0 baseline_rules={} planted=2 planted_rules_delta={'github-pat': 1, 'generic-api-key': 1} moved=True
+allowlist_suppressed_in_this_payload=0 threshold=none
+plant_files_inside_staged_payload=0 names=[]
+gitleaks_A_shipped_base_exit=0 gitleaks_A_shipped_planted_exit=0 gitleaks_B_allowlist_stripped_base_exit=0 gitleaks_B_allowlist_stripped_planted_exit=0 gitleaks_C_builtin_base_exit=0 gitleaks_C_builtin_planted_exit=0
+credential_scan_face staged_files=4 gitleaks_runs=6 arms=11 arms_passed=10 arms_failed=1 failed=['scope'] PASS=False
+w41b_staged_credential_scan_exit=1
+w99_staged_credential_scan_exit=1

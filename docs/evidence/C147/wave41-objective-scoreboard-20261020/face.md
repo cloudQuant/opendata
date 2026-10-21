@@ -1429,3 +1429,62 @@ A2 面上仍红的只有「immutable evidence secret scan / pinned Gitleaks file
 被 pin 的 witness 与 fetcher 改动付了一次 seeking_alpha 局部重签：`claims emitted=15 (15 PASS, 0 FAIL,
 0 BLOCKED)`、`signed=3 refused=0`，merge + judge 仍 **349/350**。
 **流程上记一条**：提交前的闸门清单里，「凭据扫描」和「A2 质量面」是两件事，之前我只做了前者。
+
+
+## 59. `181d6b72e` 的提交后收口面：8/8 arms、drift 0、全历史 554 commits 无泄漏
+
+`probes/w117_closure.py 181d6b72e`（载荷只有 `audit.md` 一个路径，所以走 `--scope diff`）。
+读数 `runs/w47_closure_face_181d6b72e.txt`：
+
+* `reconcile commit=181d6b72e parent=6b3ae3556 commit_paths=1 worktree_drift_vs_commit=0 moved_vs_parent=1
+  missing_in_commit=0`，`drift_list=[]`，`commit_paths_by_root={'docs/evidence/C147': 1}` —— 工作树与提交
+  对象逐字节一致，提交里没有「说要有却没有」的路径。
+* `gitleaks_git_mode commit=181d6b72e rc=0 findings=0`，同臂的 planted 控制 `findings=2 arm_can_move=True`
+  （令牌在运行时拼装、只活在 /tmp、从不打印）；`gitleaks_dir_mode bundles rc=0 findings=0`，planted 同样 2。
+* 全历史 `secret_scan_check rc=0`：**554 commits / 505.54 MB / no leaks found**。§57 记的是 551，
+  差的 3 个就是 `ce48de82a`、`6b3ae3556`、`181d6b72e`，逐 commit 对得上。
+* 生成物摘要 `claims_sha256=40300e875bcbb54d judge_report_sha256=27d262593db920ea`。
+* `closure_face … arms=8 arms_passed=8 arms_failed=0 failed=[] PASS=True`，`w117_closure_exit=0`。
+
+**一条口径诚实说明**：提交前的索引闸门 `runs/w108_staged_scan_plan_gate_wave53.txt` 读
+`staged_files=4 … credential_scan_face arms=11 arms_passed=11 PASS=True`，而提交对象只有 1 个路径。
+另外 3 个索引项在提交后被 git 清空，现存载体里没有留下文件名清单，**我无法从证据回推是哪 3 个**，
+所以这里不做归因（只记事实：闸门扫的是索引，提交的是那 1 个路径，索引里其余项既没进这次提交、
+现在也不在索引里 —— `git diff --cached` 当前为空）。这正是索引面闸门的已知上限，也是每发载荷都要
+补一发「扫提交对象本身」的收口面的原因：收口面的 `findings=0` 是对 `181d6b72e` 这个 git 对象的读数，
+不依赖索引。
+
+现场复核（本轮从载体重读，不是回忆）：`w105` 记分板 **21/21 arms PASS**，
+`accepted=349 / identities=350 / claims=1745 / residue=1 / claim_rows_incomplete=0 /
+live_judge_status_differing=0 / identity_set=5168e1e723999312`，provider 分裂
+`full=31 none=['stockgrid'] partial=[]`，测试平面 `plane_after=10 new=0 fixed=18 collected=26779`；
+`w111` 4/4、`w113` 4/4、`w130` 6/6。`objective_complete=False`，理由三项照旧：
+`residue_owner_gated=1`、`providers_without_rows=1`、`subagent_over_cap=4`。
+
+**本轮我自己的一次误用与还原**：这一发的提交前闸门我第一条命令直接调了 **wave 40 的 wrapper**
+`C146/…/w99_staged_credential_scan.py`（它把 `WAVE_PREFIXES` 硬声明成 benzinga/tradingeconomics/C101/C146），
+所以 `scope` 臂如实报红 —— `arms=11 arms_passed=10 arms_failed=1 failed=['scope'] PASS=False`，
+而 6 次 gitleaks 全是 `findings=0`、planted 各 2（即：**没有任何凭据发现，红的是作用域**）。
+副作用是那个 wrapper 把自己的 stdout 写进了 **C146 已提交的载体**
+`runs/w99_staged_credential_scan.txt`。处置：红读数先按原名保留到
+`runs/w99_wave40_wrapper_scope_red_20261022.txt`（sha256 前缀 `df26ab391dd547bf`），再把 C146 那份还原成
+提交态并逐字节验证 `worktree_sha=28cdb97d92c3766d == git show HEAD:…=28cdb97d92c3766d`，`git status` 对
+`docs/evidence/C146/` 为空。正确的闸门是本 bundle 的 `probes/w108_staged_scan_plan.py --prefix
+docs/evidence/C147`，重跑 **11/11 arms PASS、rc=0、staged_files=4**（载体
+`runs/w108_staged_scan_plan_gate_wave54.txt`）。
+**记一条**：wrapper 的 docstring 已经写明「作用域臂的含义是『本波之外没有东西被 stage』」，
+跨波复用 wrapper 时必须同时重指 `WAVE_PREFIXES` 和它的 carrier 落点，否则红的是仪器、代价落在别的波的载体上。
+
+`w108` 的落点还有一处要先读代码才不会被读数骗过：它把本次 stdout 归档到
+`runs/w108_staged_scan_plan.txt`，然后把 `runs/w99_staged_credential_scan.txt` **还原成上一发的内容**
+（输出行 `carrier archived=w108_staged_scan_plan.txt prior_restored=True`）。所以「这一发的闸门面」只在
+`w108_staged_scan_plan.txt` 里，`w99_…txt` 是上一发 `181d6b72e` 的。
+本发最终闸门是对 7 个 staged 路径重跑：`staged_files=7 wave_prefixes=1
+credential_scan_face … arms=11 arms_passed=11 arms_failed=0 failed=[] PASS=True`，
+`payload_index_sha256=ed981a1ae8be0352`，`w108_staged_scan_plan_exit=0`。
+两次闸门面都按波名留档：`runs/w108_staged_scan_plan_gate_wave53.txt`（`payload_index_sha256=02dfea77…`，
+即 `181d6b72e` 的提交前 4 路径闸门）、`runs/w108_staged_scan_plan_gate_wave54.txt`（本发，`staged_files=7`
+那份归档）。
+诚实说明回归：本 `face.md` 的 §59 文字是在这次扫描之后才改定的，所以 `ed981a1a…` 那个索引里不含 §59 的最后
+字节；能对提交对象本身负责的是 `w117` 收口面（8/8 arms，扫 git 对象 + 目录 + 全历史），这也是每发载荷都要
+补一发的原因。
