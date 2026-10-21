@@ -1050,3 +1050,62 @@ closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
 
 **结论不变**：346/350；残差 4 行（intrinio engine facet、SA captcha×2、stockgrid 端点）；
 子代理 34>30 是已发生的违反，目标仍不可标记完成。
+
+## 46. 6e4c413ad（wave46 intrinio::OptionsSnapshots 落地 + 第五次全树重签）的收口面
+
+**落地**：`intrinio::OptionsSnapshots` 用两次请求的手写 fetcher 实现（`models/options_snapshots.py`）：
+认证 GET `/options/snapshots` 取元数据信封 `snapshots[].files[].url`，再 GET 该 URL 取 gzip CSV
+（`\x1f\x8b` 魔数判定，非 gzip 直接按 UTF-8 解析），按 20 个上游列名映射，并把 OCC 合约号拆成
+underlying / expiration(`%y%m%d`) / C-P / strike(`÷1000`)，`only_traded` 为真时丢弃无成交时间戳的行。
+`intrinio/specs.py` 的 `NOT_DECLARABLE` 因此收空——engine 的 `flow.preflight_lookup + shape.columnar`
+缺口没有实现，改由手写适配器承担；intrinio **38/38**。
+
+**见证**：runner 的 `client_seam`（kind `shared_http_client`，attr `get_shared_http_client`，只点名本波模块）
+以两条 `responses` 供元数据 JSON 与 CSV 文本；反例丢掉 `snapshots[0].files`，声明的拒绝码
+`INTRINIO_OPTIONS_SNAPSHOTS_UNAVAILABLE` 与 receipt 的 observed 码一致。五相 5/5 PASS。
+
+**第五次全树重签**：31 provider，0 producer/recorder fail；落地后又付了两次 intrinio 局部重签
+（补 `query_model` ClassVar 与 ruff/mypy 修正都改在被 pin 的源文件上）。判定器 **347/350**、
+claims 1745（**347×5 PASS + 2×5 BLOCKED + 1×0**）、reviews 347；残差 3 = seeking_alpha×2（INCOMPLETE）
++ stockgrid（UNREVIEWED）。
+
+**冻结面**（`runs/w49_batch5_rebase_wave46.txt`，11/11 arms）：380 身份 / 367 域 / 347 deferred /
+358 descriptor-eligible；catalog 380 bindings（360 手写）、capabilities 380 / descriptors 358；
+domains `262c4f45…`、`models/__init__.py` `c02f19e3…`。一处自家仪器缺陷：rebase 仪器先给自已写出的
+快照算 sha 再落字面量，而我把 delta 块改名 `wave37_wave38_census_rebase → wave46_intrinio_options_census_rebase`
+发生在其后，于是钉住的是上一代字节——按最终字节 `d3f71839…` 重钉后 339 项冻结测试全绿。
+
+**平面**（`test_plane_w46_final.xml`）：`10 failed, 26,455 passed, 306 skipped`，失败集合与此前逐 id 相同；
+collected **26,771**。`w105` **21/21**：accepted 347、residue 3、providers_with_rows 31、
+zero=[stockgrid]、provider_split full=30 / partial=[seeking_alpha 1/3] / none=[stockgrid]、
+claim→receipt 1,735 全命中 / 10 条 BLOCKED 空指针、`forged_sha_mismatch=1`、plane_new=0。
+`w111` 4/4（`delta_vs_wave39` accepted +8、rows_in_claims +4、claims +20）、`w130` 6/6
+（`EXPECTED_ACCEPTED` 346→347）、`w113` 4/4。
+
+**A2 面上两处先前就存在、本波如实记录不顺手修**：`a2_check --files` 的 mypy 成员在**已提交**的
+`opendata/data/providers/econdb/models/profiles.py`（wave44/45 落地件）上就报 4 条
+`[override]`/`no-any-return`——`Fetcher[TQuery, TRaw]` 的 `TRaw` 被写成行模型元组而
+`extract_data` 返回原始 JSON 结构；本波新文件按 `TRaw = list[dict[str, Any]]` 声明并已零红。
+同一成员的「pinned Gitleaks file scan」在 `docs/evidence/C100/**/inputs/pristine/akshare/*.py`
+（不可变证据输入）上返回 leaks，与本波载荷无关；载荷侧的凭据闸门是下面那道 A/B/C。
+
+**提交与收口**：
+
+```
+reconcile commit=6e4c413ad parent=b9aaec7cf commit_paths=2186
+          worktree_drift_vs_commit=0 moved_vs_parent=2186 missing_in_commit=0
+commit_paths_by_root={'docs/evidence/C101': 2154, 'tests': 11, 'docs/evidence/C147': 10, 'opendata': 8,
+                      'docs/迭代计划/迭代2-统一Provider架构与全量能力补齐': 2, 'scripts': 1}
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）
+gitleaks dir-mode findings=0（planted 2）；copied_from_commit=23 bytecode_skipped=1407
+secret_scan_check rc=0  532 commits / 487.76 MB / no leaks found
+closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
+```
+
+载体：本波闸门 `runs/w108_staged_scan_plan_gate_wave46.txt`（`staged_files=2186`、A/B/C 全 0、
+11/11 arms）；收口面固定名 `runs/w47_closure_face.txt`，另存 `runs/w47_closure_face_6e4c413ad.txt`；
+重签日志 `runs/w46_resign.txt`；generation `claims_sha256=8ef0df092441935c`、
+`judge_report_sha256=7e0ab12b8f691a02`。
+
+**结论**：347/350、30/32 provider 全行落地；残差 3 行全部外部阻塞（SA captcha×2、stockgrid 端点退役）；
+子代理 34>30 仍是已发生的违反，目标不可标记完成。
