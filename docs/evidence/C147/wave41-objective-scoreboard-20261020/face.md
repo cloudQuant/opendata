@@ -1174,3 +1174,34 @@ generation claims_sha256=4a9cbcb50daa34bb judge_report_sha256=f63ac42c3b80fe54
 `runs/w108_staged_scan_plan.txt`——那是本波闸门在「提交前读索引」时自己写出的固定名载体，不是载荷漂移。
 另存为 `runs/w108_staged_scan_plan_gate_wave48.txt`、把固定名恢复到提交内字节后重跑，才得到上面的 8/8。
 这与 §44 记的是同一类自指：载体的字节永远新于它所描述的提交。
+
+## 49. wave49 整树 `Fetcher[TQuery, TRaw]` 错型普查（§48 留的那条「未测」口径现在有了读数）
+
+§48 写明「没有跑过整树清扫，所以『其余文件干净』不是实测结论」。本节把它变成实测：
+`probes/w148_fetcher_typing_census.py` → `runs/w148_fetcher_typing_census.py.txt`，**6/6 arms PASS**。
+
+**仪器**：人口 = `opendata/data/providers/` 下 **394** 个模块（排除 `_vendor`、`__pycache__`），
+**一个** mypy 进程按仓库相对路径跑（逐文件跑会丢兄弟模块，正是 wave46 A2 `--files` 切面比树窄的原因）；
+判定谓词 = 错误码 `override` + `no-any-return`，即 §48 修的那个形状（`TRaw` 被声明成行模型元组，
+而 `extract_data` 返回原始响应结构）；其余码单独打 histogram，所以本谓词为 0 **不等于**「整树 mypy 干净」。
+双侧对照取自 git 而非伪造变异：`30faded84^` 的 econdb 修前字节必须被标红、`30faded84` 的修后字节必须为 0
+——实测 `pre_fix_defect=5`、`post_fix_defect=0`，所以那个 0 是会被咬的 0。
+
+**首跑读数**：`defect_class_files=2`、`defect_class_errors=4`——
+`biztoc/models/world_news.py` 2 条、`yfinance/models/available_indices.py` 2 条，
+都是 wave43/44 我自己落的文件；其余 histogram 是
+`attr-defined 1 / var-annotated 1 / arg-type 1 / assignment 1`。
+
+**修后**：两处同样的类型面改写（`TRaw` 改成真实中间结构 `list[dict[str, Any]]` / `dict[str, Any]`，
+无行为改动）。A2 因「碰到即零容忍」又顶出两笔既存小债：biztoc `notes=` 字面量 106 字符（E501）、
+yfinance `transform_data` 缺 docstring（D102），一并按注释/文档串口径补掉。
+现在 ruff check / ruff format / mypy / bandit 全 ok；A2 仍红的只剩
+「immutable evidence secret scan / pinned Gitleaks file scan」那一支，作用对象是
+`docs/evidence/C100/**/inputs/pristine/akshare/*.py` 这批不可变证据输入。
+
+**验收面**：biztoc 与 yfinance 各付一次局部重签（`5 claims 5 PASS` / `145 claims 145 PASS`，
+recorder `refused=0`），merge + judge 仍 **347/350**、claims 1745；
+`w105` **21/21**（现场判定器 `differing=0 missing=0 extra=0`、身份集不变、伪造可咬）；
+相关测试 229 passed，唯一 1 红是 §48 那条同一行的 AC-18 既存红
+（`market` 的 `Optional` vs `str | None`、`maturity` 多一项，diff 与本波改动前逐字相同）。
+复跑普查：`defect_class_files=0`，对照仍 `5 / 0`，**6/6 arms PASS**。

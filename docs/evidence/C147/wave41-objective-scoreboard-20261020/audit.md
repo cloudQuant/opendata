@@ -45,6 +45,12 @@
   判定器不变 **347/350**；修后平面 `test_plane_w46b_final.xml` 仍 10 红同集合（26,455 passed、
   collected 26,771），`w105` 21/21，收口 `30faded84` 8/8 arms（首跑 drift 1 是固定名闸门载体的自指，
   见 `face.md` §48）。
+* 2026-10-21 wave49：整树 `Fetcher` 错型普查落地（`w148`，394 模块 / 单进程 mypy /
+  谓词 `override`+`no-any-return` / git 双侧对照 `pre_fix=5`、`post_fix=0`，**6/6 arms**）。
+  首跑点名 2 个文件、4 条错误（biztoc `world_news.py`、yfinance `available_indices.py`，
+  均为 wave43/44 落地件），已按 §48 同法改 `TRaw` 并补掉两笔 A2 顶出的既存小债（E501、D102）；
+  复跑 `defect_class_files=0`。两次局部重签后判定器不变 **347/350**、`w105` 21/21
+  （`face.md` §49）。
 
 ## 未达成项各自缺什么
 

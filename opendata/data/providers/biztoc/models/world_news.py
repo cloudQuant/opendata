@@ -36,7 +36,7 @@ class BiztocWorldNewsQuery(QueryParams):
     publisher: str | None = None
 
 
-class BiztocWorldNewsFetcher(Fetcher[BiztocWorldNewsQuery, tuple[BiztocWorldNews, ...]]):
+class BiztocWorldNewsFetcher(Fetcher[BiztocWorldNewsQuery, list[dict[str, Any]]]):
     """Fetch one Biztoc feed and validate every article against the frozen contract."""
 
     async_mode = "bounded_thread"
@@ -50,7 +50,8 @@ class BiztocWorldNewsFetcher(Fetcher[BiztocWorldNewsQuery, tuple[BiztocWorldNews
         market="global",
         source="biztoc",
         verified=False,
-        notes="Public news feed; live access requires a RapidAPI key, offline acceptance uses a fixture.",
+        notes="Public news feed; live access requires a RapidAPI key, offline "
+        "acceptance uses a fixture.",
     )
 
     def transform_query(self, **kwargs: object) -> BiztocWorldNewsQuery:
@@ -78,8 +79,10 @@ class BiztocWorldNewsFetcher(Fetcher[BiztocWorldNewsQuery, tuple[BiztocWorldNews
             },
         )
         if not 200 <= response.status < 300:
-            code = "BIZTOC_CREDENTIAL_REJECTED" if response.status in (401, 403) else (
-                "BIZTOC_HTTP_ERROR"
+            code = (
+                "BIZTOC_CREDENTIAL_REJECTED"
+                if response.status in (401, 403)
+                else ("BIZTOC_HTTP_ERROR")
             )
             raise ProviderEngineError(code, status=response.status, url=url)
         return response.document

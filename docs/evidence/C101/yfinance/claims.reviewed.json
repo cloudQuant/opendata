@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model AvailableIndices --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:39:44.827519+00:00",
+      "executed_at_utc": "2026-10-21T16:04:05.430729+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -137,8 +137,8 @@
             "path": "opendata/data/providers/yfinance/provider.py"
           },
           {
-            "after_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
-            "before_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
+            "after_sha256": "60f9c01d3c2e611ced8f9343fa4f95e26ef2182791f4e2221b325e13363af747",
+            "before_sha256": "60f9c01d3c2e611ced8f9343fa4f95e26ef2182791f4e2221b325e13363af747",
             "path": "opendata/data/providers/yfinance/models/available_indices.py"
           },
           {
@@ -153,7 +153,7 @@
       "receipt": {
         "model_identity": "yfinance::AvailableIndices",
         "path": "docs/evidence/C101/receipts/yfinance/AvailableIndices/implementation.json",
-        "sha256": "15f062d0c52e3b9b150629c35527ca0ac343cdc53600dd6c4f467c4a40a56059"
+        "sha256": "abf43ad456bdc72d456c7f7296d388504317c9e3e1e4ad2639ba8828e4e3cb2c"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -161,7 +161,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model AvailableIndices --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:39:45.947571+00:00",
+      "executed_at_utc": "2026-10-21T16:04:06.629347+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -250,8 +250,8 @@
             "path": "opendata/data/providers/yfinance/provider.py"
           },
           {
-            "after_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
-            "before_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
+            "after_sha256": "60f9c01d3c2e611ced8f9343fa4f95e26ef2182791f4e2221b325e13363af747",
+            "before_sha256": "60f9c01d3c2e611ced8f9343fa4f95e26ef2182791f4e2221b325e13363af747",
             "path": "opendata/data/providers/yfinance/models/available_indices.py"
           },
           {
@@ -266,7 +266,7 @@
       "receipt": {
         "model_identity": "yfinance::AvailableIndices",
         "path": "docs/evidence/C101/receipts/yfinance/AvailableIndices/direct.json",
-        "sha256": "858a89e0b3c05214bba8e0c253c1376c99de978d544137ac1b9fa21267526dc5"
+        "sha256": "ac7827f0ba40766053e75ba1e2dd62c24330e4ff945b6af216de7fd9144df6f1"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -274,7 +274,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model AvailableIndices --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:39:47.067906+00:00",
+      "executed_at_utc": "2026-10-21T16:04:07.800412+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -363,8 +363,8 @@
             "path": "opendata/data/providers/yfinance/provider.py"
           },
           {
-            "after_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
-            "before_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
+            "after_sha256": "60f9c01d3c2e611ced8f9343fa4f95e26ef2182791f4e2221b325e13363af747",
+            "before_sha256": "60f9c01d3c2e611ced8f9343fa4f95e26ef2182791f4e2221b325e13363af747",
             "path": "opendata/data/providers/yfinance/models/available_indices.py"
           },
           {
@@ -379,7 +379,7 @@
       "receipt": {
         "model_identity": "yfinance::AvailableIndices",
         "path": "docs/evidence/C101/receipts/yfinance/AvailableIndices/service.json",
-        "sha256": "37a32d129f94605fea650a68eb4d2e66c666608e7ff1d51b7430702d3628ce09"
+        "sha256": "e3cde85e6687744018d754d28d63cfc320c0b68c13181440c2e72e8a1bd4e9f0"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -387,7 +387,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model AvailableIndices --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:39:48.176454+00:00",
+      "executed_at_utc": "2026-10-21T16:04:08.968632+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -476,8 +476,8 @@
             "path": "opendata/data/providers/yfinance/provider.py"
           },
           {
-            "after_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
-            "before_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
+            "after_sha256": "60f9c01d3c2e611ced8f9343fa4f95e26ef2182791f4e2221b325e13363af747",
+            "before_sha256": "60f9c01d3c2e611ced8f9343fa4f95e26ef2182791f4e2221b325e13363af747",
             "path": "opendata/data/providers/yfinance/models/available_indices.py"
           },
           {
@@ -492,7 +492,7 @@
       "receipt": {
         "model_identity": "yfinance::AvailableIndices",
         "path": "docs/evidence/C101/receipts/yfinance/AvailableIndices/contract.json",
-        "sha256": "b2aaf3068ad9b9b6bc0c2cd85ef71be041b35a64266ef13e9743d6676469659b"
+        "sha256": "4f4392332891befb40da1ec023bcb0f4f8c9cb78a98b2dc2c8ce40ecfaf7536e"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -500,7 +500,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model AvailableIndices --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:39:50.417672+00:00",
+      "executed_at_utc": "2026-10-21T16:04:11.343288+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -589,8 +589,8 @@
             "path": "opendata/data/providers/yfinance/provider.py"
           },
           {
-            "after_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
-            "before_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
+            "after_sha256": "60f9c01d3c2e611ced8f9343fa4f95e26ef2182791f4e2221b325e13363af747",
+            "before_sha256": "60f9c01d3c2e611ced8f9343fa4f95e26ef2182791f4e2221b325e13363af747",
             "path": "opendata/data/providers/yfinance/models/available_indices.py"
           },
           {
@@ -605,7 +605,7 @@
       "receipt": {
         "model_identity": "yfinance::AvailableIndices",
         "path": "docs/evidence/C101/receipts/yfinance/AvailableIndices/counterfact.json",
-        "sha256": "fc749374a537f7ceaf84d11d2801af9dfd75613509b1f7e8a4338ede68b9be02"
+        "sha256": "e8d9cdb0cd7a55b4cb00bde316e9eaedf5ec3e6121fe3978bb58bd79d071ebe5"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -613,7 +613,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model BalanceSheet --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:39:51.534163+00:00",
+      "executed_at_utc": "2026-10-21T16:04:12.519558+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -768,7 +768,7 @@
       "receipt": {
         "model_identity": "yfinance::BalanceSheet",
         "path": "docs/evidence/C101/receipts/yfinance/BalanceSheet/implementation.json",
-        "sha256": "3bfc2dbe2ea8cedddc262b2ea578d0eec6eab15cf5a7b79266c8372d4e7fdd92"
+        "sha256": "309c7c03d359baf034145986f286af3809f90def19bd19c2253c1ad10da461a9"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheet"
@@ -776,7 +776,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model BalanceSheet --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:39:52.694815+00:00",
+      "executed_at_utc": "2026-10-21T16:04:13.750823+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -886,7 +886,7 @@
       "receipt": {
         "model_identity": "yfinance::BalanceSheet",
         "path": "docs/evidence/C101/receipts/yfinance/BalanceSheet/direct.json",
-        "sha256": "972f58d7a6c35933ded512a59b41173f123b9b79bb868d2d0115ce5b65789018"
+        "sha256": "6c031b4ff967ab8ff99b2525c598e525561a4b2f477d2701f3710f7efabe8d5f"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheet"
@@ -894,7 +894,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model BalanceSheet --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:39:53.839383+00:00",
+      "executed_at_utc": "2026-10-21T16:04:14.968815+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1004,7 +1004,7 @@
       "receipt": {
         "model_identity": "yfinance::BalanceSheet",
         "path": "docs/evidence/C101/receipts/yfinance/BalanceSheet/service.json",
-        "sha256": "03ab66206a33c0e79f6b8d826ef7b704e5856ab0c3208c64c9e0ea03ac9261b5"
+        "sha256": "e93c86c8ef9b07ad94887b5f0ab3dad5458d067d97dcd7ea0563271cdfa0c076"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheet"
@@ -1012,7 +1012,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model BalanceSheet --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:39:54.978298+00:00",
+      "executed_at_utc": "2026-10-21T16:04:16.177463+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1122,7 +1122,7 @@
       "receipt": {
         "model_identity": "yfinance::BalanceSheet",
         "path": "docs/evidence/C101/receipts/yfinance/BalanceSheet/contract.json",
-        "sha256": "50e56b1518766ad4dd44ef5efa9878c2533e1ef3d3420af369548c4ac8c13c22"
+        "sha256": "33e7d7b105a08544d73b40180bcabaacbaadf92f442f28df381f7a216e5a68bb"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheet"
@@ -1130,7 +1130,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model BalanceSheet --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:39:57.285864+00:00",
+      "executed_at_utc": "2026-10-21T16:04:18.601002+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1240,7 +1240,7 @@
       "receipt": {
         "model_identity": "yfinance::BalanceSheet",
         "path": "docs/evidence/C101/receipts/yfinance/BalanceSheet/counterfact.json",
-        "sha256": "9498ba89138d26d7a616188a7d5c0200eb8425feb04eac7a7b67be7997f4e068"
+        "sha256": "8394b0a163b1e1985d8aa71a550bec955ad53ff25739b779f65d60789fcdeced"
       },
       "status": "PASS",
       "upstream_model": "BalanceSheet"
@@ -1248,7 +1248,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CashFlowStatement --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:39:58.409514+00:00",
+      "executed_at_utc": "2026-10-21T16:04:19.780039+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1403,7 +1403,7 @@
       "receipt": {
         "model_identity": "yfinance::CashFlowStatement",
         "path": "docs/evidence/C101/receipts/yfinance/CashFlowStatement/implementation.json",
-        "sha256": "379232451af3f4f17f17a9f5ebeb41b7b5efde4537a0273aa0a825c97eb8c4cb"
+        "sha256": "dee3638f6b0041493fe798b5201e3eaad8852f58911b10886b701f2a556291ba"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatement"
@@ -1411,7 +1411,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CashFlowStatement --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:39:59.554034+00:00",
+      "executed_at_utc": "2026-10-21T16:04:20.996592+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1521,7 +1521,7 @@
       "receipt": {
         "model_identity": "yfinance::CashFlowStatement",
         "path": "docs/evidence/C101/receipts/yfinance/CashFlowStatement/direct.json",
-        "sha256": "32d63e0a07fbcf75efd7c8c46708fd2109cf89cf4d6e32b34d95388d8afc3c7a"
+        "sha256": "26a45984b71d3a011698d751e0603aa8bb5bbbbe676b9831856480ead79a6ac3"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatement"
@@ -1529,7 +1529,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CashFlowStatement --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:40:00.698887+00:00",
+      "executed_at_utc": "2026-10-21T16:04:22.212431+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1639,7 +1639,7 @@
       "receipt": {
         "model_identity": "yfinance::CashFlowStatement",
         "path": "docs/evidence/C101/receipts/yfinance/CashFlowStatement/service.json",
-        "sha256": "8d6b3596f888418fffb7be9996fa8d9ed4e6c9dff1a9c209c62299a6bcf689cf"
+        "sha256": "370b9b592570dc35d1fc74347e01cb354648fc05613d183b850ceed8d54b9ad0"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatement"
@@ -1647,7 +1647,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CashFlowStatement --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:40:01.835171+00:00",
+      "executed_at_utc": "2026-10-21T16:04:23.419325+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1757,7 +1757,7 @@
       "receipt": {
         "model_identity": "yfinance::CashFlowStatement",
         "path": "docs/evidence/C101/receipts/yfinance/CashFlowStatement/contract.json",
-        "sha256": "67c5c9a46e3b6760cd5851b8b182ff4495e0d3df7907a06dbdee3f184350947b"
+        "sha256": "4d5d066644b22244044703e478992482e136b2b7c19e332c4fbb41ab853aa33d"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatement"
@@ -1765,7 +1765,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CashFlowStatement --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:40:04.129702+00:00",
+      "executed_at_utc": "2026-10-21T16:04:25.883323+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1875,7 +1875,7 @@
       "receipt": {
         "model_identity": "yfinance::CashFlowStatement",
         "path": "docs/evidence/C101/receipts/yfinance/CashFlowStatement/counterfact.json",
-        "sha256": "a7c317bd2c20b3b4217ed3516a197af9444b1bed02fda3de78ddb8589b25a05b"
+        "sha256": "30fd4dfbd96c2732d134830619f97eb4017b12db19222fb075ee08c33ec3fb94"
       },
       "status": "PASS",
       "upstream_model": "CashFlowStatement"
@@ -1883,7 +1883,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CompanyNews --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:40:05.244734+00:00",
+      "executed_at_utc": "2026-10-21T16:04:27.091477+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2043,7 +2043,7 @@
       "receipt": {
         "model_identity": "yfinance::CompanyNews",
         "path": "docs/evidence/C101/receipts/yfinance/CompanyNews/implementation.json",
-        "sha256": "e6184d26ef200864998e530f9d6820b30deb10554fe8a6919fcbec83d1c419c5"
+        "sha256": "7ebcf66c441fcfa02ae6d9bfe2df2cacd654d4bf836a11cfcfdd0fb3be8d9d9d"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -2051,7 +2051,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CompanyNews --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:40:06.377688+00:00",
+      "executed_at_utc": "2026-10-21T16:04:28.325324+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2071,8 +2071,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "2e9a2ac140657a3f5a7c798fd4ddc1c8abcd72fd3b42f173b35d4a2ce1489c74",
-            "before_sha256": "2e9a2ac140657a3f5a7c798fd4ddc1c8abcd72fd3b42f173b35d4a2ce1489c74",
+            "after_sha256": "d92fe205b8c88d4a629bb61d6afd78aa159d4aa9b5782b293d372d73b23d3deb",
+            "before_sha256": "d92fe205b8c88d4a629bb61d6afd78aa159d4aa9b5782b293d372d73b23d3deb",
             "path": "docs/evidence/C101/fixtures/yfinance/CompanyNews.json"
           }
         ],
@@ -2166,7 +2166,7 @@
       "receipt": {
         "model_identity": "yfinance::CompanyNews",
         "path": "docs/evidence/C101/receipts/yfinance/CompanyNews/direct.json",
-        "sha256": "2e5ab6a65cfff99010fa84e8e0b93f694f37fbcecaffe07986313bf7bef5fa43"
+        "sha256": "7bbcef66e058ec60edf41e826446646a3a2a6dfd5b9b95dc3104e9f771626fa7"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -2174,7 +2174,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CompanyNews --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:40:07.520768+00:00",
+      "executed_at_utc": "2026-10-21T16:04:29.560908+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2194,8 +2194,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "2e9a2ac140657a3f5a7c798fd4ddc1c8abcd72fd3b42f173b35d4a2ce1489c74",
-            "before_sha256": "2e9a2ac140657a3f5a7c798fd4ddc1c8abcd72fd3b42f173b35d4a2ce1489c74",
+            "after_sha256": "d92fe205b8c88d4a629bb61d6afd78aa159d4aa9b5782b293d372d73b23d3deb",
+            "before_sha256": "d92fe205b8c88d4a629bb61d6afd78aa159d4aa9b5782b293d372d73b23d3deb",
             "path": "docs/evidence/C101/fixtures/yfinance/CompanyNews.json"
           }
         ],
@@ -2289,7 +2289,7 @@
       "receipt": {
         "model_identity": "yfinance::CompanyNews",
         "path": "docs/evidence/C101/receipts/yfinance/CompanyNews/service.json",
-        "sha256": "e5edd66323a13941774ae1ef3bdb5759bcc13144c1d4392d3d9e2f992bacad0d"
+        "sha256": "57e3e70364be6a1c26194753bca0ac93dfab2dab80d29d873d45ab548188afe1"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -2297,7 +2297,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CompanyNews --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:40:08.653435+00:00",
+      "executed_at_utc": "2026-10-21T16:04:30.815813+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2317,8 +2317,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "2e9a2ac140657a3f5a7c798fd4ddc1c8abcd72fd3b42f173b35d4a2ce1489c74",
-            "before_sha256": "2e9a2ac140657a3f5a7c798fd4ddc1c8abcd72fd3b42f173b35d4a2ce1489c74",
+            "after_sha256": "d92fe205b8c88d4a629bb61d6afd78aa159d4aa9b5782b293d372d73b23d3deb",
+            "before_sha256": "d92fe205b8c88d4a629bb61d6afd78aa159d4aa9b5782b293d372d73b23d3deb",
             "path": "docs/evidence/C101/fixtures/yfinance/CompanyNews.json"
           }
         ],
@@ -2412,7 +2412,7 @@
       "receipt": {
         "model_identity": "yfinance::CompanyNews",
         "path": "docs/evidence/C101/receipts/yfinance/CompanyNews/contract.json",
-        "sha256": "c395564b91848cd12799235337372df83dbc4ed48b8722ab93ec9881f745fa63"
+        "sha256": "99aa294204c0ddb0d6cc359e12b0d85f3ffb8c59a5efdb92e007e320759726d3"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -2420,7 +2420,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CompanyNews --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:40:10.933965+00:00",
+      "executed_at_utc": "2026-10-21T16:04:33.269602+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2440,8 +2440,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "2e9a2ac140657a3f5a7c798fd4ddc1c8abcd72fd3b42f173b35d4a2ce1489c74",
-            "before_sha256": "2e9a2ac140657a3f5a7c798fd4ddc1c8abcd72fd3b42f173b35d4a2ce1489c74",
+            "after_sha256": "d92fe205b8c88d4a629bb61d6afd78aa159d4aa9b5782b293d372d73b23d3deb",
+            "before_sha256": "d92fe205b8c88d4a629bb61d6afd78aa159d4aa9b5782b293d372d73b23d3deb",
             "path": "docs/evidence/C101/fixtures/yfinance/CompanyNews.json"
           }
         ],
@@ -2535,7 +2535,7 @@
       "receipt": {
         "model_identity": "yfinance::CompanyNews",
         "path": "docs/evidence/C101/receipts/yfinance/CompanyNews/counterfact.json",
-        "sha256": "84209371fdef6e840817fd87946c67e8e52b2ba686e41098e3d0dc9685ebda72"
+        "sha256": "190793739f937970302b5d37dc6a1fdfa902dfb6e3facd500702180b985a8d6a"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -2543,7 +2543,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CryptoHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:40:12.052532+00:00",
+      "executed_at_utc": "2026-10-21T16:04:34.446196+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2703,7 +2703,7 @@
       "receipt": {
         "model_identity": "yfinance::CryptoHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/CryptoHistorical/implementation.json",
-        "sha256": "ea3510561b4e23481c5dccd27417dc6c91d85cc11e42cc1263128f86a248352b"
+        "sha256": "5a232cac40f9edf9dc120c88aba555e36cbfca1452364a7d85038779431a3124"
       },
       "status": "PASS",
       "upstream_model": "CryptoHistorical"
@@ -2711,7 +2711,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CryptoHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:40:13.212657+00:00",
+      "executed_at_utc": "2026-10-21T16:04:35.678547+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2731,8 +2731,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "a655b6e7269ff6d0a738a82e19931773e4a4e9b7dfd17116543fa4c247a3105b",
-            "before_sha256": "a655b6e7269ff6d0a738a82e19931773e4a4e9b7dfd17116543fa4c247a3105b",
+            "after_sha256": "11482dbc8c7cc41e42e7549c53207880877ae55b8df64fc9a86d85c7515c32b2",
+            "before_sha256": "11482dbc8c7cc41e42e7549c53207880877ae55b8df64fc9a86d85c7515c32b2",
             "path": "docs/evidence/C101/fixtures/yfinance/CryptoHistorical.json"
           }
         ],
@@ -2826,7 +2826,7 @@
       "receipt": {
         "model_identity": "yfinance::CryptoHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/CryptoHistorical/direct.json",
-        "sha256": "50c29e1544f68cc416b5c98153180b8bd6c811eaaaa16cafc026e9fed0bde774"
+        "sha256": "40357ff70ca1b3ab0937ed143caa052276ab8c0125aa5bbacf296ee517beea04"
       },
       "status": "PASS",
       "upstream_model": "CryptoHistorical"
@@ -2834,7 +2834,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CryptoHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:40:14.366020+00:00",
+      "executed_at_utc": "2026-10-21T16:04:36.915912+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2854,8 +2854,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "a655b6e7269ff6d0a738a82e19931773e4a4e9b7dfd17116543fa4c247a3105b",
-            "before_sha256": "a655b6e7269ff6d0a738a82e19931773e4a4e9b7dfd17116543fa4c247a3105b",
+            "after_sha256": "11482dbc8c7cc41e42e7549c53207880877ae55b8df64fc9a86d85c7515c32b2",
+            "before_sha256": "11482dbc8c7cc41e42e7549c53207880877ae55b8df64fc9a86d85c7515c32b2",
             "path": "docs/evidence/C101/fixtures/yfinance/CryptoHistorical.json"
           }
         ],
@@ -2949,7 +2949,7 @@
       "receipt": {
         "model_identity": "yfinance::CryptoHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/CryptoHistorical/service.json",
-        "sha256": "290ad8e585cb51174ae60f6a9d4fc5f24a63772e2ae2e8eff244b31b8b8f39ab"
+        "sha256": "f951a54ad3e046c0022e7989690ea4c014cdfcfeb11aa11894e255b7832d394c"
       },
       "status": "PASS",
       "upstream_model": "CryptoHistorical"
@@ -2957,7 +2957,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CryptoHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:40:15.520528+00:00",
+      "executed_at_utc": "2026-10-21T16:04:38.136645+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2977,8 +2977,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "a655b6e7269ff6d0a738a82e19931773e4a4e9b7dfd17116543fa4c247a3105b",
-            "before_sha256": "a655b6e7269ff6d0a738a82e19931773e4a4e9b7dfd17116543fa4c247a3105b",
+            "after_sha256": "11482dbc8c7cc41e42e7549c53207880877ae55b8df64fc9a86d85c7515c32b2",
+            "before_sha256": "11482dbc8c7cc41e42e7549c53207880877ae55b8df64fc9a86d85c7515c32b2",
             "path": "docs/evidence/C101/fixtures/yfinance/CryptoHistorical.json"
           }
         ],
@@ -3072,7 +3072,7 @@
       "receipt": {
         "model_identity": "yfinance::CryptoHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/CryptoHistorical/contract.json",
-        "sha256": "cdcc1737841f01a737830a700dc4c29184e73366444112e092d81047d6a444e4"
+        "sha256": "a12f89a8dcd4e02b0fe988d4cf5526bead6266d36d2b07774160d12d11ab6b26"
       },
       "status": "PASS",
       "upstream_model": "CryptoHistorical"
@@ -3080,7 +3080,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CryptoHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:40:17.836378+00:00",
+      "executed_at_utc": "2026-10-21T16:04:40.606931+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3100,8 +3100,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "a655b6e7269ff6d0a738a82e19931773e4a4e9b7dfd17116543fa4c247a3105b",
-            "before_sha256": "a655b6e7269ff6d0a738a82e19931773e4a4e9b7dfd17116543fa4c247a3105b",
+            "after_sha256": "11482dbc8c7cc41e42e7549c53207880877ae55b8df64fc9a86d85c7515c32b2",
+            "before_sha256": "11482dbc8c7cc41e42e7549c53207880877ae55b8df64fc9a86d85c7515c32b2",
             "path": "docs/evidence/C101/fixtures/yfinance/CryptoHistorical.json"
           }
         ],
@@ -3195,7 +3195,7 @@
       "receipt": {
         "model_identity": "yfinance::CryptoHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/CryptoHistorical/counterfact.json",
-        "sha256": "063f56916c813d781f7dc3357e7faf484039ca2fa9b2a186e9aa4b7dd6fe3bb6"
+        "sha256": "48f640b6bbcb63a0ec9fe677af27cf2435f7ad532bfe3bd94584fbab618ddf41"
       },
       "status": "PASS",
       "upstream_model": "CryptoHistorical"
@@ -3203,7 +3203,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CurrencyHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:40:18.945011+00:00",
+      "executed_at_utc": "2026-10-21T16:04:41.776666+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -3363,7 +3363,7 @@
       "receipt": {
         "model_identity": "yfinance::CurrencyHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/CurrencyHistorical/implementation.json",
-        "sha256": "bd293b0c61736c1e745b8d147ccf6f4e89c79c733603f0c72c9487543604da27"
+        "sha256": "94782e3586b8bf5dddb970620c026e49cf7426004a2b2c754f4209e66132dfd5"
       },
       "status": "PASS",
       "upstream_model": "CurrencyHistorical"
@@ -3371,7 +3371,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CurrencyHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:40:20.108263+00:00",
+      "executed_at_utc": "2026-10-21T16:04:42.996402+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3391,8 +3391,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "4540610f85070d97c282273bebc5ab448808e2ec86c5417275ed6f8418c96a82",
-            "before_sha256": "4540610f85070d97c282273bebc5ab448808e2ec86c5417275ed6f8418c96a82",
+            "after_sha256": "1f2ff1d9e3b7cda6237e9195ee264272594557c37a65e77aea4224549b474c20",
+            "before_sha256": "1f2ff1d9e3b7cda6237e9195ee264272594557c37a65e77aea4224549b474c20",
             "path": "docs/evidence/C101/fixtures/yfinance/CurrencyHistorical.json"
           }
         ],
@@ -3486,7 +3486,7 @@
       "receipt": {
         "model_identity": "yfinance::CurrencyHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/CurrencyHistorical/direct.json",
-        "sha256": "e54a4aa72bc45aa900747fe9932dd269872881b548d9c436617de544f4d4fe35"
+        "sha256": "91856b22794bb9f795b249c6e5575b01033861e0b964e264074614cec0fd9d46"
       },
       "status": "PASS",
       "upstream_model": "CurrencyHistorical"
@@ -3494,7 +3494,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CurrencyHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:40:21.263289+00:00",
+      "executed_at_utc": "2026-10-21T16:04:44.221811+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3514,8 +3514,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "4540610f85070d97c282273bebc5ab448808e2ec86c5417275ed6f8418c96a82",
-            "before_sha256": "4540610f85070d97c282273bebc5ab448808e2ec86c5417275ed6f8418c96a82",
+            "after_sha256": "1f2ff1d9e3b7cda6237e9195ee264272594557c37a65e77aea4224549b474c20",
+            "before_sha256": "1f2ff1d9e3b7cda6237e9195ee264272594557c37a65e77aea4224549b474c20",
             "path": "docs/evidence/C101/fixtures/yfinance/CurrencyHistorical.json"
           }
         ],
@@ -3609,7 +3609,7 @@
       "receipt": {
         "model_identity": "yfinance::CurrencyHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/CurrencyHistorical/service.json",
-        "sha256": "7912f677ccfbece4760c7fd5f19a57badf0152fc48799e2fb96c9b2931d66c77"
+        "sha256": "a3e660ef961f275e8ab0f98102d6d5687a3fd24b613d7e8ac9a5f3f945ae85c4"
       },
       "status": "PASS",
       "upstream_model": "CurrencyHistorical"
@@ -3617,7 +3617,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CurrencyHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:40:22.418194+00:00",
+      "executed_at_utc": "2026-10-21T16:04:45.443792+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3637,8 +3637,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "4540610f85070d97c282273bebc5ab448808e2ec86c5417275ed6f8418c96a82",
-            "before_sha256": "4540610f85070d97c282273bebc5ab448808e2ec86c5417275ed6f8418c96a82",
+            "after_sha256": "1f2ff1d9e3b7cda6237e9195ee264272594557c37a65e77aea4224549b474c20",
+            "before_sha256": "1f2ff1d9e3b7cda6237e9195ee264272594557c37a65e77aea4224549b474c20",
             "path": "docs/evidence/C101/fixtures/yfinance/CurrencyHistorical.json"
           }
         ],
@@ -3732,7 +3732,7 @@
       "receipt": {
         "model_identity": "yfinance::CurrencyHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/CurrencyHistorical/contract.json",
-        "sha256": "db13f53fedf908dc1d2eae2dd9d114b43696598ecdd7b835be2c448abddcfbf2"
+        "sha256": "33edf033607c577f0d99e4e7a428879747c1dd2e94ce6f9d7db208726a23a0a7"
       },
       "status": "PASS",
       "upstream_model": "CurrencyHistorical"
@@ -3740,7 +3740,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model CurrencyHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:40:24.738381+00:00",
+      "executed_at_utc": "2026-10-21T16:04:47.894327+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3760,8 +3760,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "4540610f85070d97c282273bebc5ab448808e2ec86c5417275ed6f8418c96a82",
-            "before_sha256": "4540610f85070d97c282273bebc5ab448808e2ec86c5417275ed6f8418c96a82",
+            "after_sha256": "1f2ff1d9e3b7cda6237e9195ee264272594557c37a65e77aea4224549b474c20",
+            "before_sha256": "1f2ff1d9e3b7cda6237e9195ee264272594557c37a65e77aea4224549b474c20",
             "path": "docs/evidence/C101/fixtures/yfinance/CurrencyHistorical.json"
           }
         ],
@@ -3855,7 +3855,7 @@
       "receipt": {
         "model_identity": "yfinance::CurrencyHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/CurrencyHistorical/counterfact.json",
-        "sha256": "435d6aa2bf8db974a32c911feed8051327e23399d829c968152ffba0b22eb8eb"
+        "sha256": "e2b5bc41d79e7415e53893a1ad982d7b831b94f1f66361e6c55d06749d7cafb1"
       },
       "status": "PASS",
       "upstream_model": "CurrencyHistorical"
@@ -3863,7 +3863,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityActive --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:40:25.860470+00:00",
+      "executed_at_utc": "2026-10-21T16:04:49.062848+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -4018,7 +4018,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityActive",
         "path": "docs/evidence/C101/receipts/yfinance/EquityActive/implementation.json",
-        "sha256": "35e570f2ad8289a8dd0c98e60a13e406f020ff481d398345cb971b9aea17c3cd"
+        "sha256": "45ac25d45a83dbc8dc533c94ef263e17c9dee22f0d8d33267ec1cbf158c17396"
       },
       "status": "PASS",
       "upstream_model": "EquityActive"
@@ -4026,7 +4026,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityActive --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:40:26.998342+00:00",
+      "executed_at_utc": "2026-10-21T16:04:50.260963+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -4136,7 +4136,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityActive",
         "path": "docs/evidence/C101/receipts/yfinance/EquityActive/direct.json",
-        "sha256": "182f4ea7980078ee56c2723c8869a73ad58763825296f3685b2ae2e51d4ac4e9"
+        "sha256": "11329fc26e00a2e1f55804a4cfa34891176836ad5461c7756b510f92f7e4b295"
       },
       "status": "PASS",
       "upstream_model": "EquityActive"
@@ -4144,7 +4144,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityActive --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:40:28.141222+00:00",
+      "executed_at_utc": "2026-10-21T16:04:51.467817+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -4254,7 +4254,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityActive",
         "path": "docs/evidence/C101/receipts/yfinance/EquityActive/service.json",
-        "sha256": "88a53bffb88ea1e75ca46b099373e856b03b79d6235e55321736c5dd32e53c7c"
+        "sha256": "e89d9ceb459648a3fd2d93878b8bdf0a3cd289df7f9a2cf724ed1d95cf792726"
       },
       "status": "PASS",
       "upstream_model": "EquityActive"
@@ -4262,7 +4262,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityActive --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:40:29.289676+00:00",
+      "executed_at_utc": "2026-10-21T16:04:52.668903+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -4372,7 +4372,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityActive",
         "path": "docs/evidence/C101/receipts/yfinance/EquityActive/contract.json",
-        "sha256": "10632ada0cf77d161f75889f9595eeb0aacc37a787ea25c92091d3fff1ba8cd5"
+        "sha256": "1356cb46bce53c0a11afc4ec1d49d6faada8b5184292b0539f40d739d0c19e57"
       },
       "status": "PASS",
       "upstream_model": "EquityActive"
@@ -4380,7 +4380,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityActive --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:40:31.570476+00:00",
+      "executed_at_utc": "2026-10-21T16:04:55.079562+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -4490,7 +4490,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityActive",
         "path": "docs/evidence/C101/receipts/yfinance/EquityActive/counterfact.json",
-        "sha256": "f6c31b45be30241f7bddbeae74cfdbd95fdd256ee710697000069159aefd3dda"
+        "sha256": "10398cdea25adbf6c859a21e502bb84590e90846b275e6876bdcb17d152f6c09"
       },
       "status": "PASS",
       "upstream_model": "EquityActive"
@@ -4498,7 +4498,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityAggressiveSmallCaps --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:40:32.683792+00:00",
+      "executed_at_utc": "2026-10-21T16:04:56.267660+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -4658,7 +4658,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityAggressiveSmallCaps",
         "path": "docs/evidence/C101/receipts/yfinance/EquityAggressiveSmallCaps/implementation.json",
-        "sha256": "83f5d9c31fc409d5e660dd9155e1489e4c35a685b5724b648a5759ea986a2ca6"
+        "sha256": "a8c60ba01ec7af78c5ce134a802ebbd03a743457c757a22c5e7bb904a7cb4505"
       },
       "status": "PASS",
       "upstream_model": "EquityAggressiveSmallCaps"
@@ -4666,7 +4666,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityAggressiveSmallCaps --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:40:33.829931+00:00",
+      "executed_at_utc": "2026-10-21T16:04:57.468157+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -4781,7 +4781,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityAggressiveSmallCaps",
         "path": "docs/evidence/C101/receipts/yfinance/EquityAggressiveSmallCaps/direct.json",
-        "sha256": "368b74ae755558dd3647f0c47fcaa1498e0a8312476f5f65cd715524e393c0c5"
+        "sha256": "3b72758487a5f7905a89cbe304870fc7c173d9b7fd15d8bb0965fc87150aeb2d"
       },
       "status": "PASS",
       "upstream_model": "EquityAggressiveSmallCaps"
@@ -4789,7 +4789,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityAggressiveSmallCaps --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:40:34.968858+00:00",
+      "executed_at_utc": "2026-10-21T16:04:58.677950+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -4904,7 +4904,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityAggressiveSmallCaps",
         "path": "docs/evidence/C101/receipts/yfinance/EquityAggressiveSmallCaps/service.json",
-        "sha256": "8ecf8270c2e1eeda6cd79d8074214f46852f8b475686c4cb9df901ff1db49461"
+        "sha256": "76238d1f68000ea194c246c84b8be53a09af4b170ad3c7c8539e7128628c37da"
       },
       "status": "PASS",
       "upstream_model": "EquityAggressiveSmallCaps"
@@ -4912,7 +4912,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityAggressiveSmallCaps --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:40:36.100743+00:00",
+      "executed_at_utc": "2026-10-21T16:04:59.878246+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -5027,7 +5027,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityAggressiveSmallCaps",
         "path": "docs/evidence/C101/receipts/yfinance/EquityAggressiveSmallCaps/contract.json",
-        "sha256": "8e3ce92dfbd5a5bfbe418623ac491ab38f3812de7618cc5169840ba7f2129ea8"
+        "sha256": "8ac60d98b44fdeb78daa7cf284ee56b730ae4e8266f7844c25389d986f106977"
       },
       "status": "PASS",
       "upstream_model": "EquityAggressiveSmallCaps"
@@ -5035,7 +5035,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityAggressiveSmallCaps --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:40:38.377719+00:00",
+      "executed_at_utc": "2026-10-21T16:05:02.295040+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -5150,7 +5150,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityAggressiveSmallCaps",
         "path": "docs/evidence/C101/receipts/yfinance/EquityAggressiveSmallCaps/counterfact.json",
-        "sha256": "9df3c04e866a0888387c2e78039e9d5e6a95c6d66b7f7e5e5d23658e65fcdcae"
+        "sha256": "f56791f36ea1666f5bc396fc364a64dbd45ac8fdbe0adbc723434e2913e92a61"
       },
       "status": "PASS",
       "upstream_model": "EquityAggressiveSmallCaps"
@@ -5158,7 +5158,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityGainers --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:40:39.495530+00:00",
+      "executed_at_utc": "2026-10-21T16:05:03.481304+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -5313,7 +5313,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityGainers",
         "path": "docs/evidence/C101/receipts/yfinance/EquityGainers/implementation.json",
-        "sha256": "85c8a7cf3bf3704395e053c943275188eb42423bbbc4801078890b8cd13d6142"
+        "sha256": "75dcdc9e6f39eac74c38e9922ad8f4db3a2f33ced06ac00f859631f746bd39a4"
       },
       "status": "PASS",
       "upstream_model": "EquityGainers"
@@ -5321,7 +5321,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityGainers --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:40:40.632856+00:00",
+      "executed_at_utc": "2026-10-21T16:05:04.683798+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -5431,7 +5431,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityGainers",
         "path": "docs/evidence/C101/receipts/yfinance/EquityGainers/direct.json",
-        "sha256": "e63446b0c04822bd790d1033e1bea7646e86a651e130b486e2906e14cae4c469"
+        "sha256": "53c10987a564e5534870d07bfe5349a5488370c6d0ded0ae3a6c5a24689fd05b"
       },
       "status": "PASS",
       "upstream_model": "EquityGainers"
@@ -5439,7 +5439,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityGainers --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:40:41.763362+00:00",
+      "executed_at_utc": "2026-10-21T16:05:05.887815+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -5549,7 +5549,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityGainers",
         "path": "docs/evidence/C101/receipts/yfinance/EquityGainers/service.json",
-        "sha256": "a0362fcc8ebe4101e6ecee66bcf75fa4ef007c3de040360bd1c2d5e8c51e3c90"
+        "sha256": "5690437dcfc894b722211c26fb93f6525e6c469952be9fbe9e500a76d08eb18f"
       },
       "status": "PASS",
       "upstream_model": "EquityGainers"
@@ -5557,7 +5557,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityGainers --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:40:42.904120+00:00",
+      "executed_at_utc": "2026-10-21T16:05:07.085733+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -5667,7 +5667,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityGainers",
         "path": "docs/evidence/C101/receipts/yfinance/EquityGainers/contract.json",
-        "sha256": "a4cffe07f86c247406f9edd6ed955923c7365ebceaca2ffd6d60821281001a1b"
+        "sha256": "ebe3932c071489d38ebde19497c6692efc966085360e4cd8638e893c346bd978"
       },
       "status": "PASS",
       "upstream_model": "EquityGainers"
@@ -5675,7 +5675,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityGainers --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:40:45.190483+00:00",
+      "executed_at_utc": "2026-10-21T16:05:09.490520+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -5785,7 +5785,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityGainers",
         "path": "docs/evidence/C101/receipts/yfinance/EquityGainers/counterfact.json",
-        "sha256": "8e73630725b652982cd64469817bf34e3adcdb57b9bb36ebbcea792914bfe22b"
+        "sha256": "d28bddd8abe105b9be3fc7d97acc83128e1fe5d6bb38a4936b3911c1b7637487"
       },
       "status": "PASS",
       "upstream_model": "EquityGainers"
@@ -5793,7 +5793,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:40:46.315783+00:00",
+      "executed_at_utc": "2026-10-21T16:05:10.681928+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -5958,7 +5958,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/EquityHistorical/implementation.json",
-        "sha256": "f6093cd3c8c1b4e8a50705d1b91b1c344be108853e0f89481a4d587d101789ec"
+        "sha256": "1ac4c4756291fe3de5a93ed574ba967e93ef86b0d5885e2997cba7790b390396"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -5966,7 +5966,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:40:47.477441+00:00",
+      "executed_at_utc": "2026-10-21T16:05:11.911407+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -6086,7 +6086,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/EquityHistorical/direct.json",
-        "sha256": "84f0a3ac95ca09571921f79ecc2ec567130eef4d0adba3ab38e8049742c18fc1"
+        "sha256": "7033fe076d1d855e75f51a095fde4d8f4bf006f5064a051c550d15cfa24f425e"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -6094,7 +6094,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:40:48.637673+00:00",
+      "executed_at_utc": "2026-10-21T16:05:13.140702+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -6214,7 +6214,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/EquityHistorical/service.json",
-        "sha256": "a3af7199a9d540dd5adc1aa8d236303081633074b95c848014350a583e48d26f"
+        "sha256": "da6bef4f43a4e753fd793529f5e6fb9e20f8faff92d7a9e35c062d031b32fe62"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -6222,7 +6222,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:40:49.796576+00:00",
+      "executed_at_utc": "2026-10-21T16:05:14.366397+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -6342,7 +6342,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/EquityHistorical/contract.json",
-        "sha256": "3fcd90d6224193a60a6eb1e8c8594cc3dbb0072faf97e70f4a44214084af1e77"
+        "sha256": "7e9daf653988ad8343ba81136964126fd63348fe50bed460f0779de1cf4da879"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -6350,7 +6350,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:40:52.104733+00:00",
+      "executed_at_utc": "2026-10-21T16:05:16.832521+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -6470,7 +6470,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/EquityHistorical/counterfact.json",
-        "sha256": "c014478389a3f58ed81105f731e545a2487e4ff67284438d7ce154975191a963"
+        "sha256": "67f8db460833e2bddea1d8d88c6b9cfa7913fc0cdde85d848cec4fb730a1fe91"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -6478,7 +6478,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityInfo --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:40:53.225668+00:00",
+      "executed_at_utc": "2026-10-21T16:05:18.002662+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -6643,7 +6643,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityInfo",
         "path": "docs/evidence/C101/receipts/yfinance/EquityInfo/implementation.json",
-        "sha256": "69c894bcd6b69da3c8c4b4c3afe6aba96a549c5aded9504375f23c78a85c739f"
+        "sha256": "904c4a1a48d76bdf127734f03dfddb85e0419c563815f1181d2bd14348c935d3"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -6651,7 +6651,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityInfo --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:40:54.362677+00:00",
+      "executed_at_utc": "2026-10-21T16:05:19.209460+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -6771,7 +6771,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityInfo",
         "path": "docs/evidence/C101/receipts/yfinance/EquityInfo/direct.json",
-        "sha256": "76a80adf8ff4ead96dc5be89ddb3a718b39543ad8aa9c5a6be2f1dd48005ab74"
+        "sha256": "65a5f944eec155c17afd647fd7ec55fd413b7d0d3e9f4da3eceddfc38427429d"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -6779,7 +6779,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityInfo --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:40:55.499720+00:00",
+      "executed_at_utc": "2026-10-21T16:05:20.411203+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -6899,7 +6899,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityInfo",
         "path": "docs/evidence/C101/receipts/yfinance/EquityInfo/service.json",
-        "sha256": "89f6e0edb0093602d3ac52aebcfa360b4035c6318352e220ee2fca56fef9ad4d"
+        "sha256": "9a4fcd526537736228e070c1c5f721fa33735e83bc4a92d6995e57337f52ab50"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -6907,7 +6907,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityInfo --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:40:56.634669+00:00",
+      "executed_at_utc": "2026-10-21T16:05:21.615134+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -7027,7 +7027,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityInfo",
         "path": "docs/evidence/C101/receipts/yfinance/EquityInfo/contract.json",
-        "sha256": "9a579b5cbce3c35e59c295c6b029c90f8389fc0af0a2b511433652003c2a06cc"
+        "sha256": "b4b33389f5c362a0b8ebbcdf0fc749ff981625cf589f84031ccb46c0e9e3d071"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -7035,7 +7035,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityInfo --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:40:58.915137+00:00",
+      "executed_at_utc": "2026-10-21T16:05:24.017657+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -7155,7 +7155,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityInfo",
         "path": "docs/evidence/C101/receipts/yfinance/EquityInfo/counterfact.json",
-        "sha256": "a8c4f33979288de3c67a9db12c14c8ea38bd7bc7cab4c8e385da15d928f3c1e0"
+        "sha256": "c7546facb2f75fbe881ef30ddf476afaa617968f287d3384be142f46af0cd19b"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -7163,7 +7163,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityLosers --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:41:00.051911+00:00",
+      "executed_at_utc": "2026-10-21T16:05:25.188913+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -7318,7 +7318,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityLosers",
         "path": "docs/evidence/C101/receipts/yfinance/EquityLosers/implementation.json",
-        "sha256": "d76adf0bc743deef52535e172ba331fe3f02f634413455e9d706aac261c82440"
+        "sha256": "ead9b16105abd02c48078288f1c252868c685b0b0eab9d380874f740a575e5c0"
       },
       "status": "PASS",
       "upstream_model": "EquityLosers"
@@ -7326,7 +7326,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityLosers --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:41:01.188122+00:00",
+      "executed_at_utc": "2026-10-21T16:05:26.397239+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -7436,7 +7436,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityLosers",
         "path": "docs/evidence/C101/receipts/yfinance/EquityLosers/direct.json",
-        "sha256": "47bce52303a316d06dc06c73605451ec636c467f1e3f202597561fb30ae691ee"
+        "sha256": "8ca52165e357ac07535aed6b08ca2438a0eb5504a4f5540539310074169dd805"
       },
       "status": "PASS",
       "upstream_model": "EquityLosers"
@@ -7444,7 +7444,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityLosers --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:41:02.319129+00:00",
+      "executed_at_utc": "2026-10-21T16:05:27.592899+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -7554,7 +7554,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityLosers",
         "path": "docs/evidence/C101/receipts/yfinance/EquityLosers/service.json",
-        "sha256": "0a891f0e246b04d72f78b3ced65270ab4b2508150686d0bd23f33c458806a003"
+        "sha256": "19cf577fe226cf59dc9ca79e9a1c758f8a09153b223e87d9209897a5da285de6"
       },
       "status": "PASS",
       "upstream_model": "EquityLosers"
@@ -7562,7 +7562,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityLosers --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:41:03.449786+00:00",
+      "executed_at_utc": "2026-10-21T16:05:28.784691+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -7672,7 +7672,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityLosers",
         "path": "docs/evidence/C101/receipts/yfinance/EquityLosers/contract.json",
-        "sha256": "0c1c29fb56707cab153beb24bdb7b81ef879b0e96ff33bbc07469f6f718e51c7"
+        "sha256": "63ef970c2d518b9ac296480553c848679d76860cacb939d5f06835d6278165c9"
       },
       "status": "PASS",
       "upstream_model": "EquityLosers"
@@ -7680,7 +7680,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityLosers --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:41:05.725836+00:00",
+      "executed_at_utc": "2026-10-21T16:05:31.179791+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -7790,7 +7790,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityLosers",
         "path": "docs/evidence/C101/receipts/yfinance/EquityLosers/counterfact.json",
-        "sha256": "fc0652416eedd999f8a875129be75e688af12ae87a391f67b3d792511dc93570"
+        "sha256": "3a35af733b567a991bd0a8748a68b61a076711c7029f7847a0ca0e87d6e3f60f"
       },
       "status": "PASS",
       "upstream_model": "EquityLosers"
@@ -7798,7 +7798,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityQuote --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:41:06.857819+00:00",
+      "executed_at_utc": "2026-10-21T16:05:32.352866+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -7958,7 +7958,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityQuote",
         "path": "docs/evidence/C101/receipts/yfinance/EquityQuote/implementation.json",
-        "sha256": "2255020a358ca19290f3d8b6b244da4385ccfeee25a4280997bca7859face63e"
+        "sha256": "280c664a8248e16110c74b9fb6161f9055710926264d22d4252cf42dbb1ce735"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -7966,7 +7966,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityQuote --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:41:08.025643+00:00",
+      "executed_at_utc": "2026-10-21T16:05:33.593806+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -7986,8 +7986,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "c7e5df0a10704ff901803bacd2ef8e5a22e0c40cb0d23e8254e499859263c338",
-            "before_sha256": "c7e5df0a10704ff901803bacd2ef8e5a22e0c40cb0d23e8254e499859263c338",
+            "after_sha256": "15d37f13e991cba3c5eadf9d46acc2a05151fe955b0f280c51a5eb168aba233d",
+            "before_sha256": "15d37f13e991cba3c5eadf9d46acc2a05151fe955b0f280c51a5eb168aba233d",
             "path": "docs/evidence/C101/fixtures/yfinance/EquityQuote.json"
           }
         ],
@@ -8081,7 +8081,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityQuote",
         "path": "docs/evidence/C101/receipts/yfinance/EquityQuote/direct.json",
-        "sha256": "7d96d264ee8d6a0cf4a83dfaf77857c87708cc37e01a30e61b60560f253b61ec"
+        "sha256": "e1ac6feacaf04051f76bb1e16b1e495376631e862e9c1ced1ed4d142ae55cb33"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -8089,7 +8089,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityQuote --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:41:09.204275+00:00",
+      "executed_at_utc": "2026-10-21T16:05:34.825336+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -8109,8 +8109,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "c7e5df0a10704ff901803bacd2ef8e5a22e0c40cb0d23e8254e499859263c338",
-            "before_sha256": "c7e5df0a10704ff901803bacd2ef8e5a22e0c40cb0d23e8254e499859263c338",
+            "after_sha256": "15d37f13e991cba3c5eadf9d46acc2a05151fe955b0f280c51a5eb168aba233d",
+            "before_sha256": "15d37f13e991cba3c5eadf9d46acc2a05151fe955b0f280c51a5eb168aba233d",
             "path": "docs/evidence/C101/fixtures/yfinance/EquityQuote.json"
           }
         ],
@@ -8204,7 +8204,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityQuote",
         "path": "docs/evidence/C101/receipts/yfinance/EquityQuote/service.json",
-        "sha256": "0b0173c4240ed264e0908beb03a7c3eeb49c3b28105bbf75ccfac58c61e751b8"
+        "sha256": "6b0bdbd14d41f65e4b9e86bd05f9d646df63113df3f104797dc8bb5de1bf35e8"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -8212,7 +8212,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityQuote --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:41:10.369898+00:00",
+      "executed_at_utc": "2026-10-21T16:05:36.046370+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -8232,8 +8232,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "c7e5df0a10704ff901803bacd2ef8e5a22e0c40cb0d23e8254e499859263c338",
-            "before_sha256": "c7e5df0a10704ff901803bacd2ef8e5a22e0c40cb0d23e8254e499859263c338",
+            "after_sha256": "15d37f13e991cba3c5eadf9d46acc2a05151fe955b0f280c51a5eb168aba233d",
+            "before_sha256": "15d37f13e991cba3c5eadf9d46acc2a05151fe955b0f280c51a5eb168aba233d",
             "path": "docs/evidence/C101/fixtures/yfinance/EquityQuote.json"
           }
         ],
@@ -8327,7 +8327,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityQuote",
         "path": "docs/evidence/C101/receipts/yfinance/EquityQuote/contract.json",
-        "sha256": "4588f17b4d3b5e2824d5f497b734ba7577bf3def132bfd8af5d3a10e68e7c2e4"
+        "sha256": "966e29fa189be201bca8a9c7af04a882c7b9f3a06cbc592971f4ce8fff4f8315"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -8335,7 +8335,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityQuote --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:41:12.701462+00:00",
+      "executed_at_utc": "2026-10-21T16:05:38.504137+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -8355,8 +8355,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "c7e5df0a10704ff901803bacd2ef8e5a22e0c40cb0d23e8254e499859263c338",
-            "before_sha256": "c7e5df0a10704ff901803bacd2ef8e5a22e0c40cb0d23e8254e499859263c338",
+            "after_sha256": "15d37f13e991cba3c5eadf9d46acc2a05151fe955b0f280c51a5eb168aba233d",
+            "before_sha256": "15d37f13e991cba3c5eadf9d46acc2a05151fe955b0f280c51a5eb168aba233d",
             "path": "docs/evidence/C101/fixtures/yfinance/EquityQuote.json"
           }
         ],
@@ -8450,7 +8450,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityQuote",
         "path": "docs/evidence/C101/receipts/yfinance/EquityQuote/counterfact.json",
-        "sha256": "c30eca81d4f71e84dd72bcec6fbf3e25a833dbfc3a5eb5a0a7eb1f4c1c08de7b"
+        "sha256": "35aa9f3df45448131904681ccefafa7d9ac89e7b3baa36d74afa6a8fb756bc77"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -8458,7 +8458,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityScreener --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:41:13.808124+00:00",
+      "executed_at_utc": "2026-10-21T16:05:39.682224+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -8613,7 +8613,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityScreener",
         "path": "docs/evidence/C101/receipts/yfinance/EquityScreener/implementation.json",
-        "sha256": "fd247c84c672a1dc31fb15a1e58d2708067685e07fbd2cd8f9a153f7741049bb"
+        "sha256": "d3af62a7eddca21ec3bfad84de70f6427d75fc6ad39a86a886bc91ea47fa2b4d"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -8621,7 +8621,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityScreener --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:41:14.938341+00:00",
+      "executed_at_utc": "2026-10-21T16:05:40.878844+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -8731,7 +8731,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityScreener",
         "path": "docs/evidence/C101/receipts/yfinance/EquityScreener/direct.json",
-        "sha256": "2f7cbddcdcd337d417a4210b30a2c7864a5d1f6e58df3fcd96b873b57cc21213"
+        "sha256": "7be334e70bd9b2fb5a82f3b1ec44483499436da71606875eaf29639b59e73af2"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -8739,7 +8739,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityScreener --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:41:16.075866+00:00",
+      "executed_at_utc": "2026-10-21T16:05:42.081428+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -8849,7 +8849,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityScreener",
         "path": "docs/evidence/C101/receipts/yfinance/EquityScreener/service.json",
-        "sha256": "60040c2d6ed1b20cff1ded1df741104c9291a657ac4b2b9133b11a04d92c4fc8"
+        "sha256": "eb5a8a103f4e37fe277ef3a8ac9827cdbe517b363510ab4e56045305e0129b54"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -8857,7 +8857,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityScreener --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:41:17.203651+00:00",
+      "executed_at_utc": "2026-10-21T16:05:43.298967+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -8967,7 +8967,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityScreener",
         "path": "docs/evidence/C101/receipts/yfinance/EquityScreener/contract.json",
-        "sha256": "b9d783fc11eccbb6ed67e9642980872584de62d4b8fa45da163692b4ec6b3458"
+        "sha256": "ac7f94fb82c5aa1c95308465f15747707c36e10c8636afd372ff525f5e8dfb1a"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -8975,7 +8975,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityScreener --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:41:19.471574+00:00",
+      "executed_at_utc": "2026-10-21T16:05:45.722046+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -9085,7 +9085,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityScreener",
         "path": "docs/evidence/C101/receipts/yfinance/EquityScreener/counterfact.json",
-        "sha256": "a9c8f86ea42b3171b838616936e1b417127b8406dfd9e70040312fa6038487c8"
+        "sha256": "f1d7525993c675cbeacc06d820f10a1f0d7deab122b9f126a76f468e424b9a2a"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -9093,7 +9093,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityUndervaluedGrowth --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:41:20.588500+00:00",
+      "executed_at_utc": "2026-10-21T16:05:46.914024+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -9253,7 +9253,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityUndervaluedGrowth",
         "path": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedGrowth/implementation.json",
-        "sha256": "a191d9ef4a00b4e39fb8b3e7c2a1ea35647a57de4347b3a2b7ee7f31c3095643"
+        "sha256": "744dc2ede5aedadd0c85e9448188f5668dabc0d8b6fc4489a1f7ed992b923285"
       },
       "status": "PASS",
       "upstream_model": "EquityUndervaluedGrowth"
@@ -9261,7 +9261,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityUndervaluedGrowth --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:41:21.716392+00:00",
+      "executed_at_utc": "2026-10-21T16:05:48.108439+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -9376,7 +9376,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityUndervaluedGrowth",
         "path": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedGrowth/direct.json",
-        "sha256": "91dee607727bb16046344309d980be50cd2a52f5ada382e5456943a6cd0bd353"
+        "sha256": "6925cac49eb8bcfb68b3f61d61ab9555e3b2242afaccc01db5ed2fb5aeb1bcc2"
       },
       "status": "PASS",
       "upstream_model": "EquityUndervaluedGrowth"
@@ -9384,7 +9384,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityUndervaluedGrowth --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:41:22.854172+00:00",
+      "executed_at_utc": "2026-10-21T16:05:49.305352+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -9499,7 +9499,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityUndervaluedGrowth",
         "path": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedGrowth/service.json",
-        "sha256": "accc0dc0516d8f6ef7c885702d1babfdcdfe26edb513dd8a05b87451865ccf32"
+        "sha256": "ea4a4aacbbaad9675bd06db32a7381b7ecab95752495c8b5fa8bc1c1bb78871a"
       },
       "status": "PASS",
       "upstream_model": "EquityUndervaluedGrowth"
@@ -9507,7 +9507,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityUndervaluedGrowth --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:41:23.985300+00:00",
+      "executed_at_utc": "2026-10-21T16:05:50.516123+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -9622,7 +9622,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityUndervaluedGrowth",
         "path": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedGrowth/contract.json",
-        "sha256": "66f9e97e87af925d8fe921ca2330b2c76698bcfd307fe0316d590c3b3b1bbeae"
+        "sha256": "e795c34f535b080439e28cf95804591535f8df94113517a2a78be9756dfa4e87"
       },
       "status": "PASS",
       "upstream_model": "EquityUndervaluedGrowth"
@@ -9630,7 +9630,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityUndervaluedGrowth --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:41:26.268754+00:00",
+      "executed_at_utc": "2026-10-21T16:05:52.946549+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -9745,7 +9745,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityUndervaluedGrowth",
         "path": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedGrowth/counterfact.json",
-        "sha256": "4d795b054a88fdfb38e3d97e3722552e268e70e6d516fe2b02d04ae86b195e10"
+        "sha256": "7dbbf010686b5e644489e04195bda27ad735eed54df7bed76f4cf041cec0e56e"
       },
       "status": "PASS",
       "upstream_model": "EquityUndervaluedGrowth"
@@ -9753,7 +9753,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityUndervaluedLargeCaps --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:41:27.372869+00:00",
+      "executed_at_utc": "2026-10-21T16:05:54.121360+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -9913,7 +9913,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityUndervaluedLargeCaps",
         "path": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedLargeCaps/implementation.json",
-        "sha256": "e52face967aad6a3ea15ba28ad3573cb2c5bc31584b2bb7f4df8522bfc0f40d1"
+        "sha256": "7a1921d5030e86a111e20bba2a9255f6820c956b81becc8896b181e62a7c56c3"
       },
       "status": "PASS",
       "upstream_model": "EquityUndervaluedLargeCaps"
@@ -9921,7 +9921,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityUndervaluedLargeCaps --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:41:28.522838+00:00",
+      "executed_at_utc": "2026-10-21T16:05:55.319611+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -10036,7 +10036,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityUndervaluedLargeCaps",
         "path": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedLargeCaps/direct.json",
-        "sha256": "2f097ac10537eaacae371b9dd82680f6a55e18379818ebf3dfca6c342081f515"
+        "sha256": "3645c62a0129445bbf40691cb64a4f5965da420e8c099f047e61a2e913df8992"
       },
       "status": "PASS",
       "upstream_model": "EquityUndervaluedLargeCaps"
@@ -10044,7 +10044,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityUndervaluedLargeCaps --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:41:29.662721+00:00",
+      "executed_at_utc": "2026-10-21T16:05:56.529392+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -10159,7 +10159,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityUndervaluedLargeCaps",
         "path": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedLargeCaps/service.json",
-        "sha256": "be2f25abda81f50fce778ecac7384170d6fb92d0110783a89db7c9a8a0b0dc35"
+        "sha256": "4e5ed7a0d59e00f9aa3b2072c8a87f156987b24dd206ce2fd224ea8321ce3b7f"
       },
       "status": "PASS",
       "upstream_model": "EquityUndervaluedLargeCaps"
@@ -10167,7 +10167,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityUndervaluedLargeCaps --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:41:30.791855+00:00",
+      "executed_at_utc": "2026-10-21T16:05:57.740078+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -10282,7 +10282,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityUndervaluedLargeCaps",
         "path": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedLargeCaps/contract.json",
-        "sha256": "4b3a158d88748bfda05bd1ee2a1a3d4cabee5b864c71d2aadbd1067054e09e68"
+        "sha256": "b493feb96bf80550deb7a7a2d30cd93b36da65edc826b426a79cdfb8f69f2fd6"
       },
       "status": "PASS",
       "upstream_model": "EquityUndervaluedLargeCaps"
@@ -10290,7 +10290,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityUndervaluedLargeCaps --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:41:33.067868+00:00",
+      "executed_at_utc": "2026-10-21T16:06:00.143990+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -10405,7 +10405,7 @@
       "receipt": {
         "model_identity": "yfinance::EquityUndervaluedLargeCaps",
         "path": "docs/evidence/C101/receipts/yfinance/EquityUndervaluedLargeCaps/counterfact.json",
-        "sha256": "ef80687da1d4e9cf5ba3cde95e8b613109616541f36d2d28447ae03c14f445fb"
+        "sha256": "828fd9bae72c80ab600cf51915abd287788a5df3057d66f49a05a32e52e5a2cd"
       },
       "status": "PASS",
       "upstream_model": "EquityUndervaluedLargeCaps"
@@ -10413,7 +10413,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EtfHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:41:34.190673+00:00",
+      "executed_at_utc": "2026-10-21T16:06:01.327946+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -10578,7 +10578,7 @@
       "receipt": {
         "model_identity": "yfinance::EtfHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/EtfHistorical/implementation.json",
-        "sha256": "f7e56ecf069de5d9df136bf98f6594ab5e8b5155c735f1423055fdf53d013e60"
+        "sha256": "9d2b86832835a28e6057fa05abb361416bcd74126a6dc98f848b6f3c3c5c3194"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -10586,7 +10586,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EtfHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:41:35.343525+00:00",
+      "executed_at_utc": "2026-10-21T16:06:02.569935+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -10706,7 +10706,7 @@
       "receipt": {
         "model_identity": "yfinance::EtfHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/EtfHistorical/direct.json",
-        "sha256": "3b8e9099a04bb1197407d82db51e3f95f8df8c82a54b865852e592abe5947a8a"
+        "sha256": "eb7c11def916abb1a4c277d664c379a748c2e7c0c096d6973269ebb3b853a2ae"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -10714,7 +10714,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EtfHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:41:36.504986+00:00",
+      "executed_at_utc": "2026-10-21T16:06:03.797849+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -10834,7 +10834,7 @@
       "receipt": {
         "model_identity": "yfinance::EtfHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/EtfHistorical/service.json",
-        "sha256": "235bd86a7ce4f0bb8e407279e7f61534d98022f8cb0f226093d452e97735db49"
+        "sha256": "4489bfb85e173f454bd5297ca0f47328a0ac93a87deeca3437e1d6f7843824ec"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -10842,7 +10842,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EtfHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:41:37.668953+00:00",
+      "executed_at_utc": "2026-10-21T16:06:05.014590+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -10962,7 +10962,7 @@
       "receipt": {
         "model_identity": "yfinance::EtfHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/EtfHistorical/contract.json",
-        "sha256": "af243f50c087e74afea3632082707ef35bfc7ad79e5dd2e483120b72d44e8216"
+        "sha256": "95a2342c403634e472b35459d7d35a60c5cd87eaa67ac4916e177181ec86cf1d"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -10970,7 +10970,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EtfHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:41:40.010443+00:00",
+      "executed_at_utc": "2026-10-21T16:06:07.481632+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -11090,7 +11090,7 @@
       "receipt": {
         "model_identity": "yfinance::EtfHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/EtfHistorical/counterfact.json",
-        "sha256": "761344dc1007f49956c56f7121d83bb95a4d3b8b42b1ee2e6ae0319bc834b593"
+        "sha256": "45067c345441a3c0afa9883d0a23de03966e6607c07ff7e67231aebe4660b50a"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -11098,7 +11098,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EtfInfo --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:41:41.129042+00:00",
+      "executed_at_utc": "2026-10-21T16:06:08.658325+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -11263,7 +11263,7 @@
       "receipt": {
         "model_identity": "yfinance::EtfInfo",
         "path": "docs/evidence/C101/receipts/yfinance/EtfInfo/implementation.json",
-        "sha256": "4ed29ffe3522b82517de3c974bcd3d614281442c6a77b4e7b710034cecc9573d"
+        "sha256": "dfb8dc203ab53f7eeb385c04642b859753e69380a1271d20245173c38639d870"
       },
       "status": "PASS",
       "upstream_model": "EtfInfo"
@@ -11271,7 +11271,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EtfInfo --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:41:42.270603+00:00",
+      "executed_at_utc": "2026-10-21T16:06:09.860600+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -11391,7 +11391,7 @@
       "receipt": {
         "model_identity": "yfinance::EtfInfo",
         "path": "docs/evidence/C101/receipts/yfinance/EtfInfo/direct.json",
-        "sha256": "5a7fa916c8e46226e957370e18cbf47017e97587d0b2d5d8bf3a14c7390262ae"
+        "sha256": "a48bd9d34a292d5b1ed092f9a7c6fc00421d8f75686c1531ab1f9d3f5d36fe73"
       },
       "status": "PASS",
       "upstream_model": "EtfInfo"
@@ -11399,7 +11399,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EtfInfo --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:41:43.403131+00:00",
+      "executed_at_utc": "2026-10-21T16:06:11.058059+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -11519,7 +11519,7 @@
       "receipt": {
         "model_identity": "yfinance::EtfInfo",
         "path": "docs/evidence/C101/receipts/yfinance/EtfInfo/service.json",
-        "sha256": "ba043284d10ed8f7f7579e67dcc8171f96f5b36b2a43d2bfce3adad949a78956"
+        "sha256": "7f51efc5f120f8e82ac2f5a2c6c99b196d1aca2ca0e213f2ccd04ceb79087f98"
       },
       "status": "PASS",
       "upstream_model": "EtfInfo"
@@ -11527,7 +11527,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EtfInfo --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:41:44.536012+00:00",
+      "executed_at_utc": "2026-10-21T16:06:12.276077+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -11647,7 +11647,7 @@
       "receipt": {
         "model_identity": "yfinance::EtfInfo",
         "path": "docs/evidence/C101/receipts/yfinance/EtfInfo/contract.json",
-        "sha256": "6fe29cb9c4f65c182ec1b5030cbf02779069d4ee421f0721595212b7ec73670f"
+        "sha256": "ea6e980ddf0efa86980877bd5e89cf3de557eef44721656c33bd343d840b5573"
       },
       "status": "PASS",
       "upstream_model": "EtfInfo"
@@ -11655,7 +11655,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EtfInfo --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:41:46.817532+00:00",
+      "executed_at_utc": "2026-10-21T16:06:14.694611+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -11775,7 +11775,7 @@
       "receipt": {
         "model_identity": "yfinance::EtfInfo",
         "path": "docs/evidence/C101/receipts/yfinance/EtfInfo/counterfact.json",
-        "sha256": "620c977c34091721265b7138327cbcab0e749fe5ff68dbd246db7d5d04795689"
+        "sha256": "aaeeacd5fea1a81cf89ee11b775f1655701e04cec868caf3acd80afdc3cdf416"
       },
       "status": "PASS",
       "upstream_model": "EtfInfo"
@@ -11783,7 +11783,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model FuturesCurve --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:41:47.935039+00:00",
+      "executed_at_utc": "2026-10-21T16:06:15.860585+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -11953,7 +11953,7 @@
       "receipt": {
         "model_identity": "yfinance::FuturesCurve",
         "path": "docs/evidence/C101/receipts/yfinance/FuturesCurve/implementation.json",
-        "sha256": "a7f3e3c185662abcdfec751c3acd686e90c3331aca390cf355d63c680b5cb9ed"
+        "sha256": "9bf5780d9614a49b22135dd6d3de3cd6c0ac305a1cdb2bb6fb4a15f30ff9526d"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -11961,7 +11961,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model FuturesCurve --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:41:49.075345+00:00",
+      "executed_at_utc": "2026-10-21T16:06:17.082880+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -12086,7 +12086,7 @@
       "receipt": {
         "model_identity": "yfinance::FuturesCurve",
         "path": "docs/evidence/C101/receipts/yfinance/FuturesCurve/direct.json",
-        "sha256": "bd36c392e36c26e44cb8572cbeb41f2086024228b4777312d78cfdaf9106e82b"
+        "sha256": "18da92d826f7e3260b1276cdf8bcf711e7fd568c1e0eb56ec625e981e3bad0c2"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -12094,7 +12094,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model FuturesCurve --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:41:50.219611+00:00",
+      "executed_at_utc": "2026-10-21T16:06:18.287766+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -12219,7 +12219,7 @@
       "receipt": {
         "model_identity": "yfinance::FuturesCurve",
         "path": "docs/evidence/C101/receipts/yfinance/FuturesCurve/service.json",
-        "sha256": "1f9a682f0d5387f14fcc206f08cc06a1b1015b3b11bbdd43db4fb963ce8da1d1"
+        "sha256": "ef9a8fc511a95f9a3c5b50c3f7af8c24cb95cc77e4f283de7a8fde2ff3ea0246"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -12227,7 +12227,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model FuturesCurve --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:41:51.360836+00:00",
+      "executed_at_utc": "2026-10-21T16:06:19.493591+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -12352,7 +12352,7 @@
       "receipt": {
         "model_identity": "yfinance::FuturesCurve",
         "path": "docs/evidence/C101/receipts/yfinance/FuturesCurve/contract.json",
-        "sha256": "1bb02ca7f115fa11d25e342f166520c733b5dbd297ab1b4e1f7adbe1f0d1c05e"
+        "sha256": "26a8708a71526a279469129219e45aee0d73c4d89cdfc956d4b2e0bef78ce048"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -12360,7 +12360,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model FuturesCurve --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:41:53.653748+00:00",
+      "executed_at_utc": "2026-10-21T16:06:21.913285+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -12485,7 +12485,7 @@
       "receipt": {
         "model_identity": "yfinance::FuturesCurve",
         "path": "docs/evidence/C101/receipts/yfinance/FuturesCurve/counterfact.json",
-        "sha256": "66e4d4ba1e8aea4ea9593eac3c9ba795ec4effe2aae233797b1bb77423a7bd7d"
+        "sha256": "a37ddd40597db2a7a6e290e56a1e6fc071ed183b53790d06b38a242b44c7dd78"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -12493,7 +12493,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model FuturesHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:41:54.766643+00:00",
+      "executed_at_utc": "2026-10-21T16:06:23.099830+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -12653,7 +12653,7 @@
       "receipt": {
         "model_identity": "yfinance::FuturesHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/FuturesHistorical/implementation.json",
-        "sha256": "f26ec3f2b1ef07f2828f994d1e207a8dc67e3bdca0e2ab8d909cb964e6dfa61f"
+        "sha256": "078b4515ffdf7e19986cedd819b3d574b0fe53c1bf1b65891cef49cd8e98f505"
       },
       "status": "PASS",
       "upstream_model": "FuturesHistorical"
@@ -12661,7 +12661,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model FuturesHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:41:55.921346+00:00",
+      "executed_at_utc": "2026-10-21T16:06:24.328593+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -12681,8 +12681,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "e91ea6acda795ec3ee506e1f85cc8222bd20fe01669ce112a9c5f07d1f2e5f3d",
-            "before_sha256": "e91ea6acda795ec3ee506e1f85cc8222bd20fe01669ce112a9c5f07d1f2e5f3d",
+            "after_sha256": "2dfcd9df03548c887b6f6986f323b463b1b8e0dc847a6dac4cb1b2d529f86cda",
+            "before_sha256": "2dfcd9df03548c887b6f6986f323b463b1b8e0dc847a6dac4cb1b2d529f86cda",
             "path": "docs/evidence/C101/fixtures/yfinance/FuturesHistorical.json"
           }
         ],
@@ -12776,7 +12776,7 @@
       "receipt": {
         "model_identity": "yfinance::FuturesHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/FuturesHistorical/direct.json",
-        "sha256": "5ae85d7d19498eecadd81c2eab51f65dbaeaa6ca5149c11c1652f6ef97c35060"
+        "sha256": "f2ca63a5b8808bc835b1be72218055014f69f0b02bd158661a26f2dec5b80c4a"
       },
       "status": "PASS",
       "upstream_model": "FuturesHistorical"
@@ -12784,7 +12784,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model FuturesHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:41:57.072059+00:00",
+      "executed_at_utc": "2026-10-21T16:06:25.550355+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -12804,8 +12804,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "e91ea6acda795ec3ee506e1f85cc8222bd20fe01669ce112a9c5f07d1f2e5f3d",
-            "before_sha256": "e91ea6acda795ec3ee506e1f85cc8222bd20fe01669ce112a9c5f07d1f2e5f3d",
+            "after_sha256": "2dfcd9df03548c887b6f6986f323b463b1b8e0dc847a6dac4cb1b2d529f86cda",
+            "before_sha256": "2dfcd9df03548c887b6f6986f323b463b1b8e0dc847a6dac4cb1b2d529f86cda",
             "path": "docs/evidence/C101/fixtures/yfinance/FuturesHistorical.json"
           }
         ],
@@ -12899,7 +12899,7 @@
       "receipt": {
         "model_identity": "yfinance::FuturesHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/FuturesHistorical/service.json",
-        "sha256": "41307ab9517641c0175e185fff378aeb594a5cad97079906f9c0195f32980c7d"
+        "sha256": "49451c900f82f540514a5ae8c0c4834487173ccea6e083bb3d775869f85fd144"
       },
       "status": "PASS",
       "upstream_model": "FuturesHistorical"
@@ -12907,7 +12907,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model FuturesHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:41:58.223395+00:00",
+      "executed_at_utc": "2026-10-21T16:06:26.768737+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -12927,8 +12927,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "e91ea6acda795ec3ee506e1f85cc8222bd20fe01669ce112a9c5f07d1f2e5f3d",
-            "before_sha256": "e91ea6acda795ec3ee506e1f85cc8222bd20fe01669ce112a9c5f07d1f2e5f3d",
+            "after_sha256": "2dfcd9df03548c887b6f6986f323b463b1b8e0dc847a6dac4cb1b2d529f86cda",
+            "before_sha256": "2dfcd9df03548c887b6f6986f323b463b1b8e0dc847a6dac4cb1b2d529f86cda",
             "path": "docs/evidence/C101/fixtures/yfinance/FuturesHistorical.json"
           }
         ],
@@ -13022,7 +13022,7 @@
       "receipt": {
         "model_identity": "yfinance::FuturesHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/FuturesHistorical/contract.json",
-        "sha256": "39ae4fea901c1ce3e1ec2f21ba540eeb6e1f383b4d46995ed9cbfaecb0518061"
+        "sha256": "9f6f07792b7f3bf6240282761da515e1a3e7ec2779d0f2415350bc96f9527ce7"
       },
       "status": "PASS",
       "upstream_model": "FuturesHistorical"
@@ -13030,7 +13030,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model FuturesHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:42:00.543017+00:00",
+      "executed_at_utc": "2026-10-21T16:06:29.214862+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -13050,8 +13050,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "e91ea6acda795ec3ee506e1f85cc8222bd20fe01669ce112a9c5f07d1f2e5f3d",
-            "before_sha256": "e91ea6acda795ec3ee506e1f85cc8222bd20fe01669ce112a9c5f07d1f2e5f3d",
+            "after_sha256": "2dfcd9df03548c887b6f6986f323b463b1b8e0dc847a6dac4cb1b2d529f86cda",
+            "before_sha256": "2dfcd9df03548c887b6f6986f323b463b1b8e0dc847a6dac4cb1b2d529f86cda",
             "path": "docs/evidence/C101/fixtures/yfinance/FuturesHistorical.json"
           }
         ],
@@ -13145,7 +13145,7 @@
       "receipt": {
         "model_identity": "yfinance::FuturesHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/FuturesHistorical/counterfact.json",
-        "sha256": "209d7caef78e626f19630dc3fff6e7b88d3c4948d6e20a1b5103361c193369d8"
+        "sha256": "58d93e7e97f739f9b4c4c317dfdc7d56bee12cc6f6f8b5b2b9b32e4dcd58068e"
       },
       "status": "PASS",
       "upstream_model": "FuturesHistorical"
@@ -13153,7 +13153,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model GrowthTechEquities --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:42:01.676887+00:00",
+      "executed_at_utc": "2026-10-21T16:06:30.387602+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -13313,7 +13313,7 @@
       "receipt": {
         "model_identity": "yfinance::GrowthTechEquities",
         "path": "docs/evidence/C101/receipts/yfinance/GrowthTechEquities/implementation.json",
-        "sha256": "336af2eb2c8f9b79752bccc90cee69995aa04a236cbe377f66000b5eb960f40f"
+        "sha256": "2a501a18896db2e363d1c3c17c49858bdd76f7f0bd3d54bc509a5e6e98099fa3"
       },
       "status": "PASS",
       "upstream_model": "GrowthTechEquities"
@@ -13321,7 +13321,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model GrowthTechEquities --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:42:02.809601+00:00",
+      "executed_at_utc": "2026-10-21T16:06:31.586089+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -13436,7 +13436,7 @@
       "receipt": {
         "model_identity": "yfinance::GrowthTechEquities",
         "path": "docs/evidence/C101/receipts/yfinance/GrowthTechEquities/direct.json",
-        "sha256": "2faa8f5db15e7e3ab840b3be195d886f4de316b68a37369dbac7a7a8bb7ac938"
+        "sha256": "5db5bcde8f254f041255b7c9bf03248cd52a900f19a552825871513e7542def8"
       },
       "status": "PASS",
       "upstream_model": "GrowthTechEquities"
@@ -13444,7 +13444,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model GrowthTechEquities --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:42:03.956467+00:00",
+      "executed_at_utc": "2026-10-21T16:06:32.783041+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -13559,7 +13559,7 @@
       "receipt": {
         "model_identity": "yfinance::GrowthTechEquities",
         "path": "docs/evidence/C101/receipts/yfinance/GrowthTechEquities/service.json",
-        "sha256": "117fe0f0ed11fdb1c753adb0fe87bbf2bdbe564b52a359fd977f16c6af2b4f51"
+        "sha256": "950707c59d2b066a0fe91750ecb8763539fa02dacdfaf321085dc45954e72155"
       },
       "status": "PASS",
       "upstream_model": "GrowthTechEquities"
@@ -13567,7 +13567,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model GrowthTechEquities --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:42:05.094066+00:00",
+      "executed_at_utc": "2026-10-21T16:06:33.987076+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -13682,7 +13682,7 @@
       "receipt": {
         "model_identity": "yfinance::GrowthTechEquities",
         "path": "docs/evidence/C101/receipts/yfinance/GrowthTechEquities/contract.json",
-        "sha256": "097adbc9fe4e3ee8438ff44929b8399258b90f9fd61ef7ecb6a2032fb596fda9"
+        "sha256": "82dd0e5898a74781acce41e6fb637b6a4a83a84ee1bf1e77dad3ce7fd429c4a7"
       },
       "status": "PASS",
       "upstream_model": "GrowthTechEquities"
@@ -13690,7 +13690,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model GrowthTechEquities --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:42:07.372418+00:00",
+      "executed_at_utc": "2026-10-21T16:06:36.411093+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -13805,7 +13805,7 @@
       "receipt": {
         "model_identity": "yfinance::GrowthTechEquities",
         "path": "docs/evidence/C101/receipts/yfinance/GrowthTechEquities/counterfact.json",
-        "sha256": "fbc46c422d826f6c73676ff3467af51835ccd2849b5762685eb3a9c295304f3f"
+        "sha256": "e355ea0406a648e6e9b5a5864bf5d6eb7ec33acc17a4787f0a9228fe5b324bd2"
       },
       "status": "PASS",
       "upstream_model": "GrowthTechEquities"
@@ -13813,7 +13813,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model HistoricalDividends --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:42:08.504847+00:00",
+      "executed_at_utc": "2026-10-21T16:06:37.581279+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -13973,7 +13973,7 @@
       "receipt": {
         "model_identity": "yfinance::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/yfinance/HistoricalDividends/implementation.json",
-        "sha256": "24f2bcd3b07e259148d68b8d5dbdc796f8f6d157171bc2a1c958f84122641de4"
+        "sha256": "8691b3769e3e50ef7a96ae4dc77638e374058589a4911570575b82ae172dd413"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -13981,7 +13981,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model HistoricalDividends --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:42:09.681138+00:00",
+      "executed_at_utc": "2026-10-21T16:06:38.803914+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -14001,8 +14001,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "88249a91e5ef1500adfdaff937345b83afe199081277e69e3acb309d4536dba3",
-            "before_sha256": "88249a91e5ef1500adfdaff937345b83afe199081277e69e3acb309d4536dba3",
+            "after_sha256": "8fedfded8e1149e90a90366310cf448cc487a7e7ddb1547767e1d59eee355852",
+            "before_sha256": "8fedfded8e1149e90a90366310cf448cc487a7e7ddb1547767e1d59eee355852",
             "path": "docs/evidence/C101/fixtures/yfinance/HistoricalDividends.json"
           }
         ],
@@ -14096,7 +14096,7 @@
       "receipt": {
         "model_identity": "yfinance::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/yfinance/HistoricalDividends/direct.json",
-        "sha256": "ad59267224c2da28cbd4031519e0b48c203c7aa52ca18a19085ebf33824c40a7"
+        "sha256": "bf8028992d62e5ba1d0836fd6ded17c493600cc4994a65857c3c23e997c6fc9c"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -14104,7 +14104,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model HistoricalDividends --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:42:10.836377+00:00",
+      "executed_at_utc": "2026-10-21T16:06:40.027638+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -14124,8 +14124,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "88249a91e5ef1500adfdaff937345b83afe199081277e69e3acb309d4536dba3",
-            "before_sha256": "88249a91e5ef1500adfdaff937345b83afe199081277e69e3acb309d4536dba3",
+            "after_sha256": "8fedfded8e1149e90a90366310cf448cc487a7e7ddb1547767e1d59eee355852",
+            "before_sha256": "8fedfded8e1149e90a90366310cf448cc487a7e7ddb1547767e1d59eee355852",
             "path": "docs/evidence/C101/fixtures/yfinance/HistoricalDividends.json"
           }
         ],
@@ -14219,7 +14219,7 @@
       "receipt": {
         "model_identity": "yfinance::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/yfinance/HistoricalDividends/service.json",
-        "sha256": "abbf56e5cfce2864ba072cb5a19aa639df360654e965e4c3abb7d07044112d5b"
+        "sha256": "76f0a0bf35a68ba7d1ae6556dc92a1e6dad61b16f74a6847a3b2b6cc9fb0804b"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -14227,7 +14227,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model HistoricalDividends --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:42:11.981771+00:00",
+      "executed_at_utc": "2026-10-21T16:06:41.250330+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -14247,8 +14247,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "88249a91e5ef1500adfdaff937345b83afe199081277e69e3acb309d4536dba3",
-            "before_sha256": "88249a91e5ef1500adfdaff937345b83afe199081277e69e3acb309d4536dba3",
+            "after_sha256": "8fedfded8e1149e90a90366310cf448cc487a7e7ddb1547767e1d59eee355852",
+            "before_sha256": "8fedfded8e1149e90a90366310cf448cc487a7e7ddb1547767e1d59eee355852",
             "path": "docs/evidence/C101/fixtures/yfinance/HistoricalDividends.json"
           }
         ],
@@ -14342,7 +14342,7 @@
       "receipt": {
         "model_identity": "yfinance::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/yfinance/HistoricalDividends/contract.json",
-        "sha256": "85d864daa951e24cef0192cdabb14003296df31928ba4311769f485293bd3a60"
+        "sha256": "6ae00c51284263c6b91ed99280229917e40a4b72ce567584a3a7ac0d69331213"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -14350,7 +14350,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model HistoricalDividends --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:42:14.296409+00:00",
+      "executed_at_utc": "2026-10-21T16:06:43.690253+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -14370,8 +14370,8 @@
         "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
         "fixture": [
           {
-            "after_sha256": "88249a91e5ef1500adfdaff937345b83afe199081277e69e3acb309d4536dba3",
-            "before_sha256": "88249a91e5ef1500adfdaff937345b83afe199081277e69e3acb309d4536dba3",
+            "after_sha256": "8fedfded8e1149e90a90366310cf448cc487a7e7ddb1547767e1d59eee355852",
+            "before_sha256": "8fedfded8e1149e90a90366310cf448cc487a7e7ddb1547767e1d59eee355852",
             "path": "docs/evidence/C101/fixtures/yfinance/HistoricalDividends.json"
           }
         ],
@@ -14465,7 +14465,7 @@
       "receipt": {
         "model_identity": "yfinance::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/yfinance/HistoricalDividends/counterfact.json",
-        "sha256": "8835d9406929f912b9b8116a5989668704f37bceb1002cca136b71b983807a56"
+        "sha256": "2182ca835f9736769c425281aae323cbfb436e89b626380113cb21e1fcc40c93"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -14473,7 +14473,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model IncomeStatement --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:42:15.410649+00:00",
+      "executed_at_utc": "2026-10-21T16:06:44.869439+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -14628,7 +14628,7 @@
       "receipt": {
         "model_identity": "yfinance::IncomeStatement",
         "path": "docs/evidence/C101/receipts/yfinance/IncomeStatement/implementation.json",
-        "sha256": "2049e8c945e198a59db13aa85292d65c06768bbaf67815ad7e3e23106a378967"
+        "sha256": "9d27381357c47374333fb7eae79ea61a28b59bd980bebc1915a016b7dddfafb3"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatement"
@@ -14636,7 +14636,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model IncomeStatement --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:42:16.543513+00:00",
+      "executed_at_utc": "2026-10-21T16:06:46.076412+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -14746,7 +14746,7 @@
       "receipt": {
         "model_identity": "yfinance::IncomeStatement",
         "path": "docs/evidence/C101/receipts/yfinance/IncomeStatement/direct.json",
-        "sha256": "0d77ffa6429d049fa6b34558431e0f957bf864104feca38be875128b329d4839"
+        "sha256": "ee39ca3fe6abcb9389f25d4fb9a95ddcae730a661ccfec9d7a6078fbbfd5493e"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatement"
@@ -14754,7 +14754,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model IncomeStatement --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:42:17.674509+00:00",
+      "executed_at_utc": "2026-10-21T16:06:47.273037+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -14864,7 +14864,7 @@
       "receipt": {
         "model_identity": "yfinance::IncomeStatement",
         "path": "docs/evidence/C101/receipts/yfinance/IncomeStatement/service.json",
-        "sha256": "35ea406d06d6490014858ccbd279d0db7ada459eff42a39ab9b71f7220fc0aff"
+        "sha256": "7f0fee9ff51d7b6f3e2ff21d4a7460ff8d04bc0a552ba70755de41be63e9e5cc"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatement"
@@ -14872,7 +14872,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model IncomeStatement --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:42:18.811802+00:00",
+      "executed_at_utc": "2026-10-21T16:06:48.470230+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -14982,7 +14982,7 @@
       "receipt": {
         "model_identity": "yfinance::IncomeStatement",
         "path": "docs/evidence/C101/receipts/yfinance/IncomeStatement/contract.json",
-        "sha256": "7c67943453b8421451da097b1fa0fd9f562c5acad513575d0e7e306c0b56dd5b"
+        "sha256": "de5c9c53df74057a910b5d8ab8497f17fb5c225dc2477337bc4fb6a5c55ae018"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatement"
@@ -14990,7 +14990,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model IncomeStatement --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:42:21.095254+00:00",
+      "executed_at_utc": "2026-10-21T16:06:50.883963+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -15100,7 +15100,7 @@
       "receipt": {
         "model_identity": "yfinance::IncomeStatement",
         "path": "docs/evidence/C101/receipts/yfinance/IncomeStatement/counterfact.json",
-        "sha256": "9039fc497ad9eb4967f0a7ee4593ce93a275b1c7631c33d99fcd526655a6252f"
+        "sha256": "9da2c2ae85020cbd6d552a818339b5ac2e04ac369aeb33b5ad3582a79cf91473"
       },
       "status": "PASS",
       "upstream_model": "IncomeStatement"
@@ -15108,7 +15108,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model IndexHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:42:22.204498+00:00",
+      "executed_at_utc": "2026-10-21T16:06:52.049931+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15273,7 +15273,7 @@
       "receipt": {
         "model_identity": "yfinance::IndexHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/IndexHistorical/implementation.json",
-        "sha256": "0d6845ea7bbd25184047f08bbf3ee695972b64da2765d789e510f113fd19feab"
+        "sha256": "9ca98e9dfff54732399c104a09fb71c44dbeebf3ffe98e35a07ffaafd112f737"
       },
       "status": "PASS",
       "upstream_model": "IndexHistorical"
@@ -15281,7 +15281,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model IndexHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:42:23.363729+00:00",
+      "executed_at_utc": "2026-10-21T16:06:53.284118+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -15401,7 +15401,7 @@
       "receipt": {
         "model_identity": "yfinance::IndexHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/IndexHistorical/direct.json",
-        "sha256": "737c076bac2a796fed9ae3c7227338c9f526d3820f8747a76f34a110590be174"
+        "sha256": "d3ade6a6c55d3f2ea9206607bc4907d2da9e6ed0a1f88c1510b31472636f16b9"
       },
       "status": "PASS",
       "upstream_model": "IndexHistorical"
@@ -15409,7 +15409,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model IndexHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:42:24.519060+00:00",
+      "executed_at_utc": "2026-10-21T16:06:54.508966+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -15529,7 +15529,7 @@
       "receipt": {
         "model_identity": "yfinance::IndexHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/IndexHistorical/service.json",
-        "sha256": "15c008a877d26f81e8c80b34a7d4d3bcfb73c41f67c6a1e34daf0868cbc84fa2"
+        "sha256": "9b5055fe1a9c508f3766e082c71ffa0e356baf7773932d655d6b86b9179bd8cb"
       },
       "status": "PASS",
       "upstream_model": "IndexHistorical"
@@ -15537,7 +15537,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model IndexHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:42:25.667721+00:00",
+      "executed_at_utc": "2026-10-21T16:06:55.724209+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -15657,7 +15657,7 @@
       "receipt": {
         "model_identity": "yfinance::IndexHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/IndexHistorical/contract.json",
-        "sha256": "657884789b7c50994a46d5bac3f9f9a0357ac5d1b5f71bc46e6dd2d6b832636b"
+        "sha256": "c74c1f083d21b88b79e00097cdd6c918427c92482614a034245faa3e159659cb"
       },
       "status": "PASS",
       "upstream_model": "IndexHistorical"
@@ -15665,7 +15665,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model IndexHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:42:27.981004+00:00",
+      "executed_at_utc": "2026-10-21T16:06:58.179357+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -15785,7 +15785,7 @@
       "receipt": {
         "model_identity": "yfinance::IndexHistorical",
         "path": "docs/evidence/C101/receipts/yfinance/IndexHistorical/counterfact.json",
-        "sha256": "340f09ee2aadfbbf590e32c2ae73c065755fb7a3861a463454e2624378e5f720"
+        "sha256": "a50dbd6c46cc58b2fc81f31df0be0a522965ef82de0b1dba5732a3be4e639ec5"
       },
       "status": "PASS",
       "upstream_model": "IndexHistorical"
@@ -15793,7 +15793,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model KeyExecutives --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:42:29.100129+00:00",
+      "executed_at_utc": "2026-10-21T16:06:59.352659+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15953,7 +15953,7 @@
       "receipt": {
         "model_identity": "yfinance::KeyExecutives",
         "path": "docs/evidence/C101/receipts/yfinance/KeyExecutives/implementation.json",
-        "sha256": "8e95a8da15d2d403989a02e60f140953108e846faa0f941025f7534fe106165b"
+        "sha256": "3af8f7f0aff7a0943804774ce163f2dac26ca9505141a1974ca4d1809d4b6514"
       },
       "status": "PASS",
       "upstream_model": "KeyExecutives"
@@ -15961,7 +15961,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model KeyExecutives --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:42:30.233581+00:00",
+      "executed_at_utc": "2026-10-21T16:07:00.556892+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -16076,7 +16076,7 @@
       "receipt": {
         "model_identity": "yfinance::KeyExecutives",
         "path": "docs/evidence/C101/receipts/yfinance/KeyExecutives/direct.json",
-        "sha256": "ef5d5c873624e1ad697b9738ccb3f95e5168fbe7ed1b8aaa86454d518bc29ffe"
+        "sha256": "80a01711a9098b45b9ffcad1879a75ad809ec8f0035976b73a98a071b4c6d0d3"
       },
       "status": "PASS",
       "upstream_model": "KeyExecutives"
@@ -16084,7 +16084,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model KeyExecutives --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:42:31.369512+00:00",
+      "executed_at_utc": "2026-10-21T16:07:01.752236+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -16199,7 +16199,7 @@
       "receipt": {
         "model_identity": "yfinance::KeyExecutives",
         "path": "docs/evidence/C101/receipts/yfinance/KeyExecutives/service.json",
-        "sha256": "d6a9229a2e93feeef9b0eb75843b76082ab1aff1f27bc222738a3a8d075ac59c"
+        "sha256": "2d70700962020cc9950a754c661057b39fd7c46b6d782d110499b1fdc7ff12f0"
       },
       "status": "PASS",
       "upstream_model": "KeyExecutives"
@@ -16207,7 +16207,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model KeyExecutives --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:42:32.506610+00:00",
+      "executed_at_utc": "2026-10-21T16:07:02.945727+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -16322,7 +16322,7 @@
       "receipt": {
         "model_identity": "yfinance::KeyExecutives",
         "path": "docs/evidence/C101/receipts/yfinance/KeyExecutives/contract.json",
-        "sha256": "411ddceba0801ea1faad342f22236c1f2e8448ee20e88e48464ad40d9462785c"
+        "sha256": "458b459bbc22952f4a25386b8c67f3518c2bf0bafa702166294f6023735855c0"
       },
       "status": "PASS",
       "upstream_model": "KeyExecutives"
@@ -16330,7 +16330,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model KeyExecutives --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:42:34.784489+00:00",
+      "executed_at_utc": "2026-10-21T16:07:05.353071+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -16445,7 +16445,7 @@
       "receipt": {
         "model_identity": "yfinance::KeyExecutives",
         "path": "docs/evidence/C101/receipts/yfinance/KeyExecutives/counterfact.json",
-        "sha256": "31fbe6b9ca7b750f542512b1e8bfc3e91a4fce28ec544e03cb30129152901cb7"
+        "sha256": "37cabd88a19e1a5d76e9884188e53e6baca4a0f79d000bf9e6760ca909121a27"
       },
       "status": "PASS",
       "upstream_model": "KeyExecutives"
@@ -16453,7 +16453,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model KeyMetrics --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:42:35.899937+00:00",
+      "executed_at_utc": "2026-10-21T16:07:06.526483+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -16608,7 +16608,7 @@
       "receipt": {
         "model_identity": "yfinance::KeyMetrics",
         "path": "docs/evidence/C101/receipts/yfinance/KeyMetrics/implementation.json",
-        "sha256": "fc149d48631f1993ce7e69212e023c4203fcd07045e698b7f113f357a04109c0"
+        "sha256": "653cdc45d79419ff0ff0cb767fb3a562add6f366673eecc3e183a1eac160c4a1"
       },
       "status": "PASS",
       "upstream_model": "KeyMetrics"
@@ -16616,7 +16616,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model KeyMetrics --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:42:37.038570+00:00",
+      "executed_at_utc": "2026-10-21T16:07:07.743332+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -16726,7 +16726,7 @@
       "receipt": {
         "model_identity": "yfinance::KeyMetrics",
         "path": "docs/evidence/C101/receipts/yfinance/KeyMetrics/direct.json",
-        "sha256": "903f3acfeee5fd13b4e764545469d27243d86b75fa816cd14412cb91536c38bd"
+        "sha256": "56bec9d9975bbf2c4844361f4c5b27bd2608d86cc715724483402c2e30541130"
       },
       "status": "PASS",
       "upstream_model": "KeyMetrics"
@@ -16734,7 +16734,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model KeyMetrics --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:42:38.171701+00:00",
+      "executed_at_utc": "2026-10-21T16:07:08.948862+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -16844,7 +16844,7 @@
       "receipt": {
         "model_identity": "yfinance::KeyMetrics",
         "path": "docs/evidence/C101/receipts/yfinance/KeyMetrics/service.json",
-        "sha256": "ef0abc2b935c1d57cc269eba4511d3288169b732900cddaacdf9771b69248391"
+        "sha256": "13d7e06941e78acfeae45e5589fc609f26d242ad7bdb3a29df1762d31e8b33ec"
       },
       "status": "PASS",
       "upstream_model": "KeyMetrics"
@@ -16852,7 +16852,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model KeyMetrics --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:42:39.307267+00:00",
+      "executed_at_utc": "2026-10-21T16:07:10.161768+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -16962,7 +16962,7 @@
       "receipt": {
         "model_identity": "yfinance::KeyMetrics",
         "path": "docs/evidence/C101/receipts/yfinance/KeyMetrics/contract.json",
-        "sha256": "2a257f0536ddded4a84378a2c171386e4d91492a70f7fe4c3299d23c86905676"
+        "sha256": "0e7dc9abb04e41c7d7cc0232fedf9b780bf3d4331970875adb2e0814afb003ac"
       },
       "status": "PASS",
       "upstream_model": "KeyMetrics"
@@ -16970,7 +16970,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model KeyMetrics --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:42:41.591863+00:00",
+      "executed_at_utc": "2026-10-21T16:07:12.590574+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -17080,7 +17080,7 @@
       "receipt": {
         "model_identity": "yfinance::KeyMetrics",
         "path": "docs/evidence/C101/receipts/yfinance/KeyMetrics/counterfact.json",
-        "sha256": "89679d9014a64e51203c49fb8f9fc63924571d875eb2056dadabc9839461b41d"
+        "sha256": "2b34959e2a0703d9b0da916aa3ca4969ea7e4204e8f50e890d333280373de02d"
       },
       "status": "PASS",
       "upstream_model": "KeyMetrics"
@@ -17088,7 +17088,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model OptionsChains --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:42:42.707855+00:00",
+      "executed_at_utc": "2026-10-21T16:07:13.757156+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -17248,7 +17248,7 @@
       "receipt": {
         "model_identity": "yfinance::OptionsChains",
         "path": "docs/evidence/C101/receipts/yfinance/OptionsChains/implementation.json",
-        "sha256": "2b67f365fcc6d14ea3bd76e928dc8e1af73ed1ea802e58b363dbab30bb53bf61"
+        "sha256": "8a2c1aa441c708cc09e2590dcc81e09e5cf1a63b048c6efac29d7904be40d283"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -17256,7 +17256,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model OptionsChains --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:42:43.843644+00:00",
+      "executed_at_utc": "2026-10-21T16:07:14.951997+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -17371,7 +17371,7 @@
       "receipt": {
         "model_identity": "yfinance::OptionsChains",
         "path": "docs/evidence/C101/receipts/yfinance/OptionsChains/direct.json",
-        "sha256": "8d41cae102565d639f5f7a49092988486dc93fd0d3824303cfa7acc8645ad43c"
+        "sha256": "9a0cb7f59d1b1973f9d5b5ecfe1d98299e4ed1417192f8267d888f73359a9711"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -17379,7 +17379,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model OptionsChains --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:42:44.974372+00:00",
+      "executed_at_utc": "2026-10-21T16:07:16.154528+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -17494,7 +17494,7 @@
       "receipt": {
         "model_identity": "yfinance::OptionsChains",
         "path": "docs/evidence/C101/receipts/yfinance/OptionsChains/service.json",
-        "sha256": "aaaefbc70e3559616a3560c157e5b3f9da33edb5bfec2b8762cdac9294fdbc63"
+        "sha256": "2d1ae93f6edebf2b0b07a58a9678e418f0a59fabf5e0449117b5254ecbc295ed"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -17502,7 +17502,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model OptionsChains --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:42:46.098694+00:00",
+      "executed_at_utc": "2026-10-21T16:07:17.356194+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -17617,7 +17617,7 @@
       "receipt": {
         "model_identity": "yfinance::OptionsChains",
         "path": "docs/evidence/C101/receipts/yfinance/OptionsChains/contract.json",
-        "sha256": "0e575369ce392c456488a2c9323f84216701b09a9c4e23b9e0a00203446708d8"
+        "sha256": "d9a317d99920a6f836dcb9fd52cbb7e48265a2d43edc8b0b8869f6e0b880c9e2"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -17625,7 +17625,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model OptionsChains --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:42:48.372943+00:00",
+      "executed_at_utc": "2026-10-21T16:07:19.787006+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -17740,7 +17740,7 @@
       "receipt": {
         "model_identity": "yfinance::OptionsChains",
         "path": "docs/evidence/C101/receipts/yfinance/OptionsChains/counterfact.json",
-        "sha256": "1bc00c78a0f83a2f8cb8c9af8bb9a2657fdc3c0d96705a14993cfd6dd6449cc9"
+        "sha256": "b3f30ce235f1fb6d3b5954a2b14ae844d5db0ec9a00f67a3f052a592a75f2187"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -17748,7 +17748,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model PriceTargetConsensus --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:42:49.494776+00:00",
+      "executed_at_utc": "2026-10-21T16:07:20.957220+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -17908,7 +17908,7 @@
       "receipt": {
         "model_identity": "yfinance::PriceTargetConsensus",
         "path": "docs/evidence/C101/receipts/yfinance/PriceTargetConsensus/implementation.json",
-        "sha256": "75f779bbb798bdffa9e746287c47878cd1cacae24f70eebfcbad5e04ee34d62e"
+        "sha256": "8e551ae7ed39b1322f1a7f15813389296874d14024f9ab6b5863fbe7497a2f06"
       },
       "status": "PASS",
       "upstream_model": "PriceTargetConsensus"
@@ -17916,7 +17916,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model PriceTargetConsensus --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:42:50.621852+00:00",
+      "executed_at_utc": "2026-10-21T16:07:22.165473+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -18031,7 +18031,7 @@
       "receipt": {
         "model_identity": "yfinance::PriceTargetConsensus",
         "path": "docs/evidence/C101/receipts/yfinance/PriceTargetConsensus/direct.json",
-        "sha256": "9a5343c410a8754c9eb02d4cc8424963108c663145b326c89fe220757e94c1d0"
+        "sha256": "24d745e309d11a91331f359e7c308ac75e2b65fbb7383c30b33889b70f5e51db"
       },
       "status": "PASS",
       "upstream_model": "PriceTargetConsensus"
@@ -18039,7 +18039,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model PriceTargetConsensus --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:42:51.766531+00:00",
+      "executed_at_utc": "2026-10-21T16:07:23.376970+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -18154,7 +18154,7 @@
       "receipt": {
         "model_identity": "yfinance::PriceTargetConsensus",
         "path": "docs/evidence/C101/receipts/yfinance/PriceTargetConsensus/service.json",
-        "sha256": "ec917e037627e332d335f61fb1b67902296af93dff7bd8ca82ecd300fbaf347b"
+        "sha256": "75de8f4637fe894dfe432a3da740d3c94fa8c951db9b339c6603f1f983dc32c1"
       },
       "status": "PASS",
       "upstream_model": "PriceTargetConsensus"
@@ -18162,7 +18162,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model PriceTargetConsensus --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:42:52.904131+00:00",
+      "executed_at_utc": "2026-10-21T16:07:24.586836+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -18277,7 +18277,7 @@
       "receipt": {
         "model_identity": "yfinance::PriceTargetConsensus",
         "path": "docs/evidence/C101/receipts/yfinance/PriceTargetConsensus/contract.json",
-        "sha256": "6a75aee11ea9e4868866bbaae5adabd4b55e52cdad37b654c308e420f2107f1d"
+        "sha256": "c56a681ade4852a035258aed9db9ca9b0fa8720a2b84c7cf2b6405959955c670"
       },
       "status": "PASS",
       "upstream_model": "PriceTargetConsensus"
@@ -18285,7 +18285,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model PriceTargetConsensus --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:42:55.182097+00:00",
+      "executed_at_utc": "2026-10-21T16:07:26.991249+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -18400,7 +18400,7 @@
       "receipt": {
         "model_identity": "yfinance::PriceTargetConsensus",
         "path": "docs/evidence/C101/receipts/yfinance/PriceTargetConsensus/counterfact.json",
-        "sha256": "2f23cda38c4d8acb65f5320448c885bb1c55d45a7597b7a240cdd2cc5bcb3f04"
+        "sha256": "7729c343ead374db38ba2061d95556bbac3d1dbbf4a08315c4c33c23df98b7b3"
       },
       "status": "PASS",
       "upstream_model": "PriceTargetConsensus"
@@ -18408,7 +18408,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model ShareStatistics --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:42:56.288806+00:00",
+      "executed_at_utc": "2026-10-21T16:07:28.169148+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -18568,7 +18568,7 @@
       "receipt": {
         "model_identity": "yfinance::ShareStatistics",
         "path": "docs/evidence/C101/receipts/yfinance/ShareStatistics/implementation.json",
-        "sha256": "bbff0a75793004e97bc52089ae73d54104438efa3a4c5c70a53b979aa7e47d12"
+        "sha256": "4460209389143abf55e5bbe34fe10787dacedb430b4c82e6730530634bafcc88"
       },
       "status": "PASS",
       "upstream_model": "ShareStatistics"
@@ -18576,7 +18576,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model ShareStatistics --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:42:57.429253+00:00",
+      "executed_at_utc": "2026-10-21T16:07:29.388858+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -18691,7 +18691,7 @@
       "receipt": {
         "model_identity": "yfinance::ShareStatistics",
         "path": "docs/evidence/C101/receipts/yfinance/ShareStatistics/direct.json",
-        "sha256": "5fad16aa21058716236f6ceb2ce026f2569a3a6770b0f64ac27af1c4384f8180"
+        "sha256": "d0750223c53df09dfe8a649bcd59919e68c03bd5152c096e0e582b8ff0525da7"
       },
       "status": "PASS",
       "upstream_model": "ShareStatistics"
@@ -18699,7 +18699,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model ShareStatistics --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:42:58.578945+00:00",
+      "executed_at_utc": "2026-10-21T16:07:30.577241+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -18814,7 +18814,7 @@
       "receipt": {
         "model_identity": "yfinance::ShareStatistics",
         "path": "docs/evidence/C101/receipts/yfinance/ShareStatistics/service.json",
-        "sha256": "f1d8e0caa0e01f612b3587c2a5792a6e7e399be17755a2f6545f7cc3ee658d60"
+        "sha256": "a4f390d45fb146f293ea585e201c66377e46a3eb50413505fce51d3704e34862"
       },
       "status": "PASS",
       "upstream_model": "ShareStatistics"
@@ -18822,7 +18822,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model ShareStatistics --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:42:59.712351+00:00",
+      "executed_at_utc": "2026-10-21T16:07:31.774839+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -18937,7 +18937,7 @@
       "receipt": {
         "model_identity": "yfinance::ShareStatistics",
         "path": "docs/evidence/C101/receipts/yfinance/ShareStatistics/contract.json",
-        "sha256": "05bf73d88dbeebd452c492d96ab0c2d5cfab904e8cbb44b5754e845c48d4477a"
+        "sha256": "3531db8d2b962562a1178b8620620172cf4838b9a62e786411bfeb8a8aa18619"
       },
       "status": "PASS",
       "upstream_model": "ShareStatistics"
@@ -18945,7 +18945,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model ShareStatistics --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:43:02.008383+00:00",
+      "executed_at_utc": "2026-10-21T16:07:34.192710+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -19060,7 +19060,7 @@
       "receipt": {
         "model_identity": "yfinance::ShareStatistics",
         "path": "docs/evidence/C101/receipts/yfinance/ShareStatistics/counterfact.json",
-        "sha256": "cd50435c4cc60eed8b6b1aa2f7eb4e710c6b57331cb2940dd6387de982746201"
+        "sha256": "804500d0b4d44659bfd78875963c5eba058d8225f5e1a94fa91889a291fe077a"
       },
       "status": "PASS",
       "upstream_model": "ShareStatistics"
@@ -19074,9 +19074,9 @@
       "receipt": {
         "model_identity": "yfinance::AvailableIndices",
         "path": "docs/evidence/C101/primary-reviews/yfinance__AvailableIndices.review.json",
-        "sha256": "dca8942d7548c98f2047b0de8a946543e9ac341cbae70f632146f83be2b4d676"
+        "sha256": "ecf167373dccb4c6e4d200ac425c1b27ce00f062427ce12784deed41d6c38a4e"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19089,9 +19089,9 @@
       "receipt": {
         "model_identity": "yfinance::BalanceSheet",
         "path": "docs/evidence/C101/primary-reviews/yfinance__BalanceSheet.review.json",
-        "sha256": "af3dba81772e5e30dc7525797e7f50b81ef23c58be4dfb3bee241533b1186fa3"
+        "sha256": "49e5c4930e53d03f3d654cb8614252cb27f8251a3a87c656a568b0b842c3a399"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19104,9 +19104,9 @@
       "receipt": {
         "model_identity": "yfinance::CashFlowStatement",
         "path": "docs/evidence/C101/primary-reviews/yfinance__CashFlowStatement.review.json",
-        "sha256": "ba9e6f7d7ce0b1c81282c90062ba57abb4cf315f42886fddd0961a1c3f76a8bb"
+        "sha256": "a3dc65df46767a559b07a0dc11ea0fb4f97ec5a7ba0960728e49ab32b4a46dde"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19119,9 +19119,9 @@
       "receipt": {
         "model_identity": "yfinance::CompanyNews",
         "path": "docs/evidence/C101/primary-reviews/yfinance__CompanyNews.review.json",
-        "sha256": "93971465edcca350d733687c24873776106cb521e2b73525b23b8aa07a3c07f1"
+        "sha256": "8137fbbe313ed46080434ebbabe64387517a5a1d68862e840e260427505c1b34"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19134,9 +19134,9 @@
       "receipt": {
         "model_identity": "yfinance::CryptoHistorical",
         "path": "docs/evidence/C101/primary-reviews/yfinance__CryptoHistorical.review.json",
-        "sha256": "39f829d2b156ba9706ffedd4023cfd74739df663fd30558ed3ec919b4b9c2e91"
+        "sha256": "9dbe94b8934af0ab4ee77e1b522d59c56d50edd4e2d7ab5627b1f455206aa019"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19149,9 +19149,9 @@
       "receipt": {
         "model_identity": "yfinance::CurrencyHistorical",
         "path": "docs/evidence/C101/primary-reviews/yfinance__CurrencyHistorical.review.json",
-        "sha256": "6743fdec6d13aa1c808af3673315a854cdd2c5499d9f553a1a2c86f164c59417"
+        "sha256": "e7634c44782b41e9b2c148cfabf941eb610fa61015d3329b94bda36c4db88b7b"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19164,9 +19164,9 @@
       "receipt": {
         "model_identity": "yfinance::EquityActive",
         "path": "docs/evidence/C101/primary-reviews/yfinance__EquityActive.review.json",
-        "sha256": "bf676368d022b524052bf08d1b1bb32f385d1bd41f68d00a93fe2cdaefc5d6f1"
+        "sha256": "d79908f17de6ff0eb26e21bd2035b835ab3e400890aae681d03512834b832881"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19179,9 +19179,9 @@
       "receipt": {
         "model_identity": "yfinance::EquityAggressiveSmallCaps",
         "path": "docs/evidence/C101/primary-reviews/yfinance__EquityAggressiveSmallCaps.review.json",
-        "sha256": "580ed17034884934c6c33ca47175d9c96d4a6b52f9945fe673baa7aea5a26a2f"
+        "sha256": "cb8c0b2dbfa3e2e11daac753b2d4c2b9b2c642c949d67a3a0073ab6f70c6bcf7"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19194,9 +19194,9 @@
       "receipt": {
         "model_identity": "yfinance::EquityGainers",
         "path": "docs/evidence/C101/primary-reviews/yfinance__EquityGainers.review.json",
-        "sha256": "479d31d6b1d323fd6346b4ded3efd0a7f62b35a69b53a75935580523f54f57bd"
+        "sha256": "5f18db33915401bc669b2524108d25f784c2d492532f808e979ac499ab9454dd"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19209,9 +19209,9 @@
       "receipt": {
         "model_identity": "yfinance::EquityHistorical",
         "path": "docs/evidence/C101/primary-reviews/yfinance__EquityHistorical.review.json",
-        "sha256": "38d509c06bfd3ce61266e131f0ebbabc81db3a9e08b5314f2b18668089d41383"
+        "sha256": "d6f75d61970596570a1f9efc7ce2d4ae822a5ce77aa2c2c85b15d463f0ac111a"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19224,9 +19224,9 @@
       "receipt": {
         "model_identity": "yfinance::EquityInfo",
         "path": "docs/evidence/C101/primary-reviews/yfinance__EquityInfo.review.json",
-        "sha256": "2a79d0272e50aadd6bd73c55362b5e1c6e610cd628f18a8a52ef8d8cf5eaa7fb"
+        "sha256": "3451fb13fe0643a4e7ffaa68d85b78c59d3e288cf7e5500243397142146aae42"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19239,9 +19239,9 @@
       "receipt": {
         "model_identity": "yfinance::EquityLosers",
         "path": "docs/evidence/C101/primary-reviews/yfinance__EquityLosers.review.json",
-        "sha256": "b4bf14e9979c33f8d6f919b205bac1bff35ecb2301fcf102841d1b2a97488cb7"
+        "sha256": "62647f31643c4ea3724e5c8c73d12603c4363e6b4087b1b0f4f2016c15c10dbf"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19254,9 +19254,9 @@
       "receipt": {
         "model_identity": "yfinance::EquityQuote",
         "path": "docs/evidence/C101/primary-reviews/yfinance__EquityQuote.review.json",
-        "sha256": "c8e6e8004f079c4ef46647897effbff294879a97eff2a154a996317323eb377c"
+        "sha256": "a23168eca62a8c8c0af289515f2e80168450ee044e2bc2be82f421495173c427"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19269,9 +19269,9 @@
       "receipt": {
         "model_identity": "yfinance::EquityScreener",
         "path": "docs/evidence/C101/primary-reviews/yfinance__EquityScreener.review.json",
-        "sha256": "0e7595940a5a48e593127b377c78940a5f6eae9720ea279a1d9ddecf1122ee2b"
+        "sha256": "4a1aae2f654fb4db1d0a43e54dda2150e10ebc13dd29348e46f376b7fa1e4400"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19284,9 +19284,9 @@
       "receipt": {
         "model_identity": "yfinance::EquityUndervaluedGrowth",
         "path": "docs/evidence/C101/primary-reviews/yfinance__EquityUndervaluedGrowth.review.json",
-        "sha256": "15fb4ee81a66edb152c677b87d35550ab4b52d8930392557399e6d694bce7cc4"
+        "sha256": "894e8e329c2d1bfc09510c8b0dcae58e1738b8796e948a915a963247a5c158d4"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19299,9 +19299,9 @@
       "receipt": {
         "model_identity": "yfinance::EquityUndervaluedLargeCaps",
         "path": "docs/evidence/C101/primary-reviews/yfinance__EquityUndervaluedLargeCaps.review.json",
-        "sha256": "6d46388ce14f61a50997e3e53b51a1c6b23e4e8711f0063b59c818fedaa6b3a7"
+        "sha256": "f34b44ac1f091f7908012deab1efec75d1d03c9e3f84352b865dd34a777b7750"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19314,9 +19314,9 @@
       "receipt": {
         "model_identity": "yfinance::EtfHistorical",
         "path": "docs/evidence/C101/primary-reviews/yfinance__EtfHistorical.review.json",
-        "sha256": "6f9dd09355296f6cb47aff70eac190f998abaca92acb381d6a70cc1693528ced"
+        "sha256": "ec7c0018d4143475d136491c0b256e8ba37701291bde5fe89231ce328ed92be3"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19329,9 +19329,9 @@
       "receipt": {
         "model_identity": "yfinance::EtfInfo",
         "path": "docs/evidence/C101/primary-reviews/yfinance__EtfInfo.review.json",
-        "sha256": "e4759ed4e2bc4b8851cb4171b991d5a7002cf7c8fb56a439a10b63b7dada7085"
+        "sha256": "f9deefe1ab97c43b0bf2301d9f31864c6bb67857a157f7387619f1e80fd441c5"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19344,9 +19344,9 @@
       "receipt": {
         "model_identity": "yfinance::FuturesCurve",
         "path": "docs/evidence/C101/primary-reviews/yfinance__FuturesCurve.review.json",
-        "sha256": "2dbd2c68e5324e0c88a3a4a581456a92a805bb15b5eebabc3a62e7f0b6fa4d7b"
+        "sha256": "cccb8439adb70f24b70094d762406f38ad4a5168bf2bc21201f767cae1100e4b"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19359,9 +19359,9 @@
       "receipt": {
         "model_identity": "yfinance::FuturesHistorical",
         "path": "docs/evidence/C101/primary-reviews/yfinance__FuturesHistorical.review.json",
-        "sha256": "26bf9d183dffb91e67de6e2432f98dcc7b320a4e54ad36f063247aefd8583499"
+        "sha256": "9b57fdbb9cc4ec83a206f0c1c5c227b7a3b6789fd0c9e7e51b2c731861fbfdd7"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19374,9 +19374,9 @@
       "receipt": {
         "model_identity": "yfinance::GrowthTechEquities",
         "path": "docs/evidence/C101/primary-reviews/yfinance__GrowthTechEquities.review.json",
-        "sha256": "c83a267512b692e38233359108ab39649521d22fb1aa9297e3bcb7685d773fc9"
+        "sha256": "a0eb22550341cb24d7ed4065188b22a33fd1a32fd387a26faa2502e751b2e92f"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19389,9 +19389,9 @@
       "receipt": {
         "model_identity": "yfinance::HistoricalDividends",
         "path": "docs/evidence/C101/primary-reviews/yfinance__HistoricalDividends.review.json",
-        "sha256": "b754a45e5fffc49e3df56cec1f4c2bbacb71a351398d004270feb8352a859fe5"
+        "sha256": "dba2d28a2a2cabd295161cfb6df11bec5a1b1e74216ad696623b26be47104345"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19404,9 +19404,9 @@
       "receipt": {
         "model_identity": "yfinance::IncomeStatement",
         "path": "docs/evidence/C101/primary-reviews/yfinance__IncomeStatement.review.json",
-        "sha256": "459601db38e75511774acfce2227e3f9cc489dee4a5e662251b2d6d59e3541e5"
+        "sha256": "e4f5696f2c5bb0bd3e3f3e90048a24903fda74cd9e54413b3d2fcc721dc79d14"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19419,9 +19419,9 @@
       "receipt": {
         "model_identity": "yfinance::IndexHistorical",
         "path": "docs/evidence/C101/primary-reviews/yfinance__IndexHistorical.review.json",
-        "sha256": "a3710ee4882b8fa84306ae17e990b434b5860875383d109e4156af9f34deba6b"
+        "sha256": "d03f844a6c062fb368a945c257efeb66a01117f637eb669f066b37c43802c311"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19434,9 +19434,9 @@
       "receipt": {
         "model_identity": "yfinance::KeyExecutives",
         "path": "docs/evidence/C101/primary-reviews/yfinance__KeyExecutives.review.json",
-        "sha256": "8a8c64c7a34854d24fb215fb89c5fa90c20f5a069ac37857945043cec69ae9b4"
+        "sha256": "7bb8621c0d75605d8b458080605afb78029ac1f6bb39290f315b2017cbeb1f44"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19449,9 +19449,9 @@
       "receipt": {
         "model_identity": "yfinance::KeyMetrics",
         "path": "docs/evidence/C101/primary-reviews/yfinance__KeyMetrics.review.json",
-        "sha256": "93edd03340f2027c0dd2c2dcb97cbcf9680ad1f923e9e1c0be45d4f7391e6691"
+        "sha256": "40325fee236052ed5b4e0f28a55cac0e177736baf3c959064709186c2276032c"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19464,9 +19464,9 @@
       "receipt": {
         "model_identity": "yfinance::OptionsChains",
         "path": "docs/evidence/C101/primary-reviews/yfinance__OptionsChains.review.json",
-        "sha256": "edfc3321efb2389f6456a5648927dbac329c07f5d92a5110ad9334bb5bd4e137"
+        "sha256": "eca572f63a6cb4387e6c81afdc4941455ce3a582a986dfab1570f17deab1bfc8"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19479,9 +19479,9 @@
       "receipt": {
         "model_identity": "yfinance::PriceTargetConsensus",
         "path": "docs/evidence/C101/primary-reviews/yfinance__PriceTargetConsensus.review.json",
-        "sha256": "b398401511a45eb6f2b61a388f0bd9d960e4fee16873be7b21b48e29abf21e03"
+        "sha256": "810a1f7dc1965b74bd4db297016dbab75de3623c1586360fa0efb7549aa2f8c8"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -19494,9 +19494,9 @@
       "receipt": {
         "model_identity": "yfinance::ShareStatistics",
         "path": "docs/evidence/C101/primary-reviews/yfinance__ShareStatistics.review.json",
-        "sha256": "9dc65f780ab14f6a375548082e31ac8bf01c28e53fc89d1cb3c294aef5655584"
+        "sha256": "4cd2344f49bd984c7be0b71be669da0f1364f9003379eb144246121556e99cf0"
       },
-      "reviewed_at_utc": "2026-10-21T09:43:03Z",
+      "reviewed_at_utc": "2026-10-21T16:07:35Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
