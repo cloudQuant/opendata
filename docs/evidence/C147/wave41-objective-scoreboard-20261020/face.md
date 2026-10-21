@@ -1565,3 +1565,17 @@ final=`axlfi.com/landing` / 非 JSON，并要求同运行的 dead-host 反例 0 
 
 本发载荷是 `face.md` 的 §62–§63 与两份收口载体（`w47_closure_face.txt` 的新字节 + 按提交名留档的副本）；
 `外部API申请清单.md` 的 stockgrid 口径与 §61 已在上一发 `1752630d1` 落地。
+
+## 64. 本波终局收口：`232c3bfdd` 8/8 arms、全历史 558 commits 无泄漏
+
+`runs/w47_closure_face_232c3bfdd.txt`。载荷 5 个路径、`worktree_drift_vs_commit=0`、`missing_in_commit=0`、
+`drift_list=[]`；git 模式对提交对象 `findings=0`（planted 各 2 可咬）、目录模式 `findings=0`；
+全历史 `secret_scan_check rc=0`：**558 commits / 505.57 MB / no leaks found**。
+`git rev-list --count HEAD` = 558，与该读数**同代相等**（这次运行期间我没有再提交，所以 555→558 的差
+就是 §62/§63 那两发与 `1752630d1`，可直接逐发对齐）。判定器摘要 `claims_sha256=40300e875bcbb54d`、
+`judge_report_sha256=27d262593db920ea` 与 §59/§63 逐字节相同。
+
+本波到此的实测终态（全部有载体）：平面 1 **349/350**、`{OFFLINE_ACCEPTED: 349, UNREVIEWED: 1}`、
+**0 行 INCOMPLETE**、claims 1,745、identity set 未变、31/32 provider 全行落地；
+唯一残行 `stockgrid::ShortVolume` 要 owner 给数据端点与权利行；子代理 **34 > 30** 仍为既成违反。
+目标未完成，不调 `UpdateGoal complete`。
