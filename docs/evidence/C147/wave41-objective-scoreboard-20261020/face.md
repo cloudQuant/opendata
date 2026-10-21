@@ -982,3 +982,19 @@ residue 5、providers 31、zero=[stockgrid]、plane_new=0。
 **仍挡住的 2 类**：seeking_alpha×2 的 ID 解析被 PerimeterX captcha（403）挡住，公开 GET 无解；
 stockgrid 旧端点 301→axlfi.com，仍无新端点。econdb::CountryProfile（v1 语义缺口）与
 intrinio::OptionsSnapshots（engine facet）未在本波实现。
+
+## 44. fb1b09956（wave44 两行落地 + 第三次全树重签）的收口面
+
+```
+reconcile commit=fb1b09956 parent=bcc16d55a commit_paths=2195
+          worktree_drift_vs_commit=0 moved_vs_parent=2195 missing_in_commit=0
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）
+gitleaks dir-mode findings=0（planted 2）；copied_from_commit=22 bytecode_skipped=1407
+secret_scan_check rc=0  527 commits / 471.13 MB / no leaks found
+closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
+```
+
+载体：固定名保持 a287 代（`d2b6f2…`），本次读数另存 `runs/w47_closure_face_fb1b09956.txt`
+（见该文件 sha256）；提交内 roots 见载体 `commit_paths_by_root`。复制行仍是 `w99` 的旧值
+（`02dfea…`）；本提交的闸门是 `runs/w108_staged_scan_plan_gate_wave44.txt`
+（`payload_index_sha256` 见该文件、`staged=2194`、A/B/C 全 0、11/11 arms）。
