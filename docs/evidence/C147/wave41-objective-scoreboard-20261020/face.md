@@ -1505,3 +1505,20 @@ credential_scan_face … arms=11 arms_passed=11 arms_failed=0 failed=[] PASS=Tru
   现读数为 349/350 与 31/32；不删原文，避免把历史裁定改写成现状。
 
 这一发不动产品代码，因此不需要重签；判定器读数仍以 `runs/w105_objective_scoreboard.txt` 为准。
+
+## 61. 「文档提交会不会让 claim 变 STALE」改为按 pin 值实测（答案：不会）
+
+我先跑的一版把 `pins` 当列表遍历，而它是 dict：`for p in pins` 出的是**键名**
+（contract / contract_version / fixture / probe / source），于是「命中 0 条」是一次**空真**读数，
+不能作为结论。改成按 dict 取值、只统计带 `path` 的条目后重测 `docs/evidence/C101/claims.merged.json`：
+
+* `claims=1745`、`pin_path_sites=25980`、`digest_strings=1745`（`contract_version` 存的是 `sha256:…` 串，
+  不是路径，先前把它们混进了路径计数）。
+* `distinct_pin_paths=700`，按根分：`opendata/data` 288、`scripts/quality` 63、
+  `docs/evidence/C101/fixtures` 349（每行一份 wire 形状 fixture）。
+* **`迭代计划` 与 `docs/evidence/C147` 的叙事文件一条都不在 pin 里** —— 所以 §59/§60 与本轮
+  `前置条件与决策清单.md`、`外部API申请清单.md` 的提交不会使任何 claim STALE，无需重签。
+  这条以后可直接复算：改 `claims.merged.json` 的 pin 视图就是判定器的输入面。
+
+同轮把 `外部API申请清单.md` 的 stockgrid 行升到 `w150` 的实测口径（重定向后 200 / 1,261,465 B /
+final=`axlfi.com/landing` / 非 JSON，并要求同运行的 dead-host 反例 0 B + URLError 作为对照）。
