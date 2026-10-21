@@ -998,3 +998,55 @@ closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
 （见该文件 sha256）；提交内 roots 见载体 `commit_paths_by_root`。复制行仍是 `w99` 的旧值
 （`02dfea…`）；本提交的闸门是 `runs/w108_staged_scan_plan_gate_wave44.txt`
 （`payload_index_sha256` 见该文件、`staged=2194`、A/B/C 全 0、11/11 arms）。
+
+## 45. 8436c75ea（wave45 econdb::CountryProfile 落地 + 第四次全树重签）的收口面
+
+**落地**：`econdb::CountryProfile` 用公开无凭证路由 `https://www.econdb.com/series/context/`（13 个
+ticker，一次 GET，`urlencode` 后的 `tickers=[…]`）实现：GDP（`GDP_ADJUST` 国取单季、其余取近四季）、
+人口（×`_POP_MULTIPLIER`）、百分比除以 100、债务/GDP 比值、国家名取自 `geography`。变换对当次的
+真实 context 响应（约 1.1 MB，未入档）人工核过 US 的 13 个字段；入档证据是 13 项 fixture、
+五相 capture 与 witness。econdb 8/8；7 行授权中已落地 3 行（ExportDestinations、AvailableIndices、
+CountryProfile），另 4 行仍缺外部输入或 engine 工作（计划 §8）。
+
+**第四次全树重签**：31 provider，0 producer/recorder fail（intrinio `refused=1`、seeking_alpha
+`refused=2` 均为既有残差）；判定器 **346/350**、identities 350、claims 1745（346×5 PASS +
+3×5 BLOCKED）、reviews 346；残差 4 = intrinio::OptionsSnapshots + seeking_alpha×2（INCOMPLETE）
++ stockgrid（UNREVIEWED）。
+
+**冻结面**：379 身份 / 366 域 / 346 deferred / 357 descriptor-eligible；catalog 379 bindings
+（359 手写）、capabilities 379 / descriptors 357；snapshot `dd4aca5e…`、domains `a013ad24…`。
+冻结测试首轮 4 红同源于 `models/__init__.py` 的 sha pin（`0e99ab55…` 未随 snapshot 重钉），
+重钉为 `991de130…` 后 `test_provider_domains` 6/6；全平面另证 10 红同集合。
+
+**平面**（`test_plane_w45_final.xml`）：`10 failed, 26,452 passed, 305 skipped`，失败集合与此前
+逐 id 相同；collected **26,767** = 26,634 + **143** 新测试名 − **10** 改名，`w105` I 臂精确闭合。
+`w105` **21/21**：accepted 346、claims 1745、residue 4、providers_with_rows 31、zero=[stockgrid]、
+plane_new=0；claim↔row 346×5 PASS + 3×5 BLOCKED + 1×0、claim→receipt 1,730 命中 / 15 空指针、
+`forged_sha_mismatch=1`。
+
+**审计仪器两处重钉（都是分母，不是产物）**：`w130` 的 A 臂原写死 `accepted == 339`，改为
+`len(rows) == judge_accepted == 346`（仍与报告自洽）；`w111` 的 B 臂原要求与 wave39 载体逐字段
+相等，改为「零读数不动 + 计数读数恰好移动本波落地的行（accepted +7、rows_in_claims +4、
+claims +20 = 4 行 × 5）」，并打印 `delta_vs_wave39`。重跑后 `w111` 4/4、`w130` 6/6、`w113` 4/4。
+（`w105` 首跑两红是我从 `probes/` 目录启动、相对 receipt 路径失配所致；从仓库根重跑 21/21。）
+
+**提交与收口**：
+
+```
+reconcile commit=8436c75ea parent=b68f807e6 commit_paths=2176
+          worktree_drift_vs_commit=0 moved_vs_parent=2176 missing_in_commit=0
+commit_paths_by_root={'docs/evidence/C101': 2148, 'docs/evidence/C147': 10, 'tests': 9,
+                      'opendata': 6, 'docs/迭代计划/迭代2-统一Provider架构与全量能力补齐': 2, 'scripts': 1}
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）
+gitleaks dir-mode findings=0（planted 2）；copied_from_commit=21 bytecode_skipped=1407
+secret_scan_check rc=0  529 commits / 479.29 MB / no leaks found
+closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
+```
+
+载体：本波闸门 `runs/w108_staged_scan_plan_gate_wave45.txt`（`payload_index_sha256=4b19c105…`、
+`staged_files=2176`、A/B/C 全 0、11/11 arms）；收口面固定名 `runs/w47_closure_face.txt`，另存
+`runs/w47_closure_face_8436c75ea.txt`；重签日志 `runs/w45_resign.txt`；generation
+`claims_sha256=619f9ec878cad268`、`judge_report_sha256=9939a8dd8cb0e451`。
+
+**结论不变**：346/350；残差 4 行（intrinio engine facet、SA captcha×2、stockgrid 端点）；
+子代理 34>30 是已发生的违反，目标仍不可标记完成。
