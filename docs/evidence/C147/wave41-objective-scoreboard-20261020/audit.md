@@ -39,6 +39,12 @@
 * 2026-10-21 wave46：intrinio OptionsSnapshots 以手写两次请求 fetcher 落地（346→347，intrinio 38/38，
   `NOT_DECLARABLE` 收空）；第五次全树重签 31 provider（0 fail）+ 两次 intrinio 局部重签（pin 后编辑）；
   判定器 **347/350**、claims 1745（347×5 PASS + 2×5 BLOCKED）、reviews 347；残差 3。
+* 2026-10-21 wave47/48（复测与修红）：clean-room 两面复测 logic 仍 **0**、table **260 → 293**，+33 逐文件
+  归因为 econdb `profiles.py` 19 + intrinio `options_snapshots.py` 14（`face.md` §47，`w132` 5/5、
+  `w133` 8/8 后者分母重钉）；§46 披露的 A2 mypy 既存红（econdb 7 条）已修到 **0** 并局部重签，
+  判定器不变 **347/350**；修后平面 `test_plane_w46b_final.xml` 仍 10 红同集合（26,455 passed、
+  collected 26,771），`w105` 21/21，收口 `30faded84` 8/8 arms（首跑 drift 1 是固定名闸门载体的自指，
+  见 `face.md` §48）。
 
 ## 未达成项各自缺什么
 
