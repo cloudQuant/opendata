@@ -528,6 +528,36 @@ domains:
     filter_dims: [date, country, category, event, importance, calendar_id]
     storage_mode: transient
     permissions: [query]
+  wsj_etf_gainers:
+    display_name: WSJ ETF Gainers
+    rest_path: market/wsj/etf-gainers
+    contract: WSJETFPerformance
+    temporal_kind: snapshot
+    time_field: date
+    natural_key: [symbol]
+    filter_dims: [symbol, country, type, date]
+    storage_mode: transient
+    permissions: [query]
+  wsj_etf_losers:
+    display_name: WSJ ETF Losers
+    rest_path: market/wsj/etf-losers
+    contract: WSJETFPerformance
+    temporal_kind: snapshot
+    time_field: date
+    natural_key: [symbol]
+    filter_dims: [symbol, country, type, date]
+    storage_mode: transient
+    permissions: [query]
+  wsj_etf_active:
+    display_name: WSJ ETF Most Active
+    rest_path: market/wsj/etf-active
+    contract: WSJETFPerformance
+    temporal_kind: snapshot
+    time_field: date
+    natural_key: [symbol]
+    filter_dims: [symbol, country, type, date]
+    storage_mode: transient
+    permissions: [query]
   sp500_multiples:
     display_name: Multpl S&P 500 valuation multiples
     rest_path: multpl/sp500/multiples

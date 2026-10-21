@@ -1,1512 +1,1357 @@
 {
   "claims": [
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase implementation --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFGainers --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-14T12:35:48.316820+00:00",
+      "executed_at_utc": "2026-10-21T00:42:15.304952+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::AnalystSearch",
-        "path": "docs/evidence/C101/receipts/benzinga/AnalystSearch/implementation.json",
-        "sha256": "8b99e677d37fbc446f552a3e318e1c901966c53cfa441ea106b61a8477053ed7"
+        "model_identity": "wsj::ETFGainers",
+        "path": "docs/evidence/C101/receipts/wsj/ETFGainers/implementation.json",
+        "sha256": "faadbd97ec43581ba1fcd682195b6b9c20f89d7adcd20ba8a0702886a605ff0b"
       },
       "status": "PASS",
-      "upstream_model": "AnalystSearch"
+      "upstream_model": "ETFGainers"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase direct --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFGainers --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-14T12:35:49.090656+00:00",
+      "executed_at_utc": "2026-10-21T00:42:16.715686+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "f926fc8320428492f2a1c397d523a4ab1bb9098a724f4d918b7989e507e2198b",
-            "before_sha256": "f926fc8320428492f2a1c397d523a4ab1bb9098a724f4d918b7989e507e2198b",
-            "path": "docs/evidence/C101/fixtures/benzinga/AnalystSearch.json"
+            "after_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "before_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "path": "docs/evidence/C101/fixtures/wsj/ETFGainers.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::AnalystSearch",
-        "path": "docs/evidence/C101/receipts/benzinga/AnalystSearch/direct.json",
-        "sha256": "4255a54b11ea3b8fb1fc28b8273f0ad5c16b7923039624069969afdbc7d78691"
+        "model_identity": "wsj::ETFGainers",
+        "path": "docs/evidence/C101/receipts/wsj/ETFGainers/direct.json",
+        "sha256": "441e9c87e49db62c1188f06a3c27e1368439a6cb81731a126d52bc668d6e15aa"
       },
       "status": "PASS",
-      "upstream_model": "AnalystSearch"
+      "upstream_model": "ETFGainers"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase service --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFGainers --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-14T12:35:49.995237+00:00",
+      "executed_at_utc": "2026-10-21T00:42:18.050084+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "f926fc8320428492f2a1c397d523a4ab1bb9098a724f4d918b7989e507e2198b",
-            "before_sha256": "f926fc8320428492f2a1c397d523a4ab1bb9098a724f4d918b7989e507e2198b",
-            "path": "docs/evidence/C101/fixtures/benzinga/AnalystSearch.json"
+            "after_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "before_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "path": "docs/evidence/C101/fixtures/wsj/ETFGainers.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::AnalystSearch",
-        "path": "docs/evidence/C101/receipts/benzinga/AnalystSearch/service.json",
-        "sha256": "f17a49eb7ce27a6421437f5b9c6aff8acbe201f3754acf2eec495fa37914481c"
+        "model_identity": "wsj::ETFGainers",
+        "path": "docs/evidence/C101/receipts/wsj/ETFGainers/service.json",
+        "sha256": "7d1ccab40ac2e2754233c360b36a9a3216770d46860fd568aa06fe64fa73d353"
       },
       "status": "PASS",
-      "upstream_model": "AnalystSearch"
+      "upstream_model": "ETFGainers"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase contract --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFGainers --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-14T12:35:50.764671+00:00",
+      "executed_at_utc": "2026-10-21T00:42:19.348429+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "f926fc8320428492f2a1c397d523a4ab1bb9098a724f4d918b7989e507e2198b",
-            "before_sha256": "f926fc8320428492f2a1c397d523a4ab1bb9098a724f4d918b7989e507e2198b",
-            "path": "docs/evidence/C101/fixtures/benzinga/AnalystSearch.json"
+            "after_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "before_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "path": "docs/evidence/C101/fixtures/wsj/ETFGainers.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::AnalystSearch",
-        "path": "docs/evidence/C101/receipts/benzinga/AnalystSearch/contract.json",
-        "sha256": "1d191b69fa63068e27abff5709f3274fe524fc5fe68380689c1022f20405fd8a"
+        "model_identity": "wsj::ETFGainers",
+        "path": "docs/evidence/C101/receipts/wsj/ETFGainers/contract.json",
+        "sha256": "eb339ab36b6d6a4297ea04f7ddef3e7783b47013e75ec132215af4dd7ae2c604"
       },
       "status": "PASS",
-      "upstream_model": "AnalystSearch"
+      "upstream_model": "ETFGainers"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase counterfact --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFGainers --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-14T12:35:51.524967+00:00",
+      "executed_at_utc": "2026-10-21T00:42:22.035114+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "f926fc8320428492f2a1c397d523a4ab1bb9098a724f4d918b7989e507e2198b",
-            "before_sha256": "f926fc8320428492f2a1c397d523a4ab1bb9098a724f4d918b7989e507e2198b",
-            "path": "docs/evidence/C101/fixtures/benzinga/AnalystSearch.json"
+            "after_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "before_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "path": "docs/evidence/C101/fixtures/wsj/ETFGainers.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::AnalystSearch",
-        "path": "docs/evidence/C101/receipts/benzinga/AnalystSearch/counterfact.json",
-        "sha256": "e9a68d6fa4f07aa32f4df9059e780532dd8d991a79af4ddab4fda31a9f33d612"
+        "model_identity": "wsj::ETFGainers",
+        "path": "docs/evidence/C101/receipts/wsj/ETFGainers/counterfact.json",
+        "sha256": "ee91577e011969fa4b14ad9ad4f80eb446fd562944cf518be3c08a6486d63d13"
       },
       "status": "PASS",
-      "upstream_model": "AnalystSearch"
+      "upstream_model": "ETFGainers"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase implementation --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFLosers --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-14T12:35:52.300210+00:00",
+      "executed_at_utc": "2026-10-21T00:42:23.325098+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::CompanyNews",
-        "path": "docs/evidence/C101/receipts/benzinga/CompanyNews/implementation.json",
-        "sha256": "df554c8e949a24f79d4f8b13544e9538a71e3c8c70b89821b2fe414848094677"
+        "model_identity": "wsj::ETFLosers",
+        "path": "docs/evidence/C101/receipts/wsj/ETFLosers/implementation.json",
+        "sha256": "81b6e6307a3b4e42b6ea880829c833dc863dad4e15bc4fcb0321e55938943087"
       },
       "status": "PASS",
-      "upstream_model": "CompanyNews"
+      "upstream_model": "ETFLosers"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase direct --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFLosers --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-14T12:35:53.074323+00:00",
+      "executed_at_utc": "2026-10-21T00:42:24.676976+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "d78856901b8ed706796f47c933b242d42e69389e9172b4fff652e671b27d24c1",
-            "before_sha256": "d78856901b8ed706796f47c933b242d42e69389e9172b4fff652e671b27d24c1",
-            "path": "docs/evidence/C101/fixtures/benzinga/CompanyNews.json"
+            "after_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "before_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "path": "docs/evidence/C101/fixtures/wsj/ETFLosers.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::CompanyNews",
-        "path": "docs/evidence/C101/receipts/benzinga/CompanyNews/direct.json",
-        "sha256": "daef62010fcd3fc1650d4dde7572a0f349e6b5e18e396fd993127b22d3039642"
+        "model_identity": "wsj::ETFLosers",
+        "path": "docs/evidence/C101/receipts/wsj/ETFLosers/direct.json",
+        "sha256": "4ac2fee0a79f6de29ace959e7183cd083313bff20a418ecd35714997c00e7ec9"
       },
       "status": "PASS",
-      "upstream_model": "CompanyNews"
+      "upstream_model": "ETFLosers"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase service --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFLosers --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-14T12:35:53.961071+00:00",
+      "executed_at_utc": "2026-10-21T00:42:25.993601+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "d78856901b8ed706796f47c933b242d42e69389e9172b4fff652e671b27d24c1",
-            "before_sha256": "d78856901b8ed706796f47c933b242d42e69389e9172b4fff652e671b27d24c1",
-            "path": "docs/evidence/C101/fixtures/benzinga/CompanyNews.json"
+            "after_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "before_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "path": "docs/evidence/C101/fixtures/wsj/ETFLosers.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::CompanyNews",
-        "path": "docs/evidence/C101/receipts/benzinga/CompanyNews/service.json",
-        "sha256": "5865cf0eb0447f3bfe0e33c66e09a26178e406f4098c2e3fb5cf62d61dc43414"
+        "model_identity": "wsj::ETFLosers",
+        "path": "docs/evidence/C101/receipts/wsj/ETFLosers/service.json",
+        "sha256": "024b51256aebc42e187d55be32e1b76171055f2e209dc003d0a0a7878cec88c5"
       },
       "status": "PASS",
-      "upstream_model": "CompanyNews"
+      "upstream_model": "ETFLosers"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase contract --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFLosers --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-14T12:35:54.737793+00:00",
+      "executed_at_utc": "2026-10-21T00:42:27.291672+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "d78856901b8ed706796f47c933b242d42e69389e9172b4fff652e671b27d24c1",
-            "before_sha256": "d78856901b8ed706796f47c933b242d42e69389e9172b4fff652e671b27d24c1",
-            "path": "docs/evidence/C101/fixtures/benzinga/CompanyNews.json"
+            "after_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "before_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "path": "docs/evidence/C101/fixtures/wsj/ETFLosers.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::CompanyNews",
-        "path": "docs/evidence/C101/receipts/benzinga/CompanyNews/contract.json",
-        "sha256": "4db8be557481c8e5b0a733cba25d720b8c9a9de053368b22202bf83877dc6dec"
+        "model_identity": "wsj::ETFLosers",
+        "path": "docs/evidence/C101/receipts/wsj/ETFLosers/contract.json",
+        "sha256": "34ddd9b0fe4316ef6c2dc83e99efef27bd315fcdc293d7618b6103457efb6438"
       },
       "status": "PASS",
-      "upstream_model": "CompanyNews"
+      "upstream_model": "ETFLosers"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase counterfact --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFLosers --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-14T12:35:55.507802+00:00",
+      "executed_at_utc": "2026-10-21T00:42:29.905441+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "d78856901b8ed706796f47c933b242d42e69389e9172b4fff652e671b27d24c1",
-            "before_sha256": "d78856901b8ed706796f47c933b242d42e69389e9172b4fff652e671b27d24c1",
-            "path": "docs/evidence/C101/fixtures/benzinga/CompanyNews.json"
+            "after_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "before_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "path": "docs/evidence/C101/fixtures/wsj/ETFLosers.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::CompanyNews",
-        "path": "docs/evidence/C101/receipts/benzinga/CompanyNews/counterfact.json",
-        "sha256": "f838b034524744061c04a7a70bf86c5576b38e45fda33a84d4d25e44ee174831"
+        "model_identity": "wsj::ETFLosers",
+        "path": "docs/evidence/C101/receipts/wsj/ETFLosers/counterfact.json",
+        "sha256": "1fc05dbc7f0b6eb700d1e09476036778d586138ffce618cce92877a264df6ca0"
       },
       "status": "PASS",
-      "upstream_model": "CompanyNews"
+      "upstream_model": "ETFLosers"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase implementation --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFActive --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-14T12:35:56.265959+00:00",
+      "executed_at_utc": "2026-10-21T00:42:31.173472+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::WorldNews",
-        "path": "docs/evidence/C101/receipts/benzinga/WorldNews/implementation.json",
-        "sha256": "8fe36ff6da2a3de8a0cb523c38b62385978280420cb193fb271bf309f6da9697"
+        "model_identity": "wsj::ETFActive",
+        "path": "docs/evidence/C101/receipts/wsj/ETFActive/implementation.json",
+        "sha256": "a849205aaa1fc36dcc30fb449b5fff3651f45503f9d9719eb2c92992ebf3d8e2"
       },
       "status": "PASS",
-      "upstream_model": "WorldNews"
+      "upstream_model": "ETFActive"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase direct --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFActive --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-14T12:35:57.041068+00:00",
+      "executed_at_utc": "2026-10-21T00:42:32.503669+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "e718afe9fe5725602fafe770f99735dc91c46050240707750c26bb299b6200d8",
-            "before_sha256": "e718afe9fe5725602fafe770f99735dc91c46050240707750c26bb299b6200d8",
-            "path": "docs/evidence/C101/fixtures/benzinga/WorldNews.json"
+            "after_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "before_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "path": "docs/evidence/C101/fixtures/wsj/ETFActive.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::WorldNews",
-        "path": "docs/evidence/C101/receipts/benzinga/WorldNews/direct.json",
-        "sha256": "1e04047687e40c8673030a47ca5c11ca7be5fc2c8d0bd92fde829447fb386aac"
+        "model_identity": "wsj::ETFActive",
+        "path": "docs/evidence/C101/receipts/wsj/ETFActive/direct.json",
+        "sha256": "ff04b1bb8a471308374d4d33f38815762318423b79dfdb89f28e90a360dd2ec6"
       },
       "status": "PASS",
-      "upstream_model": "WorldNews"
+      "upstream_model": "ETFActive"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase service --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFActive --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-14T12:35:57.948503+00:00",
+      "executed_at_utc": "2026-10-21T00:42:34.505503+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "e718afe9fe5725602fafe770f99735dc91c46050240707750c26bb299b6200d8",
-            "before_sha256": "e718afe9fe5725602fafe770f99735dc91c46050240707750c26bb299b6200d8",
-            "path": "docs/evidence/C101/fixtures/benzinga/WorldNews.json"
+            "after_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "before_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "path": "docs/evidence/C101/fixtures/wsj/ETFActive.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::WorldNews",
-        "path": "docs/evidence/C101/receipts/benzinga/WorldNews/service.json",
-        "sha256": "9d7da651eaf8dbd6915abca1d1d7a665f735702d7eed5fb0b1a58d283a22cd49"
+        "model_identity": "wsj::ETFActive",
+        "path": "docs/evidence/C101/receipts/wsj/ETFActive/service.json",
+        "sha256": "57e94769426f2c9844b63a2fd4749b92dd86f95aca1fc106639ce106840b90b2"
       },
       "status": "PASS",
-      "upstream_model": "WorldNews"
+      "upstream_model": "ETFActive"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase contract --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFActive --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-14T12:35:58.734159+00:00",
+      "executed_at_utc": "2026-10-21T00:42:35.559111+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "e718afe9fe5725602fafe770f99735dc91c46050240707750c26bb299b6200d8",
-            "before_sha256": "e718afe9fe5725602fafe770f99735dc91c46050240707750c26bb299b6200d8",
-            "path": "docs/evidence/C101/fixtures/benzinga/WorldNews.json"
+            "after_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "before_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "path": "docs/evidence/C101/fixtures/wsj/ETFActive.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::WorldNews",
-        "path": "docs/evidence/C101/receipts/benzinga/WorldNews/contract.json",
-        "sha256": "64f41df70a071ff38ea91f8ced0660a23e3db83c6d4f0ee83e013f1f6742c1aa"
+        "model_identity": "wsj::ETFActive",
+        "path": "docs/evidence/C101/receipts/wsj/ETFActive/contract.json",
+        "sha256": "7983d1295e98ac80c001ee639943c8066b2a2b75f143eedc4fec1cac22088ccf"
       },
       "status": "PASS",
-      "upstream_model": "WorldNews"
+      "upstream_model": "ETFActive"
     },
     {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase counterfact --evidence-root docs/evidence/C101",
+      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFActive --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-14T12:35:59.502676+00:00",
+      "executed_at_utc": "2026-10-21T00:42:37.611341+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
       "pins": {
         "contract": [
           {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
+            "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+            "path": "opendata/data/models/wsj.py"
           },
           {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
+            "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+            "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
             "path": "opendata/data/domains.yaml"
           }
         ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
+        "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
         "fixture": [
           {
-            "after_sha256": "e718afe9fe5725602fafe770f99735dc91c46050240707750c26bb299b6200d8",
-            "before_sha256": "e718afe9fe5725602fafe770f99735dc91c46050240707750c26bb299b6200d8",
-            "path": "docs/evidence/C101/fixtures/benzinga/WorldNews.json"
+            "after_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "before_sha256": "d91f85cbf20cd404b65229a2a3f61da0143dc17f6d545f9743ab2a9244f547de",
+            "path": "docs/evidence/C101/fixtures/wsj/ETFActive.json"
           }
         ],
         "probe": [
           {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
+            "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+            "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
             "path": "scripts/quality/iter2_claims_probe_runner.py"
           },
           {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
+            "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+            "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
             "path": "scripts/quality/iter2_claims_fixtures.py"
+          },
+          {
+            "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+            "path": "scripts/quality/iter2_witnesses/wsj.py"
           }
         ],
         "source": [
           {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+            "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+            "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
+            "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+            "path": "opendata/data/providers/wsj/registration.py"
           },
           {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
+            "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+            "path": "opendata/data/providers/wsj/provider.py"
           },
           {
-            "after_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "before_sha256": "dc4cb8429d4c502682c922517e5a2905a576b6b3149610e06ec44583c650db7f",
-            "path": "opendata/data/providers/benzinga/models/iter2.py"
+            "after_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "before_sha256": "07ff0f2d0775b2fc5e4e45d9c6682a8f1a72553f01702c349215c1667b9af8c9",
+            "path": "opendata/data/providers/wsj/models/etf_movers.py"
+          },
+          {
+            "after_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "before_sha256": "e8244ed004cca098508cc94340b779bb977d16cff0f6ef7101c79fdb26a8dd58",
+            "path": "opendata/data/providers/wsj/specs.py"
+          },
+          {
+            "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+            "path": "opendata/data/providers/_engine/http_json.py"
           }
         ]
       },
-      "provider": "benzinga",
+      "provider": "wsj",
       "reason": "witness reported a clean verdict",
       "receipt": {
-        "model_identity": "benzinga::WorldNews",
-        "path": "docs/evidence/C101/receipts/benzinga/WorldNews/counterfact.json",
-        "sha256": "392b51b9355074ed388ed7f86cdaac570fcf1584f7bae38fff7bbf31fbeb2202"
+        "model_identity": "wsj::ETFActive",
+        "path": "docs/evidence/C101/receipts/wsj/ETFActive/counterfact.json",
+        "sha256": "1d1b91005569c7621090f242f27bddfadec5aa9dca47f06d05cdf4fabe425f0d"
       },
       "status": "PASS",
-      "upstream_model": "WorldNews"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase implementation --evidence-root docs/evidence/C101",
-      "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-14T12:36:00.274468+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 0,
-      "phase": "implementation",
-      "pins": {
-        "contract": [
-          {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
-          },
-          {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "path": "opendata/data/domains.yaml"
-          }
-        ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-        "fixture": [
-          {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "path": "scripts/quality/iter2_claims_probe_runner.py"
-          },
-          {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "path": "scripts/quality/iter2_claims_fixtures.py"
-          }
-        ],
-        "probe": [
-          {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "path": "scripts/quality/iter2_claims_probe_runner.py"
-          },
-          {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "path": "scripts/quality/iter2_claims_fixtures.py"
-          }
-        ],
-        "source": [
-          {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "path": "opendata/data/providers/catalog.py"
-          },
-          {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
-          },
-          {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
-          },
-          {
-            "after_sha256": "7a2d9148536ed3fd726af45725c61d537997f05036fd8491784d24559d34001f",
-            "before_sha256": "7a2d9148536ed3fd726af45725c61d537997f05036fd8491784d24559d34001f",
-            "path": "opendata/data/providers/benzinga/models/price_target.py"
-          },
-          {
-            "after_sha256": "56ec710ec8966ad0ea6af328d09ebee660d3ca781210162e9a3a98f54410c5d3",
-            "before_sha256": "56ec710ec8966ad0ea6af328d09ebee660d3ca781210162e9a3a98f54410c5d3",
-            "path": "opendata/data/providers/benzinga/specs.py"
-          }
-        ]
-      },
-      "provider": "benzinga",
-      "reason": "witness reported a clean verdict",
-      "receipt": {
-        "model_identity": "benzinga::PriceTarget",
-        "path": "docs/evidence/C101/receipts/benzinga/PriceTarget/implementation.json",
-        "sha256": "01dee02af096bd369e7b57ba44885615a2829093cbf6256228cfb4b50268a565"
-      },
-      "status": "PASS",
-      "upstream_model": "PriceTarget"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase direct --evidence-root docs/evidence/C101",
-      "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-14T12:36:01.053472+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 0,
-      "phase": "direct",
-      "pins": {
-        "contract": [
-          {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
-          },
-          {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "path": "opendata/data/domains.yaml"
-          }
-        ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-        "fixture": [
-          {
-            "after_sha256": "74bb53264b7bdb231c0884288e06c51e0837e78dcd46dd11bc83ef215f9c53bd",
-            "before_sha256": "74bb53264b7bdb231c0884288e06c51e0837e78dcd46dd11bc83ef215f9c53bd",
-            "path": "docs/evidence/C101/fixtures/benzinga/PriceTarget.json"
-          }
-        ],
-        "probe": [
-          {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "path": "scripts/quality/iter2_claims_probe_runner.py"
-          },
-          {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "path": "scripts/quality/iter2_claims_fixtures.py"
-          }
-        ],
-        "source": [
-          {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "path": "opendata/data/providers/catalog.py"
-          },
-          {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
-          },
-          {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
-          },
-          {
-            "after_sha256": "7a2d9148536ed3fd726af45725c61d537997f05036fd8491784d24559d34001f",
-            "before_sha256": "7a2d9148536ed3fd726af45725c61d537997f05036fd8491784d24559d34001f",
-            "path": "opendata/data/providers/benzinga/models/price_target.py"
-          },
-          {
-            "after_sha256": "56ec710ec8966ad0ea6af328d09ebee660d3ca781210162e9a3a98f54410c5d3",
-            "before_sha256": "56ec710ec8966ad0ea6af328d09ebee660d3ca781210162e9a3a98f54410c5d3",
-            "path": "opendata/data/providers/benzinga/specs.py"
-          }
-        ]
-      },
-      "provider": "benzinga",
-      "reason": "witness reported a clean verdict",
-      "receipt": {
-        "model_identity": "benzinga::PriceTarget",
-        "path": "docs/evidence/C101/receipts/benzinga/PriceTarget/direct.json",
-        "sha256": "484e0a09344a2f0545f58ec49767c6d3f64861f30a0018360088a16e089b5fcc"
-      },
-      "status": "PASS",
-      "upstream_model": "PriceTarget"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase service --evidence-root docs/evidence/C101",
-      "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-14T12:36:01.965413+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 0,
-      "phase": "service",
-      "pins": {
-        "contract": [
-          {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
-          },
-          {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "path": "opendata/data/domains.yaml"
-          }
-        ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-        "fixture": [
-          {
-            "after_sha256": "74bb53264b7bdb231c0884288e06c51e0837e78dcd46dd11bc83ef215f9c53bd",
-            "before_sha256": "74bb53264b7bdb231c0884288e06c51e0837e78dcd46dd11bc83ef215f9c53bd",
-            "path": "docs/evidence/C101/fixtures/benzinga/PriceTarget.json"
-          }
-        ],
-        "probe": [
-          {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "path": "scripts/quality/iter2_claims_probe_runner.py"
-          },
-          {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "path": "scripts/quality/iter2_claims_fixtures.py"
-          }
-        ],
-        "source": [
-          {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "path": "opendata/data/providers/catalog.py"
-          },
-          {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
-          },
-          {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
-          },
-          {
-            "after_sha256": "7a2d9148536ed3fd726af45725c61d537997f05036fd8491784d24559d34001f",
-            "before_sha256": "7a2d9148536ed3fd726af45725c61d537997f05036fd8491784d24559d34001f",
-            "path": "opendata/data/providers/benzinga/models/price_target.py"
-          },
-          {
-            "after_sha256": "56ec710ec8966ad0ea6af328d09ebee660d3ca781210162e9a3a98f54410c5d3",
-            "before_sha256": "56ec710ec8966ad0ea6af328d09ebee660d3ca781210162e9a3a98f54410c5d3",
-            "path": "opendata/data/providers/benzinga/specs.py"
-          }
-        ]
-      },
-      "provider": "benzinga",
-      "reason": "witness reported a clean verdict",
-      "receipt": {
-        "model_identity": "benzinga::PriceTarget",
-        "path": "docs/evidence/C101/receipts/benzinga/PriceTarget/service.json",
-        "sha256": "7dbbbb452469196148b5dbab8bccf1dcd509eecf76207d19b36d61d0eee9a3a5"
-      },
-      "status": "PASS",
-      "upstream_model": "PriceTarget"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase contract --evidence-root docs/evidence/C101",
-      "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-14T12:36:02.757376+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 0,
-      "phase": "contract",
-      "pins": {
-        "contract": [
-          {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
-          },
-          {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "path": "opendata/data/domains.yaml"
-          }
-        ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-        "fixture": [
-          {
-            "after_sha256": "74bb53264b7bdb231c0884288e06c51e0837e78dcd46dd11bc83ef215f9c53bd",
-            "before_sha256": "74bb53264b7bdb231c0884288e06c51e0837e78dcd46dd11bc83ef215f9c53bd",
-            "path": "docs/evidence/C101/fixtures/benzinga/PriceTarget.json"
-          }
-        ],
-        "probe": [
-          {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "path": "scripts/quality/iter2_claims_probe_runner.py"
-          },
-          {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "path": "scripts/quality/iter2_claims_fixtures.py"
-          }
-        ],
-        "source": [
-          {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "path": "opendata/data/providers/catalog.py"
-          },
-          {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
-          },
-          {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
-          },
-          {
-            "after_sha256": "7a2d9148536ed3fd726af45725c61d537997f05036fd8491784d24559d34001f",
-            "before_sha256": "7a2d9148536ed3fd726af45725c61d537997f05036fd8491784d24559d34001f",
-            "path": "opendata/data/providers/benzinga/models/price_target.py"
-          },
-          {
-            "after_sha256": "56ec710ec8966ad0ea6af328d09ebee660d3ca781210162e9a3a98f54410c5d3",
-            "before_sha256": "56ec710ec8966ad0ea6af328d09ebee660d3ca781210162e9a3a98f54410c5d3",
-            "path": "opendata/data/providers/benzinga/specs.py"
-          }
-        ]
-      },
-      "provider": "benzinga",
-      "reason": "witness reported a clean verdict",
-      "receipt": {
-        "model_identity": "benzinga::PriceTarget",
-        "path": "docs/evidence/C101/receipts/benzinga/PriceTarget/contract.json",
-        "sha256": "e9213f5acd92b4adf8e70619778a09b7968a4617e9805c46ca5ed66b72e27a40"
-      },
-      "status": "PASS",
-      "upstream_model": "PriceTarget"
-    },
-    {
-      "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase counterfact --evidence-root docs/evidence/C101",
-      "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-14T12:36:03.517796+00:00",
-      "execution_mode": "offline_fixture",
-      "exit_code": 0,
-      "phase": "counterfact",
-      "pins": {
-        "contract": [
-          {
-            "after_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "before_sha256": "1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-            "path": "opendata/data/models/benzinga.py"
-          },
-          {
-            "after_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "before_sha256": "044f3d6493542f23b17c37ec97a6de61f89357f81bff66bc48d264e3f92b32ca",
-            "path": "opendata/data/domains.yaml"
-          }
-        ],
-        "contract_version": "sha256:1cba05feee27b595e8e18aaf5c53e6011e52dac0f4dfea9bccded5db4c85d10b",
-        "fixture": [
-          {
-            "after_sha256": "74bb53264b7bdb231c0884288e06c51e0837e78dcd46dd11bc83ef215f9c53bd",
-            "before_sha256": "74bb53264b7bdb231c0884288e06c51e0837e78dcd46dd11bc83ef215f9c53bd",
-            "path": "docs/evidence/C101/fixtures/benzinga/PriceTarget.json"
-          }
-        ],
-        "probe": [
-          {
-            "after_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "before_sha256": "c424e4b94da19542aa1ae2b1211b315b699455305448485a4c32c45b56bab821",
-            "path": "scripts/quality/iter2_claims_probe_runner.py"
-          },
-          {
-            "after_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "before_sha256": "f575da1d4b136d5d38ba9716cbbfb0933f92cf809438beffed202131d42a12d3",
-            "path": "scripts/quality/iter2_claims_fixtures.py"
-          }
-        ],
-        "source": [
-          {
-            "after_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "before_sha256": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
-            "path": "opendata/data/providers/catalog.py"
-          },
-          {
-            "after_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "before_sha256": "ad300dfbdc66ed8060c8ba3615edd06eb6ccf25643c347aa080c94322252beb0",
-            "path": "opendata/data/providers/benzinga/registration.py"
-          },
-          {
-            "after_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "before_sha256": "03e2cda67b14fababeed2a0e2068306487277293781a43a2e9f51aec491b46e9",
-            "path": "opendata/data/providers/benzinga/provider.py"
-          },
-          {
-            "after_sha256": "7a2d9148536ed3fd726af45725c61d537997f05036fd8491784d24559d34001f",
-            "before_sha256": "7a2d9148536ed3fd726af45725c61d537997f05036fd8491784d24559d34001f",
-            "path": "opendata/data/providers/benzinga/models/price_target.py"
-          },
-          {
-            "after_sha256": "56ec710ec8966ad0ea6af328d09ebee660d3ca781210162e9a3a98f54410c5d3",
-            "before_sha256": "56ec710ec8966ad0ea6af328d09ebee660d3ca781210162e9a3a98f54410c5d3",
-            "path": "opendata/data/providers/benzinga/specs.py"
-          }
-        ]
-      },
-      "provider": "benzinga",
-      "reason": "witness reported a clean verdict",
-      "receipt": {
-        "model_identity": "benzinga::PriceTarget",
-        "path": "docs/evidence/C101/receipts/benzinga/PriceTarget/counterfact.json",
-        "sha256": "410aa0bf8172b8b1363b2752e6430ae059d0813cf369bcd91412e902ec3b4aab"
-      },
-      "status": "PASS",
-      "upstream_model": "PriceTarget"
+      "upstream_model": "ETFActive"
     }
   ],
-  "generated_at_utc": "2026-10-14T12:36:04.855716+00:00",
+  "generated_at_utc": "2026-10-21T00:42:39.313855+00:00",
   "generated_by": "scripts/quality/iter2_claims_producer.py",
   "identity_set_sha256": "5168e1e723999312b0978bf9b1a8999c0b4960cdb12013e43e1e59e349e21e65",
   "notes": "claims are candidate labels produced only by subprocess witnesses; primary_reviews are external human/primary-model records this producer never fabricates, so judge acceptance stops at CANDIDATE phases",

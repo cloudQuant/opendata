@@ -438,6 +438,8 @@ from opendata.data.models.yfinance_iter2 import (
     YfinanceScreenerObservation,
 )
 
+from opendata.data.models.wsj import WSJETFPerformance
+
 __all__ = [
     "AlphaVantageEquityHistorical",
     "AlphaVantageEtfHistorical",
@@ -789,4 +791,5 @@ __all__ = [
     "TiingoEtfHistorical",
     "TiingoTrailingDividendYield",
     "TiingoWorldNews",
+    "WSJETFPerformance",
 ]

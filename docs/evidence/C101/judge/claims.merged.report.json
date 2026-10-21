@@ -2,7 +2,7 @@
   "acceptance_rule": "all five phase claims plus an explicit valid primary-model or human ACCEPT receipt; claim PASS alone is candidate only",
   "claims_input": {
     "path": "docs/evidence/C101/claims.merged.json",
-    "sha256": "87edaa366892c8a263ba787fb8c94a1baf52f5648aad3256caae1cbefd65ca77"
+    "sha256": "294551726dd82f07af87f1e33d4774a08df43f4168ee011aac8cfd120c5f0ef0"
   },
   "claims_status_source": "explicit JSON claims only; no directory globbing or markdown status parsing",
   "global_issues": [],
@@ -27336,116 +27336,269 @@
       "upstream_model": "EconomicCalendar"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "wsj::ETFGainers",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFGainers/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [
+                "symbol"
+              ],
+              "refusal_class": "ProviderEngineError",
+              "refusal_code": "WSJ_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [
+                "symbol"
+              ],
+              "refusal_class": "ProviderEngineError",
+              "refusal_code": "WSJ_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "publishing a mover row without its 'ticker' leaves the required, non-nullable 'symbol' column unresolvable, so the engine must refuse with WSJ_SHAPE_INVALID attributing missing=('symbol',) rather than shipping an ETF row the caller cannot cite back; untampered control produced 2 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFGainers/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFGainers/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFGainers/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFGainers/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "wsj",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-wsj-ETFGainers",
       "upstream_model": "ETFGainers"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "wsj::ETFLosers",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFLosers/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [
+                "symbol"
+              ],
+              "refusal_class": "ProviderEngineError",
+              "refusal_code": "WSJ_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [
+                "symbol"
+              ],
+              "refusal_class": "ProviderEngineError",
+              "refusal_code": "WSJ_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "publishing a mover row without its 'ticker' leaves the required, non-nullable 'symbol' column unresolvable, so the engine must refuse with WSJ_SHAPE_INVALID attributing missing=('symbol',) rather than shipping an ETF row the caller cannot cite back; untampered control produced 2 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFLosers/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFLosers/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFLosers/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFLosers/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "wsj",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-wsj-ETFLosers",
       "upstream_model": "ETFLosers"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "wsj::ETFActive",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFActive/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [
+                "symbol"
+              ],
+              "refusal_class": "ProviderEngineError",
+              "refusal_code": "WSJ_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [
+                "symbol"
+              ],
+              "refusal_class": "ProviderEngineError",
+              "refusal_code": "WSJ_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "publishing a mover row without its 'ticker' leaves the required, non-nullable 'symbol' column unresolvable, so the engine must refuse with WSJ_SHAPE_INVALID attributing missing=('symbol',) rather than shipping an ETF row the caller cannot cite back; untampered control produced 2 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFActive/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFActive/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFActive/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/wsj/ETFActive/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "wsj",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-wsj-ETFActive",
       "upstream_model": "ETFActive"
     },
@@ -27866,7 +28019,7 @@
               "rejected": [],
               "status": null
             },
-            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCryptoHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam"
+            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCryptoHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 20 row(s) through the same seam"
           },
           "evidence_kind": "adversarial_counterfact",
           "issues": [],
@@ -27951,7 +28104,7 @@
               "rejected": [],
               "status": null
             },
-            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCurrencyHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam"
+            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceCurrencyHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 20 row(s) through the same seam"
           },
           "evidence_kind": "adversarial_counterfact",
           "issues": [],
@@ -29141,7 +29294,7 @@
               "rejected": [],
               "status": null
             },
-            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceFuturesHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 21 row(s) through the same seam"
+            "reason": "an empty chart result keeps every leg the SDK reads before the bars well-formed -- the crumb, the schedule probe that supplies exchangeTimezoneName, the URL, the parameters -- and only the daily series the window was asked for disappears: PriceHistory returns its empty frame, _history_rows sees a frame with no rows, and YfinanceFuturesHistoricalFetcher must refuse rather than publish a history window the source never returned bars for; untampered control produced 20 row(s) through the same seam"
           },
           "evidence_kind": "adversarial_counterfact",
           "issues": [],
@@ -29959,14 +30112,14 @@
   ],
   "schema_version": 1,
   "summary": {
-    "claim_count": 1725,
+    "claim_count": 1740,
     "identity_count": 350,
-    "offline_acceptance_count": 339,
-    "primary_review_count": 339,
+    "offline_acceptance_count": 342,
+    "primary_review_count": 342,
     "status_counts": {
       "INCOMPLETE": 6,
-      "OFFLINE_ACCEPTED": 339,
-      "UNREVIEWED": 5
+      "OFFLINE_ACCEPTED": 342,
+      "UNREVIEWED": 2
     }
   }
 }

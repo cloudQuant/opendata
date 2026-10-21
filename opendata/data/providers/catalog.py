@@ -44,6 +44,7 @@ from opendata.data.providers.tradier.provider import PROVIDER as TRADIER_PROVIDE
 from opendata.data.providers.tradingeconomics.provider import (
     PROVIDER as TRADINGECONOMICS_PROVIDER,
 )
+from opendata.data.providers.wsj.provider import PROVIDER as WSJ_PROVIDER
 from opendata.data.providers.yfinance.provider import PROVIDER as YFINANCE_PROVIDER
 
 if TYPE_CHECKING:
@@ -103,7 +104,7 @@ _UPSTREAM_PROVIDERS: tuple[Provider, ...] = (
     _reserved_provider("stockgrid"),
     TMX_PROVIDER,
     TRADIER_PROVIDER,
-    _reserved_provider("wsj"),
+    WSJ_PROVIDER,
 )
 
 PROVIDERS: tuple[Provider, ...] = (

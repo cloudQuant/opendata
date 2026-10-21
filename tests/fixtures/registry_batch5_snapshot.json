@@ -9,14 +9,14 @@
       "non_base_contract_model_classes": 325
     },
     "live_counts": {
-      "all_symbols": 350,
-      "contract_model_classes_including_base": 346,
-      "non_base_contract_model_classes": 345
+      "all_symbols": 351,
+      "contract_model_classes_including_base": 347,
+      "non_base_contract_model_classes": 346
     },
     "delta_vs_adjudication": {
-      "all_symbols": 20,
-      "contract_model_classes_including_base": 20,
-      "non_base_contract_model_classes": 20
+      "all_symbols": 21,
+      "contract_model_classes_including_base": 21,
+      "non_base_contract_model_classes": 21
     },
     "attribution": {
       "removed_by_iteration2": [
@@ -332,14 +332,14 @@
   },
   "candidate_counts": {
     "basis": "Export census re-derived from the live opendata.data.models.__all__ at iteration-2 head (see iter2_census_rebase); domain/identity counts remain the batch5 manual arithmetic from the pinned batch4 snapshot plus the candidate-approved single SLOOS provider/domain identity. The three export counts below supersede the batch5 count adjudication's 330/326/325, which stays hashed unchanged at 2a929fd8614af09e28aa2ae16fa781c7da49d7692dcd6a3b6c78f2118c0906de.",
-    "domain_specs": 338,
-    "fixed_bound": 318,
-    "fixed_identities": 351,
+    "domain_specs": 362,
+    "fixed_bound": 342,
+    "fixed_identities": 375,
     "fixed_unbound": 33,
-    "provider_model_legs": 351,
-    "all_symbols": 350,
-    "contract_model_classes_including_base": 346,
-    "non_base_contract_model_classes": 345,
+    "provider_model_legs": 375,
+    "all_symbols": 351,
+    "contract_model_classes_including_base": 347,
+    "non_base_contract_model_classes": 346,
     "non_contract_exports": [
       {
         "name": "BlsCatalogPage",
@@ -427,19 +427,19 @@
     "ods_legs": "The 33 registered source/domain legs on the 20 legacy domains remain split by the 10 explicit legacy freshness-field mappings present in the pinned AkShare/THS mapping YAMLs; the remaining 23 are explicitly unmapped."
   },
   "counts": {
-    "deferred_domain_count": 339,
-    "deferred_source_domain_leg_count": 339,
-    "domain_count": 359,
+    "deferred_domain_count": 342,
+    "deferred_source_domain_leg_count": 342,
+    "domain_count": 362,
     "legacy_dwd_domain_count": 20,
     "legacy_source_domain_leg_count": 33,
     "mapped_ods_leg_count": 10,
-    "provider_model_identity_count": 372,
+    "provider_model_identity_count": 375,
     "queried_table_count": 30,
-    "query_semantic_domain_count": 339,
-    "registered_source_domain_leg_count": 372,
+    "query_semantic_domain_count": 342,
+    "registered_source_domain_leg_count": 375,
     "unmapped_ods_leg_count": 23,
     "warehouse_table_catalog_count": 53,
-    "descriptor_eligible_identity_count": 350,
+    "descriptor_eligible_identity_count": 353,
     "model_key_only_identity_count": 22,
     "descriptor_eligible_legacy_identity_count": 11
   },
@@ -754,6 +754,9 @@
     "tradier_equity_search",
     "tradier_etf_historical",
     "tradier_options_chains",
+    "wsj_etf_active",
+    "wsj_etf_gainers",
+    "wsj_etf_losers",
     "yfinance_balance_sheet",
     "yfinance_cash_flow_statement",
     "yfinance_company_news",
@@ -2030,6 +2033,18 @@
       "source": "tradingeconomics"
     },
     {
+      "domain": "wsj_etf_active",
+      "source": "wsj"
+    },
+    {
+      "domain": "wsj_etf_gainers",
+      "source": "wsj"
+    },
+    {
+      "domain": "wsj_etf_losers",
+      "source": "wsj"
+    },
+    {
       "domain": "yfinance_balance_sheet",
       "source": "yfinance"
     },
@@ -2473,6 +2488,9 @@
     "tradier_etf_historical",
     "tradier_options_chains",
     "trading_calendar",
+    "wsj_etf_active",
+    "wsj_etf_gainers",
+    "wsj_etf_losers",
     "yfinance_balance_sheet",
     "yfinance_cash_flow_statement",
     "yfinance_company_news",
@@ -6143,6 +6161,36 @@
       "canonical_ids_declared": true
     },
     {
+      "binding": "opendata.data.providers.wsj.models.etf_movers:WSJETFActiveFetcher",
+      "contract": "WSJETFPerformance",
+      "domain": "wsj_etf_active",
+      "model": "ETFActive",
+      "scenario_present": true,
+      "source": "wsj",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.wsj.models.etf_movers:WSJETFGainersFetcher",
+      "contract": "WSJETFPerformance",
+      "domain": "wsj_etf_gainers",
+      "model": "ETFGainers",
+      "scenario_present": true,
+      "source": "wsj",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.wsj.models.etf_movers:WSJETFLosersFetcher",
+      "contract": "WSJETFPerformance",
+      "domain": "wsj_etf_losers",
+      "model": "ETFLosers",
+      "scenario_present": true,
+      "source": "wsj",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
       "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceBalanceSheetFetcher",
       "contract": "YfinanceFinancialStatementObservation",
       "domain": "yfinance_balance_sheet",
@@ -6744,6 +6792,9 @@
     "tradier_equity_search",
     "tradier_etf_historical",
     "tradier_options_chains",
+    "wsj_etf_active",
+    "wsj_etf_gainers",
+    "wsj_etf_losers",
     "yfinance_balance_sheet",
     "yfinance_cash_flow_statement",
     "yfinance_company_news",
@@ -8151,6 +8202,18 @@
       "source": "tradingeconomics"
     },
     {
+      "domain": "wsj_etf_active",
+      "source": "wsj"
+    },
+    {
+      "domain": "wsj_etf_gainers",
+      "source": "wsj"
+    },
+    {
+      "domain": "wsj_etf_losers",
+      "source": "wsj"
+    },
+    {
       "domain": "stock_daily_overseas",
       "source": "yfinance"
     },
@@ -8284,10 +8347,10 @@
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/receipt.json": "f2e3eb877e7a1ec4f6a080ebbe60137330e50b38d8d5224ac186e0950191bef3",
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/smoke.json": "224c2475432ea6fca4b2c6e1442718ae2b0b829386530bf97a5361fb79897dc9",
     "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5",
-    "opendata/data/domains.yaml": "87e02b3da5277a283591cfa4d79e26a64cbf045671c404ca48fd24a9bdaf83fb",
+    "opendata/data/domains.yaml": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
     "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
     "opendata/data/mappings/ths.yaml": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418",
-    "opendata/data/models/__init__.py": "4429da0506fc7b8883188a6676606cf21935b72b7b23d412afee204b80dfa934",
+    "opendata/data/models/__init__.py": "5208ad14589f1dc22d9685122e8e09f9f3f3a7663a622dfb12b9335d18084474",
     "opendata/data/models/finviz_performance.py": "1c0df807da91d8cb2fb1b5720431ce7d68bbacd3d4eb746fa2ff34ca5bf07b86",
     "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
     "opendata/data/models/yfinance_iter2.py": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
@@ -9077,5 +9140,36 @@
     },
     "test_sites": "the test-side literals moved by this re-base are listed in the probe's carrier, not here: tests/test_provider_domains.py and tests/test_pipeline_jobs.py byte-pin this fixture's digest, so recording the list inside the fixture would invalidate the very digest it would have to name",
     "why_late": "wave 37 landed cboe_index_snapshots without re-basing this fence and wave 38 adds a second domain on top of the same drift; re-basing a pin a wave moved is the house rule (waves 33 and 34 each carry a waveNN_census_rebase block, over 15 and 3 domains)"
+  },
+  "wave42_wsj_census_rebase": {
+    "scope": "wave-42 WSJ ETF mover provider (3 identities, 3 domains, 1 contract)",
+    "identities_added": [
+      [
+        "wsj",
+        "ETFActive",
+        "wsj_etf_active"
+      ],
+      [
+        "wsj",
+        "ETFGainers",
+        "wsj_etf_gainers"
+      ],
+      [
+        "wsj",
+        "ETFLosers",
+        "wsj_etf_losers"
+      ]
+    ],
+    "domains_added": [
+      "wsj_etf_active",
+      "wsj_etf_gainers",
+      "wsj_etf_losers"
+    ],
+    "counts": {
+      "domain_count": 362,
+      "provider_model_identity_count": 375,
+      "descriptor_eligible_identity_count": 353
+    },
+    "measured_by": "opendata.data.providers.catalog.list_providers() + load_domains()"
   }
 }

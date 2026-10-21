@@ -1,0 +1,185 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/wsj/ETFLosers/implementation-exit0.txt",
+    "sha256": "e6123a5cf1af98d9b36a8d6ce84f99bbfa15314281bb64fa9e3f25b043bfec96",
+    "size_bytes": 348,
+    "stdout_excerpt": "implementation: registered domain=wsj_etf_losers row_model=WSJETFPerformance verified=False transport=offline-only\nVERDICT=PASS\n"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFLosers --phase implementation --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-21T02:11:42.875938+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+          "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+          "path": "opendata/data/models/wsj.py"
+        },
+        {
+          "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+          "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+      "fixture": [
+        {
+          "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+          "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+          "path": "scripts/quality/iter2_witnesses/wsj.py"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+          "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+          "path": "scripts/quality/iter2_witnesses/wsj.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+          "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+          "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+          "path": "opendata/data/providers/wsj/registration.py"
+        },
+        {
+          "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+          "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+          "path": "opendata/data/providers/wsj/provider.py"
+        },
+        {
+          "after_sha256": "1ad1da889802b6fc85ebe0ef1db7887985fbdf9c12e980f9be87b79ef72c7bee",
+          "before_sha256": "1ad1da889802b6fc85ebe0ef1db7887985fbdf9c12e980f9be87b79ef72c7bee",
+          "path": "opendata/data/providers/wsj/models/etf_movers.py"
+        },
+        {
+          "after_sha256": "f77260db317f80aac3d41f26d675d78056929cce722c6df76452368c5ea4f8b2",
+          "before_sha256": "f77260db317f80aac3d41f26d675d78056929cce722c6df76452368c5ea4f8b2",
+          "path": "opendata/data/providers/wsj/specs.py"
+        },
+        {
+          "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+          "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+          "path": "opendata/data/providers/_engine/http_json.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "wsj::ETFLosers",
+  "phase": "implementation",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+        "before_sha256": "c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+        "path": "opendata/data/models/wsj.py"
+      },
+      {
+        "after_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+        "before_sha256": "42a3f859d4bce1ce4c536317f7ee8c27407793dcf20f5af341f5dd6e6986cf31",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:c9ed0a6feff652193b3fadee6cead7695c14c11f46d4237038cf38ae272ac61b",
+    "fixture": [
+      {
+        "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+        "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+        "path": "scripts/quality/iter2_witnesses/wsj.py"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+        "before_sha256": "5fa430e57263c760ccc0c8463229735106453858472729d4602d029af45704f6",
+        "path": "scripts/quality/iter2_witnesses/wsj.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+        "before_sha256": "6709319ccb40097795a9ba7106c137c94e2ff95d58dd39d23a1b714aa1584a9b",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+        "before_sha256": "f04afd5bc625ab869b5c4bfc59f8adfac6973c1ce58c67097aba1cf133980128",
+        "path": "opendata/data/providers/wsj/registration.py"
+      },
+      {
+        "after_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+        "before_sha256": "a00ffa568419d09e1c8843aa1b56291af1dae0207dd1e88d35ddb13f2bda1864",
+        "path": "opendata/data/providers/wsj/provider.py"
+      },
+      {
+        "after_sha256": "1ad1da889802b6fc85ebe0ef1db7887985fbdf9c12e980f9be87b79ef72c7bee",
+        "before_sha256": "1ad1da889802b6fc85ebe0ef1db7887985fbdf9c12e980f9be87b79ef72c7bee",
+        "path": "opendata/data/providers/wsj/models/etf_movers.py"
+      },
+      {
+        "after_sha256": "f77260db317f80aac3d41f26d675d78056929cce722c6df76452368c5ea4f8b2",
+        "before_sha256": "f77260db317f80aac3d41f26d675d78056929cce722c6df76452368c5ea4f8b2",
+        "path": "opendata/data/providers/wsj/specs.py"
+      },
+      {
+        "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+        "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+        "path": "opendata/data/providers/_engine/http_json.py"
+      }
+    ]
+  },
+  "provider": "wsj",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-wsj-ETFLosers",
+  "upstream_model": "ETFLosers"
+}

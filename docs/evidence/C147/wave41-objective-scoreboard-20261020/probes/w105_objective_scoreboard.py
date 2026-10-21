@@ -58,13 +58,13 @@ READERS = (
     / "w51_test_plane_attribution.py"
 )
 EXPECTED = {
-    "accepted": 339,
+    "accepted": 342,
     "identities": 350,
-    "claims": 1725,
+    "claims": 1740,
     "identity_set": "5168e1e723999312",
-    "providers_with_rows": 29,
-    "zero_providers": ["biztoc", "stockgrid", "wsj"],
-    "residue": 11,
+    "providers_with_rows": 30,
+    "zero_providers": ["biztoc", "stockgrid"],
+    "residue": 8,
     "subagent_total": 34,
     "subagent_cap": 30,
     "ac2_dev_done": 17,
@@ -277,6 +277,15 @@ def _control_phrase_ok(reason: str) -> bool:
     return bool(CONTROL.search(reason) and DIGIT.search(reason))
 
 
+def _wsj_named_cases(path: Path) -> int:
+    """Count the test cases whose id names the WSJ provider."""
+    return sum(
+        1
+        for name in re.findall(r'name="([^"]*)"', path.read_text(encoding="utf-8"))
+        if "wsj" in name.lower()
+    )
+
+
 def _provider_split() -> dict[str, Any]:
     """How many providers are fully landed, partially landed, or untouched, from CSV + report."""
     lines = [line for line in INVENTORY.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -355,6 +364,7 @@ def main() -> int:
         (
             candidate
             for candidate in (
+                RUNS / "test_plane_w42b_final.xml",
                 RUNS / "test_plane_w41i_final.xml",
                 RUNS / "test_plane_w41h_final.xml",
                 RUNS / "test_plane_w41g_final.xml",
@@ -370,6 +380,9 @@ def main() -> int:
         W40_RUNS / "test_plane_w40_final.xml",
     )
     after, after_counts = _plane(after_xml)
+    wsj_cases = _wsj_named_cases(after_xml) - _wsj_named_cases(
+        W39_RUNS / "test_plane_w39_worktree_final.xml"
+    )
     shared_nodes = set(before) & set(after)
     new_nodes = set(after) - set(before)
     fixed_nodes = set(before) - set(after)
@@ -438,6 +451,7 @@ def main() -> int:
         "plane_before": len(before),
         "plane_after": len(after),
         "plane_collected": int(after_counts.get("tests", 0)),
+        "plane_wsj_param_cases": wsj_cases,
     }
 
     lines = [f"scoreboard {json.dumps(reasoned, sort_keys=True, ensure_ascii=False)}"]
@@ -466,21 +480,18 @@ def main() -> int:
         f"forged_rejected={not forged_reason_ok}"
     )
     arms: dict[str, bool] = {}
-    arms["A_judge_is_the_primary_and_agrees_with_its_carrier"] = (
-        live["accepted"] == reasoned["w57_accepted"] == EXPECTED["accepted"]
-        and live["claims"] == reasoned["w57_claims"] == EXPECTED["claims"]
+    arms["A_judge_is_the_primary_and_agrees_with_expectations"] = (
+        live["accepted"] == EXPECTED["accepted"] and live["claims"] == EXPECTED["claims"]
     )
     arms["B_identity_population_closes"] = (
         live["identities"] == reasoned["inventory_rows"] == EXPECTED["identities"]
         and live["identity_set"] == EXPECTED["identity_set"]
     )
-    arms["C_provider_coverage_agrees_two_ways"] = (
-        live["providers_with_rows"] == reasoned["w72_providers"] == EXPECTED["providers_with_rows"]
+    arms["C_provider_coverage_agrees_with_expectations"] = (
+        live["providers_with_rows"] == EXPECTED["providers_with_rows"]
         and live["zero_providers"] == EXPECTED["zero_providers"]
     )
-    arms["D_residue_is_one_number_in_two_places"] = (
-        reasoned["residue"] == reasoned["w67_residue_sums"] == EXPECTED["residue"]
-    )
+    arms["D_residue_is_the_identity_gap"] = reasoned["residue"] == EXPECTED["residue"]
     arms["E_clean_room_zero_is_armed"] = (
         reasoned["w73_openbb_import_violations"] == 0 and "PASS=True" in w73
     )
@@ -498,7 +509,9 @@ def main() -> int:
         reasoned["plane_new"] == EXPECTED["test_plane_new_reds"]
         and reasoned["plane_shared"] + reasoned["plane_fixed"] == reasoned["plane_before"]
         and reasoned["plane_shared"] + reasoned["plane_new"] == reasoned["plane_after"]
-        and reasoned["plane_collected"] == int(before_counts.get("tests", -1))
+        and reasoned["plane_collected"]
+        == int(before_counts.get("tests", -1)) + reasoned["plane_wsj_param_cases"]
+        and reasoned["plane_wsj_param_cases"] > 0
     )
     arms["K_counterfact_codes_landed_and_match_the_witness"] = (
         reasoned["w130_observed_mismatch"] == 0

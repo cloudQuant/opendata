@@ -815,3 +815,67 @@ closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
 载体：固定名保持 a287 代（`d2b6f2…`），本次读数另存 `runs/w47_closure_face_85445578a.txt`
 （`86240d…`）。复制行仍是 `w99` 的旧值（`02dfea…`）；本提交的闸门是
 `runs/w108_staged_scan_plan_gate_w41ll.txt`（`payload_index_sha256=50600451…`、`staged=5`）。
+
+## 38. wave42：WSJ 3 行落地，以及一次全树重签
+
+**实现**：WSJ 三个 ETF mover 表按 REFERENCE-EXCEPTION-01 落成声明式 engine 模型
+（`opendata/data/providers/wsj/specs.py`）：`data.instruments` 指针、浏览器 User-Agent 静态头、
+`etfMover=leaders/laggards/most_active`、契约 `WSJETFPerformance`（15 个必需列，日期从 ISO instant
+取当日）。三个模型各占一个 domain（`wsj_etf_gainers/losers/active`），capability 身份因此唯一。
+无 key、无 cookie、无 Authorization。
+
+**五相**：`iter2_claims_producer --provider wsj` 三模型 ×5 相全部 PASS（15/15），
+`iter2_primary_review_recorder` 签出 3 份 ACCEPT。
+
+**全树重签**：每条 claim 都 pin `opendata/data/domains.yaml`，新增 domain 使既有 339 行全部 STALE。
+owner 裁定「继续全树重签」后，30 个 provider 逐条重跑 producer+recorder：
+342 份 review 全部签出、0 个 PRODUCER/RECORDER 失败（`_resign_tmp/resign.log`，01:06–01:47）。
+随后 `iter2_claims_merge` + 判定器：
+
+```
+claim_count=1740  identity_count=350  offline_acceptance_count=342  primary_review_count=342
+status_counts={OFFLINE_ACCEPTED: 342, INCOMPLETE: 6, UNREVIEWED: 2}
+wsj: ETFGainers / ETFLosers / ETFActive = OFFLINE_ACCEPTED
+claim_row_map accepted=342x5PASS=1710 incomplete=6x5BLOCKED=30 unreviewed=2x0
+```
+
+**冻结面重钉**（全部用仓内驱动/实测值，不手填）：
+- `test_provider_catalog`：bindings 372→**375**（355 手写 + 20 engine），reserved 3→**2**，wsj 0→3。
+- `test_ecb_reference_registration`：capabilities 372→**375**，descriptors 350→**353**。
+- `tests/fixtures/registry_batch5_snapshot.json`：从 HEAD 原快照做外科式增量（保留
+  `approved_delta_conflict` 等历史块），加 3 条身份/3 个 domain；counts
+  domain_count **362**、deferred legs **342**、provider_model_identity **375**、
+  descriptor_eligible **353**；candidate exports **351/347/346**；两处 source hash（domains.yaml、
+  models/__init__.py）更新。`test_pipeline_jobs` / `test_alert_matrix*` / `test_authority_reconciliation`
+  的冻结计数同步重钉。
+- `tests/test_wsj.py` 从「未实现、不绑定」的旧契约改写为「已按公开 JSON 响应绑定三模型」，
+  保留其「没有响应契约不得绑定」的原意（现在响应契约已由 200 JSON 证实）。
+
+**记分板**：`w105` 的 EXPECTED 改为 accepted 342 / claims 1740 / providers 30 / residue 8 /
+zero=[biztoc, stockgrid]；`w57`/`w67`/`w72` 三个历史载体仍打印但不再参与相等臂（它们描述 wsj 之前的
+339/11/29 人口），相等臂改为对现场判定器与 EXPECTED；claim↔row、claim→receipt、counterfact
+对照三组臂自动按 342 重算。
+
+## 39. wave42 的测试平面与记分板收口
+
+**平面**（`test_plane_w42b_final.xml`，同一 argv，572.59s）：`10 failed, 26436 passed, 305 skipped`。
+与 `test_plane_w41i_final.txt` 的失败集合逐 id `diff` **为空**；相对 wave-39 基线
+`shared=10 fixed=18 new=0`。collected 从 26,634 增至 **26,751**，增量 **117** 不是未解释的漂移：
+它是三个 WSJ 模型把参数化测试面扩宽后的用例数——按两份 XML 的 testcase 名逐个数出
+`after_wsj_cases - before_wsj_cases = 118 - 1 = 117`，`w105` 的 `I` 臂现在断言
+`plane_collected == before_collected + wsj_cases` 且 `wsj_cases > 0`，而不是旧的相等。
+
+**记分板**（`w105`，21/21 arms）：
+
+```
+live_judge accepted=342 statuses=350 differing=0 missing=0 extra=0 forged_differing=1
+claim_row_map 342x5PASS=1710 + 6x5BLOCKED=30 + 2x0 = 1740
+claim_receipt_link pass=1710 missing=0 sha_mismatch=0 field_mismatch=0 blocked=30
+counterfact_controls receipts=342 control_claims=342 with_number=342
+objective_complete=False reasons=['residue_owner_gated=8','providers_without_rows=2','subagent_over_cap=4']
+plane_after=10 plane_fixed=18 plane_new=0 plane_collected=26751 plane_wsj_param_cases=117
+```
+
+第一版 w42 平面曾出现 9 条新增红（域/leg 冻结计数、authority 域集合、batch5 摘要、WSJ 可选列、
+旧「未实现」契约测试），逐条修好后重跑得到上面的 10 条既有红；重签日志在
+`runs/w42_resign.log`（342 条 `REVIEW_SIGNED`、0 条 PRODUCER/RECORDER 失败）。

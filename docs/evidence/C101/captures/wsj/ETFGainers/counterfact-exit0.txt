@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider wsj --model ETFGainers --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": ["symbol"], "refusal_class": "ProviderEngineError", "refusal_code": "WSJ_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": ["symbol"], "refusal_class": "ProviderEngineError", "refusal_code": "WSJ_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "publishing a mover row without its 'ticker' leaves the required, non-nullable 'symbol' column unresolvable, so the engine must refuse with WSJ_SHAPE_INVALID attributing missing=('symbol',) rather than shipping an ETF row the caller cannot cite back; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

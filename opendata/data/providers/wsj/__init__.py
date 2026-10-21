@@ -1,1 +1,1 @@
-"""WSJ protocol-gap evidence; no provider or fetcher is declared."""
+"""WSJ ETF mover adapter (declarative JSON engine; no credential)."""
