@@ -39,17 +39,22 @@ UA: Final = (
     "(KHTML, like Gecko) Chrome/125.0 Safari/537.36"
 )
 SA_HOST: Final = "https://seekingalpha.com"
+#: The estimates route exactly as C144 ``w53`` recorded it; a variant path is not a re-measurement.
+SA_ESTIMATES: Final = "https://seekingalpha.com/api/v3/symbol_data/estimates"
 STOCKGRID_URL: Final = "https://www.stockgrid.io/get_dark_pool_individual_data?ticker=AAPL"
 TIMEOUT: Final = 20.0
 CREDENTIAL_HEADERS: Final = ("authorization", "cookie", "x-rapidapi-key", "x-api-key")
+# Every URL below is copied from C144 w53's recorded shapes (bracket-array params included).
 ESTIMATE_CASES: Final = (
-    "ticker_ids=539514&relative_periods=4",
-    "ticker_ids=361145&relative_periods=4",
-    "ticker_ids=539514&relative_periods=2",
-    "ticker_ids=999999999&relative_periods=4",
-    "ticker_ids=539514&relative_periods=4&items=eps",
+    f"{SA_ESTIMATES}?ticker_ids%5B%5D=AAPL",
+    f"{SA_ESTIMATES}?ticker_ids%5B%5D=AAPL&relative_periods=4",
+    f"{SA_ESTIMATES}?ticker_ids%5B%5D=AAPL&relative_periods=4&estimates_data_items%5B%5D=eps_avg",
+    f"{SA_ESTIMATES}?ticker_ids%5B%5D=167087&relative_periods=4&estimates_data_items%5B%5D=eps_avg",
+    f"{SA_ESTIMATES}?ticker_ids%5B%5D=ZZZZNOTREAL&relative_periods=4&estimates_data_items%5B%5D=eps_avg",
+    f"{SA_ESTIMATES}?ticker_ids%5B%5D=AAPL&relative_periods=12&estimates_data_items%5B%5D=eps_avg",
 )
 SEARCH_ROW_THRESHOLD: Final = 64
+PX_MARKERS: Final = ("jsClientSrc", "firstPartyEnabled", '"appId":"PX', "blockScript", "captcha")
 
 
 def _fetch(url: str) -> dict[str, Any]:
@@ -83,6 +88,16 @@ def _fetch(url: str) -> dict[str, Any]:
     return record
 
 
+def _px_challenge(record: dict[str, Any]) -> bool:
+    """True when the body is PerimeterX's bot-mitigation payload, not source data.
+
+    The challenge JSON carries per-request tokens (``vid``/``uuid``/``appId``), so its digest is
+    unique per call. A "bodies differ, therefore the source answers" predicate is a false positive
+    on it -- which is exactly what an earlier take of this face produced.
+    """
+    return record.get("code") == 403 or any(marker in record["head"] for marker in PX_MARKERS)
+
+
 def _json_payload(record: dict[str, Any]) -> bool:
     """True only when the head parses as a non-empty JSON list or object."""
     if not record["bytes"]:
@@ -94,9 +109,9 @@ def _json_payload(record: dict[str, Any]) -> bool:
     return bool(parsed) if isinstance(parsed, list | dict) else False
 
 
-def _sa_unblocked(search_bytes: int, distinct: int) -> bool:
-    """The row is advanceable only if ids resolve AND estimates vary by input."""
-    return search_bytes > SEARCH_ROW_THRESHOLD and distinct > 1
+def _sa_unblocked(answered: int, distinct_answered: int) -> bool:
+    """Advanceable only if the source ANSWERS without a challenge AND varies its data."""
+    return answered > 0 and distinct_answered > 1
 
 
 def _grid_unblocked(code: int | None, json_rows: bool) -> bool:
@@ -125,21 +140,29 @@ def main() -> int:
         f"A1 sa_search status={search.get('code')} bytes={search['bytes']} "
         f"sha={search['sha']} head={search['head'][:60]!r}"
     )
-    digests: list[str] = []
+    digests: list[str] = []  # every estimate digest, challenge or not
     estimates: list[dict[str, Any]] = []
-    for case in ESTIMATE_CASES:
-        url = f"{SA_HOST}/api/v3/analysis/company-fundamentals/symbol-data/estimates?{case}"
+    for url in ESTIMATE_CASES:
         got = _fetch(url)
         estimates.append(got)
         digests.append(got["sha"])
+        query = url.split("?", 1)[1]
         lines.append(
-            f"A2 estimates params={case} status={got.get('code')} bytes={got['bytes']} "
-            f"sha={got['sha']} ct={got.get('content_type', '')}"
+            f"A2 estimates params={query} status={got.get('code')} bytes={got['bytes']} "
+            f"sha={got['sha']} head={got['head'][:48]!r}"
         )
-    distinct = len(set(digests))
+    all_sa = [search, *estimates]
+    challenges = [record for record in all_sa if _px_challenge(record)]
+    answered = [record for record in all_sa if not _px_challenge(record)]
+    data_digests = {record["sha"] for record in answered}
+    markers = [
+        marker
+        for marker in ("jsClientSrc", "firstPartyEnabled", '"appId":"PX', "blockScript", "captcha")
+        if challenges and marker in challenges[0]["head"]
+    ]
     lines.append(
-        f"A3 distinct_bodies={distinct} of={len(digests)} byte_identical={distinct == 1} "
-        f"search_resolves_ids={search['bytes'] > SEARCH_ROW_THRESHOLD}"
+        f"A3 sa_requests={len(all_sa)} px_challenges={len(challenges)} answered={len(answered)} "
+        f"distinct_answered_digests={len(data_digests)} markers={markers}"
     )
 
     grid = _fetch(STOCKGRID_URL)
@@ -150,9 +173,9 @@ def main() -> int:
         f"error={grid.get('error', 'none')}"
     )
 
-    sa_live = _sa_unblocked(search["bytes"], distinct)
+    sa_live = _sa_unblocked(len(answered), len(data_digests))
     grid_live = _grid_unblocked(grid.get("code"), grid_json)
-    sa_forged = _sa_unblocked(4096, 3)
+    sa_forged = _sa_unblocked(3, 3)
     grid_forged = _grid_unblocked(200, True)
     sent = [name for rec in (control, search, grid, *estimates) for name in rec["sent_headers"]]
 
@@ -161,7 +184,7 @@ def main() -> int:
         and control.get("code") is not None
         and dead["bytes"] == 0
         and "error" in dead,
-        "A_search_and_five_estimates_recorded": search["code"] is not None
+        "A_search_and_estimates_recorded": search["code"] is not None
         and len(digests) == len(ESTIMATE_CASES)
         and all(record.get("code") is not None for record in estimates),
         "C_stockgrid_recorded": grid["code"] is not None or "error" in grid,

@@ -1259,4 +1259,36 @@ dir-mode findings=0；全历史 **542 commits / 497.45 MB / no leaks found**；
 `judge_report_sha256=831a781da67546d7`（与 wave49 之后同一代，本波未动 claims）。
 闸门 `runs/w108_staged_scan_plan_gate_wave50.txt`（`staged_files=5`、A/B/C 全 0、11/11 arms）。
 
+## 52. §51 的 seeking_alpha 读数作废：那测的是另一个 URL，不是同一个源
+
+**作废的原因（仪器缺陷，不是源变了）**：`w150` 首版把 estimates 的 base path 写成
+`/api/v3/analysis/company-fundamentals/symbol-data/estimates`，而仓内台账与 C144 `w53` 记录的是
+`https://seekingalpha.com/api/v3/symbol_data/estimates`；参数也写成了标量 `ticker_ids=…`，
+记录里的形状是 `ticker_ids%5B%5D=AAPL`（bracket array）。
+所以 §51 里「estimates 404 HTML、5 组逐字节相同」「search 200 但 `{}`」两行**都是在测一个仓内没记录的
+URL**，不构成对 10-19 读数的复核。§51 原文按「发布过的数字保留」的规则不删，本节是其取代者。
+
+**复测过程中又逼出两处自家仪器缺陷**：
+① 「5 组参数返回不同 body」曾被谓词读成 `sa_unblocked=True`——PerimeterX 的 403 挑战体里带
+`vid`/`uuid`/`appId` 这类**每请求 token**，digest 天然互不相同。补 `_px_challenge`
+（`code==403` 或 body 命中 `jsClientSrc`/`firstPartyEnabled`/`"appId":"PX`/`blockScript`/`captcha`），
+判定改成「**无挑战** 且 已答 body 随输入变化」。
+② marker 首查抓到的是 `blockScript` 变体，名单里没有它就漏判——已补全并让 A3 打印实际命中的 marker。
+
+**修正后的当日读数**（`w150` 现版，**5/5 arms PASS**）：
+
+```
+A1 search                403 / 413 B  head={"blockScript":"/xgCxM9By/captcha/PXxgCxM9By/captcha.js?…
+A2 estimates ×6 组（含记录里的 eps_avg / relative_periods 形状与两组畸形输入）  全部 403 / 413 B
+A3 sa_requests=7 px_challenges=7 answered=0 distinct_answered_digests=0 markers=['blockScript','captcha']
+C  stockgrid 200 / 1,261,465 B / final=axlfi.com/landing / json_rows=False
+K  同域控制 403 / 4,863 B（证明有路由）  K2 死域名 0 B + URLError [Errno 8]（证明该控制会失效）
+verdict sa_unblocked=False stockgrid_unblocked=False rows_advanceable_now=0 forged=(True,True)
+```
+
+**与 10-19 的对照**：那次 estimates 先走 400 参数链（`ticker_ids`→`relative_periods`→
+`revisions_data_items`/`estimates_data_items`）再给 200 + 31 字节空信封；今天同一记录路径**直接 403 挑战**，
+连空信封都不给。阻塞类别相同（无凭据不可解），形态更严。DEC-39-04 的措辞已换成这条，
+`rows_advanceable_now=0` 仍然是测出来的、并且两个谓词在伪造输入下会翻 True。
+
 **仍缺的仍是 owner 输入，不是代码**：seeking_alpha×2 需要不被 PerimeterX 挡住的路由，stockgrid 需要新端点与权利登记；子代理 34>30 无法回溯。目标在本轮之后仍是 **未完成**。
