@@ -1259,6 +1259,7 @@ dir-mode findings=0；全历史 **542 commits / 497.45 MB / no leaks found**；
 `judge_report_sha256=831a781da67546d7`（与 wave49 之后同一代，本波未动 claims）。
 闸门 `runs/w108_staged_scan_plan_gate_wave50.txt`（`staged_files=5`、A/B/C 全 0、11/11 arms）。
 
+
 ## 52. §51 的 seeking_alpha 读数作废：那测的是另一个 URL，不是同一个源
 
 **作废的原因（仪器缺陷，不是源变了）**：`w150` 首版把 estimates 的 base path 写成
@@ -1298,3 +1299,39 @@ gitleaks git-mode 0（planted 2）、dir-mode 0；全历史 **544 commits / 497.
 闸门 `runs/w108_staged_scan_plan_gate_wave51.txt`（11/11 arms、A/B/C 全 0）。
 
 **仍缺的仍是 owner 输入，不是代码**：seeking_alpha×2 需要不被 PerimeterX 挡住的路由，stockgrid 需要新端点与权利登记；子代理 34>30 无法回溯。目标在本轮之后仍是 **未完成**。
+
+## 53. 把 SA 两行变成「一次可执行落地」：形状证据已实测，缺的只是预算
+
+本波在决定要不要实现 `seeking_alpha::Forward{Eps,Sales}Estimates` 之前，先把「证据从哪来」量清楚。
+我先说一句被自己推翻的话：看到参考实现的 `tests/record/http/.../*forward_eps_estimates*.yaml`
+时我说「那是带行的真实上游响应」——**请求侧不是**：cassette 的 URI 是
+`estimates?estimates_data_items=MOCK_ITEMS&period_type=MOCK_PERIOD&relative_periods=MOCK_PERIODS&ticker_ids=MOCK_TICKER_IDS`，
+即参考测试自己 mock 了 ID 解析那一步。**响应侧确实是真实载荷**（把 `!!binary` 段 gunzip 出来）：
+
+```
+eps   cassette: 35,279 B 顶层 ['estimates','revisions']，estimates 键 ['1150']
+  item 名 9 个：eps_gaap_{actual,consensus_high,consensus_low,consensus_mean}
+              eps_normalized_{actual,consensus_high,consensus_low,consensus_mean,num_of_estimates}
+  形状：estimates.<ticker_id>.<item>.<relative_period>[{effectivedate,dataitemvalue,
+        period{periodtypeid,fiscalquarter,fiscalyear,calendarquarter,calendaryear,periodenddate,advancedate}}]
+sales cassette: 20,349 B，item 名 5 个：revenue_{actual,consensus_high,consensus_low,consensus_mean,num_of_estimates}
+```
+
+所以这两行的 offline 落地**不需要 invented shape**：字段名、嵌套、值类型、period 对象全都有入档载荷可引；
+请求侧需要 `ticker_ids`（先经 `api/v3/searches` 解析，cassette 里的 id 是 `1150`）、`period_type`、
+`relative_periods`、`estimates_data_items` 四个参数，与 C144 `w54` 走出来的 400 参数链一致。
+
+**没落地的原因只有一个，是预算，不是证据**：`domains.yaml` 现在只有 `seeking_alpha_calendar_earnings`
+一条 SA 域，两行落地要新增 2 个键；新增键会让全树 claim pin 过期——最近一次同类重签是
+**31 provider、06:53:51 起、约 35 分钟**（载体 `runs/w46_resign.txt`），之后还要全平面复取（≈10 分钟）。
+本轮剩余预算放不下「实现 + 重签 + 复取 + 收口」这条整链，而半途改 `domains.yaml` 会让判定器把
+**347 行全读成 STALE**（§45 之前量过这个反例：`pre_chain_accepted=0`）。故本波把计划与证据落成
+本文件与 DEC-39-04 的可执行条目，不改 `domains.yaml`、不动产品代码：树仍是干净的
+**347/350**，不是半成品。
+
+**给下一轮的准确工序**（一步都不能省，顺序即依赖）：
+① `opendata/data/models/seeking_alpha_estimates.py` 两份行模型 + `models/__init__` 导出；
+② 一个手写 fetcher（两次请求：searches→estimates），witness 走 `client_seam` 双响应（`shared_http_client`）；
+③ `domains.yaml` 两条 + provider 绑定 + `specs.NOT_DECLARABLE`/`UPSTREAM_ROWS` 计数；
+④ `w49_batch5_rebase.py` 重钉 fence（注意 §46 那个自哈希一代的坑）；
+⑤ 一次全树重签 → merge/judge 期望 **349/350** → `w105`/`w111`/`w130` 复跑 → 全平面 → 提交 + `w117` 收口。
