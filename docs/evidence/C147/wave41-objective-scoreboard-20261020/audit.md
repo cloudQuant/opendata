@@ -19,11 +19,12 @@
 * DEC-41-05 以仓内 §6.2 原文（迭代 1 `需求文档.md`「数据域优先级」，P0/P1/P2 三档）收口：
   `test_scheduled_patrol` 的陈旧两档断言修正，测试平面 **11 → 10**（`w41i`，`new=0`，仅少那一条；
   `face.md` §28）。
-* 两项都不改变本页结论：**未完成**——残差 11 行、3 个 provider 无行、子代理 34 > 30。
+* 两项都不改变本页结论：**未完成**——残差 11 行、3 个 provider 无行、子代理 34 > 30（wave42 前读数；
+  之后为残差 8、无行 2，见下条）。
 * 2026-10-21 wave42：WSJ 3 行按 REFERENCE-EXCEPTION-01 落地（声明式 engine + 浏览器 UA），
   五相 15/15 PASS；新增 3 domain 触发全树重签（342 reviews），判定器 **342/350**、claims 1740；
   测试平面新增 9 红全部修掉（3 条改为按契约必需列跳过），残差降为 8、无行 provider 降为 2。
-* `w105` 另补三条行级不变量（`face.md` §32、§34、§36）：claim↔row（339×5 PASS + 6×5
+* `w105` 另补三条行级不变量（`face.md` §32、§34、§36；wave42 前读数）：claim↔row（339×5 PASS + 6×5
   BLOCKED + 5×0 = 1725）、claim→receipt 指针（1,695 条全部命中且摘要/任务/相位/exit 一致，
   30 条 BLOCKED 为空指针+理由）、counterfact 对照语句（339/339 行，属 runner 输出中的声明，
   非独立 artifact）。每条都有深拷贝伪造臂；记分板现为 **21/21 arms PASS**。
@@ -31,22 +32,23 @@
 ## 未达成项各自缺什么
 
 * **provider biztoc / stockgrid**：分别缺凭证授权、端点与权利登记。计划 §7 DEC-39-04 / DEC-39-05 给出成本与默认动作；wsj 已由 DEC-39-06 关闭（3 行 OFFLINE_ACCEPTED）。
-* **残差 8 行**：与上条同源；另 2 行（stockgrid、yfinance::AvailableIndices）分别无端点记录与 0 endpoints
-  （后者若要落地需为「无 HTTP 请求的本地常量」建 reference-input 见证，改 runner ⇒ 全树重签，DEC-40-02）。
-  seeking_alpha ×2 的空信封与参数无关：15 次参数尝试里，参数齐全的 200 响应对假 ticker
-  （`ZZZZNOTREAL`）、数字 id、假 item 都返回同一个 31 字节 `{"revisions":{},"estimates":{}}`
-  （C144 `w54` D 臂 distinct=1），所以继续补参数不会产生数据；wsj ×3 是本机传输不可达
-  （3 次 timeout、0 字节 header）。
+* **残差 8 行（wave42 后，逐行归因）**：biztoc（1，key 只与 live 相关；离线验收需新增 provider/domain
+  并再全树重签）；stockgrid（1，旧端点 301→axlfi.com，不再供数）；econdb（2，当前 v1 API 没有
+  CountryProfile/ExportDestinations 的等价语义，`NOT_DECLARED`）；intrinio（1，OptionsSnapshots 需
+  `flow.preflight_lookup + shape.columnar`，`NOT_DECLARABLE`）；seeking_alpha（2，空信封与参数无关：
+  参数齐全的 200 响应对假 ticker/数字 id/假 item 返回同一 31 字节，C144 `w54` D 臂 distinct=1）；
+  yfinance::AvailableIndices（1，本地常量、无 HTTP，DEC-40-02）。
 * **子代理 34 > 30**：已发生的越界，不能通过任何后续动作变回「未发生」。
 
 ## 如果 owner 做出不同裁定，判定会怎么变
 
 | 裁定 | 变化 |
 | --- | --- |
-| DEC-39-04 提供 4 行凭证 | 最多 +4 accepted rows（339 → 343），provider 覆盖 29 → 30 |
-| DEC-39-05 给 stockgrid 端点与权利 | +1 行、provider 30 → 31（与上条叠加顺序无关） |
+| DEC-39-04 提供 biztoc key | **0 accepted rows**：key 只用于 live；离线验收仍需新增 provider/domain + 全树重签（342→343） |
+| econdb / intrinio 提供 key | **0 行**：残差是语义/engine 缺口（`NOT_DECLARED` / `NOT_DECLARABLE`），不是 key |
+| DEC-39-05 给 stockgrid 新端点与权利 | +1 行、provider 30 → 31（需 AXLFI 新接口；旧端点已退役） |
 | ~~DEC-39-06~~ 已关闭 | wsj 3 行已落地（342/350），不再计入待裁定 |
-| DEC-40-02 建 reference-input 见证 | AvailableIndices 1 行可评；代价是全树重签 45–60 分钟 |
+| DEC-40-02 建 reference-input 见证 | AvailableIndices 1 行（342→343）；代价是全树重签 45–60 分钟 |
 | DEC-41-02 扩 350 身份集 | 分母本身改变，其余口径需重算 |
 
 以上任何一条都不会改变第 5 条的违反结论。

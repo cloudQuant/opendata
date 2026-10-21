@@ -3,7 +3,10 @@
 **范围**：台账 `模型级任务清单.csv` 中 `credential_fields` 非空的 195 行 / 15 个 provider。
 **结论先行**：
 
-- 解阻**剩余目标行**只需要 3 个 key：`biztoc`、`econdb`、`intrinio`（合计 4 行）。
+- **唯一与 key 相关的未验收行是 `biztoc`**（1 行）；key 只影响真实来源验证，离线验收可用合成 fixture。
+- `econdb` 的 2 行与 `intrinio::OptionsSnapshots` **不是 key 问题**：econdb 的当前 v1 API 没有
+  `CountryProfile`/`ExportDestinations` 的语义等价（`NOT_DECLARED`：单位/映射未审）；intrinio 那行需要
+  engine 的 `flow.preflight_lookup + shape.columnar`（`NOT_DECLARABLE`）。
 - 其余 12 个 provider 的行已离线验收；它们的 key **只用于真实来源验证**（plane 3），不影响当前目标。
 - `wsj`（3 行）、`stockgrid`（1 行）、`yfinance::AvailableIndices`（1 行）**不需要 key**。
 
@@ -11,15 +14,20 @@
 > 仓内 `provider.py` 的 `environment_variable` 与各源官网。没有直达申请页的源，只写官网/文档入口，
 > 不猜深链接。价格与免费额度以官网当前页面为准。
 
-## 1. 必需：解阻剩余 4 行
+## 1. 与未验收行直接相关：只有 biztoc（且 key 只用于 live）
 
 | provider | 影响行 | 台账字段 | 环境变量 | 申请入口 | 说明 |
 |---|---|---|---|---|---|
-| `biztoc` | WorldNews（1） | `api_key` | `BIZTOC_API_KEY` | https://rapidapi.com/thma/api/biztoc | 注册/登录 RapidAPI → 订阅 Biztoc API（有免费档选免费）→ 复制 `X-RapidAPI-Key`。请求用 header |
-| `econdb` | CountryProfile、ExportDestinations（2） | `api_key` | `ECONDB_API_KEY` | https://www.econdb.com （API/账户页） | 参考实现无 key 时会申请临时 token；正式 key 用于提高额度/稳定性。请求用 query `token` |
-| `intrinio` | OptionsSnapshots（1） | `api_key` | `INTRINIO_API_KEY` | https://intrinio.com/starter-plan | 订阅后在账户 dashboard 取 token；Starter 计划是否收费按官网 |
+| `biztoc` | WorldNews（1） | `api_key` | `BIZTOC_API_KEY` | https://rapidapi.com/thma/api/biztoc | 注册/登录 RapidAPI → 订阅 Biztoc API（有免费档选免费）→ 复制 `X-RapidAPI-Key`。请求用 header；key 只用于真实来源验证 |
 
-**这三个拿到后**：最多 339 → 343 行；provider 覆盖 29 → 30。仍无法改变子代理 34>30 的留档。
+**离线验收**不消费真实 key（与其余 191 条凭据行一样用合成 fixture）；但新增 provider/domain 会触发全树重签（约 45–60 分钟），需 owner 单独批准。拿到 key 后最多 **342 → 343** 行（若批准重签），provider 30 → 31；仍无法改变子代理 34>30 的留档。
+
+## 1b. econdb / intrinio 的 key：只服务已验收行的真实来源验证
+
+| provider | 未验收行 | 为什么 key 解不了 | 申请入口 |
+|---|---|---|---|
+| `econdb` | CountryProfile、ExportDestinations | 当前 v1 API 不提供等价语义（国家档案映射/单位、出口额 vs TEU 运量），`NOT_DECLARED` | https://www.econdb.com |
+| `intrinio` | OptionsSnapshots | 需要 engine 的 `flow.preflight_lookup + shape.columnar`，`NOT_DECLARABLE` | https://intrinio.com/starter-plan |
 
 ## 2. 可选：真实来源验证（12 个已离线验收的 provider）
 
@@ -60,9 +68,9 @@
 
 ## 5. 一次性注册勾选清单
 
-- [ ] 必需：biztoc（RapidAPI）
-- [ ] 必需：econdb
-- [ ] 必需：intrinio
+- [ ] 与未验收行相关：biztoc（RapidAPI；key 仅用于 live）
+- [ ] live 可选：econdb
+- [ ] live 可选：intrinio
 - [ ] 可选：alpha_vantage（免费）
 - [ ] 可选：bls（免费）
 - [ ] 可选：congress_gov（免费）
