@@ -1156,3 +1156,21 @@ recorder `signed=8 refused=0`，merge + judge 仍 **347/350**、claims 1745；`w
 
 **同类缺陷的口径**：全仓有 **163** 个文件出现 `Fetcher[`，本轮只经由 A2 的逐文件 mypy 面在
 wave44/45 那份文件上撞到它；**没有**跑过整树 `make typecheck` 清扫，所以「其余文件干净」不是本轮实测结论。
+
+**平面与收口**：修后全平面 `test_plane_w46b_final.xml` = `10 failed, 26,455 passed, 306 skipped`
+（collected 26,771，与 §46 的 `w46` 同集合，`plane_new=0`、`plane_fixed=18`）；`w105` 以该平面取数
+仍 **21/21**。收口 `w117_closure 30faded84`：
+
+```
+reconcile commit=30faded84 parent=84541e610 commit_paths=55
+          worktree_drift_vs_commit=0 moved_vs_parent=55 missing_in_commit=0  drift_list=[]
+gitleaks git-mode findings=0（planted 2）；dir-mode findings=0（planted 2）
+secret_scan_check rc=0  535 commits / 487.81 MB / no leaks found
+closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
+generation claims_sha256=4a9cbcb50daa34bb judge_report_sha256=f63ac42c3b80fe54
+```
+
+**收口首跑的一红如实留档**：第一次 `w117` 报 `worktree_matches_commit` 一红，`drift_list` 里只有
+`runs/w108_staged_scan_plan.txt`——那是本波闸门在「提交前读索引」时自己写出的固定名载体，不是载荷漂移。
+另存为 `runs/w108_staged_scan_plan_gate_wave48.txt`、把固定名恢复到提交内字节后重跑，才得到上面的 8/8。
+这与 §44 记的是同一类自指：载体的字节永远新于它所描述的提交。
