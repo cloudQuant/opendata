@@ -1205,3 +1205,21 @@ recorder `refused=0`），merge + judge 仍 **347/350**、claims 1745；
 相关测试 229 passed，唯一 1 红是 §48 那条同一行的 AC-18 既存红
 （`market` 的 `Optional` vs `str | None`、`maturity` 多一项，diff 与本波改动前逐字相同）。
 复跑普查：`defect_class_files=0`，对照仍 `5 / 0`，**6/6 arms PASS**。
+
+**收口 `w117_closure 2c4a2c8c7`**：
+
+```
+reconcile commit=2c4a2c8c7 parent=59ac53e4c commit_paths=211
+          worktree_drift_vs_commit=0 moved_vs_parent=211 missing_in_commit=0  drift_list=[]
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）；dir-mode findings=0（planted 2）
+secret_scan_check rc=0  538 commits / 492.71 MB / no leaks found
+closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
+generation claims_sha256=b200050639d193d0 judge_report_sha256=831a781da67546d7
+```
+
+载体：本波闸门 `runs/w108_staged_scan_plan_gate_wave49.txt`（`staged_files=211`、A/B/C 全 0、11/11 arms）；
+收口面固定名 `runs/w47_closure_face.txt`，另存 `runs/w47_closure_face_2c4a2c8c7.txt`；
+普查载体 `runs/w148_fetcher_typing_census.py.txt`。
+
+**仍缺的仍是 owner 输入，不是代码**：seeking_alpha×2 需要不被 PerimeterX 挡住的路由，
+stockgrid 需要新端点与权利登记；子代理 34>30 无法回溯。目标在本轮之后仍是 **未完成**。

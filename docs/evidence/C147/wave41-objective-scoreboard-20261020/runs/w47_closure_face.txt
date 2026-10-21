@@ -1,19 +1,19 @@
 # carrier for w47_closure_face.py
-# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/w47_closure_face.py --commit 30faded84
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/w47_closure_face.py --commit 2c4a2c8c7
 
-reconcile commit=30faded84 parent=84541e610 commit_paths=55 worktree_drift_vs_commit=0 moved_vs_parent=55 missing_in_commit=0
+reconcile commit=2c4a2c8c7 parent=59ac53e4c commit_paths=211 worktree_drift_vs_commit=0 moved_vs_parent=211 missing_in_commit=0
 drift_list=[]
-commit_paths_by_root={'docs/evidence/C101': 52, 'docs/evidence/C147': 2, 'opendata': 1}
+commit_paths_by_root={'docs/evidence/C101': 205, 'docs/evidence/C147': 4, 'opendata': 2}
 
 ---- payload scan ----
 pre_commit_gate payload_index_sha256=02dfea77f6d7e817a7ed2d669411ed817dc1630a98df3c3a5e665e898a5e1af4
-staged_files_from_scan_carrier=4 committed_paths=55 gate_scope_note=the pre-commit gate read the index before its own carrier was staged, so this face is the arm that scans the commit
-gitleaks_git_mode commit=30faded84 rc=0 findings=0 rules=[] planted_control rc=0 findings=2 arm_can_move=True
-dir_mode_tree copied_from_commit=2 local_only_files=2065 local_only_sample=['docs/evidence/C147/wave41-objective-scoreboard-20261020/audit.md', 'docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/__pycache__/w105_objective_scoreboard.cpython-313.pyc', 'docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/__pycache__/w106_staged_credential_scan.cpython-313.pyc', 'docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/__pycache__/w108_staged_scan_plan.cpython-313.pyc'] bytecode_skipped=1407
+staged_files_from_scan_carrier=4 committed_paths=211 gate_scope_note=the pre-commit gate read the index before its own carrier was staged, so this face is the arm that scans the commit
+gitleaks_git_mode commit=2c4a2c8c7 rc=0 findings=0 rules=[] planted_control rc=0 findings=2 arm_can_move=True
+dir_mode_tree copied_from_commit=4 local_only_files=2069 local_only_sample=['docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/__pycache__/w105_objective_scoreboard.cpython-313.pyc', 'docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/__pycache__/w106_staged_credential_scan.cpython-313.pyc', 'docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/__pycache__/w108_staged_scan_plan.cpython-313.pyc', 'docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/__pycache__/w109_immutable_fence_rebase.cpython-313.pyc'] bytecode_skipped=1408
 gitleaks_dir_mode bundles rc=0 findings=0 rules=[] planted rc=0 findings=2 arm_can_move=True
-secret_scan_check rc=0 tail=[90m11:41PM[0m [32mINF[0m [1m535 commits scanned.[0m | [90m11:41PM[0m [32mINF[0m [1mscanned ~487809996 bytes (487.81 MB) in 8m59s[0m | [90m11:41PM[0m [32mINF[0m [1mno leaks found[0m
-generation claims_sha256=4a9cbcb50daa34bb judge_report_sha256=f63ac42c3b80fe54
+secret_scan_check rc=0 tail=[90m12:16AM[0m [32mINF[0m [1m538 commits scanned.[0m | [90m12:16AM[0m [32mINF[0m [1mscanned ~492705851 bytes (492.71 MB) in 6m49s[0m | [90m12:16AM[0m [32mINF[0m [1mno leaks found[0m
+generation claims_sha256=b200050639d193d0 judge_report_sha256=831a781da67546d7
 
-closure_face commit=30faded84 paths=55 arms=8 arms_passed=8 arms_failed=0 failed=[] PASS=True
+closure_face commit=2c4a2c8c7 paths=211 arms=8 arms_passed=8 arms_failed=0 failed=[] PASS=True
 
 w47_closure_face_exit=0
