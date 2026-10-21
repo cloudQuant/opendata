@@ -928,3 +928,23 @@ providers_with_rows 31、zero=[stockgrid]、plane_new=0。
 
 **残差 7**：stockgrid（端点退役）、econdb×2（语义缺口）、intrinio（engine 缺口）、
 seeking_alpha×2（空信封）、yfinance::AvailableIndices（本地常量）。子代理 34>30 不变。
+
+## 42. bc2a7f3f1（Biztoc 落地 + 第二次全树重签）的收口面
+
+```
+reconcile commit=bc2a7f3f1 parent=01cc4b6ff commit_paths=2159
+          worktree_drift_vs_commit=0 moved_vs_parent=2159 missing_in_commit=0
+commit_paths_by_root={'docs/evidence/C101': 2130, 'opendata': 10, 'docs/evidence/C147': 8,
+                      'tests': 8, 'docs/迭代计划': 2, 'scripts': 1}
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）
+gitleaks dir-mode findings=0（planted 2；dir-mode 复制 bundle 前缀内 18 个 blob，
+其余 C101 blob 由 git-mode 臂覆盖）
+secret_scan_check rc=0  524 commits / 458.12 MB / no leaks found
+closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
+```
+
+载体：固定名保持 a287 代（`d2b6f2…`），本次读数另存 `runs/w47_closure_face_bc2a7f3f1.txt`
+（`9c741e…`）。复制行仍是 `w99` 的旧值（`02dfea…`）；本提交的闸门是
+`runs/w108_staged_scan_plan_gate_wave43.txt`（`payload_index_sha256=2f356174…`、`staged=2157`，
+A/B/C 全 0、11/11 arms）；第一次红扫描（B/C 各 1，provider.py 的 env 名；payload `75a907…`）另存
+`runs/w108_staged_scan_plan_red_wave43.txt`。
