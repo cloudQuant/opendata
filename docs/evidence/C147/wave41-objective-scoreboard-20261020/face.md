@@ -1488,3 +1488,20 @@ credential_scan_face … arms=11 arms_passed=11 arms_failed=0 failed=[] PASS=Tru
 诚实说明回归：本 `face.md` 的 §59 文字是在这次扫描之后才改定的，所以 `ed981a1a…` 那个索引里不含 §59 的最后
 字节；能对提交对象本身负责的是 `w117` 收口面（8/8 arms，扫 git 对象 + 目录 + 全历史），这也是每发载荷都要
 补一发的原因。
+
+## 60. owner 决策清单刷新到 349/350（§8 表与 DEC-39-04 曾把已落地的两行写成未落地）
+
+`docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/前置条件与决策清单.md` 里有三处是落地前的旧口径，
+本轮逐处改到实测值并留下历史标记：
+
+* §8 标题与成本段：原写「4 行已落地；3 行仍缺外部输入 / 四次全树重签」，实测为 **6 行已落地、1 行待 owner**
+  （五次全树重签 + seeking_alpha 一次局部重签，`9fea1060e`/`6b3ae3556`）；表内 SA 两行从「未落地」改为
+  已落地，并写明实现（两次请求 `client_seam`、`estimates.<id>.<item>.<relative_period>` 转置、
+  `…_BAD_NUMERIC` 反例、五相 15/15 PASS）与**仍留的诚实口径**：live 侧 7/7 请求 403 PerimeterX（`w150`），
+  `live_verification_status` 仍是未验证。
+* §7 DEC-39-04 改为「已关闭（wave53）」，把「未落地原因是预算」保留为当时事实，并记判定器 **347→349/350**、
+  seeking_alpha 1/3→**3/3**（`w105` `provider_split full=31 partial=[] none=['stockgrid']`）。
+* §6（wave 39 裁定）那段「天花板 339/350、29/32」加显式历史标记，说明它是 wave 39 时代读数、
+  现读数为 349/350 与 31/32；不删原文，避免把历史裁定改写成现状。
+
+这一发不动产品代码，因此不需要重签；判定器读数仍以 `runs/w105_objective_scoreboard.txt` 为准。
