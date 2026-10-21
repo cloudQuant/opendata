@@ -1389,3 +1389,17 @@ sales cassette: 20,349 B，item 名 5 个：revenue_{actual,consensus_high,conse
 
 **未做完的一件事，明确留口**：本波全平面复取（`test_plane_w55_final.xml`）在提交时才跑完/未跑完，
 收口面 `w117` 也还没在这个提交上跑；下一波先补这两件，再谈 stockgrid。
+
+
+## 56. 更正我自己写在 `c3dc3ba98` 提交说明里的平面数字（照旧保留错值）
+
+那条提交说明写的是「collected 26,772 = 26,634 + 148 − 10」——**这是把上一波的数抄进来的**，
+不是本波实测。载体 `runs/w105_objective_scoreboard.txt` 的读数才是本次的：
+
+```
+plane_after=10  plane_after_source=test_plane_w55_final.xml  plane_new=0
+plane_collected=26,779 = 26,634 + 161 新测试名 − 16 改名   plane_new_cases=161  plane_retired_cases=16
+```
+
+与 pytest 末行 `10 failed, 26,463 passed, 306 skipped`（合计 26,779）一致。错值留在提交说明里不改写历史，
+本 §56 是更正记录；`w105` 的 I 臂按 `new - retired` 集合算术仍精确闭合，21/21。
