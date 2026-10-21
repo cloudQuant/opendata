@@ -182,6 +182,7 @@ DECLARED_GAPS: dict[str, str] = {
 #: The fixed-model tasks implemented against documented EconDB APIs (the export-destination
 #: row uses the public widget table; the other five use the v1 series/port endpoints).
 READY_MODELS: Final[tuple[str, ...]] = (
+    "CountryProfile",
     "EconomicIndicators",
     "ExportDestinations",
     "GdpNominal",
@@ -191,15 +192,7 @@ READY_MODELS: Final[tuple[str, ...]] = (
 )
 
 #: The two census rows that still lack a documented semantic equivalent in the current API.
-NOT_DECLARED: dict[str, str] = {
-    "CountryProfile": (
-        "The current documented v1 API exposes individual indicator series but does not document "
-        "a country-profile series mapping or the unit conversions needed to safely publish the "
-        "profile's population, USD GDP, normalized rates, and percent-of-GDP metrics. The model "
-        "needs a reviewed indicator-to-field mapping with units and compatible-country coverage; "
-        "accepting arbitrary series IDs would mislabel values."
-    ),
-}
+NOT_DECLARED: dict[str, str] = {}
 
 __all__ = [
     "AVAILABLE_INDICATORS",

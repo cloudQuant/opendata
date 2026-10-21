@@ -120,6 +120,7 @@ class TestCensusRowIsDeclared:
         assert implemented | set(NOT_DECLARED) == set(UPSTREAM_ROWS), "a silent drop"
         assert len(UPSTREAM_ROWS) == 8, "this provider's census has eight rows"
         assert set(READY_MODELS) == {
+            "CountryProfile",
             "EconomicIndicators",
             "ExportDestinations",
             "GdpNominal",
@@ -127,7 +128,7 @@ class TestCensusRowIsDeclared:
             "PortVolume",
             "YieldCurve",
         }
-        assert set(NOT_DECLARED) == {"CountryProfile"}
+        assert set(NOT_DECLARED) == set()
         assert "symbol_root" in DECLARED_GAPS["AvailableIndicators"]
 
     def test_the_provider_descriptor_binds_the_declared_and_ready_models(self) -> None:

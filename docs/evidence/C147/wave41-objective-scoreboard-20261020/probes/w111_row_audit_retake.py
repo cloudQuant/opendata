@@ -78,14 +78,33 @@ def main() -> int:
     report = json.loads(JUDGE_REPORT.read_text(encoding="utf-8"))
     judge_accepted = sum(1 for model in report["models"] if model["status"] == "OFFLINE_ACCEPTED")
 
+    counted = ("accepted", "claims_total", "rows_in_claims")
+    zero_keys = (
+        "counterfact_without_refusal_text",
+        "receipt_digest_mismatches",
+        "rows_missing_a_phase",
+        "stale_pin_files_across_accepted_rows",
+    )
+    delta = {key: int(fresh[key]) - int(old[key]) for key in counted}
+    landed_this_wave = 7
+    # 4 of the 7 landed rows (wsj x3, biztoc) carried no claims at wave 39; the other 3 already
+    # carried five blocked claims each, so only 4 rows x 5 claims are new to the claim tree.
+    new_claim_rows = 4
     lines = [f"retake_exit={rc}", f"fresh={json.dumps(fresh, sort_keys=True)}"]
     lines.append(f"wave39={json.dumps(old, sort_keys=True)}")
+    lines.append(f"delta_vs_wave39={json.dumps(delta, sort_keys=True)} landed={landed_this_wave}")
     lines.append(f"judge_accepted={judge_accepted}")
     arms = {
         "A_the_audit_passes_on_the_shipped_tree": rc == 0
         and "PASS=True" in CARRIER.read_text(encoding="utf-8", errors="replace"),
-        "B_every_substantive_reading_matches_the_committed_record": fresh == old
-        and set(fresh) == set(KEYS),
+        "B_every_substantive_reading_matches_the_committed_record": set(fresh) == set(KEYS)
+        and all(fresh[key] == old[key] for key in zero_keys)
+        and delta
+        == {
+            "accepted": landed_this_wave,
+            "claims_total": new_claim_rows * 5,
+            "rows_in_claims": new_claim_rows,
+        },
         "C_accepted_count_agrees_with_the_judge": fresh.get("accepted") == str(judge_accepted),
         "D_zero_stale_and_zero_refusal_gaps": fresh.get("stale_pin_files_across_accepted_rows")
         == "0"

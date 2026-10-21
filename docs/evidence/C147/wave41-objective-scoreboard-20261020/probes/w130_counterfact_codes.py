@@ -28,6 +28,7 @@ RUNS = REPO / BUNDLE / "runs"
 CARRIER = RUNS / "w130_counterfact_codes.txt"
 REPORT = REPO / "docs/evidence/C101/judge/claims.merged.report.json"
 RECEIPTS = REPO / "docs/evidence/C101/receipts"
+EXPECTED_ACCEPTED = 346
 
 
 def _declared_codes() -> dict[tuple[str, str], str]:
@@ -64,6 +65,9 @@ def main() -> int:
     """Compare expected/observed/declared refusal codes across every accepted row."""
     RUNS.mkdir(parents=True, exist_ok=True)
     rows = _accepted()
+    judge_accepted = int(
+        json.loads(REPORT.read_text(encoding="utf-8"))["summary"]["offline_acceptance_count"]
+    )
     declared = _declared_codes()
     missing_receipt: list[str] = []
     missing_expected: list[str] = []
@@ -117,7 +121,10 @@ def main() -> int:
         f"forge_probe failures={forged_failures}",
     ]
     arms = {
-        "A_every_accepted_row_has_a_receipt": len(rows) == 339 and not missing_receipt,
+        "A_every_accepted_row_has_a_receipt": len(rows)
+        == judge_accepted
+        == EXPECTED_ACCEPTED
+        and not missing_receipt,
         "B_every_receipt_names_an_expected_code": not missing_expected,
         "C_observed_equals_expected": not observed_mismatch,
         "D_expected_equals_the_witness_declaration": not declared_mismatch and not undeclared,

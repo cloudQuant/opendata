@@ -128,3 +128,22 @@ class EconDBExportDestinations(ContractModel):
     units: str
     title: str
     footnote: str | None = None
+
+
+class EconDBCountryProfile(ContractModel):
+    """One country's macro profile from the public series-context table."""
+
+    country: str
+    population: int | None = None
+    gdp_usd: float | None = None
+    gdp_qoq: float | None = None
+    gdp_yoy: float | None = None
+    cpi_yoy: float | None = None
+    core_yoy: float | None = None
+    retail_sales_yoy: float | None = None
+    industrial_production_yoy: float | None = None
+    policy_rate: float | None = None
+    yield_10y: float | None = None
+    govt_debt_gdp: float | None = None
+    current_account_gdp: float | None = None
+    jobless_rate: float | None = None

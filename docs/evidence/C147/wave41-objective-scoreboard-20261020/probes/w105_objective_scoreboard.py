@@ -58,13 +58,13 @@ READERS = (
     / "w51_test_plane_attribution.py"
 )
 EXPECTED = {
-    "accepted": 345,
+    "accepted": 346,
     "identities": 350,
     "claims": 1745,
     "identity_set": "5168e1e723999312",
     "providers_with_rows": 31,
     "zero_providers": ["stockgrid"],
-    "residue": 5,
+    "residue": 4,
     "subagent_total": 34,
     "subagent_cap": 30,
     "ac2_dev_done": 17,
@@ -360,6 +360,7 @@ def main() -> int:
         (
             candidate
             for candidate in (
+                RUNS / "test_plane_w45_final.xml",
                 RUNS / "test_plane_w44b_final.xml",
                 RUNS / "test_plane_w44_final.xml",
                 RUNS / "test_plane_w43_final.xml",

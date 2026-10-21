@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarDividend --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T05:44:19.146114+00:00",
+      "executed_at_utc": "2026-10-21T07:32:46.760149+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -83,7 +83,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarDividend",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarDividend/implementation.json",
-        "sha256": "53a6638d2b086725b22a4f1e3809e1433ce8306ee78e0facba25f5aeccd9ee01"
+        "sha256": "a548ee25a011e98061e77fff23dc6eb96751bbdfe26bb12eaadd961d1a3b6906"
       },
       "status": "PASS",
       "upstream_model": "CalendarDividend"
@@ -91,7 +91,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarDividend --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T05:44:20.253417+00:00",
+      "executed_at_utc": "2026-10-21T07:32:48.909212+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -103,8 +103,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -161,7 +161,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarDividend",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarDividend/direct.json",
-        "sha256": "5e7dbc600f91aabbd8f98d8dccaf4e920089c83623c2870fb7962c3f8740f557"
+        "sha256": "884b60ce827f81108e460992ee6252edcd917bc229e1de84110aef169c8be031"
       },
       "status": "PASS",
       "upstream_model": "CalendarDividend"
@@ -169,7 +169,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarDividend --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T05:44:21.419500+00:00",
+      "executed_at_utc": "2026-10-21T07:32:51.476533+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -181,8 +181,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -239,7 +239,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarDividend",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarDividend/service.json",
-        "sha256": "d4490d3b2d1c1f31fbc672367e3b6ff7346d50e94298350fcd20acbb28ecea58"
+        "sha256": "90205f97d1fc406e9c28e53574071c848adf58addc70e811898dd2e34436f32a"
       },
       "status": "PASS",
       "upstream_model": "CalendarDividend"
@@ -247,7 +247,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarDividend --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T05:44:22.519245+00:00",
+      "executed_at_utc": "2026-10-21T07:32:53.586124+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -259,8 +259,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -317,7 +317,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarDividend",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarDividend/contract.json",
-        "sha256": "6d5f880dd2089bab6fb2ee663966ef405ece8c343932519c4bbf483043e91e5f"
+        "sha256": "8188ff520f1c5a7957da161491ceddedafa95122703ad2060c23df6f479171fe"
       },
       "status": "PASS",
       "upstream_model": "CalendarDividend"
@@ -325,7 +325,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarDividend --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T05:44:24.582005+00:00",
+      "executed_at_utc": "2026-10-21T07:32:57.892957+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -337,8 +337,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -395,7 +395,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarDividend",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarDividend/counterfact.json",
-        "sha256": "58cd41ae41e492ee541aafa5048fdd76b1b98ab6938dffea2c9c4199c6b3ffa2"
+        "sha256": "7abe124b7ce947927c51558c804edccab3f68df39e51b584a14e2880bee550fd"
       },
       "status": "PASS",
       "upstream_model": "CalendarDividend"
@@ -403,7 +403,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarEarnings --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T05:44:25.465161+00:00",
+      "executed_at_utc": "2026-10-21T07:32:59.833550+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -415,8 +415,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -483,7 +483,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarEarnings/implementation.json",
-        "sha256": "d9abc2c699bd42289034a691fa2080641d18582216173c78480d6897de67b268"
+        "sha256": "9c71ad3e49f3f78f92bc717709beb825ee939c3299d71cd5ed40066828369ea2"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -491,7 +491,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarEarnings --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T05:44:26.448970+00:00",
+      "executed_at_utc": "2026-10-21T07:33:01.951981+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -503,8 +503,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -561,7 +561,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarEarnings/direct.json",
-        "sha256": "2a2081d5ae52208548105dfceba83ea27c4fa2f70e0e3f800f54dad01db06bb1"
+        "sha256": "323ce29f31fedfc05de7d9885704c12d750afb4fcd2feb0d3ac58a81efb54304"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -569,7 +569,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarEarnings --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T05:44:27.609000+00:00",
+      "executed_at_utc": "2026-10-21T07:33:04.488672+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -581,8 +581,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -639,7 +639,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarEarnings/service.json",
-        "sha256": "da23b39f3f3c4f7189d080a9baa9d2d468f50f868d169d614d3659ea315a9ba1"
+        "sha256": "fac90b5e0d80b56307b8bbd4ce745737330f8c767e5ef5de6757698629e7e5ed"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -647,7 +647,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarEarnings --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T05:44:28.606158+00:00",
+      "executed_at_utc": "2026-10-21T07:33:06.588689+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -659,8 +659,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -717,7 +717,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarEarnings/contract.json",
-        "sha256": "960448749c9d169a3db52c6ca7f31e35b74a4bec1c396e8d88a763e2d6c1b89b"
+        "sha256": "e47c5ea1304fc9ee9a16aa8951c4519ead9a20a1e51b9ac93d0ab7d0e4ee052c"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -725,7 +725,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarEarnings --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T05:44:30.586736+00:00",
+      "executed_at_utc": "2026-10-21T07:33:10.768847+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -737,8 +737,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -795,7 +795,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarEarnings",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarEarnings/counterfact.json",
-        "sha256": "febf019c61811efdf595ed71af599b441ea693185b695a44f0e123241fd4a9b6"
+        "sha256": "9a95e9fcdc294754cb85769d2f5bba6ad6b3e7fc37bf58230e44f23287ccbfdf"
       },
       "status": "PASS",
       "upstream_model": "CalendarEarnings"
@@ -803,7 +803,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarIpo --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T05:44:31.463057+00:00",
+      "executed_at_utc": "2026-10-21T07:33:12.493842+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -815,8 +815,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -883,7 +883,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarIpo",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarIpo/implementation.json",
-        "sha256": "ca38ecf48d1aecbb90502cac864420706d42195d04dc2b9b7cffee342cd869a6"
+        "sha256": "4f1530776a5864063be1557d5da1350bea5c17400d2f983ae5d2f471918332e6"
       },
       "status": "PASS",
       "upstream_model": "CalendarIpo"
@@ -891,7 +891,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarIpo --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T05:44:32.444946+00:00",
+      "executed_at_utc": "2026-10-21T07:33:14.662850+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -903,8 +903,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -961,7 +961,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarIpo",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarIpo/direct.json",
-        "sha256": "cc8a730a9964cb61b619a3d9ceefd172b6fb239306a0151972d676987a72e18b"
+        "sha256": "b76202336f6efa4084c100f39646faa163ab7e7efff1d59ed4cdcb741be908ef"
       },
       "status": "PASS",
       "upstream_model": "CalendarIpo"
@@ -969,7 +969,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarIpo --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T05:44:33.603324+00:00",
+      "executed_at_utc": "2026-10-21T07:33:17.254356+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -981,8 +981,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1039,7 +1039,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarIpo",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarIpo/service.json",
-        "sha256": "d83b10359decabf0b25a313ecca0bf97030168da5a987a9b432bcdcb0ff1f7bd"
+        "sha256": "30d668ebd3d7bb0c47db11fe15d8b96869787a7a7a397529d5b7377d6566e629"
       },
       "status": "PASS",
       "upstream_model": "CalendarIpo"
@@ -1047,7 +1047,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarIpo --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T05:44:34.596164+00:00",
+      "executed_at_utc": "2026-10-21T07:33:19.421715+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1059,8 +1059,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1117,7 +1117,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarIpo",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarIpo/contract.json",
-        "sha256": "270aefb731593d428bfd24a2a1f37eb2b69b43f8ea9c5d210ab4204bb461280d"
+        "sha256": "664c1674da6a11d7ffacc605692a1c0ba3484cd09e60cd3f87fc163388fcb31b"
       },
       "status": "PASS",
       "upstream_model": "CalendarIpo"
@@ -1125,7 +1125,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CalendarIpo --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T05:44:36.607518+00:00",
+      "executed_at_utc": "2026-10-21T07:33:23.820047+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1137,8 +1137,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1195,7 +1195,7 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarIpo",
         "path": "docs/evidence/C101/receipts/nasdaq/CalendarIpo/counterfact.json",
-        "sha256": "4ff13771df150f334bbe6eec03284087f58e98dfc8d14a5ae2b9449df8c0aac8"
+        "sha256": "95fc3b33902c61c1825e289625f4f9efb4eda5669d7b0eb5246101b9277c71e3"
       },
       "status": "PASS",
       "upstream_model": "CalendarIpo"
@@ -1203,7 +1203,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CompanyFilings --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T05:44:37.500531+00:00",
+      "executed_at_utc": "2026-10-21T07:33:25.695183+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1215,8 +1215,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1283,7 +1283,7 @@
       "receipt": {
         "model_identity": "nasdaq::CompanyFilings",
         "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/implementation.json",
-        "sha256": "2fabf0decd902051028d66c9020cd00ffb23181722abef7fea29e0a4f6398176"
+        "sha256": "8eea16ddb4cb5eef6d0e99a8e79e1817ed3f7b161f6e5f7413b1ec9974af25ba"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -1291,7 +1291,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CompanyFilings --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T05:44:38.532530+00:00",
+      "executed_at_utc": "2026-10-21T07:33:27.804629+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1303,8 +1303,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1361,7 +1361,7 @@
       "receipt": {
         "model_identity": "nasdaq::CompanyFilings",
         "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/direct.json",
-        "sha256": "2f05182b8b2a69e5613720c8449ab5905a0971ad3fc4694f52eff78fad1507ab"
+        "sha256": "2cc4eeada851708f028006fe70fe42234d23f8204a716a76a0a64f86b52153aa"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -1369,7 +1369,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CompanyFilings --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T05:44:39.701664+00:00",
+      "executed_at_utc": "2026-10-21T07:33:30.261978+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1381,8 +1381,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1439,7 +1439,7 @@
       "receipt": {
         "model_identity": "nasdaq::CompanyFilings",
         "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/service.json",
-        "sha256": "aa9dea18afd67e5f49ed7bc89d0ad61c28bcd961e3d1b3fcfb87be4f9e227401"
+        "sha256": "fa0304ea470570687d3c7f5c3b2c706b18e3c720007e57f558a91117925037f4"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -1447,7 +1447,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CompanyFilings --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T05:44:40.684431+00:00",
+      "executed_at_utc": "2026-10-21T07:33:32.352683+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1459,8 +1459,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1517,7 +1517,7 @@
       "receipt": {
         "model_identity": "nasdaq::CompanyFilings",
         "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/contract.json",
-        "sha256": "a0494950b4ff7e5491b0d3301ef7e9f5a5f126201deb1f2bb52140e924be2d3d"
+        "sha256": "49d9ecc6c11d55c8fdac71b1bce14da2e0297e2e234d004267288ec4dc3b9237"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -1525,7 +1525,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model CompanyFilings --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T05:44:42.684598+00:00",
+      "executed_at_utc": "2026-10-21T07:33:36.627759+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1537,8 +1537,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1595,7 +1595,7 @@
       "receipt": {
         "model_identity": "nasdaq::CompanyFilings",
         "path": "docs/evidence/C101/receipts/nasdaq/CompanyFilings/counterfact.json",
-        "sha256": "1525c7236ce64f2df2ad40465a6b024e4cf3f1e1db310e40dc17f6d99167a03d"
+        "sha256": "f41a7ef0a31220f84d9ebb17e9c9edb47c45fcbd14d9836c8eb4d57c579a7ef9"
       },
       "status": "PASS",
       "upstream_model": "CompanyFilings"
@@ -1603,7 +1603,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EconomicCalendar --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T05:44:43.590491+00:00",
+      "executed_at_utc": "2026-10-21T07:33:38.745664+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1615,8 +1615,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1683,7 +1683,7 @@
       "receipt": {
         "model_identity": "nasdaq::EconomicCalendar",
         "path": "docs/evidence/C101/receipts/nasdaq/EconomicCalendar/implementation.json",
-        "sha256": "9fe3181161746fcf8b6ef13fec307ded9c14a1b1abfa0cfba8ead552b2b32740"
+        "sha256": "f6b54d9d793e0e60277351208e7fc33848efae11c80aa1c27d320a691a0c0aa6"
       },
       "status": "PASS",
       "upstream_model": "EconomicCalendar"
@@ -1691,7 +1691,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EconomicCalendar --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T05:44:44.639474+00:00",
+      "executed_at_utc": "2026-10-21T07:33:40.841665+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1703,8 +1703,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1761,7 +1761,7 @@
       "receipt": {
         "model_identity": "nasdaq::EconomicCalendar",
         "path": "docs/evidence/C101/receipts/nasdaq/EconomicCalendar/direct.json",
-        "sha256": "39a133ecb77ab47bbf389aa9539bbfe70c1a3b8164aa078410e1d85a7733b345"
+        "sha256": "0981043b88823fa207ede205f51a73d6cf7d083b1698af6ba933f020fc4307e3"
       },
       "status": "PASS",
       "upstream_model": "EconomicCalendar"
@@ -1769,7 +1769,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EconomicCalendar --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T05:44:45.771783+00:00",
+      "executed_at_utc": "2026-10-21T07:33:43.168917+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1781,8 +1781,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1839,7 +1839,7 @@
       "receipt": {
         "model_identity": "nasdaq::EconomicCalendar",
         "path": "docs/evidence/C101/receipts/nasdaq/EconomicCalendar/service.json",
-        "sha256": "506c34f691fef9ce142853272cf7dc242c5a13605cb3f21e17619e9731553273"
+        "sha256": "ab440c273e259aaf649b6a3803147b44373461a23351ec36efb6e2ee773cb5ed"
       },
       "status": "PASS",
       "upstream_model": "EconomicCalendar"
@@ -1847,7 +1847,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EconomicCalendar --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T05:44:46.773229+00:00",
+      "executed_at_utc": "2026-10-21T07:33:45.249326+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1859,8 +1859,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1917,7 +1917,7 @@
       "receipt": {
         "model_identity": "nasdaq::EconomicCalendar",
         "path": "docs/evidence/C101/receipts/nasdaq/EconomicCalendar/contract.json",
-        "sha256": "51248a9229a3a47af7a2c65591a3b702e6ffbfbf872834ca28de5fa64ff0bf87"
+        "sha256": "b8e0b7a57a3b39949d64ef15d3916b6d0969bc3adf6551ed3d0837d221e9eda5"
       },
       "status": "PASS",
       "upstream_model": "EconomicCalendar"
@@ -1925,7 +1925,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EconomicCalendar --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T05:44:48.784353+00:00",
+      "executed_at_utc": "2026-10-21T07:33:49.549248+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1937,8 +1937,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1995,7 +1995,7 @@
       "receipt": {
         "model_identity": "nasdaq::EconomicCalendar",
         "path": "docs/evidence/C101/receipts/nasdaq/EconomicCalendar/counterfact.json",
-        "sha256": "68816283925c01ce32897fa04cf7eb7e1b33ef2e4d8572b84aaa1fdaf8cec175"
+        "sha256": "48f04dc03b29463f794939c9951c13c1cb9b2d6b324f171132a27cd481360240"
       },
       "status": "PASS",
       "upstream_model": "EconomicCalendar"
@@ -2003,7 +2003,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquitySearch --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T05:44:49.685859+00:00",
+      "executed_at_utc": "2026-10-21T07:33:51.746612+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2015,8 +2015,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2083,7 +2083,7 @@
       "receipt": {
         "model_identity": "nasdaq::EquitySearch",
         "path": "docs/evidence/C101/receipts/nasdaq/EquitySearch/implementation.json",
-        "sha256": "65b94658326488f045ae680d2e89e7f943be1c6dab5c22384a00315e9a20d9df"
+        "sha256": "a5e2d19f6fa1fa62fe6f6467b1210e33475d9c53d2401fc3d4333461d399a228"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -2091,7 +2091,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquitySearch --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T05:44:50.731279+00:00",
+      "executed_at_utc": "2026-10-21T07:33:53.911228+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2103,8 +2103,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2161,7 +2161,7 @@
       "receipt": {
         "model_identity": "nasdaq::EquitySearch",
         "path": "docs/evidence/C101/receipts/nasdaq/EquitySearch/direct.json",
-        "sha256": "d4de5bca85fff44eac5bba030aa4910e075692c10cc611a2a851816b38f0e89f"
+        "sha256": "6852fcd3252bd2b00582e2404c366fd6c6f950537295d3b968a81a61c0363c33"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -2169,7 +2169,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquitySearch --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T05:44:51.877156+00:00",
+      "executed_at_utc": "2026-10-21T07:33:56.314722+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2181,8 +2181,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2239,7 +2239,7 @@
       "receipt": {
         "model_identity": "nasdaq::EquitySearch",
         "path": "docs/evidence/C101/receipts/nasdaq/EquitySearch/service.json",
-        "sha256": "dde308f09216943e04934136f6ee546d5aecbe7cf31a1c37256935c75d9d390b"
+        "sha256": "d5e4405dfd1e943869e22556960fd22ea7a762394ddaa2fa246af68ee7bf038a"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -2247,7 +2247,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquitySearch --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T05:44:52.917886+00:00",
+      "executed_at_utc": "2026-10-21T07:33:58.485567+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2259,8 +2259,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2317,7 +2317,7 @@
       "receipt": {
         "model_identity": "nasdaq::EquitySearch",
         "path": "docs/evidence/C101/receipts/nasdaq/EquitySearch/contract.json",
-        "sha256": "ee6d7c7eb51211003bb03b38954191def367b38f428436fddec10dd4cea09ce9"
+        "sha256": "442558a887396486043ca39630e908a6dfadd3a81f5358ae788423c54cfaa1d8"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -2325,7 +2325,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquitySearch --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T05:44:54.915009+00:00",
+      "executed_at_utc": "2026-10-21T07:34:02.815815+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2337,8 +2337,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2395,7 +2395,7 @@
       "receipt": {
         "model_identity": "nasdaq::EquitySearch",
         "path": "docs/evidence/C101/receipts/nasdaq/EquitySearch/counterfact.json",
-        "sha256": "187e660dd4ca002bc5aa3a7b646e8041a7e29e2e583f807c334701ca709228ec"
+        "sha256": "c908cd879fc1352cbaa462872f755d981b6eb97d1991b2dc86fd9593e7712280"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -2403,7 +2403,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquityScreener --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T05:44:55.804323+00:00",
+      "executed_at_utc": "2026-10-21T07:34:04.821869+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2415,8 +2415,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2483,7 +2483,7 @@
       "receipt": {
         "model_identity": "nasdaq::EquityScreener",
         "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/implementation.json",
-        "sha256": "0c76dc686a3758afdc5445764e67eee3ba59bef69ab734d0cb4ff85cf52688f4"
+        "sha256": "029291d8c501c18190da172d750143207ed490b98d18cf4ba333bfa7417f06a8"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -2491,7 +2491,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquityScreener --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T05:44:56.820552+00:00",
+      "executed_at_utc": "2026-10-21T07:34:07.102149+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2503,8 +2503,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2561,7 +2561,7 @@
       "receipt": {
         "model_identity": "nasdaq::EquityScreener",
         "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/direct.json",
-        "sha256": "af0e084288cc0e3c128e3a7a8de86c369b5549599137bc733d454000a4e0bb06"
+        "sha256": "ee89ff4471ce9e57a31c6d0dba7c43540673b79515e28b8d7ea6b1b6729d7971"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -2569,7 +2569,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquityScreener --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T05:44:58.048248+00:00",
+      "executed_at_utc": "2026-10-21T07:34:09.770425+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2581,8 +2581,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2639,7 +2639,7 @@
       "receipt": {
         "model_identity": "nasdaq::EquityScreener",
         "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/service.json",
-        "sha256": "86b028dfdb41f96ce109ec4d64267712588ff4d8aa89ee78a3b0da872a85f6ee"
+        "sha256": "c5d53e095e477cff60bf8b5df9d34a1f353d2e9ed6ec3c2808b5ed2aab136d08"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -2647,7 +2647,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquityScreener --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T05:44:59.079043+00:00",
+      "executed_at_utc": "2026-10-21T07:34:11.902512+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2659,8 +2659,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2717,7 +2717,7 @@
       "receipt": {
         "model_identity": "nasdaq::EquityScreener",
         "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/contract.json",
-        "sha256": "1d308b041a57065384c23c4add636eed6a1a6b93a7df2d04723185ecf94ef28d"
+        "sha256": "3cf853ee4aa7e50063fd51d44b675932cc83bf7eb3a4952780dd06a2f73d8b13"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -2725,7 +2725,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model EquityScreener --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T05:45:01.146527+00:00",
+      "executed_at_utc": "2026-10-21T07:34:16.484913+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2737,8 +2737,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2795,7 +2795,7 @@
       "receipt": {
         "model_identity": "nasdaq::EquityScreener",
         "path": "docs/evidence/C101/receipts/nasdaq/EquityScreener/counterfact.json",
-        "sha256": "8ec36da83a5815bbf07e0df44ac1032ebeb26621e0a3d7bae857f86310b249d0"
+        "sha256": "008126db9f8aa13f6a54818990aa1e54c15cfb2a33a12fd368050dd63cc25ff4"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -2803,7 +2803,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model HistoricalDividends --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T05:45:02.041230+00:00",
+      "executed_at_utc": "2026-10-21T07:34:18.373500+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2815,8 +2815,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2883,7 +2883,7 @@
       "receipt": {
         "model_identity": "nasdaq::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/implementation.json",
-        "sha256": "1ec4fc3ba4e4b23fcc3cd9a2dafd8f7311b96d264635246d1dd0f13512bd2580"
+        "sha256": "37fc367c36b5884333cff2b1714430a7868d7244a60c4963660af5b5e46bb7a4"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -2891,7 +2891,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model HistoricalDividends --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T05:45:03.091872+00:00",
+      "executed_at_utc": "2026-10-21T07:34:20.328243+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2903,8 +2903,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2961,7 +2961,7 @@
       "receipt": {
         "model_identity": "nasdaq::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/direct.json",
-        "sha256": "1be48b644700d7253ad285d69a1e707df67d6a499b35cc0bb2630636e4b46f86"
+        "sha256": "fdc33b36735fc74bebabafc247da3fcc397958029f441c7b3d983be8ae950cc0"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -2969,7 +2969,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model HistoricalDividends --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T05:45:04.294030+00:00",
+      "executed_at_utc": "2026-10-21T07:34:22.595848+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2981,8 +2981,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3039,7 +3039,7 @@
       "receipt": {
         "model_identity": "nasdaq::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/service.json",
-        "sha256": "4501ad6fb87cd82ebf1ea625da2a5d304ea5fcd1c00ad5b5a3ecfa4be825e097"
+        "sha256": "81ca3040a3fc2a0bf8237889990edbe56d1166e6bd2a9ad8ded6a970d2342523"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -3047,7 +3047,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model HistoricalDividends --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T05:45:05.312121+00:00",
+      "executed_at_utc": "2026-10-21T07:34:24.491432+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3059,8 +3059,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3117,7 +3117,7 @@
       "receipt": {
         "model_identity": "nasdaq::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/contract.json",
-        "sha256": "2af2215a532d15c14fd2bb835bc9a657d49354ac699eda9d2515cb5d1b633315"
+        "sha256": "d335841f94b35ac0ed327b664cb82b820008aef5b88d18ad6a25d62b5c5295f4"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -3125,7 +3125,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model HistoricalDividends --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T05:45:07.311887+00:00",
+      "executed_at_utc": "2026-10-21T07:34:28.754985+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3137,8 +3137,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3195,7 +3195,7 @@
       "receipt": {
         "model_identity": "nasdaq::HistoricalDividends",
         "path": "docs/evidence/C101/receipts/nasdaq/HistoricalDividends/counterfact.json",
-        "sha256": "8928132abbaa2f217784d60a4e7fc373c1f38224343b678e42c6f337b661c299"
+        "sha256": "489c3562fd892cc5f5a1f550c9dbbc9041655ea88edd5964e9385c44baa3c060"
       },
       "status": "PASS",
       "upstream_model": "HistoricalDividends"
@@ -3203,7 +3203,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model TopRetail --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T05:45:08.204172+00:00",
+      "executed_at_utc": "2026-10-21T07:34:30.701086+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -3215,8 +3215,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3283,7 +3283,7 @@
       "receipt": {
         "model_identity": "nasdaq::TopRetail",
         "path": "docs/evidence/C101/receipts/nasdaq/TopRetail/implementation.json",
-        "sha256": "e44a5dd7b4b4d1df93f6fd3f19198f2f22ae5e21589457cf01b34016aa364e45"
+        "sha256": "d8e81162d613ced5a80053be18fba02f712059731caf62f948c4ed2e0f0b6296"
       },
       "status": "PASS",
       "upstream_model": "TopRetail"
@@ -3291,7 +3291,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model TopRetail --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T05:45:09.200274+00:00",
+      "executed_at_utc": "2026-10-21T07:34:32.879386+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3303,8 +3303,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3361,7 +3361,7 @@
       "receipt": {
         "model_identity": "nasdaq::TopRetail",
         "path": "docs/evidence/C101/receipts/nasdaq/TopRetail/direct.json",
-        "sha256": "ca1f63f3e238a63a3c1834ad50ec147205c34049aefe5bd46c74369aa3984543"
+        "sha256": "f60f62d07130e7439b6744267c6d477f3f7cdcae53956b00f21af1c21f965e87"
       },
       "status": "PASS",
       "upstream_model": "TopRetail"
@@ -3369,7 +3369,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model TopRetail --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T05:45:10.392808+00:00",
+      "executed_at_utc": "2026-10-21T07:34:35.325683+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3381,8 +3381,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3439,7 +3439,7 @@
       "receipt": {
         "model_identity": "nasdaq::TopRetail",
         "path": "docs/evidence/C101/receipts/nasdaq/TopRetail/service.json",
-        "sha256": "6cf44958aefbbc5786160312a0da85f236e4aeede479641e41b23bf557229389"
+        "sha256": "8eed13d1ded8ccf9f2cee5b1c5435a6c9afe58c6d93c40b6a586e25fa1f45015"
       },
       "status": "PASS",
       "upstream_model": "TopRetail"
@@ -3447,7 +3447,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model TopRetail --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T05:45:11.396743+00:00",
+      "executed_at_utc": "2026-10-21T07:34:37.392634+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3459,8 +3459,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3517,7 +3517,7 @@
       "receipt": {
         "model_identity": "nasdaq::TopRetail",
         "path": "docs/evidence/C101/receipts/nasdaq/TopRetail/contract.json",
-        "sha256": "5960a47ad2759512378cbb46d6d95cdff860174a00c98910e04928d1844bd7e0"
+        "sha256": "aedd36d094f2d3049eafd7a6a953c49cb02af7a4d02b43d5c8eeddf9adce63df"
       },
       "status": "PASS",
       "upstream_model": "TopRetail"
@@ -3525,7 +3525,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider nasdaq --model TopRetail --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T05:45:13.408904+00:00",
+      "executed_at_utc": "2026-10-21T07:34:41.572399+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3537,8 +3537,8 @@
             "path": "opendata/data/models/nasdaq.py"
           },
           {
-            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+            "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3595,7 +3595,7 @@
       "receipt": {
         "model_identity": "nasdaq::TopRetail",
         "path": "docs/evidence/C101/receipts/nasdaq/TopRetail/counterfact.json",
-        "sha256": "0a027b02eba6fd6fc250d33da1f3f0c8855aecfa83954dee9e775911c110bca9"
+        "sha256": "9cdcb23b6f6177f1343b484b7533a7ebf4165c164b5530e68d8a30107d0a77f0"
       },
       "status": "PASS",
       "upstream_model": "TopRetail"
@@ -3609,9 +3609,9 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarDividend",
         "path": "docs/evidence/C101/primary-reviews/nasdaq__CalendarDividend.review.json",
-        "sha256": "0be77702039cad89eb3d0ca02f541ba25e0f90918573b60d61da9ec03aee0253"
+        "sha256": "754742c8bf0c8e1409b38f31fea1311f8c747f157efaf067267a7006d227b610"
       },
-      "reviewed_at_utc": "2026-10-21T05:45:15Z",
+      "reviewed_at_utc": "2026-10-21T07:34:45Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3624,9 +3624,9 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarEarnings",
         "path": "docs/evidence/C101/primary-reviews/nasdaq__CalendarEarnings.review.json",
-        "sha256": "e12706345f637a61528be5c9d5fcb9146807d61266c6fc7097b39094d566fb13"
+        "sha256": "9dab0f13fc145c8e9135c6508cebc47126c4010a99aaf5bc27b220cc0bc6cc3b"
       },
-      "reviewed_at_utc": "2026-10-21T05:45:15Z",
+      "reviewed_at_utc": "2026-10-21T07:34:45Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3639,9 +3639,9 @@
       "receipt": {
         "model_identity": "nasdaq::CalendarIpo",
         "path": "docs/evidence/C101/primary-reviews/nasdaq__CalendarIpo.review.json",
-        "sha256": "df0776ee8cdfc996b15f6e785920da4167134abcd43e676fa9deaca67d6abd6d"
+        "sha256": "a020866d2318f86829ea5f8566ce149043a6629430f20b5da403f4bf6ee46f2e"
       },
-      "reviewed_at_utc": "2026-10-21T05:45:15Z",
+      "reviewed_at_utc": "2026-10-21T07:34:45Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3654,9 +3654,9 @@
       "receipt": {
         "model_identity": "nasdaq::CompanyFilings",
         "path": "docs/evidence/C101/primary-reviews/nasdaq__CompanyFilings.review.json",
-        "sha256": "282cc4b08b0b4b9a76cd42535773e2bf9af636e6aa9b564f568818e67218b05f"
+        "sha256": "e014b9e079c958f1fa099d22c2dd3420f2164a5fcf0b55a0ecd2d613310191d0"
       },
-      "reviewed_at_utc": "2026-10-21T05:45:15Z",
+      "reviewed_at_utc": "2026-10-21T07:34:45Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3669,9 +3669,9 @@
       "receipt": {
         "model_identity": "nasdaq::EconomicCalendar",
         "path": "docs/evidence/C101/primary-reviews/nasdaq__EconomicCalendar.review.json",
-        "sha256": "aa7b30c247f4ec3a3e5bfae251c40dc036a5461915591005b0e3b4d2f7490f8b"
+        "sha256": "76c29b3879d2aa09843741176e01c4cbfdf415b46f24a686332b619b244de3d0"
       },
-      "reviewed_at_utc": "2026-10-21T05:45:15Z",
+      "reviewed_at_utc": "2026-10-21T07:34:45Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3684,9 +3684,9 @@
       "receipt": {
         "model_identity": "nasdaq::EquityScreener",
         "path": "docs/evidence/C101/primary-reviews/nasdaq__EquityScreener.review.json",
-        "sha256": "9f1f9842e8d2aad6c6d7f195bc8a9554f225d5c8e88f01f62c10cf76f2302ce3"
+        "sha256": "9a4ec74421c872dd8c4719b84bdc8b11ad8bab6191d0697058a174a976754d98"
       },
-      "reviewed_at_utc": "2026-10-21T05:45:15Z",
+      "reviewed_at_utc": "2026-10-21T07:34:45Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3699,9 +3699,9 @@
       "receipt": {
         "model_identity": "nasdaq::EquitySearch",
         "path": "docs/evidence/C101/primary-reviews/nasdaq__EquitySearch.review.json",
-        "sha256": "dd932c1ccc8f371787b835a7fa8d7f180017743151576e9e2f30bd39fc77178f"
+        "sha256": "4af9081b1d2246c4a22666df0f024825ba45d652560087019a56cb0e467a2df6"
       },
-      "reviewed_at_utc": "2026-10-21T05:45:15Z",
+      "reviewed_at_utc": "2026-10-21T07:34:45Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3714,9 +3714,9 @@
       "receipt": {
         "model_identity": "nasdaq::HistoricalDividends",
         "path": "docs/evidence/C101/primary-reviews/nasdaq__HistoricalDividends.review.json",
-        "sha256": "4cfc51c8963f8714ce109240828dbe50fb42997ea5ce0a3942cb9577b5fbd176"
+        "sha256": "6518b0b19776fed2d9054e9ba2d3d792f89c592ebb249b62b04605162390e710"
       },
-      "reviewed_at_utc": "2026-10-21T05:45:15Z",
+      "reviewed_at_utc": "2026-10-21T07:34:45Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3729,9 +3729,9 @@
       "receipt": {
         "model_identity": "nasdaq::TopRetail",
         "path": "docs/evidence/C101/primary-reviews/nasdaq__TopRetail.review.json",
-        "sha256": "809d415f3eca6b26bb231a8582741cbc8a41fa1ef46e269efd25d0603a9ab780"
+        "sha256": "1ed0d36bdc257264dbad3961df3d725a66231bfeca7c05f6b9af24abecbaed66"
       },
-      "reviewed_at_utc": "2026-10-21T05:45:15Z",
+      "reviewed_at_utc": "2026-10-21T07:34:45Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

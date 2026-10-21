@@ -83,6 +83,7 @@ SINGLE_SOURCE_EXEMPTIONS: frozenset[str] = frozenset(
 # unverified, and named here in the same wave that registers it rather than in a later correction.
 NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
     {
+        "econdb_country_profile",
         "econdb_export_destinations",
         "yfinance_available_indices",
         "biztoc_world_news",

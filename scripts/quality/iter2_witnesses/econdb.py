@@ -70,11 +70,64 @@ def _econdb_export_destinations_document() -> dict[str, Any]:
     }
 
 
+def _econdb_country_profile_document() -> list[dict[str, Any]]:
+    """Thirteen context series for the United States, in the live response shape."""
+    entries: list[tuple[str, str, list[float]]] = [
+        ("GDPUS~TUSD", "Millions", [8_000_000, 8_000_000, 8_000_000, 8_000_000]),
+        ("RGDPUS~TPOP", "Percent", [0.55]),
+        ("RGDPUS~TOYA", "Percent", [2.2]),
+        ("POPUS", "Thousands", [343008]),
+        ("CPIUS~TOYA", "Percent", [3.7]),
+        ("COREUS~TOYA", "Percent", [2.5]),
+        ("RETAUS~TOYA", "Percent", [6.2]),
+        ("IPUS~TOYA", "Percent", [2.2]),
+        ("POLIRUS", "Percent", [3.75]),
+        ("Y10YDUS", "Percent", [4.99]),
+        ("GDEBTUS~TUSD", "Millions", [39_000_000]),
+        ("CAUS~TPGP", "Percent", [-0.84]),
+        ("URATEUS", "Percent", [4.2]),
+    ]
+    document = []
+    for ticker, scale, values in entries:
+        document.append(
+            {
+                "id": ticker,
+                "td": {"scale": scale, "units": "Percent" if scale == "Percent" else "USD"},
+                "geography": {"name": "United States"},
+                "dataarray": [
+                    {"date": f"2025-{index + 1:02d}-01", ticker: value}
+                    for index, value in enumerate(values)
+                ],
+            }
+        )
+    return document
+
+
 CONFIG: Final[dict[str, Any]] = {
     "registration_module": "opendata.data.providers.econdb.registration",
     "credential_env": {"ECONDB_API_KEY": "fixture-token-never-sent"},
     "allowed_hosts": ["api.econdb.com"],
     "models": {
+        "CountryProfile": {
+            "fixture_document": _econdb_country_profile_document,
+            "query": {"country": "US"},
+            "tamper": {"op": "drop", "path": [10], "column": "govt_debt_gdp"},
+            "refusal_class": "ProviderEngineError",
+            "refusal_code": "ECONDB_SHAPE_INVALID",
+            "tamper_reason": (
+                "dropping the GDEBT context series leaves the government-debt ratio with no "
+                "numerator, so the adapter must refuse with ECONDB_SHAPE_INVALID rather than "
+                "publish a profile with a silently missing ratio"
+            ),
+            "source_files": [
+                "opendata/data/providers/econdb/models/profiles.py",
+                "opendata/data/providers/_engine/http_json.py",
+            ],
+            "contract_files": [
+                "opendata/data/models/econdb.py",
+                "opendata/data/domains.yaml",
+            ],
+        },
         "ExportDestinations": {
             "fixture_document": _econdb_export_destinations_document,
             "query": {"country": "US"},

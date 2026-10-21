@@ -1352,8 +1352,8 @@ EXPECTED_FINVIZ_DOMAINS = {
         ("query",),
     ),
 }
-BATCH5_SNAPSHOT_SHA256 = "3789da2a3fc666c62ba6efb1095483e154adc4801f2f2b8e2c4d70667e8b3304"
-BATCH5_DOMAIN_SOURCE_SHA256 = "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373"
+BATCH5_SNAPSHOT_SHA256 = "dd4aca5e8103743ca7442351881cbafefb99c8e5af68834b38283d857f801268"
+BATCH5_DOMAIN_SOURCE_SHA256 = "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6"
 BATCH5_CANDIDATE_SHA256 = "775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e"
 
 
@@ -1411,13 +1411,13 @@ def _batch5_identity_snapshot() -> dict[str, object]:
         "sha256": "adcf3986456fad52e56b85b1764fbdfd5d716ebad886c0f66a107da07136d6c8",
         "status": "STATIC_SOURCE_FREEZE_NO_NEW_RUNTIME",
     }
-    assert snapshot["counts"]["domain_count"] == 365
-    assert snapshot["counts"]["query_semantic_domain_count"] == 345
+    assert snapshot["counts"]["domain_count"] == 366
+    assert snapshot["counts"]["query_semantic_domain_count"] == 346
     assert snapshot["counts"]["legacy_dwd_domain_count"] == 20
-    assert snapshot["counts"]["provider_model_identity_count"] == 378
-    assert snapshot["counts"]["deferred_source_domain_leg_count"] == 345
+    assert snapshot["counts"]["provider_model_identity_count"] == 379
+    assert snapshot["counts"]["deferred_source_domain_leg_count"] == 346
     assert snapshot["counts"]["legacy_source_domain_leg_count"] == 33
-    assert snapshot["counts"]["descriptor_eligible_identity_count"] == 356
+    assert snapshot["counts"]["descriptor_eligible_identity_count"] == 357
     assert snapshot["counts"]["model_key_only_identity_count"] == 22
     assert snapshot["counts"]["descriptor_eligible_legacy_identity_count"] == 11
     assert (
@@ -1425,18 +1425,18 @@ def _batch5_identity_snapshot() -> dict[str, object]:
         + snapshot["counts"]["model_key_only_identity_count"]
         == snapshot["counts"]["provider_model_identity_count"]
     )
-    assert snapshot["candidate_counts"]["fixed_identities"] == 378
-    assert snapshot["candidate_counts"]["domain_specs"] == 365
-    assert snapshot["candidate_counts"]["fixed_bound"] == 345
+    assert snapshot["candidate_counts"]["fixed_identities"] == 379
+    assert snapshot["candidate_counts"]["domain_specs"] == 366
+    assert snapshot["candidate_counts"]["fixed_bound"] == 346
     assert snapshot["candidate_counts"]["fixed_unbound"] == 33
     assert (
         snapshot["candidate_counts"]["fixed_bound"] + snapshot["candidate_counts"]["fixed_unbound"]
         == snapshot["candidate_counts"]["fixed_identities"]
     )
-    assert snapshot["candidate_counts"]["provider_model_legs"] == 378
-    assert snapshot["candidate_counts"]["contract_model_classes_including_base"] == 350
-    assert snapshot["candidate_counts"]["non_base_contract_model_classes"] == 349
-    assert snapshot["candidate_counts"]["all_symbols"] == 354
+    assert snapshot["candidate_counts"]["provider_model_legs"] == 379
+    assert snapshot["candidate_counts"]["contract_model_classes_including_base"] == 351
+    assert snapshot["candidate_counts"]["non_base_contract_model_classes"] == 350
+    assert snapshot["candidate_counts"]["all_symbols"] == 355
     assert snapshot["candidate_counts"]["non_contract_exports"] == [
         {
             "name": "BlsCatalogPage",
@@ -1472,9 +1472,9 @@ def _batch5_identity_snapshot() -> dict[str, object]:
         BATCH5_DOMAIN_SOURCE_SHA256
     )
     assert snapshot["source_hashes_sha256"]["opendata/data/models/__init__.py"] == (
-        "0e99ab55fcb5591b2d95310d1cafde9149217419b4eba7481102b2eab7907faf"
+        "991de1307b4df364d58bdfff2de06c9a341eb1387fb0be324c1cb145a2b64f53"
     )
-    assert len(snapshot["provider_model_identities"]) == 378
+    assert len(snapshot["provider_model_identities"]) == 379
     assert snapshot["approved_delta"] == {
         "source": "fred",
         "domain": "senior_loan_officer_survey",

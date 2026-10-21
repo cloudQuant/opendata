@@ -1,13 +1,13 @@
 {
   "capture": {
     "path": "docs/evidence/C101/captures/yfinance/EquityQuote/service-exit0.txt",
-    "sha256": "45c824e57ec4d3edee69d0ecd2a9233bfffa78526ec5ddb5835445456851ba51",
+    "sha256": "1f490ccaaab5bdd44b6921cc99a9714e51e13e76a709e1bf88f72adb083f8c61",
     "size_bytes": 362,
-    "stdout_excerpt": "service: query_provider_model executed for real (registry + reviewed domain semantics), rows=1 first_row_sha256=b54721a7b26240c3\nVERDICT=PASS\n"
+    "stdout_excerpt": "service: query_provider_model executed for real (registry + reviewed domain semantics), rows=1 first_row_sha256=b8a184a542008f23\nVERDICT=PASS\n"
   },
   "machine_execution": {
     "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityQuote --phase service --evidence-root docs/evidence/C101",
-    "executed_at_utc": "2026-10-21T05:55:14.923405+00:00",
+    "executed_at_utc": "2026-10-21T07:54:06.309106+00:00",
     "exit_code": 0,
     "pins": {
       "contract": [
@@ -17,16 +17,16 @@
           "path": "opendata/data/models/yfinance_iter2.py"
         },
         {
-          "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-          "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+          "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+          "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
           "path": "opendata/data/domains.yaml"
         }
       ],
       "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
       "fixture": [
         {
-          "after_sha256": "1c90756ebf72b60b51d9ea7e2d774a0f7a7c026bc62bc27f6f60c39a60150f97",
-          "before_sha256": "1c90756ebf72b60b51d9ea7e2d774a0f7a7c026bc62bc27f6f60c39a60150f97",
+          "after_sha256": "abbcaafbb4c303e6cd3e86ef359e214d1fafc4b36e818323f61dbbd756537f67",
+          "before_sha256": "abbcaafbb4c303e6cd3e86ef359e214d1fafc4b36e818323f61dbbd756537f67",
           "path": "docs/evidence/C101/fixtures/yfinance/EquityQuote.json"
         }
       ],
@@ -128,16 +128,16 @@
         "path": "opendata/data/models/yfinance_iter2.py"
       },
       {
-        "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
-        "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+        "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+        "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
         "path": "opendata/data/domains.yaml"
       }
     ],
     "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
     "fixture": [
       {
-        "after_sha256": "1c90756ebf72b60b51d9ea7e2d774a0f7a7c026bc62bc27f6f60c39a60150f97",
-        "before_sha256": "1c90756ebf72b60b51d9ea7e2d774a0f7a7c026bc62bc27f6f60c39a60150f97",
+        "after_sha256": "abbcaafbb4c303e6cd3e86ef359e214d1fafc4b36e818323f61dbbd756537f67",
+        "before_sha256": "abbcaafbb4c303e6cd3e86ef359e214d1fafc4b36e818323f61dbbd756537f67",
         "path": "docs/evidence/C101/fixtures/yfinance/EquityQuote.json"
       }
     ],

@@ -1,0 +1,195 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/econdb/CountryProfile/implementation-exit0.txt",
+    "sha256": "764c3a48957b9800c242f96e70b93920253555d0fcb192904c7c433042d84e29",
+    "size_bytes": 367,
+    "stdout_excerpt": "implementation: registered domain=econdb_country_profile row_model=EconDBCountryProfile verified=False transport=offline-only\nVERDICT=PASS\n"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase implementation --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-21T06:58:11.948907+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "b46c11b8403d116ea1d3c545668007372dbda65e9f7c2c5bb1fccf82f204145d",
+          "before_sha256": "b46c11b8403d116ea1d3c545668007372dbda65e9f7c2c5bb1fccf82f204145d",
+          "path": "opendata/data/models/econdb.py"
+        },
+        {
+          "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+          "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:b46c11b8403d116ea1d3c545668007372dbda65e9f7c2c5bb1fccf82f204145d",
+      "fixture": [
+        {
+          "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "a8567ad4a4a87081d341c540cbef4062ba6b6418e33735d9542bd87efb376545",
+          "before_sha256": "a8567ad4a4a87081d341c540cbef4062ba6b6418e33735d9542bd87efb376545",
+          "path": "scripts/quality/iter2_witnesses/econdb.py"
+        },
+        {
+          "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+          "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+          "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "a8567ad4a4a87081d341c540cbef4062ba6b6418e33735d9542bd87efb376545",
+          "before_sha256": "a8567ad4a4a87081d341c540cbef4062ba6b6418e33735d9542bd87efb376545",
+          "path": "scripts/quality/iter2_witnesses/econdb.py"
+        },
+        {
+          "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+          "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+          "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+          "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+          "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+          "path": "opendata/data/providers/econdb/registration.py"
+        },
+        {
+          "after_sha256": "5967c3d807f6a02bcc2cf9b602d3c10089c0261dd68c542f9304e11b9be65747",
+          "before_sha256": "5967c3d807f6a02bcc2cf9b602d3c10089c0261dd68c542f9304e11b9be65747",
+          "path": "opendata/data/providers/econdb/provider.py"
+        },
+        {
+          "after_sha256": "42129350650300df254bf2753c00d9fcbb2684b483a97e5b97dbf3b8d90bbf1f",
+          "before_sha256": "42129350650300df254bf2753c00d9fcbb2684b483a97e5b97dbf3b8d90bbf1f",
+          "path": "opendata/data/providers/econdb/models/profiles.py"
+        },
+        {
+          "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+          "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+          "path": "opendata/data/providers/_engine/http_json.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "econdb::CountryProfile",
+  "phase": "implementation",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "b46c11b8403d116ea1d3c545668007372dbda65e9f7c2c5bb1fccf82f204145d",
+        "before_sha256": "b46c11b8403d116ea1d3c545668007372dbda65e9f7c2c5bb1fccf82f204145d",
+        "path": "opendata/data/models/econdb.py"
+      },
+      {
+        "after_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+        "before_sha256": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:b46c11b8403d116ea1d3c545668007372dbda65e9f7c2c5bb1fccf82f204145d",
+    "fixture": [
+      {
+        "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "a8567ad4a4a87081d341c540cbef4062ba6b6418e33735d9542bd87efb376545",
+        "before_sha256": "a8567ad4a4a87081d341c540cbef4062ba6b6418e33735d9542bd87efb376545",
+        "path": "scripts/quality/iter2_witnesses/econdb.py"
+      },
+      {
+        "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+        "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+        "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "a8567ad4a4a87081d341c540cbef4062ba6b6418e33735d9542bd87efb376545",
+        "before_sha256": "a8567ad4a4a87081d341c540cbef4062ba6b6418e33735d9542bd87efb376545",
+        "path": "scripts/quality/iter2_witnesses/econdb.py"
+      },
+      {
+        "after_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+        "before_sha256": "f7958045b91d7123dec34ed66b13d157c6a6c7d9c399a64fe754e6368586ccee",
+        "path": "scripts/quality/iter2_witnesses/_parts/econdb/rows_a.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+        "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+        "before_sha256": "3bc3391ae63d48fab702edc1e6626319cc9e1d1fa307836a5018d09698a3079e",
+        "path": "opendata/data/providers/econdb/registration.py"
+      },
+      {
+        "after_sha256": "5967c3d807f6a02bcc2cf9b602d3c10089c0261dd68c542f9304e11b9be65747",
+        "before_sha256": "5967c3d807f6a02bcc2cf9b602d3c10089c0261dd68c542f9304e11b9be65747",
+        "path": "opendata/data/providers/econdb/provider.py"
+      },
+      {
+        "after_sha256": "42129350650300df254bf2753c00d9fcbb2684b483a97e5b97dbf3b8d90bbf1f",
+        "before_sha256": "42129350650300df254bf2753c00d9fcbb2684b483a97e5b97dbf3b8d90bbf1f",
+        "path": "opendata/data/providers/econdb/models/profiles.py"
+      },
+      {
+        "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+        "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+        "path": "opendata/data/providers/_engine/http_json.py"
+      }
+    ]
+  },
+  "provider": "econdb",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-econdb-CountryProfile",
+  "upstream_model": "CountryProfile"
+}

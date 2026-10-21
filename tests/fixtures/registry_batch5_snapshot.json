@@ -9,14 +9,14 @@
       "non_base_contract_model_classes": 325
     },
     "live_counts": {
-      "all_symbols": 354,
-      "contract_model_classes_including_base": 350,
-      "non_base_contract_model_classes": 349
+      "all_symbols": 355,
+      "contract_model_classes_including_base": 351,
+      "non_base_contract_model_classes": 350
     },
     "delta_vs_adjudication": {
-      "all_symbols": 24,
-      "contract_model_classes_including_base": 24,
-      "non_base_contract_model_classes": 24
+      "all_symbols": 25,
+      "contract_model_classes_including_base": 25,
+      "non_base_contract_model_classes": 25
     },
     "attribution": {
       "removed_by_iteration2": [
@@ -332,14 +332,14 @@
   },
   "candidate_counts": {
     "basis": "Export census re-derived from the live opendata.data.models.__all__ at iteration-2 head (see iter2_census_rebase); domain/identity counts remain the batch5 manual arithmetic from the pinned batch4 snapshot plus the candidate-approved single SLOOS provider/domain identity. The three export counts below supersede the batch5 count adjudication's 330/326/325, which stays hashed unchanged at 2a929fd8614af09e28aa2ae16fa781c7da49d7692dcd6a3b6c78f2118c0906de.",
-    "domain_specs": 365,
-    "fixed_bound": 345,
-    "fixed_identities": 378,
+    "domain_specs": 366,
+    "fixed_bound": 346,
+    "fixed_identities": 379,
     "fixed_unbound": 33,
-    "provider_model_legs": 378,
-    "all_symbols": 354,
-    "contract_model_classes_including_base": 350,
-    "non_base_contract_model_classes": 349,
+    "provider_model_legs": 379,
+    "all_symbols": 355,
+    "contract_model_classes_including_base": 351,
+    "non_base_contract_model_classes": 350,
     "non_contract_exports": [
       {
         "name": "BlsCatalogPage",
@@ -427,19 +427,19 @@
     "ods_legs": "The 33 registered source/domain legs on the 20 legacy domains remain split by the 10 explicit legacy freshness-field mappings present in the pinned AkShare/THS mapping YAMLs; the remaining 23 are explicitly unmapped."
   },
   "counts": {
-    "deferred_domain_count": 345,
-    "deferred_source_domain_leg_count": 345,
-    "domain_count": 365,
+    "deferred_domain_count": 346,
+    "deferred_source_domain_leg_count": 346,
+    "domain_count": 366,
     "legacy_dwd_domain_count": 20,
     "legacy_source_domain_leg_count": 33,
     "mapped_ods_leg_count": 10,
-    "provider_model_identity_count": 378,
+    "provider_model_identity_count": 379,
     "queried_table_count": 30,
-    "query_semantic_domain_count": 345,
-    "registered_source_domain_leg_count": 378,
+    "query_semantic_domain_count": 346,
+    "registered_source_domain_leg_count": 379,
     "unmapped_ods_leg_count": 23,
     "warehouse_table_catalog_count": 53,
-    "descriptor_eligible_identity_count": 356,
+    "descriptor_eligible_identity_count": 357,
     "model_key_only_identity_count": 22,
     "descriptor_eligible_legacy_identity_count": 11
   },
@@ -486,6 +486,7 @@
     "deribit_futures_instruments",
     "deribit_options_chains",
     "econdb_available_indicators",
+    "econdb_country_profile",
     "econdb_economic_indicators",
     "econdb_export_destinations",
     "econdb_gdp_nominal",
@@ -949,6 +950,10 @@
     },
     {
       "domain": "econdb_available_indicators",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_country_profile",
       "source": "econdb"
     },
     {
@@ -2216,6 +2221,7 @@
     "deribit_futures_instruments",
     "deribit_options_chains",
     "econdb_available_indicators",
+    "econdb_country_profile",
     "econdb_economic_indicators",
     "econdb_export_destinations",
     "econdb_gdp_nominal",
@@ -3277,6 +3283,16 @@
       "source": "econdb",
       "verified": false,
       "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.econdb.models.profiles:EconDBCountryProfileFetcher",
+      "canonical_ids_declared": true,
+      "contract": "EconDBCountryProfile",
+      "domain": "econdb_country_profile",
+      "model": "CountryProfile",
+      "scenario_present": true,
+      "source": "econdb",
+      "verified": false
     },
     {
       "binding": "opendata.data.providers.econdb.models.iter2:EconDBEconomicIndicatorsFetcher",
@@ -6572,6 +6588,7 @@
     "deribit_futures_instruments",
     "deribit_options_chains",
     "econdb_available_indicators",
+    "econdb_country_profile",
     "econdb_economic_indicators",
     "econdb_export_destinations",
     "econdb_gdp_nominal",
@@ -7090,6 +7107,10 @@
     },
     {
       "domain": "econdb_available_indicators",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_country_profile",
       "source": "econdb"
     },
     {
@@ -8410,10 +8431,10 @@
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/receipt.json": "f2e3eb877e7a1ec4f6a080ebbe60137330e50b38d8d5224ac186e0950191bef3",
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/smoke.json": "224c2475432ea6fca4b2c6e1442718ae2b0b829386530bf97a5361fb79897dc9",
     "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5",
-    "opendata/data/domains.yaml": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+    "opendata/data/domains.yaml": "a013ad24f9b6d4ad26a2e6e5ad8d939a88e31c02cc7a5e22a7478b01f13b11d6",
     "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
     "opendata/data/mappings/ths.yaml": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418",
-    "opendata/data/models/__init__.py": "0e99ab55fcb5591b2d95310d1cafde9149217419b4eba7481102b2eab7907faf",
+    "opendata/data/models/__init__.py": "991de1307b4df364d58bdfff2de06c9a341eb1387fb0be324c1cb145a2b64f53",
     "opendata/data/models/finviz_performance.py": "1c0df807da91d8cb2fb1b5720431ce7d68bbacd3d4eb746fa2ff34ca5bf07b86",
     "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
     "opendata/data/models/yfinance_iter2.py": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
@@ -9264,6 +9285,18 @@
     "domains_added": [
       "econdb_export_destinations",
       "yfinance_available_indices"
+    ]
+  },
+  "wave45_econdb_profile_census_rebase": {
+    "identities_added": [
+      [
+        "econdb",
+        "CountryProfile",
+        "econdb_country_profile"
+      ]
+    ],
+    "domains_added": [
+      "econdb_country_profile"
     ]
   }
 }

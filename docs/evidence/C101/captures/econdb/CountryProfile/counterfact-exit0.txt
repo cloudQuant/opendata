@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model CountryProfile --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "dropping the GDEBT context series leaves the government-debt ratio with no numerator, so the adapter must refuse with ECONDB_SHAPE_INVALID rather than publish a profile with a silently missing ratio; untampered control produced 1 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

@@ -558,6 +558,16 @@ domains:
     filter_dims: [code, symbol, name]
     storage_mode: transient
     permissions: [query]
+  econdb_country_profile:
+    display_name: EconDB Country Profile
+    rest_path: macro/econdb/country-profile
+    contract: EconDBCountryProfile
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [country]
+    filter_dims: [country]
+    storage_mode: transient
+    permissions: [query]
   wsj_etf_gainers:
     display_name: WSJ ETF Gainers
     rest_path: market/wsj/etf-gainers
