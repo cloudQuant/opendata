@@ -19,6 +19,24 @@ PROVIDER = Provider(
             canonical_model_ids=("CalendarEarnings",),
             scenario="财报日历：按日读取 Seeking Alpha 公开的 earnings_calendar/tickers 分页 JSON",
         ),
+        LazyFetcherBinding(
+            "opendata.data.providers.seeking_alpha.models.estimates_public",
+            "SeekingAlphaForwardEpsEstimatesFetcher",
+            canonical_model_ids=("ForwardEpsEstimates",),
+            scenario=(
+                "前瞻 EPS 预测：先用公开 searches 路由解析站点内 id，再读 symbol_data/estimates "
+                "的 per-item 序列并转置成每期一行（seeking_alpha_forward_eps_estimates 域）"
+            ),
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.seeking_alpha.models.estimates_public",
+            "SeekingAlphaForwardSalesEstimatesFetcher",
+            canonical_model_ids=("ForwardSalesEstimates",),
+            scenario=(
+                "前瞻营收预测：同一两次请求通路，读取五个 revenue_* 数据项"
+                "（seeking_alpha_forward_sales_estimates 域）"
+            ),
+        ),
     ),
     credentials=(),
 )

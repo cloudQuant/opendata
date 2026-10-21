@@ -1,13 +1,13 @@
 {
   "capture": {
     "path": "docs/evidence/C101/captures/yfinance/EquityInfo/direct-exit0.txt",
-    "sha256": "3f2b07c6b3c650f630775146c00f79adfcfcd2126a5c0508a1d35d92036bad37",
+    "sha256": "fcf4a19e0f7468fffdde6574cffbb1c24bf5cc2020cb45e31079261e94298fb9",
     "size_bytes": 367,
-    "stdout_excerpt": "direct: fetcher=YfinanceEquityInfoFetcher seam_requests=4 rows=1 row_class=YfinancePayloadObservation first_row_sha256=2d009426c1864dd6\nVERDICT=PASS\n"
+    "stdout_excerpt": "direct: fetcher=YfinanceEquityInfoFetcher seam_requests=4 rows=1 row_class=YfinancePayloadObservation first_row_sha256=fe62e3a4ee8763d9\nVERDICT=PASS\n"
   },
   "machine_execution": {
     "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityInfo --phase direct --evidence-root docs/evidence/C101",
-    "executed_at_utc": "2026-10-21T16:05:19.209460+00:00",
+    "executed_at_utc": "2026-10-21T17:48:14.374849+00:00",
     "exit_code": 0,
     "pins": {
       "contract": [
@@ -17,8 +17,8 @@
           "path": "opendata/data/models/yfinance_iter2.py"
         },
         {
-          "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-          "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+          "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+          "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
           "path": "opendata/data/domains.yaml"
         }
       ],
@@ -133,8 +133,8 @@
         "path": "opendata/data/models/yfinance_iter2.py"
       },
       {
-        "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-        "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+        "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+        "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
         "path": "opendata/data/domains.yaml"
       }
     ],

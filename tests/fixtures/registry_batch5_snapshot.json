@@ -9,14 +9,14 @@
       "non_base_contract_model_classes": 325
     },
     "live_counts": {
-      "all_symbols": 356,
-      "contract_model_classes_including_base": 352,
-      "non_base_contract_model_classes": 351
+      "all_symbols": 358,
+      "contract_model_classes_including_base": 354,
+      "non_base_contract_model_classes": 353
     },
     "delta_vs_adjudication": {
-      "all_symbols": 26,
-      "contract_model_classes_including_base": 26,
-      "non_base_contract_model_classes": 26
+      "all_symbols": 28,
+      "contract_model_classes_including_base": 28,
+      "non_base_contract_model_classes": 28
     },
     "attribution": {
       "removed_by_iteration2": [
@@ -337,9 +337,9 @@
     "fixed_identities": 379,
     "fixed_unbound": 33,
     "provider_model_legs": 379,
-    "all_symbols": 356,
-    "contract_model_classes_including_base": 352,
-    "non_base_contract_model_classes": 351,
+    "all_symbols": 358,
+    "contract_model_classes_including_base": 354,
+    "non_base_contract_model_classes": 353,
     "non_contract_exports": [
       {
         "name": "BlsCatalogPage",
@@ -427,19 +427,19 @@
     "ods_legs": "The 33 registered source/domain legs on the 20 legacy domains remain split by the 10 explicit legacy freshness-field mappings present in the pinned AkShare/THS mapping YAMLs; the remaining 23 are explicitly unmapped."
   },
   "counts": {
-    "deferred_domain_count": 347,
-    "deferred_source_domain_leg_count": 347,
-    "domain_count": 367,
+    "deferred_domain_count": 349,
+    "deferred_source_domain_leg_count": 349,
+    "domain_count": 369,
     "legacy_dwd_domain_count": 20,
     "legacy_source_domain_leg_count": 33,
     "mapped_ods_leg_count": 10,
-    "provider_model_identity_count": 380,
+    "provider_model_identity_count": 382,
     "queried_table_count": 30,
-    "query_semantic_domain_count": 347,
-    "registered_source_domain_leg_count": 380,
+    "query_semantic_domain_count": 349,
+    "registered_source_domain_leg_count": 382,
     "unmapped_ods_leg_count": 23,
     "warehouse_table_catalog_count": 53,
-    "descriptor_eligible_identity_count": 358,
+    "descriptor_eligible_identity_count": 360,
     "model_key_only_identity_count": 22,
     "descriptor_eligible_legacy_identity_count": 11
   },
@@ -717,6 +717,8 @@
     "sec_sic_search",
     "sec_symbol_map",
     "seeking_alpha_calendar_earnings",
+    "seeking_alpha_forward_eps_estimates",
+    "seeking_alpha_forward_sales_estimates",
     "senior_loan_officer_survey",
     "sofr",
     "sonia",
@@ -1906,6 +1908,14 @@
       "source": "seeking_alpha"
     },
     {
+      "domain": "seeking_alpha_forward_eps_estimates",
+      "source": "seeking_alpha"
+    },
+    {
+      "domain": "seeking_alpha_forward_sales_estimates",
+      "source": "seeking_alpha"
+    },
+    {
       "domain": "tiingo_company_news",
       "source": "tiingo"
     },
@@ -2471,6 +2481,8 @@
     "sec_sic_search",
     "sec_symbol_map",
     "seeking_alpha_calendar_earnings",
+    "seeking_alpha_forward_eps_estimates",
+    "seeking_alpha_forward_sales_estimates",
     "senior_loan_officer_survey",
     "sofr",
     "sonia",
@@ -5751,6 +5763,26 @@
       "canonical_ids_declared": true
     },
     {
+      "binding": "opendata.data.providers.seeking_alpha.models.estimates_public:SeekingAlphaForwardEpsEstimatesFetcher",
+      "contract": "SeekingAlphaForwardEpsEstimates",
+      "domain": "seeking_alpha_forward_eps_estimates",
+      "model": "ForwardEpsEstimates",
+      "scenario_present": true,
+      "source": "seeking_alpha",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.seeking_alpha.models.estimates_public:SeekingAlphaForwardSalesEstimatesFetcher",
+      "contract": "SeekingAlphaForwardSalesEstimates",
+      "domain": "seeking_alpha_forward_sales_estimates",
+      "model": "ForwardSalesEstimates",
+      "scenario_present": true,
+      "source": "seeking_alpha",
+      "verified": false,
+      "canonical_ids_declared": true
+    },
+    {
       "binding": "opendata.data.providers.ths.models.financial_statement:ThsFinancialStatementFetcher",
       "contract": "FinancialStatement",
       "domain": "financial_statement",
@@ -6835,6 +6867,8 @@
     "sec_sic_search",
     "sec_symbol_map",
     "seeking_alpha_calendar_earnings",
+    "seeking_alpha_forward_eps_estimates",
+    "seeking_alpha_forward_sales_estimates",
     "senior_loan_officer_survey",
     "sofr",
     "sonia",
@@ -8111,6 +8145,14 @@
       "source": "seeking_alpha"
     },
     {
+      "domain": "seeking_alpha_forward_eps_estimates",
+      "source": "seeking_alpha"
+    },
+    {
+      "domain": "seeking_alpha_forward_sales_estimates",
+      "source": "seeking_alpha"
+    },
+    {
       "domain": "financial_statement",
       "source": "ths"
     },
@@ -8452,10 +8494,10 @@
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/receipt.json": "f2e3eb877e7a1ec4f6a080ebbe60137330e50b38d8d5224ac186e0950191bef3",
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/smoke.json": "224c2475432ea6fca4b2c6e1442718ae2b0b829386530bf97a5361fb79897dc9",
     "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5",
-    "opendata/data/domains.yaml": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+    "opendata/data/domains.yaml": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
     "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
     "opendata/data/mappings/ths.yaml": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418",
-    "opendata/data/models/__init__.py": "c02f19e3f292890e759558d71299de669f68807ff9d03536fb26360f34c577fb",
+    "opendata/data/models/__init__.py": "03558a8df54583b495af49791661d4a4a8171fb07e92e809aea3d97bf940fe3f",
     "opendata/data/models/finviz_performance.py": "1c0df807da91d8cb2fb1b5720431ce7d68bbacd3d4eb746fa2ff34ca5bf07b86",
     "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
     "opendata/data/models/yfinance_iter2.py": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
@@ -9319,5 +9361,173 @@
     "domains_added": [
       "econdb_country_profile"
     ]
+  },
+  "wave55_sa_estimates_census_rebase": {
+    "scope": "the two model domains waves 37 and 38 added; the legacy/measured cohort, the ods mapped+unmapped split, the warehouse table catalog, the model-key-only partition and the provider count are declared frozen below and each is re-checked against the live registry by this probe",
+    "measured_by": "from: git show HEAD:tests/fixtures/registry_batch5_snapshot.json; to: rebase_batch5_census.py + rebase_descriptor_census.py over the live registry, read after register_providers()",
+    "domains_added": [
+      "seeking_alpha_forward_eps_estimates",
+      "seeking_alpha_forward_sales_estimates"
+    ],
+    "domains_removed": [],
+    "identities_added": [
+      [
+        "seeking_alpha",
+        "ForwardEpsEstimates",
+        "seeking_alpha_forward_eps_estimates"
+      ],
+      [
+        "seeking_alpha",
+        "ForwardSalesEstimates",
+        "seeking_alpha_forward_sales_estimates"
+      ]
+    ],
+    "identities_removed": [],
+    "identity_fields_moved": 0,
+    "legs_added": [
+      [
+        "seeking_alpha",
+        "seeking_alpha_forward_eps_estimates"
+      ],
+      [
+        "seeking_alpha",
+        "seeking_alpha_forward_sales_estimates"
+      ]
+    ],
+    "legs_removed": [],
+    "cohort_counts": {
+      "domain_ids": {
+        "from": 367,
+        "to": 369
+      },
+      "deferred_domain_ids": {
+        "from": 347,
+        "to": 349
+      },
+      "deferred_source_domain_legs": {
+        "from": 347,
+        "to": 349
+      },
+      "source_domain_legs": {
+        "from": 380,
+        "to": 382
+      },
+      "query_semantic_domain_ids": {
+        "from": 347,
+        "to": 349
+      },
+      "provider_model_identities": {
+        "from": 380,
+        "to": 382
+      }
+    },
+    "counts": {
+      "domain_count": {
+        "from": 367,
+        "to": 369
+      },
+      "query_semantic_domain_count": {
+        "from": 347,
+        "to": 349
+      },
+      "deferred_domain_count": {
+        "from": 347,
+        "to": 349
+      },
+      "deferred_source_domain_leg_count": {
+        "from": 347,
+        "to": 349
+      },
+      "registered_source_domain_leg_count": {
+        "from": 380,
+        "to": 382
+      },
+      "provider_model_identity_count": {
+        "from": 380,
+        "to": 382
+      },
+      "descriptor_eligible_identity_count": {
+        "from": 358,
+        "to": 360
+      },
+      "descriptor_eligible_legacy_identity_count": {
+        "from": 11,
+        "to": 11
+      },
+      "model_key_only_identity_count": {
+        "from": 22,
+        "to": 22
+      },
+      "warehouse_table_catalog_count": {
+        "from": 53,
+        "to": 53
+      },
+      "legacy_dwd_domain_count": {
+        "from": 20,
+        "to": 20
+      },
+      "legacy_source_domain_leg_count": {
+        "from": 33,
+        "to": 33
+      }
+    },
+    "frozen_verified": {
+      "legacy_legs_equal_live": true,
+      "legacy_head_count": 33,
+      "legacy_live_count": 33,
+      "warehouse_head_set_equal_live": true,
+      "warehouse_head_count": 53,
+      "warehouse_live_count": 53,
+      "legacy_dwd_domains_equal_live": true,
+      "model_key_only_head": 22,
+      "model_key_only_live": 22,
+      "registered_sources_head": 34,
+      "registered_sources_live": 34,
+      "query_semantic_added": [
+        "seeking_alpha_forward_eps_estimates",
+        "seeking_alpha_forward_sales_estimates"
+      ],
+      "candidate_counts_restored_keys": [
+        "domain_specs",
+        "fixed_bound",
+        "fixed_identities",
+        "provider_model_legs"
+      ]
+    },
+    "export_census": {
+      "measured_by": "live opendata.data.models.__all__ counted with the same ContractModel subclass tests tests/test_provider_domains.py:1867-1877 uses; written to both blocks the tests cross-check (candidate_counts and iter2_census_rebase.live_counts) and the delta recomputed as live minus batch5_count_adjudication.counts",
+      "keys": {
+        "all_symbols": {
+          "from": 356,
+          "to": 358,
+          "adjudication": 330
+        },
+        "contract_model_classes_including_base": {
+          "from": 352,
+          "to": 354,
+          "adjudication": 326
+        },
+        "non_base_contract_model_classes": {
+          "from": 351,
+          "to": 353,
+          "adjudication": 325
+        }
+      },
+      "frozen_blocks_equal_head": {
+        "batch5_count_adjudication": true,
+        "batch4_baseline": true,
+        "batch5_adjudication_counts": true
+      }
+    },
+    "source_pin_delta": {
+      "entries_pinned": 31,
+      "entries_changed": 2,
+      "changed": [
+        "opendata/data/domains.yaml from=262c4f45c5aa82c1 to=771268b61ed6e082",
+        "opendata/data/models/__init__.py from=c02f19e3f292890e to=03558a8df54583b4"
+      ]
+    },
+    "test_sites": "the test-side literals moved by this re-base are listed in the probe's carrier, not here: tests/test_provider_domains.py and tests/test_pipeline_jobs.py byte-pin this fixture's digest, so recording the list inside the fixture would invalidate the very digest it would have to name",
+    "why_late": "wave 37 landed cboe_index_snapshots without re-basing this fence and wave 38 adds a second domain on top of the same drift; re-basing a pin a wave moved is the house rule (waves 33 and 34 each carry a waveNN_census_rebase block, over 15 and 3 domains)"
   }
 }

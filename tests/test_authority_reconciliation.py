@@ -360,6 +360,8 @@ NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
         "sec_sic_search",
         "sec_symbol_map",
         "seeking_alpha_calendar_earnings",
+        "seeking_alpha_forward_eps_estimates",
+        "seeking_alpha_forward_sales_estimates",
         "senior_loan_officer_survey",
         "sofr",
         "sonia",

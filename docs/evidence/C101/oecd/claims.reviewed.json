@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CompositeLeadingIndicator --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:30:31.219642+00:00",
+      "executed_at_utc": "2026-10-21T17:37:23.658936+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -88,7 +88,7 @@
       "receipt": {
         "model_identity": "oecd::CompositeLeadingIndicator",
         "path": "docs/evidence/C101/receipts/oecd/CompositeLeadingIndicator/implementation.json",
-        "sha256": "a87db8f31b63a25302fa99721ff0ee9759228a77533e24d21ed622c250746cc4"
+        "sha256": "db4f1bb5ad2c4053f83ce4317e564c46b594644813e04875c2afa7769f276b26"
       },
       "status": "PASS",
       "upstream_model": "CompositeLeadingIndicator"
@@ -96,7 +96,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CompositeLeadingIndicator --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:30:32.639352+00:00",
+      "executed_at_utc": "2026-10-21T17:37:24.790754+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -108,8 +108,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -171,7 +171,7 @@
       "receipt": {
         "model_identity": "oecd::CompositeLeadingIndicator",
         "path": "docs/evidence/C101/receipts/oecd/CompositeLeadingIndicator/direct.json",
-        "sha256": "66be1332926b51870239bd0b12f74ead53b6ae7dacb1dbbc646ca4a919fe08c4"
+        "sha256": "a1b73ddf1342b18fee8071d9eab8a59ef14023f2513617483eaa9d28e0227454"
       },
       "status": "PASS",
       "upstream_model": "CompositeLeadingIndicator"
@@ -179,7 +179,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CompositeLeadingIndicator --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:30:34.228092+00:00",
+      "executed_at_utc": "2026-10-21T17:37:26.032928+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -191,8 +191,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -254,7 +254,7 @@
       "receipt": {
         "model_identity": "oecd::CompositeLeadingIndicator",
         "path": "docs/evidence/C101/receipts/oecd/CompositeLeadingIndicator/service.json",
-        "sha256": "b9bd832105844118b9ca8bbe0ba7f5d877dc73156e161da50fee18f99421711e"
+        "sha256": "b22b8437847016f8809ba4e8c4e7951c1bf12e4b740bfa7491319566c2926ec9"
       },
       "status": "PASS",
       "upstream_model": "CompositeLeadingIndicator"
@@ -262,7 +262,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CompositeLeadingIndicator --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:30:35.736913+00:00",
+      "executed_at_utc": "2026-10-21T17:37:27.185985+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -274,8 +274,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -337,7 +337,7 @@
       "receipt": {
         "model_identity": "oecd::CompositeLeadingIndicator",
         "path": "docs/evidence/C101/receipts/oecd/CompositeLeadingIndicator/contract.json",
-        "sha256": "bb7e4d5e8084ca88b7fe795849f8e13cb9b4117018d948bf1e9ee90954337ebb"
+        "sha256": "10c2bd161683c4a8df3347f56db5e80ba7bc21edc16e61c2849fd2f632da1f6a"
       },
       "status": "PASS",
       "upstream_model": "CompositeLeadingIndicator"
@@ -345,7 +345,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CompositeLeadingIndicator --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:30:38.676134+00:00",
+      "executed_at_utc": "2026-10-21T17:37:29.470969+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -357,8 +357,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -420,7 +420,7 @@
       "receipt": {
         "model_identity": "oecd::CompositeLeadingIndicator",
         "path": "docs/evidence/C101/receipts/oecd/CompositeLeadingIndicator/counterfact.json",
-        "sha256": "e4d01425ff9bbd2dc609d6bec8fce718e92ef280f4e8ca80faa4c6258462fac6"
+        "sha256": "9d859ecad21b9a1de5e3f0f47ae7dfaaddbb82efde80c05a1a5e5ef6f85ad1ab"
       },
       "status": "PASS",
       "upstream_model": "CompositeLeadingIndicator"
@@ -428,7 +428,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model ConsumerPriceIndex --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:30:39.824788+00:00",
+      "executed_at_utc": "2026-10-21T17:37:30.341667+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -440,8 +440,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -513,7 +513,7 @@
       "receipt": {
         "model_identity": "oecd::ConsumerPriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/ConsumerPriceIndex/implementation.json",
-        "sha256": "e5217e76d07f7c87a6ec587def53ff54234c460e40df61ac3cc468dfd4fc91b6"
+        "sha256": "99cc6e543aa3ecbc281a2cefeb43123cadd64c13a06d4bbfeb2cdea124d5d575"
       },
       "status": "PASS",
       "upstream_model": "ConsumerPriceIndex"
@@ -521,7 +521,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model ConsumerPriceIndex --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:30:41.271529+00:00",
+      "executed_at_utc": "2026-10-21T17:37:31.455567+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -533,8 +533,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -596,7 +596,7 @@
       "receipt": {
         "model_identity": "oecd::ConsumerPriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/ConsumerPriceIndex/direct.json",
-        "sha256": "c82300a742db2cfccc2d6ad8d163bcfe34466f39df5124fcd1d89a809cd4edeb"
+        "sha256": "16e1afcc4c00c32d0f655374d4d15024c9098568c57fb2ea2050c5109d1013f9"
       },
       "status": "PASS",
       "upstream_model": "ConsumerPriceIndex"
@@ -604,7 +604,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model ConsumerPriceIndex --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:30:42.878422+00:00",
+      "executed_at_utc": "2026-10-21T17:37:32.742237+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -616,8 +616,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -679,7 +679,7 @@
       "receipt": {
         "model_identity": "oecd::ConsumerPriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/ConsumerPriceIndex/service.json",
-        "sha256": "729a98811c79fd572bfefc3027a44284e2b9963098253ad22f0f3272d85a7c38"
+        "sha256": "5fe7b5661d5119e5a09bf2898fbecc59f2607725b1e48c162d3837c0c92faf28"
       },
       "status": "PASS",
       "upstream_model": "ConsumerPriceIndex"
@@ -687,7 +687,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model ConsumerPriceIndex --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:30:44.342366+00:00",
+      "executed_at_utc": "2026-10-21T17:37:33.900844+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -699,8 +699,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -762,7 +762,7 @@
       "receipt": {
         "model_identity": "oecd::ConsumerPriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/ConsumerPriceIndex/contract.json",
-        "sha256": "3998593d2c8b7cc8ef5786e5a6de69c20fda0070c41b225de51c911714c81043"
+        "sha256": "89dff35f1213bb7cee982627497dadde9670a2b318840f6691341fca25850f05"
       },
       "status": "PASS",
       "upstream_model": "ConsumerPriceIndex"
@@ -770,7 +770,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model ConsumerPriceIndex --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:30:47.417892+00:00",
+      "executed_at_utc": "2026-10-21T17:37:36.192841+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -782,8 +782,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -845,7 +845,7 @@
       "receipt": {
         "model_identity": "oecd::ConsumerPriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/ConsumerPriceIndex/counterfact.json",
-        "sha256": "9163effb290e6f7ffb5ae8767ae418991d7c94730602fb22ae81ddbb61edf5de"
+        "sha256": "86ff205cdb008c2096a70bb6878c366bea9c39d6f3f37bdf239ebe766f6b1ed7"
       },
       "status": "PASS",
       "upstream_model": "ConsumerPriceIndex"
@@ -853,7 +853,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CountryInterestRates --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:30:48.567669+00:00",
+      "executed_at_utc": "2026-10-21T17:37:37.070601+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -865,8 +865,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -938,7 +938,7 @@
       "receipt": {
         "model_identity": "oecd::CountryInterestRates",
         "path": "docs/evidence/C101/receipts/oecd/CountryInterestRates/implementation.json",
-        "sha256": "1dcfe3b9e07120c5504e2f7421317a43ba71148db6f04e640c4c5cb43d39b81b"
+        "sha256": "34920cee665f3b4f178a7690e898f1e081d79fdafe0df45f07dadc90414be0c3"
       },
       "status": "PASS",
       "upstream_model": "CountryInterestRates"
@@ -946,7 +946,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CountryInterestRates --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:30:49.993754+00:00",
+      "executed_at_utc": "2026-10-21T17:37:38.167832+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -958,8 +958,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1021,7 +1021,7 @@
       "receipt": {
         "model_identity": "oecd::CountryInterestRates",
         "path": "docs/evidence/C101/receipts/oecd/CountryInterestRates/direct.json",
-        "sha256": "7f70473a70c43b430701c911d6d1519da7ce2af7a1733a54bd739a5a59c23d6a"
+        "sha256": "1846dbac2e95fe501d82e1809c86688ddd9122e411751cc56905307778a66fe3"
       },
       "status": "PASS",
       "upstream_model": "CountryInterestRates"
@@ -1029,7 +1029,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CountryInterestRates --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:30:51.561845+00:00",
+      "executed_at_utc": "2026-10-21T17:37:39.449762+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1041,8 +1041,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1104,7 +1104,7 @@
       "receipt": {
         "model_identity": "oecd::CountryInterestRates",
         "path": "docs/evidence/C101/receipts/oecd/CountryInterestRates/service.json",
-        "sha256": "a5d2b220957c367ee4fc64f2dbdcb055a5083f2d4b5f44f97e3ae498a1a0f793"
+        "sha256": "53ddfc4f778a143357ef4c68cd06683a593179dec691ce5c9e40071193c9c27c"
       },
       "status": "PASS",
       "upstream_model": "CountryInterestRates"
@@ -1112,7 +1112,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CountryInterestRates --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:30:53.019203+00:00",
+      "executed_at_utc": "2026-10-21T17:37:40.610544+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1124,8 +1124,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1187,7 +1187,7 @@
       "receipt": {
         "model_identity": "oecd::CountryInterestRates",
         "path": "docs/evidence/C101/receipts/oecd/CountryInterestRates/contract.json",
-        "sha256": "531c1293f1fb1a4c1d89a56d0a6ce896782373f1561581ce6511551203460d00"
+        "sha256": "51b182ea3a9439dc04361384300567e9c80e59625e935024788f8067e61024f7"
       },
       "status": "PASS",
       "upstream_model": "CountryInterestRates"
@@ -1195,7 +1195,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model CountryInterestRates --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:30:56.055630+00:00",
+      "executed_at_utc": "2026-10-21T17:37:42.880866+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1207,8 +1207,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1270,7 +1270,7 @@
       "receipt": {
         "model_identity": "oecd::CountryInterestRates",
         "path": "docs/evidence/C101/receipts/oecd/CountryInterestRates/counterfact.json",
-        "sha256": "6fe84d1cef4a7ace6e9b25106ac4e592c4e1298e733a61d91cc893c35fc5c2a1"
+        "sha256": "dfa2c4656e5e1ecd5c9f8ca9ee9983d1a309bbc74916ad1381b3978793172959"
       },
       "status": "PASS",
       "upstream_model": "CountryInterestRates"
@@ -1278,7 +1278,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpNominal --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:30:57.203894+00:00",
+      "executed_at_utc": "2026-10-21T17:37:43.755282+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1290,8 +1290,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1363,7 +1363,7 @@
       "receipt": {
         "model_identity": "oecd::GdpNominal",
         "path": "docs/evidence/C101/receipts/oecd/GdpNominal/implementation.json",
-        "sha256": "70416f944097ee39e40699346e27f9267decb0497805a68b37fdb24ecbbbb719"
+        "sha256": "a545381312a386e9a37c7227d3f167243511fda62ccb12a7256812dbc3c7c537"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
@@ -1371,7 +1371,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpNominal --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:30:58.627610+00:00",
+      "executed_at_utc": "2026-10-21T17:37:44.863896+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1383,8 +1383,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1446,7 +1446,7 @@
       "receipt": {
         "model_identity": "oecd::GdpNominal",
         "path": "docs/evidence/C101/receipts/oecd/GdpNominal/direct.json",
-        "sha256": "a142dbbec8c7818732d44197f628e8380f6b4ef2a8ce153a0f7c42f872485823"
+        "sha256": "37655344db00cd6f3c631260774a3c64cc8863319e7adbc8850398c5ceb83477"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
@@ -1454,7 +1454,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpNominal --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:31:00.287746+00:00",
+      "executed_at_utc": "2026-10-21T17:37:46.145605+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1466,8 +1466,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1529,7 +1529,7 @@
       "receipt": {
         "model_identity": "oecd::GdpNominal",
         "path": "docs/evidence/C101/receipts/oecd/GdpNominal/service.json",
-        "sha256": "18e8ed3a14206f4e3938966ebfc0107dc984c87397e7c9c61b2dc39e130eebef"
+        "sha256": "c6e4f8a8d1dc3c49df8b43e53043f313160e844a8ff993751814f0d51c121078"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
@@ -1537,7 +1537,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpNominal --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:31:01.713076+00:00",
+      "executed_at_utc": "2026-10-21T17:37:47.316202+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1549,8 +1549,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1612,7 +1612,7 @@
       "receipt": {
         "model_identity": "oecd::GdpNominal",
         "path": "docs/evidence/C101/receipts/oecd/GdpNominal/contract.json",
-        "sha256": "d70d8a8a4c50859c2e6ba76c359b7e52ebe7f0dfea65e0cf608fece108d4712c"
+        "sha256": "62a07a2521d38ea69810f2572a06464e65d3e16c8ac3e9e2d571f2f740cf4fb0"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
@@ -1620,7 +1620,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpNominal --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:31:04.688052+00:00",
+      "executed_at_utc": "2026-10-21T17:37:49.587181+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1632,8 +1632,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1695,7 +1695,7 @@
       "receipt": {
         "model_identity": "oecd::GdpNominal",
         "path": "docs/evidence/C101/receipts/oecd/GdpNominal/counterfact.json",
-        "sha256": "e071ef57b7a9ca07d433f71b7fd4b3d58f5c89cc9d379a93af02ed9f358d90a5"
+        "sha256": "30c5e20a2f61d39647d3e039c3f2736900dd5a25c6a35b827ddcfdc7111a58e0"
       },
       "status": "PASS",
       "upstream_model": "GdpNominal"
@@ -1703,7 +1703,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpReal --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:31:05.819959+00:00",
+      "executed_at_utc": "2026-10-21T17:37:50.448093+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1715,8 +1715,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1788,7 +1788,7 @@
       "receipt": {
         "model_identity": "oecd::GdpReal",
         "path": "docs/evidence/C101/receipts/oecd/GdpReal/implementation.json",
-        "sha256": "dd93bb74eae53b2091994a76961dea270225064d5872280c96c9d79f3fff4930"
+        "sha256": "ff73d5466d1517b6c701a0afaf39070b53a700238c037981f1d1791ee57171b9"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
@@ -1796,7 +1796,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpReal --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:31:07.254359+00:00",
+      "executed_at_utc": "2026-10-21T17:37:51.551330+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1808,8 +1808,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1871,7 +1871,7 @@
       "receipt": {
         "model_identity": "oecd::GdpReal",
         "path": "docs/evidence/C101/receipts/oecd/GdpReal/direct.json",
-        "sha256": "519d664ef9715d2d44d90bfb893258370c5af6a1e8db9122ee33a6ea054fa8ef"
+        "sha256": "304c3175b2df9a6a41f617fa7589e6ee23fb538cae881318ae954c3012a74266"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
@@ -1879,7 +1879,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpReal --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:31:08.859540+00:00",
+      "executed_at_utc": "2026-10-21T17:37:52.848860+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1891,8 +1891,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1954,7 +1954,7 @@
       "receipt": {
         "model_identity": "oecd::GdpReal",
         "path": "docs/evidence/C101/receipts/oecd/GdpReal/service.json",
-        "sha256": "f2739b976dbdf82d2fe19d540a70c9b75362fbc0cb38dfccffc30a5251c4aa85"
+        "sha256": "16ed045aad48723e1c6281ff95e49f3479ff8672a738395db69c73f958d8f087"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
@@ -1962,7 +1962,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpReal --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:31:10.242673+00:00",
+      "executed_at_utc": "2026-10-21T17:37:54.053352+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1974,8 +1974,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2037,7 +2037,7 @@
       "receipt": {
         "model_identity": "oecd::GdpReal",
         "path": "docs/evidence/C101/receipts/oecd/GdpReal/contract.json",
-        "sha256": "e1a2c7f317d5dd685128ef6dfe84d79c5db3d5d41d38c6ffa990daf53efa020b"
+        "sha256": "2cf6ed419a56c2649813decccc237028946d7a41a4d09abecaef59684db000f9"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
@@ -2045,7 +2045,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpReal --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:31:13.119520+00:00",
+      "executed_at_utc": "2026-10-21T17:37:56.323741+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2057,8 +2057,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2120,7 +2120,7 @@
       "receipt": {
         "model_identity": "oecd::GdpReal",
         "path": "docs/evidence/C101/receipts/oecd/GdpReal/counterfact.json",
-        "sha256": "fc8ef2c2da3d4270d32d28bca1c0ac631f60ce7170e65b1b506bffd4b227279c"
+        "sha256": "d717ec164eeb854834aeede36ca651e7886b595f6a6eb6e1fdfef25b63a5698d"
       },
       "status": "PASS",
       "upstream_model": "GdpReal"
@@ -2128,7 +2128,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpForecast --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:31:14.259070+00:00",
+      "executed_at_utc": "2026-10-21T17:37:57.275023+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2140,8 +2140,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2213,7 +2213,7 @@
       "receipt": {
         "model_identity": "oecd::GdpForecast",
         "path": "docs/evidence/C101/receipts/oecd/GdpForecast/implementation.json",
-        "sha256": "4a8df64632c25daedcb5ae4e536c4a5f23f4cd4f4bd37b7ad7ca73a3cabb6704"
+        "sha256": "1695b10026bbfaa43d99d3da37a5bd0c08aecff8560c4476a3d94be8d239a1d5"
       },
       "status": "PASS",
       "upstream_model": "GdpForecast"
@@ -2221,7 +2221,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpForecast --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:31:15.658734+00:00",
+      "executed_at_utc": "2026-10-21T17:37:58.380808+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2233,8 +2233,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2296,7 +2296,7 @@
       "receipt": {
         "model_identity": "oecd::GdpForecast",
         "path": "docs/evidence/C101/receipts/oecd/GdpForecast/direct.json",
-        "sha256": "82b8364dde51cc1068af42ba45a33257a4bde6e9e2485682737b0db74d68e7ac"
+        "sha256": "eca09dfea16c6fec1abaad1f5bf23640cacdbc8c3084f28c1e9020de85f07c2f"
       },
       "status": "PASS",
       "upstream_model": "GdpForecast"
@@ -2304,7 +2304,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpForecast --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:31:17.260591+00:00",
+      "executed_at_utc": "2026-10-21T17:37:59.663827+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2316,8 +2316,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2379,7 +2379,7 @@
       "receipt": {
         "model_identity": "oecd::GdpForecast",
         "path": "docs/evidence/C101/receipts/oecd/GdpForecast/service.json",
-        "sha256": "62b18a4f5332478880eecf3776e1fbd195b576e7407bb36ee552af5163a93785"
+        "sha256": "af0a2885523a58f2201fd04c25f2ae84c5b349d25e1a89d0a9f882a4e57077f0"
       },
       "status": "PASS",
       "upstream_model": "GdpForecast"
@@ -2387,7 +2387,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpForecast --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:31:18.672224+00:00",
+      "executed_at_utc": "2026-10-21T17:38:00.835231+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2399,8 +2399,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2462,7 +2462,7 @@
       "receipt": {
         "model_identity": "oecd::GdpForecast",
         "path": "docs/evidence/C101/receipts/oecd/GdpForecast/contract.json",
-        "sha256": "ff00c2896320352d43ea06211e3bc7ba173c9465e8a330ca5ce2509393e451b8"
+        "sha256": "ec525ac83b590b2bb73a2593ea3aa4d52dba1beedce782703941233cc3131aca"
       },
       "status": "PASS",
       "upstream_model": "GdpForecast"
@@ -2470,7 +2470,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model GdpForecast --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:31:21.650612+00:00",
+      "executed_at_utc": "2026-10-21T17:38:03.134604+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2482,8 +2482,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2545,7 +2545,7 @@
       "receipt": {
         "model_identity": "oecd::GdpForecast",
         "path": "docs/evidence/C101/receipts/oecd/GdpForecast/counterfact.json",
-        "sha256": "f104f247d9553dcf5bdbafc7a88adbb410adaff44066743d49cff9dfbd0968c1"
+        "sha256": "e561422477a70699818fb7211eedd23c4f3fcaaac39a6c1b27638303c19e815b"
       },
       "status": "PASS",
       "upstream_model": "GdpForecast"
@@ -2553,7 +2553,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model HousePriceIndex --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:31:22.761893+00:00",
+      "executed_at_utc": "2026-10-21T17:38:04.007675+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2565,8 +2565,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2638,7 +2638,7 @@
       "receipt": {
         "model_identity": "oecd::HousePriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/HousePriceIndex/implementation.json",
-        "sha256": "a129ed65a72be35ca86fcf386820e8769f75ec0bb4812cce7f370fd5a9ae3094"
+        "sha256": "3156052639fc955f478623f4860e20049678214b91f9506271caf65194efccd5"
       },
       "status": "PASS",
       "upstream_model": "HousePriceIndex"
@@ -2646,7 +2646,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model HousePriceIndex --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:31:24.209055+00:00",
+      "executed_at_utc": "2026-10-21T17:38:05.109543+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2658,8 +2658,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2721,7 +2721,7 @@
       "receipt": {
         "model_identity": "oecd::HousePriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/HousePriceIndex/direct.json",
-        "sha256": "b8b67b5d81905302ca5918e1333a1ff732930ab08d4e4a8cb9b803310190bdc1"
+        "sha256": "ffd23118bb6cbde7797c62f4dd4a050bddf2c8604a85e8f7015b9c8178d271c2"
       },
       "status": "PASS",
       "upstream_model": "HousePriceIndex"
@@ -2729,7 +2729,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model HousePriceIndex --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:31:25.730272+00:00",
+      "executed_at_utc": "2026-10-21T17:38:06.392798+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2741,8 +2741,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2804,7 +2804,7 @@
       "receipt": {
         "model_identity": "oecd::HousePriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/HousePriceIndex/service.json",
-        "sha256": "eb84a6f7f61111368e2cf84895a8fb184935e1732b8a8d5acefb1b63ee10011f"
+        "sha256": "ec30b354a2c13710cf15a387b593552bfca79c3a7d9de91b746ca0aa74d5825f"
       },
       "status": "PASS",
       "upstream_model": "HousePriceIndex"
@@ -2812,7 +2812,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model HousePriceIndex --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:31:27.211202+00:00",
+      "executed_at_utc": "2026-10-21T17:38:07.560255+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2824,8 +2824,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2887,7 +2887,7 @@
       "receipt": {
         "model_identity": "oecd::HousePriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/HousePriceIndex/contract.json",
-        "sha256": "86dbe1033122285f62a42a86deef525e2c82d3e138bd00bb715144fd40bcbff7"
+        "sha256": "f07a2884658dd5271d1e5034245ac2aa540f33af52d43d5defe6d58362d0e4d8"
       },
       "status": "PASS",
       "upstream_model": "HousePriceIndex"
@@ -2895,7 +2895,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model HousePriceIndex --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:31:30.058440+00:00",
+      "executed_at_utc": "2026-10-21T17:38:09.843549+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2907,8 +2907,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2970,7 +2970,7 @@
       "receipt": {
         "model_identity": "oecd::HousePriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/HousePriceIndex/counterfact.json",
-        "sha256": "cd5ef544aacbabc02f0a96f60efca65c09a90a2cbe945e834fc3ee8564dcb355"
+        "sha256": "42dd5697addc3d944df5f7f4b213e28968f38af12fcafe2c437082b512fdd4b7"
       },
       "status": "PASS",
       "upstream_model": "HousePriceIndex"
@@ -2978,7 +2978,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model SharePriceIndex --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:31:31.204585+00:00",
+      "executed_at_utc": "2026-10-21T17:38:10.711902+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2990,8 +2990,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3063,7 +3063,7 @@
       "receipt": {
         "model_identity": "oecd::SharePriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/SharePriceIndex/implementation.json",
-        "sha256": "5a3ee6d9dafcefcce6fc42bd56b02bbb6810fa0ced9747a43a8e30b29ae89dbd"
+        "sha256": "5513faf100f8e9588ce58d384c6174748f45cbe4dca6e1ff1c66319bb72d8328"
       },
       "status": "PASS",
       "upstream_model": "SharePriceIndex"
@@ -3071,7 +3071,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model SharePriceIndex --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:31:32.644598+00:00",
+      "executed_at_utc": "2026-10-21T17:38:11.814834+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3083,8 +3083,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3146,7 +3146,7 @@
       "receipt": {
         "model_identity": "oecd::SharePriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/SharePriceIndex/direct.json",
-        "sha256": "681498738480031fb66b838a74ae18cd05c0bcac185f97ecc348d148dd439816"
+        "sha256": "80660ba3aa1238fa093a186d926a0ec5c2124bd6296aa06e5570139dd304e796"
       },
       "status": "PASS",
       "upstream_model": "SharePriceIndex"
@@ -3154,7 +3154,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model SharePriceIndex --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:31:34.294543+00:00",
+      "executed_at_utc": "2026-10-21T17:38:13.108039+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3166,8 +3166,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3229,7 +3229,7 @@
       "receipt": {
         "model_identity": "oecd::SharePriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/SharePriceIndex/service.json",
-        "sha256": "f1fb47d2039cd8fbbb8dea13680b640993db94b2cb8ed2a6dce44745f2c5a1d0"
+        "sha256": "5f7cda4f74567c3469e568ba38f5b09adf1b485a165ec11382ed65359fa5a78f"
       },
       "status": "PASS",
       "upstream_model": "SharePriceIndex"
@@ -3237,7 +3237,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model SharePriceIndex --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:31:35.715420+00:00",
+      "executed_at_utc": "2026-10-21T17:38:14.274627+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3249,8 +3249,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3312,7 +3312,7 @@
       "receipt": {
         "model_identity": "oecd::SharePriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/SharePriceIndex/contract.json",
-        "sha256": "c3f8d808ac680a55bdc26231cb62c47660a6b4922330fb11361fe3b6c7f74772"
+        "sha256": "c0e672f9947d71e59faf2306d0aac127fbd4b84eb8697a4fe15664aaf8abef8c"
       },
       "status": "PASS",
       "upstream_model": "SharePriceIndex"
@@ -3320,7 +3320,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model SharePriceIndex --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:31:38.522225+00:00",
+      "executed_at_utc": "2026-10-21T17:38:16.558005+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3332,8 +3332,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3395,7 +3395,7 @@
       "receipt": {
         "model_identity": "oecd::SharePriceIndex",
         "path": "docs/evidence/C101/receipts/oecd/SharePriceIndex/counterfact.json",
-        "sha256": "cf6069543f2f70c855b938bd1b9bfa69f66dd5138458bde6686096121d6d4546"
+        "sha256": "28e9d0dcc4b56de38125f79a93ee41fd5f2aefbe600708f64ca561db5e9411cd"
       },
       "status": "PASS",
       "upstream_model": "SharePriceIndex"
@@ -3403,7 +3403,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model Unemployment --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:31:39.627076+00:00",
+      "executed_at_utc": "2026-10-21T17:38:17.420385+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -3415,8 +3415,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3488,7 +3488,7 @@
       "receipt": {
         "model_identity": "oecd::Unemployment",
         "path": "docs/evidence/C101/receipts/oecd/Unemployment/implementation.json",
-        "sha256": "4285fd977c3008ee424cfac67fbe8d4bcf9454f66230dfd8571871bec7fddf42"
+        "sha256": "74634b1b27f5a40ba046ba715d14e65f6cf3099c62c47818061942f67b1d09f1"
       },
       "status": "PASS",
       "upstream_model": "Unemployment"
@@ -3496,7 +3496,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model Unemployment --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:31:41.076197+00:00",
+      "executed_at_utc": "2026-10-21T17:38:18.517766+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3508,8 +3508,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3571,7 +3571,7 @@
       "receipt": {
         "model_identity": "oecd::Unemployment",
         "path": "docs/evidence/C101/receipts/oecd/Unemployment/direct.json",
-        "sha256": "33a7b40586be57dcd252de53c1b05558484c3edc6ba66e90e4d26a89bde48d16"
+        "sha256": "68f17a33515f4e6e8888bf25b4fc3afb469806f29b19ea2a1277c9d77265ebb8"
       },
       "status": "PASS",
       "upstream_model": "Unemployment"
@@ -3579,7 +3579,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model Unemployment --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:31:42.609643+00:00",
+      "executed_at_utc": "2026-10-21T17:38:19.811591+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3591,8 +3591,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3654,7 +3654,7 @@
       "receipt": {
         "model_identity": "oecd::Unemployment",
         "path": "docs/evidence/C101/receipts/oecd/Unemployment/service.json",
-        "sha256": "754e96b2e41894a0d00771a6a7428fd4eeecabf30d27d2cd5ed2930ef5d3fba7"
+        "sha256": "7669fe0905ac6b5edf20740f60c2ba660964617a3891354c0c52f27707ee27a6"
       },
       "status": "PASS",
       "upstream_model": "Unemployment"
@@ -3662,7 +3662,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model Unemployment --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:31:44.025979+00:00",
+      "executed_at_utc": "2026-10-21T17:38:20.968806+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3674,8 +3674,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3737,7 +3737,7 @@
       "receipt": {
         "model_identity": "oecd::Unemployment",
         "path": "docs/evidence/C101/receipts/oecd/Unemployment/contract.json",
-        "sha256": "7e8da0108457dca77f2d37c6993213ab7f5e8250e10a954e8f8eb37a89614e02"
+        "sha256": "df8efa492ce4b422c1d27c483e7fa9f3b4d796c96596edcfec6cae33b9a481dc"
       },
       "status": "PASS",
       "upstream_model": "Unemployment"
@@ -3745,7 +3745,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider oecd --model Unemployment --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:31:46.922028+00:00",
+      "executed_at_utc": "2026-10-21T17:38:23.260254+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3757,8 +3757,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3820,7 +3820,7 @@
       "receipt": {
         "model_identity": "oecd::Unemployment",
         "path": "docs/evidence/C101/receipts/oecd/Unemployment/counterfact.json",
-        "sha256": "150cbe77d1ed1814801ce9e06777f0cfe9f9d249403710f7abb7ab8968fa6118"
+        "sha256": "37a75887246f485dd91ff216eb1183bb97e963f1f3885b466f876d0c8538eb66"
       },
       "status": "PASS",
       "upstream_model": "Unemployment"
@@ -3834,9 +3834,9 @@
       "receipt": {
         "model_identity": "oecd::CompositeLeadingIndicator",
         "path": "docs/evidence/C101/primary-reviews/oecd__CompositeLeadingIndicator.review.json",
-        "sha256": "23995573123555edffe6ae2d82b5ec9e90a77d699997c0e48f8c2ca2a929d67e"
+        "sha256": "6d33bb011792c413c061988c26ef36978f5e94de69298f7e0aa3e7d8d409b4ba"
       },
-      "reviewed_at_utc": "2026-10-21T09:31:49Z",
+      "reviewed_at_utc": "2026-10-21T17:38:25Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3849,9 +3849,9 @@
       "receipt": {
         "model_identity": "oecd::ConsumerPriceIndex",
         "path": "docs/evidence/C101/primary-reviews/oecd__ConsumerPriceIndex.review.json",
-        "sha256": "3e3c403103b641a11273213d22e63e77f1204a9e08ca6ff9d251c2e693e1b514"
+        "sha256": "58857641dfd214552c7a2bc2471e33f3ad3faf800e4639e0f286362553300d53"
       },
-      "reviewed_at_utc": "2026-10-21T09:31:49Z",
+      "reviewed_at_utc": "2026-10-21T17:38:25Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3864,9 +3864,9 @@
       "receipt": {
         "model_identity": "oecd::CountryInterestRates",
         "path": "docs/evidence/C101/primary-reviews/oecd__CountryInterestRates.review.json",
-        "sha256": "c765d971cff6e0ada2ddd3240fa8e7941e6a1674c101c1b650032b4677d8184f"
+        "sha256": "85b80a96b52be03e296846098eacbca07cc2f50330786b3637e4449d166f82f3"
       },
-      "reviewed_at_utc": "2026-10-21T09:31:49Z",
+      "reviewed_at_utc": "2026-10-21T17:38:25Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3879,9 +3879,9 @@
       "receipt": {
         "model_identity": "oecd::GdpForecast",
         "path": "docs/evidence/C101/primary-reviews/oecd__GdpForecast.review.json",
-        "sha256": "4f0158ceca1790b2a27c5efdfd6afea8f2d465cfacbe919e75fad9b5caa6f674"
+        "sha256": "89f9435a5ed47ce3e88a3fbb2b87cb638b1ab388fcbb346976a71fb08ae8196c"
       },
-      "reviewed_at_utc": "2026-10-21T09:31:49Z",
+      "reviewed_at_utc": "2026-10-21T17:38:25Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3894,9 +3894,9 @@
       "receipt": {
         "model_identity": "oecd::GdpNominal",
         "path": "docs/evidence/C101/primary-reviews/oecd__GdpNominal.review.json",
-        "sha256": "90725e64326d4059c5585a01c06a3fea4933eba0fc13c6c2e71ad8a895353726"
+        "sha256": "22d8d05f3d623a7c047f82bfeb6fff6e0516ac517d0face8a0a445e576073704"
       },
-      "reviewed_at_utc": "2026-10-21T09:31:49Z",
+      "reviewed_at_utc": "2026-10-21T17:38:25Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3909,9 +3909,9 @@
       "receipt": {
         "model_identity": "oecd::GdpReal",
         "path": "docs/evidence/C101/primary-reviews/oecd__GdpReal.review.json",
-        "sha256": "c88e15cabd89452f2fe3cc755a808a16c271a7fd5170eb95e80ab89876b53247"
+        "sha256": "aa0762893ecc1980eb172c09d6c8ec2bdde95de1a08f614f63aff592c1155ebb"
       },
-      "reviewed_at_utc": "2026-10-21T09:31:49Z",
+      "reviewed_at_utc": "2026-10-21T17:38:25Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3924,9 +3924,9 @@
       "receipt": {
         "model_identity": "oecd::HousePriceIndex",
         "path": "docs/evidence/C101/primary-reviews/oecd__HousePriceIndex.review.json",
-        "sha256": "50c4f14276e78228f53c370490e0aa196f1eeb665d6db1f1dd59e2dcf5d560db"
+        "sha256": "65b5cbe2d0646fae6f9f614002ecd7f66cdfd161ddf04f0b98617876a185ab96"
       },
-      "reviewed_at_utc": "2026-10-21T09:31:49Z",
+      "reviewed_at_utc": "2026-10-21T17:38:25Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3939,9 +3939,9 @@
       "receipt": {
         "model_identity": "oecd::SharePriceIndex",
         "path": "docs/evidence/C101/primary-reviews/oecd__SharePriceIndex.review.json",
-        "sha256": "37dc26f15d174cb2ac21dc5bccf42243e5ecc0c2ff07684831c5eca1312821db"
+        "sha256": "0afa9a8f115f194e6d606e3a182151a4df96d52c717e529ddbdc43963b2220d5"
       },
-      "reviewed_at_utc": "2026-10-21T09:31:49Z",
+      "reviewed_at_utc": "2026-10-21T17:38:25Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3954,9 +3954,9 @@
       "receipt": {
         "model_identity": "oecd::Unemployment",
         "path": "docs/evidence/C101/primary-reviews/oecd__Unemployment.review.json",
-        "sha256": "224db1d234f4a3674cc0437614588141caf39cc6ad404a5a17624c46efda332b"
+        "sha256": "197c851fc6c91213748fbbc0912ff3562a06afb3f1c286e9cf978736b10b8672"
       },
-      "reviewed_at_utc": "2026-10-21T09:31:49Z",
+      "reviewed_at_utc": "2026-10-21T17:38:25Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

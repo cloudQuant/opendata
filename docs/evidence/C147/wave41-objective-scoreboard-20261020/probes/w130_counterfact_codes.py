@@ -28,7 +28,7 @@ RUNS = REPO / BUNDLE / "runs"
 CARRIER = RUNS / "w130_counterfact_codes.txt"
 REPORT = REPO / "docs/evidence/C101/judge/claims.merged.report.json"
 RECEIPTS = REPO / "docs/evidence/C101/receipts"
-EXPECTED_ACCEPTED = 347
+EXPECTED_ACCEPTED = 349
 
 
 def _declared_codes() -> dict[tuple[str, str], str]:

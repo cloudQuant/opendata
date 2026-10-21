@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdData --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:22:19.735605+00:00",
+      "executed_at_utc": "2026-10-21T17:30:39.501946+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -98,7 +98,7 @@
       "receipt": {
         "model_identity": "government_us::CommodityPsdData",
         "path": "docs/evidence/C101/receipts/government_us/CommodityPsdData/implementation.json",
-        "sha256": "f3f7ef454d715f456697bf93d5d9f9b730d0f472bc05cdf457975ce69e108881"
+        "sha256": "3933942c72ea5ee9cc4d1f717a4be8b38a25e9b4ff23a752cc2079014e014345"
       },
       "status": "PASS",
       "upstream_model": "CommodityPsdData"
@@ -106,7 +106,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdData --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:22:20.999183+00:00",
+      "executed_at_utc": "2026-10-21T17:30:40.534166+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -118,8 +118,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -186,7 +186,7 @@
       "receipt": {
         "model_identity": "government_us::CommodityPsdData",
         "path": "docs/evidence/C101/receipts/government_us/CommodityPsdData/direct.json",
-        "sha256": "e7083d961a27d7e6806c01aa91441e9f9672633d73d7e9b9b4d329ba81d68f48"
+        "sha256": "039be9773196da44145d6b43a9dd3e4192af16a686fb1893d385c1f260e14435"
       },
       "status": "PASS",
       "upstream_model": "CommodityPsdData"
@@ -194,7 +194,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdData --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:22:22.272759+00:00",
+      "executed_at_utc": "2026-10-21T17:30:41.600447+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -206,8 +206,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -274,7 +274,7 @@
       "receipt": {
         "model_identity": "government_us::CommodityPsdData",
         "path": "docs/evidence/C101/receipts/government_us/CommodityPsdData/service.json",
-        "sha256": "b77860bd97ad8778a2d7c8b866d34472dae71e87391daa2cf381b9690c50c3c4"
+        "sha256": "89cdb6712e81912fec4d782705f903f1fab082d4f332bd51868984678bde37f5"
       },
       "status": "PASS",
       "upstream_model": "CommodityPsdData"
@@ -282,7 +282,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdData --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:22:23.531473+00:00",
+      "executed_at_utc": "2026-10-21T17:30:42.636037+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -294,8 +294,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -362,7 +362,7 @@
       "receipt": {
         "model_identity": "government_us::CommodityPsdData",
         "path": "docs/evidence/C101/receipts/government_us/CommodityPsdData/contract.json",
-        "sha256": "d13760a4825765aaf13915d135f27f5126b2b6d6dc48e7f69f89f40749aed906"
+        "sha256": "2ec1ad1091035c6cef919cc0491b369899623f953070020d8752da1fa888a686"
       },
       "status": "PASS",
       "upstream_model": "CommodityPsdData"
@@ -370,7 +370,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdData --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:22:26.231167+00:00",
+      "executed_at_utc": "2026-10-21T17:30:44.781725+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -382,8 +382,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -450,7 +450,7 @@
       "receipt": {
         "model_identity": "government_us::CommodityPsdData",
         "path": "docs/evidence/C101/receipts/government_us/CommodityPsdData/counterfact.json",
-        "sha256": "123c37e885d3ead9bb86ef339c2e418395e6abcdd96004e780520b019697d0fb"
+        "sha256": "b27c30941603b83d202eee69b46c7d6bed2ac7f9dae84849ad0d6d754658e22d"
       },
       "status": "PASS",
       "upstream_model": "CommodityPsdData"
@@ -458,7 +458,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdReport --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:22:27.543563+00:00",
+      "executed_at_utc": "2026-10-21T17:30:45.815119+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -470,8 +470,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -553,7 +553,7 @@
       "receipt": {
         "model_identity": "government_us::CommodityPsdReport",
         "path": "docs/evidence/C101/receipts/government_us/CommodityPsdReport/implementation.json",
-        "sha256": "b63ffd5f64a96d65964649260f541bbbeda0b0ded1f8c3f34e79fd3dc7dc5d78"
+        "sha256": "a8c8343a9d2f62549c7e972a6c5d95fa44616dadbf096b85bef821a4131df7b3"
       },
       "status": "PASS",
       "upstream_model": "CommodityPsdReport"
@@ -561,7 +561,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdReport --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:22:28.882149+00:00",
+      "executed_at_utc": "2026-10-21T17:30:46.889420+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -573,8 +573,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -641,7 +641,7 @@
       "receipt": {
         "model_identity": "government_us::CommodityPsdReport",
         "path": "docs/evidence/C101/receipts/government_us/CommodityPsdReport/direct.json",
-        "sha256": "1f769b030196928fb147a40f71abd6a6e1ac19d001bbaba4cbda42435013ef74"
+        "sha256": "e0bab3bfb128bca51d44ca62537c9c72eabfba04de155881fb729760669e9512"
       },
       "status": "PASS",
       "upstream_model": "CommodityPsdReport"
@@ -649,7 +649,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdReport --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:22:30.167421+00:00",
+      "executed_at_utc": "2026-10-21T17:30:47.930972+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -661,8 +661,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -729,7 +729,7 @@
       "receipt": {
         "model_identity": "government_us::CommodityPsdReport",
         "path": "docs/evidence/C101/receipts/government_us/CommodityPsdReport/service.json",
-        "sha256": "cc0f3d431de34c88e70af4993ebbf9575a39ce8e41071e4c33467c1abc74d033"
+        "sha256": "1489b68cf76009814d4906cd36dff351a68102a19d557d8de768ddc8f88baff9"
       },
       "status": "PASS",
       "upstream_model": "CommodityPsdReport"
@@ -737,7 +737,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdReport --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:22:31.464331+00:00",
+      "executed_at_utc": "2026-10-21T17:30:49.002627+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -749,8 +749,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -817,7 +817,7 @@
       "receipt": {
         "model_identity": "government_us::CommodityPsdReport",
         "path": "docs/evidence/C101/receipts/government_us/CommodityPsdReport/contract.json",
-        "sha256": "d8e404ca936e73cdefaaf2788ee2b313cc1c4d682e8a95b344f9aedf1a6f4efd"
+        "sha256": "86b7e697e8b7a7fd5efb078493dd6bdb68c7ca2ac90ac72c9abb0d99dc35e0e7"
       },
       "status": "PASS",
       "upstream_model": "CommodityPsdReport"
@@ -825,7 +825,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model CommodityPsdReport --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:22:34.091321+00:00",
+      "executed_at_utc": "2026-10-21T17:30:51.117565+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -837,8 +837,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -905,7 +905,7 @@
       "receipt": {
         "model_identity": "government_us::CommodityPsdReport",
         "path": "docs/evidence/C101/receipts/government_us/CommodityPsdReport/counterfact.json",
-        "sha256": "5e8325451804da4c4eef159bf976e60df222d1fe1cc2f8ceb7c2fa9c79b14b12"
+        "sha256": "cba926c71532ef18cfb3bb62c15679bff6fa735de15909d127172b15d68c4cbb"
       },
       "status": "PASS",
       "upstream_model": "CommodityPsdReport"
@@ -913,7 +913,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:22:35.357843+00:00",
+      "executed_at_utc": "2026-10-21T17:30:52.206398+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -925,8 +925,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1008,7 +1008,7 @@
       "receipt": {
         "model_identity": "government_us::TreasuryAuctions",
         "path": "docs/evidence/C101/receipts/government_us/TreasuryAuctions/implementation.json",
-        "sha256": "9a2e776216d6fdc589c9c550839cd8cefff88fc8afbe0fdd47f84d198dafbf56"
+        "sha256": "5140c3a6f60ddaf0d168fffc3c165ddb702cb94393f81e1d9c5cf316d52cecb7"
       },
       "status": "PASS",
       "upstream_model": "TreasuryAuctions"
@@ -1016,7 +1016,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:22:36.641362+00:00",
+      "executed_at_utc": "2026-10-21T17:30:53.241668+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1028,8 +1028,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1096,7 +1096,7 @@
       "receipt": {
         "model_identity": "government_us::TreasuryAuctions",
         "path": "docs/evidence/C101/receipts/government_us/TreasuryAuctions/direct.json",
-        "sha256": "09adf7052000fcb8b5d38fc2e56d1c81821801cf1daf139428541e8c886eb885"
+        "sha256": "46dcf294a1153535413f386e41ba3ea624605d20372d8755c63c9321ff0c42ca"
       },
       "status": "PASS",
       "upstream_model": "TreasuryAuctions"
@@ -1104,7 +1104,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:22:37.898577+00:00",
+      "executed_at_utc": "2026-10-21T17:30:54.314727+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1116,8 +1116,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1184,7 +1184,7 @@
       "receipt": {
         "model_identity": "government_us::TreasuryAuctions",
         "path": "docs/evidence/C101/receipts/government_us/TreasuryAuctions/service.json",
-        "sha256": "af92a0f19d1cbe2bccc6e8959c0fa26f53ded46cf5397e4fd5948814f88eca63"
+        "sha256": "3b00a163c63371a173bef1518de95aa3a8eee7a5bc7d07ebdcd3bd726bf9d2a1"
       },
       "status": "PASS",
       "upstream_model": "TreasuryAuctions"
@@ -1192,7 +1192,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:22:39.232199+00:00",
+      "executed_at_utc": "2026-10-21T17:30:55.343024+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1204,8 +1204,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1272,7 +1272,7 @@
       "receipt": {
         "model_identity": "government_us::TreasuryAuctions",
         "path": "docs/evidence/C101/receipts/government_us/TreasuryAuctions/contract.json",
-        "sha256": "4d6fddff9da9ce2c6f735644d83cb0463ffd208119af9ba2fd9afdbeaefd2272"
+        "sha256": "067dc88912c71c51d558b928d26b72de1df8bdb1c149282361c2aeb52bed9185"
       },
       "status": "PASS",
       "upstream_model": "TreasuryAuctions"
@@ -1280,7 +1280,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryAuctions --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:22:41.822974+00:00",
+      "executed_at_utc": "2026-10-21T17:30:57.516700+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1292,8 +1292,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1360,7 +1360,7 @@
       "receipt": {
         "model_identity": "government_us::TreasuryAuctions",
         "path": "docs/evidence/C101/receipts/government_us/TreasuryAuctions/counterfact.json",
-        "sha256": "2d94c399e8c008fbccc3dc222ec41474f5a1c1202b66b7812f5bcac96b1e93fc"
+        "sha256": "5cd1bd4457f52b873e25f3dee768fee1771fc41c0373eb24077a15d35a448ddc"
       },
       "status": "PASS",
       "upstream_model": "TreasuryAuctions"
@@ -1368,7 +1368,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryPrices --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:22:43.106914+00:00",
+      "executed_at_utc": "2026-10-21T17:30:58.554546+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1380,8 +1380,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1463,7 +1463,7 @@
       "receipt": {
         "model_identity": "government_us::TreasuryPrices",
         "path": "docs/evidence/C101/receipts/government_us/TreasuryPrices/implementation.json",
-        "sha256": "4357e8bf4bcb0f23a444406b43084bd7876fc3f6bcdbc6619c7275f433e5b94b"
+        "sha256": "08c1d0f5d056f1e60a85202375a0fc726c95a2e672647ec2a8cd749493bcb00a"
       },
       "status": "PASS",
       "upstream_model": "TreasuryPrices"
@@ -1471,7 +1471,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryPrices --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:22:44.376123+00:00",
+      "executed_at_utc": "2026-10-21T17:30:59.618795+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1483,8 +1483,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1551,7 +1551,7 @@
       "receipt": {
         "model_identity": "government_us::TreasuryPrices",
         "path": "docs/evidence/C101/receipts/government_us/TreasuryPrices/direct.json",
-        "sha256": "5a0e353565701c8c186fc41a26bfb7b1cb62e84fce8400393bc825dd73cf9ce2"
+        "sha256": "3fb3f504d95699374ab75ccc4629f3c3c192f329e229d4ab560e14a55849818d"
       },
       "status": "PASS",
       "upstream_model": "TreasuryPrices"
@@ -1559,7 +1559,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryPrices --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:22:45.668280+00:00",
+      "executed_at_utc": "2026-10-21T17:31:00.662533+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1571,8 +1571,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1639,7 +1639,7 @@
       "receipt": {
         "model_identity": "government_us::TreasuryPrices",
         "path": "docs/evidence/C101/receipts/government_us/TreasuryPrices/service.json",
-        "sha256": "d66b8c7612b5c34f1d4eb12015ca20d9aa9da1c8c076adb52e9b54f8e09c26f1"
+        "sha256": "bf3056e68d941d05392fee69cff13a96cb3644b7a5bb3d3c7b92bd3c79b663ee"
       },
       "status": "PASS",
       "upstream_model": "TreasuryPrices"
@@ -1647,7 +1647,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryPrices --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:22:46.930523+00:00",
+      "executed_at_utc": "2026-10-21T17:31:01.772060+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1659,8 +1659,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1727,7 +1727,7 @@
       "receipt": {
         "model_identity": "government_us::TreasuryPrices",
         "path": "docs/evidence/C101/receipts/government_us/TreasuryPrices/contract.json",
-        "sha256": "ffbe1667b4ab26cf2031476b424706bcba29c9beddddec93df9233b50d26ab5a"
+        "sha256": "673baa62528a9e0878bdd64a7895cdba6eca2285ad8f257b99bd08274a5fe28a"
       },
       "status": "PASS",
       "upstream_model": "TreasuryPrices"
@@ -1735,7 +1735,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model TreasuryPrices --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:22:49.496899+00:00",
+      "executed_at_utc": "2026-10-21T17:31:03.920640+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1747,8 +1747,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1815,7 +1815,7 @@
       "receipt": {
         "model_identity": "government_us::TreasuryPrices",
         "path": "docs/evidence/C101/receipts/government_us/TreasuryPrices/counterfact.json",
-        "sha256": "41798b073d05335f757505891de559fe6bc51e1580b919deac2fe3d1bb406c57"
+        "sha256": "336d46cb6c7ca8370e9f0e4c65fe24b31e2fd47ea0808490ece2d81d523bd7dd"
       },
       "status": "PASS",
       "upstream_model": "TreasuryPrices"
@@ -1823,7 +1823,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:22:50.765727+00:00",
+      "executed_at_utc": "2026-10-21T17:31:05.005100+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1835,8 +1835,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1918,7 +1918,7 @@
       "receipt": {
         "model_identity": "government_us::WeatherBulletin",
         "path": "docs/evidence/C101/receipts/government_us/WeatherBulletin/implementation.json",
-        "sha256": "5560cb8f2dbc164c143554ee508019e6e202903f00e3cb33e38cce5c786cd959"
+        "sha256": "7e3dbc1c69b9661d69600339dd105f99c02e64c0ab9b4852a7df67fa0dcb168a"
       },
       "status": "PASS",
       "upstream_model": "WeatherBulletin"
@@ -1926,7 +1926,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:22:52.061428+00:00",
+      "executed_at_utc": "2026-10-21T17:31:06.049399+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1938,8 +1938,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2006,7 +2006,7 @@
       "receipt": {
         "model_identity": "government_us::WeatherBulletin",
         "path": "docs/evidence/C101/receipts/government_us/WeatherBulletin/direct.json",
-        "sha256": "824712355ce355f4d370195b935641f154e5a1ae484305d44ca4089da141debb"
+        "sha256": "cdee9fc6ede99edd2594fa232b5dcb8aaa4433160cc10f1ceab9976c880b6c5b"
       },
       "status": "PASS",
       "upstream_model": "WeatherBulletin"
@@ -2014,7 +2014,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:22:53.315800+00:00",
+      "executed_at_utc": "2026-10-21T17:31:07.122262+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2026,8 +2026,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2094,7 +2094,7 @@
       "receipt": {
         "model_identity": "government_us::WeatherBulletin",
         "path": "docs/evidence/C101/receipts/government_us/WeatherBulletin/service.json",
-        "sha256": "ed27f5887cd3e966e90b86150d19b6ea71c87459ab66d5dc3284a9be541ade91"
+        "sha256": "3c5c3d31002f29c9d0ad2b7fa9113a1d317961a0a14df2bc249e06660f26e0e5"
       },
       "status": "PASS",
       "upstream_model": "WeatherBulletin"
@@ -2102,7 +2102,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:22:54.570504+00:00",
+      "executed_at_utc": "2026-10-21T17:31:08.149294+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2114,8 +2114,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2182,7 +2182,7 @@
       "receipt": {
         "model_identity": "government_us::WeatherBulletin",
         "path": "docs/evidence/C101/receipts/government_us/WeatherBulletin/contract.json",
-        "sha256": "75502cc63c4fedb9b10946fb16d29a4c6bba2f8e45502f71602ef148b20ad2cd"
+        "sha256": "8041c72f199eb7ee7a2785fefb83dbf71bf7cde8c843fc7026e9f50dc3da88bf"
       },
       "status": "PASS",
       "upstream_model": "WeatherBulletin"
@@ -2190,7 +2190,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletin --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:22:57.079585+00:00",
+      "executed_at_utc": "2026-10-21T17:31:10.299810+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2202,8 +2202,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2270,7 +2270,7 @@
       "receipt": {
         "model_identity": "government_us::WeatherBulletin",
         "path": "docs/evidence/C101/receipts/government_us/WeatherBulletin/counterfact.json",
-        "sha256": "6450a46605572ff3a52ff0f10f892d414ba17bf40495095364b8fca42aa7f946"
+        "sha256": "64624506efbad555ef3eb9364c3fb441256536a151f8f7bc085f15d12664cbf0"
       },
       "status": "PASS",
       "upstream_model": "WeatherBulletin"
@@ -2278,7 +2278,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletinDownload --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T09:22:58.376728+00:00",
+      "executed_at_utc": "2026-10-21T17:31:11.343526+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2290,8 +2290,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2373,7 +2373,7 @@
       "receipt": {
         "model_identity": "government_us::WeatherBulletinDownload",
         "path": "docs/evidence/C101/receipts/government_us/WeatherBulletinDownload/implementation.json",
-        "sha256": "71575566f943856c7d847a6d49ed665ccaa90047b228cc3559679c3a73f0b9ab"
+        "sha256": "64ce96bf77afb8b4d93ccdec6e1ed28c35674e287d847f152d07b5aab84e82ef"
       },
       "status": "PASS",
       "upstream_model": "WeatherBulletinDownload"
@@ -2381,7 +2381,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletinDownload --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T09:22:59.671976+00:00",
+      "executed_at_utc": "2026-10-21T17:31:12.405355+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2393,8 +2393,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2461,7 +2461,7 @@
       "receipt": {
         "model_identity": "government_us::WeatherBulletinDownload",
         "path": "docs/evidence/C101/receipts/government_us/WeatherBulletinDownload/direct.json",
-        "sha256": "5a8b7e8b5d15f000fc0a2e2421836760584e07054588214795326afd1cdaa06f"
+        "sha256": "b5ca505646bdceb43603b2a7b2112e02275f0fb29d8bae58b3373c7f066ae7e1"
       },
       "status": "PASS",
       "upstream_model": "WeatherBulletinDownload"
@@ -2469,7 +2469,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletinDownload --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T09:23:00.941061+00:00",
+      "executed_at_utc": "2026-10-21T17:31:13.446254+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2481,8 +2481,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2549,7 +2549,7 @@
       "receipt": {
         "model_identity": "government_us::WeatherBulletinDownload",
         "path": "docs/evidence/C101/receipts/government_us/WeatherBulletinDownload/service.json",
-        "sha256": "32aa159e1b3cf3d4eda02e82f3ed8e98066e7f70f761c97c89a7a514328c7c76"
+        "sha256": "d49ca23c6edd91995816122484202556c4a092a6b7334c34348d6027cef7947c"
       },
       "status": "PASS",
       "upstream_model": "WeatherBulletinDownload"
@@ -2557,7 +2557,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletinDownload --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T09:23:02.203502+00:00",
+      "executed_at_utc": "2026-10-21T17:31:14.526801+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2569,8 +2569,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2637,7 +2637,7 @@
       "receipt": {
         "model_identity": "government_us::WeatherBulletinDownload",
         "path": "docs/evidence/C101/receipts/government_us/WeatherBulletinDownload/contract.json",
-        "sha256": "55a175d945ac2185f74638f0195dade6a02121bbd56da399c9dca05762cb1ea9"
+        "sha256": "e27c2a9edd6f2276a89dc1da3d9b3c61623d4f7338a68ccf61d805d7d84504c9"
       },
       "status": "PASS",
       "upstream_model": "WeatherBulletinDownload"
@@ -2645,7 +2645,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider government_us --model WeatherBulletinDownload --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T09:23:04.783931+00:00",
+      "executed_at_utc": "2026-10-21T17:31:16.630813+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2657,8 +2657,8 @@
             "path": "opendata/data/models/government_us.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2725,7 +2725,7 @@
       "receipt": {
         "model_identity": "government_us::WeatherBulletinDownload",
         "path": "docs/evidence/C101/receipts/government_us/WeatherBulletinDownload/counterfact.json",
-        "sha256": "16513f89d785bb94f74b666852c8394ababb4c28df03c764ae067061695fc1e7"
+        "sha256": "773e07d2dfb1f8693cd8df0f82eed9d82ab5a71bf085422886f7462af39fb489"
       },
       "status": "PASS",
       "upstream_model": "WeatherBulletinDownload"
@@ -2739,9 +2739,9 @@
       "receipt": {
         "model_identity": "government_us::CommodityPsdData",
         "path": "docs/evidence/C101/primary-reviews/government_us__CommodityPsdData.review.json",
-        "sha256": "310d59becc0e5c7698bfbc350481e4e8afe3d19e979b8862af66522a8a71dc6d"
+        "sha256": "ec0d484541d73910cfec1426847dc2c54c2b53f7d4dfd412fdc095295822ef22"
       },
-      "reviewed_at_utc": "2026-10-21T09:23:06Z",
+      "reviewed_at_utc": "2026-10-21T17:31:17Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -2754,9 +2754,9 @@
       "receipt": {
         "model_identity": "government_us::CommodityPsdReport",
         "path": "docs/evidence/C101/primary-reviews/government_us__CommodityPsdReport.review.json",
-        "sha256": "94d17819e335d955c8fa9a791e58df37d1a32d798b330a7eb567ce3b9ec2a85f"
+        "sha256": "4da8bcff931cc331d9d007ebf33753d71be62df9b369cb08037b89347fe2065f"
       },
-      "reviewed_at_utc": "2026-10-21T09:23:06Z",
+      "reviewed_at_utc": "2026-10-21T17:31:17Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -2769,9 +2769,9 @@
       "receipt": {
         "model_identity": "government_us::TreasuryAuctions",
         "path": "docs/evidence/C101/primary-reviews/government_us__TreasuryAuctions.review.json",
-        "sha256": "5cc6cd85dc4854aeb4cf5804141cc58bb9a53185649da2ca0eb692a543d18bfb"
+        "sha256": "9ae0bb1bf1b0134454497ba30d576794bee5ae4dd2859bb7d70b3d6dabe877a3"
       },
-      "reviewed_at_utc": "2026-10-21T09:23:06Z",
+      "reviewed_at_utc": "2026-10-21T17:31:17Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -2784,9 +2784,9 @@
       "receipt": {
         "model_identity": "government_us::TreasuryPrices",
         "path": "docs/evidence/C101/primary-reviews/government_us__TreasuryPrices.review.json",
-        "sha256": "06c7c3cf7826c7a0a59e6dc8889486460a38da3ce07b0f2236cd8862973e83b4"
+        "sha256": "1a00553fa4c49ee41bf0d84dfcde322fc65098b5b9b77d0f8206c298d0914ccf"
       },
-      "reviewed_at_utc": "2026-10-21T09:23:06Z",
+      "reviewed_at_utc": "2026-10-21T17:31:17Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -2799,9 +2799,9 @@
       "receipt": {
         "model_identity": "government_us::WeatherBulletin",
         "path": "docs/evidence/C101/primary-reviews/government_us__WeatherBulletin.review.json",
-        "sha256": "a1a48ce8b79726cb8bd1a189715144198489dec2805eacfc6f29f06cd10a12bd"
+        "sha256": "caccbebe461afe7beafc4392d945956e6fca8c4551a1adb4a3409109c945c493"
       },
-      "reviewed_at_utc": "2026-10-21T09:23:06Z",
+      "reviewed_at_utc": "2026-10-21T17:31:17Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -2814,9 +2814,9 @@
       "receipt": {
         "model_identity": "government_us::WeatherBulletinDownload",
         "path": "docs/evidence/C101/primary-reviews/government_us__WeatherBulletinDownload.review.json",
-        "sha256": "7f8a587373654f800a5c691e27cacbb9faebfe4dc90b4f7a6c9bbf135bfaaf97"
+        "sha256": "3e7f8234919c487ff0b8b23fd198e7714d27b57f813d87e0dbf682598df64ef7"
       },
-      "reviewed_at_utc": "2026-10-21T09:23:06Z",
+      "reviewed_at_utc": "2026-10-21T17:31:17Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

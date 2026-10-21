@@ -1367,3 +1367,25 @@ sales cassette: 20,349 B，item 名 5 个：revenue_{actual,consensus_high,conse
 重钉 fence（注意 §46 那个「自哈希早于改名」的坑）→ 一次全树重签 → merge/judge 期望 **349/350** →
 `w105` EXPECTED 改 accepted 347→349、residue 3→2 → `w111`/`w130`/`w113` 复跑 → 全平面 →
 提交 + `w117` 收口。完成后残差只剩 stockgrid 一行。
+
+
+## 55. §54 的补丁落地：plane 1 **349/350**，残差只剩 stockgrid 一行
+
+`git apply patches/w154_sa_estimates_landing.patch` 后两行五相全 PASS，随后走完 §54 列的剩余工序：
+第六次全树重签 31 provider（载体 `runs/w55_resign.txt`）、`w49_batch5_rebase` 重钉 fence
+（`runs/w49_batch5_rebase_wave55.txt`，11/11 arms；自哈希早于改名的坑第二次踩到，按最终字节
+`640a2699…` 重钉）、fence 计数由活注册表推出（capabilities 382、bindings 382/362 手写、descriptors 360）、
+`tests/test_seeking_alpha.py` 的两条 ledger 断言按落地现实改写（`NOT_DECLARED == {}`、bound = 全部三个身份）。
+
+**判定器**：claims 1745 = **349×5 PASS + 0 BLOCKED**，reviews 349，
+`{OFFLINE_ACCEPTED: 349, UNREVIEWED: 1}` —— 第一次出现 **0 行 INCOMPLETE**。
+`w105` **21/21**（accepted 349、residue 1、providers_with_rows 31、zero=[stockgrid]），
+`w111` 4/4（landed 10 / rows_in_claims +4 / claims +20）、`w130` 6/6（EXPECTED_ACCEPTED 349）、`w113` 4/4。
+
+**重签过程中我自己犯的错，写下来免得再犯**：我在链还在跑时就去 `cp` 日志并 `rm -rf` 临时目录，
+把尾部 5 个 provider（tmx/tradier/tradingeconomics/yfinance/wsj）的产出打断，merge/judge 一度读出
+**287 accepted / 62 STALE**。正确做法是先等 `RESIGN6_DONE` 再收日志；我用一次只针对这 5 个 provider 的
+局部重签补回，最终 349 与逐 provider 记录一致（`runs/w55_resign.txt` 末段含这次补跑）。
+
+**未做完的一件事，明确留口**：本波全平面复取（`test_plane_w55_final.xml`）在提交时才跑完/未跑完，
+收口面 `w117` 也还没在这个提交上跑；下一波先补这两件，再谈 stockgrid。

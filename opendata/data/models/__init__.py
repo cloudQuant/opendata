@@ -307,6 +307,10 @@ from opendata.data.models.intrinio_snapshots_clean import (
     IntrinioEtfPricePerformance,
     IntrinioMarketSnapshot,
 )
+from opendata.data.models.seeking_alpha_estimates import (
+    SeekingAlphaForwardEpsEstimates,
+    SeekingAlphaForwardSalesEstimates,
+)
 from opendata.data.models.macro import MacroSeries
 from opendata.data.models.macro_iter2 import (
     ImfAvailableIndicator,
@@ -639,6 +643,8 @@ __all__ = [
     "SecSicCode",
     "SecSymbolMapRecord",
     "SeekingAlphaCalendarEarnings",
+    "SeekingAlphaForwardEpsEstimates",
+    "SeekingAlphaForwardSalesEstimates",
     "SP500Multiples",
     "SdmxGroupContext",
     "TiingoCryptoHistorical",

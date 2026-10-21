@@ -4801,6 +4801,28 @@ domains:
     storage_mode: "transient"
     permissions: ["query"]
 
+  seeking_alpha_forward_eps_estimates:
+    display_name: "Seeking Alpha 前瞻每股收益预测"
+    rest_path: "market/seeking-alpha/estimates-eps-forward"
+    contract: "SeekingAlphaForwardEpsEstimates"
+    priority: null
+    temporal_kind: "series"
+    time_field: "period_end_date"
+    natural_key: ["sa_ticker_id", "relative_period", "period_end_date"]
+    filter_dims: ["symbol", "period_type", "period_end_date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  seeking_alpha_forward_sales_estimates:
+    display_name: "Seeking Alpha 前瞻营收预测"
+    rest_path: "market/seeking-alpha/estimates-sales-forward"
+    contract: "SeekingAlphaForwardSalesEstimates"
+    priority: null
+    temporal_kind: "series"
+    time_field: "period_end_date"
+    natural_key: ["sa_ticker_id", "relative_period", "period_end_date"]
+    filter_dims: ["symbol", "period_type", "period_end_date"]
+    storage_mode: "transient"
+    permissions: ["query"]
   seeking_alpha_calendar_earnings:
     display_name: "SeekingAlpha财报日历"
     rest_path: "market/seeking-alpha/calendar-earnings"

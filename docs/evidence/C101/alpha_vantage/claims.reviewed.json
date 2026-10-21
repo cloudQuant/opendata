@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T08:49:42.702589+00:00",
+      "executed_at_utc": "2026-10-21T17:11:01.718914+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -88,7 +88,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::EquityHistorical",
         "path": "docs/evidence/C101/receipts/alpha_vantage/EquityHistorical/implementation.json",
-        "sha256": "899d18c70d228c861f85b9b3c81ce3db21c980807539f09ce3f9c4def038491e"
+        "sha256": "311d84715e27624a407073259e37ac58d39eec5cf8bd970976603df8e17ac680"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -96,7 +96,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T08:49:43.572281+00:00",
+      "executed_at_utc": "2026-10-21T17:11:02.647934+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -108,8 +108,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -171,7 +171,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::EquityHistorical",
         "path": "docs/evidence/C101/receipts/alpha_vantage/EquityHistorical/direct.json",
-        "sha256": "74b4fc37a0b4274c4dbfce1150c5f40de97b90fabcd6751ba80ae97b2cb7b7cc"
+        "sha256": "cbccc4c4154c2442dfefd047932f082789541ff8cb08dcb8c6405902ca278cf7"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -179,7 +179,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T08:49:44.586017+00:00",
+      "executed_at_utc": "2026-10-21T17:11:03.690697+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -191,8 +191,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -254,7 +254,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::EquityHistorical",
         "path": "docs/evidence/C101/receipts/alpha_vantage/EquityHistorical/service.json",
-        "sha256": "28ad63483f92366e8d22721e8620fd0c292e93dc15ef37a6b65948dc06a43bf7"
+        "sha256": "59b818ee180f0138c62be10291b2d254426b0a24ff3a1f844e90967736d25bec"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -262,7 +262,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T08:49:45.439800+00:00",
+      "executed_at_utc": "2026-10-21T17:11:04.625380+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -274,8 +274,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -337,7 +337,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::EquityHistorical",
         "path": "docs/evidence/C101/receipts/alpha_vantage/EquityHistorical/contract.json",
-        "sha256": "e522f6762490f1f2ec1cd0582da764ccbd31317e9e6f1dddaa1c4e1a74fa6795"
+        "sha256": "286ee4b1588e91df4a4d8d5d8d394d8882177157e0e65ecb517593616b541d03"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -345,7 +345,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T08:49:47.188331+00:00",
+      "executed_at_utc": "2026-10-21T17:11:06.533911+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -357,8 +357,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -420,7 +420,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::EquityHistorical",
         "path": "docs/evidence/C101/receipts/alpha_vantage/EquityHistorical/counterfact.json",
-        "sha256": "b93673008680cb0261a377146ba5e39badb628c70fe47fae74cc3ba4b195e6ea"
+        "sha256": "e294edadeb127b50d3acf226647615a576c494adf71c54439cd5893f1e1405b8"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -428,7 +428,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T08:49:48.054241+00:00",
+      "executed_at_utc": "2026-10-21T17:11:07.400026+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -440,8 +440,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -508,7 +508,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::HistoricalEps",
         "path": "docs/evidence/C101/receipts/alpha_vantage/HistoricalEps/implementation.json",
-        "sha256": "70df963ba64d407af7a71fb4d30add976e27c962d70a255e0f5b589737c8b416"
+        "sha256": "0713ce1b7d417f320cd27b06cfd79e2b52e89923f9f3881b4a72a6f0d1e78c78"
       },
       "status": "PASS",
       "upstream_model": "HistoricalEps"
@@ -516,7 +516,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T08:49:48.909625+00:00",
+      "executed_at_utc": "2026-10-21T17:11:08.270560+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -528,8 +528,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -586,7 +586,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::HistoricalEps",
         "path": "docs/evidence/C101/receipts/alpha_vantage/HistoricalEps/direct.json",
-        "sha256": "9e00084623d5d31d918ae41d12ee8dce6503e600e0fb04bd7aed765620680f2a"
+        "sha256": "d122e4baab2ca843c27fdc48e60a110c720f8ae7081fc2b6c2387a3d71e1ba65"
       },
       "status": "PASS",
       "upstream_model": "HistoricalEps"
@@ -594,7 +594,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T08:49:49.921813+00:00",
+      "executed_at_utc": "2026-10-21T17:11:09.336691+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -606,8 +606,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -664,7 +664,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::HistoricalEps",
         "path": "docs/evidence/C101/receipts/alpha_vantage/HistoricalEps/service.json",
-        "sha256": "8610dad92330bbfa20db91ae1d0469dd3bb17d9111a73816a8fd8afc941477aa"
+        "sha256": "2f41be6c3f37346ae86480691af8dab127c163600216bb98ede3f47efbd7195b"
       },
       "status": "PASS",
       "upstream_model": "HistoricalEps"
@@ -672,7 +672,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T08:49:50.785694+00:00",
+      "executed_at_utc": "2026-10-21T17:11:10.213101+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -684,8 +684,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -742,7 +742,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::HistoricalEps",
         "path": "docs/evidence/C101/receipts/alpha_vantage/HistoricalEps/contract.json",
-        "sha256": "0bd45325895418d34f825035fe1a96bdf1febe97740cd80d22b9eb91ee5bdccf"
+        "sha256": "8081f0953f192ac3dcedb407163a82ba149776e9a41576387d550750eb4bcb6f"
       },
       "status": "PASS",
       "upstream_model": "HistoricalEps"
@@ -750,7 +750,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model HistoricalEps --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T08:49:52.528033+00:00",
+      "executed_at_utc": "2026-10-21T17:11:12.039721+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -762,8 +762,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -820,7 +820,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::HistoricalEps",
         "path": "docs/evidence/C101/receipts/alpha_vantage/HistoricalEps/counterfact.json",
-        "sha256": "cc4ae316179c8d2cf66adc0d0246820d93e3af2d2bc0c07800482a9297cc72fb"
+        "sha256": "ad7b186e2783731d0b4508b5762b8c5a6ca695afa5060c1ef85e1dbba114a064"
       },
       "status": "PASS",
       "upstream_model": "HistoricalEps"
@@ -828,7 +828,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T08:49:53.383451+00:00",
+      "executed_at_utc": "2026-10-21T17:11:12.952411+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -840,8 +840,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -913,7 +913,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::EtfHistorical",
         "path": "docs/evidence/C101/receipts/alpha_vantage/EtfHistorical/implementation.json",
-        "sha256": "d314485914096e07b65d0e4f60ef6af838cad52cc5c689764b378fdbdbddcd3d"
+        "sha256": "87252d0c8cc608cffa3b2b28223f6e29d6f7bb45a596faae40467e010d5f6e45"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -921,7 +921,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T08:49:54.240334+00:00",
+      "executed_at_utc": "2026-10-21T17:11:13.826600+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -933,8 +933,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -996,7 +996,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::EtfHistorical",
         "path": "docs/evidence/C101/receipts/alpha_vantage/EtfHistorical/direct.json",
-        "sha256": "a906c7572718dda8ebc1300562e6a48dbd79a9be121cd2a1dec47a916b234398"
+        "sha256": "c334d1e6ce8c5e762d3c80070b9d1f12d064cd9fbadefe72be614397ee1fb0aa"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -1004,7 +1004,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T08:49:55.249051+00:00",
+      "executed_at_utc": "2026-10-21T17:11:14.900104+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1016,8 +1016,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1079,7 +1079,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::EtfHistorical",
         "path": "docs/evidence/C101/receipts/alpha_vantage/EtfHistorical/service.json",
-        "sha256": "6c1e866a6a468e990b452b7b56f22106a714e9509a879487364c8561e86dc52b"
+        "sha256": "ac637ba3bc279208ce15e67c6829053ec67f09df9ca3068ec7960b3bdf21760f"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -1087,7 +1087,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T08:49:56.125690+00:00",
+      "executed_at_utc": "2026-10-21T17:11:15.760648+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1099,8 +1099,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1162,7 +1162,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::EtfHistorical",
         "path": "docs/evidence/C101/receipts/alpha_vantage/EtfHistorical/contract.json",
-        "sha256": "08b1707be7953986173ad32b4bc493e728ff49d761f34838cbd72477eaf078ba"
+        "sha256": "046684151d9a063b4716dd12f981ccddba05791e730c12e4ce2cf509fc578395"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -1170,7 +1170,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider alpha_vantage --model EtfHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T08:49:57.854800+00:00",
+      "executed_at_utc": "2026-10-21T17:11:17.578262+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1182,8 +1182,8 @@
             "path": "opendata/data/models/alpha_vantage.py"
           },
           {
-            "after_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
-            "before_sha256": "262c4f45c5aa82c1d47a66f8b79f2ac482920329fdc906e4a4a6bce34b87bb0d",
+            "after_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
+            "before_sha256": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1245,7 +1245,7 @@
       "receipt": {
         "model_identity": "alpha_vantage::EtfHistorical",
         "path": "docs/evidence/C101/receipts/alpha_vantage/EtfHistorical/counterfact.json",
-        "sha256": "8e869c29062512feb6a2f95ad25ba8241849f0302a3efc984480f13f8785039e"
+        "sha256": "49fccb6c9d0311b5e1724e89365efbdaee850e8f9fb3fd980f1023b8e112d3ef"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -1259,9 +1259,9 @@
       "receipt": {
         "model_identity": "alpha_vantage::EquityHistorical",
         "path": "docs/evidence/C101/primary-reviews/alpha_vantage__EquityHistorical.review.json",
-        "sha256": "5e678f9fd8390bca886024cfcf0082e449f1b35b3556409fd294542da38a4f9c"
+        "sha256": "2f07e96f15c59e3af7c69a93502b72e20fcc9a48da5f753b7b36e24255a3c045"
       },
-      "reviewed_at_utc": "2026-10-21T08:49:59Z",
+      "reviewed_at_utc": "2026-10-21T17:11:19Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -1274,9 +1274,9 @@
       "receipt": {
         "model_identity": "alpha_vantage::EtfHistorical",
         "path": "docs/evidence/C101/primary-reviews/alpha_vantage__EtfHistorical.review.json",
-        "sha256": "4241101873b8af16272457e8f37832af88b8f0bfc0f77dda6d71f16d76a709c0"
+        "sha256": "f9251406400cd7b5145a1fd6656125070c3616248b8ccda7751261c1523d16d6"
       },
-      "reviewed_at_utc": "2026-10-21T08:49:59Z",
+      "reviewed_at_utc": "2026-10-21T17:11:19Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -1289,9 +1289,9 @@
       "receipt": {
         "model_identity": "alpha_vantage::HistoricalEps",
         "path": "docs/evidence/C101/primary-reviews/alpha_vantage__HistoricalEps.review.json",
-        "sha256": "6d8ec12bb3361110bde220b78501a793592fd571ee1e74bdf257830d60b1588f"
+        "sha256": "5569584a5cd3e3a94ce13c4b32e5ec517ea4c734542e5a43ead55631b4a76ef7"
       },
-      "reviewed_at_utc": "2026-10-21T08:49:59Z",
+      "reviewed_at_utc": "2026-10-21T17:11:19Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

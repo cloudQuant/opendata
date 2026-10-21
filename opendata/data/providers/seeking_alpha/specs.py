@@ -7,9 +7,7 @@ requires ``filter[selected_date]``, publishes ``meta.total_pages`` with a page c
 records equal ``meta.total_count`` for one date, while its own ``links.next`` resolves to
 ``HTTP/2 404`` against the site root. ``models.calendar_earnings_public`` maps that envelope.
 
-The two estimates rows stay here. Every ``symbol_data/estimates`` request in the same round
-answered ``HTTP/2 400`` naming the next required parameter, so no machine protocol for them is on
-file and no cell of their contract has been read from a live response.
+Both estimates rows left this ledger in wave 52: the request protocol is the one C144 walked out of the ``HTTP/2 400`` chain (search resolves the numeric site id, then ``ticker_ids``/``period_type``/``relative_periods``/``estimates_data_items``), and the response layout is recorded field by field in ``docs/evidence/C147/wave41-objective-scoreboard-20261020/runs/w152_sa_estimates_shape_inventory.txt``. Live access without credentials is still a bot challenge, so the rows are accepted offline only -- see ``face.md` §53 for that distinction.
 """
 
 from __future__ import annotations
@@ -17,14 +15,4 @@ from __future__ import annotations
 from typing import Final
 
 DECLARED_MODELS: Final[tuple[str, ...]] = ()
-NOT_DECLARED: Final[dict[str, str]] = {
-    "ForwardEpsEstimates": (
-        "Official help confirms past and future EPS estimates in the UI, but the public estimates "
-        "page returned HTTP 403 without credentials and no official machine protocol is documented."
-    ),
-    "ForwardSalesEstimates": (
-        "Official help confirms past and future revenue estimates in the UI, but the public "
-        "estimates page returned HTTP 403 without credentials and no official machine protocol is "
-        "documented."
-    ),
-}
+NOT_DECLARED: Final[dict[str, str]] = {}
