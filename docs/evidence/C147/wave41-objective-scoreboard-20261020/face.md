@@ -1522,3 +1522,46 @@ credential_scan_face … arms=11 arms_passed=11 arms_failed=0 failed=[] PASS=Tru
 
 同轮把 `外部API申请清单.md` 的 stockgrid 行升到 `w150` 的实测口径（重定向后 200 / 1,261,465 B /
 final=`axlfi.com/landing` / 非 JSON，并要求同运行的 dead-host 反例 0 B + URLError 作为对照）。
+
+## 62. 决策清单表格结构校验：我先前的「4 行错位」是自己谓词的假阳性
+
+改完 §7/§8 之后做一次结构校验（不改内容，只验渲染）。**第一版按 `line.count("|")-1` 数单元格**，
+报 `table@L88`（§3 外部条件预检）有 4 行多出单元格 —— 那是假的：那些单元格里写的是转义竖线
+`AC-8\|05/06`、`AC-15\|01/02`，按未转义分隔符切分时被当成列边界。改成 `re.split(r"(?<!\\)\|", row)`
+只数未转义分隔符后重测，**8 张表全部 `bad=[]`**：
+
+| 表首行 | 列数 | 数据行数 |
+| --- | --- | --- |
+| L7 | 4 | 1 |
+| L21 | 5 | 34 |
+| L64 | 6 | 15 |
+| L88 | 4 | 7 |
+| L104 | 4 | 5 |
+| L150（§7 owner 队列） | 6 | 11 |
+| L175 | 6 | -1 |
+| L202（§8 七行授权） | 4 | 7 |
+
+`table@L202 rows=7 landed_cells=6` 与 §8 标题「6 行已落地；1 行仍缺外部输入」一致（同一份读数里
+`none=['stockgrid']`），所以标题与表格不是各说各话。**一个既存、非本轮造成的排版瑕疵留档**：
+§6b 末尾的 `DEC-41-07` 行（L173）是一行没有表头的表（我的分表器把它当成「表首行 + 分隔行」，故
+`rows=-1`），渲染成表体缺失；本轮不动它，因为那是别人写下的结构、与本轮口径无关，改它等于扩大载荷。
+**教训**：数分隔符的谓词要先看主题里有没有转义形式，否则「结构坏了」会变成对我自己谓词的报告。
+
+## 63. `7c2b1272b` 的收口面：8/8 arms、全历史 555 commits 无泄漏、判定器摘要未动
+
+载体 `runs/w47_closure_face_7c2b1272b.txt`（sha256 前缀 `eebad939`）：
+
+* `reconcile commit=7c2b1272b parent=181d6b72e commit_paths=7 worktree_drift_vs_commit=0 moved_vs_parent=7
+  missing_in_commit=0`，`drift_list=[]`。**一条时序诚实说明**：`reconcile` 是这次运行**开头**取的读数，
+  而我在它跑的 7 分钟里又改了 `face.md`（§62）并提交了 `8f337f2d5`；所以「drift=0」说的是扫描开始那一刻的
+  工作树与该提交一致，**不是**扫描结束时的状态。它也不影响载荷判定：被扫的是提交对象里的 7 个路径。
+* `gitleaks_git_mode commit=7c2b1272b rc=0 findings=0`（planted `findings=2 arm_can_move=True`）；
+  `gitleaks_dir_mode bundles rc=0 findings=0`（planted 2）；`copied_from_commit=7`、`bytecode_skipped=1408`。
+* 全历史 `secret_scan_check rc=0`：**555 commits / 505.55 MB / no leaks found**。§59 记的 554 → 555
+  就是这次运行中途落地的 `8f337f2d5`（逐 commit 可归因）。
+* `generation claims_sha256=40300e875bcbb54d judge_report_sha256=27d262593db920ea` —— 与 §59 完全相同，
+  这正是 §61 那条 pin 作用域实测要证明的事：**文档提交没有移动验收树**（判定器与 claims 摘要逐字节未变）。
+* `closure_face … arms=8 arms_passed=8 failed=[] PASS=True`，`w117_closure_exit=0`。
+
+本发载荷是 `face.md` 的 §62–§63 与两份收口载体（`w47_closure_face.txt` 的新字节 + 按提交名留档的副本）；
+`外部API申请清单.md` 的 stockgrid 口径与 §61 已在上一发 `1752630d1` 落地。
