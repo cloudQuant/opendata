@@ -879,3 +879,21 @@ plane_after=10 plane_fixed=18 plane_new=0 plane_collected=26751 plane_wsj_param_
 第一版 w42 平面曾出现 9 条新增红（域/leg 冻结计数、authority 域集合、batch5 摘要、WSJ 可选列、
 旧「未实现」契约测试），逐条修好后重跑得到上面的 10 条既有红；重签日志在
 `runs/w42_resign.log`（342 条 `REVIEW_SIGNED`、0 条 PRODUCER/RECORDER 失败）。
+
+## 40. 081ca1fb3（WSJ 落地 + 全树重签）的收口面
+
+```
+reconcile commit=081ca1fb3 parent=ef69c8361 commit_paths=2199
+          worktree_drift_vs_commit=0 moved_vs_parent=2199 missing_in_commit=0
+commit_paths_by_root={'docs/evidence/C101': 2167, 'opendata': 11, 'docs/evidence/C147': 10,
+                      'tests': 9, 'docs/迭代计划': 1, 'scripts': 1}
+gitleaks git-mode findings=0（planted 2，arm_can_move=True）
+gitleaks dir-mode findings=0（planted 2；dir-mode 只复制 bundle 前缀内的 20 个 blob，
+提交内其余 2,167 个 C101 blob 由 git-mode 臂覆盖）
+secret_scan_check rc=0  521 commits / 448.95 MB / no leaks found
+closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
+```
+
+载体：固定名保持 a287 代（`d2b6f2…`），本次读数另存 `runs/w47_closure_face_081ca1fb3.txt`
+（`813779…`）。复制行仍是 `w99` 的旧值（`02dfea…`、`staged=4`）；本提交的闸门是
+`runs/w108_staged_scan_plan_gate_wave42.txt`（`payload_index_sha256=a2320790…`、`staged=2198`）。
