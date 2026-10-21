@@ -20,7 +20,7 @@
 |---|---|---|---|---|---|
 | `biztoc` | WorldNews（1） | `api_key` | `BIZTOC_API_KEY` | https://rapidapi.com/thma/api/biztoc | 注册/登录 RapidAPI → 订阅 Biztoc API（有免费档选免费）→ 复制 `X-RapidAPI-Key`。请求用 header；key 只用于真实来源验证 |
 
-**离线验收**不消费真实 key（与其余 191 条凭据行一样用合成 fixture）；但新增 provider/domain 会触发全树重签（约 45–60 分钟），需 owner 单独批准。拿到 key 后最多 **342 → 343** 行（若批准重签），provider 30 → 31；仍无法改变子代理 34>30 的留档。
+**离线验收**不消费真实 key（与其余 191 条凭据行一样用合成 fixture）。biztoc 已于 wave43 离线验收（**343/350**），key 现在只服务真实来源验证；仍无法改变子代理 34>30 的留档。
 
 ## 1b. econdb / intrinio 的 key：只服务已验收行的真实来源验证
 

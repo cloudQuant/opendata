@@ -58,13 +58,13 @@ READERS = (
     / "w51_test_plane_attribution.py"
 )
 EXPECTED = {
-    "accepted": 342,
+    "accepted": 343,
     "identities": 350,
-    "claims": 1740,
+    "claims": 1745,
     "identity_set": "5168e1e723999312",
-    "providers_with_rows": 30,
-    "zero_providers": ["biztoc", "stockgrid"],
-    "residue": 8,
+    "providers_with_rows": 31,
+    "zero_providers": ["stockgrid"],
+    "residue": 7,
     "subagent_total": 34,
     "subagent_cap": 30,
     "ac2_dev_done": 17,
@@ -277,12 +277,12 @@ def _control_phrase_ok(reason: str) -> bool:
     return bool(CONTROL.search(reason) and DIGIT.search(reason))
 
 
-def _wsj_named_cases(path: Path) -> int:
-    """Count the test cases whose id names the WSJ provider."""
+def _provider_cases(path: Path) -> int:
+    """Count the test cases whose id names a provider added by this wave."""
     return sum(
         1
         for name in re.findall(r'name="([^"]*)"', path.read_text(encoding="utf-8"))
-        if "wsj" in name.lower()
+        if "wsj" in name.lower() or "biztoc" in name.lower()
     )
 
 
@@ -364,6 +364,7 @@ def main() -> int:
         (
             candidate
             for candidate in (
+                RUNS / "test_plane_w43_final.xml",
                 RUNS / "test_plane_w42b_final.xml",
                 RUNS / "test_plane_w41i_final.xml",
                 RUNS / "test_plane_w41h_final.xml",
@@ -380,7 +381,7 @@ def main() -> int:
         W40_RUNS / "test_plane_w40_final.xml",
     )
     after, after_counts = _plane(after_xml)
-    wsj_cases = _wsj_named_cases(after_xml) - _wsj_named_cases(
+    new_cases = _provider_cases(after_xml) - _provider_cases(
         W39_RUNS / "test_plane_w39_worktree_final.xml"
     )
     shared_nodes = set(before) & set(after)
@@ -451,7 +452,7 @@ def main() -> int:
         "plane_before": len(before),
         "plane_after": len(after),
         "plane_collected": int(after_counts.get("tests", 0)),
-        "plane_wsj_param_cases": wsj_cases,
+        "plane_new_provider_cases": new_cases,
     }
 
     lines = [f"scoreboard {json.dumps(reasoned, sort_keys=True, ensure_ascii=False)}"]
@@ -510,8 +511,8 @@ def main() -> int:
         and reasoned["plane_shared"] + reasoned["plane_fixed"] == reasoned["plane_before"]
         and reasoned["plane_shared"] + reasoned["plane_new"] == reasoned["plane_after"]
         and reasoned["plane_collected"]
-        == int(before_counts.get("tests", -1)) + reasoned["plane_wsj_param_cases"]
-        and reasoned["plane_wsj_param_cases"] > 0
+        == int(before_counts.get("tests", -1)) + reasoned["plane_new_provider_cases"]
+        and reasoned["plane_new_provider_cases"] > 0
     )
     arms["K_counterfact_codes_landed_and_match_the_witness"] = (
         reasoned["w130_observed_mismatch"] == 0

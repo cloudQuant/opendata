@@ -528,6 +528,16 @@ domains:
     filter_dims: [date, country, category, event, importance, calendar_id]
     storage_mode: transient
     permissions: [query]
+  biztoc_world_news:
+    display_name: Biztoc World News
+    rest_path: news/biztoc/world-news
+    contract: BiztocWorldNews
+    temporal_kind: event
+    time_field: date
+    natural_key: [date, title]
+    filter_dims: [date, title, url]
+    storage_mode: transient
+    permissions: [query]
   wsj_etf_gainers:
     display_name: WSJ ETF Gainers
     rest_path: market/wsj/etf-gainers

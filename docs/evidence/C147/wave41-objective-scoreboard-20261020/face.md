@@ -897,3 +897,34 @@ closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
 载体：固定名保持 a287 代（`d2b6f2…`），本次读数另存 `runs/w47_closure_face_081ca1fb3.txt`
 （`813779…`）。复制行仍是 `w99` 的旧值（`02dfea…`、`staged=4`）；本提交的闸门是
 `runs/w108_staged_scan_plan_gate_wave42.txt`（`payload_index_sha256=a2320790…`、`staged=2198`）。
+
+## 41. wave43：Biztoc 离线落地（343/350），第二次全树重签
+
+**实现**：biztoc 用一个手写 fetcher（RapidAPI 的 `X-RapidAPI-Key` 头，key 从 `BIZTOC_API_KEY` 读取；
+`news/latest`、`search`、`news/source/{publisher}` 三条已记录路由），契约 `BiztocWorldNews`，
+domain `biztoc_world_news`。按 REFERENCE-EXCEPTION-01 查阅参考实现；离线 witness 用合成 fixture +
+fixture key（不触网、不消费真实 key），五相 **5/5 PASS**。
+
+**第二次全树重签**：新增 domain 同样使既有 342 行全部 STALE。owner 裁定「现在做离线验收」后，31 个
+provider 重跑 producer+recorder：**343 份 review**、0 个 PRODUCER/RECORDER 失败
+（`runs/w43_resign.log`，03:10–03:53）。判定器：
+
+```
+claim_count=1745 identity_count=350 offline_acceptance_count=343 primary_review_count=343
+status_counts={OFFLINE_ACCEPTED: 343, INCOMPLETE: 6, UNREVIEWED: 1}
+biztoc::WorldNews = OFFLINE_ACCEPTED
+```
+
+**冻结面**（按实测重钉）：catalog bindings **376**（356 手写 + 20 engine）、reserved **1**；
+capabilities **376**、descriptors **354**；batch5 快照 **376** 身份 / **363** 域 / **354**
+descriptor-eligible；candidate exports **352/348/347**；authority 的 NATIVE_MODEL_DOMAINS 加
+`biztoc_world_news`；pipeline/alert 的 363/343/376 同步。快照仍是从上一版做外科增量，历史块
+（`approved_delta_conflict` 等）原样保留。
+
+**平面**（`test_plane_w43_final.xml`）：`10 failed, 26440 passed, 305 skipped`，失败集合与
+`w41i`/`w42b` 逐 id 相同；collected **26,755** = 26,634 + **121**，由 `_provider_cases` 精确解释
+（WSJ 117 + Biztoc 4）。`w105` 21/21 arms：accepted 343、claims 1745、residue 7、
+providers_with_rows 31、zero=[stockgrid]、plane_new=0。
+
+**残差 7**：stockgrid（端点退役）、econdb×2（语义缺口）、intrinio（engine 缺口）、
+seeking_alpha×2（空信封）、yfinance::AvailableIndices（本地常量）。子代理 34>30 不变。

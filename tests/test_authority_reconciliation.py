@@ -83,6 +83,7 @@ SINGLE_SOURCE_EXEMPTIONS: frozenset[str] = frozenset(
 # unverified, and named here in the same wave that registers it rather than in a later correction.
 NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
     {
+        "biztoc_world_news",
         "wsj_etf_active",
         "wsj_etf_gainers",
         "wsj_etf_losers",

@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider biztoc --model WorldNews --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "BIZTOC_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "BIZTOC_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "publishing an article without its 'title' leaves the required 'title' contract field unresolvable, so the adapter must refuse with BIZTOC_SHAPE_INVALID rather than shipping an article the caller cannot identify; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

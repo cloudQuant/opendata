@@ -438,6 +438,7 @@ from opendata.data.models.yfinance_iter2 import (
     YfinanceScreenerObservation,
 )
 
+from opendata.data.models.biztoc import BiztocWorldNews
 from opendata.data.models.wsj import WSJETFPerformance
 
 __all__ = [
@@ -792,4 +793,5 @@ __all__ = [
     "TiingoTrailingDividendYield",
     "TiingoWorldNews",
     "WSJETFPerformance",
+    "BiztocWorldNews",
 ]

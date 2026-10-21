@@ -170,6 +170,7 @@ def test_catalog_contains_34_sources_and_the_live_fetcher_binding_census() -> No
         "tradingeconomics",
         "wsj",
         "yfinance",
+        "biztoc",
     }
     declared_ids = {f"{source}::{spec.model}" for source, spec in engine_declared_models()}
     engine_bindings = [
@@ -182,9 +183,9 @@ def test_catalog_contains_34_sources_and_the_live_fetcher_binding_census() -> No
         f"{source}::{binding.canonical_model_ids[0]}" for source, binding in engine_bindings
     }
     assert engine_ids == declared_ids, "an engine binding's canonical id is the model it generates"
-    assert len(bindings) == 375
-    assert len(bindings) - len(engine_bindings) == 355
-    assert len(engine_bindings) == len(bindings) - 355
+    assert len(bindings) == 376
+    assert len(bindings) - len(engine_bindings) == 356
+    assert len(engine_bindings) == len(bindings) - 356
     print(
         f"\ncatalog bindings: total={len(bindings)} engine={len(engine_bindings)} "
         f"hand_written={len(bindings) - len(engine_bindings)} engine_ids={sorted(engine_ids)}"
@@ -197,7 +198,7 @@ def test_catalog_contains_34_sources_and_the_live_fetcher_binding_census() -> No
     reserved = [provider for provider in providers if not provider.is_implemented]
     # 3, not 4: seeking_alpha moved from reserved to implemented in wave 38, leaving
     # biztoc / stockgrid / wsj as the headless packages.
-    assert len(reserved) == 2
+    assert len(reserved) == 1
     assert all(provider.health_check().status == "not_implemented" for provider in reserved)
     assert all(not provider.fetcher_bindings for provider in reserved)
 

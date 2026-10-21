@@ -2,7 +2,7 @@
   "acceptance_rule": "all five phase claims plus an explicit valid primary-model or human ACCEPT receipt; claim PASS alone is candidate only",
   "claims_input": {
     "path": "docs/evidence/C101/claims.merged.json",
-    "sha256": "294551726dd82f07af87f1e33d4774a08df43f4168ee011aac8cfd120c5f0ef0"
+    "sha256": "408db662bd00cf35d8f4fed178cbf1db9180ceec2859940f72f727322dddcdb5"
   },
   "claims_status_source": "explicit JSON claims only; no directory globbing or markdown status parsing",
   "global_issues": [],
@@ -613,40 +613,87 @@
       "upstream_model": "PriceTarget"
     },
     {
-      "issues": [
-        "primary_review_missing"
-      ],
-      "missing_material": [
-        "add implementation claim",
-        "add direct claim",
-        "add service claim",
-        "add contract claim",
-        "add counterfact claim",
-        "add externally recorded primary-model or human review receipt"
-      ],
-      "missing_phases": [
-        "implementation",
-        "direct",
-        "service",
-        "contract",
-        "counterfact"
-      ],
+      "issues": [],
+      "missing_material": [],
+      "missing_phases": [],
       "model_identity": "biztoc::WorldNews",
-      "phases": {},
+      "phases": {
+        "contract": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "typed_contract",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/biztoc/WorldNews/contract.json",
+          "status": "CANDIDATE"
+        },
+        "counterfact": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": {
+            "expected": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "ProviderEngineError",
+              "refusal_code": "BIZTOC_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "observed": {
+              "invalid": [],
+              "missing": [],
+              "refusal_class": "ProviderEngineError",
+              "refusal_code": "BIZTOC_SHAPE_INVALID",
+              "rejected": [],
+              "status": null
+            },
+            "reason": "publishing an article without its 'title' leaves the required 'title' contract field unresolvable, so the adapter must refuse with BIZTOC_SHAPE_INVALID rather than shipping an article the caller cannot identify; untampered control produced 2 row(s) through the same seam"
+          },
+          "evidence_kind": "adversarial_counterfact",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/biztoc/WorldNews/counterfact.json",
+          "status": "CANDIDATE"
+        },
+        "direct": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "direct_fetcher",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/biztoc/WorldNews/direct.json",
+          "status": "CANDIDATE"
+        },
+        "implementation": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "implementation_check",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/biztoc/WorldNews/implementation.json",
+          "status": "CANDIDATE"
+        },
+        "service": {
+          "claim_count": 1,
+          "claim_status": "PASS",
+          "counterfact": null,
+          "evidence_kind": "provider_model_query",
+          "issues": [],
+          "receipt": "docs/evidence/C101/receipts/biztoc/WorldNews/service.json",
+          "status": "CANDIDATE"
+        }
+      },
       "primary_review": {
-        "decision": null,
-        "evidence_snapshot_status": null,
-        "issues": [
-          "primary_review_missing"
-        ],
-        "reviewer_id": null,
-        "reviewer_model": null,
-        "reviewer_role": null,
-        "reviewer_type": null,
-        "status": "MISSING_OR_INVALID"
+        "decision": "ACCEPT",
+        "evidence_snapshot_status": "MATCHED",
+        "issues": [],
+        "reviewer_id": "iter2-acceptance-reviewer",
+        "reviewer_model": "qoder-cli-agent",
+        "reviewer_role": "acceptance_reviewer",
+        "reviewer_type": "primary_model",
+        "status": "VALID"
       },
       "provider": "biztoc",
-      "status": "UNREVIEWED",
+      "status": "OFFLINE_ACCEPTED",
       "task_id": "OBB2-biztoc-WorldNews",
       "upstream_model": "WorldNews"
     },
@@ -30112,14 +30159,14 @@
   ],
   "schema_version": 1,
   "summary": {
-    "claim_count": 1740,
+    "claim_count": 1745,
     "identity_count": 350,
-    "offline_acceptance_count": 342,
-    "primary_review_count": 342,
+    "offline_acceptance_count": 343,
+    "primary_review_count": 343,
     "status_counts": {
       "INCOMPLETE": 6,
-      "OFFLINE_ACCEPTED": 342,
-      "UNREVIEWED": 2
+      "OFFLINE_ACCEPTED": 343,
+      "UNREVIEWED": 1
     }
   }
 }

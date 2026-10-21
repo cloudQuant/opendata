@@ -1752,7 +1752,7 @@ class TestPartitionMaintenanceJob:
         snapshot_bytes = snapshot_path.read_bytes()
         assert (
             sha256(snapshot_bytes).hexdigest()
-            == "d5cc2a8c5eadd0f8f207c28d413e4003ffd1de69c2225374052b342dba09a22b"
+            == "894e47460a689655acca8c215e3ccb331c76c815fc99f314af12269386bb2b2e"
         )
         snapshot = json.loads(snapshot_bytes)
         counts = snapshot["counts"]
@@ -1774,9 +1774,9 @@ class TestPartitionMaintenanceJob:
         expected_unmapped_ods_legs = {
             (item["domain"], item["source"]) for item in snapshot["unmapped_ods_legs"]
         }
-        assert counts["domain_count"] == 362
-        assert counts["deferred_domain_count"] == 342
-        assert counts["registered_source_domain_leg_count"] == 375
+        assert counts["domain_count"] == 363
+        assert counts["deferred_domain_count"] == 343
+        assert counts["registered_source_domain_leg_count"] == 376
         assert counts["legacy_dwd_domain_count"] == 20
         assert counts["legacy_source_domain_leg_count"] == 33
         assert counts["mapped_ods_leg_count"] == 10
@@ -1800,9 +1800,9 @@ class TestPartitionMaintenanceJob:
         assert set(legs) == known
         assert actual_legs == expected_legs
         assert measured_domains == expected_legacy_domains
-        assert len(known) == 362
-        assert len(deferred_domains) == 342
-        assert len(actual_legs) == 375
+        assert len(known) == 363
+        assert len(deferred_domains) == 343
+        assert len(actual_legs) == 376
         assert len(measured_domains) == 20
         assert measured_domains | deferred_domains == known
         assert expected_deferred_legs | expected_legacy_legs == expected_legs
@@ -1811,10 +1811,10 @@ class TestPartitionMaintenanceJob:
         assert expected_mapped_ods_legs.isdisjoint(expected_unmapped_ods_legs)
         assert len(expected_ods) == 33
         assert len(expected_dwd) == 20
-        assert len(expected_deferred_legs) == deferred_legs == 342
+        assert len(expected_deferred_legs) == deferred_legs == 343
         assert len(expected_mapped_ods_legs) == 10
         assert len(expected_unmapped_ods_legs) == 23
-        assert len(expected_ods) + deferred_legs == 375
+        assert len(expected_ods) + deferred_legs == 376
         assert len(tables) == 53
         assert set(ods) == expected_ods
         for table in ods:
