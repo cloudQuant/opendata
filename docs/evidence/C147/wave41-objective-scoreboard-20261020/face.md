@@ -1335,3 +1335,35 @@ sales cassette: 20,349 B，item 名 5 个：revenue_{actual,consensus_high,conse
 ③ `domains.yaml` 两条 + provider 绑定 + `specs.NOT_DECLARABLE`/`UPSTREAM_ROWS` 计数；
 ④ `w49_batch5_rebase.py` 重钉 fence（注意 §46 那个自哈希一代的坑）；
 ⑤ 一次全树重签 → merge/judge 期望 **349/350** → `w105`/`w111`/`w130` 复跑 → 全平面 → 提交 + `w117` 收口。
+
+
+## 54. SA 两行已经写完并且 10/10 相位通过；本波不落地，以补丁 + 干跑载体移交
+
+按 §53 的工序把 `seeking_alpha::Forward{Eps,Sales}Estimates` 实现完了：两份行模型
+（`models/seeking_alpha_estimates.py`，转置视图，一行 = `(relative_period, period_end_date)`）、一个
+两次请求的手写 fetcher（`models/estimates_public.py`：`/api/v3/searches` 解析站点 id →
+`/api/v3/symbol_data/estimates`，无凭证）、两个 `client_seam` 双响应 witness（篡改 `dataitemvalue`
+为 `True` → `SEEKING_ALPHA_ESTIMATES_BAD_NUMERIC`）、两条 domain、两条 provider 绑定、
+`specs.NOT_DECLARED` 收空、`models/__init__` 导出与 authority 名单。
+
+**干跑结果**（`runs/w154_sa_five_phase_dryrun.txt`）：两行 **5/5 相位全 PASS**；
+`domains=369`、`capabilities=382`、`catalog-resolvable bound identities=349/350`
+（只剩 stockgrid 未绑定）。
+
+**为什么不在本波落地**：落地需要改 `domains.yaml`，而全部 claim 都 pin 它——不重签就提交会让
+**347 行全读成 STALE**（`pre_chain_accepted=0` 是量过的反例）。剩下的预算放不下
+「全树重签(≈35 min) + fence 重钉 + 全平面 + 提交 + 收口」这条整链，所以工作树已回到提交态
+（`domains=367`、无 forward 导出、只剩外部 README 脏），改动以补丁形式入档：
+`patches/w154_sa_estimates_landing.patch`（733 行，含两份新文件）。
+
+**三条把这一波耗掉的注册表约束**（下次直接照做，别再试错）：
+① `temporal_kind` 只允许 `series|snapshot|event|document`，`report` 会让整本 domain 注册表加载失败
+（表现是 `capabilities` 崩到 209/350 与 service 相位 `ProviderModelQueryUnavailableError`，很误导）；
+② `rest_path` 必须是 `market/<provider>/<kebab-case>`（照 `market/seeking-alpha/calendar-earnings`）；
+③ `filter_dims` 只能引用**契约列**，不能写查询参数名（`period`/`relative_periods` 会报
+`references unknown contract field`，应写 `period_type`/`period_end_date`）。
+
+**接手工序**：`git apply patches/w154_sa_estimates_landing.patch` → 干跑两行仍 5/5 → `w49_batch5_rebase`
+重钉 fence（注意 §46 那个「自哈希早于改名」的坑）→ 一次全树重签 → merge/judge 期望 **349/350** →
+`w105` EXPECTED 改 accepted 347→349、residue 3→2 → `w111`/`w130`/`w113` 复跑 → 全平面 →
+提交 + `w117` 收口。完成后残差只剩 stockgrid 一行。

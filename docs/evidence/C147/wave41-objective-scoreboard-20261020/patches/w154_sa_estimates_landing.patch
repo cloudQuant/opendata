@@ -1,0 +1,733 @@
+diff --git a/opendata/data/domains.yaml b/opendata/data/domains.yaml
+index fc1fe25b6..139ce414a 100644
+--- a/opendata/data/domains.yaml
++++ b/opendata/data/domains.yaml
+@@ -4801,6 +4801,28 @@ domains:
+     storage_mode: "transient"
+     permissions: ["query"]
+ 
++  seeking_alpha_forward_eps_estimates:
++    display_name: "Seeking Alpha 前瞻每股收益预测"
++    rest_path: "market/seeking-alpha/estimates-eps-forward"
++    contract: "SeekingAlphaForwardEpsEstimates"
++    priority: null
++    temporal_kind: "series"
++    time_field: "period_end_date"
++    natural_key: ["sa_ticker_id", "relative_period", "period_end_date"]
++    filter_dims: ["symbol", "period_type", "period_end_date"]
++    storage_mode: "transient"
++    permissions: ["query"]
++  seeking_alpha_forward_sales_estimates:
++    display_name: "Seeking Alpha 前瞻营收预测"
++    rest_path: "market/seeking-alpha/estimates-sales-forward"
++    contract: "SeekingAlphaForwardSalesEstimates"
++    priority: null
++    temporal_kind: "series"
++    time_field: "period_end_date"
++    natural_key: ["sa_ticker_id", "relative_period", "period_end_date"]
++    filter_dims: ["symbol", "period_type", "period_end_date"]
++    storage_mode: "transient"
++    permissions: ["query"]
+   seeking_alpha_calendar_earnings:
+     display_name: "SeekingAlpha财报日历"
+     rest_path: "market/seeking-alpha/calendar-earnings"
+diff --git a/opendata/data/models/__init__.py b/opendata/data/models/__init__.py
+index d3a27631c..3144aa7a6 100644
+--- a/opendata/data/models/__init__.py
++++ b/opendata/data/models/__init__.py
+@@ -307,6 +307,10 @@ from opendata.data.models.intrinio_snapshots_clean import (
+     IntrinioEtfPricePerformance,
+     IntrinioMarketSnapshot,
+ )
++from opendata.data.models.seeking_alpha_estimates import (
++    SeekingAlphaForwardEpsEstimates,
++    SeekingAlphaForwardSalesEstimates,
++)
+ from opendata.data.models.macro import MacroSeries
+ from opendata.data.models.macro_iter2 import (
+     ImfAvailableIndicator,
+@@ -639,6 +643,8 @@ __all__ = [
+     "SecSicCode",
+     "SecSymbolMapRecord",
+     "SeekingAlphaCalendarEarnings",
++    "SeekingAlphaForwardEpsEstimates",
++    "SeekingAlphaForwardSalesEstimates",
+     "SP500Multiples",
+     "SdmxGroupContext",
+     "TiingoCryptoHistorical",
+diff --git a/opendata/data/models/seeking_alpha_estimates.py b/opendata/data/models/seeking_alpha_estimates.py
+new file mode 100644
+index 000000000..cd087b896
+--- /dev/null
++++ b/opendata/data/models/seeking_alpha_estimates.py
+@@ -0,0 +1,79 @@
++"""Seeking Alpha forward estimate rows, one row per reporting period per ticker.
++
++The upstream envelope publishes a value series per *data item* rather than per period, keyed
++``estimates.<sa_ticker_id>.<item>.<relative_period>[{dataitemvalue, effectivedate, period}]``.
++These contracts are the transposed view: one row per ``(relative_period, period_end_date)`` with the
++items read across. Field names keep the upstream item spelling so a row can be traced back to the
++cell it came from; the shape is recorded in
++``docs/evidence/C147/wave41-objective-scoreboard-20261020/runs/w152_sa_estimates_shape_inventory.txt``.
++"""
++
++from __future__ import annotations
++
++import math
++from datetime import date, datetime
++from typing import Annotated, Literal
++
++from pydantic import BeforeValidator, Field, StrictInt, StrictStr
++
++from opendata.data.models.base import ContractModel
++
++
++def _finite(value: object) -> object:
++    """Reject a non-number or a non-finite number in a numeric cell."""
++    if value is None:
++        return None
++    if isinstance(value, bool) or not isinstance(value, (int, float)):
++        raise ValueError("expected a JSON number")
++    if not math.isfinite(float(value)):
++        raise ValueError("expected a finite JSON number")
++    return value
++
++
++FiniteNumber = Annotated[float, BeforeValidator(_finite)]
++FiniteCount = Annotated[int, BeforeValidator(_finite), Field(ge=0)]
++
++
++class _SeekingAlphaEstimateRow(ContractModel):
++    """The columns every estimate row carries, straight from the envelope's ``period`` object."""
++
++    symbol: StrictStr
++    sa_ticker_id: StrictStr
++    relative_period: StrictStr
++    period_type: Literal["quarterly", "annual"]
++    fiscal_year: FiniteCount
++    fiscal_quarter: FiniteCount | None = None
++    calendar_year: FiniteCount | None = None
++    calendar_quarter: FiniteCount | None = None
++    period_end_date: date
++    as_of: datetime | None = None
++
++
++class SeekingAlphaForwardEpsEstimates(_SeekingAlphaEstimateRow):
++    """Per-period EPS estimates: GAAP and normalized actual, consensus low/mean/high, count."""
++
++    eps_gaap_actual: FiniteNumber | None = None
++    eps_gaap_consensus_low: FiniteNumber | None = None
++    eps_gaap_consensus_mean: FiniteNumber | None = None
++    eps_gaap_consensus_high: FiniteNumber | None = None
++    eps_normalized_actual: FiniteNumber | None = None
++    eps_normalized_consensus_low: FiniteNumber | None = None
++    eps_normalized_consensus_mean: FiniteNumber | None = None
++    eps_normalized_consensus_high: FiniteNumber | None = None
++    eps_normalized_num_of_estimates: FiniteCount | None = None
++
++
++class SeekingAlphaForwardSalesEstimates(_SeekingAlphaEstimateRow):
++    """Per-period revenue estimates: actual, consensus low/mean/high, count."""
++
++    revenue_actual: FiniteNumber | None = None
++    revenue_consensus_low: FiniteNumber | None = None
++    revenue_consensus_mean: FiniteNumber | None = None
++    revenue_consensus_high: FiniteNumber | None = None
++    revenue_num_of_estimates: FiniteCount | None = None
++
++
++__all__ = [
++    "SeekingAlphaForwardEpsEstimates",
++    "SeekingAlphaForwardSalesEstimates",
++]
+diff --git a/opendata/data/providers/seeking_alpha/models/estimates_public.py b/opendata/data/providers/seeking_alpha/models/estimates_public.py
+new file mode 100644
+index 000000000..b7aca6371
+--- /dev/null
++++ b/opendata/data/providers/seeking_alpha/models/estimates_public.py
+@@ -0,0 +1,345 @@
++"""Seeking Alpha forward estimate adapters: resolve the site id, then read the estimates envelope.
++
++Two requests, both public and unauthenticated, matching the route C144 walked through its 400
++parameter chain: ``/api/v3/searches`` resolves a ticker to the numeric Seeking Alpha id that the
++estimates route insists on, and ``/api/v3/symbol_data/estimates`` answers per data item rather than
++per period. No credential, cookie, or session token exists on either call.
++
++The envelope's shape is recorded in
++``docs/evidence/C147/wave41-objective-scoreboard-20261020/runs/w152_sa_estimates_shape_inventory.txt``:
++``estimates.<id>.<item>.<relative_period>[{dataitemvalue, effectivedate, period{...}}]``. Because
++that is a transposed layout, an item that the source does not publish simply leaves the column
++null; a cell that *is* published but is not a number is a corrupt body and is refused.
++"""
++
++from __future__ import annotations
++
++from datetime import date, datetime
++from typing import Any, ClassVar, Literal
++
++from pydantic import ConfigDict, StrictStr, ValidationError
++
++from opendata.data.capability import Capability
++from opendata.data.http_client import get_shared_http_client
++from opendata.data.models.seeking_alpha_estimates import (
++    SeekingAlphaForwardEpsEstimates,
++    SeekingAlphaForwardSalesEstimates,
++)
++from opendata.data.models.base import ContractModel
++from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
++from opendata.data.providers._engine.http_json import ProviderEngineError
++from opendata.data.providers.seeking_alpha._source import SOURCE
++
++BASE_URL = "https://seekingalpha.com"
++SEARCH_PATH = "/api/v3/searches"
++ESTIMATES_PATH = "/api/v3/symbol_data/estimates"
++TIMEOUT_SECONDS = 20.0
++MAX_RELATIVE_PERIODS = 8
++
++ID_UNRESOLVED = "SEEKING_ALPHA_ESTIMATES_ID_UNRESOLVED"
++HTTP_ERROR = "SEEKING_ALPHA_ESTIMATES_HTTP_ERROR"
++SHAPE_INVALID = "SEEKING_ALPHA_ESTIMATES_SHAPE_INVALID"
++BAD_NUMERIC = "SEEKING_ALPHA_ESTIMATES_BAD_NUMERIC"
++EMPTY = "SEEKING_ALPHA_ESTIMATES_EMPTY"
++BAD_QUERY = "SEEKING_ALPHA_ESTIMATES_QUERY_INVALID"
++
++EPS_ITEMS = (
++    "eps_gaap_actual",
++    "eps_gaap_consensus_low",
++    "eps_gaap_consensus_mean",
++    "eps_gaap_consensus_high",
++    "eps_normalized_actual",
++    "eps_normalized_consensus_low",
++    "eps_normalized_consensus_mean",
++    "eps_normalized_consensus_high",
++    "eps_normalized_num_of_estimates",
++)
++SALES_ITEMS = (
++    "revenue_actual",
++    "revenue_consensus_low",
++    "revenue_consensus_mean",
++    "revenue_consensus_high",
++    "revenue_num_of_estimates",
++)
++_COUNT_ITEMS = frozenset({"eps_normalized_num_of_estimates", "revenue_num_of_estimates"})
++
++
++class SeekingAlphaForwardEstimatesQuery(QueryParams):
++    """One symbol (or a comma list), a reporting period, and how many forward periods to ask for."""
++
++    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
++
++    symbol: StrictStr
++    source: Literal["auto", "seeking_alpha"] = "auto"
++    market: Literal["us"] | None = None
++    period: Literal["annual", "quarter"] = "quarter"
++    relative_periods: int = 4
++
++    def resolved_symbols(self) -> list[str]:
++        """Split the multi-symbol form and refuse an empty or oversized request."""
++        parts = [part.strip().upper() for part in self.symbol.split(",") if part.strip()]
++        if not parts:
++            raise ProviderEngineError(BAD_QUERY, invalid=("symbol",))
++        if len(parts) > 8:
++            raise ProviderEngineError(BAD_QUERY, invalid=("symbol",))
++        return parts
++
++
++def _moment(value: object) -> datetime | None:
++    """Parse an ISO timestamp with a UTC offset, the only form the envelope publishes."""
++    if value is None or value == "":
++        return None
++    if not isinstance(value, str):
++        raise ProviderEngineError(SHAPE_INVALID)
++    try:
++        return datetime.fromisoformat(value.replace("Z", "+00:00"))
++    except ValueError:
++        raise ProviderEngineError(SHAPE_INVALID) from None
++
++
++def _day(value: object) -> date:
++    """Parse the period end date; the row declares it non-null."""
++    if not isinstance(value, str) or not value:
++        raise ProviderEngineError(SHAPE_INVALID)
++    try:
++        return datetime.fromisoformat(value.replace("Z", "+00:00")).date()
++    except ValueError:
++        raise ProviderEngineError(SHAPE_INVALID) from None
++
++
++def _number(value: object, *, integer: bool) -> float | int | None:
++    """Read ``dataitemvalue``: the source sends numeric strings, and a boolean is a corrupt cell."""
++    if value is None or value == "":
++        return None
++    if isinstance(value, bool):
++        raise ProviderEngineError(BAD_NUMERIC)
++    if isinstance(value, str):
++        try:
++            number: float = float(value)
++        except ValueError:
++            raise ProviderEngineError(BAD_NUMERIC) from None
++    elif isinstance(value, (int, float)):
++        number = float(value)
++    else:
++        raise ProviderEngineError(BAD_NUMERIC)
++    if integer:
++        if not number.is_integer():
++            raise ProviderEngineError(BAD_NUMERIC)
++        return int(number)
++    return number
++
++
++def _int_cell(value: object) -> int | None:
++    """A period-object integer, refused when present but not a whole number."""
++    if value is None:
++        return None
++    number = _number(value, integer=True)
++    return None if number is None else int(number)
++
++
++class _SeekingAlphaForwardEstimatesFetcher(
++    Fetcher[SeekingAlphaForwardEstimatesQuery, list[dict[str, Any]]]
++):
++    """Shared request and envelope-walking behavior for the two estimate rows."""
++
++    async_mode = "bounded_thread"
++    canonical_model: ClassVar[str | None]
++    items: ClassVar[tuple[str, ...]]
++    row_model: ClassVar[type[ContractModel]]
++    capability: ClassVar[Capability]
++
++    def transform_query(self, **kwargs: object) -> SeekingAlphaForwardEstimatesQuery:
++        """Validate the documented query, including the forward-period bound."""
++        query = SeekingAlphaForwardEstimatesQuery.model_validate(kwargs)
++        if not 1 <= query.relative_periods <= MAX_RELATIVE_PERIODS:
++            raise ProviderEngineError(BAD_QUERY, invalid=("relative_periods",))
++        query.resolved_symbols()
++        return query
++
++    def _get(self, path: str, params: dict[str, str], ctx: FetchContext) -> dict[str, Any]:
++        """One unauthenticated GET that must answer with a JSON object."""
++        timeout = min(float(ctx.timeout or TIMEOUT_SECONDS), TIMEOUT_SECONDS)
++        response = get_shared_http_client().get(
++            f"{BASE_URL}{path}",
++            params=params,
++            timeout=timeout,
++            source=SOURCE,
++            headers={"Accept": "application/json"},
++            cache_context={"canonical_model": self.canonical_model},
++        )
++        status = int(getattr(response, "status_code", 0) or 0)
++        if not 200 <= status < 300:
++            raise ProviderEngineError(HTTP_ERROR, status=status, url=f"{BASE_URL}{path}")
++        try:
++            payload: object = response.json()
++        except Exception:
++            raise ProviderEngineError(SHAPE_INVALID) from None
++        if not isinstance(payload, dict):
++            raise ProviderEngineError(SHAPE_INVALID)
++        return payload
++
++    def _resolve_id(self, symbol: str, ctx: FetchContext) -> str:
++        """Ask the public search route for the numeric id the estimates route insists on."""
++        payload = self._get(
++            SEARCH_PATH,
++            {"filter[phrase]": symbol, "count": "1", "type": "ticker"},
++            ctx,
++        )
++        data = payload.get("data")
++        if not isinstance(data, list) or not data or not isinstance(data[0], dict):
++            raise ProviderEngineError(ID_UNRESOLVED)
++        identifier = data[0].get("id")
++        if not isinstance(identifier, (str, int)) or not str(identifier).strip().isdigit():
++            raise ProviderEngineError(ID_UNRESOLVED)
++        return str(identifier)
++
++    def extract_data(
++        self,
++        params: SeekingAlphaForwardEstimatesQuery,
++        ctx: FetchContext,
++    ) -> list[dict[str, Any]]:
++        """Resolve every symbol, then read its per-item series in one estimates call each."""
++        period_type = "annual" if params.period == "annual" else "quarterly"
++        relative = ",".join(str(step) for step in range(params.relative_periods + 1))
++        collected: list[dict[str, Any]] = []
++        for symbol in params.resolved_symbols():
++            sa_id = self._resolve_id(symbol, ctx)
++            body = self._get(
++                ESTIMATES_PATH,
++                {
++                    "ticker_ids": sa_id,
++                    "period_type": period_type,
++                    "relative_periods": relative,
++                    "estimates_data_items": ",".join(self.items),
++                },
++                ctx,
++            )
++            estimates = body.get("estimates")
++            if not isinstance(estimates, dict):
++                raise ProviderEngineError(SHAPE_INVALID)
++            collected.append(
++                {"symbol": symbol, "sa_ticker_id": sa_id, "series": estimates.get(sa_id)}
++            )
++        return collected
++
++    def transform_data(
++        self,
++        raw: list[dict[str, Any]],
++        params: SeekingAlphaForwardEstimatesQuery,
++    ) -> FetchResult:
++        """Transpose per-item series into one row per ``(relative_period, period_end_date)``."""
++        rows: list[ContractModel] = []
++        for entry in raw:
++            rows.extend(self._rows_for(entry))
++        if not rows:
++            raise ProviderEngineError(EMPTY)
++        return tuple(rows)
++
++    def _rows_for(self, entry: dict[str, Any]) -> list[ContractModel]:
++        """Build the rows of one symbol, refusing a series that is not the documented mapping."""
++        symbol = str(entry["symbol"])
++        sa_id = str(entry["sa_ticker_id"])
++        series = entry["series"]
++        if series is None:
++            return []
++        if not isinstance(series, dict):
++            raise ProviderEngineError(SHAPE_INVALID)
++        cells: dict[tuple[str, str], dict[str, Any]] = {}
++        order: list[tuple[str, str]] = []
++        for item in self.items:
++            buckets = series.get(item)
++            if buckets is None:
++                continue
++            if not isinstance(buckets, dict):
++                raise ProviderEngineError(SHAPE_INVALID)
++            for relative, records in sorted(buckets.items()):
++                if not isinstance(records, list):
++                    raise ProviderEngineError(SHAPE_INVALID)
++                for record in records:
++                    if not isinstance(record, dict):
++                        raise ProviderEngineError(SHAPE_INVALID)
++                    period = record.get("period")
++                    if not isinstance(period, dict):
++                        raise ProviderEngineError(SHAPE_INVALID)
++                    end_date = _day(period.get("periodenddate"))
++                    key = (str(relative), end_date.isoformat())
++                    if key not in cells:
++                        cells[key] = {
++                            "symbol": symbol,
++                            "sa_ticker_id": sa_id,
++                            "relative_period": str(relative),
++                            "period_type": str(period.get("periodtypeid") or "quarterly"),
++                            "fiscal_year": _int_cell(period.get("fiscalyear")),
++                            "fiscal_quarter": _int_cell(period.get("fiscalquarter")),
++                            "calendar_year": _int_cell(period.get("calendaryear")),
++                            "calendar_quarter": _int_cell(period.get("calendarquarter")),
++                            "period_end_date": end_date,
++                            "as_of": _moment(record.get("effectivedate")),
++                        }
++                        order.append(key)
++                    cells[key][item] = _number(
++                        record.get("dataitemvalue"), integer=item in _COUNT_ITEMS
++                    )
++        built: list[ContractModel] = []
++        for key in order:
++            cell = cells[key]
++            for name in self.items:
++                cell.setdefault(name, None)
++            if cell["fiscal_year"] is None:
++                raise ProviderEngineError(SHAPE_INVALID)
++            try:
++                built.append(self.row_model.model_validate(cell, strict=False))
++            except ValidationError:
++                raise ProviderEngineError(SHAPE_INVALID) from None
++        return built
++
++
++class SeekingAlphaForwardEpsEstimatesFetcher(_SeekingAlphaForwardEstimatesFetcher):
++    """Forward EPS estimates: GAAP and normalized actual plus consensus low/mean/high."""
++
++    canonical_model: ClassVar[str | None] = "ForwardEpsEstimates"
++    items: ClassVar[tuple[str, ...]] = EPS_ITEMS
++    row_model: ClassVar[type[SeekingAlphaForwardEpsEstimates]] = SeekingAlphaForwardEpsEstimates
++    capability: ClassVar[Capability] = Capability(
++        asset_class="stock",
++        domain="seeking_alpha_forward_eps_estimates",
++        period="series",
++        market="us",
++        source=SOURCE,
++        verified=False,
++        notes=(
++            "Two public unauthenticated GETs: the search route resolves the numeric site id the "
++            "estimates route requires, then per-item series are transposed into rows. Offline "
++            "acceptance only: the live route answers a bot challenge without credentials."
++        ),
++    )
++
++
++class SeekingAlphaForwardSalesEstimatesFetcher(_SeekingAlphaForwardEstimatesFetcher):
++    """Forward revenue estimates: actual plus consensus low/mean/high and the estimate count."""
++
++    canonical_model: ClassVar[str | None] = "ForwardSalesEstimates"
++    items: ClassVar[tuple[str, ...]] = SALES_ITEMS
++    row_model: ClassVar[type[SeekingAlphaForwardSalesEstimates]] = (
++        SeekingAlphaForwardSalesEstimates
++    )
++    capability: ClassVar[Capability] = Capability(
++        asset_class="stock",
++        domain="seeking_alpha_forward_sales_estimates",
++        period="series",
++        market="us",
++        source=SOURCE,
++        verified=False,
++        notes=(
++            "Same two-request walk as the EPS row, over the five revenue_* data items. Offline "
++            "acceptance only: the live route answers a bot challenge without credentials."
++        ),
++    )
++
++
++__all__ = [
++    "EPS_ITEMS",
++    "SALES_ITEMS",
++    "SeekingAlphaForwardEpsEstimatesFetcher",
++    "SeekingAlphaForwardSalesEstimatesFetcher",
++]
+diff --git a/opendata/data/providers/seeking_alpha/provider.py b/opendata/data/providers/seeking_alpha/provider.py
+index ca077d549..415df1cd1 100644
+--- a/opendata/data/providers/seeking_alpha/provider.py
++++ b/opendata/data/providers/seeking_alpha/provider.py
+@@ -19,6 +19,24 @@ PROVIDER = Provider(
+             canonical_model_ids=("CalendarEarnings",),
+             scenario="财报日历：按日读取 Seeking Alpha 公开的 earnings_calendar/tickers 分页 JSON",
+         ),
++        LazyFetcherBinding(
++            "opendata.data.providers.seeking_alpha.models.estimates_public",
++            "SeekingAlphaForwardEpsEstimatesFetcher",
++            canonical_model_ids=("ForwardEpsEstimates",),
++            scenario=(
++                "前瞻 EPS 预测：先用公开 searches 路由解析站点内 id，再读 symbol_data/estimates "
++                "的 per-item 序列并转置成每期一行（seeking_alpha_forward_eps_estimates 域）"
++            ),
++        ),
++        LazyFetcherBinding(
++            "opendata.data.providers.seeking_alpha.models.estimates_public",
++            "SeekingAlphaForwardSalesEstimatesFetcher",
++            canonical_model_ids=("ForwardSalesEstimates",),
++            scenario=(
++                "前瞻营收预测：同一两次请求通路，读取五个 revenue_* 数据项"
++                "（seeking_alpha_forward_sales_estimates 域）"
++            ),
++        ),
+     ),
+     credentials=(),
+ )
+diff --git a/opendata/data/providers/seeking_alpha/specs.py b/opendata/data/providers/seeking_alpha/specs.py
+index 6f0033c6c..e0c46ac95 100644
+--- a/opendata/data/providers/seeking_alpha/specs.py
++++ b/opendata/data/providers/seeking_alpha/specs.py
+@@ -7,9 +7,7 @@ requires ``filter[selected_date]``, publishes ``meta.total_pages`` with a page c
+ records equal ``meta.total_count`` for one date, while its own ``links.next`` resolves to
+ ``HTTP/2 404`` against the site root. ``models.calendar_earnings_public`` maps that envelope.
+ 
+-The two estimates rows stay here. Every ``symbol_data/estimates`` request in the same round
+-answered ``HTTP/2 400`` naming the next required parameter, so no machine protocol for them is on
+-file and no cell of their contract has been read from a live response.
++Both estimates rows left this ledger in wave 52: the request protocol is the one C144 walked out of the ``HTTP/2 400`` chain (search resolves the numeric site id, then ``ticker_ids``/``period_type``/``relative_periods``/``estimates_data_items``), and the response layout is recorded field by field in ``docs/evidence/C147/wave41-objective-scoreboard-20261020/runs/w152_sa_estimates_shape_inventory.txt``. Live access without credentials is still a bot challenge, so the rows are accepted offline only -- see ``face.md` §53 for that distinction.
+ """
+ 
+ from __future__ import annotations
+@@ -17,14 +15,4 @@ from __future__ import annotations
+ from typing import Final
+ 
+ DECLARED_MODELS: Final[tuple[str, ...]] = ()
+-NOT_DECLARED: Final[dict[str, str]] = {
+-    "ForwardEpsEstimates": (
+-        "Official help confirms past and future EPS estimates in the UI, but the public estimates "
+-        "page returned HTTP 403 without credentials and no official machine protocol is documented."
+-    ),
+-    "ForwardSalesEstimates": (
+-        "Official help confirms past and future revenue estimates in the UI, but the public "
+-        "estimates page returned HTTP 403 without credentials and no official machine protocol is "
+-        "documented."
+-    ),
+-}
++NOT_DECLARED: Final[dict[str, str]] = {}
+diff --git a/scripts/quality/iter2_witnesses/seeking_alpha.py b/scripts/quality/iter2_witnesses/seeking_alpha.py
+index 165eb7cc9..4d9dde5cc 100644
+--- a/scripts/quality/iter2_witnesses/seeking_alpha.py
++++ b/scripts/quality/iter2_witnesses/seeking_alpha.py
+@@ -83,6 +83,87 @@ def _cboe_calendar_envelope() -> dict[str, Any]:
+     }
+ 
+ 
++_SA_ID = "1150"
++_SA_EFFECTIVE = "2024-06-19T00:06:03.000-04:00"
++
++
++def _sa_period(index: int) -> dict[str, object]:
++    """The envelope's own ``period`` object for one relative period, as the capture spells it."""
++    return {
++        "periodtypeid": "quarterly",
++        "fiscalquarter": index + 1,
++        "fiscalyear": 2027,
++        "calendarquarter": index + 1,
++        "calendaryear": 2026,
++        "periodenddate": f"2026-0{index + 4}-30T00:00:00.000-04:00",
++        "advancedate": None,
++    }
++
++
++def _sa_series(items: dict[str, list[str]]) -> dict[str, object]:
++    """Per-item series in upstream layout: ``<item>.<relative_period>[{dataitemvalue, ...}]``."""
++    series: dict[str, object] = {}
++    for name, values in items.items():
++        series[name] = {
++            str(index): [
++                {"effectivedate": _SA_EFFECTIVE, "dataitemvalue": value, "period": _sa_period(index)}
++            ]
++            for index, value in enumerate(values)
++        }
++    return series
++
++
++def _sa_estimates_envelope(items: dict[str, list[str]]) -> dict[str, object]:
++    """Two seam responses: the search that resolves the site id, then the estimates envelope."""
++    return {
++        "responses": [
++            {
++                "url_contains": "/api/v3/searches",
++                "body": {
++                    "data": [
++                        {"id": _SA_ID, "type": "ticker", "attributes": {"symbol": "AAPL"}}
++                    ]
++                },
++            },
++            {
++                "url_contains": "/api/v3/symbol_data/estimates",
++                "body": {"estimates": {_SA_ID: _sa_series(items)}, "revisions": {}},
++            },
++        ]
++    }
++
++
++def _sa_eps_envelope() -> dict[str, object]:
++    """The nine ``eps_*`` items the inventory records, two relative periods each."""
++    return _sa_estimates_envelope(
++        {
++            "eps_gaap_actual": ["1.05", "1.08"],
++            "eps_gaap_consensus_low": ["0.88", "0.92"],
++            "eps_gaap_consensus_mean": ["0.97", "1.02"],
++            "eps_gaap_consensus_high": ["1.12", "1.18"],
++            "eps_normalized_actual": ["1.15", "1.19"],
++            "eps_normalized_consensus_low": ["0.90", "0.95"],
++            "eps_normalized_consensus_mean": ["1.01", "1.06"],
++            "eps_normalized_consensus_high": ["1.20", "1.25"],
++            "eps_normalized_num_of_estimates": ["8.0", "7.0"],
++        }
++    )
++
++
++def _sa_sales_envelope() -> dict[str, object]:
++    """The five ``revenue_*`` items the inventory records, two relative periods each."""
++    return _sa_estimates_envelope(
++        {
++            "revenue_actual": ["90753000000.0", "95_340".replace("_", "") + "00000.0"],
++            "revenue_consensus_low": ["88100000000.0", "91000000000.0"],
++            "revenue_consensus_mean": ["92400000000.0", "97100000000.0"],
++            "revenue_consensus_high": ["96800000000.0", "103400000000.0"],
++            "revenue_num_of_estimates": ["9.0", "8.0"],
++        }
++    )
++
++
++
+ CONFIG: Final[dict[str, Any]] = {
+     "registration_module": "opendata.data.providers.seeking_alpha.registration",
+     "credential_env": {},
+@@ -121,5 +202,74 @@ CONFIG: Final[dict[str, Any]] = {
+                 "opendata/data/domains.yaml",
+             ],
+         },
++        "ForwardEpsEstimates": {
++            "client_seam": {
++                "kind": "shared_http_client",
++                "attr": "get_shared_http_client",
++                "modules": [
++                    "opendata.data.providers.seeking_alpha.models.estimates_public",
++                ],
++            },
++            "fixture_document": _sa_eps_envelope,
++            "query": {"symbol": "AAPL", "period": "quarter", "relative_periods": 2},
++            "tamper": {
++                "op": "set",
++                "path": [
++                    "responses", 1, "body", "estimates", _SA_ID,
++                    "eps_gaap_actual", "0", 0, "dataitemvalue",
++                ],
++                "value": True,
++            },
++            "refusal_class": "ProviderEngineError",
++            "refusal_code": "SEEKING_ALPHA_ESTIMATES_BAD_NUMERIC",
++            "tamper_reason": (
++                "dataitemvalue is the one field of the estimate record that becomes a contract "
++                "number; the source sends it as a numeric string, and a boolean in that cell is a "
++                "corrupt body rather than a missing estimate -- _number refuses it so the row "
++                "cannot publish an EPS the source never returned, since pydantic would widen True "
++                "to 1.0"
++            ),
++            "source_files": [
++                "opendata/data/providers/seeking_alpha/models/estimates_public.py",
++            ],
++            "contract_files": [
++                "opendata/data/models/seeking_alpha_estimates.py",
++                "opendata/data/domains.yaml",
++            ],
++        },
++        "ForwardSalesEstimates": {
++            "client_seam": {
++                "kind": "shared_http_client",
++                "attr": "get_shared_http_client",
++                "modules": [
++                    "opendata.data.providers.seeking_alpha.models.estimates_public",
++                ],
++            },
++            "fixture_document": _sa_sales_envelope,
++            "query": {"symbol": "AAPL", "period": "quarter", "relative_periods": 2},
++            "tamper": {
++                "op": "set",
++                "path": [
++                    "responses", 1, "body", "estimates", _SA_ID,
++                    "revenue_actual", "0", 0, "dataitemvalue",
++                ],
++                "value": True,
++            },
++            "refusal_class": "ProviderEngineError",
++            "refusal_code": "SEEKING_ALPHA_ESTIMATES_BAD_NUMERIC",
++            "tamper_reason": (
++                "revenue_actual is read through the same numeric guard as the EPS row: the source "
++                "publishes it as a numeric string, a boolean there is a corrupt record and must "
++                "land as SEEKING_ALPHA_ESTIMATES_BAD_NUMERIC instead of a revenue figure the "
++                "estimates envelope never carried"
++            ),
++            "source_files": [
++                "opendata/data/providers/seeking_alpha/models/estimates_public.py",
++            ],
++            "contract_files": [
++                "opendata/data/models/seeking_alpha_estimates.py",
++                "opendata/data/domains.yaml",
++            ],
++        },
+     },
+ }
+diff --git a/tests/test_authority_reconciliation.py b/tests/test_authority_reconciliation.py
+index 7d07f77c6..ead6b7a4f 100644
+--- a/tests/test_authority_reconciliation.py
++++ b/tests/test_authority_reconciliation.py
+@@ -360,6 +360,8 @@ NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
+         "sec_sic_search",
+         "sec_symbol_map",
+         "seeking_alpha_calendar_earnings",
++        "seeking_alpha_forward_eps_estimates",
++        "seeking_alpha_forward_sales_estimates",
+         "senior_loan_officer_survey",
+         "sofr",
+         "sonia",
