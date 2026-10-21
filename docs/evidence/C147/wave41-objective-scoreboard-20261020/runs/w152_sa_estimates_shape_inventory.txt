@@ -1,0 +1,20 @@
+# Seeking Alpha estimates 响应形状清点（只含字段名/嵌套键/计数与字节数；不含任何数值载荷）
+# 来源：openbb_platform/providers/seeking_alpha/tests/record/http/test_seeking_alpha_fetchers/
+#        test_sa_forward_{eps,sales}_estimates_urllib3_v2.yaml 的 string: !!binary 段（gunzip）
+# 请求侧在同一 cassette 里是 MOCK_ITEMS/MOCK_TICKER_IDS，因此只有 响应 侧算形状证据。
+
+[eps] cassette=test_sa_forward_eps_estimates_urllib3_v2.yaml decoded_bytes=37871 top_keys=['estimates', 'revisions']
+  estimates 的 ticker_id 键个数=1（样例键为不透明数字串，值已省略）
+  item 名 9 个：['eps_gaap_actual', 'eps_gaap_consensus_high', 'eps_gaap_consensus_low', 'eps_gaap_consensus_mean', 'eps_normalized_actual', 'eps_normalized_consensus_high', 'eps_normalized_consensus_low', 'eps_normalized_consensus_mean', 'eps_normalized_num_of_estimates']
+  嵌套层级：estimates.<ticker_id>.<item>.<relative_period>[…]
+  relative_period 键样例个数=5
+  每条记录字段=['dataitemvalue', 'effectivedate', 'period']
+  period 子对象字段=['advancedate', 'calendarquarter', 'calendaryear', 'fiscalquarter', 'fiscalyear', 'periodenddate', 'periodtypeid']
+
+[sales] cassette=test_sa_forward_sales_estimates_urllib3_v2.yaml decoded_bytes=21817 top_keys=['estimates', 'revisions']
+  estimates 的 ticker_id 键个数=1（样例键为不透明数字串，值已省略）
+  item 名 5 个：['revenue_actual', 'revenue_consensus_high', 'revenue_consensus_low', 'revenue_consensus_mean', 'revenue_num_of_estimates']
+  嵌套层级：estimates.<ticker_id>.<item>.<relative_period>[…]
+  relative_period 键样例个数=5
+  每条记录字段=['dataitemvalue', 'effectivedate', 'period']
+  period 子对象字段=['advancedate', 'calendarquarter', 'calendaryear', 'fiscalquarter', 'fiscalyear', 'periodenddate', 'periodtypeid']
