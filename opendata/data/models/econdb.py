@@ -117,3 +117,14 @@ class EconDBYieldCurve(ContractModel):
     country: StrictStr
     units: StrictStr
     description: StrictStr
+
+
+class EconDBExportDestinations(ContractModel):
+    """One merchandise export-destination row from the public EconDB widget."""
+
+    origin_country: str
+    destination_country: str
+    value: float
+    units: str
+    title: str
+    footnote: str | None = None

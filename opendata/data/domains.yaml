@@ -538,6 +538,26 @@ domains:
     filter_dims: [date, title, url]
     storage_mode: transient
     permissions: [query]
+  econdb_export_destinations:
+    display_name: EconDB Export Destinations
+    rest_path: macro/econdb/export-destinations
+    contract: EconDBExportDestinations
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [origin_country, destination_country]
+    filter_dims: [origin_country, destination_country]
+    storage_mode: transient
+    permissions: [query]
+  yfinance_available_indices:
+    display_name: Yahoo Finance Available Indices
+    rest_path: market/yfinance/available-indices
+    contract: YFinanceAvailableIndices
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [code]
+    filter_dims: [code, symbol, name]
+    storage_mode: transient
+    permissions: [query]
   wsj_etf_gainers:
     display_name: WSJ ETF Gainers
     rest_path: market/wsj/etf-gainers

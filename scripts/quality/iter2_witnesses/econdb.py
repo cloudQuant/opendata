@@ -53,11 +53,52 @@ def _econdb_gdp_real_document() -> dict[str, Any]:
     )
 
 
+def _econdb_export_destinations_document() -> dict[str, Any]:
+    """A two-destination answer from the public widget table."""
+    return {
+        "plots": [
+            {
+                "data": [
+                    {"Country": "Mexico", "Value million USD": 123.4},
+                    {"Country": "Canada", "Value million USD": 98.7},
+                ],
+                "series": [{"code": "Value million USD"}],
+                "title": "Exports from United States",
+                "footnote": "Public widget fixture.",
+            }
+        ]
+    }
+
+
 CONFIG: Final[dict[str, Any]] = {
     "registration_module": "opendata.data.providers.econdb.registration",
     "credential_env": {"ECONDB_API_KEY": "fixture-token-never-sent"},
     "allowed_hosts": ["api.econdb.com"],
     "models": {
+        "ExportDestinations": {
+            "fixture_document": _econdb_export_destinations_document,
+            "query": {"country": "US"},
+            "tamper": {
+                "op": "drop",
+                "path": ["plots", 0, "data", 0, "Country"],
+                "column": "destination_country",
+            },
+            "refusal_class": "ProviderEngineError",
+            "refusal_code": "ECONDB_SHAPE_INVALID",
+            "tamper_reason": (
+                "publishing a destination row without its 'Country' leaves the required "
+                "'destination_country' field unresolvable, so the adapter must refuse with "
+                "ECONDB_SHAPE_INVALID rather than ship an unlabelled export value"
+            ),
+            "source_files": [
+                "opendata/data/providers/econdb/models/profiles.py",
+                "opendata/data/providers/_engine/http_json.py",
+            ],
+            "contract_files": [
+                "opendata/data/models/econdb.py",
+                "opendata/data/domains.yaml",
+            ],
+        },
         "EconomicIndicators": {
             "fixture_document": _econdb_economic_indicator_document,
             "query": {"symbol": _SERIES_URL_SYMBOL},

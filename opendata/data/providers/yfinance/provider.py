@@ -13,6 +13,12 @@ PROVIDER = Provider(
     website="https://finance.yahoo.com/",
     fetcher_bindings=(
         LazyFetcherBinding(
+            "opendata.data.providers.yfinance.models.available_indices",
+            "YFinanceAvailableIndicesFetcher",
+            canonical_model_ids=("AvailableIndices",),
+            scenario="Yahoo Finance 可用指数目录：读取本地参考表（无 HTTP）",
+        ),
+        LazyFetcherBinding(
             "opendata.data.providers.yfinance.models.stock_daily",
             "YfinanceStockDailyFetcher",
             scenario="行情日线（回测数据准备 / dwd 日线域）",

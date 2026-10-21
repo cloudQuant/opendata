@@ -9,14 +9,14 @@
       "non_base_contract_model_classes": 325
     },
     "live_counts": {
-      "all_symbols": 352,
-      "contract_model_classes_including_base": 348,
-      "non_base_contract_model_classes": 347
+      "all_symbols": 354,
+      "contract_model_classes_including_base": 350,
+      "non_base_contract_model_classes": 349
     },
     "delta_vs_adjudication": {
-      "all_symbols": 22,
-      "contract_model_classes_including_base": 22,
-      "non_base_contract_model_classes": 22
+      "all_symbols": 24,
+      "contract_model_classes_including_base": 24,
+      "non_base_contract_model_classes": 24
     },
     "attribution": {
       "removed_by_iteration2": [
@@ -332,14 +332,14 @@
   },
   "candidate_counts": {
     "basis": "Export census re-derived from the live opendata.data.models.__all__ at iteration-2 head (see iter2_census_rebase); domain/identity counts remain the batch5 manual arithmetic from the pinned batch4 snapshot plus the candidate-approved single SLOOS provider/domain identity. The three export counts below supersede the batch5 count adjudication's 330/326/325, which stays hashed unchanged at 2a929fd8614af09e28aa2ae16fa781c7da49d7692dcd6a3b6c78f2118c0906de.",
-    "domain_specs": 363,
-    "fixed_bound": 343,
-    "fixed_identities": 376,
+    "domain_specs": 365,
+    "fixed_bound": 345,
+    "fixed_identities": 378,
     "fixed_unbound": 33,
-    "provider_model_legs": 376,
-    "all_symbols": 352,
-    "contract_model_classes_including_base": 348,
-    "non_base_contract_model_classes": 347,
+    "provider_model_legs": 378,
+    "all_symbols": 354,
+    "contract_model_classes_including_base": 350,
+    "non_base_contract_model_classes": 349,
     "non_contract_exports": [
       {
         "name": "BlsCatalogPage",
@@ -427,19 +427,19 @@
     "ods_legs": "The 33 registered source/domain legs on the 20 legacy domains remain split by the 10 explicit legacy freshness-field mappings present in the pinned AkShare/THS mapping YAMLs; the remaining 23 are explicitly unmapped."
   },
   "counts": {
-    "deferred_domain_count": 343,
-    "deferred_source_domain_leg_count": 343,
-    "domain_count": 363,
+    "deferred_domain_count": 345,
+    "deferred_source_domain_leg_count": 345,
+    "domain_count": 365,
     "legacy_dwd_domain_count": 20,
     "legacy_source_domain_leg_count": 33,
     "mapped_ods_leg_count": 10,
-    "provider_model_identity_count": 376,
+    "provider_model_identity_count": 378,
     "queried_table_count": 30,
-    "query_semantic_domain_count": 343,
-    "registered_source_domain_leg_count": 376,
+    "query_semantic_domain_count": 345,
+    "registered_source_domain_leg_count": 378,
     "unmapped_ods_leg_count": 23,
     "warehouse_table_catalog_count": 53,
-    "descriptor_eligible_identity_count": 354,
+    "descriptor_eligible_identity_count": 356,
     "model_key_only_identity_count": 22,
     "descriptor_eligible_legacy_identity_count": 11
   },
@@ -487,6 +487,7 @@
     "deribit_options_chains",
     "econdb_available_indicators",
     "econdb_economic_indicators",
+    "econdb_export_destinations",
     "econdb_gdp_nominal",
     "econdb_gdp_real",
     "econdb_port_volume",
@@ -758,6 +759,7 @@
     "wsj_etf_active",
     "wsj_etf_gainers",
     "wsj_etf_losers",
+    "yfinance_available_indices",
     "yfinance_balance_sheet",
     "yfinance_cash_flow_statement",
     "yfinance_company_news",
@@ -951,6 +953,10 @@
     },
     {
       "domain": "econdb_economic_indicators",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_export_destinations",
       "source": "econdb"
     },
     {
@@ -2050,6 +2056,10 @@
       "source": "wsj"
     },
     {
+      "domain": "yfinance_available_indices",
+      "source": "yfinance"
+    },
+    {
       "domain": "yfinance_balance_sheet",
       "source": "yfinance"
     },
@@ -2207,6 +2217,7 @@
     "deribit_options_chains",
     "econdb_available_indicators",
     "econdb_economic_indicators",
+    "econdb_export_destinations",
     "econdb_gdp_nominal",
     "econdb_gdp_real",
     "econdb_port_volume",
@@ -2497,6 +2508,7 @@
     "wsj_etf_active",
     "wsj_etf_gainers",
     "wsj_etf_losers",
+    "yfinance_available_indices",
     "yfinance_balance_sheet",
     "yfinance_cash_flow_statement",
     "yfinance_company_news",
@@ -3275,6 +3287,16 @@
       "source": "econdb",
       "verified": false,
       "canonical_ids_declared": true
+    },
+    {
+      "binding": "opendata.data.providers.econdb.models.profiles:EconDBExportDestinationsFetcher",
+      "canonical_ids_declared": true,
+      "contract": "EconDBExportDestinations",
+      "domain": "econdb_export_destinations",
+      "model": "ExportDestinations",
+      "scenario_present": true,
+      "source": "econdb",
+      "verified": false
     },
     {
       "binding": "opendata.data.providers.econdb.models.iter2:EconDBGdpNominalFetcher",
@@ -6207,6 +6229,16 @@
       "canonical_ids_declared": true
     },
     {
+      "binding": "opendata.data.providers.yfinance.models.available_indices:YFinanceAvailableIndicesFetcher",
+      "canonical_ids_declared": true,
+      "contract": "YFinanceAvailableIndices",
+      "domain": "yfinance_available_indices",
+      "model": "AvailableIndices",
+      "scenario_present": true,
+      "source": "yfinance",
+      "verified": false
+    },
+    {
       "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceBalanceSheetFetcher",
       "contract": "YfinanceFinancialStatementObservation",
       "domain": "yfinance_balance_sheet",
@@ -6541,6 +6573,7 @@
     "deribit_options_chains",
     "econdb_available_indicators",
     "econdb_economic_indicators",
+    "econdb_export_destinations",
     "econdb_gdp_nominal",
     "econdb_gdp_real",
     "econdb_port_volume",
@@ -6812,6 +6845,7 @@
     "wsj_etf_active",
     "wsj_etf_gainers",
     "wsj_etf_losers",
+    "yfinance_available_indices",
     "yfinance_balance_sheet",
     "yfinance_cash_flow_statement",
     "yfinance_company_news",
@@ -7060,6 +7094,10 @@
     },
     {
       "domain": "econdb_economic_indicators",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_export_destinations",
       "source": "econdb"
     },
     {
@@ -8239,6 +8277,10 @@
       "source": "yfinance"
     },
     {
+      "domain": "yfinance_available_indices",
+      "source": "yfinance"
+    },
+    {
       "domain": "yfinance_balance_sheet",
       "source": "yfinance"
     },
@@ -8368,10 +8410,10 @@
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/receipt.json": "f2e3eb877e7a1ec4f6a080ebbe60137330e50b38d8d5224ac186e0950191bef3",
     "docs/evidence/C100/integration/root-guarded-batch3-retake1/smoke.json": "224c2475432ea6fca4b2c6e1442718ae2b0b829386530bf97a5361fb79897dc9",
     "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5",
-    "opendata/data/domains.yaml": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+    "opendata/data/domains.yaml": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
     "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
     "opendata/data/mappings/ths.yaml": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418",
-    "opendata/data/models/__init__.py": "e3285297f81a6a6351d8cfba8fa9e4cf99de9398a646e0408817905aab7c8eec",
+    "opendata/data/models/__init__.py": "0e99ab55fcb5591b2d95310d1cafde9149217419b4eba7481102b2eab7907faf",
     "opendata/data/models/finviz_performance.py": "1c0df807da91d8cb2fb1b5720431ce7d68bbacd3d4eb746fa2ff34ca5bf07b86",
     "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
     "opendata/data/models/yfinance_iter2.py": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
@@ -9205,5 +9247,23 @@
       "biztoc_world_news"
     ],
     "measured_by": "catalog + load_domains + registered_legs"
+  },
+  "wave44_econdb_yfinance_census_rebase": {
+    "identities_added": [
+      [
+        "econdb",
+        "ExportDestinations",
+        "econdb_export_destinations"
+      ],
+      [
+        "yfinance",
+        "AvailableIndices",
+        "yfinance_available_indices"
+      ]
+    ],
+    "domains_added": [
+      "econdb_export_destinations",
+      "yfinance_available_indices"
+    ]
   }
 }

@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model AvailableIndices --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:12:20.259696+00:00",
+      "executed_at_utc": "2026-10-21T05:16:57.822540+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -118,7 +118,7 @@
       "receipt": {
         "model_identity": "cboe::AvailableIndices",
         "path": "docs/evidence/C101/receipts/cboe/AvailableIndices/implementation.json",
-        "sha256": "ba6be3ed418cf0af5b57dfb0c286bf382a19661a18a6c768553188e03e8ad8f9"
+        "sha256": "3d8bbb07bc162458952a19375ced465bde701147e96a890b9a9279b1b8fff282"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -126,7 +126,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model AvailableIndices --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:12:21.670739+00:00",
+      "executed_at_utc": "2026-10-21T05:16:58.838806+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -138,8 +138,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -216,7 +216,7 @@
       "receipt": {
         "model_identity": "cboe::AvailableIndices",
         "path": "docs/evidence/C101/receipts/cboe/AvailableIndices/direct.json",
-        "sha256": "b9719fb365ae670810acb4ca4a9ec0fe12169eada3f57ad8a7811d6d3bf3cd9c"
+        "sha256": "24bbd440a9dabefc6db153d696f2242ab09b0353029ea57564fa80347e6010eb"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -224,7 +224,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model AvailableIndices --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:12:23.135858+00:00",
+      "executed_at_utc": "2026-10-21T05:16:59.857250+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -236,8 +236,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -314,7 +314,7 @@
       "receipt": {
         "model_identity": "cboe::AvailableIndices",
         "path": "docs/evidence/C101/receipts/cboe/AvailableIndices/service.json",
-        "sha256": "2a2efa45cb9737aed9e7025c0b5f92a380561e6cf56f03ccdee8d2444824e910"
+        "sha256": "574b428db6ff79d63ea7dc935bedad393d0cfef8b6e1d38e5ed68d0e440bf6f7"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -322,7 +322,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model AvailableIndices --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:12:24.701655+00:00",
+      "executed_at_utc": "2026-10-21T05:17:00.865802+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -334,8 +334,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -412,7 +412,7 @@
       "receipt": {
         "model_identity": "cboe::AvailableIndices",
         "path": "docs/evidence/C101/receipts/cboe/AvailableIndices/contract.json",
-        "sha256": "aab48dec30bb5118a3d4d0ad60861b4675f56d13c512ce7ff249684d00a1e489"
+        "sha256": "78c20923dc8fb20da03a3042634750656490b3c896da97397056fa898406261d"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -420,7 +420,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model AvailableIndices --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:12:27.682903+00:00",
+      "executed_at_utc": "2026-10-21T05:17:02.903114+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -432,8 +432,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -510,7 +510,7 @@
       "receipt": {
         "model_identity": "cboe::AvailableIndices",
         "path": "docs/evidence/C101/receipts/cboe/AvailableIndices/counterfact.json",
-        "sha256": "dc662912a50b0b6a8cac65646334fbd6f4fd84ceeaead7f9d71d1aa00c5b0fdd"
+        "sha256": "b44a2f83b2d12bd0eb49a5c00f663a9b01abbb351883bbc57152f965913aeece"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndices"
@@ -518,7 +518,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquityHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:12:28.806383+00:00",
+      "executed_at_utc": "2026-10-21T05:17:03.918079+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -530,8 +530,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -633,7 +633,7 @@
       "receipt": {
         "model_identity": "cboe::EquityHistorical",
         "path": "docs/evidence/C101/receipts/cboe/EquityHistorical/implementation.json",
-        "sha256": "9a6693b0b10352f24fdf9279b25cb84cbb222019fc882a04f1d8c734ae4872f1"
+        "sha256": "5f2157c2566b151b5cb2f5e812c660e31b0b3b9d7704737a698b2ab61f7bf502"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -641,7 +641,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquityHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:12:29.931416+00:00",
+      "executed_at_utc": "2026-10-21T05:17:04.925947+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -653,8 +653,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -731,7 +731,7 @@
       "receipt": {
         "model_identity": "cboe::EquityHistorical",
         "path": "docs/evidence/C101/receipts/cboe/EquityHistorical/direct.json",
-        "sha256": "cb05d6ee5181d0990ad6c8097d3b74f6a825935c11a159e69efc0c8318420a54"
+        "sha256": "dbf00a3e294aa123220197be7ed4e44dfe12dd97b7f9b1c7759bf92d63602a56"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -739,7 +739,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquityHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:12:31.041439+00:00",
+      "executed_at_utc": "2026-10-21T05:17:05.926364+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -751,8 +751,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -829,7 +829,7 @@
       "receipt": {
         "model_identity": "cboe::EquityHistorical",
         "path": "docs/evidence/C101/receipts/cboe/EquityHistorical/service.json",
-        "sha256": "29260d8ca8731feb07e7a08df1789a220e707c2381f0053eed8a08928a5e170d"
+        "sha256": "7a53303fc6a6c03d59d45000df09a6decfbaac7598995930856e0899e584017f"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -837,7 +837,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquityHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:12:32.221521+00:00",
+      "executed_at_utc": "2026-10-21T05:17:06.930854+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -849,8 +849,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -927,7 +927,7 @@
       "receipt": {
         "model_identity": "cboe::EquityHistorical",
         "path": "docs/evidence/C101/receipts/cboe/EquityHistorical/contract.json",
-        "sha256": "8a1108514654c88bca5ae76d2680dbe7be7f29b63846b359bc67b7dd54de8f75"
+        "sha256": "0d1640908e8a7d2857a07a6ef3af6f6e5c6d27f75074e9b1157edc35b1ec0d73"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -935,7 +935,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:12:34.672138+00:00",
+      "executed_at_utc": "2026-10-21T05:17:08.983096+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -947,8 +947,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1025,7 +1025,7 @@
       "receipt": {
         "model_identity": "cboe::EquityHistorical",
         "path": "docs/evidence/C101/receipts/cboe/EquityHistorical/counterfact.json",
-        "sha256": "c8fd160ecc28370f99cc387393a3048d4903c8f285aea854ed75f3108a41b5e2"
+        "sha256": "ac3d88c11ad7623b4d9a836bcd1a10851b7f46985868002a7cd01d307b4f5aed"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -1033,7 +1033,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquityQuote --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:12:35.796665+00:00",
+      "executed_at_utc": "2026-10-21T05:17:10.015777+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1045,8 +1045,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1148,7 +1148,7 @@
       "receipt": {
         "model_identity": "cboe::EquityQuote",
         "path": "docs/evidence/C101/receipts/cboe/EquityQuote/implementation.json",
-        "sha256": "7a6fd928445ecd5493fedb12800694e5f3e30f3d040074e5ac9bab1404350e37"
+        "sha256": "53ae6171a1ec2d544f3a325ca8ccce5ac0c62e1ba2ff0b77255658f00275ae56"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -1156,7 +1156,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquityQuote --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:12:36.972593+00:00",
+      "executed_at_utc": "2026-10-21T05:17:11.038021+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1168,8 +1168,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1246,7 +1246,7 @@
       "receipt": {
         "model_identity": "cboe::EquityQuote",
         "path": "docs/evidence/C101/receipts/cboe/EquityQuote/direct.json",
-        "sha256": "5ac921a100a29da3fa63684fa74477eba513ba151fcb940a110d6e98ccb1456d"
+        "sha256": "41d2a3a7537c8842c9db0a0ba0db9835efcaa11f97929aed246515140de183d1"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -1254,7 +1254,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquityQuote --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:12:38.183236+00:00",
+      "executed_at_utc": "2026-10-21T05:17:12.059694+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1266,8 +1266,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1344,7 +1344,7 @@
       "receipt": {
         "model_identity": "cboe::EquityQuote",
         "path": "docs/evidence/C101/receipts/cboe/EquityQuote/service.json",
-        "sha256": "bb801d4b4af9e2cd935fc91f38c387040485df0dd79530f02ec66a3171073198"
+        "sha256": "e2b510b1230cba5afea0f6d99b13a91ec91fd4dcb6797618e708e5834dff63bb"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -1352,7 +1352,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquityQuote --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:12:39.326310+00:00",
+      "executed_at_utc": "2026-10-21T05:17:13.064789+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1364,8 +1364,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1442,7 +1442,7 @@
       "receipt": {
         "model_identity": "cboe::EquityQuote",
         "path": "docs/evidence/C101/receipts/cboe/EquityQuote/contract.json",
-        "sha256": "c1e1437dc5be71a48fe75b1ae3dbd9c7afc063b4ec46d08da22a452ab43b253a"
+        "sha256": "eea5053515af0e7f45b5e17ae2c1ca1c53bdcae9618dca8c5912d533696eec37"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -1450,7 +1450,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquityQuote --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:12:41.683513+00:00",
+      "executed_at_utc": "2026-10-21T05:17:15.094757+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1462,8 +1462,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1540,7 +1540,7 @@
       "receipt": {
         "model_identity": "cboe::EquityQuote",
         "path": "docs/evidence/C101/receipts/cboe/EquityQuote/counterfact.json",
-        "sha256": "05c358e42ecb1e8227454f1156b70001a37b20c610232ed761af2b6b14c43b8d"
+        "sha256": "faa00b461a3f59ed47a5a8f26f69ac1f932002aa96ebc99b847e0a4a8faad4c9"
       },
       "status": "PASS",
       "upstream_model": "EquityQuote"
@@ -1548,7 +1548,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquitySearch --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:12:42.814542+00:00",
+      "executed_at_utc": "2026-10-21T05:17:16.097935+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1560,8 +1560,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1663,7 +1663,7 @@
       "receipt": {
         "model_identity": "cboe::EquitySearch",
         "path": "docs/evidence/C101/receipts/cboe/EquitySearch/implementation.json",
-        "sha256": "600563bf607880e8e29eaa473ff01dfe7950f35bc9f420f01a4b6f400b445482"
+        "sha256": "933d5745cab3a7830b3d01f77e4f46ad9b803fb3633f578a838d1d32ae6f8896"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -1671,7 +1671,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquitySearch --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:12:43.963722+00:00",
+      "executed_at_utc": "2026-10-21T05:17:17.100606+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1683,8 +1683,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1761,7 +1761,7 @@
       "receipt": {
         "model_identity": "cboe::EquitySearch",
         "path": "docs/evidence/C101/receipts/cboe/EquitySearch/direct.json",
-        "sha256": "a203dc9dba1b485a2327e3453f93e97bdd4529d54e0f5d77f9844cd815e32c47"
+        "sha256": "fa1707e6b44c4f12c8f3782589cd9c4a6153fdde8cdcd72664d191c4d13b700e"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -1769,7 +1769,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquitySearch --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:12:45.147039+00:00",
+      "executed_at_utc": "2026-10-21T05:17:18.109407+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1781,8 +1781,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1859,7 +1859,7 @@
       "receipt": {
         "model_identity": "cboe::EquitySearch",
         "path": "docs/evidence/C101/receipts/cboe/EquitySearch/service.json",
-        "sha256": "74928f42f86714815847a1885f04349a5e77cf67eb65ebce2d562e74384ff9f0"
+        "sha256": "5252c43cfa9029578f01331d6e6270d5af05a0013e230001ecaad36fffb3843e"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -1867,7 +1867,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquitySearch --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:12:46.279752+00:00",
+      "executed_at_utc": "2026-10-21T05:17:19.114675+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1879,8 +1879,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1957,7 +1957,7 @@
       "receipt": {
         "model_identity": "cboe::EquitySearch",
         "path": "docs/evidence/C101/receipts/cboe/EquitySearch/contract.json",
-        "sha256": "c6f81e440e89081e76a483728c0af98a6393e4c8c63c149385e07383e9e68fd9"
+        "sha256": "39f15ce47c6015dea0110b5840a707b6bc8cba986352d4658c8ad529b15a9374"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -1965,7 +1965,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EquitySearch --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:12:48.591908+00:00",
+      "executed_at_utc": "2026-10-21T05:17:21.146539+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1977,8 +1977,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2055,7 +2055,7 @@
       "receipt": {
         "model_identity": "cboe::EquitySearch",
         "path": "docs/evidence/C101/receipts/cboe/EquitySearch/counterfact.json",
-        "sha256": "9e845178c283dcd425a9cfea66e04745329f40c9624c838dbda9df4599d1d6a8"
+        "sha256": "7c4e7ba0f4c5574d380a2a20449ef6e093bdbb2d7edec7849288f9babeed0dc1"
       },
       "status": "PASS",
       "upstream_model": "EquitySearch"
@@ -2063,7 +2063,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EtfHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:12:49.708575+00:00",
+      "executed_at_utc": "2026-10-21T05:17:22.166521+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2075,8 +2075,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2178,7 +2178,7 @@
       "receipt": {
         "model_identity": "cboe::EtfHistorical",
         "path": "docs/evidence/C101/receipts/cboe/EtfHistorical/implementation.json",
-        "sha256": "f6cfdc7e29c4a78fd98a1b9ed58d2a5d67d26ac89a350d0d719f9d95d1231654"
+        "sha256": "3722748cca25dbb5c162b2bfe4e71570f3ccc4e3a34e26466b657d8e074c0ee1"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -2186,7 +2186,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EtfHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:12:50.856989+00:00",
+      "executed_at_utc": "2026-10-21T05:17:23.180874+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2198,8 +2198,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2276,7 +2276,7 @@
       "receipt": {
         "model_identity": "cboe::EtfHistorical",
         "path": "docs/evidence/C101/receipts/cboe/EtfHistorical/direct.json",
-        "sha256": "1aae99c48a485bc44b59941a2abf886ec8d4639310c90913123c05c87b151ab1"
+        "sha256": "731f04885290cc7366a77174b5cc967dc98666bb06543f1612369939e1b03046"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -2284,7 +2284,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EtfHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:12:51.976221+00:00",
+      "executed_at_utc": "2026-10-21T05:17:24.233991+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2296,8 +2296,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2374,7 +2374,7 @@
       "receipt": {
         "model_identity": "cboe::EtfHistorical",
         "path": "docs/evidence/C101/receipts/cboe/EtfHistorical/service.json",
-        "sha256": "40205dcbad9ddd6ee1c6bbd4e65db02890acf97226d7d7af0913bb2bc8800beb"
+        "sha256": "2856f7a52dda8972d3544b84d7254d7fa2b8ab5cfde6f97f260ffe491f1aa81e"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -2382,7 +2382,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EtfHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:12:53.171824+00:00",
+      "executed_at_utc": "2026-10-21T05:17:25.260122+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2394,8 +2394,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2472,7 +2472,7 @@
       "receipt": {
         "model_identity": "cboe::EtfHistorical",
         "path": "docs/evidence/C101/receipts/cboe/EtfHistorical/contract.json",
-        "sha256": "c28da1646e6c97245dcb6d54a31a7ed00e99ecc734d9a006dedc1435fe414cf9"
+        "sha256": "1330085d81dd4faf60e678bf69103715f5f9baeb1820b3e454fd688388aaa0dc"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -2480,7 +2480,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model EtfHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:12:55.459950+00:00",
+      "executed_at_utc": "2026-10-21T05:17:27.287744+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2492,8 +2492,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2570,7 +2570,7 @@
       "receipt": {
         "model_identity": "cboe::EtfHistorical",
         "path": "docs/evidence/C101/receipts/cboe/EtfHistorical/counterfact.json",
-        "sha256": "5eac2a4fcad362b555b790131ee6b537383566ce0fdbf8c37d943e37ca41a672"
+        "sha256": "5c91f41e9324452dafe3ba56993e641b0fdba42a179ac13a558e53d98075c722"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -2578,7 +2578,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexConstituents --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:12:56.622384+00:00",
+      "executed_at_utc": "2026-10-21T05:17:28.310402+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2590,8 +2590,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2693,7 +2693,7 @@
       "receipt": {
         "model_identity": "cboe::IndexConstituents",
         "path": "docs/evidence/C101/receipts/cboe/IndexConstituents/implementation.json",
-        "sha256": "3874f99a7512da428f5695dbe7900b868a303b7fc9ae3a83248d69b7c8a442c5"
+        "sha256": "e3a77ff44e96ca19ca69989566b31804ace9b1e00d10218cad563d2b2d21f787"
       },
       "status": "PASS",
       "upstream_model": "IndexConstituents"
@@ -2701,7 +2701,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexConstituents --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:12:57.818669+00:00",
+      "executed_at_utc": "2026-10-21T05:17:29.331627+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2713,8 +2713,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2791,7 +2791,7 @@
       "receipt": {
         "model_identity": "cboe::IndexConstituents",
         "path": "docs/evidence/C101/receipts/cboe/IndexConstituents/direct.json",
-        "sha256": "e0ebd4c4e9d444f79b58ef091ee0e9f591f410fab268b1186ec6153fdcbe94db"
+        "sha256": "ea098e016b4dd805c8084e857aa604f6c4c7138d56ce0c5b5b3f1e97b8b7fdbd"
       },
       "status": "PASS",
       "upstream_model": "IndexConstituents"
@@ -2799,7 +2799,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexConstituents --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:12:58.907661+00:00",
+      "executed_at_utc": "2026-10-21T05:17:30.344576+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2811,8 +2811,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2889,7 +2889,7 @@
       "receipt": {
         "model_identity": "cboe::IndexConstituents",
         "path": "docs/evidence/C101/receipts/cboe/IndexConstituents/service.json",
-        "sha256": "ab161862ed8cd208848ef9f9ac74da01c38d60a9cfe25bfc8b69b9fa0084c5fa"
+        "sha256": "f3a4e141aae2f4954ab45264f065547a1e5d305fcb4c9d515dfa985d960318aa"
       },
       "status": "PASS",
       "upstream_model": "IndexConstituents"
@@ -2897,7 +2897,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexConstituents --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:13:00.003881+00:00",
+      "executed_at_utc": "2026-10-21T05:17:31.361935+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2909,8 +2909,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2987,7 +2987,7 @@
       "receipt": {
         "model_identity": "cboe::IndexConstituents",
         "path": "docs/evidence/C101/receipts/cboe/IndexConstituents/contract.json",
-        "sha256": "cfbf4dd53b90115c29900b1a42ad6325b30ae7760c7276cc4327fb2aaf14f890"
+        "sha256": "9a324b61e13ca2ece60f0624d03187052678a9ee5a7cfe4d0575c88a5b657411"
       },
       "status": "PASS",
       "upstream_model": "IndexConstituents"
@@ -2995,7 +2995,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexConstituents --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:13:02.749083+00:00",
+      "executed_at_utc": "2026-10-21T05:17:33.406451+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3007,8 +3007,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3085,7 +3085,7 @@
       "receipt": {
         "model_identity": "cboe::IndexConstituents",
         "path": "docs/evidence/C101/receipts/cboe/IndexConstituents/counterfact.json",
-        "sha256": "ed20c54551ba5e97b8a241d53501ca07270d0d13da6e461b170467060973e26a"
+        "sha256": "85a1931834e506b85a17c48ddd250d4aaffecb7cd81fdc3c0d7b6d738b85b581"
       },
       "status": "PASS",
       "upstream_model": "IndexConstituents"
@@ -3093,7 +3093,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model FuturesCurve --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:13:04.038891+00:00",
+      "executed_at_utc": "2026-10-21T05:17:34.459752+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -3105,8 +3105,8 @@
             "path": "opendata/data/models/cboe_futures_curve.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3203,7 +3203,7 @@
       "receipt": {
         "model_identity": "cboe::FuturesCurve",
         "path": "docs/evidence/C101/receipts/cboe/FuturesCurve/implementation.json",
-        "sha256": "73c7393064b80b48c173df3f92b5ee63e8c75ac1c1a4554140c85f2b695e672a"
+        "sha256": "ceb5a3ea1448c66672fc36df5c2e314ac942f96e3868846274fc3d0faedc8521"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -3211,7 +3211,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model FuturesCurve --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:13:05.352685+00:00",
+      "executed_at_utc": "2026-10-21T05:17:35.476046+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3223,8 +3223,8 @@
             "path": "opendata/data/models/cboe_futures_curve.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3296,7 +3296,7 @@
       "receipt": {
         "model_identity": "cboe::FuturesCurve",
         "path": "docs/evidence/C101/receipts/cboe/FuturesCurve/direct.json",
-        "sha256": "b2015b1ddf4cf958f46a09a05a0122c6f4e074afced5a08a4551dfb6074abe09"
+        "sha256": "f0d2c42698825e69dd871afba457c9a53a59a1f005d4980d2870ce1e651f7b86"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -3304,7 +3304,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model FuturesCurve --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:13:06.670408+00:00",
+      "executed_at_utc": "2026-10-21T05:17:36.494037+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3316,8 +3316,8 @@
             "path": "opendata/data/models/cboe_futures_curve.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3389,7 +3389,7 @@
       "receipt": {
         "model_identity": "cboe::FuturesCurve",
         "path": "docs/evidence/C101/receipts/cboe/FuturesCurve/service.json",
-        "sha256": "a4616fd518b6f2d1579bb226f73d234a4695aaeba8aff975b0211d4390721d04"
+        "sha256": "a9b47e8ffc41db3a779f345db779a44c16b7618d631d1c334165de5acef69fc4"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -3397,7 +3397,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model FuturesCurve --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:13:08.003990+00:00",
+      "executed_at_utc": "2026-10-21T05:17:37.516151+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3409,8 +3409,8 @@
             "path": "opendata/data/models/cboe_futures_curve.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3482,7 +3482,7 @@
       "receipt": {
         "model_identity": "cboe::FuturesCurve",
         "path": "docs/evidence/C101/receipts/cboe/FuturesCurve/contract.json",
-        "sha256": "a4a097abc48e5e2dffb7b380b59ac706f762acdd05715469f0b7133a8a2bb7e1"
+        "sha256": "2922fabd66c11f8bcdcf26f6c25ce25417275d701d1e323133ba750590f45def"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -3490,7 +3490,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model FuturesCurve --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:13:10.662764+00:00",
+      "executed_at_utc": "2026-10-21T05:17:39.677794+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3502,8 +3502,8 @@
             "path": "opendata/data/models/cboe_futures_curve.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3575,7 +3575,7 @@
       "receipt": {
         "model_identity": "cboe::FuturesCurve",
         "path": "docs/evidence/C101/receipts/cboe/FuturesCurve/counterfact.json",
-        "sha256": "51a818e2fb56d91b20be4cf4b910baca0750637e200409cea13b2cafa6bf1029"
+        "sha256": "65a94060ce5983c31c8ae0e8c509e17ac85e8a2d7a3d4bf6d28a20af61f50248"
       },
       "status": "PASS",
       "upstream_model": "FuturesCurve"
@@ -3583,7 +3583,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:13:11.923712+00:00",
+      "executed_at_utc": "2026-10-21T05:17:40.755259+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -3595,8 +3595,8 @@
             "path": "opendata/data/models/cboe_index_historical.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3693,7 +3693,7 @@
       "receipt": {
         "model_identity": "cboe::IndexHistorical",
         "path": "docs/evidence/C101/receipts/cboe/IndexHistorical/implementation.json",
-        "sha256": "11a84ed7de86acafb6074fdb9604b0e9780eb66061b944550ba784c662d472ad"
+        "sha256": "0cf2f4f32ed043c6a7dbb9992880dd51c044e7c0f7e4c4e5bcb13cadc05d63de"
       },
       "status": "PASS",
       "upstream_model": "IndexHistorical"
@@ -3701,7 +3701,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:13:13.215371+00:00",
+      "executed_at_utc": "2026-10-21T05:17:41.816545+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3713,8 +3713,8 @@
             "path": "opendata/data/models/cboe_index_historical.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3786,7 +3786,7 @@
       "receipt": {
         "model_identity": "cboe::IndexHistorical",
         "path": "docs/evidence/C101/receipts/cboe/IndexHistorical/direct.json",
-        "sha256": "a46098f0cf52c410f0abd92477ca7612f9da3cf6e1f66416b9522f72098bb0d3"
+        "sha256": "ed9f57ea4ddebf385c923da9e4c85970a5fd71d6b60603dcab5141ec103a3a35"
       },
       "status": "PASS",
       "upstream_model": "IndexHistorical"
@@ -3794,7 +3794,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:13:14.584140+00:00",
+      "executed_at_utc": "2026-10-21T05:17:42.895693+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3806,8 +3806,8 @@
             "path": "opendata/data/models/cboe_index_historical.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3879,7 +3879,7 @@
       "receipt": {
         "model_identity": "cboe::IndexHistorical",
         "path": "docs/evidence/C101/receipts/cboe/IndexHistorical/service.json",
-        "sha256": "a5eb1b6ea5d44a285a9852dd8d7fad014315a1a0d494d3ee3ea9e6e15cf0f502"
+        "sha256": "7ed8cc2c26673d03ed227e8ccff6d5328b1dd85a78f4003a6a34d03dfdac6f26"
       },
       "status": "PASS",
       "upstream_model": "IndexHistorical"
@@ -3887,7 +3887,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:13:15.904930+00:00",
+      "executed_at_utc": "2026-10-21T05:17:43.994024+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3899,8 +3899,8 @@
             "path": "opendata/data/models/cboe_index_historical.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3972,7 +3972,7 @@
       "receipt": {
         "model_identity": "cboe::IndexHistorical",
         "path": "docs/evidence/C101/receipts/cboe/IndexHistorical/contract.json",
-        "sha256": "674de32e7e5e65eb7cc5d693f4bdd622ae7b3cec16d96bcfdd30d4544a80528e"
+        "sha256": "52dd4d8fddc0dc66905654f20c8485f795751f7e2d490cd92e3f3e74e79b3c4e"
       },
       "status": "PASS",
       "upstream_model": "IndexHistorical"
@@ -3980,7 +3980,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:13:18.565666+00:00",
+      "executed_at_utc": "2026-10-21T05:17:46.037899+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3992,8 +3992,8 @@
             "path": "opendata/data/models/cboe_index_historical.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4065,7 +4065,7 @@
       "receipt": {
         "model_identity": "cboe::IndexHistorical",
         "path": "docs/evidence/C101/receipts/cboe/IndexHistorical/counterfact.json",
-        "sha256": "fed094bc2713af82808433b71864156db96345667e7638c19ac9f9a32203be57"
+        "sha256": "31a1c3b1d638954e12de0aa62566c3aa21540a38c2f831e94e2d2bb1163017fb"
       },
       "status": "PASS",
       "upstream_model": "IndexHistorical"
@@ -4073,7 +4073,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexSearch --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:13:19.864291+00:00",
+      "executed_at_utc": "2026-10-21T05:17:47.041931+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -4085,8 +4085,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4188,7 +4188,7 @@
       "receipt": {
         "model_identity": "cboe::IndexSearch",
         "path": "docs/evidence/C101/receipts/cboe/IndexSearch/implementation.json",
-        "sha256": "66f706fafae6ee6b98961426806817e0d561f4bda692d846917d65290e47812b"
+        "sha256": "64f98676e9d1bdd958e2e416149ea28d9f4d7db50687518e4ac14728880e0ac8"
       },
       "status": "PASS",
       "upstream_model": "IndexSearch"
@@ -4196,7 +4196,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexSearch --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:13:21.195225+00:00",
+      "executed_at_utc": "2026-10-21T05:17:48.056904+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -4208,8 +4208,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4286,7 +4286,7 @@
       "receipt": {
         "model_identity": "cboe::IndexSearch",
         "path": "docs/evidence/C101/receipts/cboe/IndexSearch/direct.json",
-        "sha256": "804e4569488e0881c02d4153861e8173322ffa38d46d79a680c908e3396814f4"
+        "sha256": "e710f15439261c4cdc34307b8596317c5c71b52ab154081bc8337858b0efe480"
       },
       "status": "PASS",
       "upstream_model": "IndexSearch"
@@ -4294,7 +4294,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexSearch --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:13:22.485396+00:00",
+      "executed_at_utc": "2026-10-21T05:17:49.074857+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -4306,8 +4306,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4384,7 +4384,7 @@
       "receipt": {
         "model_identity": "cboe::IndexSearch",
         "path": "docs/evidence/C101/receipts/cboe/IndexSearch/service.json",
-        "sha256": "9b57844a47a4f42307e3dc94ab1d797b5115e6b608685885bbb369330b5776a1"
+        "sha256": "e8b78cdde7417750e543ac2379d416b6416302e5eace6414c69727850605b79c"
       },
       "status": "PASS",
       "upstream_model": "IndexSearch"
@@ -4392,7 +4392,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexSearch --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:13:23.774422+00:00",
+      "executed_at_utc": "2026-10-21T05:17:50.092925+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -4404,8 +4404,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4482,7 +4482,7 @@
       "receipt": {
         "model_identity": "cboe::IndexSearch",
         "path": "docs/evidence/C101/receipts/cboe/IndexSearch/contract.json",
-        "sha256": "808930e8ea7bcc100775356528ba0f3b383d4410028de6b2590c1f53c54dfc9a"
+        "sha256": "f46c6a88a9b47d3772735f8e57d57c192f28d7b7626f6df3f0d8c74bd7df2b5d"
       },
       "status": "PASS",
       "upstream_model": "IndexSearch"
@@ -4490,7 +4490,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexSearch --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:13:26.443369+00:00",
+      "executed_at_utc": "2026-10-21T05:17:52.122841+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -4502,8 +4502,8 @@
             "path": "opendata/data/models/cboe_index.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4580,7 +4580,7 @@
       "receipt": {
         "model_identity": "cboe::IndexSearch",
         "path": "docs/evidence/C101/receipts/cboe/IndexSearch/counterfact.json",
-        "sha256": "8823cd5845fae4c55cf4836cc88f41dcaca4c06c716b9a58d64058d7c1487591"
+        "sha256": "4fe8d465369d865cb845f8eab0a8eef31230308543652cc3b2e394dc2be68e91"
       },
       "status": "PASS",
       "upstream_model": "IndexSearch"
@@ -4588,7 +4588,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexSnapshots --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:13:27.721765+00:00",
+      "executed_at_utc": "2026-10-21T05:17:53.133087+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -4600,8 +4600,8 @@
             "path": "opendata/data/models/cboe_index_snapshots.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4698,7 +4698,7 @@
       "receipt": {
         "model_identity": "cboe::IndexSnapshots",
         "path": "docs/evidence/C101/receipts/cboe/IndexSnapshots/implementation.json",
-        "sha256": "625178b85162213efee3909c24515d1b93fac1f1f4a9329eb323923d25c2c813"
+        "sha256": "44349c11347afbe5d080c380f3a0e6f392621a4acaee54e8d84985dbfe005f6c"
       },
       "status": "PASS",
       "upstream_model": "IndexSnapshots"
@@ -4706,7 +4706,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexSnapshots --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:13:29.035232+00:00",
+      "executed_at_utc": "2026-10-21T05:17:54.154246+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -4718,8 +4718,8 @@
             "path": "opendata/data/models/cboe_index_snapshots.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4791,7 +4791,7 @@
       "receipt": {
         "model_identity": "cboe::IndexSnapshots",
         "path": "docs/evidence/C101/receipts/cboe/IndexSnapshots/direct.json",
-        "sha256": "9faace97597f4b3cf74cc651b6a6facf46686e6f6f0746d297dc080e7d086b39"
+        "sha256": "5028920fd5203c5a54e85b3bf5ecfea40df9aa98b694ef0bbb5b651496b8b91a"
       },
       "status": "PASS",
       "upstream_model": "IndexSnapshots"
@@ -4799,7 +4799,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexSnapshots --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:13:30.343855+00:00",
+      "executed_at_utc": "2026-10-21T05:17:55.163296+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -4811,8 +4811,8 @@
             "path": "opendata/data/models/cboe_index_snapshots.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4884,7 +4884,7 @@
       "receipt": {
         "model_identity": "cboe::IndexSnapshots",
         "path": "docs/evidence/C101/receipts/cboe/IndexSnapshots/service.json",
-        "sha256": "0cb28deabbb4d8386ef4c409d23d9064cd177dfc7793b0331464ee320cc63623"
+        "sha256": "e09ca5db3b22bd8f77e9e319798a088f958d31421277c393436d80c7fbbf5e67"
       },
       "status": "PASS",
       "upstream_model": "IndexSnapshots"
@@ -4892,7 +4892,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexSnapshots --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:13:31.701494+00:00",
+      "executed_at_utc": "2026-10-21T05:17:56.171985+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -4904,8 +4904,8 @@
             "path": "opendata/data/models/cboe_index_snapshots.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -4977,7 +4977,7 @@
       "receipt": {
         "model_identity": "cboe::IndexSnapshots",
         "path": "docs/evidence/C101/receipts/cboe/IndexSnapshots/contract.json",
-        "sha256": "d5d0a7e21d450872086746ca17407f7d15737671a0bd792752411ead2af3aa6f"
+        "sha256": "a94e9d7491bff63e60d3fb56b4449b8c2a0548e492439a68591c267902971f2f"
       },
       "status": "PASS",
       "upstream_model": "IndexSnapshots"
@@ -4985,7 +4985,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model IndexSnapshots --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:13:34.303670+00:00",
+      "executed_at_utc": "2026-10-21T05:17:58.230828+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -4997,8 +4997,8 @@
             "path": "opendata/data/models/cboe_index_snapshots.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5070,7 +5070,7 @@
       "receipt": {
         "model_identity": "cboe::IndexSnapshots",
         "path": "docs/evidence/C101/receipts/cboe/IndexSnapshots/counterfact.json",
-        "sha256": "31c006ed09c541ae784f3174a894f9264e53897ad6449e6ea7f8afd3750a5a3e"
+        "sha256": "7ea24623853764d7f3a50f5895deca8b89cd141e8ca506fb2b347557ba567a82"
       },
       "status": "PASS",
       "upstream_model": "IndexSnapshots"
@@ -5078,7 +5078,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model OptionsChains --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:13:35.624438+00:00",
+      "executed_at_utc": "2026-10-21T05:17:59.239216+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -5090,8 +5090,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5193,7 +5193,7 @@
       "receipt": {
         "model_identity": "cboe::OptionsChains",
         "path": "docs/evidence/C101/receipts/cboe/OptionsChains/implementation.json",
-        "sha256": "60a019a60e6e560c242a5b9fe42ed99113ff0047c802bb135e474026cb30a288"
+        "sha256": "4a83d575b2bc7162b69458f995a1bdbae7cb90155e33fa1e2f6c0b6120180fa1"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -5201,7 +5201,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model OptionsChains --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:13:36.940430+00:00",
+      "executed_at_utc": "2026-10-21T05:18:00.250441+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -5213,8 +5213,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5291,7 +5291,7 @@
       "receipt": {
         "model_identity": "cboe::OptionsChains",
         "path": "docs/evidence/C101/receipts/cboe/OptionsChains/direct.json",
-        "sha256": "42b253f0f143ea766a75bdfc968b4afc2d1c24eb2534a5dbadeb4802f960315d"
+        "sha256": "1df206357c0ebc34f0dda68e974eb598593b3873c2c9ed2d61e942ab6a76a1c6"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -5299,7 +5299,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model OptionsChains --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:13:38.255723+00:00",
+      "executed_at_utc": "2026-10-21T05:18:01.261202+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -5311,8 +5311,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5389,7 +5389,7 @@
       "receipt": {
         "model_identity": "cboe::OptionsChains",
         "path": "docs/evidence/C101/receipts/cboe/OptionsChains/service.json",
-        "sha256": "c967c1c832834887837d1635b4b27172bcfa313078c094ffe1cc4a0aaf2d6747"
+        "sha256": "d31e88987b59bdc1a646713ab1c4807d0e03df16da12c1823b4d0dd1b2471452"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -5397,7 +5397,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model OptionsChains --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:13:39.618378+00:00",
+      "executed_at_utc": "2026-10-21T05:18:02.279257+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -5409,8 +5409,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5487,7 +5487,7 @@
       "receipt": {
         "model_identity": "cboe::OptionsChains",
         "path": "docs/evidence/C101/receipts/cboe/OptionsChains/contract.json",
-        "sha256": "d69c704c9805d1266ccc3ac98da4ba5c90ee2db87081f3914ecbcc3c8e98368c"
+        "sha256": "fea2d152086785234cfd1dff83044addb1b5a2273412bac486eba316a9c9909f"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -5495,7 +5495,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider cboe --model OptionsChains --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:13:42.248076+00:00",
+      "executed_at_utc": "2026-10-21T05:18:04.344959+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -5507,8 +5507,8 @@
             "path": "opendata/data/models/congress_cboe_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -5585,7 +5585,7 @@
       "receipt": {
         "model_identity": "cboe::OptionsChains",
         "path": "docs/evidence/C101/receipts/cboe/OptionsChains/counterfact.json",
-        "sha256": "75b54462fd016b4933dee60ca89474e56c39336e0c77288e08d4510223fda845"
+        "sha256": "b497cac223f433cc03c03af70733e7f3b75102aa79ae85c7eb4e63cfa4270385"
       },
       "status": "PASS",
       "upstream_model": "OptionsChains"
@@ -5599,9 +5599,9 @@
       "receipt": {
         "model_identity": "cboe::AvailableIndices",
         "path": "docs/evidence/C101/primary-reviews/cboe__AvailableIndices.review.json",
-        "sha256": "0cdfb12adcd16133c17ac30e0a74f1712c60d8fcf0fdbcb4d20b6319cf461535"
+        "sha256": "3f20179d44d929eaf183e99f272a2d44d40d8c94437920a449ce6e8c07887a55"
       },
-      "reviewed_at_utc": "2026-10-21T03:13:43Z",
+      "reviewed_at_utc": "2026-10-21T05:18:05Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -5614,9 +5614,9 @@
       "receipt": {
         "model_identity": "cboe::EquityHistorical",
         "path": "docs/evidence/C101/primary-reviews/cboe__EquityHistorical.review.json",
-        "sha256": "20e110e5017f050b5091fa9d480e544a29cb52650cd5f0262c39ec3d3bd82c99"
+        "sha256": "b07e42e5248f6f8fd15cb82dedbd337c2aaa0037042fad42ccf9d55c16c4a33f"
       },
-      "reviewed_at_utc": "2026-10-21T03:13:43Z",
+      "reviewed_at_utc": "2026-10-21T05:18:05Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -5629,9 +5629,9 @@
       "receipt": {
         "model_identity": "cboe::EquityQuote",
         "path": "docs/evidence/C101/primary-reviews/cboe__EquityQuote.review.json",
-        "sha256": "27b206c5c1004c719cbad2b55aa2f4529ac37862ce80192b8951b808729edc79"
+        "sha256": "cb5043d57adcea476501918915b88307df4302cf5536ae51c4633f53963793a4"
       },
-      "reviewed_at_utc": "2026-10-21T03:13:43Z",
+      "reviewed_at_utc": "2026-10-21T05:18:05Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -5644,9 +5644,9 @@
       "receipt": {
         "model_identity": "cboe::EquitySearch",
         "path": "docs/evidence/C101/primary-reviews/cboe__EquitySearch.review.json",
-        "sha256": "a792282ecb389f3a450ad3e166d10be308eec3723e289d627c35cca256a32d65"
+        "sha256": "29cf52703ed2e8b693183c0056873a651979c4686d17199dc56ba7cfc78c0e89"
       },
-      "reviewed_at_utc": "2026-10-21T03:13:43Z",
+      "reviewed_at_utc": "2026-10-21T05:18:05Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -5659,9 +5659,9 @@
       "receipt": {
         "model_identity": "cboe::EtfHistorical",
         "path": "docs/evidence/C101/primary-reviews/cboe__EtfHistorical.review.json",
-        "sha256": "6428951e4edd4f4ae59848277b75fa54edeffb01c1f1535efa968a79fd0a76cb"
+        "sha256": "7cc08cb05a19caed26a4c3723eb7a091f3f837d2a4ada75a7c6d43c73610f589"
       },
-      "reviewed_at_utc": "2026-10-21T03:13:43Z",
+      "reviewed_at_utc": "2026-10-21T05:18:05Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -5674,9 +5674,9 @@
       "receipt": {
         "model_identity": "cboe::FuturesCurve",
         "path": "docs/evidence/C101/primary-reviews/cboe__FuturesCurve.review.json",
-        "sha256": "ed9a17443d3cb26adc047db1944f500b98496b6572e782d4aa4a351d87628300"
+        "sha256": "d2d4065669dbf26a892f404876a54c658dfcce150493ddda78cf745cdfb82d07"
       },
-      "reviewed_at_utc": "2026-10-21T03:13:43Z",
+      "reviewed_at_utc": "2026-10-21T05:18:05Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -5689,9 +5689,9 @@
       "receipt": {
         "model_identity": "cboe::IndexConstituents",
         "path": "docs/evidence/C101/primary-reviews/cboe__IndexConstituents.review.json",
-        "sha256": "eda3c44a1b1966cbd1ba5d2694432fd42f3009b005f3f3018592ec7b44b5218d"
+        "sha256": "d09ad0981ac52197c53e263b5fc42d083773f8c9c8c3d6963c255b007460a56a"
       },
-      "reviewed_at_utc": "2026-10-21T03:13:43Z",
+      "reviewed_at_utc": "2026-10-21T05:18:05Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -5704,9 +5704,9 @@
       "receipt": {
         "model_identity": "cboe::IndexHistorical",
         "path": "docs/evidence/C101/primary-reviews/cboe__IndexHistorical.review.json",
-        "sha256": "d3cdc122977205495c3973ba03a0a75b03d6a22eeb8db9d2701ab70c75ea9497"
+        "sha256": "1e874624a19e349195b3de4c0fa39905dd9b7564482ee47789614ee7bbbd9953"
       },
-      "reviewed_at_utc": "2026-10-21T03:13:43Z",
+      "reviewed_at_utc": "2026-10-21T05:18:05Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -5719,9 +5719,9 @@
       "receipt": {
         "model_identity": "cboe::IndexSearch",
         "path": "docs/evidence/C101/primary-reviews/cboe__IndexSearch.review.json",
-        "sha256": "066f8300a6830c3735f34dfb5cd869618b9a99bfa22cde831319fb8c795774d5"
+        "sha256": "bde8c1ae1b4a61f20fb31eb5d90926dfe13a9db60f83d87f6b07655beacdb058"
       },
-      "reviewed_at_utc": "2026-10-21T03:13:43Z",
+      "reviewed_at_utc": "2026-10-21T05:18:05Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -5734,9 +5734,9 @@
       "receipt": {
         "model_identity": "cboe::IndexSnapshots",
         "path": "docs/evidence/C101/primary-reviews/cboe__IndexSnapshots.review.json",
-        "sha256": "19de3ce13b0f2dd8a0f353a998f915a75f179c82124050dc31a1e7c602ab8886"
+        "sha256": "e11088dbd15d227877d04b506bf9f5915ceb089262bc166f53594892b7b33333"
       },
-      "reviewed_at_utc": "2026-10-21T03:13:43Z",
+      "reviewed_at_utc": "2026-10-21T05:18:05Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -5749,9 +5749,9 @@
       "receipt": {
         "model_identity": "cboe::OptionsChains",
         "path": "docs/evidence/C101/primary-reviews/cboe__OptionsChains.review.json",
-        "sha256": "b464afc1727097a87b5e77f0b4303eb9a1340f8acdb2207779629c1d5ff08711"
+        "sha256": "b39d19b781fddd89be5307de69833bacc8c64994255c0562e184ef110749ed26"
       },
-      "reviewed_at_utc": "2026-10-21T03:13:43Z",
+      "reviewed_at_utc": "2026-10-21T05:18:05Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

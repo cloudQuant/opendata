@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model AvailableIndicators --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:35:11.462171+00:00",
+      "executed_at_utc": "2026-10-21T05:37:45.618060+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -88,7 +88,7 @@
       "receipt": {
         "model_identity": "imf::AvailableIndicators",
         "path": "docs/evidence/C101/receipts/imf/AvailableIndicators/implementation.json",
-        "sha256": "680aa54dae82700d990724d4effa8c2ef0c01948766d41eee4bf0b8259833404"
+        "sha256": "e2641109701c2d975baf943341cd8fb74e1435d1d640c610f831110242955aab"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndicators"
@@ -96,7 +96,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model AvailableIndicators --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:35:12.340821+00:00",
+      "executed_at_utc": "2026-10-21T05:37:46.559062+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -108,8 +108,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -171,7 +171,7 @@
       "receipt": {
         "model_identity": "imf::AvailableIndicators",
         "path": "docs/evidence/C101/receipts/imf/AvailableIndicators/direct.json",
-        "sha256": "9fa7e89a9ea21208ef4e01a6f3c9eda400baef57cd2f9d90d285210b1c8dd080"
+        "sha256": "1e335369c64b503b549a66e2ac715d1e8c6543548500358ad25a437c031226c7"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndicators"
@@ -179,7 +179,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model AvailableIndicators --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:35:13.449667+00:00",
+      "executed_at_utc": "2026-10-21T05:37:47.610079+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -191,8 +191,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -254,7 +254,7 @@
       "receipt": {
         "model_identity": "imf::AvailableIndicators",
         "path": "docs/evidence/C101/receipts/imf/AvailableIndicators/service.json",
-        "sha256": "5552a9c7a3201624bf199507d829eaf19f3d7f27e30255a8a3371c2b45297d1f"
+        "sha256": "70c730537857fdcd608ce67b5f420aee987a24659df115ecd2951caae5997427"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndicators"
@@ -262,7 +262,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model AvailableIndicators --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:35:14.329313+00:00",
+      "executed_at_utc": "2026-10-21T05:37:48.545546+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -274,8 +274,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -337,7 +337,7 @@
       "receipt": {
         "model_identity": "imf::AvailableIndicators",
         "path": "docs/evidence/C101/receipts/imf/AvailableIndicators/contract.json",
-        "sha256": "0eb36b748b4989136a1e2b3594255f0344aa9d470535c7a0ccd86f52be85847d"
+        "sha256": "7816f4ac2f1205a18bea52cf2467978172247c883f7dde907a5e039a5a6eed6c"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndicators"
@@ -345,7 +345,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model AvailableIndicators --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:35:16.196692+00:00",
+      "executed_at_utc": "2026-10-21T05:37:50.380171+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -357,8 +357,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -420,7 +420,7 @@
       "receipt": {
         "model_identity": "imf::AvailableIndicators",
         "path": "docs/evidence/C101/receipts/imf/AvailableIndicators/counterfact.json",
-        "sha256": "5f8a6933b819aba29799acd82fc7fa57f35e14b664599d928d2d41bc90cf8f1c"
+        "sha256": "f09456b2c606d7a06c8764f31bfb54eed5b696da80103920f4aa4096857326f1"
       },
       "status": "PASS",
       "upstream_model": "AvailableIndicators"
@@ -428,7 +428,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model ConsumerPriceIndex --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:35:17.124550+00:00",
+      "executed_at_utc": "2026-10-21T05:37:51.268371+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -440,8 +440,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -513,7 +513,7 @@
       "receipt": {
         "model_identity": "imf::ConsumerPriceIndex",
         "path": "docs/evidence/C101/receipts/imf/ConsumerPriceIndex/implementation.json",
-        "sha256": "eac4b0b9cf0a807c7325510e89afbcffb606f599f49f90348b1d8807ed3cb24b"
+        "sha256": "dbd69221f8a3164b4148ee14a066242378bc363d0c017bc5b40b5715baecad2b"
       },
       "status": "PASS",
       "upstream_model": "ConsumerPriceIndex"
@@ -521,7 +521,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model ConsumerPriceIndex --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:35:18.067776+00:00",
+      "executed_at_utc": "2026-10-21T05:37:52.258847+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -533,8 +533,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -596,7 +596,7 @@
       "receipt": {
         "model_identity": "imf::ConsumerPriceIndex",
         "path": "docs/evidence/C101/receipts/imf/ConsumerPriceIndex/direct.json",
-        "sha256": "9f5ebf55c2b077d3a159bc87df928859c05584c42ddca3fefb3c7d367b53a86d"
+        "sha256": "3d5dd8d8634e9abc64c8d29515cf746a307681a25b61d5dee84081bcb60b7d56"
       },
       "status": "PASS",
       "upstream_model": "ConsumerPriceIndex"
@@ -604,7 +604,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model ConsumerPriceIndex --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:35:19.120178+00:00",
+      "executed_at_utc": "2026-10-21T05:37:53.361816+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -616,8 +616,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -679,7 +679,7 @@
       "receipt": {
         "model_identity": "imf::ConsumerPriceIndex",
         "path": "docs/evidence/C101/receipts/imf/ConsumerPriceIndex/service.json",
-        "sha256": "07af5939bd7f1666b20602d1faa3b89ce7da06aee6f4a32de770cc51d5ade723"
+        "sha256": "d8a8c9ed2b8751a8681ca64aed8fac17307a918cb6e99d0f164573b1de6c4c3d"
       },
       "status": "PASS",
       "upstream_model": "ConsumerPriceIndex"
@@ -687,7 +687,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model ConsumerPriceIndex --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:35:20.049116+00:00",
+      "executed_at_utc": "2026-10-21T05:37:54.319735+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -699,8 +699,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -762,7 +762,7 @@
       "receipt": {
         "model_identity": "imf::ConsumerPriceIndex",
         "path": "docs/evidence/C101/receipts/imf/ConsumerPriceIndex/contract.json",
-        "sha256": "7cf23403e3fba75b92466e62a4c6f3c324076786b22f4c61b5e6b6e9722bb795"
+        "sha256": "f332335e95ac61383da728f220f0b1872b10da470f54c88a76a64d068cdc0584"
       },
       "status": "PASS",
       "upstream_model": "ConsumerPriceIndex"
@@ -770,7 +770,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model ConsumerPriceIndex --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:35:21.872397+00:00",
+      "executed_at_utc": "2026-10-21T05:37:56.175101+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -782,8 +782,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -845,7 +845,7 @@
       "receipt": {
         "model_identity": "imf::ConsumerPriceIndex",
         "path": "docs/evidence/C101/receipts/imf/ConsumerPriceIndex/counterfact.json",
-        "sha256": "1062273aecfb0c1e007b2a44ebc403aa5c7785e42d603777c182b88acd14cb11"
+        "sha256": "db25cb2fa44fccdbd159b0c6dc2c6bf5ae2379b345f34445d3d3507449985f0d"
       },
       "status": "PASS",
       "upstream_model": "ConsumerPriceIndex"
@@ -853,7 +853,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model DirectionOfTrade --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:35:22.746539+00:00",
+      "executed_at_utc": "2026-10-21T05:37:57.100732+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -865,8 +865,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -938,7 +938,7 @@
       "receipt": {
         "model_identity": "imf::DirectionOfTrade",
         "path": "docs/evidence/C101/receipts/imf/DirectionOfTrade/implementation.json",
-        "sha256": "26e0e2593d61bfd8de4f5c3978c5c195fbac3a5161b62b43ea924b922991e605"
+        "sha256": "f2f25d31b654165e73dc5c0a0ce3dfd3d242300d68c23932502892d2ff76735e"
       },
       "status": "PASS",
       "upstream_model": "DirectionOfTrade"
@@ -946,7 +946,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model DirectionOfTrade --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:35:23.637632+00:00",
+      "executed_at_utc": "2026-10-21T05:37:58.009522+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -958,8 +958,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1021,7 +1021,7 @@
       "receipt": {
         "model_identity": "imf::DirectionOfTrade",
         "path": "docs/evidence/C101/receipts/imf/DirectionOfTrade/direct.json",
-        "sha256": "ea351554c79fcf69d413a30ca437fc999b692c3d2f2abcba9edbe37717468dd0"
+        "sha256": "f7e2d5e288808fa78cc81c45107e61b4d8ed7e7faedd60d9c611f0854d5f0d17"
       },
       "status": "PASS",
       "upstream_model": "DirectionOfTrade"
@@ -1029,7 +1029,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model DirectionOfTrade --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:35:24.704923+00:00",
+      "executed_at_utc": "2026-10-21T05:37:59.095066+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1041,8 +1041,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1104,7 +1104,7 @@
       "receipt": {
         "model_identity": "imf::DirectionOfTrade",
         "path": "docs/evidence/C101/receipts/imf/DirectionOfTrade/service.json",
-        "sha256": "a4b235af7752ba78b5394a70e210422d8a8d9d7d3f12818e36572fe203dcdef7"
+        "sha256": "65c5955b3f63142cab6ab4cd7761278aed536941aa0274619d1fd49525008830"
       },
       "status": "PASS",
       "upstream_model": "DirectionOfTrade"
@@ -1112,7 +1112,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model DirectionOfTrade --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:35:25.638897+00:00",
+      "executed_at_utc": "2026-10-21T05:38:00.022536+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1124,8 +1124,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1187,7 +1187,7 @@
       "receipt": {
         "model_identity": "imf::DirectionOfTrade",
         "path": "docs/evidence/C101/receipts/imf/DirectionOfTrade/contract.json",
-        "sha256": "c9f89e52a4399a80aea8ee13452a5c6feb1d7184a8cf727878a58fda2f3e03ce"
+        "sha256": "0f37ae768bb01b5db80114b16e9286d7d981b346b6abc1c85062f686dea0bc8b"
       },
       "status": "PASS",
       "upstream_model": "DirectionOfTrade"
@@ -1195,7 +1195,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model DirectionOfTrade --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:35:27.465926+00:00",
+      "executed_at_utc": "2026-10-21T05:38:01.849658+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1207,8 +1207,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1270,7 +1270,7 @@
       "receipt": {
         "model_identity": "imf::DirectionOfTrade",
         "path": "docs/evidence/C101/receipts/imf/DirectionOfTrade/counterfact.json",
-        "sha256": "22609f775729e56a7c8e7df8332b1d6dc4dad641677853f4e34598e068409da9"
+        "sha256": "3786e7872a8e3352bdf28ad6449b8b3528e49fda3f0b5c1ef84ec10a868451ac"
       },
       "status": "PASS",
       "upstream_model": "DirectionOfTrade"
@@ -1278,7 +1278,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model EconomicIndicators --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:35:28.347376+00:00",
+      "executed_at_utc": "2026-10-21T05:38:02.719997+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1290,8 +1290,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1363,7 +1363,7 @@
       "receipt": {
         "model_identity": "imf::EconomicIndicators",
         "path": "docs/evidence/C101/receipts/imf/EconomicIndicators/implementation.json",
-        "sha256": "7ff58eee8b94c2a72280b7160c34ee1ba723b9a1116ce6eae7f99a28b1eec617"
+        "sha256": "2ca5f2b78c01291987b37565725b8e1edfa0032366fc7e327b358f4a3576fdb2"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
@@ -1371,7 +1371,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model EconomicIndicators --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:35:29.249179+00:00",
+      "executed_at_utc": "2026-10-21T05:38:03.630118+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1383,8 +1383,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1446,7 +1446,7 @@
       "receipt": {
         "model_identity": "imf::EconomicIndicators",
         "path": "docs/evidence/C101/receipts/imf/EconomicIndicators/direct.json",
-        "sha256": "828fc7faf17c0d6beee7eca9e75e362d56f5a2681fc951c24c93efecc5742017"
+        "sha256": "eef486d3cb2189a89cefe31dfd9951805424c93e0f2d1415a7853530fb12868a"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
@@ -1454,7 +1454,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model EconomicIndicators --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:35:30.339561+00:00",
+      "executed_at_utc": "2026-10-21T05:38:04.719397+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1466,8 +1466,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1529,7 +1529,7 @@
       "receipt": {
         "model_identity": "imf::EconomicIndicators",
         "path": "docs/evidence/C101/receipts/imf/EconomicIndicators/service.json",
-        "sha256": "f067f5450d97e518a5d048a8ca4a5882ca6264cbc0bd79f56a17d5b10615afa4"
+        "sha256": "2cc00be56aa8a486554e3b7b9ea63545ca2258e5cf0b1b6041e888b7b7474709"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
@@ -1537,7 +1537,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model EconomicIndicators --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:35:31.265429+00:00",
+      "executed_at_utc": "2026-10-21T05:38:05.658408+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1549,8 +1549,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1612,7 +1612,7 @@
       "receipt": {
         "model_identity": "imf::EconomicIndicators",
         "path": "docs/evidence/C101/receipts/imf/EconomicIndicators/contract.json",
-        "sha256": "cbdab92aabf858ec82e6c07dbd3497469299473c986ab97a97920725584f0986"
+        "sha256": "2a6d0beb11c1c6b04a039ed904775546b9621ff5d9cef813a527b55fd02a4495"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
@@ -1620,7 +1620,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model EconomicIndicators --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:35:33.097403+00:00",
+      "executed_at_utc": "2026-10-21T05:38:07.481270+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1632,8 +1632,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1695,7 +1695,7 @@
       "receipt": {
         "model_identity": "imf::EconomicIndicators",
         "path": "docs/evidence/C101/receipts/imf/EconomicIndicators/counterfact.json",
-        "sha256": "6ec9bb0a263c376cbc2936bfe07d0d4f5d64647d3d7c4dcdc563c1f62c2bf3ff"
+        "sha256": "ab4646ad397fc778f58350ed6e8259bf2f380aa5e69b2de1e7a33999c273b796"
       },
       "status": "PASS",
       "upstream_model": "EconomicIndicators"
@@ -1703,7 +1703,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointInfo --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:35:33.979469+00:00",
+      "executed_at_utc": "2026-10-21T05:38:08.348912+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1715,8 +1715,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1783,7 +1783,7 @@
       "receipt": {
         "model_identity": "imf::MaritimeChokePointInfo",
         "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointInfo/implementation.json",
-        "sha256": "b5ea7e698bf9ba02ce318e4e567926cd7fbb4274fd09d8052ff8fd937806eed1"
+        "sha256": "1c5472f3d58e810b9deea4823ba9b6ccf31e182ec34a9614aab9e638519d7c4e"
       },
       "status": "PASS",
       "upstream_model": "MaritimeChokePointInfo"
@@ -1791,7 +1791,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointInfo --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:35:34.887146+00:00",
+      "executed_at_utc": "2026-10-21T05:38:09.275986+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1803,8 +1803,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1861,7 +1861,7 @@
       "receipt": {
         "model_identity": "imf::MaritimeChokePointInfo",
         "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointInfo/direct.json",
-        "sha256": "67f7e259da7c43b1f3811f011d90c72d59881ba9c44e86acf51fc3e2476d5482"
+        "sha256": "9ba06082c1cf79af0156ee948767e6b787969fafaabb4ddc0fd086d6e11fe2d9"
       },
       "status": "PASS",
       "upstream_model": "MaritimeChokePointInfo"
@@ -1869,7 +1869,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointInfo --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:35:35.973765+00:00",
+      "executed_at_utc": "2026-10-21T05:38:10.391531+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1881,8 +1881,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1939,7 +1939,7 @@
       "receipt": {
         "model_identity": "imf::MaritimeChokePointInfo",
         "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointInfo/service.json",
-        "sha256": "9e0aa9e8d0325b154b87aa7fc97b1dae1721ed27ae32be43f30c387770dabd5d"
+        "sha256": "e9356c01a8d62c8fd3619fd8d52da69a3ca4f65e43d17ea8edac84fcaa6d8e13"
       },
       "status": "PASS",
       "upstream_model": "MaritimeChokePointInfo"
@@ -1947,7 +1947,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointInfo --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:35:36.902666+00:00",
+      "executed_at_utc": "2026-10-21T05:38:11.345308+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1959,8 +1959,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2017,7 +2017,7 @@
       "receipt": {
         "model_identity": "imf::MaritimeChokePointInfo",
         "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointInfo/contract.json",
-        "sha256": "777df5300397febb23ff40fdcefe1cba0c8d30d2bef91d4f2e033ba7a8b7e832"
+        "sha256": "e151f08b0366d516a2bfc106e7cb8123499a84eb816dfe64b1c32d3091c73eae"
       },
       "status": "PASS",
       "upstream_model": "MaritimeChokePointInfo"
@@ -2025,7 +2025,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointInfo --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:35:38.737832+00:00",
+      "executed_at_utc": "2026-10-21T05:38:13.190786+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2037,8 +2037,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2095,7 +2095,7 @@
       "receipt": {
         "model_identity": "imf::MaritimeChokePointInfo",
         "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointInfo/counterfact.json",
-        "sha256": "f213132e66b0beee8cb02daed992f1f665d4062c0f1ce2049aeec71e971d85db"
+        "sha256": "277705a9dd874dc42bd18b974ad3920fe5cf789aad155e35e553f3ca43873f36"
       },
       "status": "PASS",
       "upstream_model": "MaritimeChokePointInfo"
@@ -2103,7 +2103,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointVolume --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:35:39.607167+00:00",
+      "executed_at_utc": "2026-10-21T05:38:14.099482+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2115,8 +2115,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2183,7 +2183,7 @@
       "receipt": {
         "model_identity": "imf::MaritimeChokePointVolume",
         "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointVolume/implementation.json",
-        "sha256": "f952caf0678a9078f6fc4b464aced51dc078d1087d1f7f835b1d0be951eab1e6"
+        "sha256": "62d77ff5479eebdb8c504f1525a87897b2a945bda6884fb0b0f3758f99cd5c4c"
       },
       "status": "PASS",
       "upstream_model": "MaritimeChokePointVolume"
@@ -2191,7 +2191,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointVolume --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:35:40.518232+00:00",
+      "executed_at_utc": "2026-10-21T05:38:15.047303+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2203,8 +2203,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2261,7 +2261,7 @@
       "receipt": {
         "model_identity": "imf::MaritimeChokePointVolume",
         "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointVolume/direct.json",
-        "sha256": "44526a26e70a767c03661ae0a2ac2021687286988339a0b71c14a0023127e05e"
+        "sha256": "48ad9add92cf88c667c16f4ba6ce2c38c3aa933fa9aef35e71759986bb899db5"
       },
       "status": "PASS",
       "upstream_model": "MaritimeChokePointVolume"
@@ -2269,7 +2269,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointVolume --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:35:41.600832+00:00",
+      "executed_at_utc": "2026-10-21T05:38:16.110808+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2281,8 +2281,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2339,7 +2339,7 @@
       "receipt": {
         "model_identity": "imf::MaritimeChokePointVolume",
         "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointVolume/service.json",
-        "sha256": "242e9808c24fa9ac8085ef397cf56a14426e58ad30f6f12766e639d6ff747473"
+        "sha256": "0fc047edaf91146646884cf588eea26003cb2c2c09802e705051c39420ad3e77"
       },
       "status": "PASS",
       "upstream_model": "MaritimeChokePointVolume"
@@ -2347,7 +2347,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointVolume --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:35:42.525213+00:00",
+      "executed_at_utc": "2026-10-21T05:38:17.043464+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2359,8 +2359,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2417,7 +2417,7 @@
       "receipt": {
         "model_identity": "imf::MaritimeChokePointVolume",
         "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointVolume/contract.json",
-        "sha256": "3d9f1b559dd3600e17a8e4b88ff30fbdf4148f54faabd3933d304442d792ac3a"
+        "sha256": "fdae115533b0d8d8cf0d68747df4e579d3227d39a73773c5f3b06b579f08e1df"
       },
       "status": "PASS",
       "upstream_model": "MaritimeChokePointVolume"
@@ -2425,7 +2425,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model MaritimeChokePointVolume --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:35:44.354841+00:00",
+      "executed_at_utc": "2026-10-21T05:38:18.870827+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2437,8 +2437,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2495,7 +2495,7 @@
       "receipt": {
         "model_identity": "imf::MaritimeChokePointVolume",
         "path": "docs/evidence/C101/receipts/imf/MaritimeChokePointVolume/counterfact.json",
-        "sha256": "28207260167a74546db4d36fb99e519976ff944674fe684a1692017609257164"
+        "sha256": "4751615c3eb386123b9ad39b89195986ae1a070915ff2ca2eeb794ef9e65331b"
       },
       "status": "PASS",
       "upstream_model": "MaritimeChokePointVolume"
@@ -2503,7 +2503,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortInfo --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:35:45.234255+00:00",
+      "executed_at_utc": "2026-10-21T05:38:19.757622+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2515,8 +2515,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2583,7 +2583,7 @@
       "receipt": {
         "model_identity": "imf::PortInfo",
         "path": "docs/evidence/C101/receipts/imf/PortInfo/implementation.json",
-        "sha256": "5e985afc3c49e2e1825f6e1e5654882be788f0748d78d876a47e07fc788e6478"
+        "sha256": "651b457b03df4d6326be507e40865ad8e8c1585d43fc79ab11055af5b63b4579"
       },
       "status": "PASS",
       "upstream_model": "PortInfo"
@@ -2591,7 +2591,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortInfo --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:35:46.143487+00:00",
+      "executed_at_utc": "2026-10-21T05:38:20.727541+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2603,8 +2603,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2661,7 +2661,7 @@
       "receipt": {
         "model_identity": "imf::PortInfo",
         "path": "docs/evidence/C101/receipts/imf/PortInfo/direct.json",
-        "sha256": "3cbf386a36b9c87083900c2b2489ea34c7c8d7517e31b1fa016b289d84444083"
+        "sha256": "1ca234b3ac52878ad367b6235fb99a0272ada774db50bb6de2dc246000a9a556"
       },
       "status": "PASS",
       "upstream_model": "PortInfo"
@@ -2669,7 +2669,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortInfo --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:35:47.241752+00:00",
+      "executed_at_utc": "2026-10-21T05:38:21.862807+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2681,8 +2681,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2739,7 +2739,7 @@
       "receipt": {
         "model_identity": "imf::PortInfo",
         "path": "docs/evidence/C101/receipts/imf/PortInfo/service.json",
-        "sha256": "2617b3b9b7380789db8bdffb6cc69a1303255e2553941a4007e2ab60e7549151"
+        "sha256": "c06137d3b49e0b6aaf3ce0c5905b8206beafe561583281a535c4eb171e5d7266"
       },
       "status": "PASS",
       "upstream_model": "PortInfo"
@@ -2747,7 +2747,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortInfo --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:35:48.172204+00:00",
+      "executed_at_utc": "2026-10-21T05:38:22.794767+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2759,8 +2759,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2817,7 +2817,7 @@
       "receipt": {
         "model_identity": "imf::PortInfo",
         "path": "docs/evidence/C101/receipts/imf/PortInfo/contract.json",
-        "sha256": "e927a8b056ef4b5bea26a183ce9e1848c0c0f762a8b05dea4682274c8a17c46f"
+        "sha256": "073b76a0821971f8bc57cef6c1cd6ce36e9b018240d30713420213f873604e78"
       },
       "status": "PASS",
       "upstream_model": "PortInfo"
@@ -2825,7 +2825,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortInfo --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:35:49.985786+00:00",
+      "executed_at_utc": "2026-10-21T05:38:24.622785+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2837,8 +2837,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2895,7 +2895,7 @@
       "receipt": {
         "model_identity": "imf::PortInfo",
         "path": "docs/evidence/C101/receipts/imf/PortInfo/counterfact.json",
-        "sha256": "c96ee6bf7a4ef2e29144d52abd9f1f0a88c6311c6e9695731ee8e7e381788635"
+        "sha256": "ebf06b807f369260b529f6e926c165e7bd51942a66b6be9696065509e6a769f6"
       },
       "status": "PASS",
       "upstream_model": "PortInfo"
@@ -2903,7 +2903,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortVolume --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:35:50.862974+00:00",
+      "executed_at_utc": "2026-10-21T05:38:25.488730+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2915,8 +2915,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2983,7 +2983,7 @@
       "receipt": {
         "model_identity": "imf::PortVolume",
         "path": "docs/evidence/C101/receipts/imf/PortVolume/implementation.json",
-        "sha256": "3298d9c7f64a10c12512d9ca81b67f40a45f923467d243ec036b38ddc150f8e4"
+        "sha256": "67e0ae79c85ee93e09e64c2e146f2a3de49dcce6236f6ff61da4a64602cecf0f"
       },
       "status": "PASS",
       "upstream_model": "PortVolume"
@@ -2991,7 +2991,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortVolume --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:35:51.772481+00:00",
+      "executed_at_utc": "2026-10-21T05:38:26.402475+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3003,8 +3003,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3061,7 +3061,7 @@
       "receipt": {
         "model_identity": "imf::PortVolume",
         "path": "docs/evidence/C101/receipts/imf/PortVolume/direct.json",
-        "sha256": "1758b298ccd613d885808f08956e060cda45d3a7ba10d14f585fc5ec2c3bee7c"
+        "sha256": "d649fb61b45da4179b73f328e27fb231e61eec458ae5f875b66e8ee5b0cc3158"
       },
       "status": "PASS",
       "upstream_model": "PortVolume"
@@ -3069,7 +3069,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortVolume --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:35:52.862433+00:00",
+      "executed_at_utc": "2026-10-21T05:38:27.496418+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3081,8 +3081,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3139,7 +3139,7 @@
       "receipt": {
         "model_identity": "imf::PortVolume",
         "path": "docs/evidence/C101/receipts/imf/PortVolume/service.json",
-        "sha256": "5f6233f450d33ad475db5110d04fc518bfdd979ab88c8db67332affdc21248b6"
+        "sha256": "7287d84fe17ffbee4125dd3a5a032408155630e9e706e5bc5f6ae2e240482772"
       },
       "status": "PASS",
       "upstream_model": "PortVolume"
@@ -3147,7 +3147,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortVolume --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:35:53.794060+00:00",
+      "executed_at_utc": "2026-10-21T05:38:28.438983+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3159,8 +3159,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3217,7 +3217,7 @@
       "receipt": {
         "model_identity": "imf::PortVolume",
         "path": "docs/evidence/C101/receipts/imf/PortVolume/contract.json",
-        "sha256": "dc6e9fd156193fc2be1ccb64e96514816ee997a108217f03519ce440300a3c17"
+        "sha256": "a71711f3b31901427449834639510ac74deea379a718e7ebb3ea808def7503cc"
       },
       "status": "PASS",
       "upstream_model": "PortVolume"
@@ -3225,7 +3225,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider imf --model PortVolume --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:35:55.625654+00:00",
+      "executed_at_utc": "2026-10-21T05:38:30.257217+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3237,8 +3237,8 @@
             "path": "opendata/data/models/macro_iter2.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3295,7 +3295,7 @@
       "receipt": {
         "model_identity": "imf::PortVolume",
         "path": "docs/evidence/C101/receipts/imf/PortVolume/counterfact.json",
-        "sha256": "86d261b60bea9e90246a5eb4c1765b14b3bd658be9df43fb74397d13a0addd22"
+        "sha256": "bc0e39090c4eee2bb8e0ffe44fc86d8fd2ed45eb3d45a8df88c545a03a7e5f5f"
       },
       "status": "PASS",
       "upstream_model": "PortVolume"
@@ -3309,9 +3309,9 @@
       "receipt": {
         "model_identity": "imf::AvailableIndicators",
         "path": "docs/evidence/C101/primary-reviews/imf__AvailableIndicators.review.json",
-        "sha256": "64c42ed42a803fad7ea85990c45e6965f9d210b6d8777417934fce6155d8ecf0"
+        "sha256": "793c506595ca0c696678197f45e90b71ea772efb8f7b0859211c1134dfce5e86"
       },
-      "reviewed_at_utc": "2026-10-21T03:35:57Z",
+      "reviewed_at_utc": "2026-10-21T05:38:32Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3324,9 +3324,9 @@
       "receipt": {
         "model_identity": "imf::ConsumerPriceIndex",
         "path": "docs/evidence/C101/primary-reviews/imf__ConsumerPriceIndex.review.json",
-        "sha256": "34acbd0616b0e727bed1c1258e44c2cc973e20725e3e81b6dab8fb39b9a9f288"
+        "sha256": "2a00a44ef6a94c8a291e7947370dd58127c5e649bc6e61703664bf7f7e206125"
       },
-      "reviewed_at_utc": "2026-10-21T03:35:57Z",
+      "reviewed_at_utc": "2026-10-21T05:38:32Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3339,9 +3339,9 @@
       "receipt": {
         "model_identity": "imf::DirectionOfTrade",
         "path": "docs/evidence/C101/primary-reviews/imf__DirectionOfTrade.review.json",
-        "sha256": "d9baea896ffe235c6e157f14a8181937851830aa1e2652af87cc70c78006f477"
+        "sha256": "557b91253a9c84a707896a7a7cd9586a06ed4dca9127f4c2baa53d4d078bbbcc"
       },
-      "reviewed_at_utc": "2026-10-21T03:35:57Z",
+      "reviewed_at_utc": "2026-10-21T05:38:32Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3354,9 +3354,9 @@
       "receipt": {
         "model_identity": "imf::EconomicIndicators",
         "path": "docs/evidence/C101/primary-reviews/imf__EconomicIndicators.review.json",
-        "sha256": "df1cf0d2abfe2890c9b18e1357973d481fb8d33ea59eb4c9c6a129d749bb72c7"
+        "sha256": "112321a7995e0a72a1b1a5748ce07cd750de8694976fa2cee72bb5a0ad28eec3"
       },
-      "reviewed_at_utc": "2026-10-21T03:35:57Z",
+      "reviewed_at_utc": "2026-10-21T05:38:32Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3369,9 +3369,9 @@
       "receipt": {
         "model_identity": "imf::MaritimeChokePointInfo",
         "path": "docs/evidence/C101/primary-reviews/imf__MaritimeChokePointInfo.review.json",
-        "sha256": "e5ab574dd1e7b3ea395cc1c7dac3f473b72a5aa52537847c428e345b7553d9d9"
+        "sha256": "055add5d305b3eeef82117f0dcf8a5123a368a81cd49303045c0a862a4ab100d"
       },
-      "reviewed_at_utc": "2026-10-21T03:35:57Z",
+      "reviewed_at_utc": "2026-10-21T05:38:32Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3384,9 +3384,9 @@
       "receipt": {
         "model_identity": "imf::MaritimeChokePointVolume",
         "path": "docs/evidence/C101/primary-reviews/imf__MaritimeChokePointVolume.review.json",
-        "sha256": "02a6acf7afc9b362ce7a22f7f6ebbba6ec27884eff4fd2cbd0d652c806a0bb27"
+        "sha256": "da0dac32b8baeee6b14895ccb6e61d77e87d9365562f11063bc5510fb22efa06"
       },
-      "reviewed_at_utc": "2026-10-21T03:35:57Z",
+      "reviewed_at_utc": "2026-10-21T05:38:32Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3399,9 +3399,9 @@
       "receipt": {
         "model_identity": "imf::PortInfo",
         "path": "docs/evidence/C101/primary-reviews/imf__PortInfo.review.json",
-        "sha256": "3904196aa658e0424b88e6ded8d53863c51e911a25eb464ad9d2a8dc094bf976"
+        "sha256": "9c08bac574e05d29c59285faf1ed77d1f989a70b5d9c0c132df49ece9be3e56b"
       },
-      "reviewed_at_utc": "2026-10-21T03:35:57Z",
+      "reviewed_at_utc": "2026-10-21T05:38:32Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3414,9 +3414,9 @@
       "receipt": {
         "model_identity": "imf::PortVolume",
         "path": "docs/evidence/C101/primary-reviews/imf__PortVolume.review.json",
-        "sha256": "123cd248e8e4117b91ceaa0745da16837d227cc15dfcbecce041d7d6c4da6e8f"
+        "sha256": "2824f766608967b32394a06abaf01b7796488ef85839c3393efc69448b2195a7"
       },
-      "reviewed_at_utc": "2026-10-21T03:35:57Z",
+      "reviewed_at_utc": "2026-10-21T05:38:32Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

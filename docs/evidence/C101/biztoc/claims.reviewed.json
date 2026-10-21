@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider biztoc --model WorldNews --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T04:13:27.621479+00:00",
+      "executed_at_utc": "2026-10-21T05:15:57.045846+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/biztoc.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -88,7 +88,7 @@
       "receipt": {
         "model_identity": "biztoc::WorldNews",
         "path": "docs/evidence/C101/receipts/biztoc/WorldNews/implementation.json",
-        "sha256": "57a67e440fb58cdd63ff1e045e5447b1c5cd39ec0a6eb00b308edd1d3d5c5578"
+        "sha256": "eba7e7b421097aaf735160cd032aeeb7b05036a53aac8c538bd41aa4c72fb712"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -96,7 +96,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider biztoc --model WorldNews --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T04:13:28.531814+00:00",
+      "executed_at_utc": "2026-10-21T05:15:57.855100+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -108,8 +108,8 @@
             "path": "opendata/data/models/biztoc.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -171,7 +171,7 @@
       "receipt": {
         "model_identity": "biztoc::WorldNews",
         "path": "docs/evidence/C101/receipts/biztoc/WorldNews/direct.json",
-        "sha256": "b2a4a9b8a6bb4f38f3cb8548aa24b9736f676fee55d7a282018054e23d51f5f3"
+        "sha256": "f2262cc8ba790de7ef45f05bf241d0c59d6b0c618833af25b64951cf524207b0"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -179,7 +179,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider biztoc --model WorldNews --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T04:13:29.571495+00:00",
+      "executed_at_utc": "2026-10-21T05:15:58.818718+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -191,8 +191,8 @@
             "path": "opendata/data/models/biztoc.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -254,7 +254,7 @@
       "receipt": {
         "model_identity": "biztoc::WorldNews",
         "path": "docs/evidence/C101/receipts/biztoc/WorldNews/service.json",
-        "sha256": "21541751f0014985eb36febbeeede54450742f075f7d9642f00dcd8757debfa5"
+        "sha256": "b59c06820c25af09efd9fee9f7abc2b025a745453259c4ba3a42121688e022ad"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -262,7 +262,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider biztoc --model WorldNews --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T04:13:30.464050+00:00",
+      "executed_at_utc": "2026-10-21T05:15:59.630450+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -274,8 +274,8 @@
             "path": "opendata/data/models/biztoc.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -337,7 +337,7 @@
       "receipt": {
         "model_identity": "biztoc::WorldNews",
         "path": "docs/evidence/C101/receipts/biztoc/WorldNews/contract.json",
-        "sha256": "049fb878a031532275163ae7186eaa5253019aaf0a703c3eb4d1c672ada164b2"
+        "sha256": "00978d44d2374104a84d5181791799bc4aae7c4abe575e7e4eaaf8e3c94c0600"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -345,7 +345,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider biztoc --model WorldNews --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T04:13:32.214123+00:00",
+      "executed_at_utc": "2026-10-21T05:16:01.270034+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -357,8 +357,8 @@
             "path": "opendata/data/models/biztoc.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -420,7 +420,7 @@
       "receipt": {
         "model_identity": "biztoc::WorldNews",
         "path": "docs/evidence/C101/receipts/biztoc/WorldNews/counterfact.json",
-        "sha256": "b33e8cf3c487151c965503015069d5bd390c145e82d53f12b7dc1eb8249a8d25"
+        "sha256": "f6e8d252c16e51441b72113a6f9377b99bad6af882232fb2b6f42baa71e02004"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -434,9 +434,9 @@
       "receipt": {
         "model_identity": "biztoc::WorldNews",
         "path": "docs/evidence/C101/primary-reviews/biztoc__WorldNews.review.json",
-        "sha256": "778554b24e3f74dbf9d4f9d36731ec608a30a7c012f474ea600b83adc639348b"
+        "sha256": "c988cfa508827d149d93506da1bd54b118c700dc5a0829627b4a3cb40ba0ff80"
       },
-      "reviewed_at_utc": "2026-10-21T04:13:34Z",
+      "reviewed_at_utc": "2026-10-21T05:16:02Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

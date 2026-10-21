@@ -948,3 +948,37 @@ closure_face arms=8 arms_passed=8 PASS=True   w117_closure_exit=0
 `runs/w108_staged_scan_plan_gate_wave43.txt`（`payload_index_sha256=2f356174…`、`staged=2157`，
 A/B/C 全 0、11/11 arms）；第一次红扫描（B/C 各 1，provider.py 的 env 名；payload `75a907…`）另存
 `runs/w108_staged_scan_plan_red_wave43.txt`。
+
+## 43. wave44：econdb ExportDestinations + yfinance AvailableIndices（345/350）
+
+**实现（owner 对剩余 7 行的授权）**
+- `econdb::ExportDestinations`：公开 widget 表 `econdb.com/widgets/top-trade-items/data/`（无 key），
+  契约 `EconDBExportDestinations`、domain `econdb_export_destinations`；五相 **5/5 PASS**。
+- `yfinance::AvailableIndices`：上游是本地参考表（无 HTTP）。live 读嵌入常量（274 个指数），离线
+  witness 用伪 transport `reference://yfinance/available-indices` 提供参考表——**不需要改 runner**，
+  DEC-40-02 以这种方式关闭；契约 `YFinanceAvailableIndices`、domain `yfinance_available_indices`；
+  五相 **5/5 PASS**。
+
+**第三次全树重签**：两个新 domain 再次使全部 claim STALE；31 个 provider 重跑 producer+recorder，
+**345 份 review**、0 失败（`runs/w44_resign.log`）。随后 econdb 的 `specs.py`（把 ExportDestinations
+加入 READY_MODELS）又触发一次 **econdb 定向重签**；最终判定器：
+
+```
+claim_count=1745 identity_count=350 offline_acceptance_count=345 primary_review_count=345
+status_counts={OFFLINE_ACCEPTED: 345, INCOMPLETE: 4, UNREVIEWED: 1}
+econdb::ExportDestinations / yfinance::AvailableIndices = OFFLINE_ACCEPTED
+```
+
+**冻结面**：catalog bindings **378**（358 手写 + 20 engine）、reserved 1；capabilities **378**、
+descriptors **356**；batch5 **378** 身份 / **365** 域 / **356** descriptor-eligible；candidate exports
+**354/350/349**；authority 加 `econdb_export_destinations`、`yfinance_available_indices`；
+pipeline/alert 365/345/378。econdb 的「未声明」旧契约测试与 yfinance 的 scenario 计数同步改写。
+
+**平面**（`test_plane_w44b_final.xml`）：`10 failed, 26448 passed, 305 skipped`，失败集合与此前
+逐 id 相同。collected **26,763** = 26,634 + **139** 新测试名 − **10** 改名（参数化 id 随注册扩容移位），
+`w105` 的 I 臂按 `new - retired` 精确闭合。`w105` **21/21 arms**：accepted 345、claims 1745、
+residue 5、providers 31、zero=[stockgrid]、plane_new=0。
+
+**仍挡住的 2 类**：seeking_alpha×2 的 ID 解析被 PerimeterX captcha（403）挡住，公开 GET 无解；
+stockgrid 旧端点 301→axlfi.com，仍无新端点。econdb::CountryProfile（v1 语义缺口）与
+intrinio::OptionsSnapshots（engine facet）未在本波实现。

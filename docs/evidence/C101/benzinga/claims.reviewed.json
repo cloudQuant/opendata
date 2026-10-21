@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:11:29.084739+00:00",
+      "executed_at_utc": "2026-10-21T05:16:21.865676+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -83,7 +83,7 @@
       "receipt": {
         "model_identity": "benzinga::AnalystSearch",
         "path": "docs/evidence/C101/receipts/benzinga/AnalystSearch/implementation.json",
-        "sha256": "9a151bf64f0496284e888594df223a54c27092ec89cdd68dc2010b801655fb9b"
+        "sha256": "815dc54ab473793159aadf48546b1653ad88a1dc63d721182145dae297bac070"
       },
       "status": "PASS",
       "upstream_model": "AnalystSearch"
@@ -91,7 +91,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:11:30.382187+00:00",
+      "executed_at_utc": "2026-10-21T05:16:22.682681+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -103,8 +103,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -161,7 +161,7 @@
       "receipt": {
         "model_identity": "benzinga::AnalystSearch",
         "path": "docs/evidence/C101/receipts/benzinga/AnalystSearch/direct.json",
-        "sha256": "f108b9cf11c4839479c3ae53d4e8faab4abbf0c2a7b5a09e84685e1834302d85"
+        "sha256": "1b4f707cf0247d9230b7b4755773dc143e0ecfc03e67adb01557f49d229afb7a"
       },
       "status": "PASS",
       "upstream_model": "AnalystSearch"
@@ -169,7 +169,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:11:31.671071+00:00",
+      "executed_at_utc": "2026-10-21T05:16:23.633579+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -181,8 +181,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -239,7 +239,7 @@
       "receipt": {
         "model_identity": "benzinga::AnalystSearch",
         "path": "docs/evidence/C101/receipts/benzinga/AnalystSearch/service.json",
-        "sha256": "2510ca0d4f68b23811c2599e993da8438d39f84ac95613f1774304d0d5936a21"
+        "sha256": "0f230e1ebf984c2b0a80d2ae2994401d0d50c5dcf0b80c748e3896fac811fd8d"
       },
       "status": "PASS",
       "upstream_model": "AnalystSearch"
@@ -247,7 +247,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:11:32.802192+00:00",
+      "executed_at_utc": "2026-10-21T05:16:24.451076+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -259,8 +259,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -317,7 +317,7 @@
       "receipt": {
         "model_identity": "benzinga::AnalystSearch",
         "path": "docs/evidence/C101/receipts/benzinga/AnalystSearch/contract.json",
-        "sha256": "6b5c7078cb592cb2cc5fb9c559ac647201ee2daa1883c347857379b98cadc09b"
+        "sha256": "961e8e103cd7eb1c081ef96bcf8908a7f004a509dea43a98028e49ba8a283446"
       },
       "status": "PASS",
       "upstream_model": "AnalystSearch"
@@ -325,7 +325,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model AnalystSearch --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:11:35.061177+00:00",
+      "executed_at_utc": "2026-10-21T05:16:26.087995+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -337,8 +337,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -395,7 +395,7 @@
       "receipt": {
         "model_identity": "benzinga::AnalystSearch",
         "path": "docs/evidence/C101/receipts/benzinga/AnalystSearch/counterfact.json",
-        "sha256": "886e3d5b144e0a5b917fe9bdc1751dad28aca4fa752d5f7359bd7572e862ed22"
+        "sha256": "7ffb014cd64e31f30b92f3793928b31ced421f95cf4f0d37219d9f5dbb4792ce"
       },
       "status": "PASS",
       "upstream_model": "AnalystSearch"
@@ -403,7 +403,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:11:36.195398+00:00",
+      "executed_at_utc": "2026-10-21T05:16:26.889565+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -415,8 +415,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -483,7 +483,7 @@
       "receipt": {
         "model_identity": "benzinga::CompanyNews",
         "path": "docs/evidence/C101/receipts/benzinga/CompanyNews/implementation.json",
-        "sha256": "56deec440fba4239eedd75df8c3cc951990abb65538e5df1cbbb58504adb650a"
+        "sha256": "fbffef7036b1d1e1198393e1434888c61cf648b47df02010251a777cda723d03"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -491,7 +491,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:11:37.357506+00:00",
+      "executed_at_utc": "2026-10-21T05:16:27.693231+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -503,8 +503,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -561,7 +561,7 @@
       "receipt": {
         "model_identity": "benzinga::CompanyNews",
         "path": "docs/evidence/C101/receipts/benzinga/CompanyNews/direct.json",
-        "sha256": "b86878ac600fc63e37d6a29fa3fc92159dfe2a8256ce18ec9916b689e7056474"
+        "sha256": "5f307e432c5c1a4032020eb26026f3539e8ae4f31c550fdc11047c251cefbe9a"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -569,7 +569,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:11:38.675036+00:00",
+      "executed_at_utc": "2026-10-21T05:16:28.649904+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -581,8 +581,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -639,7 +639,7 @@
       "receipt": {
         "model_identity": "benzinga::CompanyNews",
         "path": "docs/evidence/C101/receipts/benzinga/CompanyNews/service.json",
-        "sha256": "7aa7e2e1e91232298c8af62e2df3f62122c9cdb4a1de2745f44f2b4a2d0b1947"
+        "sha256": "8be453fc6045d6e8fb8c7af9c9d0a3c784f219e972d7911660ce7e9dcad19baa"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -647,7 +647,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:11:39.876882+00:00",
+      "executed_at_utc": "2026-10-21T05:16:29.459654+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -659,8 +659,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -717,7 +717,7 @@
       "receipt": {
         "model_identity": "benzinga::CompanyNews",
         "path": "docs/evidence/C101/receipts/benzinga/CompanyNews/contract.json",
-        "sha256": "a02ac09290284b7423ae0c8ad6f048777250afc39d4c1744deadf7c4ee85084a"
+        "sha256": "f4d62567565d02ad179bf54cd180707f443a990fea7bdb2c50dad21185680d18"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -725,7 +725,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model CompanyNews --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:11:42.226454+00:00",
+      "executed_at_utc": "2026-10-21T05:16:31.091452+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -737,8 +737,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -795,7 +795,7 @@
       "receipt": {
         "model_identity": "benzinga::CompanyNews",
         "path": "docs/evidence/C101/receipts/benzinga/CompanyNews/counterfact.json",
-        "sha256": "7d3b7ddecb11b4e3d1c033f86ac912e67a74e5ca174c2f9ab4394d0ce7077e3f"
+        "sha256": "b7d631db93512202750a326e6a97d11cc71113a84c967cf529a9bdbbfa86e5e0"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -803,7 +803,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:11:43.375518+00:00",
+      "executed_at_utc": "2026-10-21T05:16:31.909915+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -815,8 +815,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -883,7 +883,7 @@
       "receipt": {
         "model_identity": "benzinga::WorldNews",
         "path": "docs/evidence/C101/receipts/benzinga/WorldNews/implementation.json",
-        "sha256": "a65e557e26f59e0c58c0d4acc2a937af21b773fbb6e4889a98fdd1e6e344ba3c"
+        "sha256": "669b27ef51bb0d16c7ca3de8e59d9c8f934e7f26f767fe08f18510948abecf36"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -891,7 +891,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:11:44.656661+00:00",
+      "executed_at_utc": "2026-10-21T05:16:32.713285+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -903,8 +903,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -961,7 +961,7 @@
       "receipt": {
         "model_identity": "benzinga::WorldNews",
         "path": "docs/evidence/C101/receipts/benzinga/WorldNews/direct.json",
-        "sha256": "5ea363a1f0ea542580370afac569a599543285a28d50945382fb987be213d889"
+        "sha256": "8ec806fea0276db7190b49499add4ef50d6c167232b4ee54f16c27ac7433e30c"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -969,7 +969,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:11:46.009511+00:00",
+      "executed_at_utc": "2026-10-21T05:16:33.673183+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -981,8 +981,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1039,7 +1039,7 @@
       "receipt": {
         "model_identity": "benzinga::WorldNews",
         "path": "docs/evidence/C101/receipts/benzinga/WorldNews/service.json",
-        "sha256": "6c0839df3273d0b1f0313ee8750cf2923f7ece12c686f9b93ac9d776b0de966c"
+        "sha256": "1b7b5ab0753ed04bf4edda9f8da08b905d5c32708397a1ef7fc272d0f369c52f"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -1047,7 +1047,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:11:47.184399+00:00",
+      "executed_at_utc": "2026-10-21T05:16:34.535768+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1059,8 +1059,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1117,7 +1117,7 @@
       "receipt": {
         "model_identity": "benzinga::WorldNews",
         "path": "docs/evidence/C101/receipts/benzinga/WorldNews/contract.json",
-        "sha256": "69cde7d72307955d51551a90cebf3e0bf27e054d86627f2b588246e2db7f6449"
+        "sha256": "7276c48a67725aec515794a861fe6bf8699c035b3426fcf52d2c618064a02239"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -1125,7 +1125,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model WorldNews --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:11:49.570043+00:00",
+      "executed_at_utc": "2026-10-21T05:16:36.305620+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1137,8 +1137,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1195,7 +1195,7 @@
       "receipt": {
         "model_identity": "benzinga::WorldNews",
         "path": "docs/evidence/C101/receipts/benzinga/WorldNews/counterfact.json",
-        "sha256": "848ad864d50e7951e409b4a3ddd28c5b4bcfd7db68a24ed7743d362c016d0b0b"
+        "sha256": "026078fd3747bd83ab32856fd79d5fa151c0bf0e905e684633db36432aa23f19"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -1203,7 +1203,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:11:50.845922+00:00",
+      "executed_at_utc": "2026-10-21T05:16:37.168709+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1215,8 +1215,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1288,7 +1288,7 @@
       "receipt": {
         "model_identity": "benzinga::PriceTarget",
         "path": "docs/evidence/C101/receipts/benzinga/PriceTarget/implementation.json",
-        "sha256": "cd57345a901b57816f0c669d07fd0fbd61649fd72c2a3ff575327420a3b50e70"
+        "sha256": "12d242d788871c9513ce69293ca31c96750a6c95e89a311b67bb32d1191892da"
       },
       "status": "PASS",
       "upstream_model": "PriceTarget"
@@ -1296,7 +1296,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:11:52.022720+00:00",
+      "executed_at_utc": "2026-10-21T05:16:38.015288+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1308,8 +1308,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1371,7 +1371,7 @@
       "receipt": {
         "model_identity": "benzinga::PriceTarget",
         "path": "docs/evidence/C101/receipts/benzinga/PriceTarget/direct.json",
-        "sha256": "5782f4055c560d5bf57498ee976d719e9c588cd25fe3e901b46ea0dd4093244f"
+        "sha256": "66021ae69b951ba98c6293856f4add1c8a8af386ec02842218ff4c2f2eed04b3"
       },
       "status": "PASS",
       "upstream_model": "PriceTarget"
@@ -1379,7 +1379,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:11:53.375697+00:00",
+      "executed_at_utc": "2026-10-21T05:16:39.050349+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1391,8 +1391,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1454,7 +1454,7 @@
       "receipt": {
         "model_identity": "benzinga::PriceTarget",
         "path": "docs/evidence/C101/receipts/benzinga/PriceTarget/service.json",
-        "sha256": "a1688e938dfbf6368e7467dad9b38aac64c85b2a854a738319179505c5c3b9df"
+        "sha256": "684a3ff6c953990ace629a3bb36d90f597c7bec94752a7f4421f00aa44233ae0"
       },
       "status": "PASS",
       "upstream_model": "PriceTarget"
@@ -1462,7 +1462,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:11:54.569306+00:00",
+      "executed_at_utc": "2026-10-21T05:16:39.955712+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1474,8 +1474,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1537,7 +1537,7 @@
       "receipt": {
         "model_identity": "benzinga::PriceTarget",
         "path": "docs/evidence/C101/receipts/benzinga/PriceTarget/contract.json",
-        "sha256": "08498d054ba1f15d4f12d6cc030d17e98c2cddf0fb2bac2e5ac94a2d73fb0d69"
+        "sha256": "804a2e8ba454271d3e453a6bfd9120778d35d200d9aa2a24126c01843fe603e5"
       },
       "status": "PASS",
       "upstream_model": "PriceTarget"
@@ -1545,7 +1545,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider benzinga --model PriceTarget --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:11:56.933445+00:00",
+      "executed_at_utc": "2026-10-21T05:16:41.603792+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1557,8 +1557,8 @@
             "path": "opendata/data/models/benzinga.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1620,7 +1620,7 @@
       "receipt": {
         "model_identity": "benzinga::PriceTarget",
         "path": "docs/evidence/C101/receipts/benzinga/PriceTarget/counterfact.json",
-        "sha256": "3c5aa0add7f371cd9d1d5c9d94f835a2cf2ca91ac26a98d7ebd59ce92990f0d7"
+        "sha256": "1c68d4d1c91fe46e911d9f45021b0ba6ffb0a26279f5d839f6ee733c08943a5b"
       },
       "status": "PASS",
       "upstream_model": "PriceTarget"
@@ -1637,9 +1637,9 @@
       "receipt": {
         "model_identity": "benzinga::AnalystSearch",
         "path": "docs/evidence/C101/primary-reviews/benzinga__AnalystSearch.review.json",
-        "sha256": "a23b67cddadcb3e2bf76d1f6275621620e0ac12238809128bcdac3aea40983dd"
+        "sha256": "cc3b1ea75f5d76834286b4a620250e5b69744c1c87cc07d665dba3a936f515bb"
       },
-      "reviewed_at_utc": "2026-10-21T03:11:59Z",
+      "reviewed_at_utc": "2026-10-21T05:16:43Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -1652,9 +1652,9 @@
       "receipt": {
         "model_identity": "benzinga::CompanyNews",
         "path": "docs/evidence/C101/primary-reviews/benzinga__CompanyNews.review.json",
-        "sha256": "c281d1dc4069749f8bf265664e89baaa1e6a44542d7b1f86abcbcd7fac6225e2"
+        "sha256": "7b11bbe6d80d8c2f74413baaa5884d57c9a22101e8aceb5301423e8b5def157c"
       },
-      "reviewed_at_utc": "2026-10-21T03:11:59Z",
+      "reviewed_at_utc": "2026-10-21T05:16:43Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -1667,9 +1667,9 @@
       "receipt": {
         "model_identity": "benzinga::PriceTarget",
         "path": "docs/evidence/C101/primary-reviews/benzinga__PriceTarget.review.json",
-        "sha256": "da7601e47b6167d7e6b74fed7da83137e33f77ce06205c527bd21dc3788cf277"
+        "sha256": "3e6b01f7169b4dfb460bb646447255e09dd64f9bb6748fc36ceec1357aa133ef"
       },
-      "reviewed_at_utc": "2026-10-21T03:11:59Z",
+      "reviewed_at_utc": "2026-10-21T05:16:43Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -1682,9 +1682,9 @@
       "receipt": {
         "model_identity": "benzinga::WorldNews",
         "path": "docs/evidence/C101/primary-reviews/benzinga__WorldNews.review.json",
-        "sha256": "3bab3e8b5276e220453d1f2ff80ce3c6f03c3f1c3c9170469f31339c6d0be010"
+        "sha256": "b1c54cbd4cb26369a016e353b6b6044878ee615179dd3d16d2d7728f96a774c9"
       },
-      "reviewed_at_utc": "2026-10-21T03:11:59Z",
+      "reviewed_at_utc": "2026-10-21T05:16:43Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

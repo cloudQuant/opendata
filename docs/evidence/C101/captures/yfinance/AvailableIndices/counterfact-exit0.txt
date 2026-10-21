@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model AvailableIndices --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "YFINANCE_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "YFINANCE_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "a reference entry without its 'ticker' leaves the required 'symbol' field unresolvable, so the directory must refuse with YFINANCE_SHAPE_INVALID rather than publish an index the caller cannot query; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

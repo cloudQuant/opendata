@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider econdb --model ExportDestinations --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "ECONDB_SHAPE_INVALID", "rejected": [], "status": null}, "reason": "publishing a destination row without its 'Country' leaves the required 'destination_country' field unresolvable, so the adapter must refuse with ECONDB_SHAPE_INVALID rather than ship an unlabelled export value; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---

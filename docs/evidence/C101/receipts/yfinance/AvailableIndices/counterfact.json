@@ -1,0 +1,234 @@
+{
+  "capture": {
+    "path": "docs/evidence/C101/captures/yfinance/AvailableIndices/counterfact-exit0.txt",
+    "sha256": "15518cb766f672b01d7083fb14acb6633a03b0cdb854fa5c9aa1f95386602567",
+    "size_bytes": 847,
+    "stdout_excerpt": "COUNTERFACT_JSON={\"expected\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"ProviderEngineError\", \"refusal_code\": \"YFINANCE_SHAPE_INVALID\", \"rejected\": [], \"status\": null}, \"observed\": {\"invalid\": [], \"missing\": [], \"refusal_class\": \"ProviderEngineError\", \"refusal_code\": \"YFINANCE_SHAPE_INVALID\", \"rejected\": [], \"status\": null}, \"reason\": \"a reference entry without its 'ticker' leaves the required 'symbol' field unresolvable, so the directory must refuse with YFINANCE_SHAPE_INVALID rather than publish an index the caller cannot query; untampered control produced 2 row(s) through the same seam\"}\nVERDICT=PASS\n"
+  },
+  "counterfact": {
+    "expected": {
+      "invalid": [],
+      "missing": [],
+      "refusal_class": "ProviderEngineError",
+      "refusal_code": "YFINANCE_SHAPE_INVALID",
+      "rejected": [],
+      "status": null
+    },
+    "observed": {
+      "invalid": [],
+      "missing": [],
+      "refusal_class": "ProviderEngineError",
+      "refusal_code": "YFINANCE_SHAPE_INVALID",
+      "rejected": [],
+      "status": null
+    },
+    "reason": "a reference entry without its 'ticker' leaves the required 'symbol' field unresolvable, so the directory must refuse with YFINANCE_SHAPE_INVALID rather than publish an index the caller cannot query; untampered control produced 2 row(s) through the same seam"
+  },
+  "machine_execution": {
+    "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model AvailableIndices --phase counterfact --evidence-root docs/evidence/C101",
+    "executed_at_utc": "2026-10-21T05:53:50.615387+00:00",
+    "exit_code": 0,
+    "pins": {
+      "contract": [
+        {
+          "after_sha256": "c2e154354233cd5d53a4afa58cd824efb0089e61d69b54967f35f61f5235ba39",
+          "before_sha256": "c2e154354233cd5d53a4afa58cd824efb0089e61d69b54967f35f61f5235ba39",
+          "path": "opendata/data/models/yfinance_available_indices.py"
+        },
+        {
+          "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+          "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+          "path": "opendata/data/domains.yaml"
+        }
+      ],
+      "contract_version": "sha256:c2e154354233cd5d53a4afa58cd824efb0089e61d69b54967f35f61f5235ba39",
+      "fixture": [
+        {
+          "after_sha256": "1bf1fd910922f54cc1abb69d0211d007ab54abe104c74dec65492aaba9b01158",
+          "before_sha256": "1bf1fd910922f54cc1abb69d0211d007ab54abe104c74dec65492aaba9b01158",
+          "path": "docs/evidence/C101/fixtures/yfinance/AvailableIndices.json"
+        }
+      ],
+      "probe": [
+        {
+          "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "path": "scripts/quality/iter2_claims_probe_runner.py"
+        },
+        {
+          "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+          "path": "scripts/quality/iter2_claims_fixtures.py"
+        },
+        {
+          "after_sha256": "52cf7d1d83bc878b4ceb30d766cd6a4037acb3e42c162ef1577b1a5064ebd771",
+          "before_sha256": "52cf7d1d83bc878b4ceb30d766cd6a4037acb3e42c162ef1577b1a5064ebd771",
+          "path": "scripts/quality/iter2_witnesses/yfinance.py"
+        },
+        {
+          "after_sha256": "b7fe96680a423f50906d1fd0148693913cec6008133b00753c97cbb6128cd4a2",
+          "before_sha256": "b7fe96680a423f50906d1fd0148693913cec6008133b00753c97cbb6128cd4a2",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_a.py"
+        },
+        {
+          "after_sha256": "933ac136015b237620a0b00bb7e120b90f51f9956d55194698fdba613a02cbcb",
+          "before_sha256": "933ac136015b237620a0b00bb7e120b90f51f9956d55194698fdba613a02cbcb",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_b.py"
+        },
+        {
+          "after_sha256": "9f58d90cf6450f8e1ddcc3ba88119579e3ade93633b1a6c29a505ccbc48849fa",
+          "before_sha256": "9f58d90cf6450f8e1ddcc3ba88119579e3ade93633b1a6c29a505ccbc48849fa",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_c.py"
+        },
+        {
+          "after_sha256": "561e1ef1f7055395fc74a97f142cc3e29c74e83074b499b972043103c4f29a61",
+          "before_sha256": "561e1ef1f7055395fc74a97f142cc3e29c74e83074b499b972043103c4f29a61",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_d.py"
+        },
+        {
+          "after_sha256": "7fc3d8edb37462b207deac19733585878ca02bf6e27f7cfbcdf1a1b10409c553",
+          "before_sha256": "7fc3d8edb37462b207deac19733585878ca02bf6e27f7cfbcdf1a1b10409c553",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_e.py"
+        },
+        {
+          "after_sha256": "f91aa258ee665ee44c109ba8574eaa2a5bdfe3d1db3c013da0dbc617c56ec8be",
+          "before_sha256": "f91aa258ee665ee44c109ba8574eaa2a5bdfe3d1db3c013da0dbc617c56ec8be",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_f.py"
+        },
+        {
+          "after_sha256": "ee5421eb7e3baa66fc4335ec10f428ebc20869058cfef347abe3d6736a17f186",
+          "before_sha256": "ee5421eb7e3baa66fc4335ec10f428ebc20869058cfef347abe3d6736a17f186",
+          "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w34_futures_curve.py"
+        }
+      ],
+      "source": [
+        {
+          "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+          "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+          "path": "opendata/data/providers/catalog.py"
+        },
+        {
+          "after_sha256": "200c502cad26acf39c702087f1362fda590c2ae1c24849b702232fca46fa4346",
+          "before_sha256": "200c502cad26acf39c702087f1362fda590c2ae1c24849b702232fca46fa4346",
+          "path": "opendata/data/providers/yfinance/provider.py"
+        },
+        {
+          "after_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
+          "before_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
+          "path": "opendata/data/providers/yfinance/models/available_indices.py"
+        },
+        {
+          "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+          "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+          "path": "opendata/data/providers/_engine/http_json.py"
+        }
+      ]
+    },
+    "record_type": "machine_execution",
+    "status": "PASS"
+  },
+  "model_identity": "yfinance::AvailableIndices",
+  "phase": "counterfact",
+  "pins": {
+    "contract": [
+      {
+        "after_sha256": "c2e154354233cd5d53a4afa58cd824efb0089e61d69b54967f35f61f5235ba39",
+        "before_sha256": "c2e154354233cd5d53a4afa58cd824efb0089e61d69b54967f35f61f5235ba39",
+        "path": "opendata/data/models/yfinance_available_indices.py"
+      },
+      {
+        "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+        "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+        "path": "opendata/data/domains.yaml"
+      }
+    ],
+    "contract_version": "sha256:c2e154354233cd5d53a4afa58cd824efb0089e61d69b54967f35f61f5235ba39",
+    "fixture": [
+      {
+        "after_sha256": "1bf1fd910922f54cc1abb69d0211d007ab54abe104c74dec65492aaba9b01158",
+        "before_sha256": "1bf1fd910922f54cc1abb69d0211d007ab54abe104c74dec65492aaba9b01158",
+        "path": "docs/evidence/C101/fixtures/yfinance/AvailableIndices.json"
+      }
+    ],
+    "probe": [
+      {
+        "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "path": "scripts/quality/iter2_claims_probe_runner.py"
+      },
+      {
+        "after_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "before_sha256": "7bb818ae4a77880bdd9e9236f621af64afda2aab6ce216e30ccfabb2f5cd5b08",
+        "path": "scripts/quality/iter2_claims_fixtures.py"
+      },
+      {
+        "after_sha256": "52cf7d1d83bc878b4ceb30d766cd6a4037acb3e42c162ef1577b1a5064ebd771",
+        "before_sha256": "52cf7d1d83bc878b4ceb30d766cd6a4037acb3e42c162ef1577b1a5064ebd771",
+        "path": "scripts/quality/iter2_witnesses/yfinance.py"
+      },
+      {
+        "after_sha256": "b7fe96680a423f50906d1fd0148693913cec6008133b00753c97cbb6128cd4a2",
+        "before_sha256": "b7fe96680a423f50906d1fd0148693913cec6008133b00753c97cbb6128cd4a2",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_a.py"
+      },
+      {
+        "after_sha256": "933ac136015b237620a0b00bb7e120b90f51f9956d55194698fdba613a02cbcb",
+        "before_sha256": "933ac136015b237620a0b00bb7e120b90f51f9956d55194698fdba613a02cbcb",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_b.py"
+      },
+      {
+        "after_sha256": "9f58d90cf6450f8e1ddcc3ba88119579e3ade93633b1a6c29a505ccbc48849fa",
+        "before_sha256": "9f58d90cf6450f8e1ddcc3ba88119579e3ade93633b1a6c29a505ccbc48849fa",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_c.py"
+      },
+      {
+        "after_sha256": "561e1ef1f7055395fc74a97f142cc3e29c74e83074b499b972043103c4f29a61",
+        "before_sha256": "561e1ef1f7055395fc74a97f142cc3e29c74e83074b499b972043103c4f29a61",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_d.py"
+      },
+      {
+        "after_sha256": "7fc3d8edb37462b207deac19733585878ca02bf6e27f7cfbcdf1a1b10409c553",
+        "before_sha256": "7fc3d8edb37462b207deac19733585878ca02bf6e27f7cfbcdf1a1b10409c553",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_e.py"
+      },
+      {
+        "after_sha256": "f91aa258ee665ee44c109ba8574eaa2a5bdfe3d1db3c013da0dbc617c56ec8be",
+        "before_sha256": "f91aa258ee665ee44c109ba8574eaa2a5bdfe3d1db3c013da0dbc617c56ec8be",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w32_f.py"
+      },
+      {
+        "after_sha256": "ee5421eb7e3baa66fc4335ec10f428ebc20869058cfef347abe3d6736a17f186",
+        "before_sha256": "ee5421eb7e3baa66fc4335ec10f428ebc20869058cfef347abe3d6736a17f186",
+        "path": "scripts/quality/iter2_witnesses/_parts/yfinance/rows_w34_futures_curve.py"
+      }
+    ],
+    "source": [
+      {
+        "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+        "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+        "path": "opendata/data/providers/catalog.py"
+      },
+      {
+        "after_sha256": "200c502cad26acf39c702087f1362fda590c2ae1c24849b702232fca46fa4346",
+        "before_sha256": "200c502cad26acf39c702087f1362fda590c2ae1c24849b702232fca46fa4346",
+        "path": "opendata/data/providers/yfinance/provider.py"
+      },
+      {
+        "after_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
+        "before_sha256": "a7a51ed6574aa04aaf2631b0d76a14788ce4af460eef90442324f7679a94178f",
+        "path": "opendata/data/providers/yfinance/models/available_indices.py"
+      },
+      {
+        "after_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+        "before_sha256": "c9ab305dd2146d6943599d1603ddfbb4504ee68d90850d725ccf8faeb5e04b30",
+        "path": "opendata/data/providers/_engine/http_json.py"
+      }
+    ]
+  },
+  "provider": "yfinance",
+  "reason": "witness reported a clean verdict",
+  "receipt_schema_version": 1,
+  "status": "PASS",
+  "task_id": "OBB2-yfinance-AvailableIndices",
+  "upstream_model": "AvailableIndices"
+}

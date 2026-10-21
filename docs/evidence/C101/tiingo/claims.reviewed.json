@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model EquityHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:45:22.542140+00:00",
+      "executed_at_utc": "2026-10-21T05:49:41.910168+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -88,7 +88,7 @@
       "receipt": {
         "model_identity": "tiingo::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/EquityHistorical/implementation.json",
-        "sha256": "af1745c59544eed0fa7c96059524d0279ce884550ec5ec48e74c2df2f21f2b39"
+        "sha256": "6294a5c7de59f756a6d95680b0f18b71f10bdd5d574511b3d7558435e30b4058"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -96,7 +96,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model EquityHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:45:23.503107+00:00",
+      "executed_at_utc": "2026-10-21T05:49:42.935577+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -108,8 +108,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -171,7 +171,7 @@
       "receipt": {
         "model_identity": "tiingo::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/EquityHistorical/direct.json",
-        "sha256": "c4ffd9177918119c8ecf2fe4f3c2fe690803fb3bc24cca73ad91a16be9b1a7a3"
+        "sha256": "88d3656c9b17110c819c39dc22f81f8e5fb9df08db866cbb553463c23f223fc7"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -179,7 +179,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model EquityHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:45:24.480109+00:00",
+      "executed_at_utc": "2026-10-21T05:49:43.891706+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -191,8 +191,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -254,7 +254,7 @@
       "receipt": {
         "model_identity": "tiingo::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/EquityHistorical/service.json",
-        "sha256": "4a0932b838241fe814e619ef9dc1ccdf4b2a12c7534cad68f98b858ebfdd7088"
+        "sha256": "d7599ce500b3e09afb0db0f72f889063928061bced9cdd946e7bfd198b721cab"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -262,7 +262,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model EquityHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:45:25.477093+00:00",
+      "executed_at_utc": "2026-10-21T05:49:44.925156+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -274,8 +274,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -337,7 +337,7 @@
       "receipt": {
         "model_identity": "tiingo::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/EquityHistorical/contract.json",
-        "sha256": "ad02368566abfcd8495d75b4f23cd0d3bed693854f69bcfe4e8b3ca4874a8452"
+        "sha256": "48b3c514a8014ea29a1bbfe8ba08957168a77161286daeea6b83d9a1e365b73a"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -345,7 +345,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model EquityHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:45:27.489464+00:00",
+      "executed_at_utc": "2026-10-21T05:49:46.932540+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -357,8 +357,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -420,7 +420,7 @@
       "receipt": {
         "model_identity": "tiingo::EquityHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/EquityHistorical/counterfact.json",
-        "sha256": "7f54e3d3b91989f285cc153fcdd7c6cdd4b556b2a36a05cf135ded9d99a5ccd9"
+        "sha256": "831ed256b5bc4c5e432cacd12457ab64bd4db954674c575f5dedb18bd8fd91a8"
       },
       "status": "PASS",
       "upstream_model": "EquityHistorical"
@@ -428,7 +428,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model EtfHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:45:28.491694+00:00",
+      "executed_at_utc": "2026-10-21T05:49:47.885948+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -440,8 +440,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -513,7 +513,7 @@
       "receipt": {
         "model_identity": "tiingo::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/EtfHistorical/implementation.json",
-        "sha256": "a44d332108c6cf5f91acc94ca13e43ae1f9d62b56085f62741029b6c9bfd67a8"
+        "sha256": "8d4e64a8dfceeb751ddbbe7ad299285c646d032563592a48a2048c06d87fd87d"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -521,7 +521,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model EtfHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:45:29.511388+00:00",
+      "executed_at_utc": "2026-10-21T05:49:48.914216+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -533,8 +533,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -596,7 +596,7 @@
       "receipt": {
         "model_identity": "tiingo::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/EtfHistorical/direct.json",
-        "sha256": "295a22cb14e0fa895ea84f18e2f9a1aed97ef1719bdf042eeb0342f950419a12"
+        "sha256": "eab8f595b8b4b8c06e8c27b606618ca746ef35137080e1a3a318b3c348b2bdfd"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -604,7 +604,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model EtfHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:45:30.634513+00:00",
+      "executed_at_utc": "2026-10-21T05:49:49.872169+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -616,8 +616,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -679,7 +679,7 @@
       "receipt": {
         "model_identity": "tiingo::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/EtfHistorical/service.json",
-        "sha256": "81fd6f1c3f7191f89b7a0afaaf05168ea890549dd8a2675ce53fecc0da751692"
+        "sha256": "7da801424b7eb633595764ab22136f9bc00929c969b190c20fcb7f8226919ce4"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -687,7 +687,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model EtfHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:45:31.734685+00:00",
+      "executed_at_utc": "2026-10-21T05:49:50.908163+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -699,8 +699,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -762,7 +762,7 @@
       "receipt": {
         "model_identity": "tiingo::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/EtfHistorical/contract.json",
-        "sha256": "4b24d8c484451bfcdf95278b917ab55fb72391c3b542751466bdbc60f3d8ee13"
+        "sha256": "564a385f8e821fd85d173c9bcea02c9fb234abd413d9529d3652bc5809c169a6"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -770,7 +770,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model EtfHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:45:33.747893+00:00",
+      "executed_at_utc": "2026-10-21T05:49:52.949298+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -782,8 +782,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -845,7 +845,7 @@
       "receipt": {
         "model_identity": "tiingo::EtfHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/EtfHistorical/counterfact.json",
-        "sha256": "70b4e0d64c6d39295eebbb2d7a832db0887b59e320f10a50414e90b0275985c2"
+        "sha256": "7fcea0c5f9b82798131454581b7b8a2eb78f82369fe81a9d155cefc3087e5176"
       },
       "status": "PASS",
       "upstream_model": "EtfHistorical"
@@ -853,7 +853,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CompanyNews --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:45:34.705770+00:00",
+      "executed_at_utc": "2026-10-21T05:49:53.927591+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -865,8 +865,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -938,7 +938,7 @@
       "receipt": {
         "model_identity": "tiingo::CompanyNews",
         "path": "docs/evidence/C101/receipts/tiingo/CompanyNews/implementation.json",
-        "sha256": "59f23d2798c87da1f1357410845075659eec9fb7660dfc211e769c4e122aee58"
+        "sha256": "b2d60f152be96dd9560824c3d7b66dc36bbab3d42dd0a340266053c4160c7339"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -946,7 +946,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CompanyNews --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:45:35.676668+00:00",
+      "executed_at_utc": "2026-10-21T05:49:54.958878+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -958,8 +958,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1021,7 +1021,7 @@
       "receipt": {
         "model_identity": "tiingo::CompanyNews",
         "path": "docs/evidence/C101/receipts/tiingo/CompanyNews/direct.json",
-        "sha256": "6e710b688b5e855b21938eabd471c9ba0c74afb77a2a3dec66d7df091c46a007"
+        "sha256": "64df0c23c8ddee92f573efa1a1154513dc14b7813bc9688fc099fc990b393690"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -1029,7 +1029,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CompanyNews --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:45:36.741614+00:00",
+      "executed_at_utc": "2026-10-21T05:49:55.942088+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1041,8 +1041,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1104,7 +1104,7 @@
       "receipt": {
         "model_identity": "tiingo::CompanyNews",
         "path": "docs/evidence/C101/receipts/tiingo/CompanyNews/service.json",
-        "sha256": "78999b63fa7a98047e2236c151f1d2ec69527f9a00a5911eba1a325be04bd94d"
+        "sha256": "79422c7469e754f97b91d0fcea3b9e93ca7f72d68cc2c0158802e8f4da7c1f7e"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -1112,7 +1112,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CompanyNews --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:45:37.771402+00:00",
+      "executed_at_utc": "2026-10-21T05:49:56.960326+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1124,8 +1124,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1187,7 +1187,7 @@
       "receipt": {
         "model_identity": "tiingo::CompanyNews",
         "path": "docs/evidence/C101/receipts/tiingo/CompanyNews/contract.json",
-        "sha256": "7b6068abe4f282152358813f55c5de71676d75a2835f1e667cff9b866a592dd1"
+        "sha256": "abf4d96085df2feee8a53a302dae66dee8e30a01f566ef066ae1dfd1f0e88e74"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -1195,7 +1195,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CompanyNews --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:45:39.874034+00:00",
+      "executed_at_utc": "2026-10-21T05:49:58.967144+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1207,8 +1207,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1270,7 +1270,7 @@
       "receipt": {
         "model_identity": "tiingo::CompanyNews",
         "path": "docs/evidence/C101/receipts/tiingo/CompanyNews/counterfact.json",
-        "sha256": "501e83516a43876cb8b2eab84e044d8e7b92680bb1ca97f37037e58da4ddcbbe"
+        "sha256": "b5dcc4b37cf47cf74fb2f594f077a5c80731386154d48cc1a4da611ef98e3d19"
       },
       "status": "PASS",
       "upstream_model": "CompanyNews"
@@ -1278,7 +1278,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model WorldNews --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:45:40.925367+00:00",
+      "executed_at_utc": "2026-10-21T05:49:59.942865+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1290,8 +1290,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1363,7 +1363,7 @@
       "receipt": {
         "model_identity": "tiingo::WorldNews",
         "path": "docs/evidence/C101/receipts/tiingo/WorldNews/implementation.json",
-        "sha256": "85e59c8d84c7fe17c773813a7556ad94b046661d37acdc411258abf1c813b2eb"
+        "sha256": "0a94471156d7bdde7d0303baa72cec95ed704f48fad9e6545428de71d2552bda"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -1371,7 +1371,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model WorldNews --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:45:41.970244+00:00",
+      "executed_at_utc": "2026-10-21T05:50:00.964269+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1383,8 +1383,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1446,7 +1446,7 @@
       "receipt": {
         "model_identity": "tiingo::WorldNews",
         "path": "docs/evidence/C101/receipts/tiingo/WorldNews/direct.json",
-        "sha256": "c08cca25ee73851e4dade57f7bcdcb48f781bd60c7c9c21b18ae898f343510db"
+        "sha256": "5c7ea891096f425f0202d4f59adec2bd24f61ecb88b54990cf047adb12906fe0"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -1454,7 +1454,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model WorldNews --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:45:43.085704+00:00",
+      "executed_at_utc": "2026-10-21T05:50:01.942272+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1466,8 +1466,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1529,7 +1529,7 @@
       "receipt": {
         "model_identity": "tiingo::WorldNews",
         "path": "docs/evidence/C101/receipts/tiingo/WorldNews/service.json",
-        "sha256": "32d2b10fe769ca1dbf3fecd5ce93469856141ed6a5198dcc0ab7e193fac629fb"
+        "sha256": "85ab4ccfe8fc759266a7dbb9553b4ba7a0e9cbe9b500e3f08e8ab334c7477490"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -1537,7 +1537,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model WorldNews --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:45:44.104845+00:00",
+      "executed_at_utc": "2026-10-21T05:50:02.962314+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1549,8 +1549,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1612,7 +1612,7 @@
       "receipt": {
         "model_identity": "tiingo::WorldNews",
         "path": "docs/evidence/C101/receipts/tiingo/WorldNews/contract.json",
-        "sha256": "01070231875cb6e195cddce92b66581c665ff61bb8a241afc86c2fb25160a562"
+        "sha256": "23e985cd2a4cae78a90b3d5db00decc1d2bd40e43fbbd13679ab1f50fe5a6bf6"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -1620,7 +1620,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model WorldNews --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:45:46.049268+00:00",
+      "executed_at_utc": "2026-10-21T05:50:04.969718+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1632,8 +1632,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1695,7 +1695,7 @@
       "receipt": {
         "model_identity": "tiingo::WorldNews",
         "path": "docs/evidence/C101/receipts/tiingo/WorldNews/counterfact.json",
-        "sha256": "ea1de9fa47fc0884fe4469518df66680d875fecdd980d7b7211d5ad91760e591"
+        "sha256": "bf0ff842094c4964f0c7d49e724990f7203795c90ca70f597ce015c0b8a249b2"
       },
       "status": "PASS",
       "upstream_model": "WorldNews"
@@ -1703,7 +1703,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CryptoHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:45:47.149532+00:00",
+      "executed_at_utc": "2026-10-21T05:50:05.928536+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1715,8 +1715,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1793,7 +1793,7 @@
       "receipt": {
         "model_identity": "tiingo::CryptoHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/CryptoHistorical/implementation.json",
-        "sha256": "38af46e8945d323e436787d83b6820d8fedb68fc611ee4ee5c956ee100c678a7"
+        "sha256": "e1fd83d0ef67ac476a66eee52b366095e6bd2f1fc0e686a6192e4039de4b3d0f"
       },
       "status": "PASS",
       "upstream_model": "CryptoHistorical"
@@ -1801,7 +1801,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CryptoHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:45:48.144909+00:00",
+      "executed_at_utc": "2026-10-21T05:50:06.969496+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1813,8 +1813,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1881,7 +1881,7 @@
       "receipt": {
         "model_identity": "tiingo::CryptoHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/CryptoHistorical/direct.json",
-        "sha256": "f05a39b247180712ae7e2496a8de855d2c8754c5e0687426981fb88b199179c3"
+        "sha256": "b9ef624c62345df1252d8c7fa637fd25d80791e254f9b9f610341231fe0bb8ef"
       },
       "status": "PASS",
       "upstream_model": "CryptoHistorical"
@@ -1889,7 +1889,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CryptoHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:45:49.096513+00:00",
+      "executed_at_utc": "2026-10-21T05:50:07.926832+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1901,8 +1901,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1969,7 +1969,7 @@
       "receipt": {
         "model_identity": "tiingo::CryptoHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/CryptoHistorical/service.json",
-        "sha256": "ed1c045e157e4e6745b3794491244687551709e71cd5372090d7341edfbfc1eb"
+        "sha256": "aa1e9d22c8d21d378f293a6b622999fb2007c8a562e941db1f05879e0dad4826"
       },
       "status": "PASS",
       "upstream_model": "CryptoHistorical"
@@ -1977,7 +1977,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CryptoHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:45:50.157523+00:00",
+      "executed_at_utc": "2026-10-21T05:50:08.949348+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1989,8 +1989,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2057,7 +2057,7 @@
       "receipt": {
         "model_identity": "tiingo::CryptoHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/CryptoHistorical/contract.json",
-        "sha256": "9e9dd1c91c40b064fbfed73ce6054c3366a746517f5b6334607d3a80e2541501"
+        "sha256": "5762655185175d28f4b679e3637d38299d224c0a3839cc6027e2eb4b7f993eea"
       },
       "status": "PASS",
       "upstream_model": "CryptoHistorical"
@@ -2065,7 +2065,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CryptoHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:45:52.118062+00:00",
+      "executed_at_utc": "2026-10-21T05:50:10.970910+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2077,8 +2077,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2145,7 +2145,7 @@
       "receipt": {
         "model_identity": "tiingo::CryptoHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/CryptoHistorical/counterfact.json",
-        "sha256": "cffb23babb7bcc821cbaa7b7687e87ef4de93c1ac531eb45fafc87086ca7ab4c"
+        "sha256": "c5b605bca2026efc6a3223c3e0e6f02f20f9786a751c2266df69f078d196e9b2"
       },
       "status": "PASS",
       "upstream_model": "CryptoHistorical"
@@ -2153,7 +2153,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CurrencyHistorical --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:45:53.076330+00:00",
+      "executed_at_utc": "2026-10-21T05:50:11.926758+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2165,8 +2165,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2238,7 +2238,7 @@
       "receipt": {
         "model_identity": "tiingo::CurrencyHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/CurrencyHistorical/implementation.json",
-        "sha256": "08dd0097fe57193d4d91acbdf536eaf5f8424f4609b4976a09a84ab8ce9ae6b7"
+        "sha256": "bb20b9b60b051278eb843e051dc3ca6d763b511aa62481a69dcac1c2a10bbfe8"
       },
       "status": "PASS",
       "upstream_model": "CurrencyHistorical"
@@ -2246,7 +2246,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CurrencyHistorical --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:45:54.026475+00:00",
+      "executed_at_utc": "2026-10-21T05:50:12.960265+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2258,8 +2258,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2321,7 +2321,7 @@
       "receipt": {
         "model_identity": "tiingo::CurrencyHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/CurrencyHistorical/direct.json",
-        "sha256": "df42b5483fcb6939bb1d2b2afa9c744821fd8bfe60cda83c6b938c8d5db60217"
+        "sha256": "370317e16ac5ca4fa75ea82d2d9519528b20bf730b1c9ccfa07279536b72af55"
       },
       "status": "PASS",
       "upstream_model": "CurrencyHistorical"
@@ -2329,7 +2329,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CurrencyHistorical --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:45:54.991799+00:00",
+      "executed_at_utc": "2026-10-21T05:50:13.921476+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2341,8 +2341,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2404,7 +2404,7 @@
       "receipt": {
         "model_identity": "tiingo::CurrencyHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/CurrencyHistorical/service.json",
-        "sha256": "2561962e445ef104d51617a018364188fa60eeada7a2263ff1404aaa7c4fca33"
+        "sha256": "dd2e9057d17bd18f39327a0af5727f73aa3e26520ec7c0b03caa1c91a9b5a5a5"
       },
       "status": "PASS",
       "upstream_model": "CurrencyHistorical"
@@ -2412,7 +2412,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CurrencyHistorical --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:45:55.942677+00:00",
+      "executed_at_utc": "2026-10-21T05:50:14.952666+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2424,8 +2424,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2487,7 +2487,7 @@
       "receipt": {
         "model_identity": "tiingo::CurrencyHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/CurrencyHistorical/contract.json",
-        "sha256": "34601d7b7bd5dfc08aaddc38e0a2048148fab79b3b827bf3dc3690aaeb0ddaac"
+        "sha256": "17602660177929eab8c8ad027f6d81a277c9c175ae7b18b760bb3a4884ac3f9e"
       },
       "status": "PASS",
       "upstream_model": "CurrencyHistorical"
@@ -2495,7 +2495,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model CurrencyHistorical --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:45:57.912221+00:00",
+      "executed_at_utc": "2026-10-21T05:50:16.939285+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2507,8 +2507,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2570,7 +2570,7 @@
       "receipt": {
         "model_identity": "tiingo::CurrencyHistorical",
         "path": "docs/evidence/C101/receipts/tiingo/CurrencyHistorical/counterfact.json",
-        "sha256": "c087eb49cfd7e976ea61405d0722fd45469050cce2f3e66db836de3813df2878"
+        "sha256": "e59c19cf28757f5fcd2d946e5a2ac40a083bbfcfe7494bdba65564498200a6c0"
       },
       "status": "PASS",
       "upstream_model": "CurrencyHistorical"
@@ -2578,7 +2578,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model TrailingDividendYield --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:45:58.912736+00:00",
+      "executed_at_utc": "2026-10-21T05:50:17.902002+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2590,8 +2590,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2663,7 +2663,7 @@
       "receipt": {
         "model_identity": "tiingo::TrailingDividendYield",
         "path": "docs/evidence/C101/receipts/tiingo/TrailingDividendYield/implementation.json",
-        "sha256": "50a7651d633eb27e324526867ffac9e1c93eef60ba99838a732745dd370850c1"
+        "sha256": "c9d62a9af02502ba9228243bbaf9034b9192fed8f52095f8d5d8d5228e3521d8"
       },
       "status": "PASS",
       "upstream_model": "TrailingDividendYield"
@@ -2671,7 +2671,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model TrailingDividendYield --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:45:59.954048+00:00",
+      "executed_at_utc": "2026-10-21T05:50:18.933426+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2683,8 +2683,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2746,7 +2746,7 @@
       "receipt": {
         "model_identity": "tiingo::TrailingDividendYield",
         "path": "docs/evidence/C101/receipts/tiingo/TrailingDividendYield/direct.json",
-        "sha256": "506afbf8bd092f4283d46901c759bf6bdb778ce69425a0e32899a9eb4a79fd32"
+        "sha256": "0de5d002c74525386a2da078b0782279e910e3bb636ed9b6633c151f2be683ab"
       },
       "status": "PASS",
       "upstream_model": "TrailingDividendYield"
@@ -2754,7 +2754,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model TrailingDividendYield --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:46:00.985981+00:00",
+      "executed_at_utc": "2026-10-21T05:50:19.890717+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2766,8 +2766,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2829,7 +2829,7 @@
       "receipt": {
         "model_identity": "tiingo::TrailingDividendYield",
         "path": "docs/evidence/C101/receipts/tiingo/TrailingDividendYield/service.json",
-        "sha256": "f18500863e2b05baa60865fcc35112158273c0508f1b3fbcff4958ad5c6e537a"
+        "sha256": "3c651b382c865dc7daa2346dc5032cc2ed86d6716e2e4833a48650e131750a81"
       },
       "status": "PASS",
       "upstream_model": "TrailingDividendYield"
@@ -2837,7 +2837,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model TrailingDividendYield --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:46:01.942836+00:00",
+      "executed_at_utc": "2026-10-21T05:50:20.905193+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2849,8 +2849,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2912,7 +2912,7 @@
       "receipt": {
         "model_identity": "tiingo::TrailingDividendYield",
         "path": "docs/evidence/C101/receipts/tiingo/TrailingDividendYield/contract.json",
-        "sha256": "c552b00ac4904905db64efd54a64683629c45d6c70d1c319c16cae1260f203d0"
+        "sha256": "f31b24d488e68e68cd5deac87e75098f25b4171e46dbbe5d80de3fa366444e92"
       },
       "status": "PASS",
       "upstream_model": "TrailingDividendYield"
@@ -2920,7 +2920,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider tiingo --model TrailingDividendYield --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:46:04.071933+00:00",
+      "executed_at_utc": "2026-10-21T05:50:22.896664+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2932,8 +2932,8 @@
             "path": "opendata/data/models/tiingo.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2995,7 +2995,7 @@
       "receipt": {
         "model_identity": "tiingo::TrailingDividendYield",
         "path": "docs/evidence/C101/receipts/tiingo/TrailingDividendYield/counterfact.json",
-        "sha256": "3a7a4934e4cea0e9b718e2c580b0229e02c70ebc3b60405c65358ad4abe673e6"
+        "sha256": "12ba5cc57108f0033391b1a89d8cfc42144b312cd7d002b531d2c35d2095ba5c"
       },
       "status": "PASS",
       "upstream_model": "TrailingDividendYield"
@@ -3009,9 +3009,9 @@
       "receipt": {
         "model_identity": "tiingo::CompanyNews",
         "path": "docs/evidence/C101/primary-reviews/tiingo__CompanyNews.review.json",
-        "sha256": "c60f5d72e647ad785feb3c45a4bb082eabbbbf57f3b5c5affab69e07dcc19a05"
+        "sha256": "470da10d3f6b550ac99d6e96f631f400b1a9c89012588d3549d7052cbf106b4d"
       },
-      "reviewed_at_utc": "2026-10-21T03:46:05Z",
+      "reviewed_at_utc": "2026-10-21T05:50:24Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3024,9 +3024,9 @@
       "receipt": {
         "model_identity": "tiingo::CryptoHistorical",
         "path": "docs/evidence/C101/primary-reviews/tiingo__CryptoHistorical.review.json",
-        "sha256": "78c92ed00b6103cc6894c2c18418e25efeeb4526c8a537fbf6307e7eac92ca82"
+        "sha256": "8711a2e92faae5db5355ba169731be963c6ce2b010c861e999cb3a9db4ee090d"
       },
-      "reviewed_at_utc": "2026-10-21T03:46:05Z",
+      "reviewed_at_utc": "2026-10-21T05:50:24Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3039,9 +3039,9 @@
       "receipt": {
         "model_identity": "tiingo::CurrencyHistorical",
         "path": "docs/evidence/C101/primary-reviews/tiingo__CurrencyHistorical.review.json",
-        "sha256": "2668adb94a2731d1d2e0bd8ad58f453e31b879c6fc5b66c06bf12f81ea5c9517"
+        "sha256": "73ff23c91c1634aa60f4d94fe2a2daaa5da897c854f4212277dd8a86422d9731"
       },
-      "reviewed_at_utc": "2026-10-21T03:46:05Z",
+      "reviewed_at_utc": "2026-10-21T05:50:24Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3054,9 +3054,9 @@
       "receipt": {
         "model_identity": "tiingo::EquityHistorical",
         "path": "docs/evidence/C101/primary-reviews/tiingo__EquityHistorical.review.json",
-        "sha256": "3f464c862d8c8171167564ede292e8cd9ca895131e0ca5d7a63108fb6cbb6648"
+        "sha256": "59cd6e04c9757af69ed64dd983fa8e8a5906c5e0078dab7ef5ca320b44d5b29d"
       },
-      "reviewed_at_utc": "2026-10-21T03:46:05Z",
+      "reviewed_at_utc": "2026-10-21T05:50:24Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3069,9 +3069,9 @@
       "receipt": {
         "model_identity": "tiingo::EtfHistorical",
         "path": "docs/evidence/C101/primary-reviews/tiingo__EtfHistorical.review.json",
-        "sha256": "e3b86a5c325e93a5b228b2a71c90551bf75813465203e64d52b5fd999e550318"
+        "sha256": "c9a479665cfd65e24bb0c6d73145be9140fcdebc17ef998df0ad39fb9cb253c4"
       },
-      "reviewed_at_utc": "2026-10-21T03:46:05Z",
+      "reviewed_at_utc": "2026-10-21T05:50:24Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3084,9 +3084,9 @@
       "receipt": {
         "model_identity": "tiingo::TrailingDividendYield",
         "path": "docs/evidence/C101/primary-reviews/tiingo__TrailingDividendYield.review.json",
-        "sha256": "2f8c65b3c90ab9235ff675d986e30b44bfe6c3186ace4c4b4f6943687ce212a1"
+        "sha256": "0fd78e80944b3f4fa2a78da7d24720cb306ac1a2147b59eb6070fc2deb482e7e"
       },
-      "reviewed_at_utc": "2026-10-21T03:46:05Z",
+      "reviewed_at_utc": "2026-10-21T05:50:24Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3099,9 +3099,9 @@
       "receipt": {
         "model_identity": "tiingo::WorldNews",
         "path": "docs/evidence/C101/primary-reviews/tiingo__WorldNews.review.json",
-        "sha256": "0c30835d6da8b61aa4675d540c77510751eb5c353a1f8856f829e2f39c4dd24b"
+        "sha256": "46adcedf8b0889df831f805013c07a94459a911d7224839cb29adafee85f9c33"
       },
-      "reviewed_at_utc": "2026-10-21T03:46:05Z",
+      "reviewed_at_utc": "2026-10-21T05:50:24Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

@@ -121,15 +121,16 @@ class TestCensusRowIsDeclared:
         assert len(UPSTREAM_ROWS) == 8, "this provider's census has eight rows"
         assert set(READY_MODELS) == {
             "EconomicIndicators",
+            "ExportDestinations",
             "GdpNominal",
             "GdpReal",
             "PortVolume",
             "YieldCurve",
         }
-        assert set(NOT_DECLARED) == {"CountryProfile", "ExportDestinations"}
+        assert set(NOT_DECLARED) == {"CountryProfile"}
         assert "symbol_root" in DECLARED_GAPS["AvailableIndicators"]
 
-    def test_the_provider_descriptor_binds_the_one_declaration(self) -> None:
+    def test_the_provider_descriptor_binds_the_declared_and_ready_models(self) -> None:
         assert PROVIDER.source == "econdb"
         bound = {
             model_id

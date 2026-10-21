@@ -183,9 +183,9 @@ def test_catalog_contains_34_sources_and_the_live_fetcher_binding_census() -> No
         f"{source}::{binding.canonical_model_ids[0]}" for source, binding in engine_bindings
     }
     assert engine_ids == declared_ids, "an engine binding's canonical id is the model it generates"
-    assert len(bindings) == 376
-    assert len(bindings) - len(engine_bindings) == 356
-    assert len(engine_bindings) == len(bindings) - 356
+    assert len(bindings) == 378
+    assert len(bindings) - len(engine_bindings) == 358
+    assert len(engine_bindings) == len(bindings) - 358
     print(
         f"\ncatalog bindings: total={len(bindings)} engine={len(engine_bindings)} "
         f"hand_written={len(bindings) - len(engine_bindings)} engine_ids={sorted(engine_ids)}"
@@ -293,7 +293,7 @@ def test_registration_and_legacy_fetchers_project_the_same_capabilities() -> Non
         "imf": 11,
         "oecd": 11,
         "ths": 11,
-        "yfinance": 29,
+        "yfinance": 30,
         "bls": 2,
         "fmp": 69,
     }

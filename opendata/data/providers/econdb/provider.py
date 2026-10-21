@@ -8,7 +8,7 @@ PROVIDER = Provider(
     description=(
         "EconDB adapter for the indicator roster plus documented v1 macro series and port traffic. "
         "Five additional fixed models use the current series, port roster, container-traffic, and "
-        "dwell-time APIs; country profile and merchandise export destinations remain unsupported "
+        "dwell-time APIs; country profile remains unsupported; export destinations use the public widget table "
         "because current documentation does not provide those metric mappings."
     ),
     website="https://econdb.com/",
@@ -45,6 +45,12 @@ PROVIDER = Provider(
             "EconDBPortVolumeFetcher",
             canonical_model_ids=("PortVolume",),
             scenario="港口量：按 locode 合并官方 TEU 流量与堆场 dwell time 序列",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.econdb.models.profiles",
+            "EconDBExportDestinationsFetcher",
+            canonical_model_ids=("ExportDestinations",),
+            scenario="出口目的地：读取公开 widget 的按国家拆分表并保留单位与标题",
         ),
         LazyFetcherBinding(
             "opendata.data.providers.econdb.models.iter2",

@@ -414,7 +414,7 @@ class TestProviderBindings:
     def test_each_canonical_binding_has_a_consuming_scenario(self) -> None:
         bindings = [binding for binding in PROVIDER.fetcher_bindings if binding.canonical_model_ids]
 
-        assert len(bindings) == 28
+        assert len(bindings) == 29
         assert all(binding.scenario and binding.scenario.strip() for binding in bindings)
 
 

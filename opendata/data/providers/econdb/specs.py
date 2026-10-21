@@ -179,9 +179,11 @@ DECLARED_GAPS: dict[str, str] = {
     ),
 }
 
-#: The five additional fixed-model tasks implemented against documented EconDB v1 APIs.
+#: The fixed-model tasks implemented against documented EconDB APIs (the export-destination
+#: row uses the public widget table; the other five use the v1 series/port endpoints).
 READY_MODELS: Final[tuple[str, ...]] = (
     "EconomicIndicators",
+    "ExportDestinations",
     "GdpNominal",
     "GdpReal",
     "PortVolume",
@@ -196,12 +198,6 @@ NOT_DECLARED: dict[str, str] = {
         "profile's population, USD GDP, normalized rates, and percent-of-GDP metrics. The model "
         "needs a reviewed indicator-to-field mapping with units and compatible-country coverage; "
         "accepting arbitrary series IDs would mislabel values."
-    ),
-    "ExportDestinations": (
-        "The current documented bilateral container-volume endpoint reports shipping volumes in "
-        "TEU, not merchandise export values, and its generic response does not promise a complete "
-        "country-destination table. Publishing those route volumes as export values would change "
-        "the metric semantics."
     ),
 }
 

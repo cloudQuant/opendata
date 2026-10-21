@@ -1,13 +1,13 @@
 {
   "capture": {
     "path": "docs/evidence/C101/captures/yfinance/FuturesHistorical/service-exit0.txt",
-    "sha256": "d1da7d08bed091d60d2504102cff771bb126800ce56e2dc887e9e26cc7d7168c",
+    "sha256": "b72ffab725d181215626a999748f1a497988c0e7d5963d533f25b46b911ae18a",
     "size_bytes": 369,
-    "stdout_excerpt": "service: query_provider_model executed for real (registry + reviewed domain semantics), rows=20 first_row_sha256=384b294dc9933450\nVERDICT=PASS\n"
+    "stdout_excerpt": "service: query_provider_model executed for real (registry + reviewed domain semantics), rows=21 first_row_sha256=64d3a076afedd052\nVERDICT=PASS\n"
   },
   "machine_execution": {
     "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model FuturesHistorical --phase service --evidence-root docs/evidence/C101",
-    "executed_at_utc": "2026-10-21T03:51:27.858413+00:00",
+    "executed_at_utc": "2026-10-21T05:56:06.094798+00:00",
     "exit_code": 0,
     "pins": {
       "contract": [
@@ -17,16 +17,16 @@
           "path": "opendata/data/models/yfinance_iter2.py"
         },
         {
-          "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-          "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+          "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+          "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
           "path": "opendata/data/domains.yaml"
         }
       ],
       "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
       "fixture": [
         {
-          "after_sha256": "78f776d21f81dc8ec0e7219696951561042d9050cb776741d476d0779b7c0980",
-          "before_sha256": "78f776d21f81dc8ec0e7219696951561042d9050cb776741d476d0779b7c0980",
+          "after_sha256": "dbc47796c490b3e018b242ed69079b8bb6f29d938f7061e71bcaa235c571726c",
+          "before_sha256": "dbc47796c490b3e018b242ed69079b8bb6f29d938f7061e71bcaa235c571726c",
           "path": "docs/evidence/C101/fixtures/yfinance/FuturesHistorical.json"
         }
       ],
@@ -42,8 +42,8 @@
           "path": "scripts/quality/iter2_claims_fixtures.py"
         },
         {
-          "after_sha256": "ae9eb4e404f689a7ff9b38be4af3331957f8205bdd2173cf4c78582c3ef4a3d7",
-          "before_sha256": "ae9eb4e404f689a7ff9b38be4af3331957f8205bdd2173cf4c78582c3ef4a3d7",
+          "after_sha256": "52cf7d1d83bc878b4ceb30d766cd6a4037acb3e42c162ef1577b1a5064ebd771",
+          "before_sha256": "52cf7d1d83bc878b4ceb30d766cd6a4037acb3e42c162ef1577b1a5064ebd771",
           "path": "scripts/quality/iter2_witnesses/yfinance.py"
         },
         {
@@ -89,8 +89,8 @@
           "path": "opendata/data/providers/catalog.py"
         },
         {
-          "after_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
-          "before_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
+          "after_sha256": "200c502cad26acf39c702087f1362fda590c2ae1c24849b702232fca46fa4346",
+          "before_sha256": "200c502cad26acf39c702087f1362fda590c2ae1c24849b702232fca46fa4346",
           "path": "opendata/data/providers/yfinance/provider.py"
         },
         {
@@ -128,16 +128,16 @@
         "path": "opendata/data/models/yfinance_iter2.py"
       },
       {
-        "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-        "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+        "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+        "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
         "path": "opendata/data/domains.yaml"
       }
     ],
     "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
     "fixture": [
       {
-        "after_sha256": "78f776d21f81dc8ec0e7219696951561042d9050cb776741d476d0779b7c0980",
-        "before_sha256": "78f776d21f81dc8ec0e7219696951561042d9050cb776741d476d0779b7c0980",
+        "after_sha256": "dbc47796c490b3e018b242ed69079b8bb6f29d938f7061e71bcaa235c571726c",
+        "before_sha256": "dbc47796c490b3e018b242ed69079b8bb6f29d938f7061e71bcaa235c571726c",
         "path": "docs/evidence/C101/fixtures/yfinance/FuturesHistorical.json"
       }
     ],
@@ -153,8 +153,8 @@
         "path": "scripts/quality/iter2_claims_fixtures.py"
       },
       {
-        "after_sha256": "ae9eb4e404f689a7ff9b38be4af3331957f8205bdd2173cf4c78582c3ef4a3d7",
-        "before_sha256": "ae9eb4e404f689a7ff9b38be4af3331957f8205bdd2173cf4c78582c3ef4a3d7",
+        "after_sha256": "52cf7d1d83bc878b4ceb30d766cd6a4037acb3e42c162ef1577b1a5064ebd771",
+        "before_sha256": "52cf7d1d83bc878b4ceb30d766cd6a4037acb3e42c162ef1577b1a5064ebd771",
         "path": "scripts/quality/iter2_witnesses/yfinance.py"
       },
       {
@@ -200,8 +200,8 @@
         "path": "opendata/data/providers/catalog.py"
       },
       {
-        "after_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
-        "before_sha256": "e1ec2756b918a9f33abde59b0c790156bb7cebfd6efa29bf038cd910e7e6192b",
+        "after_sha256": "200c502cad26acf39c702087f1362fda590c2ae1c24849b702232fca46fa4346",
+        "before_sha256": "200c502cad26acf39c702087f1362fda590c2ae1c24849b702232fca46fa4346",
         "path": "opendata/data/providers/yfinance/provider.py"
       },
       {

@@ -20,7 +20,7 @@
 |---|---|---|---|---|---|
 | `biztoc` | WorldNews（1） | `api_key` | `BIZTOC_API_KEY` | https://rapidapi.com/thma/api/biztoc | 注册/登录 RapidAPI → 订阅 Biztoc API（有免费档选免费）→ 复制 `X-RapidAPI-Key`。请求用 header；key 只用于真实来源验证 |
 
-**离线验收**不消费真实 key（与其余 191 条凭据行一样用合成 fixture）。biztoc 已于 wave43 离线验收（**343/350**），key 现在只服务真实来源验证；仍无法改变子代理 34>30 的留档。
+**离线验收**不消费真实 key。biztoc（wave43）、econdb ExportDestinations 与 yfinance AvailableIndices（wave44）均已离线验收（**345/350**）；key 现在只服务真实来源验证；仍无法改变子代理 34>30 的留档。
 
 ## 1b. econdb / intrinio 的 key：只服务已验收行的真实来源验证
 
@@ -52,7 +52,7 @@
 |---|---|---|
 | `wsj` | 3 | 公开 JSON 端点；默认 UA 403，浏览器 UA 200（已实测 25,118–25,336 B）。实现待 `/goal resume` |
 | `stockgrid` | 1 | 旧端点 301 → `http://axlfi.com`（落地页，不再供数），无 key 可申请 |
-| `yfinance::AvailableIndices` | 1 | 本地常量、无 HTTP 端点；受 DEC-40-02 管辖 |
+| `yfinance::AvailableIndices` | 1 | **已于 wave44 离线落地**（本地参考表 + 伪 transport 见证） |
 
 其余 provider（cboe、finviz、imf、oecd、tmx 等）台账 `credential_fields` 为空，本清单不涉及。
 

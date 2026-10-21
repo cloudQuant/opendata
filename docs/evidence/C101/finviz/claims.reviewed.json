@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model CompareGroups --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:19:45.613573+00:00",
+      "executed_at_utc": "2026-10-21T05:23:26.996374+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -103,7 +103,7 @@
       "receipt": {
         "model_identity": "finviz::CompareGroups",
         "path": "docs/evidence/C101/receipts/finviz/CompareGroups/implementation.json",
-        "sha256": "98cd9c264c8423a9fa424b15b89fe53fe76433da4f3120a3a288e4486581414b"
+        "sha256": "c6fb690aa257e9db6e101914b46ec5374599c7613eb87ee2f00b9682eca94bf9"
       },
       "status": "PASS",
       "upstream_model": "CompareGroups"
@@ -111,7 +111,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model CompareGroups --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:19:46.921960+00:00",
+      "executed_at_utc": "2026-10-21T05:23:27.869030+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -123,8 +123,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -196,7 +196,7 @@
       "receipt": {
         "model_identity": "finviz::CompareGroups",
         "path": "docs/evidence/C101/receipts/finviz/CompareGroups/direct.json",
-        "sha256": "6f9f174d3e48c4d23a9ba67458de812a0caa89994c298b4ad595d4507272bbb4"
+        "sha256": "1d78ae931aefadb3a4265c336da533a8fe856b4e175f88a3845a96a45b6cf78f"
       },
       "status": "PASS",
       "upstream_model": "CompareGroups"
@@ -204,7 +204,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model CompareGroups --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:19:48.404541+00:00",
+      "executed_at_utc": "2026-10-21T05:23:28.884804+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -216,8 +216,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -289,7 +289,7 @@
       "receipt": {
         "model_identity": "finviz::CompareGroups",
         "path": "docs/evidence/C101/receipts/finviz/CompareGroups/service.json",
-        "sha256": "0ef64b9b4a02ff2d4ba3dd81a9c8f0f3889e4a5ead6b98008b3281605f4545c1"
+        "sha256": "467ec2edb175558ad4c1b470fe69d799dd4c00cad8727b48fa1b2a1c8a6ff4e6"
       },
       "status": "PASS",
       "upstream_model": "CompareGroups"
@@ -297,7 +297,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model CompareGroups --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:19:49.670822+00:00",
+      "executed_at_utc": "2026-10-21T05:23:29.775812+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -309,8 +309,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -382,7 +382,7 @@
       "receipt": {
         "model_identity": "finviz::CompareGroups",
         "path": "docs/evidence/C101/receipts/finviz/CompareGroups/contract.json",
-        "sha256": "39edd240be674b94b66d6daafa6a99106e3325f94f7e918001bce676c1d33288"
+        "sha256": "cbede7ca43f9b8a915d8b1067134034b9004045c0c5d6ad4c1ce86a6b49d2f2e"
       },
       "status": "PASS",
       "upstream_model": "CompareGroups"
@@ -390,7 +390,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model CompareGroups --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:19:52.494360+00:00",
+      "executed_at_utc": "2026-10-21T05:23:31.546860+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -402,8 +402,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -475,7 +475,7 @@
       "receipt": {
         "model_identity": "finviz::CompareGroups",
         "path": "docs/evidence/C101/receipts/finviz/CompareGroups/counterfact.json",
-        "sha256": "da6b4fc33b7895ba0ca8bc80f78469ae3b66b3c669136df92c5da3a735ebbcad"
+        "sha256": "06a43cf9f8e2b984b7d2573a315367e80a604e136c2e81cc51bb853a2b2bee4c"
       },
       "status": "PASS",
       "upstream_model": "CompareGroups"
@@ -483,7 +483,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EtfPricePerformance --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:19:53.776918+00:00",
+      "executed_at_utc": "2026-10-21T05:23:32.409974+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -495,8 +495,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -583,7 +583,7 @@
       "receipt": {
         "model_identity": "finviz::EtfPricePerformance",
         "path": "docs/evidence/C101/receipts/finviz/EtfPricePerformance/implementation.json",
-        "sha256": "b5e11b698ef63a5e9c9c267a1193be8947da08588f1a442c66762022c0110055"
+        "sha256": "3cc006b80699e98fdfe6ae874d8b6bf00b2426360ce4e9355f65b7c07adf0c4f"
       },
       "status": "PASS",
       "upstream_model": "EtfPricePerformance"
@@ -591,7 +591,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EtfPricePerformance --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:19:55.111492+00:00",
+      "executed_at_utc": "2026-10-21T05:23:33.282124+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -603,8 +603,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -676,7 +676,7 @@
       "receipt": {
         "model_identity": "finviz::EtfPricePerformance",
         "path": "docs/evidence/C101/receipts/finviz/EtfPricePerformance/direct.json",
-        "sha256": "c807edba605546014139854b9d7b3527c37ce825c12e93f22090c45613f9f7be"
+        "sha256": "51c9747ed2d5d533b8b37b9ece9e941a605e39c8cf7b150b4be3d4aab789915d"
       },
       "status": "PASS",
       "upstream_model": "EtfPricePerformance"
@@ -684,7 +684,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EtfPricePerformance --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:19:56.659343+00:00",
+      "executed_at_utc": "2026-10-21T05:23:34.288901+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -696,8 +696,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -769,7 +769,7 @@
       "receipt": {
         "model_identity": "finviz::EtfPricePerformance",
         "path": "docs/evidence/C101/receipts/finviz/EtfPricePerformance/service.json",
-        "sha256": "8be7082393088ed2d518c48831cadda1627af7a67b3f23ce22a98d36847af478"
+        "sha256": "f04e0db18f2cd431ad8f88d3e510c60535950a83585c90d536538d5ac5895cf9"
       },
       "status": "PASS",
       "upstream_model": "EtfPricePerformance"
@@ -777,7 +777,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EtfPricePerformance --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:19:57.981345+00:00",
+      "executed_at_utc": "2026-10-21T05:23:35.161136+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -789,8 +789,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -862,7 +862,7 @@
       "receipt": {
         "model_identity": "finviz::EtfPricePerformance",
         "path": "docs/evidence/C101/receipts/finviz/EtfPricePerformance/contract.json",
-        "sha256": "fbb53e50d8e43dff03f73355e999f8429a89f663125ad2198a48f8b33db59b29"
+        "sha256": "8257f9b6aefab024ec8af250c3dba439b51a4183387f6e7557baac135e1623c9"
       },
       "status": "PASS",
       "upstream_model": "EtfPricePerformance"
@@ -870,7 +870,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EtfPricePerformance --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:20:00.853658+00:00",
+      "executed_at_utc": "2026-10-21T05:23:36.943168+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -882,8 +882,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -955,7 +955,7 @@
       "receipt": {
         "model_identity": "finviz::EtfPricePerformance",
         "path": "docs/evidence/C101/receipts/finviz/EtfPricePerformance/counterfact.json",
-        "sha256": "5cd98976653e32425c92049be7e83513e5205269664466b41fe4dd23ecc77929"
+        "sha256": "a3476e84e429af928c308dff4bd95c7633d546a37aee3d4d3b1d91c18d55a5fd"
       },
       "status": "PASS",
       "upstream_model": "EtfPricePerformance"
@@ -963,7 +963,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EquityInfo --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:20:02.207188+00:00",
+      "executed_at_utc": "2026-10-21T05:23:37.821242+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -975,8 +975,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1063,7 +1063,7 @@
       "receipt": {
         "model_identity": "finviz::EquityInfo",
         "path": "docs/evidence/C101/receipts/finviz/EquityInfo/implementation.json",
-        "sha256": "5e21017f0b3d623bc5a0528937715e85cafd11065a9705b1a310123fd32958f6"
+        "sha256": "c3d8340c877302fb1cbfd2a822112900f17d6789a730db58de94f1cc20427f0f"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -1071,7 +1071,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EquityInfo --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:20:03.644091+00:00",
+      "executed_at_utc": "2026-10-21T05:23:38.705848+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1083,8 +1083,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1156,7 +1156,7 @@
       "receipt": {
         "model_identity": "finviz::EquityInfo",
         "path": "docs/evidence/C101/receipts/finviz/EquityInfo/direct.json",
-        "sha256": "6e1d4ee9c6684872556db48e4d179363dda82d915d62802647ffbce1536d23e7"
+        "sha256": "16659901230098aafc97bf844d1025e7ddc1219a23186c202d83ad7e96a91ad6"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -1164,7 +1164,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EquityInfo --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:20:05.297822+00:00",
+      "executed_at_utc": "2026-10-21T05:23:39.747815+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1176,8 +1176,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1249,7 +1249,7 @@
       "receipt": {
         "model_identity": "finviz::EquityInfo",
         "path": "docs/evidence/C101/receipts/finviz/EquityInfo/service.json",
-        "sha256": "bcdffb49dee38bfd50fc87885a09eec269c128cf5eae5bff39c609bf36f69763"
+        "sha256": "625a69c3aa7be4527c466ec703227eb29b2355e8efd5f210410ad281458fa4de"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -1257,7 +1257,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EquityInfo --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:20:06.785798+00:00",
+      "executed_at_utc": "2026-10-21T05:23:40.619911+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1269,8 +1269,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1342,7 +1342,7 @@
       "receipt": {
         "model_identity": "finviz::EquityInfo",
         "path": "docs/evidence/C101/receipts/finviz/EquityInfo/contract.json",
-        "sha256": "9f14a4a74fc10829057e59c908e0983a6380ff573b6bb9a993a2135a49024ced"
+        "sha256": "61fa2bd15f08afcff876fc98e29d1ecc3ebaed5ee6a77540b18e9b6061adfd9b"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -1350,7 +1350,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EquityInfo --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:20:09.753500+00:00",
+      "executed_at_utc": "2026-10-21T05:23:42.405646+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1362,8 +1362,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1435,7 +1435,7 @@
       "receipt": {
         "model_identity": "finviz::EquityInfo",
         "path": "docs/evidence/C101/receipts/finviz/EquityInfo/counterfact.json",
-        "sha256": "46f495379c2b50c5e2f505e819337416e89054cc69a660c4fa2d3a3e700558c0"
+        "sha256": "5c796c3e5424a5b2ceb9f315a6039b30a97a2d39803dfd69222f263ab70f6283"
       },
       "status": "PASS",
       "upstream_model": "EquityInfo"
@@ -1443,7 +1443,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EquityScreener --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:20:11.130196+00:00",
+      "executed_at_utc": "2026-10-21T05:23:43.274276+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1455,8 +1455,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1543,7 +1543,7 @@
       "receipt": {
         "model_identity": "finviz::EquityScreener",
         "path": "docs/evidence/C101/receipts/finviz/EquityScreener/implementation.json",
-        "sha256": "0a75ea026dc2ba3e6b7f0bb087c7cdf4f0dcb21cc4ee3d0dee5445c725e2fc38"
+        "sha256": "8dc4f81212a57d44de5896301bee26b9a4331adf5d2e1f5ecb7ea017ef796497"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -1551,7 +1551,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EquityScreener --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:20:12.588240+00:00",
+      "executed_at_utc": "2026-10-21T05:23:44.132787+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1563,8 +1563,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1636,7 +1636,7 @@
       "receipt": {
         "model_identity": "finviz::EquityScreener",
         "path": "docs/evidence/C101/receipts/finviz/EquityScreener/direct.json",
-        "sha256": "71c33da9fcdcbc0e5505f7dc78f273bf655e210e4631c61ccfaaeb6dd4da6d5a"
+        "sha256": "4beb42f21d2390e5f86b4dd98bfc2fabab5d287d5dd6097ce45bb6de86159054"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -1644,7 +1644,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EquityScreener --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:20:14.280530+00:00",
+      "executed_at_utc": "2026-10-21T05:23:45.170542+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1656,8 +1656,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1729,7 +1729,7 @@
       "receipt": {
         "model_identity": "finviz::EquityScreener",
         "path": "docs/evidence/C101/receipts/finviz/EquityScreener/service.json",
-        "sha256": "d72c6eaf29b2d6b15e70e69e3d27ddeefabec805c8b91409dd2309bff63b9172"
+        "sha256": "71b0e58ead22f8eba4c2edd0330228ed92b312e5dc7406856f7532a769adad56"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -1737,7 +1737,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EquityScreener --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:20:15.690700+00:00",
+      "executed_at_utc": "2026-10-21T05:23:46.044389+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1749,8 +1749,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1822,7 +1822,7 @@
       "receipt": {
         "model_identity": "finviz::EquityScreener",
         "path": "docs/evidence/C101/receipts/finviz/EquityScreener/contract.json",
-        "sha256": "db89802197daf6dc432b429ca3e4562cc162b03a709ee05d8a2a3fdc400a59b0"
+        "sha256": "0f5af5f3435e99225fd4bf07bf6892aaa56b38d44907709a8f0179be19392598"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -1830,7 +1830,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model EquityScreener --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:20:18.677892+00:00",
+      "executed_at_utc": "2026-10-21T05:23:47.808385+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1842,8 +1842,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -1915,7 +1915,7 @@
       "receipt": {
         "model_identity": "finviz::EquityScreener",
         "path": "docs/evidence/C101/receipts/finviz/EquityScreener/counterfact.json",
-        "sha256": "8a730fb8521c43af2c2ff0ddc06373f1f901e8fd813bf8e2231d6e81f6cc3f06"
+        "sha256": "bf7c3e0007e354d0d7636116b1837ae458a61e366dea6d27b707fdd21ca28a02"
       },
       "status": "PASS",
       "upstream_model": "EquityScreener"
@@ -1923,7 +1923,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model KeyMetrics --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:20:20.137971+00:00",
+      "executed_at_utc": "2026-10-21T05:23:48.686310+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1935,8 +1935,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2023,7 +2023,7 @@
       "receipt": {
         "model_identity": "finviz::KeyMetrics",
         "path": "docs/evidence/C101/receipts/finviz/KeyMetrics/implementation.json",
-        "sha256": "a6447cd90f1ac866d2a07e8dff6824bbc6a832677302994484b1566bd64cf7d9"
+        "sha256": "66da73ef266307f90d71e909ac947758436b4cff762d3cf4a12447d9f7a2f61a"
       },
       "status": "PASS",
       "upstream_model": "KeyMetrics"
@@ -2031,7 +2031,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model KeyMetrics --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:20:21.598872+00:00",
+      "executed_at_utc": "2026-10-21T05:23:49.556165+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2043,8 +2043,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2116,7 +2116,7 @@
       "receipt": {
         "model_identity": "finviz::KeyMetrics",
         "path": "docs/evidence/C101/receipts/finviz/KeyMetrics/direct.json",
-        "sha256": "e46237bedb739e10f9ab26556665bbc2f5f5e99a5442d49da54e93f04242b1ca"
+        "sha256": "a7143d015ad479f0f72c5cb5183b0f0c7a4b5fdbc3a672f03bdb898cc30a48ba"
       },
       "status": "PASS",
       "upstream_model": "KeyMetrics"
@@ -2124,7 +2124,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model KeyMetrics --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:20:23.271177+00:00",
+      "executed_at_utc": "2026-10-21T05:23:50.569533+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2136,8 +2136,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2209,7 +2209,7 @@
       "receipt": {
         "model_identity": "finviz::KeyMetrics",
         "path": "docs/evidence/C101/receipts/finviz/KeyMetrics/service.json",
-        "sha256": "c47c41a44c7df97b754e4dbf535d459ac515174cf087c6064683628af5f902ba"
+        "sha256": "844f1fa8bce635855a01aa24097f5d4a09103dcd2dbb01c9d316ac8480d965e2"
       },
       "status": "PASS",
       "upstream_model": "KeyMetrics"
@@ -2217,7 +2217,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model KeyMetrics --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:20:24.698013+00:00",
+      "executed_at_utc": "2026-10-21T05:23:51.437647+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2229,8 +2229,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2302,7 +2302,7 @@
       "receipt": {
         "model_identity": "finviz::KeyMetrics",
         "path": "docs/evidence/C101/receipts/finviz/KeyMetrics/contract.json",
-        "sha256": "ef92637c0b47fa2e93cca13a3d4f1e17e0b77ae1cd058a1c65af9aa308185ce8"
+        "sha256": "a529c3adc1e87ec7dcdd2bfbb53fabe9b08a44318a06935753245e72d6148990"
       },
       "status": "PASS",
       "upstream_model": "KeyMetrics"
@@ -2310,7 +2310,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model KeyMetrics --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:20:27.851513+00:00",
+      "executed_at_utc": "2026-10-21T05:23:53.186200+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2322,8 +2322,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2395,7 +2395,7 @@
       "receipt": {
         "model_identity": "finviz::KeyMetrics",
         "path": "docs/evidence/C101/receipts/finviz/KeyMetrics/counterfact.json",
-        "sha256": "dacba9b1a422555a461ca7b5ae89cc9e18283c3a4be1e355dc93a7d31edd165d"
+        "sha256": "1a073c941904727d15961d35569318a5175ba7091741ef952ee2cdba2d884ad7"
       },
       "status": "PASS",
       "upstream_model": "KeyMetrics"
@@ -2403,7 +2403,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model PricePerformance --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:20:29.413320+00:00",
+      "executed_at_utc": "2026-10-21T05:23:54.081907+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2415,8 +2415,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2503,7 +2503,7 @@
       "receipt": {
         "model_identity": "finviz::PricePerformance",
         "path": "docs/evidence/C101/receipts/finviz/PricePerformance/implementation.json",
-        "sha256": "42c7a25826fc8d79be8b927f0b1e414707882ee5a80780b63bee03eeabe10215"
+        "sha256": "118ba824f96fd0ca1f9ee46a5d3ae1b3eeb8c9287bd1f90da4bf57520d88a301"
       },
       "status": "PASS",
       "upstream_model": "PricePerformance"
@@ -2511,7 +2511,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model PricePerformance --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:20:30.968411+00:00",
+      "executed_at_utc": "2026-10-21T05:23:54.970454+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2523,8 +2523,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2596,7 +2596,7 @@
       "receipt": {
         "model_identity": "finviz::PricePerformance",
         "path": "docs/evidence/C101/receipts/finviz/PricePerformance/direct.json",
-        "sha256": "3edb7b56df8027860e3d47d684027c1b1dad5436c5d689fe925850636eb3e567"
+        "sha256": "4df01e24f451173342438267af5645a9da9f592d68289f48cee7139eab6604d8"
       },
       "status": "PASS",
       "upstream_model": "PricePerformance"
@@ -2604,7 +2604,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model PricePerformance --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:20:33.001773+00:00",
+      "executed_at_utc": "2026-10-21T05:23:56.004565+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2616,8 +2616,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2689,7 +2689,7 @@
       "receipt": {
         "model_identity": "finviz::PricePerformance",
         "path": "docs/evidence/C101/receipts/finviz/PricePerformance/service.json",
-        "sha256": "53e75417cb91cbe91c31f01b43ccaca269b6588cfa480e404081d830b3d64366"
+        "sha256": "edb490a0151b9234aa150da9ae8d97bf773a420a315c4faa8ad59e7656f3ff92"
       },
       "status": "PASS",
       "upstream_model": "PricePerformance"
@@ -2697,7 +2697,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model PricePerformance --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:20:34.693920+00:00",
+      "executed_at_utc": "2026-10-21T05:23:56.900307+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2709,8 +2709,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2782,7 +2782,7 @@
       "receipt": {
         "model_identity": "finviz::PricePerformance",
         "path": "docs/evidence/C101/receipts/finviz/PricePerformance/contract.json",
-        "sha256": "383bc07f4879b1a584cf0dcc6e0884a0af2e80e1beceb3355da16f32b8da09a3"
+        "sha256": "4e88c63501c1d3b936724d8df0ba8048a4058002905665ab717f579f25d47c15"
       },
       "status": "PASS",
       "upstream_model": "PricePerformance"
@@ -2790,7 +2790,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model PricePerformance --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:20:38.075178+00:00",
+      "executed_at_utc": "2026-10-21T05:23:58.654516+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2802,8 +2802,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2875,7 +2875,7 @@
       "receipt": {
         "model_identity": "finviz::PricePerformance",
         "path": "docs/evidence/C101/receipts/finviz/PricePerformance/counterfact.json",
-        "sha256": "13b6a0d2c7b6249f78a9b83b51d387a91cf8046d49bb5808ef5764e34a52b89d"
+        "sha256": "04a6310f2158a446c6daef17a62328b1064b3d8040ad492fc816eaf26b466f60"
       },
       "status": "PASS",
       "upstream_model": "PricePerformance"
@@ -2883,7 +2883,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model PriceTarget --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:20:39.535596+00:00",
+      "executed_at_utc": "2026-10-21T05:23:59.554973+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2895,8 +2895,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -2983,7 +2983,7 @@
       "receipt": {
         "model_identity": "finviz::PriceTarget",
         "path": "docs/evidence/C101/receipts/finviz/PriceTarget/implementation.json",
-        "sha256": "4a67650fb04fcfd47e3abd5a7cae2a39f58dfbd63f9386dadb6756469f5492e2"
+        "sha256": "3c03157d375a6a1082579936b6bb764a6ddbdecf0eb32491958eefda892e14cf"
       },
       "status": "PASS",
       "upstream_model": "PriceTarget"
@@ -2991,7 +2991,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model PriceTarget --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:20:41.226170+00:00",
+      "executed_at_utc": "2026-10-21T05:24:00.494345+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3003,8 +3003,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3076,7 +3076,7 @@
       "receipt": {
         "model_identity": "finviz::PriceTarget",
         "path": "docs/evidence/C101/receipts/finviz/PriceTarget/direct.json",
-        "sha256": "5fa64a2a2d3d48d4ecd3f7348aeb9868d82202eca4063afe1973a3f81aed6f1e"
+        "sha256": "6b5e1343c1d6180035f038fa33ebb22ea43004ecdc7a789b3f088f5914ab6717"
       },
       "status": "PASS",
       "upstream_model": "PriceTarget"
@@ -3084,7 +3084,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model PriceTarget --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:20:43.075306+00:00",
+      "executed_at_utc": "2026-10-21T05:24:01.518209+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3096,8 +3096,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3169,7 +3169,7 @@
       "receipt": {
         "model_identity": "finviz::PriceTarget",
         "path": "docs/evidence/C101/receipts/finviz/PriceTarget/service.json",
-        "sha256": "c330f9da8814985aea55dca0b7bfe68512d802464cf34ca4b476e4b51c4cb941"
+        "sha256": "c9b0446c210b6e1de9370829ea880e61ee5968a84e7a45ef1f2a8fa7678d71f6"
       },
       "status": "PASS",
       "upstream_model": "PriceTarget"
@@ -3177,7 +3177,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model PriceTarget --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:20:44.603667+00:00",
+      "executed_at_utc": "2026-10-21T05:24:02.396837+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3189,8 +3189,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3262,7 +3262,7 @@
       "receipt": {
         "model_identity": "finviz::PriceTarget",
         "path": "docs/evidence/C101/receipts/finviz/PriceTarget/contract.json",
-        "sha256": "a713900e058c29c2ad30551ba1e6f5750a43e4761fa60559d2d42b941e5c8e0d"
+        "sha256": "af72e2a0fa9f738337f14352fc90d58101c1fb7f896db1b5265a0051c71bbb51"
       },
       "status": "PASS",
       "upstream_model": "PriceTarget"
@@ -3270,7 +3270,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finviz --model PriceTarget --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:20:48.057755+00:00",
+      "executed_at_utc": "2026-10-21T05:24:04.163244+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3282,8 +3282,8 @@
             "path": "opendata/data/models/finviz.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -3355,7 +3355,7 @@
       "receipt": {
         "model_identity": "finviz::PriceTarget",
         "path": "docs/evidence/C101/receipts/finviz/PriceTarget/counterfact.json",
-        "sha256": "7a35066e147c9de1cab70c2f7938c3df41cacaee0c4f9172990bf83f1e75dcd8"
+        "sha256": "2102569330d7bd6d3099524f67e2effb13f977f0984917fae16703e5670c22cf"
       },
       "status": "PASS",
       "upstream_model": "PriceTarget"
@@ -3369,9 +3369,9 @@
       "receipt": {
         "model_identity": "finviz::CompareGroups",
         "path": "docs/evidence/C101/primary-reviews/finviz__CompareGroups.review.json",
-        "sha256": "58c77ee15dddac07282e8efadd85edf0355cb3ed860828783d074c18ecf9e45a"
+        "sha256": "15bc4532e6f14b5851bf3f088efebef56551f6cb9db6ccd3d124dc16f8faf2c3"
       },
-      "reviewed_at_utc": "2026-10-21T03:20:51Z",
+      "reviewed_at_utc": "2026-10-21T05:24:06Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3384,9 +3384,9 @@
       "receipt": {
         "model_identity": "finviz::EquityInfo",
         "path": "docs/evidence/C101/primary-reviews/finviz__EquityInfo.review.json",
-        "sha256": "e96d1d05d5814a4b019ecb90ef6b3e7f64e9050dc45904435aa6a400467518da"
+        "sha256": "b062b0e8c6cb6b4d6f934e3f2f293034626b51500ee87aaa179c15171e1b5932"
       },
-      "reviewed_at_utc": "2026-10-21T03:20:51Z",
+      "reviewed_at_utc": "2026-10-21T05:24:06Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3399,9 +3399,9 @@
       "receipt": {
         "model_identity": "finviz::EquityScreener",
         "path": "docs/evidence/C101/primary-reviews/finviz__EquityScreener.review.json",
-        "sha256": "8d5526ce68d035ec64bf7bbc164a81aa9b52d9ef7039629929fef752be5fdb26"
+        "sha256": "b599588b413e5674d6fe51b927959d4fd7655abe80aba417ce167cdf9dd919f3"
       },
-      "reviewed_at_utc": "2026-10-21T03:20:51Z",
+      "reviewed_at_utc": "2026-10-21T05:24:06Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3414,9 +3414,9 @@
       "receipt": {
         "model_identity": "finviz::EtfPricePerformance",
         "path": "docs/evidence/C101/primary-reviews/finviz__EtfPricePerformance.review.json",
-        "sha256": "ec2720231a622641e0987b7b0011f0f009804ba02e3ae9a4fb139fa63a159b22"
+        "sha256": "e9923cc384f1a10dee567c0e4f7a410dc9db435a94229f5cbae2e59fd76e5448"
       },
-      "reviewed_at_utc": "2026-10-21T03:20:51Z",
+      "reviewed_at_utc": "2026-10-21T05:24:06Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3429,9 +3429,9 @@
       "receipt": {
         "model_identity": "finviz::KeyMetrics",
         "path": "docs/evidence/C101/primary-reviews/finviz__KeyMetrics.review.json",
-        "sha256": "49bb6ca9b8e4e6f9cc68ed87a0a6547eae5bb369f54dc1759373fbe7b90feb51"
+        "sha256": "76be869f537a5cc6fbfee1fdfc9558c2972c9b025e7711de9986fae05f3b36b0"
       },
-      "reviewed_at_utc": "2026-10-21T03:20:51Z",
+      "reviewed_at_utc": "2026-10-21T05:24:06Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3444,9 +3444,9 @@
       "receipt": {
         "model_identity": "finviz::PricePerformance",
         "path": "docs/evidence/C101/primary-reviews/finviz__PricePerformance.review.json",
-        "sha256": "b70b29b6131ea43b25e30b6d5dcee4e95d6b5d1d4c2baec0b7b53210d7b4f6a5"
+        "sha256": "690e6dae5afad6e69f0682cff00351756420257730bb60cf64a5980facca4f58"
       },
-      "reviewed_at_utc": "2026-10-21T03:20:51Z",
+      "reviewed_at_utc": "2026-10-21T05:24:06Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -3459,9 +3459,9 @@
       "receipt": {
         "model_identity": "finviz::PriceTarget",
         "path": "docs/evidence/C101/primary-reviews/finviz__PriceTarget.review.json",
-        "sha256": "80ecc519066dbda6a9f8ffaf3c31d4d878b8d90f469411e479d45ac26a5a560d"
+        "sha256": "55ff4d406c9964d6824afe015ae6d37c6e42fbea23f37b79ade1693432d9c81d"
       },
-      "reviewed_at_utc": "2026-10-21T03:20:51Z",
+      "reviewed_at_utc": "2026-10-21T05:24:06Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

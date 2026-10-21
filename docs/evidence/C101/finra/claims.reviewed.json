@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:19:26.858267+00:00",
+      "executed_at_utc": "2026-10-21T05:23:14.067443+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -15,8 +15,8 @@
             "path": "opendata/data/models/finra.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -88,7 +88,7 @@
       "receipt": {
         "model_identity": "finra::OTCAggregate",
         "path": "docs/evidence/C101/receipts/finra/OTCAggregate/implementation.json",
-        "sha256": "4a8b3e63abd2f72a7a2e0d3b585dcf21ef7a1acaea30b00ec3ab10f2a31374da"
+        "sha256": "4abe7b774d4bb304c895cabefb6d365829f106b2d19c0500f8a5fe346af9e5be"
       },
       "status": "PASS",
       "upstream_model": "OTCAggregate"
@@ -96,7 +96,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:19:28.144795+00:00",
+      "executed_at_utc": "2026-10-21T05:23:15.073653+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -108,8 +108,8 @@
             "path": "opendata/data/models/finra.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -171,7 +171,7 @@
       "receipt": {
         "model_identity": "finra::OTCAggregate",
         "path": "docs/evidence/C101/receipts/finra/OTCAggregate/direct.json",
-        "sha256": "cc2476cd90236c0a653266e539c801284806132d995027e3e94bcc9a3802b46e"
+        "sha256": "5f28e28a03249c327c572a36dbae7357825e97cf55b2cd5e3aae3dd426b35f06"
       },
       "status": "PASS",
       "upstream_model": "OTCAggregate"
@@ -179,7 +179,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:19:29.625103+00:00",
+      "executed_at_utc": "2026-10-21T05:23:16.218431+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -191,8 +191,8 @@
             "path": "opendata/data/models/finra.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -254,7 +254,7 @@
       "receipt": {
         "model_identity": "finra::OTCAggregate",
         "path": "docs/evidence/C101/receipts/finra/OTCAggregate/service.json",
-        "sha256": "3f1abee03684d95f7d5b207fbc169fdff33d109f3dfff18e0d7b260e96ab8ee9"
+        "sha256": "cd3d35d0b96100967bf2a0a8d7e3730be98e9f8f63e37de24abc3dd8b0c98a68"
       },
       "status": "PASS",
       "upstream_model": "OTCAggregate"
@@ -262,7 +262,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:19:30.869794+00:00",
+      "executed_at_utc": "2026-10-21T05:23:17.097727+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -274,8 +274,8 @@
             "path": "opendata/data/models/finra.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -337,7 +337,7 @@
       "receipt": {
         "model_identity": "finra::OTCAggregate",
         "path": "docs/evidence/C101/receipts/finra/OTCAggregate/contract.json",
-        "sha256": "f3adff1a1a50d44d724b5d5d432d37889670bb65dc8ab72388989918c6faac17"
+        "sha256": "15de309ec1368a0a4ac258bc4df6949008cf0f64c12ad6cabf41bd09b1e2f080"
       },
       "status": "PASS",
       "upstream_model": "OTCAggregate"
@@ -345,7 +345,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model OTCAggregate --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:19:33.651911+00:00",
+      "executed_at_utc": "2026-10-21T05:23:18.880374+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -357,8 +357,8 @@
             "path": "opendata/data/models/finra.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -420,7 +420,7 @@
       "receipt": {
         "model_identity": "finra::OTCAggregate",
         "path": "docs/evidence/C101/receipts/finra/OTCAggregate/counterfact.json",
-        "sha256": "bdff7f64033a08eb3818a5ecff448b2675cf63c6a6ffea4cf66bc302fd0dbe84"
+        "sha256": "b5fc7bee911f5c827724e811ab525986dcc55e7ed5fe5cdd8833edac68e7430c"
       },
       "status": "PASS",
       "upstream_model": "OTCAggregate"
@@ -428,7 +428,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T03:19:34.887246+00:00",
+      "executed_at_utc": "2026-10-21T05:23:19.784105+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -440,8 +440,8 @@
             "path": "opendata/data/models/finra.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -513,7 +513,7 @@
       "receipt": {
         "model_identity": "finra::EquityShortInterest",
         "path": "docs/evidence/C101/receipts/finra/EquityShortInterest/implementation.json",
-        "sha256": "005210ba4b3b60db41c06cde8e7eb55adfc09b26c77b8af718998f6c47735b00"
+        "sha256": "b9d64e3f92e22acc7f04eb7b23380ebe28c169aa3c4787f7cf2d1a4142611355"
       },
       "status": "PASS",
       "upstream_model": "EquityShortInterest"
@@ -521,7 +521,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T03:19:36.157024+00:00",
+      "executed_at_utc": "2026-10-21T05:23:20.643516+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -533,8 +533,8 @@
             "path": "opendata/data/models/finra.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -596,7 +596,7 @@
       "receipt": {
         "model_identity": "finra::EquityShortInterest",
         "path": "docs/evidence/C101/receipts/finra/EquityShortInterest/direct.json",
-        "sha256": "4577335f6bb5701342dfaa6250a7a6a23985a8d05f24b2475fd3b3aeb79b9c0c"
+        "sha256": "76cec5e725a0496c17f6b081fc7609d3f33b44a8bedd3b440cff14478bb33353"
       },
       "status": "PASS",
       "upstream_model": "EquityShortInterest"
@@ -604,7 +604,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T03:19:37.639651+00:00",
+      "executed_at_utc": "2026-10-21T05:23:21.650878+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -616,8 +616,8 @@
             "path": "opendata/data/models/finra.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -679,7 +679,7 @@
       "receipt": {
         "model_identity": "finra::EquityShortInterest",
         "path": "docs/evidence/C101/receipts/finra/EquityShortInterest/service.json",
-        "sha256": "bad8d8b18720ecfd08719d272c8a53a960f1ee670b93574f822baaacd347737c"
+        "sha256": "70129dc175bcf8d436ef2bacc49335fdf9fcadfa8fbd7e2f697b698b64c3707d"
       },
       "status": "PASS",
       "upstream_model": "EquityShortInterest"
@@ -687,7 +687,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T03:19:38.975233+00:00",
+      "executed_at_utc": "2026-10-21T05:23:22.587753+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -699,8 +699,8 @@
             "path": "opendata/data/models/finra.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -762,7 +762,7 @@
       "receipt": {
         "model_identity": "finra::EquityShortInterest",
         "path": "docs/evidence/C101/receipts/finra/EquityShortInterest/contract.json",
-        "sha256": "615cde69508d49f3b3e7e0d3d5a928d0f804098981fb17c69963278c0897b198"
+        "sha256": "4bcd661f44e4cb06528c5c7db3de9fab12795632a501a45f3502dbd12f40f016"
       },
       "status": "PASS",
       "upstream_model": "EquityShortInterest"
@@ -770,7 +770,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider finra --model EquityShortInterest --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T03:19:41.538918+00:00",
+      "executed_at_utc": "2026-10-21T05:23:24.381733+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -782,8 +782,8 @@
             "path": "opendata/data/models/finra.py"
           },
           {
-            "after_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
-            "before_sha256": "0e31e843beb711f1e04b534a54645c173249f24b47030c8c37948326fba6d20d",
+            "after_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
+            "before_sha256": "7079c8f6cbe917a9fcca85823a60638cd7a70c45d7d7a3d1e81e0dca8840b373",
             "path": "opendata/data/domains.yaml"
           }
         ],
@@ -845,7 +845,7 @@
       "receipt": {
         "model_identity": "finra::EquityShortInterest",
         "path": "docs/evidence/C101/receipts/finra/EquityShortInterest/counterfact.json",
-        "sha256": "730377bb674968efde70c1a708ef1d9534d0c5ee2f93b949bc3f11ec604c279b"
+        "sha256": "6306c931a33246485e38bb4ef38b24c7bec703edeccf0d82636da15354a472d9"
       },
       "status": "PASS",
       "upstream_model": "EquityShortInterest"
@@ -859,9 +859,9 @@
       "receipt": {
         "model_identity": "finra::EquityShortInterest",
         "path": "docs/evidence/C101/primary-reviews/finra__EquityShortInterest.review.json",
-        "sha256": "4c042b24014825d81a5cf01724ef8d0c8ba6dc983bf603fe78abf2aced9c5bd2"
+        "sha256": "9db6099ed2bb9e738a56215315cfc160068d3b44e4e9e5a620205ee87dde4335"
       },
-      "reviewed_at_utc": "2026-10-21T03:19:44Z",
+      "reviewed_at_utc": "2026-10-21T05:23:26Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -874,9 +874,9 @@
       "receipt": {
         "model_identity": "finra::OTCAggregate",
         "path": "docs/evidence/C101/primary-reviews/finra__OTCAggregate.review.json",
-        "sha256": "23ea9df7176e19b8844bd3478706a222555ecdf3afdb2aa6a12d9cd5be38a356"
+        "sha256": "708a13d41af7cc08235bd7e38e9dc2d9cf7f6ddd1692660bd5bff3d079b76ff7"
       },
-      "reviewed_at_utc": "2026-10-21T03:19:44Z",
+      "reviewed_at_utc": "2026-10-21T05:23:26Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

@@ -439,6 +439,8 @@ from opendata.data.models.yfinance_iter2 import (
 )
 
 from opendata.data.models.biztoc import BiztocWorldNews
+from opendata.data.models.econdb import EconDBExportDestinations
+from opendata.data.models.yfinance_available_indices import YFinanceAvailableIndices
 from opendata.data.models.wsj import WSJETFPerformance
 
 __all__ = [
@@ -794,4 +796,6 @@ __all__ = [
     "TiingoWorldNews",
     "WSJETFPerformance",
     "BiztocWorldNews",
+    "EconDBExportDestinations",
+    "YFinanceAvailableIndices",
 ]

@@ -182,11 +182,39 @@ def _equity_quote_document() -> dict[str, Any]:
     }
 
 
+def _yfinance_available_indices_document() -> dict[str, Any]:
+    """Two entries from the local available-index reference table."""
+    return {
+        "sp500": {"name": "S&P 500 Index", "ticker": "^GSPC"},
+        "nasdaq100": {"name": "NASDAQ 100", "ticker": "^NDX"},
+    }
+
+
 CONFIG: Final[dict[str, Any]] = {
     "registration_module": "opendata.data.providers.yfinance.provider",
     "allowed_hosts": ["fc.yahoo.com", "query1.finance.yahoo.com", "query2.finance.yahoo.com"],
     "credential_env": {},
     "models": {
+        "AvailableIndices": {
+            "fixture_document": _yfinance_available_indices_document,
+            "query": {},
+            "tamper": {"op": "drop", "path": ["sp500", "ticker"], "column": "symbol"},
+            "refusal_class": "ProviderEngineError",
+            "refusal_code": "YFINANCE_SHAPE_INVALID",
+            "tamper_reason": (
+                "a reference entry without its 'ticker' leaves the required 'symbol' field "
+                "unresolvable, so the directory must refuse with YFINANCE_SHAPE_INVALID rather "
+                "than publish an index the caller cannot query"
+            ),
+            "source_files": [
+                "opendata/data/providers/yfinance/models/available_indices.py",
+                "opendata/data/providers/_engine/http_json.py",
+            ],
+            "contract_files": [
+                "opendata/data/models/yfinance_available_indices.py",
+                "opendata/data/domains.yaml",
+            ],
+        },
         "EquityQuote": {
             "fixture_document": _equity_quote_document,
             "client_seam": _SEAM,
