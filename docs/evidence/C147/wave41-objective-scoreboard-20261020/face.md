@@ -1403,3 +1403,13 @@ plane_collected=26,779 = 26,634 + 161 新测试名 − 16 改名   plane_new_cas
 
 与 pytest 末行 `10 failed, 26,463 passed, 306 skipped`（合计 26,779）一致。错值留在提交说明里不改写历史，
 本 §56 是更正记录；`w105` 的 I 臂按 `new - retired` 集合算术仍精确闭合，21/21。
+
+
+## 57. `w117` 收口跑在 `7646e200f` 上：8/8 arms、drift 0、全历史 551 commits 无泄漏
+
+载体 `runs/w47_closure_face_7646e200f.txt`。这一发的载荷只有 §56 那一个文件，所以 `commit_paths=1`
+是对该提交的诚实读数；本波真正的载荷在 `9fea1060e`（落地）+ `c3dc3ba98`（平面与验收载体），
+它们的 gitleaks 提交前闸门是 `credential_scan_face … 11/11 arms`（A/B/C 全 0，planted 各 2）。
+至此 plane 1 **349/350**、`{OFFLINE_ACCEPTED:349, UNREVIEWED:1}`、0 INCOMPLETE、
+`w105` 21/21、`w111` 4/4、`w113` 4/4、`w130` 6/6、全平面 10 红同集合。
+唯一剩下的行是 `stockgrid::ShortVolume`，它要的是新数据端点与权利登记；子代理 34>30 仍是既成违反。
