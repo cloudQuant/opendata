@@ -7,8 +7,9 @@ whitelist predicate, and wave 38's instrument is left untouched.
 
 ``--control`` runs three extra checks, each of which can fail the run: the observed suppression map
 against a tampered expectation (must come back unequal); a forged index-vs-worktree divergence in a
-real product path (``index_is_worktree`` must catch it, the carrier exemption notwithstanding); and
-that same product path offered as an exemption (``self_carrier_exemption_exact`` must refuse).
+non-exempt staged path (``index_is_worktree`` must keep it arm-visible while the carrier lands in
+the exemption); and the exemption predicate in both directions (a product path refused, this
+carrier accepted).
 """
 
 from __future__ import annotations
@@ -86,14 +87,25 @@ def main(argv: list[str] | None = None) -> int:
         whitelist_bites = observed != tampered
         staged = module._staged_paths()
         carrier_rel = str(CARRIER.relative_to(REPO))
-        product = sorted(p for p in staged if p.startswith("opendata/"))
-        if not product:
-            raise SystemExit("control needs a product path in the staged payload to forge against")
-        forged_target = product[0]
+        # Any non-exempt staged path will do for the drift forgery: the predicate under test is
+        # "a divergent file the exemption does not name stays arm-visible", which is the same
+        # statement for a product file and for a narrative doc. Requiring an ``opendata/`` path made
+        # this control unsatisfiable on a docs-only payload (measured 2026-10-22) -- a dead arm, not
+        # a stricter one. The scope refusal needs a path outside runs/, which is why it uses a fixed
+        # product constant instead of whatever happens to be staged.
+        candidates = [p for p in staged if p != carrier_rel]
+        if not candidates:
+            raise SystemExit("control needs a non-exempt staged path to forge against")
+        forged_target = candidates[0]
+        scope_target = "opendata/data/models/__init__.py"
 
         def _forged_worktree(path: str) -> bytes:
             if path == forged_target:
                 return b"# forged divergence, never written to disk"
+            if path == carrier_rel:
+                # Forge both halves: whether the carrier is dirty at this moment depends on this
+                # driver's own write order, so a disk-state reading flips between payloads.
+                return b"# forged carrier rewrite, never written to disk"
             return (REPO / path).read_bytes()
 
         forced_drift, forced_self = module._drift_reading(
@@ -101,23 +113,24 @@ def main(argv: list[str] | None = None) -> int:
             (carrier_rel,),
             worktree=_forged_worktree,
         )
-        # Expected shape of the forged reading: the product path lands in the arm-visible drift and
-        # the carrier in the exemption -- no more, no less. Asserting "no self hits" was itself the
-        # wrong expectation (measured 2026-10-22): the control runs after this driver rewrote
-        # its own carrier, so that one path really does differ from its staged blob, and an
-        # expectation that ignores a real divergence fires on a correct run.
+        # The constructed shape, asserted: the non-exempt path stays arm-visible, the carrier is
+        # absorbed by the exemption, and nothing else moves.
         drift_bites = forced_drift == [forged_target] and forced_self == [carrier_rel]
-        scope_bites = not module._exemption_is_carrier_only((forged_target,))
+        # Two directions, or the guard is only a spelling: the product path must be refused and the
+        # carrier path must actually be accepted by the same predicate.
+        scope_bites = not module._exemption_is_carrier_only(
+            (scope_target,)
+        ) and module._exemption_is_carrier_only((carrier_rel,))
         control_ok = whitelist_bites and drift_bites and scope_bites
         lines = [
             f"control whitelist_against_tampered_expectation_unequal={whitelist_bites} "
             "(expected True: an off-by-one suppression count must redden the arm)",
-            f"control drift_arm_bites_on_forged_product_file={drift_bites} "
+            f"control drift_arm_bites_on_forged_non_exempt_path={drift_bites} "
             f"target={forged_target} forced_drift={forced_drift} forced_self={forced_self} "
-            "(expected True: the self-exemption must not excuse a product file)",
-            f"control exemption_scope_guard_bites={scope_bites} "
-            "(expected True: an exemption naming opendata/** is refused by "
-            "self_carrier_exemption_exact)",
+            "(expected True: a divergent file the exemption does not name stays arm-visible)",
+            f"control exemption_scope_guard_bites={scope_bites} refused={scope_target} "
+            f"accepted={carrier_rel} (expected True both ways: naming a product file is refused "
+            "by self_carrier_exemption_exact, naming this carrier is accepted)",
         ]
         for line in lines:
             print(line, flush=True)

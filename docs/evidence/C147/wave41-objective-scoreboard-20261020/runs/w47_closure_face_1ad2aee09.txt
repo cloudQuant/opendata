@@ -1,0 +1,19 @@
+# carrier for w47_closure_face.py
+# argv: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/w47_closure_face.py --commit 1ad2aee09
+
+reconcile commit=1ad2aee09 parent=6f16b5504 commit_paths=2186 worktree_drift_vs_commit=0 moved_vs_parent=2186 missing_in_commit=0
+drift_list=[]
+commit_paths_by_root={'docs/evidence/C101': 2160, 'docs/evidence/C147': 9, 'scripts': 7, 'tests': 5, 'opendata': 4, '.gitignore': 1}
+
+---- payload scan ----
+pre_commit_gate payload_index_sha256=02dfea77f6d7e817a7ed2d669411ed817dc1630a98df3c3a5e665e898a5e1af4
+staged_files_from_scan_carrier=4 committed_paths=2186 gate_scope_note=the pre-commit gate read the index before its own carrier was staged, so this face is the arm that scans the commit
+gitleaks_git_mode commit=1ad2aee09 rc=0 findings=0 rules=[] planted_control rc=0 findings=2 arm_can_move=True
+dir_mode_tree copied_from_commit=14 local_only_files=2121 local_only_sample=['docs/evidence/C147/wave41-objective-scoreboard-20261020/audit.md', 'docs/evidence/C147/wave41-objective-scoreboard-20261020/patches/w154_sa_estimates_landing.patch', 'docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/__pycache__/w105_objective_scoreboard.cpython-313.pyc', 'docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/__pycache__/w106_staged_credential_scan.cpython-313.pyc'] bytecode_skipped=1420
+gitleaks_dir_mode bundles rc=0 findings=0 rules=[] planted rc=0 findings=2 arm_can_move=True
+secret_scan_check rc=0 tail=[90m5:34PM[0m [32mINF[0m [1m573 commits scanned.[0m | [90m5:34PM[0m [32mINF[0m [1mscanned ~517411787 bytes (517.41 MB) in 8m41s[0m | [90m5:34PM[0m [32mINF[0m [1mno leaks found[0m
+generation claims_sha256=d43fbe8786f1ce81 judge_report_sha256=5ebb28b70d888dde
+
+closure_face commit=1ad2aee09 paths=2186 arms=8 arms_passed=8 arms_failed=0 failed=[] PASS=True
+
+w47_closure_face_exit=0

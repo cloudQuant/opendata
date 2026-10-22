@@ -1846,3 +1846,57 @@ DEC-41-03（P0 集成面冻结列表缺 `tests/test_financial_pit_api.py`）、D
 **故意不在这段里引用 `payload_index_sha256`**：§71 的定稿会改变它所在载荷的摘要，任何在此抄写的摘要都会被
 自己下面的字推翻；摘要以随发的 `runs/w166_staged_credential_gate.txt` 那一次为准，无自参照的见证是提交后的
 `w117_closure.py`。
+
+
+## 72. 收口 1ad2aee09：commit 对象 8/8 arms、全历史 573 commits 无泄漏，与固定名载体的代际处理
+
+`w117_closure.py 1ad2aee09`（对 **commit 对象**跑，无自参照）：
+`reconcile commit=1ad2aee09 parent=6f16b5504 commit_paths=2186 worktree_drift_vs_commit=0
+moved_vs_parent=2186 missing_in_commit=0 drift_list=[]`，
+`commit_paths_by_root={'docs/evidence/C101': 2160, 'docs/evidence/C147': 9, 'scripts': 7, 'tests': 5, 'opendata': 4, '.gitignore': 1}`
+——与 §71 的载荷分类逐根相同；
+`gitleaks_git_mode commit=1ad2aee09 rc=0 findings=0 rules=[]`，植入控制 `rc=0 findings=2 arm_can_move=True`；
+`dir_mode_tree copied_from_commit=14 local_only_files=2121 bytecode_skipped=1420` 后 `findings=0`、
+植入同样 `findings=2`；
+`secret_scan_check rc=0`：`573 commits scanned | 517.41 MB in 8m41s | no leaks found`；
+`generation claims_sha256=d43fbe8786f1 judge_report_sha256=5ebb28b70d888dde`；
+**closure_face arms=8 arms_passed=8 arms_failed=0 PASS=True**、`w117_closure_exit=0`。
+`federal_reserve/specs.py` 的 12 条 H.15 公开序列号确实进了 commit 对象，而全历史扫描仍 `no leaks found`
+——依据就是 `.gitleaks.toml` 里逐条登记的 regexes，本波没有动过那个配置（一次也没有）。
+
+**固定名载体的代际处理**（`feedback-reusing-shipped-drivers-enumerate-write-targets` 的既有工序）：
+这一发的 closure 覆写了已提交的 `runs/w47_closure_face.txt`。取法之后立刻
+`cp -> w47_closure_face_1ad2aee09.txt`（两份 sha 相同 `a54d72161058…`），再
+`git restore --source=HEAD --worktree -- runs/w47_closure_face.txt`，还原后的工作树摘要
+`c31c9b4f25ab…` 与 `git show HEAD:` 逐字节相同；两代同屏可辨：固定名那一条
+`closure_face commit=7ce330a7d paths=7`，后缀那一条 `commit=1ad2aee09 paths=2186`。
+
+**下一步的读法（不是断言）**：CI 上一次全绿是 2026-09-22（dev 之后连续 27 次 failure，master 自 10-08 起红）。
+本发把成员 8 的墙拆掉，成员 9-17 要在 CI 自己的环境里判（Python 3.11、克隆里没有 `docs/evidence/C100/**`
+的原始收据、MySQL service），本机无法替它决定；成员 11 本机仍无读数。已知的下一条墙是成员 12 的那 10 条，
+按台账分：DEC-41-03 的 2 条（P0 集成面冻结列表少一行）与 DEC-41-04 的 2 条（`bond_daily_sina` 的请求身份里
+含当天日期）是可以诚实重基/可去环境依赖的那一类；DEC-41-08 的 4 条需要 18 个源的合规权利行原文，
+DEC-41-01 的 1 条被 owner 自己裁过「不改注解也不改断言」，AC2/AC6 的 3 条是验收台账的真负例。
+后面这几类不是我能靠改代码关掉的，改法要 owner 给东西，不是给我许可去放松判定。
+
+**§72.1 第二次死臂，这次在对照面里**：给这条 2 文件的 docs-only 载荷跑同一个闸门，判定 13/13 PASS、
+六次 gitleaks 全 `findings=0`（specs.py 不在载荷里，B/C 自然 0 条），但 `--control` 直接
+`SystemExit: control needs a product path in the staged payload to forge against` —— 退出 1。
+成因是我自己把伪造目标限定成 `opendata/` 前缀，而这条臂要证的命题其实是「**未被豁免**的路径一旦漂移就必须
+出现在臂可见集合里」，对产品文件和对 narrative doc 是同一个命题；把它绑在前缀上不是更严，是不可满足
+（`zero-count-witness-needs-min-reachable` 的同一个形状）。改法：目标取载荷里任一非载体路径；
+而「豁免作用域」那条控制改用固定常量 `opendata/data/models/__init__.py`，并同时断言**两个方向**
+——产品路径被 `self_carrier_exemption_exact` 拒绝、本载体路径被同一个谓词接受，否则那个守卫只是单向拼写。
+
+**§72.2 第三次同类自错，以及这条 docs-only 载荷的终局读数**：把伪造目标改成「任一非载体路径」之后，控制仍
+`False`——这回是**期望**依赖了磁盘状态：我断言 `forced_self` 非空，可那条路径此刻是否漂移取决于这台驱动
+自己的写入顺序（carrier 在控制之后才写），所以它随载荷形态翻转。正确的做法是把场景的两半**都伪造**，
+断言被构造出来的形状而不是被观察到的形状。终局读数（2-file→3-file 载荷：face.md、w166 驱动、w47 拷贝）：
+`staged_files=3 worktree_differs_from_index_files=0 self_carrier_exemption carrier_only=True used=0`
+（这一发载体还没入 index，所以豁免未被使用——`used` 是观测量，不是判定量）、A/B/C 三套规则 baseline=0、
+植入各 +2、`arms=13 arms_passed=13 PASS=True`、三条控制
+`whitelist_against_tampered_expectation_unequal=True`、
+`drift_arm_bites_on_forged_non_exempt_path=True`（`forced_drift=[face.md]`、`forced_self=[载体]`，构造出来的）、
+`exemption_scope_guard_bites=True`（拒绝 `opendata/data/models/__init__.py`、接受本载体），`rc=0`。
+载体自身随后入 index，故 committed 的 `staged_files=3`/`payload_index_sha256=aa9b0c95…` 比提交内容少一条
+——这就是 §70 末段声明的自覆盖上限，无自参照的见证仍是提交后的 `w117_closure.py`。
