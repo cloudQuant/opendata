@@ -1978,3 +1978,28 @@ scripts/quality/a2_check.py`** —— 因为 883cb09b1 又改了 `a2_check.py`�
 重钉读数：`registered_entries=87 stale_paths=1 verdict=REPIN_OK dependency_edges_added=0`、
 注入臂 `REJECT`、87/87 pin-corruption 臂 `PASS`、`--apply` 后 `stale_sha256_remaining=0`；
 本机 `make zero-dep-check` **exit 0**（942 file(s) walked，frozen baseline 0）。
+
+
+## 76. 合并 master、打 v0.1.0、发 release，以及成员 8 真正的那条腿：mypy 只在 CI 的依赖环境里报错
+
+**日志样本化之后 CI 才第一次露出判定行**（完整日志取自 run 39772166481 的 logs 归档，`gh run view --log` 会截断）：
+成员 1-7 全绿；`ok immutable evidence: 5055 blocked + 19 manifest errors all name the archived corpus`；
+`BLOCKED candidate list truncated: 5055 archived candidates, 10 shown`；随后
+**`FAIL mypy (745 unique target(s))`**，33 条 error，`make a2-check Error 1`。
+
+**为什么本机量不到**：CI 与本机 mypy 同为 2.3.1、ruff 同为 0.15.20（从 CI 安装步核对），
+但对同样 4 个文件本机 `Success: no issues found`。差在**已安装依赖**：CI 里 `curl_cffi`、pandas-stubs 是真实包，
+mypy 能看到父类与元组形状；本机没装那些 stub，相关类型退化成 Any，于是 24 条
+`opendata/services/corporate_events.py` 的 Tuple index out of range、
+`iter2_claims_probe_runner.py:404` 的 `__exit__` override（返回 `Literal[False]` 与 `Session` 父类不兼容）、
+`init_tasks_and_tables.py:52` 的 comparison-overlap、`compare_with_upstream.py:538` 的 Request `params` arg-type
+都只在 CI 出现。**结论：这是一条真实存在、但本机不可复算的腿**——要修必须先有一个装上 CI 依赖集的本地环境，
+而不是在缺 stub 的环境里凭猜改。
+
+**owner 指令「继续解决 ci/cd 问题之后，合并到 master，然后生成新的 tags 和 release」**（2026-10-22，
+取代 10-21 的 STOP-01 与「转绿后再合并」那次裁定）执行：
+`git push origin dev:master` 快进 **346 commits**（未 checkout，外部手的 `README.md` 改动与
+`LICENSE-*`/`DISCLAIMER.md`/`uv.lock` 全程未被提交、未被覆盖）；`v0.1.0` 附注标签
+`d858e72d…`；release <https://github.com/cloudQuant/opendata/releases/tag/v0.1.0>。
+release 正文如实写明：31/32 provider、349/350 行、claims 1745、clean-room 逻辑窗口 0、
+全历史无泄漏，以及**未绿的成员 8 mypy 腿与成员 12 的 6 条 owner-gated 红**，没有把它写成一次绿色发布。
