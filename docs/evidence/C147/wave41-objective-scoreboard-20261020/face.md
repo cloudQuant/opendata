@@ -1964,3 +1964,17 @@ js-points、loguru，然后进 a2-check：`A2 files (complete resolver): 1113`�
 `--files` 切片）：末行 `OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit)`、`rc=0`。
 CI 的 a2 腿随后是否绿仍取决于它自己的 ruff/mypy/bandit 版本，本机不可替它判定；成员 12 的 6 条红仍是
 §73 末段那三类要 owner 给东西的项。
+
+
+## 75. 同一条 stale pin 我踩了第二次：883cb09b1 又被成员 2 拦下，这次先把本机成员 2 跑一遍再 push
+
+CI 39760711497：成员 1 过，**成员 2 再次 `reference policy is unusable: stale sha256:
+scripts/quality/a2_check.py`** —— 因为 883cb09b1 又改了 `a2_check.py`（日志样本化那一次），
+而我没有重钉，也没在 push 前跑 `make zero-dep-check`。这与 §73 是同一条教训的第二次发生，
+成因不同：第一次是「改了被钉的文件、漏钉第三个 pin 家族」，这次是「修上一条漏时又改同一个文件、
+仍然没跑那一腿」——`feedback-byte-pin-fences-span-many-test-files` 的完整版必须包含
+**「任何对被钉文件的编辑之后，重钉 + 跑成员 2，才允许 push」**。
+
+重钉读数：`registered_entries=87 stale_paths=1 verdict=REPIN_OK dependency_edges_added=0`、
+注入臂 `REJECT`、87/87 pin-corruption 臂 `PASS`、`--apply` 后 `stale_sha256_remaining=0`；
+本机 `make zero-dep-check` **exit 0**（942 file(s) walked，frozen baseline 0）。
