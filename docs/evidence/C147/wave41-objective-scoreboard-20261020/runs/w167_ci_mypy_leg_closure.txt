@@ -31,3 +31,13 @@ rc=1
 #   docs/evidence/C100/independent-ac04-current-codemod-replay
 # CI-faithful expectation: this member is green on a fresh clone (CI has never charged it;
 # run 39774191938's member 8 failure was mypy-only).
+
+# 2026-10-22 CI confirmation (run 39789413347, commit ba0ea5ea5, full log via actions/logs zip):
+#   ok  immutable evidence: 5055 blocked candidate(s) and 19 manifest error(s) all name the archived corpus ...
+#   ok  mypy (745 unique target(s))
+# The CI-only mypy leg is closed in CI itself. The gate now advances past member 8 for the
+# first time and stops at member 11 (acceptance-probe-check): VERDICT AC-18|03: gap,
+# VERDICT AC-1|05: gap — pre-existing acceptance items (local re-run of the same probe on the
+# same tree reproduces them: 470 issues, top classes build-source-file-missing=340 /
+# build-source-file-hash-mismatch=123 / build-log-stale=1), unrelated to the type fixes.
+w167_ci_mypy_leg_exit=0

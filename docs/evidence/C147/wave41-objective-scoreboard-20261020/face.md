@@ -2043,3 +2043,12 @@ SQLAlchemy 2.1.6、pydantic 2.14.1、mypy 2.3.1、ruff 0.15.20。在该环境对
 `tests/test_yfinance_iter2_budget.py` 的 `import yfinance` 在 CI 环境**必 ModuleNotFoundError**。
 此前从未暴露只因成员 12（test-cov）排在 mypy 之后、从未跑到。成员 8 转绿后 CI 的下一个红会是它。
 
+
+**§77 补记（CI 实证，run 39789413347，commit `ba0ea5ea5`）**：成员 8 在 CI 里
+**`ok mypy (745 unique target(s))`** —— 这条腿不是本机自证，是 CI 自己翻绿的。
+gate 因此第一次越过成员 8，停在**成员 11（acceptance-probe-check）**：
+`VERDICT AC-18|03: gap`（浏览器目录用例未全证）与 `VERDICT AC-1|05: gap`
+（运行面证据 471 条，最多三类 build-source-file-missing=340 / hash-mismatch=123 / build-log-stale=1）。
+本机对同一棵树重跑同一探针复现同样 gap（470 条，差 1 条来自容器运行差异）——
+**这是既有验收项第一次被 CI 照到，不是本 commit 造成**；属于任务 #14 的 owner 决策面。
+成员 12 的 yfinance `ModuleNotFoundError` 预测仍排在成员 11 之后。
