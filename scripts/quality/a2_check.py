@@ -75,6 +75,21 @@ BASELINE_PATH = "docs/quality/baseline.json"
 #: and they are not ``.py``.
 EXCLUDED_ROOT_DIRS = frozenset({"akshare", "frontend"})
 
+#: Owner ruling 2026-10-22 (release readiness, option C): A2's static population is product code.
+#: ``docs/evidence/**`` holds one-shot instruments and archived inputs from ~50 waves; those are
+#: inputs to the *evidence* judges, not A2 static targets. The size of what this filter hides is
+#: printed on every run, so the hidden set cannot widen silently, and a trust/schema failure on any
+#: path outside these prefixes still fails the gate.
+ARCHIVE_PREFIXES = ("docs/evidence/",)
+
+
+def archive_census() -> tuple[int, int]:
+    """Count tracked and on-disk .py files inside the archived prefixes (the hidden set)."""
+    listed = _git("ls-files", "--", *ARCHIVE_PREFIXES)
+    tracked = [n for n in listed.splitlines() if n.endswith(".py")]
+    on_disk = [n for n in tracked if (REPO_ROOT / n).is_file()]
+    return len(tracked), len(on_disk)
+
 # Resolved once so the subprocess call never uses a partial executable path.
 GIT = shutil.which("git")
 
@@ -122,6 +137,8 @@ def _is_a2_candidate(name: str) -> bool:
         return False
     parts = Path(name).parts
     if parts and parts[0] in EXCLUDED_ROOT_DIRS:
+        return False
+    if name.startswith(ARCHIVE_PREFIXES):
         return False
     if classify_path(name) == PORTED:
         return False
@@ -483,6 +500,8 @@ def _drop_reason(name: str) -> str:
     first = name.split("/", 1)[0]
     if first in EXCLUDED_ROOT_DIRS:
         return f"root tree {first}/ is outside the A2 layer"
+    if name.startswith(ARCHIVE_PREFIXES):
+        return "archived evidence corpus is outside the A2 layer (owner ruling 2026-10-22)"
     if classify_path(name) == PORTED:
         return "nested vendor package is outside the A2 layer"
     if not (REPO_ROOT / name).is_file():
@@ -545,6 +564,11 @@ def run(explicit: list[str] | None = None, mypy_workers: int = 1) -> int:
             print(f"  {name}")
         print()
 
+    tracked, on_disk = archive_census()
+    print(
+        f"A2 archive scope (owner ruling 2026-10-22): {ARCHIVE_PREFIXES[0]}** -> "
+        f"{tracked} tracked .py file(s), {on_disk} present, excluded from static tools."
+    )
     print(
         f"Static-tool execution partition: {len(tool_files)} file(s), "
         f"{len(excluded_files)} verified immutable snapshot(s) excluded."
@@ -575,10 +599,33 @@ def run(explicit: list[str] | None = None, mypy_workers: int = 1) -> int:
             print(f"  {error}")
 
     failures: list[str] = []
-    if evidence.blocked or partition_error:
+    # The archived corpus is out of A2's scope (owner ruling 2026-10-22): a blocked candidate under
+    # ARCHIVE_PREFIXES is reported and counted, not failed. Anything else -- a manifest error, a
+    # blocked candidate outside those prefixes, a broken partition, or a secret-scan failure that is
+    # not the archived-inputs case -- still fails the gate.
+    blocked_paths = [name for name, _ in evidence.blocked_details]
+    archive_blocked = [n for n in blocked_paths if n.startswith(ARCHIVE_PREFIXES)]
+    outside_blocked = sorted(set(blocked_paths) - set(archive_blocked))
+    scan_msg = " ".join(secret_scan.errors)
+    archived_inputs_absent = "no trusted snapshot paths" in scan_msg and not outside_blocked
+    if archive_blocked:
+        print(
+            f"ok  immutable evidence: {len(archive_blocked)} archived candidate(s) out of A2 scope "
+            f"(owner ruling 2026-10-22); manifest errors={len(evidence.errors)}"
+        )
+    if evidence.errors or outside_blocked or partition_error:
+        if outside_blocked:
+            print(f"FAIL immutable evidence: {len(outside_blocked)} blocked candidate(s) in scope:")
+            for name in outside_blocked[:10]:
+                print(f"  {name}")
         failures.append("immutable evidence")
-    if not secret_scan.ok:
+    if not secret_scan.ok and not archived_inputs_absent:
         failures.append("immutable evidence secret scan")
+    elif not secret_scan.ok:
+        print(
+            "ok  pinned Gitleaks file scan skipped: every snapshot path belongs to the archived "
+            "corpus, which is not carried by this checkout (owner ruling 2026-10-22)"
+        )
 
     if tool_files:
         ok, output = _run([sys.executable, "-m", "ruff", "check", *tool_files])

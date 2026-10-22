@@ -424,3 +424,59 @@ class TestBanditVerdictIsReadNotGuessed:
         assert code == 0 and json.loads(stdout)["results"] == []
         assert "WARNING" in stderr, "this arm needs a warning on stderr to mean anything"
         assert guard._bandit([str(target)]) == (True, "")
+
+
+#: Owner ruling 2026-10-22 (release readiness, option C): the archived evidence corpus left A2's
+#: static population, because it is input to the *evidence* judges rather than product code. The
+#: ruling is pinned the same way every other exclusion in this file is - census first, and in both
+#: directions, so that "the hidden set grew" and "the exclusion was deleted" are both visible.
+ARCHIVE_TREE = "docs/evidence"
+
+
+class TestArchivedEvidenceCorpusIsOutOfA2OnPurpose:
+    """``docs/evidence/**`` is excluded by ruling, and the exclusion is measured."""
+
+    def test_the_corpus_is_large_enough_to_matter(self) -> None:
+        """Keep the rest of this class from going vacuous if the tree ever moves."""
+        assert len(tree_files(ARCHIVE_TREE)) >= 1000, (
+            "the archive exclusion now hides almost nothing - re-read the ruling before keeping it"
+        )
+
+    def test_archive_files_are_not_a2_candidates(self) -> None:
+        for name in sorted(tree_files(ARCHIVE_TREE))[:50]:
+            assert guard._is_a2_candidate(name) is False
+
+    def test_the_resolved_set_carries_none_of_them(self) -> None:
+        """The predicate is not the gate: the resolved zero-tolerance set must agree."""
+        resolved = guard.resolve_files(None)
+        assert resolved is not None, "A2 baseline missing - the gate is inactive"
+        leaked = [name for name in resolved if name.startswith(guard.ARCHIVE_PREFIXES)]
+        assert leaked == [], f"archive paths reached the static tools: {leaked[:5]}"
+
+    def test_the_other_half_product_code_is_still_visible(self) -> None:
+        """A one-directional guard passes when someone empties the exclusion list entirely."""
+        offenders = [
+            name
+            for tree in FIRST_PARTY_TREES
+            for name in tree_files(tree)
+            if classify_path(name) == FIRST_PARTY and guard._is_a2_candidate(name) is False
+        ]
+        assert offenders == [], f"first-party code silently dropped with the archive: {offenders[:5]}"
+
+    def test_the_census_is_reported_and_matches_git(self) -> None:
+        tracked, on_disk = guard.archive_census()
+        listed = subprocess.run(  # literal argv, shell disabled
+            [guard.GIT or "git", "-c", "core.quotepath=off", "ls-files", "--", ARCHIVE_TREE],
+            capture_output=True,
+            text=True,
+            check=False,
+        ).stdout.splitlines()
+        assert tracked == len([n for n in listed if n.endswith(".py")]) > 0
+        assert on_disk <= tracked
+
+    def test_the_drop_reason_names_the_ruling(self) -> None:
+        """An operator asking for one of these files must be told why it is skipped."""
+        sample = sorted(tree_files(ARCHIVE_TREE))[0]
+        reason = guard._drop_reason(sample)
+        assert "archived evidence corpus" in reason, reason
+        assert "2026-10-22" in reason, reason
