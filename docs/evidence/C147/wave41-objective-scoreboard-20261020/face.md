@@ -1676,3 +1676,13 @@ owner 要求「解决 CI 之后合并 master、打 tag 与 release」。CI 的�
 `test_data_catalog` 的 query 注解通道（DEC-41-01 owner 已裁定保持现状）、
 `test_p0_integration_surface`（DEC-41-03）、`test_port_fidelity[bond_daily_sina]`（DEC-41-04，
 根因是请求里带当天日期）。所以「CI 全绿再合并」这一条我没有做到，也不是靠改测试能做到的。
+
+
+## 68. 更正：79280fabe 说明里的闸门计数写成了 4，实测是 2
+
+该提交的正文写「闸门 w108：staged_files=4」。载体 `runs/w108_staged_scan_plan_gate_wave64.txt` 的第一行
+读数实际是 `staged_files=2`：那一次扫描跑在 `docs/quality/akshare-reference-allowlist.json`、
+`runs/w159_reference_policy_repin_catalog.txt`、`runs/w108_staged_scan_plan.txt` 三者已入索引、
+而 `gate_wave64` 副本尚未产生之时；副本是在扫描之后才 cp 并加入，所以提交对象里有 4 个路径，
+而被扫的索引里只有 2 个。两者都是真读数，但说明里应当写**扫描的那一个**。
+不重写历史，只在档上更正（与 §56、§65 同一处置法）。
