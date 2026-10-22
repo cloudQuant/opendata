@@ -1,0 +1,17 @@
+population: registered_entries=87 stale_paths=1
+  stale: opendata/data/providers/catalog.py
+
+== opendata/data/providers/catalog.py
+   pin=bf09194c9df3 head=dff0db2767bf live=dff0db2767bf pin==head=False pin==live=False
+   findings head/live=0/0 added={} removed={}
+   dependency_edges_added={}
+   brand_lines head/live=10/10 load_shape head/live=43/43
+   verdict: REPIN_OK
+
+face: stale=1 repin_ok=1 rejected=0 dependency_edges_added=0
+arm import-injection on opendata/data/providers/catalog.py: REJECT(dep={('opendata/data/providers/catalog.py', 'akshare', 'import'): 1}) (expected REJECT) -> PASS
+arm pin-corruption: stale_sha256_readings=87 of 87 (expected ==87) -> PASS
+
+applied re-pin for 1 path(s)
+post: stale_sha256_remaining=0 -> PASS
+post: registered_entries=87 (was 87)
