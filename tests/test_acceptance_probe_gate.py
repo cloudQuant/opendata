@@ -21,6 +21,7 @@ committed face baseline fails here rather than at the next ``make gate``.
 
 from __future__ import annotations
 
+import hashlib
 import subprocess
 import sys
 from typing import TYPE_CHECKING
@@ -246,6 +247,116 @@ class TestFaceBaseline:
         assert set(book.unplumbed) <= baseline, "the only way off this list is a new probe"
 
 
+class TestFindingRatchet:
+    """The pinned reds stay in the log, and only deltas fail the gate -- both directions bite.
+
+    A pinned finding is a fact about the tree the day it was frozen, so each arm here attacks one
+    way the pin could stop meaning that: a finding the pin never saw (new), a finding wearing an
+    old pin's item and family but a new sentence (drift), a red silenced by moving the ledger
+    label it rode on, and a pin whose finding went away without anyone writing the shrink down.
+    """
+
+    @staticmethod
+    def ratchet_ctx(states: dict[str, str]) -> object:
+        """A context that answers ledger questions for exactly the items it was given."""
+
+        class _Ctx:
+            def ledger_entry(self, item: str) -> dict[str, str]:
+                if item not in states:
+                    raise tool.ProbeError(f"{item} is absent from the ledger")
+                return {"state": states[item]}
+
+        return _Ctx()
+
+    @staticmethod
+    def pin(item: str, text: str, *, family: str = "stale-proof", state: str = "proven"):
+        return {item: [tool.RatchetEntry(family, hashlib.sha256(text.encode()).hexdigest(), state)]}
+
+    def test_an_exactly_pinned_finding_is_quiet(self) -> None:
+        text = tool.stale_cell_finding("AC-1|10", [])
+        ctx = self.ratchet_ctx({"AC-1|10": "proven"})
+        findings, reading = tool.ratchet_findings(
+            ctx, [("AC-1|10", "stale-proof", text)], self.pin("AC-1|10", text), []
+        )
+        assert findings == []
+        assert "命中 1 条" in reading
+
+    def test_a_finding_the_pin_never_saw_is_red(self) -> None:
+        text = tool.stale_cell_finding("AC-9|02", [])
+        ctx = self.ratchet_ctx({"AC-9|02": "proven"})
+        findings, _ = tool.ratchet_findings(ctx, [("AC-9|02", "stale-proof", text)], {}, [])
+        assert len(findings) == 1
+        assert "棘轮新增" in findings[0] and "AC-9|02" in findings[0]
+
+    def test_a_reworded_finding_cannot_inherit_the_old_pin(self) -> None:
+        ctx = self.ratchet_ctx({"AC-1|10": "proven"})
+        drifted = tool.stale_cell_finding("AC-1|10", ["worktree(git status)"])
+        findings, _ = tool.ratchet_findings(
+            ctx,
+            [("AC-1|10", "stale-proof", drifted)],
+            self.pin("AC-1|10", tool.stale_cell_finding("AC-1|10", [])),
+            [],
+        )
+        assert len(findings) == 1
+        assert "棘轮漂移" in findings[0]
+
+    def test_silencing_a_pin_by_moving_the_ledger_label_is_red(self) -> None:
+        """The pin records the state that made the cell a finding; that state is load-bearing."""
+        text = tool.stale_cell_finding("AC-11|04", [])
+        # flipped proven -> gap: the finding disappears, the pin and its state stay behind
+        ctx = self.ratchet_ctx({"AC-11|04": "gap"})
+        findings, _ = tool.ratchet_findings(ctx, [], self.pin("AC-11|04", text), [])
+        assert any("棘轮被静音" in finding for finding in findings), (
+            "a ledger label flip is not a fix; the gate has to say so"
+        )
+
+    def test_a_closed_pin_demands_an_explicit_re_pin(self) -> None:
+        text = tool.stale_cell_finding("AC-13|06", [])
+        ctx = self.ratchet_ctx({"AC-13|06": "proven"})
+        findings, _ = tool.ratchet_findings(ctx, [], self.pin("AC-13|06", text), [])
+        assert any("棘轮收口" in finding for finding in findings), (
+            "the ratchet only shrinks through a --sync-ratchet diff someone reviewed"
+        )
+
+    def test_a_deferred_cell_is_waiting_not_closed(self) -> None:
+        text = tool.stale_cell_finding("AC-17|03", ["history(git log)"])
+        ctx = self.ratchet_ctx({"AC-17|03": "proven"})
+        findings, _ = tool.ratchet_findings(
+            ctx, [], self.pin("AC-17|03", text), deferred=["AC-17|03"]
+        )
+        assert findings == []
+
+    def test_a_missing_baseline_is_red_not_a_pass(self) -> None:
+        ctx = self.ratchet_ctx({})
+        findings, _ = tool.ratchet_findings(ctx, [], None, [])
+        assert len(findings) == 1
+        assert tool.RATCHET_REL in findings[0]
+
+    def test_a_finding_that_names_no_item_stays_hard_red(self) -> None:
+        ctx = self.ratchet_ctx({})
+        findings, _ = tool.ratchet_findings(
+            ctx, [("", "judge", "gate recipe itself is wrong")], {}, []
+        )
+        assert findings == ["gate recipe itself is wrong"]
+
+    def test_item_extraction_covers_both_key_shapes(self) -> None:
+        assert tool.item_of_finding("AC-16|07: no reading ...") == "AC-16|07"
+        assert tool.item_of_finding("§4|02: wording drifted") == "§4|02"
+        assert tool.item_of_finding("the recipe is missing a member") == ""
+
+    def test_the_committed_ratchet_parses_and_names_real_families(self) -> None:
+        """Once shipped, the baseline is load-bearing; rot has to surface here, not in CI."""
+        baseline = tool.read_ratchet()
+        assert baseline is not None, f"{tool.RATCHET_REL} is missing or malformed"
+        for item, rows in baseline.items():
+            assert tool.item_of_finding(f"{item}: x") == item, f"{item}: not an item key"
+            for row in rows:
+                assert row.family in tool.RATCHET_FAMILIES
+                assert len(row.text_sha256) == 64 and all(
+                    character in "0123456789abcdef" for character in row.text_sha256
+                ), f"{item}/{row.family}: not a sha256 digest"
+
+
 class TestCliModes:
     """The two new flags are the entry points; a typo must not look like a pass."""
 
@@ -267,8 +378,9 @@ class TestCliModes:
         assert code == 0
         assert "--gate-check" in out
         assert "--sync-faces" in out
+        assert "--sync-ratchet" in out
 
-    @pytest.mark.parametrize("mode", ["--gate-check", "--sync-faces"])
+    @pytest.mark.parametrize("mode", ["--gate-check", "--sync-faces", "--sync-ratchet"])
     def test_a_misspelled_mode_is_rejected_not_ignored(self, mode: str) -> None:
         code, out = self.run(f"{mode}-typo")
         assert code == 2

@@ -90,6 +90,12 @@ GAP: Final = "gap"
 #: ``--gate-check``: a moment-dependent probe becoming "stable" has to be a diff a reviewer saw.
 FACES_REL: Final = "docs/quality/acceptance-probe-faces.json"
 
+#: Where the frozen pre-existing-finding baseline lives. Written only by ``--sync-ratchet``, read
+#: by ``--gate-check``: a stale-proof cell or a judge finding that is already red today stays red
+#: in the log, but stops failing the gate *as long as it neither grows, changes shape, nor is
+#: silenced by a ledger flip* -- the same discipline the A1 quality ratchet applies to counts.
+RATCHET_REL: Final = "docs/quality/acceptance-gate-ratchet.json"
+
 #: The gate member this tool becomes. Its absence from the ``gate:`` recipe is a finding the
 #: recipe itself cannot hide, because ``tests/test_acceptance_probe_gate.py`` reads the recipe.
 GATE_MEMBER: Final = "acceptance-probe-check"
@@ -19914,12 +19920,256 @@ def membership_findings(ctx: Context) -> list[str]:
     ]
 
 
-def gate_check(ctx: Context) -> int:
-    """Run this tool as a gate member: one measure pass, five finding families, one exit code.
+# --------------------------------------------------------------------------- #
+# The finding ratchet -- pre-existing reds pinned, deltas still red
+# --------------------------------------------------------------------------- #
 
-    The five faces are the ones C50 measured as missing: nothing re-measured an item between the
-    ledger flip and the commit, ``--all`` compared nothing so three stale cells exited 0, and eight
-    proven cells had no plane at all. The measured cost is ~252 s of the ~8 min gate
+
+#: The finding families the ratchet may pin. Membership and face-baseline findings protect the
+#: instrument's own identity and are never ratchet-able: no baseline can excuse them.
+RATCHET_FAMILIES: Final = ("judge", "stale-proof")
+
+#: Judge and stale-cell findings begin with the item id they name; anything this does not match
+#: stays a hard finding, because a finding nobody can attribute to an item cannot be pinned.
+ITEM_OF_FINDING: Final = re.compile(r"^([A-Za-z§][A-Za-z0-9-]*\|[0-9]{2})(?=[ :/])")
+
+
+@dataclass(frozen=True)
+class RatchetEntry:
+    """One pinned finding: which family, the exact text it had, and the ledger state it rode on.
+
+    ``text_sha256`` is the anti-quiet-drift arm: the same item and family with a *changed*
+    sentence is a different finding, so re-wording a reason cannot silently inherit an old pin.
+    ``ledger_state`` is the anti-gaming arm: a baselined ``stale-proof`` cell disappears if the
+    ledger label is flipped from ``proven`` to ``gap``, so the pin records which state made it a
+    finding and any change to that state is red until the baseline is deliberately re-written.
+    """
+
+    family: str
+    text_sha256: str
+    ledger_state: str
+
+
+def item_of_finding(finding: str) -> str:
+    """The item id a judge or stale-cell finding names, or ``""`` when it names none."""
+    match = ITEM_OF_FINDING.match(finding)
+    return match.group(1) if match else ""
+
+
+def read_ratchet() -> dict[str, list[RatchetEntry]] | None:
+    """The committed ratchet baseline, or ``None`` when it is absent or malformed."""
+    path = REPO_ROOT / RATCHET_REL
+    if not path.is_file():
+        return None
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    items = raw.get("items") if isinstance(raw, dict) else None
+    if not isinstance(items, dict):
+        return None
+    entries: dict[str, list[RatchetEntry]] = {}
+    for item, payload in items.items():
+        if not isinstance(payload, dict):
+            return None
+        ledger_state = payload.get("ledger_state")
+        families = payload.get("families")
+        if not isinstance(ledger_state, str) or not isinstance(families, dict) or not families:
+            return None
+        row: list[RatchetEntry] = []
+        for family, digest in families.items():
+            if family not in RATCHET_FAMILIES or not isinstance(digest, str):
+                return None
+            row.append(RatchetEntry(str(family), digest, ledger_state))
+        entries[str(item)] = row
+    return entries
+
+
+def collect_item_findings(
+    cells: Mapping[str, list[str]],
+    judge_findings: Sequence[str],
+    book: FaceBook,
+    *,
+    include_deferred: bool = False,
+) -> list[tuple[str, str, str]]:
+    """Every item-level finding this pass produced, as ``(item, family, text)`` triples.
+
+    With ``include_deferred=False`` (the ``--gate-check`` shape) a stale-proof cell under the
+    quiet-tree rule is *not* collected: the gate has judged it deferred since C50, and the ratchet
+    must not make a mid-round tree red for leaving evidence in flight. With ``include_deferred=
+    True`` (the ``--sync-ratchet`` shape) those cells are frozen anyway, because a quiet tree such
+    as CI's fresh checkout judges them and the baseline has to know about every finding it may
+    be asked to excuse.
+    """
+    live: list[tuple[str, str, str]] = [
+        (item_of_finding(finding), "judge", finding) for finding in judge_findings
+    ]
+    labels = ("stale-proof", "deferred") if include_deferred else ("stale-proof",)
+    live.extend(
+        (item, "stale-proof", stale_cell_finding(item, book.moment.get(item, [])))
+        for label in labels
+        for item in cells.get(label, [])
+    )
+    return live
+
+
+def ratchet_findings(
+    ctx: Context,
+    live: Sequence[tuple[str, str, str]],
+    baseline: dict[str, list[RatchetEntry]] | None,
+    deferred: Sequence[str],
+) -> tuple[list[str], str]:
+    """Compare today's item-level findings with the frozen ratchet, in both directions.
+
+    Green requires every live finding to be pinned *exactly* (item, family, text digest) and every
+    pin to still be earning its keep. Red, in order of severity:
+
+    * an unpinned finding is new work going wrong, and a pinned finding whose text changed is a
+      different finding wearing an old pin's clothes;
+    * a pinned item whose ledger state no longer matches the pin has been *silenced* -- the
+      standing rule is that a ledger label is never the fix, so this stays red no matter which
+      direction the state moved;
+    * a pin whose finding is neither live nor deferred was closed by real work, and the ratchet
+      only shrinks through a ``--sync-ratchet`` diff a reviewer saw.
+
+    Findings that name no item are never ratchet-able and stay red as given.
+
+    Args:
+        ctx: Loaded document and ledger, for the ledger-state arm.
+        live: ``(item, family, text)`` triples from :func:`collect_item_findings`.
+        baseline: The committed baseline, or ``None`` when it is absent or malformed.
+        deferred: Items currently under the quiet-tree rule, exempt from the closed check.
+
+    Returns:
+        ``(findings, reading)``: what is wrong, and one sentence of what was compared.
+    """
+    live_map: dict[str, dict[str, str]] = {}
+    hard: list[str] = []
+    for item, family, text in live:
+        if not item:
+            hard.append(text)
+            continue
+        live_map.setdefault(item, {})[family] = text
+    matched = 0
+    findings = list(hard)
+
+    if baseline is None:
+        findings.append(
+            f"{RATCHET_REL} 缺失或形状不对：存量 finding 无从比对，等于全部按新增红——"
+            "跑 `--sync-ratchet` 生成后连同 diff 一起进账"
+        )
+        return findings, "棘轮：基线读不出来"
+
+    deferred_set = set(deferred)
+    for item in sorted(live_map):
+        for family, text in sorted(live_map[item].items()):
+            rows = baseline.get(item) or []
+            entry = next((row for row in rows if row.family == family), None)
+            if entry is None:
+                findings.append(
+                    f"棘轮新增（{item} / {family}）：基线没有这条存量，它不是被挡下的旧红，"
+                    "是这一遍新出的 —— 要么修掉，要么由 owner 裁定后 `--sync-ratchet` 显式进账"
+                )
+            elif entry.text_sha256 != hashlib.sha256(text.encode("utf-8")).hexdigest():
+                findings.append(
+                    f"棘轮漂移（{item} / {family}）：finding 文本与基线钉的摘要不符——"
+                    "同格同族但换了说法，按新增对待；要重钉就 `--sync-ratchet`，"
+                    "让它成为有人看过的 diff"
+                )
+            else:
+                matched += 1
+
+    for item in sorted(baseline):
+        rows = baseline[item]
+        try:
+            current_state = str(ctx.ledger_entry(item).get("state", "?"))
+        except ProbeError:
+            findings.append(
+                f"棘轮失锚（{item}）：基线钉着它，台账里已经没有这一格 —— 基线比台账活得久，"
+                "重钉并说明这格去哪了"
+            )
+            continue
+        if current_state != rows[0].ledger_state:
+            findings.append(
+                f"棘轮被静音（{item}）：基线钉的台账状态是 {rows[0].ledger_state}，现在是 "
+                f"{current_state} —— 翻台账标签从来不是修法，这个方向的移动必须作为 diff 被看过"
+            )
+        for row in rows:
+            if row.family in live_map.get(item, {}):
+                continue
+            if row.family == "stale-proof" and item in deferred_set:
+                continue
+            findings.append(
+                f"棘轮收口（{item} / {row.family}）：基线钉的这条 finding 这一遍没有再出现——"
+                "真修好了就 `--sync-ratchet` 把基线减下来，棘轮只认显式重钉，不认悄悄变小"
+            )
+
+    pinned = sum(len(rows) for rows in baseline.values())
+    reading = (
+        f"棘轮：基线钉 {pinned} 条存量 finding，本遍命中 {matched} 条"
+        f"（deferred {len(deferred_set)} 格等干净树再判）—— 新增、漂移、被静音、收口未重钉都是红"
+    )
+    return findings, reading
+
+
+def sync_ratchet(ctx: Context) -> int:
+    """Freeze today's item-level findings into the ratchet baseline, for a human to review.
+
+    The mirror of ``--sync-faces``: the baseline is what turns "someone silenced a red by
+    flipping a ledger label" and "someone quietly widened the pinned set" into a diff. Refuses to
+    write when a live finding names no item -- an unpinnable finding is a gate bug to fix, not a
+    fact to freeze.
+    """
+    readings, unmeasured = measured_readings(ctx)
+    quiet, git_says = worktree_quiet()
+    book = face_book(ctx, own_source())
+    cells, _ = reconcile(ctx, readings, book, quiet)
+    judge_findings, _ = self_test_findings(ctx, readings, unmeasured)
+    live = collect_item_findings(cells, judge_findings, book, include_deferred=True)
+    unpinnable = [text for item, _, text in live if not item]
+    if unpinnable:
+        print("FAIL: 无法进棘轮的 finding（不点名条目，只能修，不能钉）：", file=sys.stderr)
+        for text in unpinnable:
+            print(f"  {text}", file=sys.stderr)
+        return 1
+
+    items: dict[str, dict[str, object]] = {}
+    for item, family, text in live:
+        entry = items.setdefault(
+            item, {"families": {}, "ledger_state": ctx.ledger_entry(item).get("state", "?")}
+        )
+        families = cast("dict[str, str]", entry["families"])
+        families[family] = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    payload = {
+        "written_by": "python scripts/quality/acceptance_item_probe.py --sync-ratchet",
+        "meaning": (
+            "items.AC-N|NN.families.<family> = 该条存量 finding 文本的 sha256（judge 族来自反事实"
+            "自检，stale-proof 族来自台账 proven 而探针读 gap；deferred 格在安静树下同样成立）；"
+            "ledger_state = 冻结当时的台账状态，改动它以静音 finding 会让门禁红"
+        ),
+        "items": items,
+    }
+    text_out = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
+    path = REPO_ROOT / RATCHET_REL
+    path.write_text(text_out, encoding="utf-8")
+    stale = len(cells["stale-proof"])
+    deferred = len(cells["deferred"])
+    print(
+        f"wrote {RATCHET_REL}：judge 存量 {sum(1 for i, f, _ in live if f == 'judge')} 条、"
+        f"stale-proof {stale} 条、deferred 按同样文本钉 {deferred} 条 —— diff 要有人看过才能提交"
+    )
+    return 0
+
+
+def gate_check(ctx: Context) -> int:
+    """Run this tool as a gate member: one measure pass, six finding faces, one exit code.
+
+    The first five faces are the ones C50 measured as missing: nothing re-measured an item between
+    the ledger flip and the commit, ``--all`` compared nothing so three stale cells exited 0, and
+    eight proven cells had no plane at all. The sixth, the finding ratchet, keeps the gate red for
+    every *new* item-level finding while pinning the pre-existing ones CI first reached in round
+    C147 (1 unreachable judge, 8 stale-proof cells) until real work closes them through a
+    ``--sync-ratchet`` diff. The measured cost is ~252 s of the ~8 min gate
     (``docs/evidence/C50/census-run2-final-readings.txt``, face 3).
 
     Args:
@@ -19950,11 +20200,12 @@ def gate_check(ctx: Context) -> int:
     face_findings, face_reading = face_diff(read_face_baseline(), book)
     not_a_member = membership_findings(ctx)
     judge_findings, counterfact_reading = self_test_findings(ctx, readings, unmeasured)
+    live_findings = collect_item_findings(cells, judge_findings, book)
+    ratchet_reds, ratchet_reading = ratchet_findings(
+        ctx, live_findings, read_ratchet(), cells["deferred"]
+    )
     findings: list[str] = []
-    findings += judge_findings
-    findings += [
-        stale_cell_finding(item, book.moment.get(item, [])) for item in cells["stale-proof"]
-    ]
+    findings += ratchet_reds
     findings += face_findings
     findings += not_a_member
 
@@ -19963,6 +20214,7 @@ def gate_check(ctx: Context) -> int:
     if cells["deferred"]:
         print(f"  - deferred（时刻面，等工作树干净再判）：{'、'.join(cells['deferred'])}")
     print(f"  - {face_reading}")
+    print(f"  - {ratchet_reading}")
     print(f"  - 成员自证：`{GATE_MEMBER}` 在 `gate:` 配方里 = {flag(not not_a_member)}")
 
     if findings:
@@ -19972,7 +20224,7 @@ def gate_check(ctx: Context) -> int:
         return 1
     print(
         f"OK: {len(readings)} 个条目级判定在门禁里跑了一遍（{wall:.1f} s）；判据漂字、反事实、"
-        "台账↔读数、面基线、成员自证五面全过。"
+        "台账↔读数、面基线、存量棘轮、成员自证六面全过。"
     )
     return 0
 
@@ -20015,12 +20267,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--gate-check",
         action="store_true",
-        help=f"run as the {GATE_MEMBER} gate member: one pass, five faces, one exit code",
+        help=f"run as the {GATE_MEMBER} gate member: one pass, six faces, one exit code",
     )
     parser.add_argument(
         "--sync-faces",
         action="store_true",
         help=f"rewrite {FACES_REL} from the source, for a reviewer to diff",
+    )
+    parser.add_argument(
+        "--sync-ratchet",
+        action="store_true",
+        help=f"rewrite {RATCHET_REL} from today's item-level findings, for a reviewer to diff",
     )
     parser.add_argument("--json", metavar="PATH", help="also write the readings as JSON")
     args = parser.parse_args(list(argv) if argv is not None else None)
@@ -20029,8 +20286,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         for probe in PROBES:
             print(f"{probe.item}  {probe.summary}")
         return 0
-    if not (args.all or args.item or args.self_test or args.gate_check or args.sync_faces):
-        parser.error("choose --all, --item AC-N|NN, --self-test, --gate-check, or --sync-faces")
+    if not (
+        args.all
+        or args.item
+        or args.self_test
+        or args.gate_check
+        or args.sync_faces
+        or args.sync_ratchet
+    ):
+        parser.error(
+            "choose --all, --item AC-N|NN, --self-test, --gate-check, --sync-faces, "
+            "or --sync-ratchet"
+        )
 
     try:
         ctx = load_context()
@@ -20040,6 +20307,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.sync_faces:
         return sync_faces(ctx)
+    if args.sync_ratchet:
+        return sync_ratchet(ctx)
     if args.gate_check:
         return gate_check(ctx)
 
