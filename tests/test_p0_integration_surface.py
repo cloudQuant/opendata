@@ -28,11 +28,15 @@ P0_MIGRATION = "alembic_data/versions/20260923-0001_ods_dwd_p0.py"
 
 #: Modules that drive a P0 domain across module boundaries against a real engine or the app.
 #: Adding one is a review step: it changes what "the P0 domain integration tests" means.
+#: Reviewed 2026-10-22 (owner directive to clear CI): ``test_financial_pit_api.py`` carries
+#: ``pytestmark = integration`` and no ``e2e`` mark, so ``-m "integration and not e2e"`` has been
+#: selecting it since it landed -- the allow-list was the stale side of that drift, not the marks.
 P0_INTEGRATION_MODULES = frozenset(
     {
         "tests/test_data_query_api.py",
         "tests/test_data_query_http_warehouse.py",
         "tests/test_dwd_merge.py",
+        "tests/test_financial_pit_api.py",
         "tests/test_index_constituent_asof.py",
         "tests/test_ods_writer.py",
         "tests/test_p0_providers.py",

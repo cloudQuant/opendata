@@ -1900,3 +1900,46 @@ DEC-41-01 的 1 条被 owner 自己裁过「不改注解也不改断言」，AC2
 `exemption_scope_guard_bites=True`（拒绝 `opendata/data/models/__init__.py`、接受本载体），`rc=0`。
 载体自身随后入 index，故 committed 的 `staged_files=3`/`payload_index_sha256=aa9b0c95…` 比提交内容少一条
 ——这就是 §70 末段声明的自覆盖上限，无自参照的见证仍是提交后的 `w117_closure.py`。
+
+
+## 73. CI 的墙从成员 8 退到成员 2 再退到成员 3 之前：一次漏钉、一次时钟，以及 10 条红里的 4 条
+
+**push 39757278561 的实测**：`secret scan (full history)` **success**（`.gitleaks.toml` 未动的前提下，
+573 commits 全历史无泄漏在 CI 环境同样成立）；`quality gate` 在 **成员 2 `zero-dep-check`** 停住，1m54s：
+`FAIL: reference policy is unusable: stale sha256: scripts/quality/a2_check.py`。
+成因是我自己：6f16b5504 改了 `a2_check.py` 的字节，而 `docs/quality/akshare-reference-allowlist.json`
+按 C65 评审把这条路径登记为「以数据方式提到上游库、不依赖它」并 pin 了摘要——我重钉了 claims 与 batch5 栅栏，
+**漏了第三个 pin 家族**（`feedback-byte-pin-fences-span-many-test-files` 的同一条教训，这次是 policy 侧）。
+
+**用官方重钉器，不手改**：`docs/evidence/C101/probes/repin_reference_policy.py`（只读默认，`--apply` 才写）。
+读数：`registered_entries=87 stale_paths=1`，该路径 `pin=bbeefba1c7f8 head=2ff6d046c5c1 live=2ff6d046c5c1
+pin==head=False pin==live=False`、`findings head/live=1/1 added={} dependency_edges_added={}`、
+`brand_lines 2/2 load_shape 13/13`、`verdict: REPIN_OK`；两条必须**会动**的臂：注入 `import akshare` →
+`REJECT(dep={('scripts/quality/a2_check.py','akshare','import'):1})`，把 87 条 pin 各改一个 hex →
+`stale_sha256_readings=87 of 87`。`--apply` 后 `stale_sha256_remaining=0 -> PASS`、条目数 87 未变。
+本机 `make zero-dep-check` exit 0：`OK: 942 file(s) walked (opendata=615, _vendor=325, opendata_client=2),
+python 3.11, scanner 4; no new upstream references (frozen baseline: 0)`。
+
+**DEC-41-04 的 2 条红是靠「让判定只有一个输入」关掉的，不是靠改判定**：`bond_zh_cov.py:147` 用
+`datetime.datetime.now()` 拼缓存击穿参数 `d=`，所以 2026-09-24 录的 transcript 在任何别的日子重放都会
+`query/params` 不符——判官把日历当成了移植缺陷。修法是在重放期内把被 vendored 树的时钟钉到该 transcript
+自己的 `recorded_at`（`_clock_shim` 只替换 `datetime.datetime` 的 `now`/`today`，`date`/`timedelta`/`strptime`
+全部保持上游实现；`pinned_vendor_clock(None)` 保留不钉的形态，专门用来被证伪）。
+**没有**从比对身份里删掉 `d`（那是 owner 明确禁的「改 comparator」），比对逐字节照旧。
+新守卫 `test_the_replay_owns_the_vendored_wall_clock` 两向都不依赖今天是不是录制日：钉 `2099-01-01` 必须
+以 `query/params` 拒绝且 `clock_patched>=1`（否则这条臂什么都没量到），钉 `recorded_at` 必须吃满 transcript
+并与录得的 frame 零差分。读数：`tests/test_port_fidelity.py` **26 passed / 6 skipped**，
+`bond_daily_sina` 与 `test_c65_evidence_probes::test_ac6_02…`（那条 `13 == 14`）**各自 passed**。
+
+**DEC-41-03 的 2 条红是同一种诚实重基**：`pytest -m "integration and not e2e"` 早就把
+`tests/test_financial_pit_api.py` 选进来了（它带 `pytestmark = integration`、两条 test 函数、0 条 e2e 标记，
+实测），是冻结列表 `P0_INTEGRATION_MODULES` 落后于现实；这一行按该文件自己的注释是「评审动作」，
+owner 2026-10-22 指令「解决 ci/cd 问题」就是那次评审，理由写进了列表上方的注释。
+`test_p0_integration_surface.py` + `test_acceptance_probe_gate::TestC51ZeroDepCells` 合起来 **5 passed**。
+
+**平面残差 6 条**（10 − 4）：`test_openbb_inventory_guard` ×4（32 findings = 18 RIGHTS LINK + 3 STALE STATUS
++ 11 CAPABILITY COUNT，逐条清单见本轮 `w166` 会话内量到的 judge 输出：需要 18 个源在
+`docs/data-rights-registry.md` §1 里各有真实权利行，其中 `sec/tmx` 各 24 能力、`nasdaq` 9、`finviz` 7…；
+11 条计数与 3 条状态是记录落后于树的机械项）、`test_data_catalog` ×1（DEC-41-01，owner 已裁「不统一注解、
+不改断言」，我不会自行翻）、`test_ac2_case_probe` ×1（AC2 自检里 3 条 closure=gap 的真负例，
+`SELF_TEST FAIL failures=3`）。这三类要的是 owner 给的东西（合规原文、裁定反转、验收台账工作），不是我的许可。

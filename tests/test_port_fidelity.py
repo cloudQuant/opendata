@@ -51,7 +51,7 @@ def test_ported_output_matches_upstream(case: comparator.Case) -> None:
     function = comparator._load_case_function(comparator._PORTED_CASE_MODULE, case.function)
 
     comparator._pin_pure_requests_channel()
-    replayer = comparator.HttpReplayer(entries)
+    replayer = comparator.HttpReplayer(entries, clock_at=meta.get("recorded_at"))
     with replayer:
         frame = function(**case.kwargs)
 
@@ -60,6 +60,59 @@ def test_ported_output_matches_upstream(case: comparator.Case) -> None:
     assert replayer.cursor == len(entries), (
         f"http call count differs: upstream {len(entries)}, ported {replayer.cursor}"
     )
+
+
+def _fixture_clock(case_name: str) -> str | None:
+    """The ``recorded_at`` one transcript carries, which is the clock its replay has to use.
+
+    Args:
+        case_name: Fixture directory name.
+
+    Returns:
+        The recorded date as ``YYYY-MM-DD``, or ``None`` when no fixture carries one -- which leaves
+        the real clock in place and is the shape the pin's guard exists to refuse.
+    """
+    path = FIXTURES_DIR / case_name / "meta.json"
+    if not path.exists():
+        return None
+    raw: object = json.loads(path.read_text(encoding="utf-8"))
+    value = raw.get("recorded_at") if isinstance(raw, dict) else None
+    return str(value) if isinstance(value, str) else None
+
+
+def test_the_replay_owns_the_vendored_wall_clock() -> None:
+    """DEC-41-04: a cache-busting ``d=<today>`` is an input to the judge, so the replay pins it.
+
+    ``bond_zh_cov.py`` builds its query parameter from ``datetime.datetime.now()``, so a transcript
+    recorded on 2026-09-24 mismatched on request identity on every later day -- the judge read the
+    port as unfaithful because of the calendar. The pin is asserted in both directions and neither
+    arm depends on the date this suite happens to run on: a *wrong* pinned date must refuse with
+    ``query/params`` (so the pin is not decorative), and the transcript's own ``recorded_at`` must
+    consume the whole transcript and reproduce the recorded frame.
+    """
+    case = next(item for item in comparator.CASES if item.name == "bond_daily_sina")
+    recorded, reason = _fixture_status(case.name)
+    if not recorded:
+        pytest.skip(f"recording pending for {case.name}: {reason}")
+    clock = _fixture_clock(case.name)
+    meta = json.loads((FIXTURES_DIR / case.name / "meta.json").read_text(encoding="utf-8"))
+    entries = comparator._read_transcript(FIXTURES_DIR / case.name / "responses.json.gz")
+    reference = comparator._read_reference_frame(FIXTURES_DIR / case.name / "reference.csv.gz")
+    function = comparator._load_case_function(comparator._PORTED_CASE_MODULE, case.function)
+    comparator._pin_pure_requests_channel()
+
+    wrong = comparator.HttpReplayer(entries, clock_at="2099-01-01")
+    with pytest.raises(comparator.ReplayRequestMismatchError) as refused, wrong:
+        function(**case.kwargs)
+    assert "query/params" in str(refused.value)
+    assert wrong.clock_patched >= 1, "the pin rebound nothing, so this arm measured nothing"
+
+    armed = comparator.HttpReplayer(entries, clock_at=clock)
+    with armed:
+        frame = function(**case.kwargs)
+    assert armed.clock_patched >= 1
+    assert armed.cursor == len(entries)
+    assert not comparator._compare_frames(reference, frame, meta.get("dtypes"))
 
 
 def test_recorded_fixtures_are_pinned_to_upstream_lock() -> None:
@@ -185,7 +238,7 @@ def test_financial_statement_update_dates_ignore_the_machine_timezone() -> None:
         for zone in ("Asia/Shanghai", "Etc/UTC", "America/Los_Angeles"):
             os.environ["TZ"] = zone
             time.tzset()
-            replayer = comparator.HttpReplayer(entries)
+            replayer = comparator.HttpReplayer(entries, clock_at=_fixture_clock(case.name))
             with replayer:
                 frame = function(**case.kwargs)
             assert replayer.cursor == len(entries)

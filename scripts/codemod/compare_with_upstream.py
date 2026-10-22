@@ -31,11 +31,14 @@ from __future__ import annotations
 
 import argparse
 import base64
+import contextlib
+import datetime
 import gzip
 import json
 import sys
+import types
 import urllib.parse
-from collections.abc import Sequence  # noqa: TC003 - no future annotations in this script
+from collections.abc import Iterator, Sequence  # noqa: TC003 - no future annotations in this script
 from dataclasses import dataclass
 from datetime import date
 from importlib import import_module
@@ -62,6 +65,97 @@ MAX_DIFFS = 10
 
 _UPSTREAM_CASE_MODULE = "akshare"
 _PORTED_CASE_MODULE = "opendata.data.providers.akshare._vendor"
+
+#: Vendored modules bind ``import datetime`` at module level, and three build a cache-busting
+#: query parameter from the wall clock (``bond/bond_zh_cov.py:147``, ``bond/bond_zh_sina.py:188``,
+#: ``stock/stock_zh_kcb_sina.py:138``). Replaying a transcript recorded on 2026-09-24 therefore
+#: mismatched on request identity on every later day (DEC-41-04, measured: actual ``?d=2026_10_22``
+#: against recorded ``?d=2026_09_24``). The replay pins that clock to the transcript's own
+#: ``recorded_at`` instead of removing ``d`` from the compared identity: the comparison stays
+#: byte-for-byte the same, and the only thing taken away is a second, unnoticed input to the judge.
+_VENDOR_PACKAGE_PREFIX = "opendata.data.providers.akshare._vendor"
+
+
+def _clock_shim(pinned: datetime.datetime) -> types.ModuleType:
+    """Copy the stdlib ``datetime`` module, replacing only its clock.
+
+    Args:
+        pinned: The instant one transcript was recorded at.
+
+    Returns:
+        A module stand-in whose ``datetime.datetime.now``/``today`` answer ``pinned``; every other
+        attribute (``date``, ``timedelta``, ``strptime``, tz helpers) is the real one, so a
+        module doing anything else with ``datetime`` is untouched by the pin.
+    """
+    real = datetime
+    shim = types.ModuleType(real.__name__)
+    for name in dir(real):
+        if not name.startswith("__"):
+            setattr(shim, name, getattr(real, name))
+
+    class _PinnedDatetime(real.datetime):
+        """``datetime.datetime`` whose clock is the recording instant."""
+
+        __slots__ = ()
+
+        @classmethod
+        def now(cls, tz: datetime.tzinfo | None = None) -> _PinnedDatetime:
+            """``pinned``, converted into ``tz`` when the caller names one."""
+            moment = pinned if tz is None else pinned.astimezone(tz)
+            return cls(
+                moment.year,
+                moment.month,
+                moment.day,
+                moment.hour,
+                moment.minute,
+                moment.second,
+                moment.microsecond,
+                tzinfo=tz,
+            )
+
+        @classmethod
+        def today(cls) -> _PinnedDatetime:
+            """The local-date spelling of the same pinned instant."""
+            return cls.now()
+
+    shim.datetime = _PinnedDatetime  # type: ignore[attr-defined]
+    return shim
+
+
+@contextlib.contextmanager
+def pinned_vendor_clock(recorded_at: str | None) -> Iterator[dict[str, int]]:
+    """Rewrite the imported vendored modules' ``datetime`` for the duration of a replay.
+
+    Args:
+        recorded_at: The transcript's ``recorded_at`` date (``YYYY-MM-DD``), or ``None`` to
+            leave the real clock in place -- the unarmed shape, kept reachable so that the pin
+            can be falsified.
+
+    Yields:
+        ``{"patched": <modules rebound>, "clock_sites": <now() call sites in the vendored tree>}``.
+    """
+    patched: dict[str, int] = {"patched": 0, "clock_sites": 0}
+    if not recorded_at:
+        yield patched
+        return
+    pinned = datetime.datetime.fromisoformat(recorded_at)
+    shim = _clock_shim(pinned)
+    originals: dict[str, Any] = {}
+    for name, module in list(sys.modules.items()):
+        if not name.startswith(_VENDOR_PACKAGE_PREFIX):
+            continue
+        bound = getattr(module, "datetime", None)
+        if isinstance(bound, types.ModuleType) and getattr(bound, "__name__", "") == "datetime":
+            originals[name] = bound
+            setattr(module, "datetime", shim)  # noqa: B010  # dynamic module attribute
+    try:
+        patched["patched"] = len(originals)
+        yield patched
+    finally:
+        for name, original in originals.items():
+            setattr(  # noqa: B010  # dynamic module attribute
+                sys.modules[name], "datetime", original
+            )
 
 
 @dataclass(frozen=True)
@@ -299,13 +393,23 @@ class HttpReplayer:
     response can be consumed. The query target includes both the URL query and ``params``.
     """
 
-    def __init__(self, entries: list[dict[str, Any]]) -> None:
-        """Bind a transcript and rewind the cursor."""
+    def __init__(self, entries: list[dict[str, Any]], *, clock_at: str | None = None) -> None:
+        """Bind a transcript and rewind the cursor.
+
+        Args:
+            entries: The recorded requests/responses, in call order.
+            clock_at: The transcript's ``recorded_at`` date. When set, the vendored clock is
+                pinned to it for the whole replay, so a cache-busting ``d=<today>`` parameter
+                matches the recorded identity instead of the day the test runs on.
+        """
         self.entries = entries
         self.cursor = 0
         self.request_attempts = 0
+        self.clock_at = clock_at
+        self.clock_patched = 0
         self._real_get: Any = None
         self._real_post: Any = None
+        self._stack: contextlib.ExitStack | None = None
 
     def __enter__(self) -> HttpReplayer:
         """Patch requests and rewind the cursor."""
@@ -315,6 +419,9 @@ class HttpReplayer:
         self._real_post = requests.post
         _patch_attribute(requests, "get", self._get)
         _patch_attribute(requests, "post", self._post)
+        self._stack = contextlib.ExitStack()
+        reading = self._stack.enter_context(pinned_vendor_clock(self.clock_at))
+        self.clock_patched = int(reading["patched"])
         return self
 
     def __exit__(self, *exc: object) -> None:
@@ -325,6 +432,9 @@ class HttpReplayer:
         _patch_attribute(requests, "post", self._real_post)
         self._real_get = None
         self._real_post = None
+        if self._stack is not None:
+            self._stack.close()
+            self._stack = None
 
     def _get(self, url: str, **kwargs: Any) -> Any:  # noqa: ANN401
         return self._replay("GET", url, **kwargs)
@@ -716,7 +826,7 @@ def compare() -> int:
         meta = json.loads((target / "meta.json").read_text(encoding="utf-8"))
         reference = _read_reference_frame(reference_path)
         function = _load_case_function(_PORTED_CASE_MODULE, case.function)
-        replayer = HttpReplayer(entries)
+        replayer = HttpReplayer(entries, clock_at=meta.get("recorded_at"))
         try:
             with replayer:
                 frame = function(**case.kwargs)
