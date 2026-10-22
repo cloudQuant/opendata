@@ -51,7 +51,7 @@
 | provider | 行 | 原因 |
 |---|---|---|
 | `wsj` | 3 | 公开 JSON 端点；默认 UA 403，浏览器 UA 200（已实测 25,118–25,336 B）。实现待 `/goal resume` |
-| `stockgrid` | 1 | 旧端点重定向后 **200 / 1,261,465 B / final=`http://axlfi.com/landing` / 非 JSON**（2026-10-22 `w150` 复测；同一次运行的 dead-host 反例给 0 B + URLError，说明这个体量是服务端给的，不是本机路由问题）。落地页不是数据源：**要的是 AXLFI 的数据端点与条款**，无 key 可申请 |
+| `stockgrid` | 1 | **两条路由都实测不供数**（2026-10-22 `w156`，6/6 arms）：参考实现的 `www.stockgrid.io/get_dark_pool_individual_data?ticker=…` → 200 `text/html` 6,169 B、final host=`axlfi.com`；`axlfi.com` 的 `/stockgrid`、`/dark-pool`、`/data` 返回逐字节相同的同一页（sha8 `53dbda23`），`/api` 给真 404 ⇒ catch-all，不是数据路由。对照臂（本仓记录的 wsj 路由）拿到 200 `application/json` 25,158 B，证明仪器能识别活 JSON。参考集合里 `ShortVolume` 只有 stockgrid 一家（对照模型 4 家）。**要的是 owner 给的「能合法取数的新端点 + 条款/权利行」，或退役/换 provider 的裁定**；无 key 可申请 |
 | `yfinance::AvailableIndices` | 1 | **已于 wave44 离线落地**（本地参考表 + 伪 transport 见证） |
 
 其余 provider（cboe、finviz、imf、oecd、tmx 等）台账 `credential_fields` 为空，本清单不涉及。

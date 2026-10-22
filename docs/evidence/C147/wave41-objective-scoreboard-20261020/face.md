@@ -1579,3 +1579,34 @@ final=`axlfi.com/landing` / 非 JSON，并要求同运行的 dead-host 反例 0 
 **0 行 INCOMPLETE**、claims 1,745、identity set 未变、31/32 provider 全行落地；
 唯一残行 `stockgrid::ShortVolume` 要 owner 给数据端点与权利行；子代理 **34 > 30** 仍为既成违反。
 目标未完成，不调 `UpdateGoal complete`。
+
+
+## 65. 「两个 blocker 要不要自己去查」：查了，端点那一半被实测否证为信息缺口
+
+owner 问得对，第二个 blocker 是「派了几个子代理」的既成计数，查什么都变不回来；第一个的**端点**那一半确实是
+一个可查的问题，所以本轮做了三件事，全部落进 `probes/w156_stockgrid_reference_route_face.py`
+（载体 `runs/w156_stockgrid_reference_route_face.txt`，**6/6 arms PASS**）：
+
+1. **读参考实现**（REFERENCE-EXCEPTION-01 授权范围内，本机 checkout）：`openbb_stockgrid/models/short_volume.py:62`
+   用的是 `https://www.stockgrid.io/get_dark_pool_individual_data?ticker=<symbol>`，fetcher 不使用 credentials。
+   实测今天 → 200 但 `text/html` / 6,169 B / final host `axlfi.com`，`is_json=False`。**参考实现自己在今天也是死的。**
+2. **探后继站**：`axlfi.com` 的 `/stockgrid`、`/dark-pool`、`/data` 三条路径返回**逐字节相同**的正文
+   （sha8 `53dbda23`），而 `/api` 返回真 404 —— 两条合起来才说明这是 catch-all，而不是「我连不上」。
+   站点首页 11 个链接里没有一个含 api/stockgrid/short/dark/data/product，即没有公开的文档入口。
+3. **两面对照臂**：控制组不猜 URL，而是从本仓产品声明里取 —— `specs.ETF_ACTIVE` 的 `base_url + path + static_query`
+   —— 实测 200 / `application/json` / 25,158 B / top keys `data,hash,id,type`。同一 `_classify` 判别器
+   能吃下活的 JSON，所以第 1、2 条的「非 JSON」是关于源的结论。另一个计数对照：参考集合里实现
+   `ShortVolume` 的 provider 恰好 **1** 家（`openbb_stockgrid`），而 `PriceTargetConsensusFetcher` 是 **4** 家
+   —— 说明「只有 1 家」不是匹配器坏掉产生的假 1。
+
+另外做了联网检索（WebSearch），没有检索到 stockgrid/axlfi 的公开后继 API 文档；结论不依赖该检索，
+依赖上面四条可重跑的读数。
+
+**因此 DEC-39-05 的口径从「需要 AXLFI 的端点与条款」升级为「参考实现与后继站都不再供数」**，
+owner 只剩两个选择：A 给一个能合法取数的新源（端点 + 权利行），B 裁定退役该行或改挂别的 provider
+（B 要动 `EXPECTED_MODEL_COUNT`/`EXPECTED_IDENTITY_SHA256`，是判定范围变更，我不自行做）。
+§7 DEC-39-05、§8 表内 stockgrid 行与 `外部API申请清单.md` 已同步到这份读数。
+
+新文件的质量面（提交前实测，避免重犯 §58）：`ruff check` All checks passed、`ruff format --check` already
+formatted、`mypy --config-file=pyproject.toml` 0 error（先有两处 `no-redef`/`union-attr` 被我自己修掉），
+`bandit -q -r` 无 issue 行。

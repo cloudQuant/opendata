@@ -1,0 +1,14 @@
+probe reference_route status=200 ctype=text/html bytes=6169 sha8=53dbda23 is_json=False error=- final_host=axlfi.com
+probe successor_stockgrid status=200 ctype=text/html bytes=6169 sha8=53dbda23 is_json=False error=- final_host=axlfi.com
+probe successor_dark-pool status=200 ctype=text/html bytes=6169 sha8=53dbda23 is_json=False error=- final_host=axlfi.com
+probe successor_data status=200 ctype=text/html bytes=6169 sha8=53dbda23 is_json=False error=- final_host=axlfi.com
+probe successor_hard_404 status=404 ctype=application/json bytes=0 sha8=- is_json=False error=HTTPError:404 final_host=axlfi.com
+probe live_json_control status=200 ctype=application/json bytes=25158 sha8=b5a8d731 is_json=True error=- final_host=www.wsj.com
+arm reference_route_not_json ok=True is_json=False status=200 ctype=text/html
+arm redirect_leaves_the_source_host ok=True final_host=axlfi.com source_marker=stockgrid.io
+arm successor_paths_are_one_page ok=True distinct_digests=1 of 3 pages digests=['53dbda23']
+arm hard_404_control ok=True status=404 error=HTTPError:404
+arm live_json_control ok=True is_json=True status=200 top_keys=data,hash,id,type
+arm short_volume_has_one_reference_provider ok=True short_volume_providers=['openbb_stockgrid'] control_count=4
+stockgrid_reference_route_face arms=6 arms_passed=6 arms_failed=0 failed=[] PASS=True
+w156_stockgrid_reference_route_face_exit=0
