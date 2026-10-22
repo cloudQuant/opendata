@@ -1943,3 +1943,24 @@ owner 2026-10-22 指令「解决 ci/cd 问题」就是那次评审，理由写�
 11 条计数与 3 条状态是记录落后于树的机械项）、`test_data_catalog` ×1（DEC-41-01，owner 已裁「不统一注解、
 不改断言」，我不会自行翻）、`test_ac2_case_probe` ×1（AC2 自检里 3 条 closure=gap 的真负例，
 `SELF_TEST FAIL failures=3`）。这三类要的是 owner 给的东西（合规原文、裁定反转、验收台账工作），不是我的许可。
+
+
+## 74. CI 39758541626：成员 1-7 全绿、成员 8 的日志被 5,055 条 BLOCKED 挤爆，以及克隆内的同构复测
+
+push bf618aa4b 的实测：`secret scan (full history)` success；gate 依次打印 brand-check、zero-dep-check
+（成员 2 已过，说明 §73 的重钉在 CI 环境同样成立）、secret-check、ledger-check、evidence-traceability、
+js-points、loguru，然后进 a2-check：`A2 files (complete resolver): 1113`、
+`A2 archive scope … -> 331 tracked .py file(s), 331 present, excluded`、
+`Static-tool execution partition: 1113 file(s), 0 verified immutable snapshot(s) excluded`——
+**人口与本机相同**，裁定 C 在 CI 里生效。但步骤日志在 09:54:38 停在 BLOCKED 清单中间，
+之后 5 分钟无输出、步骤 exit 2：**判定行被日志量吃掉了**。克隆里同构量过：`errors=19`、
+`blocked_details=5055`、`archive_blocked=5055 outside_blocked=0`、`error_paths=34 of 19 messages`、
+`unnamed=False`、`outside_error_paths=0`、`immutable_fail=False`——判定是绿的，
+而逐条打印 5,055 个候选及其理由 ≈1.5 万行，正是日志被挤爆的原因（也是把一次通过伪装成一次崩溃的原因）。
+
+**修法仍在这条裁定之内**：当且仅当**全部** blocked 候选都在档案前缀下时，只打印前 10 条并补一行
+`BLOCKED candidate list truncated: 5055 archived candidates, 10 shown`；只要有任何一条在档案之外，
+逐条全文打印照旧（那条路径是真实缺陷，不能被样本化）。复测（克隆、C100 原始收据不存在的环境、
+`--files` 切片）：末行 `OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit)`、`rc=0`。
+CI 的 a2 腿随后是否绿仍取决于它自己的 ruff/mypy/bandit 版本，本机不可替它判定；成员 12 的 6 条红仍是
+§73 末段那三类要 owner 给东西的项。

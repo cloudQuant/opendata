@@ -586,10 +586,24 @@ def run(explicit: list[str] | None = None, mypy_workers: int = 1) -> int:
         print("BLOCKED immutable evidence validation:")
         for error in evidence.errors:
             print(f"  {error}")
-    for path_name, reasons in evidence.blocked_details:
+    # Owner ruling 2026-10-22 also bounds this print: on a clone that does not carry the archived
+    # corpus every one of the 5,055 candidates is blocked, and printing each with its reasons was
+    # ~15k lines -- long enough that CI's step log ended before the verdict line, which is how a
+    # green leg read as a crash. Names stay available for the failures this gate must show in full.
+    archive_only_blocked = all(
+        name.startswith(ARCHIVE_PREFIXES) for name, _ in evidence.blocked_details
+    )
+    shown = evidence.blocked_details if not archive_only_blocked else evidence.blocked_details[:10]
+    for path_name, reasons in shown:
         print(f"BLOCKED candidate {path_name}:")
         for reason in reasons:
             print(f"  {reason}")
+    if archive_only_blocked and len(evidence.blocked_details) > len(shown):
+        print(
+            f"BLOCKED candidate list truncated: {len(evidence.blocked_details)} archived "
+            f"candidates, {len(shown)} shown (all under {ARCHIVE_PREFIXES[0]}; owner ruling "
+            "2026-10-22)"
+        )
     if partition_error:
         print(f"BLOCKED static partition: {partition_error}")
     failures: list[str] = []
