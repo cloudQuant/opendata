@@ -1,0 +1,5 @@
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider seeking_alpha --model ForwardSalesEstimates --phase counterfact --evidence-root docs/evidence/C101
+--- stdout ---
+COUNTERFACT_JSON={"expected": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "SEEKING_ALPHA_ESTIMATES_BAD_NUMERIC", "rejected": [], "status": null}, "observed": {"invalid": [], "missing": [], "refusal_class": "ProviderEngineError", "refusal_code": "SEEKING_ALPHA_ESTIMATES_BAD_NUMERIC", "rejected": [], "status": null}, "reason": "revenue_actual is read through the same numeric guard as the EPS row: the source publishes it as a numeric string, a boolean there is a corrupt record and must land as SEEKING_ALPHA_ESTIMATES_BAD_NUMERIC instead of a revenue figure the estimates envelope never carried; untampered control produced 2 row(s) through the same seam"}
+VERDICT=PASS
+--- stderr ---
