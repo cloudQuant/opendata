@@ -248,4 +248,11 @@ ssl/
 # 且默认面上再也无法靠提交闭合，只能 git add -f 或搬家。
 /docs/evidence/C100/**
 !/docs/evidence/C100/**/
-!/docs/evidence/C100/**/*.md
+# 2026-10-22 owner 指令（发版前清理工作树）：叙述档也静音，git status 不再挂 1,846 个 README。
+# 代价与边界：evidence_traceability.py 读磁盘(rglob)+index(git ls-files)，不看 .gitignore，
+# 所以静音不改变它的记分母；要提交被静音的叙述或任何新载体，用 git add -f。
+/docs/evidence/C100/**/*.md
+# 机器残渣与临时产物：重签中间态、stderr 落盘、历史 .rcs。
+/docs/evidence/**/_resign*_tmp/
+/docs/evidence/**/*.err
+/docs/evidence/**/*.rcs
