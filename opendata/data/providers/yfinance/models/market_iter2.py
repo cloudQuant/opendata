@@ -274,9 +274,11 @@ class YfinanceHistoryFetcher(Fetcher[YfinanceHistoricalQuery, HistoryRaw]):
         )
 
     def transform_query(self, **kwargs: object) -> YfinanceHistoricalQuery:
+        """Validate keyword arguments into ``query_type`` without reaching the SDK."""
         return self.query_type.model_validate(kwargs)
 
     def extract_data(self, params: YfinanceHistoricalQuery, ctx: FetchContext) -> HistoryRaw:
+        """Fetch one history payload per validated symbol through the SDK seam."""
         from opendata.data.providers.yfinance.models import _sdk
 
         query = _validated_query(params, self.query_type)
@@ -295,6 +297,7 @@ class YfinanceHistoryFetcher(Fetcher[YfinanceHistoricalQuery, HistoryRaw]):
         )
 
     def transform_data(self, raw: HistoryRaw, params: YfinanceHistoricalQuery) -> FetchResult:
+        """Convert per-symbol history into contract bars."""
         query = _validated_query(params, self.query_type)
         if not isinstance(raw, tuple) or len(raw) != len(query.symbols):
             raise YfinanceProviderError("YFINANCE_HISTORY_SHAPE_INVALID")
@@ -438,6 +441,8 @@ def _payload_row(
 
 
 class YfinanceNewsQuery(YfinanceMultiSymbolQuery):
+    """News query accepting either ``count`` or the legacy ``limit`` alias."""
+
     limit: int | None = 10
     count: int | None = None
 
@@ -457,6 +462,7 @@ class YfinanceNewsQuery(YfinanceMultiSymbolQuery):
 
     @property
     def effective_count(self) -> int:
+        """Return the row count implied by ``count``, then ``limit``, then the default of 100."""
         if self.count is not None:
             return self.count
         return self.limit if self.limit is not None else 100
@@ -585,17 +591,20 @@ class YfinancePayloadFetcher(Fetcher[YfinanceCurrentMultiSymbolQuery, PayloadRaw
         )
 
     def transform_query(self, **kwargs: object) -> YfinanceCurrentMultiSymbolQuery:
+        """Validate keyword arguments into ``YfinanceCurrentMultiSymbolQuery``."""
         return YfinanceCurrentMultiSymbolQuery.model_validate(kwargs)
 
     def extract_data(
         self, params: YfinanceCurrentMultiSymbolQuery, ctx: FetchContext
     ) -> PayloadRaw:
+        """Fetch one current payload per validated symbol."""
         query = _validated_query(params, YfinanceCurrentMultiSymbolQuery)
         return _fetch_by_symbol(query.symbols, lambda symbol: self._fetch_one(symbol, ctx))
 
     def transform_data(
         self, raw: PayloadRaw, params: YfinanceCurrentMultiSymbolQuery
     ) -> FetchResult:
+        """Convert per-symbol payloads into contract rows."""
         query = _validated_query(params, YfinanceCurrentMultiSymbolQuery)
         if not isinstance(raw, tuple) or len(raw) != len(query.symbols):
             raise YfinanceProviderError("YFINANCE_PAYLOAD_SHAPE_INVALID")
@@ -796,6 +805,8 @@ class YfinanceShareStatisticsFetcher(YfinancePayloadFetcher):
 
 
 class YfinanceScreenLimitQuery(QueryParams):
+    """Query base carrying only the screener ``limit``, default 200."""
+
     limit: int | None = 200
 
     @field_validator("limit")
@@ -813,6 +824,8 @@ class YfinanceScreenLimitQuery(QueryParams):
 
 
 class YfinanceScreenerQuery(YfinanceScreenLimitQuery):
+    """Screener query adding sort direction to the limit base."""
+
     sort: Literal["asc", "desc"] = "desc"
 
 
@@ -1200,6 +1213,8 @@ def _fetch_screen_pages(
 
 
 class YfinanceScreenerFetcher(Fetcher[YfinanceScreenerQuery, dict[str, object]]):
+    """Screener fetcher bound to one ``screener_id``/``query_name`` pair."""
+
     async_mode = "bounded_thread"
     canonical_model: ClassVar[str]
     screener_id: ClassVar[str]
@@ -1222,9 +1237,11 @@ class YfinanceScreenerFetcher(Fetcher[YfinanceScreenerQuery, dict[str, object]])
         )
 
     def transform_query(self, **kwargs: object) -> YfinanceScreenerQuery:
+        """Validate keyword arguments into ``query_type``."""
         return self.query_type.model_validate(kwargs)
 
     def extract_data(self, params: YfinanceScreenerQuery, ctx: FetchContext) -> dict[str, object]:
+        """Fetch the screener pages for the validated query through the SDK seam."""
         from opendata.data.providers.yfinance.models import _sdk
 
         query = _validated_query(params, self.query_type)
@@ -1242,6 +1259,7 @@ class YfinanceScreenerFetcher(Fetcher[YfinanceScreenerQuery, dict[str, object]])
         )
 
     def transform_data(self, raw: dict[str, object], params: YfinanceScreenerQuery) -> FetchResult:
+        """Turn one screener document into observations."""
         _validated_query(params, self.query_type)
         if not isinstance(raw, Mapping) or not isinstance(raw.get("quotes"), list):
             raise YfinanceProviderError("YFINANCE_SCREEN_SHAPE_INVALID")
@@ -1251,9 +1269,14 @@ class YfinanceScreenerFetcher(Fetcher[YfinanceScreenerQuery, dict[str, object]])
 def _screen_rows(
     raw: Mapping[str, object], screener_id: str, offset: int
 ) -> tuple[YfinanceScreenerObservation, ...]:
-    quotes = raw["quotes"]
-    if any(not isinstance(item, Mapping) for item in quotes):
+    quotes_value = raw["quotes"]
+    if not isinstance(quotes_value, list):
         raise YfinanceProviderError("YFINANCE_SCREEN_SHAPE_INVALID")
+    quotes: list[Mapping[str, object]] = []
+    for item in quotes_value:
+        if not isinstance(item, Mapping):
+            raise YfinanceProviderError("YFINANCE_SCREEN_SHAPE_INVALID")
+        quotes.append(item)
     rows = []
     for ordinal, quote in enumerate(quotes, start=offset):
         symbol = quote.get("symbol")
@@ -1390,6 +1413,8 @@ class YfinanceEquityScreenerFetcher(Fetcher[YfinanceCustomScreenerQuery, dict[st
 
 
 class YfinanceKeyMetricsQuery(YfinanceMultiSymbolQuery):
+    """Key-metrics query with ttm, period and window fields."""
+
     ttm: Literal["include", "exclude", "only"] = "only"
     period: Literal["q1", "q2", "q3", "q4", "fy", "annual", "quarter"] = "annual"
     limit: int | None = None
@@ -1406,6 +1431,7 @@ class YfinanceKeyMetricsQuery(YfinanceMultiSymbolQuery):
 
     @property
     def effective_ttm(self) -> Literal["include", "exclude", "only"]:
+        """Return the TTM mode implied by explicit fields, dates, frequency and periods."""
         if "ttm" in self.model_fields_set:
             return self.ttm
         if self.start_date is not None or self.end_date is not None:
@@ -1416,12 +1442,14 @@ class YfinanceKeyMetricsQuery(YfinanceMultiSymbolQuery):
 
     @property
     def effective_frequency(self) -> Literal["quarterly", "yearly"]:
+        """Return the frequency implied by ``frequency`` or the requested ``period``."""
         if self.frequency is not None:
             return self.frequency
         return "quarterly" if self.period in {"quarter", "q1", "q2", "q3", "q4"} else "yearly"
 
     @property
     def effective_periods(self) -> int:
+        """Return the period count implied by the TTM mode, ``periods`` and ``limit``."""
         if self.effective_ttm == "only":
             return 0
         if self.periods is not None:
@@ -1707,6 +1735,8 @@ def _key_metric_observation(
 
 
 class YfinanceOptionChainQuery(YfinanceSymbolQuery):
+    """Option-chain query keyed by symbol, with either spelling of the expiry date."""
+
     date: date_type | None = None
     expiration_date: date_type | None = None
 

@@ -108,6 +108,7 @@ def fetch_observations(
 
 
 def flow_records(document: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Return the document's dataflow records, refusing a document without a list of them."""
     flows = document.get("dataflows")
     if not isinstance(flows, list):
         raise ImfSdmxError("IMF_BAD_RESPONSE")
@@ -115,6 +116,7 @@ def flow_records(document: Mapping[str, Any]) -> list[dict[str, Any]]:
 
 
 def data_dimensions(document: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Return the sole data structure's dimensions, refusing a document with zero or several."""
     structures = document.get("dataStructures")
     if not isinstance(structures, list) or len(structures) != 1:
         raise ImfSdmxError("IMF_BAD_RESPONSE")
@@ -131,6 +133,7 @@ def data_dimensions(document: Mapping[str, Any]) -> list[dict[str, Any]]:
 
 
 def codelist(document: Mapping[str, Any], list_id: str) -> list[dict[str, Any]]:
+    """Return the codes of ``list_id``, reading a missing or malformed ``codelists`` as empty."""
     lists = document.get("codelists")
     if not isinstance(lists, list):
         return []

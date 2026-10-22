@@ -138,6 +138,7 @@ class AlphaVantageHistoricalFetcher(
         self._client = client or AlphaVantageClient()
 
     def transform_query(self, **kwargs: object) -> AlphaVantageHistoricalQuery:
+        """Validate keyword arguments into ``AlphaVantageHistoricalQuery``."""
         return AlphaVantageHistoricalQuery.model_validate(kwargs)
 
     def extract_data(
@@ -145,6 +146,7 @@ class AlphaVantageHistoricalFetcher(
         params: AlphaVantageHistoricalQuery,
         ctx: FetchContext,
     ) -> tuple[_ParsedPriceRow, ...]:
+        """Return the upstream document parsed into per-symbol price rows."""
         requests = _price_requests(params)
         collected: list[_ParsedPriceRow] = []
         seen_dates: set[date | datetime] = set()
@@ -193,6 +195,7 @@ class AlphaVantageHistoricalFetcher(
         raw: tuple[_ParsedPriceRow, ...],
         params: AlphaVantageHistoricalQuery,
     ) -> tuple[PriceRow, ...]:
+        """Convert parsed price rows into contract ``PriceRow`` objects."""
         return tuple(self.row_type.model_validate(row) for row in raw)
 
 

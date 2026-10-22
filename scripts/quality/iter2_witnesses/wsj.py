@@ -64,7 +64,11 @@ CONFIG: Final[dict[str, Any]] = {
         model: {
             "fixture_document": _mover_document,
             "query": {},
-            "tamper": {"op": "drop", "path": ["data", "instruments", 0, "ticker"], "column": "symbol"},
+            "tamper": {
+                "op": "drop",
+                "path": ["data", "instruments", 0, "ticker"],
+                "column": "symbol",
+            },
             "expected_missing": ["symbol"],
             "refusal_class": "ProviderEngineError",
             "refusal_code": "WSJ_SHAPE_INVALID",

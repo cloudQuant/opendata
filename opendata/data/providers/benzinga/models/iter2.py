@@ -179,6 +179,7 @@ class BenzingaAPIModelFetcher(Fetcher[Any, Any]):
     max_rows = 500
 
     def transform_query(self, **kwargs: object) -> BaseModel:
+        """Validate keyword arguments against ``query_model``, refusing unknown or mistyped keys."""
         try:
             params = self.query_model.model_validate(kwargs)
         except ValidationError as exc:
@@ -253,6 +254,7 @@ class BenzingaAPIModelFetcher(Fetcher[Any, Any]):
         return response
 
     def transform_data(self, raw: object, params: object) -> tuple[ContractModel, ...]:
+        """Build contract rows from a list payload, refusing oversized input."""
         if not isinstance(raw, list) or len(raw) > self.max_rows:
             raise ProviderEngineError("BENZINGA_SHAPE_INVALID")
         rows: list[ContractModel] = []
@@ -268,6 +270,7 @@ class BenzingaAPIModelFetcher(Fetcher[Any, Any]):
         return tuple(rows)
 
     def map_record(self, item: Mapping[str, object], params: object) -> dict[str, object]:
+        """Abstract per-record hook; rows map through ``row_model``."""
         raise NotImplementedError
 
 

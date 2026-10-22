@@ -250,7 +250,8 @@ class TestSentinelAbsenceFacet:
         """Counterfact one layer earlier: on the aligned column the copy is not declarable at all.
 
         The engine's own words are the claim -- "the rewrite produces exactly the null the row model
-        refuses" -- so the mistake this family kept making is now caught before any request is built.
+        refuses" -- so the mistake this family kept making is now caught before any
+        request is built.
         """
         with pytest.raises(ValueError, match="non-nullable"):
             replace(

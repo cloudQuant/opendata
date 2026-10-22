@@ -600,7 +600,6 @@ def _entry(
     responses: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Assemble one disclosure-row witness entry over the governed-client seam."""
-    document = fixture() if responses is None else fixture
     return {
         "client_seam": _SEAM,
         "refusal_class": "FMPProviderError",
@@ -645,7 +644,8 @@ MODELS: Final[dict[str, Any]] = {
         },
         code="FMP_BAD_SHAPE",
         reason=(
-            "title is a required headline cell and the shared text validator rejects whitespace-only "
+            "title is a required headline cell and the shared text validator rejects "
+            "whitespace-only "
             "source text rather than trimming it into an empty string; a blank headline is not a "
             "story the feed can name, so the row must be refused with FMP_BAD_SHAPE"
         ),
@@ -791,8 +791,10 @@ MODELS: Final[dict[str, Any]] = {
         code="FMP_WRONG_SYMBOL",
         reason=(
             "key-executives answers without a ticker, so KeyExecutivesFetcher.transform_data "
-            "(iter2_disclosures.py:755-770) first rejects any row that names a different issuer and "
-            "only then stamps the requested symbol on the officer list; a row already carrying MSFT "
+            "(iter2_disclosures.py:755-770) first rejects any row that names a different "
+            "issuer and "
+            "only then stamps the requested symbol on the officer list; a row already "
+            "carrying MSFT "
             "would have Berkshire's officers republished under AAPL, which the guard refuses with "
             "FMP_WRONG_SYMBOL before the contract ever sees the cell"
         ),

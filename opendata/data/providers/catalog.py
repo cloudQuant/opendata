@@ -13,8 +13,8 @@ from opendata.data.provider import CredentialSpec, Provider, ProviderHealth
 from opendata.data.providers.akshare.provider import PROVIDER as AKSHARE_PROVIDER
 from opendata.data.providers.alpha_vantage.provider import PROVIDER as ALPHA_VANTAGE_PROVIDER
 from opendata.data.providers.benzinga.provider import PROVIDER as BENZINGA_PROVIDER
-from opendata.data.providers.bls.provider import PROVIDER as BLS_PROVIDER
 from opendata.data.providers.biztoc.provider import PROVIDER as BIZTOC_PROVIDER
+from opendata.data.providers.bls.provider import PROVIDER as BLS_PROVIDER
 from opendata.data.providers.cboe.provider import PROVIDER as CBOE_PROVIDER
 from opendata.data.providers.cftc.provider import PROVIDER as CFTC_PROVIDER
 from opendata.data.providers.congress_gov.provider import PROVIDER as CONGRESS_GOV_PROVIDER

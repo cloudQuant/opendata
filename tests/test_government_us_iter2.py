@@ -36,7 +36,6 @@ from opendata.data.providers.government_us.models.weather_bulletin_download impo
     WeatherBulletinDownloadFetcher,
     WeatherBulletinDownloadQuery,
 )
-from opendata.data.providers.government_us.provider import PROVIDER
 from opendata.data.request_budget import (
     GrantDecision,
     RequestBudget,

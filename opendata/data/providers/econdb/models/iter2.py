@@ -293,6 +293,7 @@ class EconDBAPIModelFetcher(Fetcher[Any, Any]):
     max_rows: ClassVar[int] = MAX_ROWS
 
     def transform_query(self, **kwargs: object) -> BaseModel:
+        """Validate keyword arguments against ``query_model``, refusing unknown or mistyped keys."""
         try:
             params = self.query_model.model_validate(kwargs)
         except ValidationError as exc:

@@ -813,7 +813,8 @@ def expected_row_value(
     """The value the row at position ``index`` must carry for ``column``, given this module's body.
 
     The synthesis publishes the raw cell a JSON or text body would carry; the engine's declared kind
-    is what turns a ``date`` column into a ``date`` -- or, for a domain whose reviewed row class types
+    is what turns a ``date`` column into a ``date`` -- or, for a domain whose reviewed row
+    class types
     that field as a moment, into the midnight ``datetime`` the class itself prints, the reading
     :func:`_row_temporal_type` takes from the row class rather than from the kind --, a stamped
     column's plan is what turns the query parameter into the column, a record-sourced plan is what

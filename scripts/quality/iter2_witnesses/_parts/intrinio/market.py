@@ -46,7 +46,8 @@ Precondition (``row_model``), printed on the gate interpreter with
     intrinio_share_statistics   -> ...intrinio_market_clean.IntrinioShareStatistics
     intrinio_etf_info           -> ...intrinio_market_clean.IntrinioEtfInfo
     intrinio_etf_search         -> ...intrinio_market_clean.IntrinioEtfSearch
-    intrinio_market_snapshots   -> opendata.data.models.intrinio_snapshots_clean.IntrinioMarketSnapshot
+    intrinio_market_snapshots   ->
+        opendata.data.models.intrinio_snapshots_clean.IntrinioMarketSnapshot
 
 Each is the very class the fetcher validates its rows with, so no look-alike is involved; the
 declarations are the whole provider-side change. ``MarketSnapshots`` is listed in the slice's
@@ -137,7 +138,12 @@ def _intrinio_equity_historical_document() -> dict[str, Any]:
     """Two cursor-walked ``/securities/AAPL/prices`` pages: two rows, then one."""
     pages = _paged(
         [
-            {"stock_prices": [_ohlcv("2024-01-02", close=185.64), _ohlcv("2024-01-03", close=183.0)]},
+            {
+                "stock_prices": [
+                    _ohlcv("2024-01-02", close=185.64),
+                    _ohlcv("2024-01-03", close=183.0),
+                ]
+            },
             {"stock_prices": [_ohlcv("2024-01-04", close=181.94, rows=2)]},
         ]
     )
@@ -208,8 +214,16 @@ def _intrinio_etf_search_document() -> dict[str, Any]:
     """Two ``/etfs/search`` pages under the one needle that cannot steal the profile call."""
     pages = _paged(
         [
-            {"etfs": [_etf_hit("VT", isin="US9220427424", sedol="B1FZ278", intrinio_id="etf_31512")]},
-            {"etfs": [_etf_hit("VTI", isin="US9220428422", sedol="B1FZ280", intrinio_id="etf_31513")]},
+            {
+                "etfs": [
+                    _etf_hit("VT", isin="US9220427424", sedol="B1FZ278", intrinio_id="etf_31512")
+                ]
+            },
+            {
+                "etfs": [
+                    _etf_hit("VTI", isin="US9220428422", sedol="B1FZ280", intrinio_id="etf_31513")
+                ]
+            },
         ]
     )
     return {"responses": [{"url_contains": "/etfs/search", "sequence": pages}]}

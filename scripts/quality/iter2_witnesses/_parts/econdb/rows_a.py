@@ -38,7 +38,8 @@ which is what lets one fixture carry three shapes. Sockets stay blocked by the r
 Refusals are derived from the contract each row claims to enforce, never copied from a capture:
 ``AvailableIndicators`` breaks the declared ``multiplier`` int column, which the engine attributes
 as ``rejected=('multiplier',)`` (``http_json.py:792-796``); ``PortVolume`` and ``YieldCurve`` break
-a numeric cell that their own ``_number`` guard refuses as "not a JSON number" (``iter2.py:172-180``)
+a numeric cell that their own ``_number`` guard refuses as "not a JSON number"
+  (``iter2.py:172-180``)
 before any row is built, so those refusals stay code-only with empty attribution faces, which is the
 econdb house pattern (``iter2_witnesses/econdb.py:61-132``).
 
@@ -55,7 +56,8 @@ from __future__ import annotations
 from typing import Any, Final
 
 #: The shared offline seam: the module that owns ``get_shared_http_client``, which the engine's
-#: ``_http_get_json`` re-imports on every call, so patching it here is what the fetch actually reads.
+#: ``_http_get_json`` re-imports on every call, so patching it here is what the fetch
+#: actually reads.
 _ECONDB_SEAM: Final[dict[str, Any]] = {
     "kind": "shared_http_client",
     "modules": ["opendata.data.http_client"],

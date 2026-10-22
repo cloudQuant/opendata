@@ -37,19 +37,28 @@ CANONICAL_SCENARIOS = {
     (
         "cboe",
         "EquitySearch",
-    ): '股票目录检索：按代码或公司名筛选 All Access 官方证券目录',
+    ): "股票目录检索：按代码或公司名筛选 All Access 官方证券目录",
     (
         "federal_reserve",
         "MoneyMeasures",
-    ): '美联储货币供应量月表（federal_reserve_money_measures 域，声明式引擎读取 H.6 的七个 _N.M 序列列）',
+    ): (
+        "美联储货币供应量月表（federal_reserve_money_measures 域，"
+        "声明式引擎读取 H.6 的七个 _N.M 序列列）"
+    ),
     (
         "federal_reserve",
         "TreasuryRates",
-    ): '美国国债收益率日表（federal_reserve_treasury_rates 域，声明式引擎读取 H.15 宽表的期限列并保留发布百分比）',
+    ): (
+        "美国国债收益率日表（federal_reserve_treasury_rates 域，"
+        "声明式引擎读取 H.15 宽表的期限列并保留发布百分比）"
+    ),
     (
         "federal_reserve",
         "SvenssonYieldCurve",
-    ): '美联储 Svensson 拟合因子收益率曲线（federal_reserve_svensson_yield_curve 域，声明式引擎读取 FEDS 名义收益率曲线宽表 99 列）',
+    ): (
+        "美联储 Svensson 拟合因子收益率曲线（federal_reserve_svensson_yield_curve 域，"
+        "声明式引擎读取 FEDS 名义收益率曲线宽表 99 列）"
+    ),
     (
         "intrinio",
         "CurrencyPairs",
@@ -69,11 +78,17 @@ CANONICAL_SCENARIOS = {
     (
         "federal_reserve",
         "FederalFundsRate",
-    ): '美国有效联邦基金利率日表（federal_reserve_federal_funds_rate 域，声明式引擎读取 NY Fed EFFR JSON 并把百分比折成小数）',
+    ): (
+        "美国有效联邦基金利率日表（federal_reserve_federal_funds_rate 域，"
+        "声明式引擎读取 NY Fed EFFR JSON 并把百分比折成小数）"
+    ),
     (
         "federal_reserve",
         "SOFR",
-    ): '美联储 SOFR 担保隔夜融资利率日表（federal_reserve_sofr 域，声明式引擎读取 NY Fed sofr/search.json 的五个百分比列）',
+    ): (
+        "美联储 SOFR 担保隔夜融资利率日表（federal_reserve_sofr 域，"
+        "声明式引擎读取 NY Fed sofr/search.json 的五个百分比列）"
+    ),
     (
         "intrinio",
         "InsiderTrading",
@@ -90,18 +105,21 @@ CANONICAL_SCENARIOS = {
     (
         "federal_reserve",
         "OvernightBankFundingRate",
-    ): '美联储 OBFR 隔夜银行融资利率日表（federal_reserve_overnight_bank_funding_rate 域，声明式引擎按日期边界读取 NY Fed obfr/search.json）',
+    ): (
+        "美联储 OBFR 隔夜银行融资利率日表（federal_reserve_overnight_bank_funding_rate 域，"
+        "声明式引擎按日期边界读取 NY Fed obfr/search.json）"
+    ),
     ("fmp", "AvailableIndices"): "全球股票指数目录查询",
     ("fmp", "CalendarDividend"): "按明确日期窗口读取股息日历",
     ("fmp", "CalendarEarnings"): "按明确日期窗口读取业绩日历",
-    ("fmp", "EtfCountries"): '读取ETF国家权重配置',
-    ("fmp", "EtfEquityExposure"): '查询ETF对单只股票的暴露',
-    ("fmp", "EtfHoldings"): '读取ETF成分持仓',
-    ("fmp", "EtfInfo"): '读取ETF基本信息',
-    ("fmp", "EtfPricePerformance"): '读取ETF当前价格表现',
-    ("fmp", "EtfSearch"): '检索FMP ETF目录',
-    ("fmp", "EtfSectors"): '读取ETF行业权重配置',
-    ("fmp", "EtfHistorical"): '读取ETF日历史价格',
+    ("fmp", "EtfCountries"): "读取ETF国家权重配置",
+    ("fmp", "EtfEquityExposure"): "查询ETF对单只股票的暴露",
+    ("fmp", "EtfHoldings"): "读取ETF成分持仓",
+    ("fmp", "EtfInfo"): "读取ETF基本信息",
+    ("fmp", "EtfPricePerformance"): "读取ETF当前价格表现",
+    ("fmp", "EtfSearch"): "检索FMP ETF目录",
+    ("fmp", "EtfSectors"): "读取ETF行业权重配置",
+    ("fmp", "EtfHistorical"): "读取ETF日历史价格",
     ("tradier", "EquityHistorical"): "带显式日期窗口的美股历史日线、周线或月线",
     ("tradier", "EtfHistorical"): "先核验ETF类型再读取显式日期窗口历史价格",
     ("tradier", "EquityQuote"): "当前美股报价快照，不接受历史日期窗口",
@@ -228,13 +246,12 @@ def test_legacy_pending_aliases_and_old_scenarios_are_not_promoted(
         for entry in entries
     )
     assert not any(entry.model in {"FredCpi", "BlsObservation", "FmpQuote"} for entry in entries)
+
     # Census re-base 2026-10-14: descriptor population tracks the live registry, so the intent
     # ("a legacy/pending alias is not promoted") is checked as one-and-only-one resolution.
     def unresolved_or_promoted(live_descriptors: list) -> list:
         counts = Counter((descriptor.source, descriptor.model) for descriptor in live_descriptors)
-        return sorted(
-            identity for identity in CANONICAL_SCENARIOS if counts.get(identity, 0) != 1
-        )
+        return sorted(identity for identity in CANONICAL_SCENARIOS if counts.get(identity, 0) != 1)
 
     live_descriptors = list(registered_registry.list_model_descriptors())
     print(

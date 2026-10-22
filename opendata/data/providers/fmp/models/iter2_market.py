@@ -327,6 +327,8 @@ class USMarketQuery(_MarketScalarQuery):
 
 
 class HistoricalQuery(_MarketMultiQuery):
+    """Multi-symbol historical window query pinned to the global market."""
+
     market: Literal["global"] = "global"
     symbol: str | list[str]
     start_date: date_type
@@ -384,6 +386,8 @@ class CurrencyHistoricalQuery(SingleSeriesHistoricalQuery):
 
 
 class SymbolQuery(MarketQuery):
+    """Single-symbol query that rejects a blank ``symbol``."""
+
     symbol: str
 
     @field_validator("symbol", mode="before")
@@ -395,6 +399,8 @@ class SymbolQuery(MarketQuery):
 
 
 class BoundedSymbolQuery(SymbolQuery):
+    """Symbol query carrying the per-symbol ``max_requests`` budget (1-8)."""
+
     max_requests: int = Field(default=1, ge=1, le=8, strict=True)
 
     @model_validator(mode="after")
@@ -425,6 +431,8 @@ class MultiSymbolQuery(_MarketMultiQuery):
 
 
 class ListQuery(MarketQuery):
+    """Search-style list query with ``query``, ``limit`` and a ``max_records`` cap."""
+
     query: str | None = None
     limit: int = Field(default=100, ge=1, le=1_000, strict=True)
     max_records: int = Field(default=_MAX_LIST_RECORDS, ge=1, le=_MAX_LIST_RECORDS, strict=True)
@@ -509,6 +517,8 @@ def _currency_code(value: object) -> str:
 
 
 class MarketMoversQuery(USMarketQuery):
+    """US-market movers query with sort direction and a record cap."""
+
     limit: int = Field(default=100, ge=1, le=500, strict=True)
     sort: Literal["asc", "desc"] = "desc"
     max_records: int = Field(default=1_000, ge=1, le=5_000, strict=True)

@@ -72,6 +72,8 @@ def _validate_symbol(value: str) -> str:
 
 
 class EquitySearchQuery(_TmxQuery):
+    """Keyword search query requiring a non-blank ``keywords`` value."""
+
     keywords: StrictStr
 
     @field_validator("keywords")
@@ -96,6 +98,8 @@ class _TmxEquitySearchSourceRow(ContractModel):
 
 
 class EquityHistoricalQuery(_TmxQuery):
+    """Historical bar query for one symbol over a required date window."""
+
     symbol: StrictStr
     start_date: _Date
     end_date: _Date
@@ -125,6 +129,8 @@ class _SymbolQuery(_TmxQuery):
 
 
 class CompanyFilingsQuery(_SymbolQuery):
+    """Company-filings query with an optional date window and a result limit."""
+
     start_date: _Date | None = None
     end_date: _Date | None = None
     limit: StrictInt = 100
@@ -139,6 +145,8 @@ class CompanyFilingsQuery(_SymbolQuery):
 
 
 class HistoricalDividendsQuery(_SymbolQuery):
+    """Dividend-history query with an optional date window."""
+
     start_date: _Date | None = None
     end_date: _Date | None = None
 
@@ -150,19 +158,19 @@ class HistoricalDividendsQuery(_SymbolQuery):
 
 
 class PriceTargetConsensusQuery(_SymbolQuery):
-    pass
+    """Price-target consensus query for one symbol; it adds no further parameters."""
 
 
 class EquityQuoteQuery(_SymbolQuery):
-    pass
+    """Quote query for one symbol; it adds no further parameters."""
 
 
 class EquityInfoQuery(_SymbolQuery):
-    pass
+    """Company-info query for one symbol; it adds no further parameters."""
 
 
 class IndexConstituentsQuery(_SymbolQuery):
-    pass
+    """Index-constituents query for one symbol; it adds no further parameters."""
 
 
 class _TypedFetcher(Fetcher[_QueryT, GraphqlReply]):

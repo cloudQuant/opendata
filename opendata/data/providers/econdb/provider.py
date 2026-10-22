@@ -8,7 +8,8 @@ PROVIDER = Provider(
     description=(
         "EconDB adapter for the indicator roster plus documented v1 macro series and port traffic. "
         "Five additional fixed models use the current series, port roster, container-traffic, and "
-        "dwell-time APIs; country profile and export destinations use the public context/widget tables "
+        "dwell-time APIs; country profile and export destinations use the public "
+        "context/widget tables "
         "because current documentation does not provide those metric mappings."
     ),
     website="https://econdb.com/",

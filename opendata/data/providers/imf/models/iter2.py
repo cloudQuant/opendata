@@ -243,6 +243,8 @@ def _parse_csv_period(raw: object) -> date:
 
 
 class ImfCpiQuery(QueryParams):
+    """Consumer-price-index query carrying the country scope and the transform measure."""
+
     country: str | list[str] = "all"
     transform: Literal[
         "index", "period", "yoy", "ref_index", "ref_period", "ref_yoy", "weight", "weight_percent"
@@ -427,6 +429,8 @@ class ImfConsumerPriceIndexFetcher(Fetcher[ImfCpiQuery, _CpiRaw]):
 
 
 class ImfDotQuery(QueryParams):
+    """Direction-of-trade query over counterpart and direction."""
+
     country: str | list[str] | None = None
     counterpart: str | list[str] | None = None
     direction: Literal["exports", "imports", "balance", "all"] = "balance"
@@ -577,6 +581,8 @@ class ImfDirectionOfTradeFetcher(Fetcher[ImfDotQuery, _DotRaw]):
 
 
 class ImfEconomicIndicatorQuery(MultiSymbolQueryParams):
+    """Multi-symbol economic-indicator query with optional country and frequency narrowing."""
+
     symbol: str | list[str]
     country: str | list[str] | None = None
     frequency: str | None = None

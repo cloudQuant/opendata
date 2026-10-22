@@ -400,12 +400,16 @@ class _CountryQuery(_DateQuery):
 
 
 class OecdCliQuery(_CountryQuery):
+    """Leading composite indicator query, defaulting to the G20 scope and amplitude adjustment."""
+
     country: str | list[str] = "g20"
     adjustment: Literal["amplitude", "normalized"] = "amplitude"
     growth_rate: StrictBool = False
 
 
 class OecdCpiQuery(_CountryQuery):
+    """Consumer-price-index query over transform, frequency, harmonisation and expenditure."""
+
     transform: Literal["index", "yoy", "period"] = "yoy"
     frequency: Literal["annual", "quarter", "monthly"] = "monthly"
     harmonized: StrictBool = False
@@ -420,36 +424,50 @@ class OecdCpiQuery(_CountryQuery):
 
 
 class OecdRateQuery(_CountryQuery):
+    """Interest-rate query keyed by ``duration``."""
+
     duration: Literal["immediate", "short", "long"] = "short"
     frequency: Literal["monthly", "quarter", "annual"] = "monthly"
 
 
 class OecdSharePriceQuery(_CountryQuery):
+    """Query model for the OECD share-price-index domain."""
+
     frequency: Literal["monthly", "quarter", "annual"] = "monthly"
 
 
 class OecdHousePriceQuery(_CountryQuery):
+    """Query model for the OECD house-price-index domain."""
+
     frequency: Literal["quarter", "annual"] = "quarter"
     transform: Literal["index", "yoy", "period"] = "index"
 
 
 class OecdGdpQuery(_CountryQuery):
+    """Query model for the OECD nominal GDP domain."""
+
     frequency: Literal["quarter", "annual"] = "quarter"
     units: Literal["level", "index", "capita"] = "level"
     price_base: Literal["current_prices", "volume"] = "current_prices"
 
 
 class OecdGdpRealQuery(_CountryQuery):
+    """Query model for the OECD real GDP domain."""
+
     frequency: Literal["quarter", "annual"] = "quarter"
 
 
 class OecdGdpForecastQuery(_CountryQuery):
+    """Query model for the OECD GDP forecast domain."""
+
     country: str | list[str] = "all"
     frequency: Literal["quarter", "annual"] = "annual"
     units: Literal["current_prices", "volume", "capita", "growth", "deflator"] = "volume"
 
 
 class OecdUnemploymentQuery(_CountryQuery):
+    """Query model for the OECD unemployment domain."""
+
     frequency: Literal["monthly", "quarter", "annual"] = "monthly"
     sex: Literal["total", "male", "female"] = "total"
     age: Literal["total", "15-24", "25+", "15_to_64", "15_or_over"] = "total"
