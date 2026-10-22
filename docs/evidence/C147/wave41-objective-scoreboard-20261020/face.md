@@ -2052,3 +2052,33 @@ gate 因此第一次越过成员 8，停在**成员 11（acceptance-probe-check�
 本机对同一棵树重跑同一探针复现同样 gap（470 条，差 1 条来自容器运行差异）——
 **这是既有验收项第一次被 CI 照到，不是本 commit 造成**；属于任务 #14 的 owner 决策面。
 成员 12 的 yfinance `ModuleNotFoundError` 预测仍排在成员 11 之后。
+
+
+## 78. 成员 11 改棘轮：基线钉 15 条存量 finding，CI 同构 fresh clone 首跑即绿
+
+**owner 裁定**（2026-10-23，就「台账这些是不是最好不要在 CI 中检验」）：
+确定性、树内可复算的检查留在 CI；运行面/时刻面的存量红按 quality-ratchet 同款纪律钉基线，
+只有 delta 红。不整条移出——验收回归没有门卫与「禁止口头判定」立场冲突。
+
+**CI 与本机 finding 集不同是结构性的**：CI run 39789413347 成员 11 红 15 条
+（AC-16|07 判据不可达 + 14 条 stale-proof，其中 AC-17|03/05/06/08、AC-1|03 读 history/index 面，
+AC-16|08 读 worktree README）；本机同命令红 7 条 + 8 deferred（脏树、未跟踪档案、外部手改的
+README、探针自身改动未重钉）。**基线必须从 CI 同构环境生成**——本机树钉出来的基线在 CI 必漂移。
+
+**实现**（commit `655f501aa`，探针被 reference policy 钉着 ⇒ 官方重钉器 `--apply`
+（87 entries 不变、注入臂 REJECT、pin-corruption 87/87），成员 2 本机先过）：
+
+- `--sync-ratchet` 显式写 `docs/quality/acceptance-gate-ratchet.json`，每条钉
+  item + family（judge/stale-proof）+ finding 文本 sha256 + 冻结时台账状态；
+- 四个方向都红：新增（基线没见过）、漂移（同格同族换说法）、被静音（翻台账标签）、
+  收口未重钉（悄悄变小）；
+- deferred 格在 `--gate-check` 不收（安静树前不判，C50 语义不变），在 `--sync-ratchet` 收
+  （CI 的 fresh clone 是安静树，基线必须知道每条它可能要豁免的 finding）；
+- 不点名的 finding（配方/面基线族）永不入棘轮；12 个双侧对照单测。
+
+**收口读数**（carrier `runs/w168_ratchet_first_green.txt`）：完整历史 fresh clone
+（`git clone --no-local`，对齐 CI 的 fetch-depth: 0）内先 `--sync-ratchet`
+（judge 1 条、stale-proof 13 条、deferred 0——AC-16|07 占 judge+stale-proof 双族），
+再 `--gate-check`：**六面全过，rc=0**——
+「棘轮：基线钉 15 条存量 finding，本遍命中 10 条（deferred 6 格等干净树再判）」。
+基线随本 commit 进账；后续 CI 的成员 11 应当越过这道墙，红面只剩真 delta。
