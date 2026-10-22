@@ -46,7 +46,7 @@ import importlib
 import json
 import os
 import socket
-import subprocess
+import subprocess  # nosec B404  # runs the five witness phases as child processes
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path

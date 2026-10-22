@@ -1732,3 +1732,117 @@ A2_BASE_REF=origin/master python scripts/quality/a2_check.py | head -1   # 只�
 A 把不可变快照输入纳入 git 或重建 manifest；B 清掉语料里的 76 mypy + 27 ruff + 31 bandit + 5 format；
 C 缩小 A2 人口（把 `docs/evidence/**` 的历史探针移出静态工具作用域）——**这是对 gate 范围的改动，
 属于 owner 裁定，我不自行做**；D 接受成员 8 现状先发 v0.1.0，把这一条作为已知红留档。
+
+
+## 70. 成员 8 在干净树里通过：栅栏重钉、schema 摘要重基，以及把同一条裁定用到我自己的提交前闸门
+
+owner 选 C（A2 静态人口=产品代码）之后的完整读数。
+
+**干净树 `make a2-check` exit 0**：`A2 files 1113`、
+`A2 archive scope: docs/evidence/** -> 328 tracked .py excluded`、
+`ok immutable evidence: 5055 blocked + 19 manifest errors 全部只指向档案语料`、
+`ok pinned Gitleaks file scan skipped`、`ok ruff check / ruff format / mypy(745 targets) / bandit`，
+末行 `OK: A2 files meet the full A2 standard`。为此做的三件事：
+
+1. **范围裁定实现**（`scripts/quality/a2_check.py`）：`ARCHIVE_PREFIXES=("docs/evidence/",)` 进
+   `_is_a2_candidate`/`_drop_reason`，**每次运行打印被隐藏的数量**（328/328），并把「先判定后打印」写死
+   —— 我第一版把豁免只加在 blocked 上，日志出现 `FAIL pinned Gitleaks file scan` 而判定却通过，
+   这种自相矛盾的档面比任何一条红都更糟，已改为一次判定、一次打印。
+   守卫在 `tests/test_a2_exclusion_scope.py` 里两向钉住：删掉排除 -> 8,214 个档案 .py 涌入静态人口（红）；
+   扩大排除 -> 103 个第一方文件隐身（红）。61 passed。
+2. **整文件字节 pin 的重钉**（`w161_batch5_repin.py` 重指 C143 驱动，carrier `runs/w49_batch5_rebase.txt`）：
+   我的 I001 修复改了 `opendata/data/models/__init__.py` 的字节，`registry_batch5_snapshot.json` 的整文件
+   pin 被顶掉，4 个测试文件同时红（一次 8 条）。重钉面 **11/11 arms PASS**：`moved=[]`、
+   369/382/349 计数与 head 相同 ⇒ 确认只是字节移动、不是普查变更；快照摘要
+   `640a2699→a31d079d`、该文件摘要 `03558a8d→64005177`；植入一字节仍撑出不同摘要。
+3. **pydantic 的连带效应（值得所有后续波次记住）**：类的 docstring 会进 `model_json_schema()` 的
+   `description`，所以为满足成员 10 补的 public docstring，让 `tests/test_query_symbol_boundary.py`
+   冻结的两个 schema 摘要移动（`FmpHistorical d23cf106→6dbc2868`、
+   `ImfEconomicIndicator 8ecc3f9a→a1a36543`，差分存 `runs/w162_query_schema_digest_rebase.txt`）。
+   字段顺序与两个 dump 摘要未变；其余 6 个案例本来就有 docstring 所以不动。
+   这是**基线重基**，不是删 docstring——后者才是这个哨兵该拦的东西。
+
+**成员 12 的现状**：全平面重跑 `10 failed / 26,469 passed / collected 26,785`（w55 是 26,779，
+差的 6 条就是我新加的守卫测试），红集合与 `runs/test_plane_w55_final.xml` **逐条同集合，new=0 gone=0**。
+这 10 条按台账分别是 3 条 AC2/AC6 自检真负例、4 条权利登记（DEC-41-08）、DEC-41-01/03/04 各一条，
+都不是我能靠改代码或改测试关掉的。
+
+**把我自己的仪器对齐同一条裁定**：`federal_reserve/specs.py` 一旦进入提交载荷，wave-38 那套
+「剥掉 allowlist 也必须 0 发现」的 B/C 臂就必然红（12 条 H.15 公开序列号，`.gitleaks.toml` 早已逐条登记，
+A 面 0 发现）。我没有放宽配置，而是复制一份 `w165_staged_credential_gate.py` + 驱动
+`w166_staged_credential_gate.py`：**A 面仍必须 0 发现、植入控制仍必须在三套规则下都严格变多**，
+B/C 的额外发现必须**逐个文件、逐条计数等于显式白名单**（新增文件或计数变化即红）。
+本发读数：`registered_suppressions={B:{specs.py:12}, C:{specs.py:12}} whitelist_match=True`、
+**12/12 arms PASS**，控制臂证明期望值差 1 就会红。
+过程里我自己的三次错都留了痕：`suppressed` 在循环后才算（会 NameError）、B 与 C 两份报告被加在一起
+（要求 24 而非 12）、以及 `.gitignore` 被我的 armed 守卫误拒 —— 前两个由臂自己拒绝了我，这是对的。
+
+另外两条诚实记录：一次 `w105` 中段读到 20/21（同输入随后两次 21/21，载体被覆写导致当时那条臂名丢失，
+成因未归属）；一次 `acceptance-probe-check` 在 sim2 的后台运行被我 `git worktree remove` 打断，
+它的 FileNotFoundError 是测量事故、不是成员 11 的判定，成员 11 交给 CI。
+
+
+## 71. 提交前终局读数：这一发的载荷构成、A2 残余债的清偿位置，以及 CI 下一步会停在哪
+
+**载荷（全部由 `git diff --cached --name-only` 计数，不是回忆）**：staged 2,186 个文件 =
+`docs/evidence/C101/` 2,160（receipts 1,745 + primary-reviews 349 + 每 provider 的
+`claims.reviewed.json` 31 + `claims.merged.json` 1 + captures 18 + fixtures 14 + judge 2）
++ `docs/evidence/C147/…/{face.md, probes/w161,w165,w166, runs/w49,w108,w162,w166,test_plane_w60_final.xml}` 9
++ 代码面 17（`opendata/` 4：biztoc provider、cboe index_historical_public、ecb reference_rates、federal_reserve specs；
+`scripts/quality/` 7：a2_check、iter2_claims_merge、iter2_claims_probe_runner、witnesses sec/intrinio 与
+`_parts/{federal_reserve/rows_a, fred/series_a}`；`tests/` 4 + `tests/fixtures/registry_batch5_snapshot.json` 1）
++ `.gitignore` 1。`README.md` 与 `LICENSE-*`/`DISCLAIMER.md`/`uv.lock` 不在任何一发我的提交里：它们不是我产生的，
+前两者是 owner/外部手的草案，`uv.lock` 的 mtime 是 10-12（早于本波），我不替它做决定。
+
+**§70 里那句「残余」在哪清偿**：HEAD 6f16b5504 只落了 A2 的范围裁定本体（`a2_check.py` + 守卫测试），
+它说明里点名的残余——新人口里的 ruff 4 / format 2 / mypy 13（scripts/quality）+ bandit——就是本发这 17 个
+代码文件。两条是真缺陷而不是风格：`iter2_claims_merge.py` 里 `key` 在两个不同元数（3 元组 / 2 元组）的循环里
+复用，mypy 报的就是这个；`iter2_claims_probe_runner.py`、`iter2_witnesses/sec.py` 的 `import subprocess`
+需要的是**逐行 `# nosec B404`**，因为 `bandit.yaml` 没有全局 skip（每个豁免必须自己挣一行）。
+其余是 docstring/E501/I001。清偿后的读数在 §70 第一段：`make a2-check` exit 0 +
+`OK: A2 files meet the full A2 standard`。
+
+**提交前闸门（终局取法，覆写 §70 里的 `staged_files=2184` 那一次）**：
+`w166_staged_credential_gate.py --prefix .gitignore --prefix docs --prefix opendata --prefix scripts --prefix tests --control`
+→ `staged_files=2186`、`staged_outside_wave=0`、`worktree_differs_from_index_files=0`（README 的那处外部改动
+落在波前缀之外，不参与本面）、载荷自 index 物化 2,186 文件、
+`payload_index_sha256=7cfbf84afb1867001ffbdc7633eba59578b1f97f10299b78143ad2851beef5a5`、
+A 面 0 发现而植入控制在三套规则下各自严格变多（A: 0→2、B: 12→14、C: 12→14）、
+`registered_suppressions={B:{specs.py:12}, C:{specs.py:12}} whitelist_match=True`、
+**arms=12 arms_passed=12 PASS=True**、`w166_staged_credential_gate_exit=0`。
+自覆盖上限照旧声明：本面写的载体自己也在载荷里，所以 committed 载体字节 = 取法之后的一次改写；
+真正无自参照的见证是提交后的 `w117_closure.py`（对 commit 对象跑 `gitleaks git` 全历史 + dir-mode）。
+
+**CI 会停在哪（预测，附验证读法）**：成员 1–8 的本机同构读数已全绿（8 是 owner 裁定 C 之后 exit 0）。
+下一条墙是**成员 12 `test-cov`**：本机 `10 failed / 26,469 passed / collected 26,785`，红集合与
+`runs/test_plane_w55_final.xml` 逐条同集合（new=0 gone=0）。这 10 条是 3 条 AC2/AC6 自检真负例、
+4 条 `test_openbb_inventory_guard` 权利登记（DEC-41-08）、DEC-41-01（AC-18 第二条通道，owner 已裁「保持现状」）、
+DEC-41-03（P0 集成面冻结列表缺 `tests/test_financial_pit_api.py`）、DEC-41-04（`bond_daily_sina` 请求含当天日期）。
+按 owner 最新指令「解决 ci/cd 问题之后……CI 转绿后再合并发布」，这 10 条必须逐条处置才算绿；
+其中 DEC-41-01 与既有裁定 ACCEPT-SCOPE-02 直接冲突（那条裁定说的是「不改注解也不改断言」），
+我不会自行翻它。成员 11 `acceptance-probe-check` 仍无本机读数（§70 记录的那次是测量事故），由 CI 判。
+
+**§71.1 终局取法把自己判红了两次，两次都是仪器的问题、不是载荷的问题**（留档，因为它改了闸门本身）：
+
+1. `index_is_worktree` 报 `failed=['index_is_worktree']`，`worktree_differs_from_index_files=1`、
+   唯一那一条就是**这台仪器自己的载体** `runs/w166_staged_credential_gate.txt`。它先读 index、后写载体，
+   所以只要载体落在被扫前缀里，这条臂对该文件**永不可满足**——和 §70 里 B/C「剥掉 allowlist 也必须 0 发现」
+   是同一类死臂（见 `feedback-arm-premise-dies-when-wave-succeeds`、`zero-count-witness-needs-min-reachable`）。
+   修法不是删臂：`w165` 增加显式声明 `SELF_CARRIER_EXEMPT`（默认空＝对任何别的驱动仍是严格语义），
+   只允许**一条**路径、且必须以 `docs/evidence/C147/wave41-objective-scoreboard-20261020/runs/` 开头
+   （新臂 `self_carrier_exemption_exact`），被豁免的文件**仍照常进载荷、仍被 gitleaks 扫**——被豁免的只有
+   「index 字节 == 工作树字节」这一条自参照，不是扫描覆盖。12 臂变 13 臂。
+2. 新加的对照臂第一次跑就 `False`：我期望被伪造漂移时 `forced_self` 为空，但对照是在驱动**写完自己的载体之后**
+   执行的，那一条路径此时确实与工作树不同。期望写错会让一次正确的运行变红——这正是我自己反复踩的形状。
+   改为断言精确形状 `forced_drift == [<产品文件>] and forced_self == [<载体>]`：既证明豁免**不能**豁免产品文件，
+   也证明豁免的作用域恰好只有那一条。
+
+对照面由此变强：`--control` 现在三条，每条都能把 rc 顶成 1——白名单期望差 1 必须不等；
+把 `opendata/data/providers/biztoc/provider.py` 伪造成漂移必须出现在臂可见漂移里（且不被豁免吸收）；
+把同一个产品路径当作豁免声明必须被 `self_carrier_exemption_exact` 拒绝。
+上一次取法（修 (2) 之前）的判定读数：`staged_files=2186`、`worktree_differs_from_index_files=0`、
+`self_carrier_exemption carrier_only=True used=1`、A 0→2 / B 12→14 / C 12→14、`whitelist_match=True`、
+`arms=13 arms_passed=13 PASS=True`、三条 gitleaks 六次调用 `exit=0`。
+**故意不在这段里引用 `payload_index_sha256`**：§71 的定稿会改变它所在载荷的摘要，任何在此抄写的摘要都会被
+自己下面的字推翻；摘要以随发的 `runs/w166_staged_credential_gate.txt` 那一次为准，无自参照的见证是提交后的
+`w117_closure.py`。

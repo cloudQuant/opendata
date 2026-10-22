@@ -309,8 +309,8 @@ def _workbook_base64(sheets: dict[str, list[tuple[object, ...]]]) -> str:
 def _tfp_worksheet(dtfp_cell: object = None) -> list[tuple[object, ...]]:
     """The ``quarterly`` tab: its units note, its exact header, then two ascending quarters."""
     width = len(_TFP_HEADER) - 1
-    first = ["2019:Q1"] + [round(1.0 + index / 50, 4) for index in range(width)]
-    second = ["2019:Q2"] + [round(2.0 + index / 50, 4) for index in range(width)]
+    first: list[object] = ["2019:Q1"] + [round(1.0 + index / 50, 4) for index in range(width)]
+    second: list[object] = ["2019:Q2"] + [round(2.0 + index / 50, 4) for index in range(width)]
     if dtfp_cell is not None:
         first[_TFP_DTFP_INDEX] = dtfp_cell
     return [

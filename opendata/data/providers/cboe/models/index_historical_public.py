@@ -18,7 +18,7 @@ from pydantic import StrictBool, StrictStr, field_validator, model_validator
 
 from opendata.data.capability import Capability
 from opendata.data.http_client import HttpFetchError, get_shared_http_client
-from opendata.data.models.base import ContractModel
+from opendata.data.models.base import ContractModel  # noqa: TC001  # row_model ClassVar
 from opendata.data.models.cboe_index_historical import CboeIndexHistorical
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, MultiSymbolQueryParams
 from opendata.data.providers.cboe._source import SOURCE

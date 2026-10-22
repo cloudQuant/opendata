@@ -25,7 +25,7 @@ from __future__ import annotations
 import base64
 import io
 import zipfile
-from typing import Any, Final
+from typing import Any, Final, TypeVar
 
 # --- Identity directories ---------------------------------------------------------------------
 
@@ -224,8 +224,12 @@ _FILING_INDEX: Final[dict[str, Any]] = {
 }
 
 
-def _copy(value: Any) -> Any:  # noqa: ANN401 - the fixture documents are dynamic JSON
-    import copy
+_T = TypeVar("_T")
+
+
+def _copy(value: _T) -> _T:
+    """Return a deep copy of one fixture document, typed as what it was given."""
+    import copy  # nosec B404  # stdlib copy of an in-memory fixture document, no shell
 
     return copy.deepcopy(value)
 

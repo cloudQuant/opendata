@@ -76,18 +76,19 @@ def merge(documents: list[tuple[Path, dict[str, Any]]]) -> dict[str, Any]:
     reviews: dict[tuple[str, str], tuple[str, Path]] = {}
     for path, document in documents:
         for review in document.get("primary_reviews") or []:
-            key = (review["provider"], review["upstream_model"])
+            review_key: tuple[str, str] = (review["provider"], review["upstream_model"])
             digest = judge.sha256_bytes(
                 json.dumps(review, sort_keys=True, ensure_ascii=False).encode("utf-8")
             )
-            if key in reviews:
-                earlier_digest, earlier_path = reviews[key]
+            if review_key in reviews:
+                earlier_digest, earlier_path = reviews[review_key]
                 if earlier_digest != digest:
                     raise SystemExit(
-                        f"refusing: {key} carries two different reviews ({earlier_path} and {path})"
+                        f"refusing: {review_key} carries two different reviews "
+                        f"({earlier_path} and {path})"
                     )
                 continue
-            reviews[key] = (digest, path)
+            reviews[review_key] = (digest, path)
             merged["primary_reviews"].append(review)
 
     return merged

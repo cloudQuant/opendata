@@ -365,14 +365,7 @@ def _intrinio_options_snapshots_document() -> dict[str, Any]:
                 "url_contains": "/options/snapshots",
                 "body": {
                     "snapshots": [
-                        {
-                            "files": [
-                                {
-                                    "url": "https://data.intrinio.example/"
-                                    "options-snapshot.csv"
-                                }
-                            ]
-                        }
+                        {"files": [{"url": "https://data.intrinio.example/options-snapshot.csv"}]}
                     ]
                 },
             },

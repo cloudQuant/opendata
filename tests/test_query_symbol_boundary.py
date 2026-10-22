@@ -99,7 +99,7 @@ _QUERY_CASES: tuple[
             "start_date": "2026-01-01",
             "end_date": "2026-01-02",
         },
-        "d23cf1063ed64723ed3792d2411e3be2196c5f723030648ae00b238fe54f34fa",
+        "6dbc28689915fc4bafcda6bc1c091f293c6729ba95b772b9fc89d9b445f7299b",
         "bf63f553e15ce971f873c2186d4e2153843897649cbfddbd12e4d721ad68ef12",
         "2945f835f7315b6cf75928c5ba22d3678bcb86f2ef77162cd565be2c555bcb7a",
         (
@@ -128,7 +128,7 @@ _QUERY_CASES: tuple[
         ImfEconomicIndicatorQuery,
         {"symbol": "WEO::NGDP_RPCH"},
         {"symbol": ["WEO::NGDP_RPCH", "WEO::NGDPD"]},
-        "8ecc3f9a0b3169d0824a5643151fb22914487fa6891bb3af44c49c0e1a4d925e",
+        "a1a36543a6c1063cb5a1c10b8c48b08ff1141daeef3980bc4c1bdd9bc53469a9",
         "dab8d435067dded1255106d5381d8884b90688963b99ef89df3e1b45a3a6ceba",
         "9ecca9940bc972dde167a4803a3ec6aaefa71763775731105110b055e979a4a9",
         (

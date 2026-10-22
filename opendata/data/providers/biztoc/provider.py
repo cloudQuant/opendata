@@ -19,7 +19,5 @@ PROVIDER = Provider(
             scenario="Biztoc 世界新闻：按搜索词、发布源或最新 feed 返回文章行",
         ),
     ),
-    credentials=(
-        CredentialSpec(name="api_key", environment_variable=CREDENTIAL_ENV_VAR),
-    ),
+    credentials=(CredentialSpec(name="api_key", environment_variable=CREDENTIAL_ENV_VAR),),
 )

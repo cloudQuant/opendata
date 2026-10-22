@@ -256,3 +256,8 @@ ssl/
 /docs/evidence/**/_resign*_tmp/
 /docs/evidence/**/*.err
 /docs/evidence/**/*.rcs
+
+# 仓库根下的 C100 候选跑残留（未跟踪、非本项目代码，2026-10-22 实测 tracked=0）。
+# 它「未跟踪且未忽略」时会被 a2_check 的 ls-files --others 收进 A2 人口，于是本地 a2/ratchet
+# 会去静态检查一批干净克隆里根本不存在的文件（60 mypy / 224 bandit B101）。忽略它让本地=CI。
+/quality-source-repairs/

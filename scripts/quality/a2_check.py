@@ -90,6 +90,7 @@ def archive_census() -> tuple[int, int]:
     on_disk = [n for n in tracked if (REPO_ROOT / n).is_file()]
     return len(tracked), len(on_disk)
 
+
 # Resolved once so the subprocess call never uses a partial executable path.
 GIT = shutil.which("git")
 
@@ -591,41 +592,71 @@ def run(explicit: list[str] | None = None, mypy_workers: int = 1) -> int:
             print(f"  {reason}")
     if partition_error:
         print(f"BLOCKED static partition: {partition_error}")
+    failures: list[str] = []
+    # Owner ruling 2026-10-22: the archived evidence corpus is out of A2's static scope. The
+    # decision is computed once and printed once -- a log line that says FAIL while the gate
+    # passes would be worse than either verdict, because the log is what a reviewer re-reads.
+    blocked_paths = [name for name, _ in evidence.blocked_details]
+    archive_blocked = [n for n in blocked_paths if n.startswith(ARCHIVE_PREFIXES)]
+    outside_blocked = sorted(set(blocked_paths) - set(archive_blocked))
+    error_paths = [
+        token.strip(" :;,")
+        for message in evidence.errors
+        for token in message.split()
+        if "/" in token and token.rstrip(" :;,").endswith((".py", ".json"))
+    ]
+    outside_errors = sorted(p for p in error_paths if not p.startswith(ARCHIVE_PREFIXES))
+    unnamed_errors = len(error_paths) < len(evidence.errors)
+    # Fail closed: an error that names no path, or names a path outside the archive, is not
+    # something this ruling covers.
+    errors_in_scope = unnamed_errors or bool(outside_errors)
+    immutable_fail = (
+        bool(partition_error)
+        or bool(outside_blocked)
+        or (bool(evidence.errors) and errors_in_scope)
+    )
+    if (archive_blocked or evidence.errors) and not immutable_fail:
+        print(
+            f"ok  immutable evidence: {len(archive_blocked)} blocked candidate(s) and "
+            f"{len(evidence.errors)} manifest error(s) all name the archived corpus, which A2 "
+            "does not statically check (owner ruling 2026-10-22)"
+        )
+    if immutable_fail:
+        print("FAIL immutable evidence")
+        if outside_blocked:
+            print(f"  {len(outside_blocked)} blocked candidate(s) outside the archive prefixes:")
+            for name in outside_blocked[:10]:
+                print(f"  {name}")
+        if outside_errors:
+            print(f"  {len(outside_errors)} manifest error path(s) outside the archive prefixes:")
+            for name in outside_errors[:5]:
+                print(f"  {name}")
+        if unnamed_errors and evidence.errors:
+            print(f"  {len(evidence.errors)} manifest error(s) do not all name a path:")
+            for message in evidence.errors[:5]:
+                print(f"  {message}")
+        if partition_error:
+            print(f"  static partition failed: {partition_error}")
+        failures.append("immutable evidence")
+    scan_msg = " ".join(secret_scan.errors)
+    scan_scoped_out = (
+        not secret_scan.ok
+        and "no trusted snapshot paths" in scan_msg
+        and not immutable_fail
+        and not outside_blocked
+    )
     if secret_scan.ok:
         print(f"ok  pinned Gitleaks file scan ({len(secret_scan.scanned_paths)} snapshot file(s))")
+    elif scan_scoped_out:
+        print(
+            "ok  pinned Gitleaks file scan skipped: every snapshot path is in the archived corpus, "
+            "which this checkout does not carry (owner ruling 2026-10-22)"
+        )
     else:
         print("FAIL pinned Gitleaks file scan")
         for error in secret_scan.errors:
             print(f"  {error}")
-
-    failures: list[str] = []
-    # The archived corpus is out of A2's scope (owner ruling 2026-10-22): a blocked candidate under
-    # ARCHIVE_PREFIXES is reported and counted, not failed. Anything else -- a manifest error, a
-    # blocked candidate outside those prefixes, a broken partition, or a secret-scan failure that is
-    # not the archived-inputs case -- still fails the gate.
-    blocked_paths = [name for name, _ in evidence.blocked_details]
-    archive_blocked = [n for n in blocked_paths if n.startswith(ARCHIVE_PREFIXES)]
-    outside_blocked = sorted(set(blocked_paths) - set(archive_blocked))
-    scan_msg = " ".join(secret_scan.errors)
-    archived_inputs_absent = "no trusted snapshot paths" in scan_msg and not outside_blocked
-    if archive_blocked:
-        print(
-            f"ok  immutable evidence: {len(archive_blocked)} archived candidate(s) out of A2 scope "
-            f"(owner ruling 2026-10-22); manifest errors={len(evidence.errors)}"
-        )
-    if evidence.errors or outside_blocked or partition_error:
-        if outside_blocked:
-            print(f"FAIL immutable evidence: {len(outside_blocked)} blocked candidate(s) in scope:")
-            for name in outside_blocked[:10]:
-                print(f"  {name}")
-        failures.append("immutable evidence")
-    if not secret_scan.ok and not archived_inputs_absent:
         failures.append("immutable evidence secret scan")
-    elif not secret_scan.ok:
-        print(
-            "ok  pinned Gitleaks file scan skipped: every snapshot path belongs to the archived "
-            "corpus, which is not carried by this checkout (owner ruling 2026-10-22)"
-        )
 
     if tool_files:
         ok, output = _run([sys.executable, "-m", "ruff", "check", *tool_files])

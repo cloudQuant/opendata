@@ -1,13 +1,13 @@
 {
   "capture": {
     "path": "docs/evidence/C101/captures/yfinance/EquityInfo/direct-exit0.txt",
-    "sha256": "102c3b1520f69604688d4625cf402cde0dd0dcd371b634f1631600d6e4aa82f5",
+    "sha256": "8244e9f984ed0925b41c5a1ea40c727e46336130b67f269c940c23a154440549",
     "size_bytes": 367,
-    "stdout_excerpt": "direct: fetcher=YfinanceEquityInfoFetcher seam_requests=4 rows=1 row_class=YfinancePayloadObservation first_row_sha256=157ac279882e74bd\nVERDICT=PASS\n"
+    "stdout_excerpt": "direct: fetcher=YfinanceEquityInfoFetcher seam_requests=4 rows=1 row_class=YfinancePayloadObservation first_row_sha256=dbfa0a701f807210\nVERDICT=PASS\n"
   },
   "machine_execution": {
     "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model EquityInfo --phase direct --evidence-root docs/evidence/C101",
-    "executed_at_utc": "2026-10-22T05:20:27.795392+00:00",
+    "executed_at_utc": "2026-10-22T07:41:55.250952+00:00",
     "exit_code": 0,
     "pins": {
       "contract": [
@@ -32,8 +32,8 @@
       ],
       "probe": [
         {
-          "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
-          "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+          "after_sha256": "1cec0bb0d0bf1084df85f776873dbfdabb6e2ebfc5269350dd00ee71e1d419e1",
+          "before_sha256": "1cec0bb0d0bf1084df85f776873dbfdabb6e2ebfc5269350dd00ee71e1d419e1",
           "path": "scripts/quality/iter2_claims_probe_runner.py"
         },
         {
@@ -148,8 +148,8 @@
     ],
     "probe": [
       {
-        "after_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
-        "before_sha256": "616972cdedb4163bbd883cbe04598c3e6cd7ac7cccad8ec02a9d9588564cf4ba",
+        "after_sha256": "1cec0bb0d0bf1084df85f776873dbfdabb6e2ebfc5269350dd00ee71e1d419e1",
+        "before_sha256": "1cec0bb0d0bf1084df85f776873dbfdabb6e2ebfc5269350dd00ee71e1d419e1",
         "path": "scripts/quality/iter2_claims_probe_runner.py"
       },
       {

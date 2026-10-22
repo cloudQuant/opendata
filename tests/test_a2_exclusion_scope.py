@@ -439,7 +439,7 @@ class TestArchivedEvidenceCorpusIsOutOfA2OnPurpose:
     def test_the_corpus_is_large_enough_to_matter(self) -> None:
         """Keep the rest of this class from going vacuous if the tree ever moves."""
         assert len(tree_files(ARCHIVE_TREE)) >= 1000, (
-            "the archive exclusion now hides almost nothing - re-read the ruling before keeping it"
+            "the archive exclusion hides almost nothing now - re-read the ruling before keeping it"
         )
 
     def test_archive_files_are_not_a2_candidates(self) -> None:
@@ -461,11 +461,11 @@ class TestArchivedEvidenceCorpusIsOutOfA2OnPurpose:
             for name in tree_files(tree)
             if classify_path(name) == FIRST_PARTY and guard._is_a2_candidate(name) is False
         ]
-        assert offenders == [], f"first-party code silently dropped with the archive: {offenders[:5]}"
+        assert offenders == [], f"first-party code dropped with the archive: {offenders[:5]}"
 
     def test_the_census_is_reported_and_matches_git(self) -> None:
         tracked, on_disk = guard.archive_census()
-        listed = subprocess.run(  # literal argv, shell disabled
+        listed = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
             [guard.GIT or "git", "-c", "core.quotepath=off", "ls-files", "--", ARCHIVE_TREE],
             capture_output=True,
             text=True,

@@ -148,8 +148,12 @@ _CONFIG_SOURCE_FILES: Final[list[str]] = [
 
 
 def _observation(day: str, token: str) -> dict[str, str]:
-    return {"date": day, "value": token, "realtime_start": _REALTIME_START,
-            "realtime_end": _REALTIME_END}
+    return {
+        "date": day,
+        "value": token,
+        "realtime_start": _REALTIME_START,
+        "realtime_end": _REALTIME_END,
+    }
 
 
 def _observations_page(

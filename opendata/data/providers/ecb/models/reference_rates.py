@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, ClassVar, Literal, cast
 from pydantic import Field, StrictStr, field_validator, model_validator
 
 from opendata.data.capability import Capability
-from opendata.data.models.currency import CurrencyReferenceRate  # noqa: TC001
+from opendata.data.models.currency import CurrencyReferenceRate
 from opendata.data.protocol import FetchContext, Fetcher, QueryParams
 from opendata.data.providers.ecb.models._client import EcbProviderError
 from opendata.data.providers.ecb.models._reference_client import fetch_reference_rates

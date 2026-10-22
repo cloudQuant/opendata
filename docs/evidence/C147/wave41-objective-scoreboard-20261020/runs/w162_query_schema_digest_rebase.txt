@@ -1,0 +1,6 @@
+# cause: pydantic publishes a class docstring as the JSON-schema `description`; the 57 public-API
+# docstrings required by member 10 therefore moved two of the eight frozen schema digests in
+# tests/test_query_symbol_boundary.py. Field order and both dump digests are unchanged; the other
+# six cases already carried docstrings, so they did not move.
+FmpHistorical: d23cf1063ed64723 -> 6dbc28689915fc4b
+ImfEconomicIndicator: 8ecc3f9a0b3169d0 -> a1a36543a6c1063c

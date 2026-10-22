@@ -1352,7 +1352,7 @@ EXPECTED_FINVIZ_DOMAINS = {
         ("query",),
     ),
 }
-BATCH5_SNAPSHOT_SHA256 = "640a269999b78dea11ce5d4076254781eb406adf3f1e4bcebbb4b522a097c96c"
+BATCH5_SNAPSHOT_SHA256 = "a31d079dc5506d07e310de771e76c9fa2c7bdbeb0149e37eab52983b97e66948"
 BATCH5_DOMAIN_SOURCE_SHA256 = "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd"
 BATCH5_CANDIDATE_SHA256 = "775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e"
 
@@ -1472,7 +1472,7 @@ def _batch5_identity_snapshot() -> dict[str, object]:
         BATCH5_DOMAIN_SOURCE_SHA256
     )
     assert snapshot["source_hashes_sha256"]["opendata/data/models/__init__.py"] == (
-        "03558a8df54583b495af49791661d4a4a8171fb07e92e809aea3d97bf940fe3f"
+        "640051772d6f0bc062b793faeb72c2e5cf938f9583c9ff057b0b884b178ccc89"
     )
     assert len(snapshot["provider_model_identities"]) == 382
     assert snapshot["approved_delta"] == {

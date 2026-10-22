@@ -8497,7 +8497,7 @@
     "opendata/data/domains.yaml": "771268b61ed6e082269e187c8571a1e320310b5e718dc326dadded0cadd2fcfd",
     "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
     "opendata/data/mappings/ths.yaml": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418",
-    "opendata/data/models/__init__.py": "03558a8df54583b495af49791661d4a4a8171fb07e92e809aea3d97bf940fe3f",
+    "opendata/data/models/__init__.py": "640051772d6f0bc062b793faeb72c2e5cf938f9583c9ff057b0b884b178ccc89",
     "opendata/data/models/finviz_performance.py": "1c0df807da91d8cb2fb1b5720431ce7d68bbacd3d4eb746fa2ff34ca5bf07b86",
     "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
     "opendata/data/models/yfinance_iter2.py": "a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
@@ -8506,7 +8506,7 @@
     "opendata/data/providers/fred/provider.py": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
     "opendata/data/providers/fred/sloos_series.py": "2b45fe84a37ffb2596f1e22c6b50fc4b028ccf24c924d410041eed550d2fe228",
     "opendata/data/providers/yfinance/models/iter2.py": "c5b083cb1547bea764cb10387665550ed21ae96a687c41206dc9f8c7c7d1154e",
-    "opendata/data/providers/yfinance/models/market_iter2.py": "5b285ae27aa64563775b0a1d50dbec9630483235953251ffc51480954473d3a4",
+    "opendata/data/providers/yfinance/models/market_iter2.py": "e6ee42847ca72619e7faeca1750b6ba8e23e698f845a71a13c9c8bb7a5d23ed4",
     "tests/fixtures/registry_batch3_snapshot.json": "7cb85126743f7fa77e60139f61ebc3c23da2cd4f9ace189bb6e798e2d93d1153",
     "tests/fixtures/registry_batch4_snapshot.json": "a7e184a61fb3d533fdb7e5ad102954e01bbfcd78797625bcf3060b43378f0376"
   },
@@ -9525,6 +9525,148 @@
       "changed": [
         "opendata/data/domains.yaml from=262c4f45c5aa82c1 to=771268b61ed6e082",
         "opendata/data/models/__init__.py from=c02f19e3f292890e to=03558a8df54583b4"
+      ]
+    },
+    "test_sites": "the test-side literals moved by this re-base are listed in the probe's carrier, not here: tests/test_provider_domains.py and tests/test_pipeline_jobs.py byte-pin this fixture's digest, so recording the list inside the fixture would invalidate the very digest it would have to name",
+    "why_late": "wave 37 landed cboe_index_snapshots without re-basing this fence and wave 38 adds a second domain on top of the same drift; re-basing a pin a wave moved is the house rule (waves 33 and 34 each carry a waveNN_census_rebase block, over 15 and 3 domains)"
+  },
+  "wave37_wave38_census_rebase": {
+    "scope": "the two model domains waves 37 and 38 added; the legacy/measured cohort, the ods mapped+unmapped split, the warehouse table catalog, the model-key-only partition and the provider count are declared frozen below and each is re-checked against the live registry by this probe",
+    "measured_by": "from: git show HEAD:tests/fixtures/registry_batch5_snapshot.json; to: rebase_batch5_census.py + rebase_descriptor_census.py over the live registry, read after register_providers()",
+    "domains_added": [],
+    "domains_removed": [],
+    "identities_added": [],
+    "identities_removed": [],
+    "identity_fields_moved": 0,
+    "legs_added": [],
+    "legs_removed": [],
+    "cohort_counts": {
+      "domain_ids": {
+        "from": 369,
+        "to": 369
+      },
+      "deferred_domain_ids": {
+        "from": 349,
+        "to": 349
+      },
+      "deferred_source_domain_legs": {
+        "from": 349,
+        "to": 349
+      },
+      "source_domain_legs": {
+        "from": 382,
+        "to": 382
+      },
+      "query_semantic_domain_ids": {
+        "from": 349,
+        "to": 349
+      },
+      "provider_model_identities": {
+        "from": 382,
+        "to": 382
+      }
+    },
+    "counts": {
+      "domain_count": {
+        "from": 369,
+        "to": 369
+      },
+      "query_semantic_domain_count": {
+        "from": 349,
+        "to": 349
+      },
+      "deferred_domain_count": {
+        "from": 349,
+        "to": 349
+      },
+      "deferred_source_domain_leg_count": {
+        "from": 349,
+        "to": 349
+      },
+      "registered_source_domain_leg_count": {
+        "from": 382,
+        "to": 382
+      },
+      "provider_model_identity_count": {
+        "from": 382,
+        "to": 382
+      },
+      "descriptor_eligible_identity_count": {
+        "from": 360,
+        "to": 360
+      },
+      "descriptor_eligible_legacy_identity_count": {
+        "from": 11,
+        "to": 11
+      },
+      "model_key_only_identity_count": {
+        "from": 22,
+        "to": 22
+      },
+      "warehouse_table_catalog_count": {
+        "from": 53,
+        "to": 53
+      },
+      "legacy_dwd_domain_count": {
+        "from": 20,
+        "to": 20
+      },
+      "legacy_source_domain_leg_count": {
+        "from": 33,
+        "to": 33
+      }
+    },
+    "frozen_verified": {
+      "legacy_legs_equal_live": true,
+      "legacy_head_count": 33,
+      "legacy_live_count": 33,
+      "warehouse_head_set_equal_live": true,
+      "warehouse_head_count": 53,
+      "warehouse_live_count": 53,
+      "legacy_dwd_domains_equal_live": true,
+      "model_key_only_head": 22,
+      "model_key_only_live": 22,
+      "registered_sources_head": 34,
+      "registered_sources_live": 34,
+      "query_semantic_added": [],
+      "candidate_counts_restored_keys": [
+        "domain_specs",
+        "fixed_bound",
+        "fixed_identities",
+        "provider_model_legs"
+      ]
+    },
+    "export_census": {
+      "measured_by": "live opendata.data.models.__all__ counted with the same ContractModel subclass tests tests/test_provider_domains.py:1867-1877 uses; written to both blocks the tests cross-check (candidate_counts and iter2_census_rebase.live_counts) and the delta recomputed as live minus batch5_count_adjudication.counts",
+      "keys": {
+        "all_symbols": {
+          "from": 358,
+          "to": 358,
+          "adjudication": 330
+        },
+        "contract_model_classes_including_base": {
+          "from": 354,
+          "to": 354,
+          "adjudication": 326
+        },
+        "non_base_contract_model_classes": {
+          "from": 353,
+          "to": 353,
+          "adjudication": 325
+        }
+      },
+      "frozen_blocks_equal_head": {
+        "batch5_count_adjudication": true,
+        "batch4_baseline": true,
+        "batch5_adjudication_counts": true
+      }
+    },
+    "source_pin_delta": {
+      "entries_pinned": 31,
+      "entries_changed": 2,
+      "changed": [
+        "opendata/data/models/__init__.py from=03558a8df54583b4 to=640051772d6f0bc0",
+        "opendata/data/providers/yfinance/models/market_iter2.py from=5b285ae27aa64563 to=e6ee42847ca72619"
       ]
     },
     "test_sites": "the test-side literals moved by this re-base are listed in the probe's carrier, not here: tests/test_provider_domains.py and tests/test_pipeline_jobs.py byte-pin this fixture's digest, so recording the list inside the fixture would invalidate the very digest it would have to name",
