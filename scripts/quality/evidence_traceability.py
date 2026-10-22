@@ -134,11 +134,18 @@ class Reading:
 
 
 def _git(*args: str) -> str:
-    """Run git for a read-only census, or "" when git is unavailable or fails."""
+    """Run git for a read-only census, or "" when git is unavailable or fails.
+
+    ``core.quotepath=false`` is part of the census, not cosmetics: with the default, git quotes
+    every non-ASCII path, so ``ls-files`` reports ``"docs/evidence/C100/\\344\\270\\273..."`` while
+    the filesystem walk yields the raw name. The two sets then never intersect, and tracked CJK
+    narratives are charged as ``#untracked`` -- five false violations against a 0-entry baseline,
+    which is how this gate stayed red in CI. Literal argv, shell disabled.
+    """
     if GIT is None:
         return ""
-    done = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
-        [GIT, *args],
+    done = subprocess.run(  # noqa: S603  # nosec B306 B603  # literal argv, shell disabled
+        [GIT, "-c", "core.quotepath=false", *args],
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
