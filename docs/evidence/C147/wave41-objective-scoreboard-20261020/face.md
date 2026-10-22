@@ -1610,3 +1610,20 @@ owner 只剩两个选择：A 给一个能合法取数的新源（端点 + 权利
 新文件的质量面（提交前实测，避免重犯 §58）：`ruff check` All checks passed、`ruff format --check` already
 formatted、`mypy --config-file=pyproject.toml` 0 error（先有两处 `no-redef`/`union-attr` 被我自己修掉），
 `bandit -q -r` 无 issue 行。
+
+
+## 66. `7ce330a7d` 的提交后收口面：8/8 arms、全历史 560 commits 无泄漏（第四次同一摘要）
+
+载体 `runs/w47_closure_face_7ce330a7d.txt`。`reconcile commit=7ce330a7d parent=3638bec23 commit_paths=7
+worktree_drift_vs_commit=0 moved_vs_parent=7 missing_in_commit=0`，`drift_list=[]`，
+`commit_paths_by_root={'docs/evidence/C147': 5, 'docs/迭代计划/…': 2}` —— 这一发跨了两个根，
+CJK 路径靠 `GIT_CONFIG_*` 关掉 quotepath 后能被正确列出与复制（wave 39 记的那个假「missing」不再复现）。
+
+* git 模式扫提交对象 `findings=0`（planted `findings=2 arm_can_move=True`）；目录模式 `findings=0`（planted 2）。
+* 全历史 `secret_scan_check rc=0`：**560 commits / 505.60 MB / no leaks**；`git rev-list --count HEAD` = **560**，
+  同代相等。§64 的 558 → 560 差两发：`3638bec23`（§64）与 `7ce330a7d`（§65），逐发可归因。
+* `generation claims_sha256=40300e875bcbb54d judge_report_sha256=27d262593db920ea` —— §59/§63/§64/§66
+  **四次读数逐字节相同**，与 §61 的 pin 作用域实测互相印证：这一整轮的文档与证据探针提交都没动过验收树。
+
+本轮之后平面 1 仍是 **349/350**（`{OFFLINE_ACCEPTED: 349, UNREVIEWED: 1}`、0 INCOMPLETE、claims 1,745），
+`w156` 只是把 `stockgrid::ShortVolume` 的挂起理由从「端点要 owner 给」升级为「参考实现与后继站都实测不供数」。
