@@ -13,7 +13,7 @@ import json
 import math
 from collections.abc import Mapping, Sequence
 from datetime import date
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator, model_validator
 
@@ -226,7 +226,8 @@ class _FederalReserveFetcher(Fetcher[Any, object]):
             source=SOURCE,
             cache_context={"model": self.canonical_model},
         )
-        return cast("bytes", response.content)
+        content: bytes = response.content
+        return content
 
     @staticmethod
     def _text(payload: object, *, model: str) -> str:

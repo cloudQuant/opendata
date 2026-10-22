@@ -2003,3 +2003,43 @@ mypy 能看到父类与元组形状；本机没装那些 stub，相关类型退�
 `d858e72d…`；release <https://github.com/cloudQuant/opendata/releases/tag/v0.1.0>。
 release 正文如实写明：31/32 provider、349/350 行、claims 1745、clean-room 逻辑窗口 0、
 全历史无泄漏，以及**未绿的成员 8 mypy 腿与成员 12 的 6 条 owner-gated 红**，没有把它写成一次绿色发布。
+
+
+## 77. CI 独有 mypy 腿收口：建同构环境、33 条全数复算、9 文件修复后 745 targets 0 error
+
+**先造尺子再动手**：`/Users/yunjinqi/opt/venvs/opendata-ci`（python 3.11.13 venv，`pip install -e ".[web,dev]"`），
+resolved 版本与 CI run 39774191938 安装步逐项相同：curl_cffi 0.16.3、pandas 3.1.0、requests 2.34.2、
+SQLAlchemy 2.1.6、pydantic 2.14.1、mypy 2.3.1、ruff 0.15.20。在该环境对 9 个受害文件跑
+`a2_check.py --files …`（修复前）：**33/33 全部复算**，与 CI 日志逐条一致——「本机不可复算」的墙被拆除。
+
+**根因分四类，全部修在类型层面，无 judge 放宽**：
+
+1. **SQLAlchemy 2.1 把 `Row` 变成 variadic 泛型**（22 条，`corporate_events.py:280-302,384-393`）：
+   代码自写的 `Row[tuple[object, ...]]` 在 2.1 语义下变成「单列 Row」，index≥1 全部 Tuple index out of range。
+   探针实证：2.1 下 `Row[tuple[Any,...]]` 的 `r[9]` 报错、`Row[*tuple[Any, ...]]` 通过但 2.0.44 报
+   `Unpack is only valid in a variadic position`，**裸 `Row` 在两个版本下都通过**——采用裸 `Row`（两处注解）。
+2. **seam 变量复用**（6 条，fred/congress_gov/sec 的 `_client`）：同一个 `response` 先绑 engine seam 的
+   `HttpResponse` 再绑 governed client 的 `requests.Response`；seam 分支改名 `seam_response`。
+   `congress_gov.get_document` 尾部 `getattr(response, "headers")` 按 seam/非 seam 分支选择对象。
+3. **新 requests 2.34.2 自带类型**（1 条，`clean_rates.py:229`）：`cast("bytes", …)` 变 redundant；
+   直接 return 在 gate env（requests 无 stub）又触发 no-any-return。解法：`content: bytes = response.content`
+   显式注解局部变量——**两个环境同时量过**（探针双跑，均 `ok mypy`）。
+4. **依赖收紧的四处单条**：`dwd_merge.py:288` `TypeAdapter(field_info.annotation)` 改显式循环 +
+   None 拒绝（保 fail-closed 语义）；`compare_with_upstream.py:538` 录制态 params 本就是任意 JSON，
+   `cast("Any", params)` 注明由 requests 在 prepare 期校验；`init_tasks_and_tables.py:52` 第二个 `result`
+   绑定改名 `task_result`（mypy 用第一次绑定的 `Sequence[DataScript]` 判 comparison-overlap）；
+   `iter2_claims_probe_runner.py:404` `__exit__` 返回 `None`（curl_cffi 0.16.3 的 `Session.__exit__` 签名）。
+
+**收口读数**（carrier `runs/w167_ci_mypy_leg_closure.txt`）：同构环境全量
+`a2_check.py`（非 --files 切片）→ **`ok mypy (745 unique target(s))`，0 error**；ruff check / format / bandit 均 ok。
+同环境受影响模块测试面 `16213 passed, 59 skipped, 0 failed`（含 yfinance 装齐后 22/22）。
+本地 gate env（py313/SQLAlchemy 2.0.44/requests 2.32.5 无 stub）同文件切片同样全绿——修复对两个解释器域都成立。
+
+**残余的非 CI 腿**：同构本机全量 a2 的 `FAIL pinned Gitleaks file scan` 全部命中
+`docs/evidence/C100/**` 里**未跟踪**（`git ls-files --error-unmatch` rc=1，.gitignore:249 匹配）的
+上游快照文件——CI 的 fresh checkout 里这些文件不存在，该成员在 CI 从未被指控；这是本机磁盘独有噪声，不是要修的债。
+
+**顺带发现（不修，报告）**：CI 只装 `.[web,dev]`，而 `yfinance` 在 `providers` extra 里，
+`tests/test_yfinance_iter2_budget.py` 的 `import yfinance` 在 CI 环境**必 ModuleNotFoundError**。
+此前从未暴露只因成员 12（test-cov）排在 mypy 之后、从未跑到。成员 8 转绿后 CI 的下一个红会是它。
+

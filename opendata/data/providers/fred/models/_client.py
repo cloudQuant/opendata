@@ -104,13 +104,13 @@ def _http_get(
     never reaches the network. Without it the governed shared client serves.
     """
     if transport is not None:
-        response = transport(
+        seam_response = transport(
             url,
             params,
             timeout=timeout if timeout is not None else 30.0,
             source="fred",
         )
-        return response.status, _response_text(response)
+        return seam_response.status, _response_text(seam_response)
     try:
         response = get_shared_http_client().get(
             url,

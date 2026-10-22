@@ -284,10 +284,14 @@ def _validate_financial_pit_alignment(
         )
 
     contract_fields = tuple(model.model_fields)
-    field_adapters: dict[str, TypeAdapter[object]] = {
-        field: TypeAdapter(field_info.annotation)
-        for field, field_info in model.model_fields.items()
-    }
+    field_adapters: dict[str, TypeAdapter[object]] = {}
+    for field_name, field_info in model.model_fields.items():
+        annotation = field_info.annotation
+        if annotation is None:
+            raise FinancialPitError(
+                f"DWD contract model field {field_name} has no resolved annotation"
+            )
+        field_adapters[field_name] = TypeAdapter(annotation)
     required_frame_fields = {*business_key, "value", "source"}
     prepared_by_key: dict[tuple[object, ...], tuple[str, dict[str, object]]] = {}
     for record in financial_versions:

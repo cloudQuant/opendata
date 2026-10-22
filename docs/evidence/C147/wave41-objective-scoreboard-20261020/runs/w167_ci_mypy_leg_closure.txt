@@ -1,0 +1,33 @@
+# w167 CI mypy leg closure — full 745-target A2 run under a CI-isomorphic local environment
+# argv: /Users/yunjinqi/opt/venvs/opendata-ci/bin/python scripts/quality/a2_check.py
+# env: python 3.11.13 venv, pip install -e ".[web,dev]" resolved versions identical to CI run 39774191938
+#      (curl_cffi 0.16.3, pandas 3.1.0, requests 2.34.2, SQLAlchemy 2.1.6, pydantic 2.14.1, mypy 2.3.1, ruff 0.15.20)
+# reproduction of the 33 CI errors before the fix (same env, pre-edit tree):
+#   opendata/data/providers/congress_gov/models/_client.py 142,204  assignment Response -> HttpResponse
+#   opendata/data/providers/federal_reserve/models/clean_rates.py 229  redundant cast to bytes
+#   opendata/data/providers/fred/models/_client.py 115,123(x2)  assignment + attr-defined
+#   opendata/data/providers/sec/models/_common.py 193  assignment Response -> HttpResponse
+#   opendata/pipeline/dwd_merge.py 288  TypeAdapter arg-type
+#   opendata/services/corporate_events.py 280-302,384-393 (22x)  Tuple index out of range
+#   scripts/codemod/compare_with_upstream.py 538  Request params arg-type
+#   scripts/init_tasks_and_tables.py 52  comparison-overlap
+#   scripts/quality/iter2_claims_probe_runner.py 404  __exit__ override
+# post-fix verdict (this carrier): mypy 745 targets, 0 errors.
+
+A2 files (complete resolver): 1113
+Historical Ruff findings: 149323 (NOT GREEN; historical evidence only).
+FAIL pinned Gitleaks file scan
+ok   ruff check
+ok   ruff format --check
+ok  mypy (745 unique target(s))
+FAIL: A2 gate failed on: immutable evidence secret scan
+ok   bandit
+rc=1
+
+# attribution of the sole remaining leg: every gitleaks hit below is untracked in HEAD and
+# matched by .gitignore line 249 (/docs/evidence/C100/**), so it cannot exist in CI's checkout.
+# `git ls-files --error-unmatch <hit>` returns rc=1 for each; directories hit:
+#   docs/evidence/C100/ac04-current-codemod-replay
+#   docs/evidence/C100/independent-ac04-current-codemod-replay
+# CI-faithful expectation: this member is green on a fresh clone (CI has never charged it;
+# run 39774191938's member 8 failure was mypy-only).

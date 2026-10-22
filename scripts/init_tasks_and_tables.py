@@ -39,8 +39,8 @@ async def create_tasks_from_scripts() -> None:
         print(f"Found {len(scripts)} active scripts")
 
         # Get existing tasks (by script_id)
-        result = await db.execute(select(ScheduledTask.script_id))
-        existing_script_ids = {row[0] for row in result.fetchall()}
+        task_result = await db.execute(select(ScheduledTask.script_id))
+        existing_script_ids = {row[0] for row in task_result.fetchall()}
         print(f"Found {len(existing_script_ids)} existing tasks")
 
         # Get admin user id (user_id=1 for admin)

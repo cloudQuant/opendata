@@ -535,7 +535,8 @@ def _canonical_request_parts(url: object, params: object) -> tuple[str, str]:
 
     if not isinstance(url, str):
         raise ValueError("request URL must be a string")
-    prepared_url = requests.Request("GET", url, params=params).prepare().url
+    # ``params`` is recorded JSON of arbitrary shape; requests validates it at prepare time.
+    prepared_url = requests.Request("GET", url, params=cast("Any", params)).prepare().url
     if prepared_url is None:
         raise ValueError("request URL could not be prepared")
     parsed = urllib.parse.urlsplit(prepared_url)

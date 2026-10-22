@@ -50,7 +50,7 @@ import subprocess  # nosec B404  # runs the five witness phases as child process
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final, Literal
+from typing import TYPE_CHECKING, Any, Final
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -401,8 +401,8 @@ def _build_sdk_session_fake(responses: list[dict[str, Any]]) -> Any:  # noqa: AN
         def __enter__(self) -> Any:  # noqa: ANN401  # ``with attr(sdk) as session`` bind point
             return self
 
-        def __exit__(self, *_exc: object) -> Literal[False]:
-            return False
+        def __exit__(self, *_exc: object) -> None:
+            return None
 
         def _answer(self, method: str, url: str, kwargs: dict[str, Any]) -> Any:  # noqa: ANN401
             params = kwargs.get("params")

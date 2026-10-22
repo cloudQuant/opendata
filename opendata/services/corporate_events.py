@@ -270,7 +270,7 @@ class CorporateEventVersionStore:
         with self.engine.connect() as connection:
             rows = connection.execute(statement, params).fetchall()
 
-        by_identity: dict[tuple[str, str], list[Row[tuple[object, ...]]]] = {}
+        by_identity: dict[tuple[str, str], list[Row]] = {}
         for source_row in rows:
             by_identity.setdefault((str(source_row[0]), str(source_row[1])), []).append(source_row)
 
@@ -347,7 +347,7 @@ class CorporateEventVersionStore:
                 ),
                 params,
             ).fetchall()
-            selected: list[Row[tuple[object, ...]]] = []
+            selected: list[Row] = []
             selected_symbols: set[str] = set()
             for candidate_row in rows:
                 symbol = _factor_symbol(_row_text(candidate_row[6]))

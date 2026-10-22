@@ -178,15 +178,15 @@ def fetch_bytes(
     headers = {"User-Agent": require_user_agent(), "Accept-Encoding": "gzip, deflate"}
     if transport is not None:
         # A seam answer never reaches SEC's servers, so the pacing cap does not apply to it.
-        response = transport(
+        seam_response = transport(
             url,
             {},
             timeout=ctx.timeout or DEFAULT_TIMEOUT_SECONDS,
             source=SOURCE,
             headers=headers,
         )
-        status = response.status
-        body = _seam_body(response)
+        status = seam_response.status
+        body = _seam_body(seam_response)
     else:
         try:
             _pace_sec_request()

@@ -124,19 +124,19 @@ def get_json(
         else min(DEFAULT_TIMEOUT_SECONDS, context.timeout)
     )
     if transport is not None:
-        response = transport(
+        seam_response = transport(
             f"{API_ROOT}{path}",
             request_params,
             timeout=timeout,
             source="congress_gov",
             headers={"Accept": "application/json"},
         )
-        status = response.status
+        status = seam_response.status
         if allow_not_found and status == 404:
             return None
         if type(status) is not int:
             raise CongressGovProviderError("CONGRESS_GOV_TRANSPORT_ERROR")
-        body = _seam_body(response)
+        body = _seam_body(seam_response)
     else:
         try:
             response = get_shared_http_client().get(
@@ -194,11 +194,11 @@ def get_document(
     )
     headers = {"Accept": "application/pdf, application/xml, text/xml, text/html"}
     if transport is not None:
-        response = transport(url, {}, timeout=timeout, source="congress_gov", headers=headers)
-        status = response.status
+        seam_response = transport(url, {}, timeout=timeout, source="congress_gov", headers=headers)
+        status = seam_response.status
         if type(status) is not int:
             raise CongressGovProviderError("CONGRESS_GOV_DOCUMENT_TRANSPORT_ERROR")
-        body = _seam_body(response)
+        body = _seam_body(seam_response)
     else:
         try:
             response = get_shared_http_client().get(
@@ -228,7 +228,7 @@ def get_document(
         raise CongressGovProviderError("CONGRESS_GOV_DOCUMENT_EMPTY", status=status)
     if len(body) > DOCUMENT_RESPONSE_LIMIT:
         raise CongressGovProviderError("CONGRESS_GOV_DOCUMENT_TOO_LARGE", status=status)
-    response_headers = getattr(response, "headers", {})
+    response_headers = getattr(seam_response if transport is not None else response, "headers", {})
     content_type = "application/octet-stream"
     if isinstance(response_headers, Mapping):
         candidate = response_headers.get("Content-Type")
