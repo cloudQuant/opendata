@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:15:49.472740+00:00",
+      "executed_at_utc": "2026-10-22T05:13:37.592660+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -57,8 +57,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -83,7 +83,7 @@
       "receipt": {
         "model_identity": "eia::PetroleumStatusReport",
         "path": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/implementation.json",
-        "sha256": "d8714746f86086ca9a4884bf1a19264658f2c83172f94b9a7b7bdde2612596a3"
+        "sha256": "7efdfec45b233de6afdd4850d0937425837593cc08ff509f9305b4db0b36a252"
       },
       "status": "PASS",
       "upstream_model": "PetroleumStatusReport"
@@ -91,7 +91,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:15:50.520545+00:00",
+      "executed_at_utc": "2026-10-22T05:13:38.626850+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -135,8 +135,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -161,7 +161,7 @@
       "receipt": {
         "model_identity": "eia::PetroleumStatusReport",
         "path": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/direct.json",
-        "sha256": "b19bbd6adc99da3d05af50a7713b73265c481c33123105295e8b121940571dda"
+        "sha256": "b20c3c3bd228ea53d68c58d73191f55a84b067d59ab5ad951065e76ab0c11bdd"
       },
       "status": "PASS",
       "upstream_model": "PetroleumStatusReport"
@@ -169,7 +169,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:15:51.704239+00:00",
+      "executed_at_utc": "2026-10-22T05:13:39.859957+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -213,8 +213,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -239,7 +239,7 @@
       "receipt": {
         "model_identity": "eia::PetroleumStatusReport",
         "path": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/service.json",
-        "sha256": "a7b9c713339cbdbe9cb746b8c97e0db9e619f638b6788ab45052492f19adc04a"
+        "sha256": "ba212ecd4c03910b206645385d326f5141a8f3b0539f991bfb398cad93e9ee8b"
       },
       "status": "PASS",
       "upstream_model": "PetroleumStatusReport"
@@ -247,7 +247,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:15:52.767052+00:00",
+      "executed_at_utc": "2026-10-22T05:13:41.027302+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -291,8 +291,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -317,7 +317,7 @@
       "receipt": {
         "model_identity": "eia::PetroleumStatusReport",
         "path": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/contract.json",
-        "sha256": "eff8a9804c0b09b050697999cf0f15a24703acbbb92fe836bf4b61c530123b3f"
+        "sha256": "3caad9a2ffcc60f33700c5ebacebfdaa8f03bdaac2225c9b34a81e3d97b858fb"
       },
       "status": "PASS",
       "upstream_model": "PetroleumStatusReport"
@@ -325,7 +325,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model PetroleumStatusReport --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:15:54.887915+00:00",
+      "executed_at_utc": "2026-10-22T05:13:43.389889+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -369,8 +369,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -395,7 +395,7 @@
       "receipt": {
         "model_identity": "eia::PetroleumStatusReport",
         "path": "docs/evidence/C101/receipts/eia/PetroleumStatusReport/counterfact.json",
-        "sha256": "ba73133aa77e64f8f8bb8bdba4fb512957a01cccabbef87300876fc9b9f30cce"
+        "sha256": "8bf0e2087cdfa00aca43345121f428f828dde61b9c44946d6dd6a8f89376209a"
       },
       "status": "PASS",
       "upstream_model": "PetroleumStatusReport"
@@ -403,7 +403,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:15:55.959976+00:00",
+      "executed_at_utc": "2026-10-22T05:13:44.536876+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -457,8 +457,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -483,7 +483,7 @@
       "receipt": {
         "model_identity": "eia::ShortTermEnergyOutlook",
         "path": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/implementation.json",
-        "sha256": "9791af0223f1744ddf4db4327c7f90deeef87adc8de8e5a27ed48610437454b4"
+        "sha256": "f8053c73d45dabae4d7fbd17feababe1716c1f925ad680c1e7760c9971a8394f"
       },
       "status": "PASS",
       "upstream_model": "ShortTermEnergyOutlook"
@@ -491,7 +491,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:15:57.027663+00:00",
+      "executed_at_utc": "2026-10-22T05:13:45.772255+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -535,8 +535,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -561,7 +561,7 @@
       "receipt": {
         "model_identity": "eia::ShortTermEnergyOutlook",
         "path": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/direct.json",
-        "sha256": "2761c811d589ef550d28ff206b1ace3b813fcac4665c2a59ad0953d41178fd6f"
+        "sha256": "1c7e66e61f6f048f6e480c65d3b0a8bf21d0f9c8d2117819284da4c12ec2f6a3"
       },
       "status": "PASS",
       "upstream_model": "ShortTermEnergyOutlook"
@@ -569,7 +569,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:15:58.213867+00:00",
+      "executed_at_utc": "2026-10-22T05:13:47.026556+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -613,8 +613,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -639,7 +639,7 @@
       "receipt": {
         "model_identity": "eia::ShortTermEnergyOutlook",
         "path": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/service.json",
-        "sha256": "aa4871390218f832128be18e741ebbafacb8494dbf5a02ac2e994c416d41408a"
+        "sha256": "3ae22f7490388cf1184c34054a28ca1d1a335d64d22dd3be8be7e039d8f57aef"
       },
       "status": "PASS",
       "upstream_model": "ShortTermEnergyOutlook"
@@ -647,7 +647,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:15:59.279494+00:00",
+      "executed_at_utc": "2026-10-22T05:13:48.134921+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -691,8 +691,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -717,7 +717,7 @@
       "receipt": {
         "model_identity": "eia::ShortTermEnergyOutlook",
         "path": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/contract.json",
-        "sha256": "2fb2708af8ad39c88e59809e3a9bab889ccaf682fb9fd72b303d6f4bfc367559"
+        "sha256": "8a3be3b413776ae0e8191d9e5fa9b530d663778ac4d3dc1ab707cfa4b85e4fb0"
       },
       "status": "PASS",
       "upstream_model": "ShortTermEnergyOutlook"
@@ -725,7 +725,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider eia --model ShortTermEnergyOutlook --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:16:01.395880+00:00",
+      "executed_at_utc": "2026-10-22T05:13:50.169430+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -769,8 +769,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -795,7 +795,7 @@
       "receipt": {
         "model_identity": "eia::ShortTermEnergyOutlook",
         "path": "docs/evidence/C101/receipts/eia/ShortTermEnergyOutlook/counterfact.json",
-        "sha256": "9168fdb7a76cabcb5c78c86052fd5bf666ec0720b4b78e674fea70ff7d7d43a9"
+        "sha256": "0abaa1db51f56a8392e3a8603d46dc18b8924ae50e4f161c9371077e7974565d"
       },
       "status": "PASS",
       "upstream_model": "ShortTermEnergyOutlook"
@@ -809,9 +809,9 @@
       "receipt": {
         "model_identity": "eia::PetroleumStatusReport",
         "path": "docs/evidence/C101/primary-reviews/eia__PetroleumStatusReport.review.json",
-        "sha256": "c43ea301830927782299a3f93e2ba4c9a09bfb72d7180b9ef20ed7bd7ddfd888"
+        "sha256": "88d7c4d4cc742a43a87fc8e1c9c0cf44e5adfecd302d8e2116d869d5722483a6"
       },
-      "reviewed_at_utc": "2026-10-21T17:16:03Z",
+      "reviewed_at_utc": "2026-10-22T05:13:51Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -824,9 +824,9 @@
       "receipt": {
         "model_identity": "eia::ShortTermEnergyOutlook",
         "path": "docs/evidence/C101/primary-reviews/eia__ShortTermEnergyOutlook.review.json",
-        "sha256": "a3d956bf9e350f999f0fc561b2f18d63bf13898a46c08d1b49f55bc8dae46f63"
+        "sha256": "8878b4f713ea9e55e00619df60d13c57bb60e0e0983a0debe1987cb5ac1e6bbb"
       },
-      "reviewed_at_utc": "2026-10-21T17:16:03Z",
+      "reviewed_at_utc": "2026-10-22T05:13:51Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

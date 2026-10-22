@@ -3,7 +3,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model CentralBankHoldings --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:16:40.527696+00:00",
+      "executed_at_utc": "2026-10-22T05:45:18.710658+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -67,8 +67,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -103,7 +103,7 @@
       "receipt": {
         "model_identity": "federal_reserve::CentralBankHoldings",
         "path": "docs/evidence/C101/receipts/federal_reserve/CentralBankHoldings/implementation.json",
-        "sha256": "d325018d9153250bee603180c4bb9344cd0a7e55e22c57bee638bbc90eefb33f"
+        "sha256": "2c300a01fe0fc8f9b6ffcabd0c7229de3f8ad97e57e739c0e89eecf4d0db378f"
       },
       "status": "PASS",
       "upstream_model": "CentralBankHoldings"
@@ -111,7 +111,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model CentralBankHoldings --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:16:41.686201+00:00",
+      "executed_at_utc": "2026-10-22T05:45:19.961813+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -160,8 +160,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -196,7 +196,7 @@
       "receipt": {
         "model_identity": "federal_reserve::CentralBankHoldings",
         "path": "docs/evidence/C101/receipts/federal_reserve/CentralBankHoldings/direct.json",
-        "sha256": "8ac0a1f921c78247488accf5f92eef16f59e92d77bda879fbce644049d439a52"
+        "sha256": "2f579c102e82a8440dbb15a880876e1c4ccdf57ca87b0f45dd1824d27449b6f0"
       },
       "status": "PASS",
       "upstream_model": "CentralBankHoldings"
@@ -204,7 +204,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model CentralBankHoldings --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:16:42.867963+00:00",
+      "executed_at_utc": "2026-10-22T05:45:21.214487+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -253,8 +253,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -289,7 +289,7 @@
       "receipt": {
         "model_identity": "federal_reserve::CentralBankHoldings",
         "path": "docs/evidence/C101/receipts/federal_reserve/CentralBankHoldings/service.json",
-        "sha256": "29398003c794659be046816c8e77170b676fa282ec9d2d7d0758a5db15cb12d9"
+        "sha256": "9c4aed7cc0a0e24042cb1089987bd4ac4c5de58511864f9ffa265298983005ca"
       },
       "status": "PASS",
       "upstream_model": "CentralBankHoldings"
@@ -297,7 +297,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model CentralBankHoldings --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:16:44.067026+00:00",
+      "executed_at_utc": "2026-10-22T05:45:22.447215+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -346,8 +346,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -382,7 +382,7 @@
       "receipt": {
         "model_identity": "federal_reserve::CentralBankHoldings",
         "path": "docs/evidence/C101/receipts/federal_reserve/CentralBankHoldings/contract.json",
-        "sha256": "2f64788fc96bdeb2f7e9b02513b485cc75a198c9fd157db6f436509e02bf615b"
+        "sha256": "ad6ba528855ea8a9c73d567f5818b3089e1c00c98f8ba1cb5833ce0af58d45b8"
       },
       "status": "PASS",
       "upstream_model": "CentralBankHoldings"
@@ -390,7 +390,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model CentralBankHoldings --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:16:46.453238+00:00",
+      "executed_at_utc": "2026-10-22T05:45:25.023359+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -439,8 +439,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -475,7 +475,7 @@
       "receipt": {
         "model_identity": "federal_reserve::CentralBankHoldings",
         "path": "docs/evidence/C101/receipts/federal_reserve/CentralBankHoldings/counterfact.json",
-        "sha256": "d18d74448b1cea8c448bc46a5d8c511a083be76dddcc97eaca4756b61768ede7"
+        "sha256": "76c95c797c9191b87bc0e9efc5c7cab4f6ef7a13176c2efda4fd9a261a220e82"
       },
       "status": "PASS",
       "upstream_model": "CentralBankHoldings"
@@ -483,7 +483,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FederalFundsRate --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:16:47.637281+00:00",
+      "executed_at_utc": "2026-10-22T05:45:26.388785+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -547,8 +547,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -588,7 +588,7 @@
       "receipt": {
         "model_identity": "federal_reserve::FederalFundsRate",
         "path": "docs/evidence/C101/receipts/federal_reserve/FederalFundsRate/implementation.json",
-        "sha256": "f0630feae141fe6738b6311eb3357791f00943b5a776e65177011698e3c65792"
+        "sha256": "42bafbf8b06d0bdbefa4ccc9ebdd9f178b14ad1d67e742b03077b8d9a1952483"
       },
       "status": "PASS",
       "upstream_model": "FederalFundsRate"
@@ -596,7 +596,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FederalFundsRate --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:16:48.810990+00:00",
+      "executed_at_utc": "2026-10-22T05:45:27.673394+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -645,8 +645,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -686,7 +686,7 @@
       "receipt": {
         "model_identity": "federal_reserve::FederalFundsRate",
         "path": "docs/evidence/C101/receipts/federal_reserve/FederalFundsRate/direct.json",
-        "sha256": "1d09f0e6356495825fc71688e0c14056f77386afab8b3b4667b840aa26f07aad"
+        "sha256": "259f3ebdf9c08bd54f4558ed99b609f3433b033235f62b5a3db8cab28dedb2be"
       },
       "status": "PASS",
       "upstream_model": "FederalFundsRate"
@@ -694,7 +694,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FederalFundsRate --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:16:49.994448+00:00",
+      "executed_at_utc": "2026-10-22T05:45:28.985746+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -743,8 +743,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -784,7 +784,7 @@
       "receipt": {
         "model_identity": "federal_reserve::FederalFundsRate",
         "path": "docs/evidence/C101/receipts/federal_reserve/FederalFundsRate/service.json",
-        "sha256": "e68c545b066cb8e3f4405356643e7c3571bec4a43de7297fc5330dd16eb37e56"
+        "sha256": "7f09fc1e5d39f9730db9d8e32370c4a450f7617ce3c0336f7df4d180ebaa20a0"
       },
       "status": "PASS",
       "upstream_model": "FederalFundsRate"
@@ -792,7 +792,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FederalFundsRate --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:16:51.188057+00:00",
+      "executed_at_utc": "2026-10-22T05:45:30.292372+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -841,8 +841,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -882,7 +882,7 @@
       "receipt": {
         "model_identity": "federal_reserve::FederalFundsRate",
         "path": "docs/evidence/C101/receipts/federal_reserve/FederalFundsRate/contract.json",
-        "sha256": "4816544c4d3357483cf665e8315dff01eb954d5609f39e25a9d6397819bdd88a"
+        "sha256": "2cab03236adcb15c83b157bb809162e3b964ece5d3af2137c68358ea8e9a8fce"
       },
       "status": "PASS",
       "upstream_model": "FederalFundsRate"
@@ -890,7 +890,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FederalFundsRate --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:16:53.571837+00:00",
+      "executed_at_utc": "2026-10-22T05:45:32.888406+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -939,8 +939,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -980,7 +980,7 @@
       "receipt": {
         "model_identity": "federal_reserve::FederalFundsRate",
         "path": "docs/evidence/C101/receipts/federal_reserve/FederalFundsRate/counterfact.json",
-        "sha256": "5e5c75bd08bbf9d6e35ee81b1443e960d85eb13aee1bd8ec30569de18c04ec49"
+        "sha256": "55192201660be966b69fb9133bccff86af5c4dedda1de402534451bf3da14f15"
       },
       "status": "PASS",
       "upstream_model": "FederalFundsRate"
@@ -988,7 +988,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FomcDocuments --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:16:54.759019+00:00",
+      "executed_at_utc": "2026-10-22T05:45:34.137708+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1052,8 +1052,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -1088,7 +1088,7 @@
       "receipt": {
         "model_identity": "federal_reserve::FomcDocuments",
         "path": "docs/evidence/C101/receipts/federal_reserve/FomcDocuments/implementation.json",
-        "sha256": "bc7f6d5cf1071c3a7877dc28f9ab7cc2f78a2f33cdb731b4259ec249ff000667"
+        "sha256": "b2f79bed4a0e540ee7780af6842ad3dd866aeb5c72bc9dbfc2a35eb2406a9ca7"
       },
       "status": "PASS",
       "upstream_model": "FomcDocuments"
@@ -1096,7 +1096,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FomcDocuments --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:16:55.955598+00:00",
+      "executed_at_utc": "2026-10-22T05:45:35.368260+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1145,8 +1145,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -1181,7 +1181,7 @@
       "receipt": {
         "model_identity": "federal_reserve::FomcDocuments",
         "path": "docs/evidence/C101/receipts/federal_reserve/FomcDocuments/direct.json",
-        "sha256": "b33c568b8372a8eda1635ee24ee6157462cb673cc3d20e66bbd1b7a4b614f6d6"
+        "sha256": "08837189b72e0ec0bcf3f64b8f1ae1b0d3ef6c42a32df821103a26c522ac567f"
       },
       "status": "PASS",
       "upstream_model": "FomcDocuments"
@@ -1189,7 +1189,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FomcDocuments --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:16:57.159343+00:00",
+      "executed_at_utc": "2026-10-22T05:45:36.617079+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1238,8 +1238,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -1274,7 +1274,7 @@
       "receipt": {
         "model_identity": "federal_reserve::FomcDocuments",
         "path": "docs/evidence/C101/receipts/federal_reserve/FomcDocuments/service.json",
-        "sha256": "eacb19824862c8f62955dfee5b5314f3da42c31bef347dd9c446b83a35288c06"
+        "sha256": "57cb2f85aa8044beb131d20a8b7680acb3cb218d7d3d00cf8ed7617a82d40eea"
       },
       "status": "PASS",
       "upstream_model": "FomcDocuments"
@@ -1282,7 +1282,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FomcDocuments --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:16:58.350778+00:00",
+      "executed_at_utc": "2026-10-22T05:45:37.888845+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1331,8 +1331,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -1367,7 +1367,7 @@
       "receipt": {
         "model_identity": "federal_reserve::FomcDocuments",
         "path": "docs/evidence/C101/receipts/federal_reserve/FomcDocuments/contract.json",
-        "sha256": "7ddf34562b49f1ce1e1ced646253ece4b4dd347ad37898bb19fade5719e8a4d6"
+        "sha256": "6a4f0ad40a258be13e2f935cb81bd414a92dfcab806e69a8a519c8b3d5612d94"
       },
       "status": "PASS",
       "upstream_model": "FomcDocuments"
@@ -1375,7 +1375,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model FomcDocuments --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:17:00.754902+00:00",
+      "executed_at_utc": "2026-10-22T05:45:40.442946+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1424,8 +1424,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -1460,7 +1460,7 @@
       "receipt": {
         "model_identity": "federal_reserve::FomcDocuments",
         "path": "docs/evidence/C101/receipts/federal_reserve/FomcDocuments/counterfact.json",
-        "sha256": "97f45a41ccd1328cd7921b7d41ead7c585cdb5cb0a6a95ac0dc4c5fd497c4416"
+        "sha256": "aa057bd0596ff9a83946aabef9dc177b43e447488a4b8dfc600abf068ab1381d"
       },
       "status": "PASS",
       "upstream_model": "FomcDocuments"
@@ -1468,7 +1468,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model InflationExpectations --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:17:01.950200+00:00",
+      "executed_at_utc": "2026-10-22T05:45:41.675569+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -1532,8 +1532,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -1568,7 +1568,7 @@
       "receipt": {
         "model_identity": "federal_reserve::InflationExpectations",
         "path": "docs/evidence/C101/receipts/federal_reserve/InflationExpectations/implementation.json",
-        "sha256": "7b5d351c4ab328449efba232dc17e06706dc3b73813f60fecd6f401f34aea30c"
+        "sha256": "5b51a17bbb97d68437862bcc73dd701271b00752cebfcb83703e95279c1798a2"
       },
       "status": "PASS",
       "upstream_model": "InflationExpectations"
@@ -1576,7 +1576,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model InflationExpectations --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:17:03.148498+00:00",
+      "executed_at_utc": "2026-10-22T05:45:42.892079+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -1596,8 +1596,8 @@
         "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
         "fixture": [
           {
-            "after_sha256": "34955bee56cdc601bb70df99e007f68584fec1a59aaa11a66bd58340d03372be",
-            "before_sha256": "34955bee56cdc601bb70df99e007f68584fec1a59aaa11a66bd58340d03372be",
+            "after_sha256": "b560995fdc1983e453dafc817ef40fdbad0cc47eeca732d2079abbee43d58c5d",
+            "before_sha256": "b560995fdc1983e453dafc817ef40fdbad0cc47eeca732d2079abbee43d58c5d",
             "path": "docs/evidence/C101/fixtures/federal_reserve/InflationExpectations.json"
           }
         ],
@@ -1625,8 +1625,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -1661,7 +1661,7 @@
       "receipt": {
         "model_identity": "federal_reserve::InflationExpectations",
         "path": "docs/evidence/C101/receipts/federal_reserve/InflationExpectations/direct.json",
-        "sha256": "0f6919711094267131721625135f5e82c683471ecff6c7af10cc39fc04c836d9"
+        "sha256": "d4bad1271231e4f0abba7f2743b830280ed5e7f62c7b16349de81b0e52fbbef2"
       },
       "status": "PASS",
       "upstream_model": "InflationExpectations"
@@ -1669,7 +1669,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model InflationExpectations --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:17:04.349973+00:00",
+      "executed_at_utc": "2026-10-22T05:45:44.162960+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -1689,8 +1689,8 @@
         "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
         "fixture": [
           {
-            "after_sha256": "34955bee56cdc601bb70df99e007f68584fec1a59aaa11a66bd58340d03372be",
-            "before_sha256": "34955bee56cdc601bb70df99e007f68584fec1a59aaa11a66bd58340d03372be",
+            "after_sha256": "b560995fdc1983e453dafc817ef40fdbad0cc47eeca732d2079abbee43d58c5d",
+            "before_sha256": "b560995fdc1983e453dafc817ef40fdbad0cc47eeca732d2079abbee43d58c5d",
             "path": "docs/evidence/C101/fixtures/federal_reserve/InflationExpectations.json"
           }
         ],
@@ -1718,8 +1718,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -1754,7 +1754,7 @@
       "receipt": {
         "model_identity": "federal_reserve::InflationExpectations",
         "path": "docs/evidence/C101/receipts/federal_reserve/InflationExpectations/service.json",
-        "sha256": "b861fa026d4ae2c6ac14c02bf39609af50abd029ae875f7580956e91f11ce580"
+        "sha256": "5fe2705d7fef156177612fe9f88622570463951c46cf23753a9647edf47015e8"
       },
       "status": "PASS",
       "upstream_model": "InflationExpectations"
@@ -1762,7 +1762,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model InflationExpectations --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:17:05.559087+00:00",
+      "executed_at_utc": "2026-10-22T05:45:45.390199+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -1782,8 +1782,8 @@
         "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
         "fixture": [
           {
-            "after_sha256": "34955bee56cdc601bb70df99e007f68584fec1a59aaa11a66bd58340d03372be",
-            "before_sha256": "34955bee56cdc601bb70df99e007f68584fec1a59aaa11a66bd58340d03372be",
+            "after_sha256": "b560995fdc1983e453dafc817ef40fdbad0cc47eeca732d2079abbee43d58c5d",
+            "before_sha256": "b560995fdc1983e453dafc817ef40fdbad0cc47eeca732d2079abbee43d58c5d",
             "path": "docs/evidence/C101/fixtures/federal_reserve/InflationExpectations.json"
           }
         ],
@@ -1811,8 +1811,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -1847,7 +1847,7 @@
       "receipt": {
         "model_identity": "federal_reserve::InflationExpectations",
         "path": "docs/evidence/C101/receipts/federal_reserve/InflationExpectations/contract.json",
-        "sha256": "53bfc934cd6c3258efc6f639c002509c69a6293eed9e218821b8f4d9a0aa2d53"
+        "sha256": "84b18f8b11b0421638c0289cce0fb2bd294346d57ca50958d7902df67992701a"
       },
       "status": "PASS",
       "upstream_model": "InflationExpectations"
@@ -1855,7 +1855,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model InflationExpectations --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:17:07.975747+00:00",
+      "executed_at_utc": "2026-10-22T05:45:47.892985+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -1875,8 +1875,8 @@
         "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
         "fixture": [
           {
-            "after_sha256": "34955bee56cdc601bb70df99e007f68584fec1a59aaa11a66bd58340d03372be",
-            "before_sha256": "34955bee56cdc601bb70df99e007f68584fec1a59aaa11a66bd58340d03372be",
+            "after_sha256": "b560995fdc1983e453dafc817ef40fdbad0cc47eeca732d2079abbee43d58c5d",
+            "before_sha256": "b560995fdc1983e453dafc817ef40fdbad0cc47eeca732d2079abbee43d58c5d",
             "path": "docs/evidence/C101/fixtures/federal_reserve/InflationExpectations.json"
           }
         ],
@@ -1904,8 +1904,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -1940,7 +1940,7 @@
       "receipt": {
         "model_identity": "federal_reserve::InflationExpectations",
         "path": "docs/evidence/C101/receipts/federal_reserve/InflationExpectations/counterfact.json",
-        "sha256": "71ecdfa93f06c82a8f40c46267ff1e826b13b53bfab8c49f7c8b8600d46fce30"
+        "sha256": "495d82f38743fbfb45b21a251c417336178b96fb374b88dd1a2c87393778460d"
       },
       "status": "PASS",
       "upstream_model": "InflationExpectations"
@@ -1948,7 +1948,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model MoneyMeasures --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:17:09.163725+00:00",
+      "executed_at_utc": "2026-10-22T05:45:49.184596+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2012,8 +2012,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -2058,7 +2058,7 @@
       "receipt": {
         "model_identity": "federal_reserve::MoneyMeasures",
         "path": "docs/evidence/C101/receipts/federal_reserve/MoneyMeasures/implementation.json",
-        "sha256": "7b6dd4dd75be0ca65742ed25fc42ead205800055327201f0fe195e9e2fca2fae"
+        "sha256": "ec9064829b25e4c2e36794e09ec6c579cc8905782f85d6e9284659bd01ad7ee0"
       },
       "status": "PASS",
       "upstream_model": "MoneyMeasures"
@@ -2066,7 +2066,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model MoneyMeasures --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:17:10.350092+00:00",
+      "executed_at_utc": "2026-10-22T05:45:50.422971+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2115,8 +2115,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -2161,7 +2161,7 @@
       "receipt": {
         "model_identity": "federal_reserve::MoneyMeasures",
         "path": "docs/evidence/C101/receipts/federal_reserve/MoneyMeasures/direct.json",
-        "sha256": "081f505e951b083d7ca52adca714b638047e5b8c4ef68db3ffbc118c2926a208"
+        "sha256": "2d5ee66464e9bad5819f4a1d07e24f21a2b0b04b500d3b51e17262d1c7bb52a4"
       },
       "status": "PASS",
       "upstream_model": "MoneyMeasures"
@@ -2169,7 +2169,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model MoneyMeasures --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:17:11.543862+00:00",
+      "executed_at_utc": "2026-10-22T05:45:51.653520+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2218,8 +2218,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -2264,7 +2264,7 @@
       "receipt": {
         "model_identity": "federal_reserve::MoneyMeasures",
         "path": "docs/evidence/C101/receipts/federal_reserve/MoneyMeasures/service.json",
-        "sha256": "9ddfca94a9046830d0e4e0886c42bb8fd4ad00247039a340b97fafd33ae1b582"
+        "sha256": "bce79a6bfe9002ad1b9898fd7de7a3ee9a3e4e4ca9a0b210db377eec20063d6b"
       },
       "status": "PASS",
       "upstream_model": "MoneyMeasures"
@@ -2272,7 +2272,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model MoneyMeasures --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:17:12.736096+00:00",
+      "executed_at_utc": "2026-10-22T05:45:52.986287+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2321,8 +2321,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -2367,7 +2367,7 @@
       "receipt": {
         "model_identity": "federal_reserve::MoneyMeasures",
         "path": "docs/evidence/C101/receipts/federal_reserve/MoneyMeasures/contract.json",
-        "sha256": "12f7bfb8730578104411119dc1c5cc6c26feeddbba3a6a73c386de4e8df5f5dc"
+        "sha256": "ca920ade627db45e38bb355e82bb5df109a82321e6fb2cb3a7cae3e25a0d5a9e"
       },
       "status": "PASS",
       "upstream_model": "MoneyMeasures"
@@ -2375,7 +2375,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model MoneyMeasures --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:17:15.138406+00:00",
+      "executed_at_utc": "2026-10-22T05:45:55.582467+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2424,8 +2424,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -2470,7 +2470,7 @@
       "receipt": {
         "model_identity": "federal_reserve::MoneyMeasures",
         "path": "docs/evidence/C101/receipts/federal_reserve/MoneyMeasures/counterfact.json",
-        "sha256": "c089cbfcb7aa29f276ebe8533d7c227b58e5009ca8df1d5d951289c167542ace"
+        "sha256": "451937e6befecadf5534d5840e8c2a8f8d493a2df01a9bf98a79016502eb74b7"
       },
       "status": "PASS",
       "upstream_model": "MoneyMeasures"
@@ -2478,7 +2478,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model OvernightBankFundingRate --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:17:16.343395+00:00",
+      "executed_at_utc": "2026-10-22T05:45:56.971094+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -2542,8 +2542,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -2583,7 +2583,7 @@
       "receipt": {
         "model_identity": "federal_reserve::OvernightBankFundingRate",
         "path": "docs/evidence/C101/receipts/federal_reserve/OvernightBankFundingRate/implementation.json",
-        "sha256": "ff729e193761bcafb61aa53e4d316f5ca713a17666dd2141f26e6111a1f0f651"
+        "sha256": "e598f2a514a789ef4dd321fc943c5ce6e2103d489175ce09a0922a1722e0226e"
       },
       "status": "PASS",
       "upstream_model": "OvernightBankFundingRate"
@@ -2591,7 +2591,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model OvernightBankFundingRate --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:17:17.537318+00:00",
+      "executed_at_utc": "2026-10-22T05:45:58.277669+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -2640,8 +2640,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -2681,7 +2681,7 @@
       "receipt": {
         "model_identity": "federal_reserve::OvernightBankFundingRate",
         "path": "docs/evidence/C101/receipts/federal_reserve/OvernightBankFundingRate/direct.json",
-        "sha256": "1033cf67695a516a996c726f4907987465c567e9f93a03b5680d016d72641bb9"
+        "sha256": "aaecc4a9984bfb1c0c0bcd54a3452c4b21029c80286bc9b2f4a14d85e1da8178"
       },
       "status": "PASS",
       "upstream_model": "OvernightBankFundingRate"
@@ -2689,7 +2689,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model OvernightBankFundingRate --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:17:18.729499+00:00",
+      "executed_at_utc": "2026-10-22T05:45:59.563637+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -2738,8 +2738,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -2779,7 +2779,7 @@
       "receipt": {
         "model_identity": "federal_reserve::OvernightBankFundingRate",
         "path": "docs/evidence/C101/receipts/federal_reserve/OvernightBankFundingRate/service.json",
-        "sha256": "101a04cce464139453298da3170da6b443400e5e71ce3a4a5d4c4f353733629f"
+        "sha256": "02e4e6e39b09e4eca9a35c0ef56fb46a9777a826e25e93b1d359cc5804990e2f"
       },
       "status": "PASS",
       "upstream_model": "OvernightBankFundingRate"
@@ -2787,7 +2787,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model OvernightBankFundingRate --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:17:19.901703+00:00",
+      "executed_at_utc": "2026-10-22T05:46:00.820600+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -2836,8 +2836,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -2877,7 +2877,7 @@
       "receipt": {
         "model_identity": "federal_reserve::OvernightBankFundingRate",
         "path": "docs/evidence/C101/receipts/federal_reserve/OvernightBankFundingRate/contract.json",
-        "sha256": "83f0b439b8f983e902bf666e777e483a0c095748cbc68e187b190aa44e2031d2"
+        "sha256": "ba9b50bc1b2c2b7876dc090e2fe4324d185e01557a509cbe9b62238daaad6ed1"
       },
       "status": "PASS",
       "upstream_model": "OvernightBankFundingRate"
@@ -2885,7 +2885,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model OvernightBankFundingRate --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:17:22.297085+00:00",
+      "executed_at_utc": "2026-10-22T05:46:03.393543+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -2934,8 +2934,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -2975,7 +2975,7 @@
       "receipt": {
         "model_identity": "federal_reserve::OvernightBankFundingRate",
         "path": "docs/evidence/C101/receipts/federal_reserve/OvernightBankFundingRate/counterfact.json",
-        "sha256": "cdf856368c88106285ac737e1c8710594afb50d2e1497015502304f7b384b08b"
+        "sha256": "604292d32d1ba7c0d8753d1e91fbbb967603fd6c27417337285d51f8713c94d4"
       },
       "status": "PASS",
       "upstream_model": "OvernightBankFundingRate"
@@ -2983,7 +2983,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerFails --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:17:23.481700+00:00",
+      "executed_at_utc": "2026-10-22T05:46:04.712102+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -3047,8 +3047,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -3083,7 +3083,7 @@
       "receipt": {
         "model_identity": "federal_reserve::PrimaryDealerFails",
         "path": "docs/evidence/C101/receipts/federal_reserve/PrimaryDealerFails/implementation.json",
-        "sha256": "233576a04421b854a56b22e5fcfc738aca782e41a259e5b97f0578e1f8d0f251"
+        "sha256": "e20db7ddb49e07384045c1323ccb91a9af642adc3a497459e58ff680718171a6"
       },
       "status": "PASS",
       "upstream_model": "PrimaryDealerFails"
@@ -3091,7 +3091,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerFails --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:17:24.676814+00:00",
+      "executed_at_utc": "2026-10-22T05:46:05.981947+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3140,8 +3140,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -3176,7 +3176,7 @@
       "receipt": {
         "model_identity": "federal_reserve::PrimaryDealerFails",
         "path": "docs/evidence/C101/receipts/federal_reserve/PrimaryDealerFails/direct.json",
-        "sha256": "25a68228e167e4c4400ba69c59e15f61ba36c98be2fc1dc98e4564640258d585"
+        "sha256": "d4b0401d8c0e2f1e1771602f7f73d222d99351fed9783e72ee0cbe6ed2358381"
       },
       "status": "PASS",
       "upstream_model": "PrimaryDealerFails"
@@ -3184,7 +3184,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerFails --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:17:25.861473+00:00",
+      "executed_at_utc": "2026-10-22T05:46:07.260962+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3233,8 +3233,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -3269,7 +3269,7 @@
       "receipt": {
         "model_identity": "federal_reserve::PrimaryDealerFails",
         "path": "docs/evidence/C101/receipts/federal_reserve/PrimaryDealerFails/service.json",
-        "sha256": "0bef3bfb096f88ca7e80132ca64029eb046d82a899dbf618f93f85fda181383a"
+        "sha256": "1df5b9f808237d1417c4709c6eb634b424735a14ae997160a7eacbf65418ff3e"
       },
       "status": "PASS",
       "upstream_model": "PrimaryDealerFails"
@@ -3277,7 +3277,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerFails --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:17:27.047072+00:00",
+      "executed_at_utc": "2026-10-22T05:46:08.520297+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3326,8 +3326,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -3362,7 +3362,7 @@
       "receipt": {
         "model_identity": "federal_reserve::PrimaryDealerFails",
         "path": "docs/evidence/C101/receipts/federal_reserve/PrimaryDealerFails/contract.json",
-        "sha256": "d3ae8f3f410fafd571130863a324d0bfca37960aa130ff9a724298784ede3c83"
+        "sha256": "ad780103399703c406499b1c49f4ff5b35cb6dbab9111c6a1a214690a63c054b"
       },
       "status": "PASS",
       "upstream_model": "PrimaryDealerFails"
@@ -3370,7 +3370,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerFails --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:17:29.439116+00:00",
+      "executed_at_utc": "2026-10-22T05:46:11.132373+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3419,8 +3419,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -3455,7 +3455,7 @@
       "receipt": {
         "model_identity": "federal_reserve::PrimaryDealerFails",
         "path": "docs/evidence/C101/receipts/federal_reserve/PrimaryDealerFails/counterfact.json",
-        "sha256": "c2100efdafb5586a146e685f44e328411f1b545209414784b8d461461ffd7d6a"
+        "sha256": "1cb7e5ba8c2b00c96f63f960764f699d393411358036f48c1b4c425451c16f16"
       },
       "status": "PASS",
       "upstream_model": "PrimaryDealerFails"
@@ -3463,7 +3463,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerPositioning --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:17:30.618431+00:00",
+      "executed_at_utc": "2026-10-22T05:46:12.434450+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -3527,8 +3527,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -3563,7 +3563,7 @@
       "receipt": {
         "model_identity": "federal_reserve::PrimaryDealerPositioning",
         "path": "docs/evidence/C101/receipts/federal_reserve/PrimaryDealerPositioning/implementation.json",
-        "sha256": "f453df3fc7536a7fb0506cc68378d2809c1434a17c49f1a6d48c5105ba4be273"
+        "sha256": "0dc32c848e087616d0a93c581aa187fe2035b521d0e680ef28d1c85664d3aaab"
       },
       "status": "PASS",
       "upstream_model": "PrimaryDealerPositioning"
@@ -3571,7 +3571,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerPositioning --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:17:31.801051+00:00",
+      "executed_at_utc": "2026-10-22T05:46:13.726256+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -3620,8 +3620,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -3656,7 +3656,7 @@
       "receipt": {
         "model_identity": "federal_reserve::PrimaryDealerPositioning",
         "path": "docs/evidence/C101/receipts/federal_reserve/PrimaryDealerPositioning/direct.json",
-        "sha256": "2497eba052217765b47c1edc880ac10b1025f70908425ae432d8a495c56515d3"
+        "sha256": "638f51bc824aa179b52f5e3932cd1905aad03b08dbc89388b44db94717fc2b28"
       },
       "status": "PASS",
       "upstream_model": "PrimaryDealerPositioning"
@@ -3664,7 +3664,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerPositioning --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:17:32.993070+00:00",
+      "executed_at_utc": "2026-10-22T05:46:14.998581+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -3713,8 +3713,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -3749,7 +3749,7 @@
       "receipt": {
         "model_identity": "federal_reserve::PrimaryDealerPositioning",
         "path": "docs/evidence/C101/receipts/federal_reserve/PrimaryDealerPositioning/service.json",
-        "sha256": "b715d459f3df598eb4730874eee406c360e6cde353a7ce1c7b4004cde86702d6"
+        "sha256": "b5cd3325b7221ae422a208b93cad6762389a1cfd146b421f1ee8b73c9f3f51d7"
       },
       "status": "PASS",
       "upstream_model": "PrimaryDealerPositioning"
@@ -3757,7 +3757,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerPositioning --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:17:34.183498+00:00",
+      "executed_at_utc": "2026-10-22T05:46:16.293823+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -3806,8 +3806,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -3842,7 +3842,7 @@
       "receipt": {
         "model_identity": "federal_reserve::PrimaryDealerPositioning",
         "path": "docs/evidence/C101/receipts/federal_reserve/PrimaryDealerPositioning/contract.json",
-        "sha256": "944b70f632f3981d569fd7dc4b961b53549e821aee5ee80a8e511615467faa97"
+        "sha256": "3a8e39a353c2a403716ad6c3585b535eb9bdcecd86a761fb83e54227e0df0b13"
       },
       "status": "PASS",
       "upstream_model": "PrimaryDealerPositioning"
@@ -3850,7 +3850,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model PrimaryDealerPositioning --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:17:36.571647+00:00",
+      "executed_at_utc": "2026-10-22T05:46:18.863739+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -3899,8 +3899,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -3935,7 +3935,7 @@
       "receipt": {
         "model_identity": "federal_reserve::PrimaryDealerPositioning",
         "path": "docs/evidence/C101/receipts/federal_reserve/PrimaryDealerPositioning/counterfact.json",
-        "sha256": "4e534aae20c3c5c90b2c63b848f9ff45eabbbc8cd3add626c542f89b4ae95271"
+        "sha256": "84932f1f53f04ecfb846433fe78f9914c9116462c1597789df6f78b15c470fb5"
       },
       "status": "PASS",
       "upstream_model": "PrimaryDealerPositioning"
@@ -3943,7 +3943,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SOFR --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:17:37.757774+00:00",
+      "executed_at_utc": "2026-10-22T05:46:20.196090+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -4007,8 +4007,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -4048,7 +4048,7 @@
       "receipt": {
         "model_identity": "federal_reserve::SOFR",
         "path": "docs/evidence/C101/receipts/federal_reserve/SOFR/implementation.json",
-        "sha256": "9649eb6361ec445e0d77fac5d8d956241fad48d948853aef951aab078f2c12d4"
+        "sha256": "f315fc4fbf85a4a452a004ad3b6465fdac2974ba0db47463e4ca3e875e85d21d"
       },
       "status": "PASS",
       "upstream_model": "SOFR"
@@ -4056,7 +4056,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SOFR --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:17:38.942845+00:00",
+      "executed_at_utc": "2026-10-22T05:46:21.501358+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -4105,8 +4105,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -4146,7 +4146,7 @@
       "receipt": {
         "model_identity": "federal_reserve::SOFR",
         "path": "docs/evidence/C101/receipts/federal_reserve/SOFR/direct.json",
-        "sha256": "fbc354e676cd16032023ab5cbfcb0b10a16f805451b510b2bdc72a2117fe34be"
+        "sha256": "3c6d1fec0af091931d686ee9ae490d4968e4532c3ecbabdc2c605233e55a3af0"
       },
       "status": "PASS",
       "upstream_model": "SOFR"
@@ -4154,7 +4154,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SOFR --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:17:40.127673+00:00",
+      "executed_at_utc": "2026-10-22T05:46:22.799449+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -4203,8 +4203,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -4244,7 +4244,7 @@
       "receipt": {
         "model_identity": "federal_reserve::SOFR",
         "path": "docs/evidence/C101/receipts/federal_reserve/SOFR/service.json",
-        "sha256": "95391540bbecab5ba0390aab6256d7540b8d29b0990b2ebfd3fecb071e9cd146"
+        "sha256": "5acbadd38dc88c9a1dd40826d7716ed28a5ebf9da8af310ab2cbd274ab24ef96"
       },
       "status": "PASS",
       "upstream_model": "SOFR"
@@ -4252,7 +4252,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SOFR --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:17:41.320401+00:00",
+      "executed_at_utc": "2026-10-22T05:46:24.090513+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -4301,8 +4301,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -4342,7 +4342,7 @@
       "receipt": {
         "model_identity": "federal_reserve::SOFR",
         "path": "docs/evidence/C101/receipts/federal_reserve/SOFR/contract.json",
-        "sha256": "6697518b1a2f5264cc7638528aa23718b7007f3726076b26ef90cb85db4ab514"
+        "sha256": "a0258f5d22e3557c9d75f4d5dcad6dcdec86ad24c6c0854499bc6776c8dce2bb"
       },
       "status": "PASS",
       "upstream_model": "SOFR"
@@ -4350,7 +4350,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SOFR --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:17:43.697336+00:00",
+      "executed_at_utc": "2026-10-22T05:46:26.695362+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -4399,8 +4399,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -4440,7 +4440,7 @@
       "receipt": {
         "model_identity": "federal_reserve::SOFR",
         "path": "docs/evidence/C101/receipts/federal_reserve/SOFR/counterfact.json",
-        "sha256": "affd1f2415bba244cb433cfc09054c0b47920e5db43d9d80b8eb2b99dc5bbcf8"
+        "sha256": "6bb28c9fdabd70a53858a3236b8b38ca7a424613908fd42dd77a8c76d43dd1c0"
       },
       "status": "PASS",
       "upstream_model": "SOFR"
@@ -4448,7 +4448,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SvenssonYieldCurve --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:17:44.868579+00:00",
+      "executed_at_utc": "2026-10-22T05:46:28.077197+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -4512,8 +4512,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -4563,7 +4563,7 @@
       "receipt": {
         "model_identity": "federal_reserve::SvenssonYieldCurve",
         "path": "docs/evidence/C101/receipts/federal_reserve/SvenssonYieldCurve/implementation.json",
-        "sha256": "17ebbd9fa66114e511b8c72c9ffea5641eb9003ef78e32fc5f54334fba1976b4"
+        "sha256": "b14b2039a4945701416e5ce6cf4a3da84152f9dbaa218d18c2891de17830e4ad"
       },
       "status": "PASS",
       "upstream_model": "SvenssonYieldCurve"
@@ -4571,7 +4571,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SvenssonYieldCurve --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:17:46.053455+00:00",
+      "executed_at_utc": "2026-10-22T05:46:29.357923+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -4620,8 +4620,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -4671,7 +4671,7 @@
       "receipt": {
         "model_identity": "federal_reserve::SvenssonYieldCurve",
         "path": "docs/evidence/C101/receipts/federal_reserve/SvenssonYieldCurve/direct.json",
-        "sha256": "43bed41b9e87a1dd02aa43a09460f8801155b0a7a690a44ec807db015f665176"
+        "sha256": "b3da1a378b237804f205a3a387b44f240fe7844b17d55dac31abacafe68d668d"
       },
       "status": "PASS",
       "upstream_model": "SvenssonYieldCurve"
@@ -4679,7 +4679,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SvenssonYieldCurve --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:17:47.245636+00:00",
+      "executed_at_utc": "2026-10-22T05:46:30.738582+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -4728,8 +4728,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -4779,7 +4779,7 @@
       "receipt": {
         "model_identity": "federal_reserve::SvenssonYieldCurve",
         "path": "docs/evidence/C101/receipts/federal_reserve/SvenssonYieldCurve/service.json",
-        "sha256": "96cc80c7a0957dd7b54bd6c4c9ba66ceb7782530f068fd4baba18e6fc7325870"
+        "sha256": "967df86e0c6278701bd36b8d7a985200e62ea30aacdee1d794c974a2a5f855f8"
       },
       "status": "PASS",
       "upstream_model": "SvenssonYieldCurve"
@@ -4787,7 +4787,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SvenssonYieldCurve --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:17:48.435436+00:00",
+      "executed_at_utc": "2026-10-22T05:46:32.111860+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -4836,8 +4836,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -4887,7 +4887,7 @@
       "receipt": {
         "model_identity": "federal_reserve::SvenssonYieldCurve",
         "path": "docs/evidence/C101/receipts/federal_reserve/SvenssonYieldCurve/contract.json",
-        "sha256": "8c7d61716b91ef884e4dbaff4e86d3f9fc417c88e2ad2a15fbb1f9c4b35a6702"
+        "sha256": "b9b7bc5e57fdbe07cc639ce02f25adb40a434abae23767495bc49e78c5caa9cd"
       },
       "status": "PASS",
       "upstream_model": "SvenssonYieldCurve"
@@ -4895,7 +4895,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model SvenssonYieldCurve --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:17:50.816182+00:00",
+      "executed_at_utc": "2026-10-22T05:46:35.236708+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -4944,8 +4944,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -4995,7 +4995,7 @@
       "receipt": {
         "model_identity": "federal_reserve::SvenssonYieldCurve",
         "path": "docs/evidence/C101/receipts/federal_reserve/SvenssonYieldCurve/counterfact.json",
-        "sha256": "457ffe6822caad9af34a20f1352c4bb0a69d6279c6363625d4cf0b8a042cafed"
+        "sha256": "81ac790cf6d98e6e3816ff0e4c03d20792f955bf47038c3db7c3c5dc1970fd31"
       },
       "status": "PASS",
       "upstream_model": "SvenssonYieldCurve"
@@ -5003,7 +5003,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TotalFactorProductivity --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:17:52.010603+00:00",
+      "executed_at_utc": "2026-10-22T05:46:36.523250+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -5067,8 +5067,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -5103,7 +5103,7 @@
       "receipt": {
         "model_identity": "federal_reserve::TotalFactorProductivity",
         "path": "docs/evidence/C101/receipts/federal_reserve/TotalFactorProductivity/implementation.json",
-        "sha256": "51be644207087f74742c6cb478c334081118373dd64b93876af445305a7f4871"
+        "sha256": "04b1fb3db360605ca456b715675756918e6fc768d7d8a93097216434cc810ac1"
       },
       "status": "PASS",
       "upstream_model": "TotalFactorProductivity"
@@ -5111,7 +5111,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TotalFactorProductivity --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:17:53.196215+00:00",
+      "executed_at_utc": "2026-10-22T05:46:37.827866+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -5131,8 +5131,8 @@
         "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
         "fixture": [
           {
-            "after_sha256": "4dc79fa7490e69d7fbf69749bdf68f9dfba09bc1737ef3db48cdd14dd52e648e",
-            "before_sha256": "4dc79fa7490e69d7fbf69749bdf68f9dfba09bc1737ef3db48cdd14dd52e648e",
+            "after_sha256": "b568671ab560091ead6c556d2d6d678375e62e66cd8e164a0741244a48ec2e9b",
+            "before_sha256": "b568671ab560091ead6c556d2d6d678375e62e66cd8e164a0741244a48ec2e9b",
             "path": "docs/evidence/C101/fixtures/federal_reserve/TotalFactorProductivity.json"
           }
         ],
@@ -5160,8 +5160,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -5196,7 +5196,7 @@
       "receipt": {
         "model_identity": "federal_reserve::TotalFactorProductivity",
         "path": "docs/evidence/C101/receipts/federal_reserve/TotalFactorProductivity/direct.json",
-        "sha256": "6b2d49b283a1f109e84dc55841f273c48b30cc8d09503611ae17ec67d745003e"
+        "sha256": "1a702983d5d79c0f25281cd0fbc9248e99622b6882fb94fa95e334f250d8d685"
       },
       "status": "PASS",
       "upstream_model": "TotalFactorProductivity"
@@ -5204,7 +5204,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TotalFactorProductivity --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:17:54.387882+00:00",
+      "executed_at_utc": "2026-10-22T05:46:39.110670+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -5224,8 +5224,8 @@
         "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
         "fixture": [
           {
-            "after_sha256": "4dc79fa7490e69d7fbf69749bdf68f9dfba09bc1737ef3db48cdd14dd52e648e",
-            "before_sha256": "4dc79fa7490e69d7fbf69749bdf68f9dfba09bc1737ef3db48cdd14dd52e648e",
+            "after_sha256": "b568671ab560091ead6c556d2d6d678375e62e66cd8e164a0741244a48ec2e9b",
+            "before_sha256": "b568671ab560091ead6c556d2d6d678375e62e66cd8e164a0741244a48ec2e9b",
             "path": "docs/evidence/C101/fixtures/federal_reserve/TotalFactorProductivity.json"
           }
         ],
@@ -5253,8 +5253,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -5289,7 +5289,7 @@
       "receipt": {
         "model_identity": "federal_reserve::TotalFactorProductivity",
         "path": "docs/evidence/C101/receipts/federal_reserve/TotalFactorProductivity/service.json",
-        "sha256": "e12ab75af1702d0f11c2eb5fe3c39920f39b4ae4fc543482f1a21eba83900851"
+        "sha256": "efa7921438990a2305b4e769e083c2dc1fddf65daba446a17dee521fbd11adf6"
       },
       "status": "PASS",
       "upstream_model": "TotalFactorProductivity"
@@ -5297,7 +5297,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TotalFactorProductivity --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:17:55.593871+00:00",
+      "executed_at_utc": "2026-10-22T05:46:40.386556+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -5317,8 +5317,8 @@
         "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
         "fixture": [
           {
-            "after_sha256": "4dc79fa7490e69d7fbf69749bdf68f9dfba09bc1737ef3db48cdd14dd52e648e",
-            "before_sha256": "4dc79fa7490e69d7fbf69749bdf68f9dfba09bc1737ef3db48cdd14dd52e648e",
+            "after_sha256": "b568671ab560091ead6c556d2d6d678375e62e66cd8e164a0741244a48ec2e9b",
+            "before_sha256": "b568671ab560091ead6c556d2d6d678375e62e66cd8e164a0741244a48ec2e9b",
             "path": "docs/evidence/C101/fixtures/federal_reserve/TotalFactorProductivity.json"
           }
         ],
@@ -5346,8 +5346,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -5382,7 +5382,7 @@
       "receipt": {
         "model_identity": "federal_reserve::TotalFactorProductivity",
         "path": "docs/evidence/C101/receipts/federal_reserve/TotalFactorProductivity/contract.json",
-        "sha256": "72be0ee8db33f74fdb719f5be2543b7d6ae81f94e8cf4530217898595834006b"
+        "sha256": "98576004ee29fbd95b6fad35f97f600b1c3d89bb1604629387ad2bc55aa68201"
       },
       "status": "PASS",
       "upstream_model": "TotalFactorProductivity"
@@ -5390,7 +5390,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TotalFactorProductivity --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:17:57.991290+00:00",
+      "executed_at_utc": "2026-10-22T05:46:43.094247+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -5410,8 +5410,8 @@
         "contract_version": "sha256:dbcb71d16be8805295557a99c175db9bf1e860c63019d209b15782ae43138b0c",
         "fixture": [
           {
-            "after_sha256": "4dc79fa7490e69d7fbf69749bdf68f9dfba09bc1737ef3db48cdd14dd52e648e",
-            "before_sha256": "4dc79fa7490e69d7fbf69749bdf68f9dfba09bc1737ef3db48cdd14dd52e648e",
+            "after_sha256": "b568671ab560091ead6c556d2d6d678375e62e66cd8e164a0741244a48ec2e9b",
+            "before_sha256": "b568671ab560091ead6c556d2d6d678375e62e66cd8e164a0741244a48ec2e9b",
             "path": "docs/evidence/C101/fixtures/federal_reserve/TotalFactorProductivity.json"
           }
         ],
@@ -5439,8 +5439,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -5475,7 +5475,7 @@
       "receipt": {
         "model_identity": "federal_reserve::TotalFactorProductivity",
         "path": "docs/evidence/C101/receipts/federal_reserve/TotalFactorProductivity/counterfact.json",
-        "sha256": "d55827e89dff6b7e4e66031312a6aad72fcd69d779f2449324b06f02ab374d7d"
+        "sha256": "b313d49eb0d3b3d93722742b23a05826302ce1e5b7fc08b510f75427bbfd8da5"
       },
       "status": "PASS",
       "upstream_model": "TotalFactorProductivity"
@@ -5483,7 +5483,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TreasuryRates --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:17:59.171137+00:00",
+      "executed_at_utc": "2026-10-22T05:46:44.409472+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -5547,8 +5547,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -5593,7 +5593,7 @@
       "receipt": {
         "model_identity": "federal_reserve::TreasuryRates",
         "path": "docs/evidence/C101/receipts/federal_reserve/TreasuryRates/implementation.json",
-        "sha256": "34a546c827096d4333ff414fea87c3fbc63d13b85d50e9ac6a375ed197b91187"
+        "sha256": "9543cf187da0843ffbd338261a944b0a762e1d9ee4291e80ed4f029786b9e006"
       },
       "status": "PASS",
       "upstream_model": "TreasuryRates"
@@ -5601,7 +5601,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TreasuryRates --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:18:00.363844+00:00",
+      "executed_at_utc": "2026-10-22T05:46:45.732494+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -5650,8 +5650,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -5696,7 +5696,7 @@
       "receipt": {
         "model_identity": "federal_reserve::TreasuryRates",
         "path": "docs/evidence/C101/receipts/federal_reserve/TreasuryRates/direct.json",
-        "sha256": "f76d829a0b8285f1e0e1f870ba5a730706807a6f5fb6d936c711b8d455f332ac"
+        "sha256": "cb499dc0ade4b361c86301ab7769e1956a5f9ce10e36f38e955a79b421b2d0cf"
       },
       "status": "PASS",
       "upstream_model": "TreasuryRates"
@@ -5704,7 +5704,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TreasuryRates --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:18:01.558764+00:00",
+      "executed_at_utc": "2026-10-22T05:46:47.033987+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -5753,8 +5753,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -5799,7 +5799,7 @@
       "receipt": {
         "model_identity": "federal_reserve::TreasuryRates",
         "path": "docs/evidence/C101/receipts/federal_reserve/TreasuryRates/service.json",
-        "sha256": "4230baecde394a2792f2aeeac5b28b41f722b78fb7fa2634a4af5280fcf1c497"
+        "sha256": "a9319dcefd5c1c490d6508b892bc48f8fb6980718e6868fa876c2864a55e2514"
       },
       "status": "PASS",
       "upstream_model": "TreasuryRates"
@@ -5807,7 +5807,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TreasuryRates --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:18:02.755286+00:00",
+      "executed_at_utc": "2026-10-22T05:46:48.458272+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -5856,8 +5856,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -5902,7 +5902,7 @@
       "receipt": {
         "model_identity": "federal_reserve::TreasuryRates",
         "path": "docs/evidence/C101/receipts/federal_reserve/TreasuryRates/contract.json",
-        "sha256": "b7a628cbda34021d9d0e5bf0a51f96af7275fb870c5050ee7225fcf85f9e65e5"
+        "sha256": "36ad610aafb67ff200ecf58ebf4fb5f42d602cc25db65de820237e38a6f492c4"
       },
       "status": "PASS",
       "upstream_model": "TreasuryRates"
@@ -5910,7 +5910,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model TreasuryRates --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:18:05.142728+00:00",
+      "executed_at_utc": "2026-10-22T05:46:51.444674+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -5959,8 +5959,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -6005,7 +6005,7 @@
       "receipt": {
         "model_identity": "federal_reserve::TreasuryRates",
         "path": "docs/evidence/C101/receipts/federal_reserve/TreasuryRates/counterfact.json",
-        "sha256": "42a85f7897e6e1fca1887b2f4b1536d177f8bb336e7d16db41a86c4acee3d987"
+        "sha256": "024122a03924e064ae17df0ee45da051fb64d6e5e49b08ef4f619354de0f1b08"
       },
       "status": "PASS",
       "upstream_model": "TreasuryRates"
@@ -6013,7 +6013,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model YieldCurve --phase implementation --evidence-root docs/evidence/C101",
       "evidence_kind": "implementation_check",
-      "executed_at_utc": "2026-10-21T17:18:06.336343+00:00",
+      "executed_at_utc": "2026-10-22T05:46:52.717470+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "implementation",
@@ -6077,8 +6077,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -6113,7 +6113,7 @@
       "receipt": {
         "model_identity": "federal_reserve::YieldCurve",
         "path": "docs/evidence/C101/receipts/federal_reserve/YieldCurve/implementation.json",
-        "sha256": "5acefe847db1c2139909526f329db2b884eda8180be1303b091da26a6df3b8a4"
+        "sha256": "a9dad89e1e9bc6598ea05228a357c6cd8a1895e2781f74c2eef0038ecb68f4f3"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -6121,7 +6121,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model YieldCurve --phase direct --evidence-root docs/evidence/C101",
       "evidence_kind": "direct_fetcher",
-      "executed_at_utc": "2026-10-21T17:18:07.541451+00:00",
+      "executed_at_utc": "2026-10-22T05:46:53.948753+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "direct",
@@ -6170,8 +6170,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -6206,7 +6206,7 @@
       "receipt": {
         "model_identity": "federal_reserve::YieldCurve",
         "path": "docs/evidence/C101/receipts/federal_reserve/YieldCurve/direct.json",
-        "sha256": "efc8aa52b60987e0f627e2ef2d88246492a0f5f0e2f0879deecde7814c556b5f"
+        "sha256": "33f934d1c3462797de6ba9ca16421ac4c00f28bd83eb981f5682ddf3ec0d9967"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -6214,7 +6214,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model YieldCurve --phase service --evidence-root docs/evidence/C101",
       "evidence_kind": "provider_model_query",
-      "executed_at_utc": "2026-10-21T17:18:08.731161+00:00",
+      "executed_at_utc": "2026-10-22T05:46:55.180136+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "service",
@@ -6263,8 +6263,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -6299,7 +6299,7 @@
       "receipt": {
         "model_identity": "federal_reserve::YieldCurve",
         "path": "docs/evidence/C101/receipts/federal_reserve/YieldCurve/service.json",
-        "sha256": "1b549c2c3fd1e1f761a267dedfe39bb39aa4544a49d821c87ffe42d764a3dbeb"
+        "sha256": "b8c44185fa14092fd7bd71d184e6b137010e970946950e82c447500e63be6f9c"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -6307,7 +6307,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model YieldCurve --phase contract --evidence-root docs/evidence/C101",
       "evidence_kind": "typed_contract",
-      "executed_at_utc": "2026-10-21T17:18:09.925281+00:00",
+      "executed_at_utc": "2026-10-22T05:46:56.400170+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "contract",
@@ -6356,8 +6356,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -6392,7 +6392,7 @@
       "receipt": {
         "model_identity": "federal_reserve::YieldCurve",
         "path": "docs/evidence/C101/receipts/federal_reserve/YieldCurve/contract.json",
-        "sha256": "b0e45bc425f08fc949b00063f6db8382f3b81646dc1ea8d30e0fdc487f6bd011"
+        "sha256": "d45e6824c7c17d02af45a47543e2b82500c156cec83a33b40b380e1da02d4ce0"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -6400,7 +6400,7 @@
     {
       "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider federal_reserve --model YieldCurve --phase counterfact --evidence-root docs/evidence/C101",
       "evidence_kind": "adversarial_counterfact",
-      "executed_at_utc": "2026-10-21T17:18:12.322293+00:00",
+      "executed_at_utc": "2026-10-22T05:46:58.861265+00:00",
       "execution_mode": "offline_fixture",
       "exit_code": 0,
       "phase": "counterfact",
@@ -6449,8 +6449,8 @@
         ],
         "source": [
           {
-            "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-            "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+            "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+            "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
             "path": "opendata/data/providers/catalog.py"
           },
           {
@@ -6485,7 +6485,7 @@
       "receipt": {
         "model_identity": "federal_reserve::YieldCurve",
         "path": "docs/evidence/C101/receipts/federal_reserve/YieldCurve/counterfact.json",
-        "sha256": "83ca0b083f20ffe813a506901e6878c7d58264a444e8c102497bfc1dfba34471"
+        "sha256": "01e1b41083efc646182a5d57a890277508458ef2b9adb665565d665465ac5aa2"
       },
       "status": "PASS",
       "upstream_model": "YieldCurve"
@@ -6499,9 +6499,9 @@
       "receipt": {
         "model_identity": "federal_reserve::CentralBankHoldings",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__CentralBankHoldings.review.json",
-        "sha256": "56e6a8dd78de1a093d60258938b85b90e72dc000f8b5b80f9fe46395f074b0a8"
+        "sha256": "059b9214dd3017115f31bfa66c489740a9d07a4efd20668243184cedda78db1d"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -6514,9 +6514,9 @@
       "receipt": {
         "model_identity": "federal_reserve::FederalFundsRate",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__FederalFundsRate.review.json",
-        "sha256": "cea706620d3be5460704747525a730b80135b1b8eaa6deb1ceeb875bd097fb98"
+        "sha256": "7d07bdc7de5ba088970f803c55da9cc07b2d3195c3a2012e4c4641b253bb4ba8"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -6529,9 +6529,9 @@
       "receipt": {
         "model_identity": "federal_reserve::FomcDocuments",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__FomcDocuments.review.json",
-        "sha256": "499ebc0b7bbbb4c1c5ce5966cc54f7969f34b9f7a333c9b7bdd85eb7f108a7a8"
+        "sha256": "b49f88d61732cb763e974265761739c43b91ebd411d9eb718e02f0473ce738aa"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -6544,9 +6544,9 @@
       "receipt": {
         "model_identity": "federal_reserve::InflationExpectations",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__InflationExpectations.review.json",
-        "sha256": "ff5eed808b352610e5477b98b30e5ad7b0852cf8b61eb45791201c5155010370"
+        "sha256": "518898bfb6cd21e2b78591356da7b6fd63586650193345729981e0c3d914ee9c"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -6559,9 +6559,9 @@
       "receipt": {
         "model_identity": "federal_reserve::MoneyMeasures",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__MoneyMeasures.review.json",
-        "sha256": "0caacfb811fb3578f7d87eaf072223a5a15bd77e18b5d63239715b73a384450c"
+        "sha256": "ea65575a3853657026d392bbd1f6394ecfd0a3396a6efb144826fbecd3dddadc"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -6574,9 +6574,9 @@
       "receipt": {
         "model_identity": "federal_reserve::OvernightBankFundingRate",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__OvernightBankFundingRate.review.json",
-        "sha256": "bcbc15df241bdef3656b65995edba4c4f2195ac20a95032cd3005d9efa67cb53"
+        "sha256": "7024ba7f7db90dee9b2232b5b7427db82e9eb6244c98bac08c8c8b21b09b13de"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -6589,9 +6589,9 @@
       "receipt": {
         "model_identity": "federal_reserve::PrimaryDealerFails",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__PrimaryDealerFails.review.json",
-        "sha256": "041eee8e9fa8f115db42da23ec924cf95cd9c8863d4c92f8c90f970c17a3c31e"
+        "sha256": "b652a19934239fc91ef95d29acbdc1fe7f871c802c20fd9750e1b59513590ed6"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -6604,9 +6604,9 @@
       "receipt": {
         "model_identity": "federal_reserve::PrimaryDealerPositioning",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__PrimaryDealerPositioning.review.json",
-        "sha256": "02fb1d1389188c66e2b33caf417d94a7321a03128616c84f929678021d09a372"
+        "sha256": "99b3c53dffd3aa16436847c279eae5524c0cfe12cd81cf6f0817ab45f2433131"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -6619,9 +6619,9 @@
       "receipt": {
         "model_identity": "federal_reserve::SOFR",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__SOFR.review.json",
-        "sha256": "970700895f20f9fb13ddc358421d2d95d6d22e72e1f1be99785d81084cd8ec95"
+        "sha256": "99b0ee4df1b4da0be24b2b1e6c4e91724e937540b6b1d94e9816c977a2820ebb"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -6634,9 +6634,9 @@
       "receipt": {
         "model_identity": "federal_reserve::SvenssonYieldCurve",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__SvenssonYieldCurve.review.json",
-        "sha256": "3cd183fb5e660508193844cef7f17f38b487e22823f21b324131ad5b5317d01d"
+        "sha256": "326ace4a5478891c00d990854f3bd057a352f990391f72941fe167cb5c93aca7"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -6649,9 +6649,9 @@
       "receipt": {
         "model_identity": "federal_reserve::TotalFactorProductivity",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__TotalFactorProductivity.review.json",
-        "sha256": "05468006c96298364c99a630a8e3177adcdf2dd6fe3bc46220e448df36876a84"
+        "sha256": "b08ae7d5b233f1332775694b8062f3b744275ff769e25439e4620f1b1cb528a5"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -6664,9 +6664,9 @@
       "receipt": {
         "model_identity": "federal_reserve::TreasuryRates",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__TreasuryRates.review.json",
-        "sha256": "69c90f0ba3be9fe7ec879f361f7cac151585f013ad9890010b11c150c5a2080e"
+        "sha256": "bd22f0837782d6ac3007aa532e0d73adfa831ed0e370361bd99e86ff1abee1ef"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",
@@ -6679,9 +6679,9 @@
       "receipt": {
         "model_identity": "federal_reserve::YieldCurve",
         "path": "docs/evidence/C101/primary-reviews/federal_reserve__YieldCurve.review.json",
-        "sha256": "2b769010905b5cfa4b93f91908069aa7981893600b94ce0c1de79ba19e9de814"
+        "sha256": "93669c320511a340a1cd2cb7be184d5e3ee051d481be1538a9364b96caa41876"
       },
-      "reviewed_at_utc": "2026-10-21T17:18:13Z",
+      "reviewed_at_utc": "2026-10-22T05:47:00Z",
       "reviewer_id": "iter2-acceptance-reviewer",
       "reviewer_model": "qoder-cli-agent",
       "reviewer_role": "acceptance_reviewer",

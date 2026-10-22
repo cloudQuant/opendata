@@ -1,0 +1,285 @@
+===== CHUNK 1 START 13:01:22 providers=8 =====
+[13:01:22] produce:alpha_vantage exit=0
+    | EtfHistorical counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=3 of p
+    | wrote docs/evidence/C101/_resign58_tmp/alpha_vantage.claims.json
+[13:01:47] record:alpha_vantage exit=0
+    | REVIEW_SIGNED: alpha_vantage::EtfHistorical
+    | REVIEW_SIGNED: alpha_vantage::HistoricalEps
+    | recorder_exit=0 signed=3 refused=0 reviews_total=3 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/alpha_vantage/claims.revi
+[13:01:47] produce:cftc exit=0
+    | COTSearch counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py -
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=2 of p
+    | wrote docs/evidence/C101/_resign58_tmp/cftc.claims.json
+[13:02:04] record:cftc exit=0
+    | REVIEW_SIGNED: cftc::COT
+    | REVIEW_SIGNED: cftc::COTSearch
+    | recorder_exit=0 signed=2 refused=0 reviews_total=2 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/cftc/claims.reviewed.json
+[13:02:04] produce:econdb exit=0
+    | YieldCurve counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py 
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=8 of p
+    | wrote docs/evidence/C101/_resign58_tmp/econdb.claims.json
+[13:03:07] record:econdb exit=0
+    | REVIEW_SIGNED: econdb::PortVolume
+    | REVIEW_SIGNED: econdb::YieldCurve
+    | recorder_exit=0 signed=8 refused=0 reviews_total=8 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/econdb/claims.reviewed.js
+[13:03:07] produce:finra exit=0
+    | EquityShortInterest counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_r
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=2 of p
+    | wrote docs/evidence/C101/_resign58_tmp/finra.claims.json
+[13:03:21] record:finra exit=0
+    | REVIEW_SIGNED: finra::EquityShortInterest
+    | REVIEW_SIGNED: finra::OTCAggregate
+    | recorder_exit=0 signed=2 refused=0 reviews_total=2 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/finra/claims.reviewed.jso
+[13:03:21] produce:government_us exit=0
+    | WeatherBulletinDownload counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_pro
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=6 of p
+    | wrote docs/evidence/C101/_resign58_tmp/government_us.claims.json
+[13:04:07] record:government_us exit=0
+    | REVIEW_SIGNED: government_us::WeatherBulletin
+    | REVIEW_SIGNED: government_us::WeatherBulletinDownload
+    | recorder_exit=0 signed=6 refused=0 reviews_total=6 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/government_us/claims.revi
+[13:04:07] produce:nasdaq exit=0
+    | TopRetail counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py -
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=9 of p
+    | wrote docs/evidence/C101/_resign58_tmp/nasdaq.claims.json
+[13:05:05] record:nasdaq exit=0
+    | REVIEW_SIGNED: nasdaq::HistoricalDividends
+    | REVIEW_SIGNED: nasdaq::TopRetail
+    | recorder_exit=0 signed=9 refused=0 reviews_total=9 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/nasdaq/claims.reviewed.js
+[13:05:05] produce:tiingo exit=0
+    | TrailingDividendYield counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=7 of p
+    | wrote docs/evidence/C101/_resign58_tmp/tiingo.claims.json
+[13:05:58] record:tiingo exit=0
+    | REVIEW_SIGNED: tiingo::TrailingDividendYield
+    | REVIEW_SIGNED: tiingo::WorldNews
+    | recorder_exit=0 signed=7 refused=0 reviews_total=7 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/tiingo/claims.reviewed.js
+[13:05:58] produce:wsj exit=0
+    | ETFActive counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py -
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=3 of p
+    | wrote docs/evidence/C101/_resign58_tmp/wsj.claims.json
+[13:06:20] record:wsj exit=0
+    | REVIEW_SIGNED: wsj::ETFGainers
+    | REVIEW_SIGNED: wsj::ETFLosers
+    | recorder_exit=0 signed=3 refused=0 reviews_total=3 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/wsj/claims.reviewed.json
+[13:06:20] merge exit=0
+    |   shard docs/evidence/C101/yfinance/claims.reviewed.json
+    | claims=1745 identities=349 reviews=349 accepted_identities=349
+    | wrote docs/evidence/C101/claims.merged.json
+[13:06:20] judge exit=0
+    | wrote docs/evidence/C101/judge/claims.merged.report.json and docs/evidence/C101/judge/claims.merged.report.md: 350 identities, 41 offline accepted
+judge_statuses={} keys=['acceptance_rule', 'claims_input', 'claims_status_source', 'global_issues', 'invalid_claims', 'inventory']
+providers_known=31 this_chunk=8 rc=0
+RESIGN58_DONE rc=0
+/tmp/resign58_all.sh: line 9: i_rc: unbound variable
+===== CHUNK 2 START 13:12:26 =====
+[13:12:26] produce:benzinga exit=0
+    | PriceTarget counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=4 of p
+    | wrote docs/evidence/C101/_resign58_tmp/benzinga.claims.json
+[13:12:49] record:benzinga exit=0
+    | REVIEW_SIGNED: benzinga::PriceTarget
+    | REVIEW_SIGNED: benzinga::WorldNews
+    | recorder_exit=0 signed=4 refused=0 reviews_total=4 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/benzinga/claims.reviewed.
+[13:12:49] produce:congress_gov exit=0
+    | CongressCommitteeDocuments counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=8 of p
+    | wrote docs/evidence/C101/_resign58_tmp/congress_gov.claims.json
+[13:13:36] record:congress_gov exit=0
+    | REVIEW_SIGNED: congress_gov::CongressCommitteeDocuments
+    | REVIEW_SIGNED: congress_gov::CongressCommitteeInfo
+    | recorder_exit=0 signed=8 refused=0 reviews_total=8 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/congress_gov/claims.revie
+[13:13:36] produce:eia exit=0
+    | ShortTermEnergyOutlook counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_prob
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=2 of p
+    | wrote docs/evidence/C101/_resign58_tmp/eia.claims.json
+[13:13:51] record:eia exit=0
+    | REVIEW_SIGNED: eia::PetroleumStatusReport
+    | REVIEW_SIGNED: eia::ShortTermEnergyOutlook
+    | recorder_exit=0 signed=2 refused=0 reviews_total=2 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/eia/claims.reviewed.json
+[13:13:51] produce:finviz exit=0
+    | PriceTarget counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=7 of p
+    | wrote docs/evidence/C101/_resign58_tmp/finviz.claims.json
+[13:14:34] record:finviz exit=0
+    | REVIEW_SIGNED: finviz::PricePerformance
+    | REVIEW_SIGNED: finviz::PriceTarget
+    | recorder_exit=0 signed=7 refused=0 reviews_total=7 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/finviz/claims.reviewed.js
+[13:14:34] produce:imf exit=0
+    | PortVolume counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py 
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=8 of p
+    | wrote docs/evidence/C101/_resign58_tmp/imf.claims.json
+[13:15:23] record:imf exit=0
+    | REVIEW_SIGNED: imf::PortInfo
+    | REVIEW_SIGNED: imf::PortVolume
+    | recorder_exit=0 signed=8 refused=0 reviews_total=8 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/imf/claims.reviewed.json
+[13:15:23] produce:oecd exit=0
+    | Unemployment counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.p
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=9 of p
+    | wrote docs/evidence/C101/_resign58_tmp/oecd.claims.json
+[13:16:24] record:oecd exit=0
+    | REVIEW_SIGNED: oecd::SharePriceIndex
+    | REVIEW_SIGNED: oecd::Unemployment
+    | recorder_exit=0 signed=9 refused=0 reviews_total=9 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/oecd/claims.reviewed.json
+[13:16:24] produce:tmx exit=0
+    | TreasuryPrices counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=24 of 
+    | wrote docs/evidence/C101/_resign58_tmp/tmx.claims.json
+[13:19:10] record:tmx exit=0
+    | REVIEW_SIGNED: tmx::PriceTargetConsensus
+    | REVIEW_SIGNED: tmx::TreasuryPrices
+    | recorder_exit=0 signed=24 refused=0 reviews_total=24 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/tmx/claims.reviewed.jso
+[13:19:10] produce:yfinance exit=0
+    | ShareStatistics counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runne
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=29 of 
+    | wrote docs/evidence/C101/_resign58_tmp/yfinance.claims.json
+[13:22:56] record:yfinance exit=0
+    | REVIEW_SIGNED: yfinance::PriceTargetConsensus
+    | REVIEW_SIGNED: yfinance::ShareStatistics
+    | recorder_exit=0 signed=29 refused=0 reviews_total=29 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/yfinance/claims.reviewe
+[13:22:57] merge exit=0
+    |   shard docs/evidence/C101/yfinance/claims.reviewed.json
+    | claims=1745 identities=349 reviews=349 accepted_identities=349
+    | wrote docs/evidence/C101/claims.merged.json
+[13:22:57] judge exit=0
+    | wrote docs/evidence/C101/judge/claims.merged.report.json and docs/evidence/C101/judge/claims.merged.report.md: 350 identities, 132 offline accepted
+judge_statuses={} keys=['acceptance_rule', 'claims_input', 'claims_status_source', 'global_issues', 'invalid_claims', 'inventory']
+providers_known=31 this_chunk=8 rc=0
+RESIGN58_DONE rc=0
+chunk2_rc=0
+===== CHUNK 3 START 13:23:00 =====
+[13:23:00] produce:bls exit=0
+    | BlsSeries counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py -
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=2 of p
+    | wrote docs/evidence/C101/_resign58_tmp/bls.claims.json
+[13:23:15] record:bls exit=0
+    | REVIEW_SIGNED: bls::BlsSearch
+    | REVIEW_SIGNED: bls::BlsSeries
+    | recorder_exit=0 signed=2 refused=0 reviews_total=2 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/bls/claims.reviewed.json
+[13:23:15] produce:deribit exit=0
+    | OptionsChains counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=5 of p
+    | wrote docs/evidence/C101/_resign58_tmp/deribit.claims.json
+[13:23:46] record:deribit exit=0
+    | REVIEW_SIGNED: deribit::FuturesInstruments
+    | REVIEW_SIGNED: deribit::OptionsChains
+    | recorder_exit=0 signed=5 refused=0 reviews_total=5 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/deribit/claims.reviewed.j
+[13:23:47] produce:famafrench exit=0
+    | FamaFrenchUSPortfolioReturns counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claim
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=6 of p
+    | wrote docs/evidence/C101/_resign58_tmp/famafrench.claims.json
+[13:24:22] record:famafrench exit=0
+    | REVIEW_SIGNED: famafrench::FamaFrenchRegionalPortfolioReturns
+    | REVIEW_SIGNED: famafrench::FamaFrenchUSPortfolioReturns
+    | recorder_exit=0 signed=6 refused=0 reviews_total=6 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/famafrench/claims.reviewe
+[13:24:22] produce:fmp exit=0
+    | GovernmentTrades counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runn
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=69 of 
+    | wrote docs/evidence/C101/_resign58_tmp/fmp.claims.json
+[13:33:08] record:fmp exit=0
+    | REVIEW_SIGNED: fmp::WorldNews
+    | REVIEW_SIGNED: fmp::YieldCurve
+    | recorder_exit=0 signed=69 refused=0 reviews_total=69 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/fmp/claims.reviewed.jso
+[13:33:09] produce:intrinio exit=0
+    | WorldNews counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py -
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=38 of 
+    | wrote docs/evidence/C101/_resign58_tmp/intrinio.claims.json
+[13:39:53] record:intrinio exit=0
+    | REVIEW_SIGNED: intrinio::ShareStatistics
+    | REVIEW_SIGNED: intrinio::WorldNews
+    | recorder_exit=0 signed=38 refused=0 reviews_total=38 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/intrinio/claims.reviewe
+[13:39:53] produce:sec exit=0
+    | SymbolMap counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py -
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=24 of 
+    | wrote docs/evidence/C101/_resign58_tmp/sec.claims.json
+[13:42:55] record:sec exit=0
+    | REVIEW_SIGNED: sec::SicSearch
+    | REVIEW_SIGNED: sec::SymbolMap
+    | recorder_exit=0 signed=24 refused=0 reviews_total=24 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/sec/claims.reviewed.jso
+[13:42:56] produce:tradier exit=0
+    | OptionsChains counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=5 of p
+    | wrote docs/evidence/C101/_resign58_tmp/tradier.claims.json
+[13:43:27] record:tradier exit=0
+    | REVIEW_SIGNED: tradier::EtfHistorical
+    | REVIEW_SIGNED: tradier::OptionsChains
+    | recorder_exit=0 signed=5 refused=0 reviews_total=5 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/tradier/claims.reviewed.j
+[13:43:27] merge exit=0
+    |   shard docs/evidence/C101/yfinance/claims.reviewed.json
+    | claims=1745 identities=349 reviews=349 accepted_identities=349
+    | wrote docs/evidence/C101/claims.merged.json
+[13:43:27] judge exit=0
+    | wrote docs/evidence/C101/judge/claims.merged.report.json and docs/evidence/C101/judge/claims.merged.report.md: 350 identities, 281 offline accepted
+judge_statuses={} keys=['acceptance_rule', 'claims_input', 'claims_status_source', 'global_issues', 'invalid_claims', 'inventory']
+providers_known=31 this_chunk=7 rc=0
+RESIGN58_DONE rc=0
+chunk3_rc=0
+===== CHUNK 4 START 13:43:31 =====
+[13:43:31] produce:cboe exit=0
+    | OptionsChains counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=11 of 
+    | wrote docs/evidence/C101/_resign58_tmp/cboe.claims.json
+[13:44:55] record:cboe exit=0
+    | REVIEW_SIGNED: cboe::IndexSnapshots
+    | REVIEW_SIGNED: cboe::OptionsChains
+    | recorder_exit=0 signed=11 refused=0 reviews_total=11 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/cboe/claims.reviewed.js
+[13:44:56] produce:ecb exit=0
+    | YieldCurve counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py 
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=3 of p
+    | wrote docs/evidence/C101/_resign58_tmp/ecb.claims.json
+[13:45:16] record:ecb exit=0
+    | REVIEW_SIGNED: ecb::CurrencyReferenceRates
+    | REVIEW_SIGNED: ecb::YieldCurve
+    | recorder_exit=0 signed=3 refused=0 reviews_total=3 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/ecb/claims.reviewed.json
+[13:45:16] produce:federal_reserve exit=0
+    | YieldCurve counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py 
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=13 of 
+    | wrote docs/evidence/C101/_resign58_tmp/federal_reserve.claims.json
+[13:46:59] record:federal_reserve exit=0
+    | REVIEW_SIGNED: federal_reserve::TreasuryRates
+    | REVIEW_SIGNED: federal_reserve::YieldCurve
+    | recorder_exit=0 signed=13 refused=0 reviews_total=13 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/federal_reserve/claims.
+[13:47:00] produce:fred exit=0
+    | YieldCurve counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py 
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=36 of 
+    | wrote docs/evidence/C101/_resign58_tmp/fred.claims.json
+[13:52:00] record:fred exit=0
+    | REVIEW_SIGNED: fred::UniversityOfMichigan
+    | REVIEW_SIGNED: fred::YieldCurve
+    | recorder_exit=0 signed=36 refused=0 reviews_total=36 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/fred/claims.reviewed.js
+[13:52:01] produce:multpl exit=0
+    | SP500Multiples counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=1 of p
+    | wrote docs/evidence/C101/_resign58_tmp/multpl.claims.json
+[13:52:09] record:multpl exit=0
+    | re-signing: dropped 1 earlier review(s) for the addressed identities
+    | REVIEW_SIGNED: multpl::SP500Multiples
+    | recorder_exit=0 signed=1 refused=0 reviews_total=1 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/multpl/claims.reviewed.js
+[13:52:09] produce:seeking_alpha exit=0
+    | ForwardSalesEstimates counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=3 of p
+    | wrote docs/evidence/C101/_resign58_tmp/seeking_alpha.claims.json
+[13:52:27] record:seeking_alpha exit=0
+    | REVIEW_SIGNED: seeking_alpha::ForwardEpsEstimates
+    | REVIEW_SIGNED: seeking_alpha::ForwardSalesEstimates
+    | recorder_exit=0 signed=3 refused=0 reviews_total=3 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/seeking_alpha/claims.revi
+[13:52:28] produce:tradingeconomics exit=0
+    | EconomicCalendar counterfact    exit=0 status=PASS command=/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runn
+    | denominators: inventory total=350 (pinned identity set 5168e1e7…); catalog-resolvable bound identities this wave=349/350; provider rows covered=1 of p
+    | wrote docs/evidence/C101/_resign58_tmp/tradingeconomics.claims.json
+[13:52:36] record:tradingeconomics exit=0
+    | re-signing: dropped 1 earlier review(s) for the addressed identities
+    | REVIEW_SIGNED: tradingeconomics::EconomicCalendar
+    | recorder_exit=0 signed=1 refused=0 reviews_total=1 output=/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C101/tradingeconomics/claims.r
+[13:52:36] merge exit=0
+    |   shard docs/evidence/C101/yfinance/claims.reviewed.json
+    | claims=1745 identities=349 reviews=349 accepted_identities=349
+    | wrote docs/evidence/C101/claims.merged.json
+[13:52:36] judge exit=0
+    | wrote docs/evidence/C101/judge/claims.merged.report.json and docs/evidence/C101/judge/claims.merged.report.md: 350 identities, 349 offline accepted
+judge_statuses={} keys=['acceptance_rule', 'claims_input', 'claims_status_source', 'global_issues', 'invalid_claims', 'inventory']
+providers_known=31 this_chunk=7 rc=0
+RESIGN58_DONE rc=0
+chunk4_rc=0
+ALL_RESIGN58_DONE 13:52:39

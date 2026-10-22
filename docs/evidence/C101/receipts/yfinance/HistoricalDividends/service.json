@@ -1,13 +1,13 @@
 {
   "capture": {
     "path": "docs/evidence/C101/captures/yfinance/HistoricalDividends/service-exit0.txt",
-    "sha256": "b7a411b357fa7e50bc6dc7b9d006486355ba192bd28c424f911bc2f20c1e8542",
+    "sha256": "4fab060f3dac2300fdc52370109f816b5f5ba7ff4c8e9b73d9754d2ec3cdec22",
     "size_bytes": 370,
-    "stdout_excerpt": "service: query_provider_model executed for real (registry + reviewed domain semantics), rows=2 first_row_sha256=24cf876437628d62\nVERDICT=PASS\n"
+    "stdout_excerpt": "service: query_provider_model executed for real (registry + reviewed domain semantics), rows=2 first_row_sha256=1cd099097ecdcb87\nVERDICT=PASS\n"
   },
   "machine_execution": {
     "actual_command": "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/iter2_claims_probe_runner.py --provider yfinance --model HistoricalDividends --phase service --evidence-root docs/evidence/C101",
-    "executed_at_utc": "2026-10-21T17:49:43.726904+00:00",
+    "executed_at_utc": "2026-10-22T05:21:56.944256+00:00",
     "exit_code": 0,
     "pins": {
       "contract": [
@@ -25,8 +25,8 @@
       "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
       "fixture": [
         {
-          "after_sha256": "00878a7c74f0b77000f4a5707aa18b600a9e0485b4fc49d092adddcd6516f5bb",
-          "before_sha256": "00878a7c74f0b77000f4a5707aa18b600a9e0485b4fc49d092adddcd6516f5bb",
+          "after_sha256": "5f67e5a7bbe6881f952178cd2a087e7ca408c2e8d4c1747162a9ab0ec909e035",
+          "before_sha256": "5f67e5a7bbe6881f952178cd2a087e7ca408c2e8d4c1747162a9ab0ec909e035",
           "path": "docs/evidence/C101/fixtures/yfinance/HistoricalDividends.json"
         }
       ],
@@ -84,8 +84,8 @@
       ],
       "source": [
         {
-          "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-          "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+          "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+          "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
           "path": "opendata/data/providers/catalog.py"
         },
         {
@@ -136,8 +136,8 @@
     "contract_version": "sha256:a9b21b6ff082f6aae997d462295c3971b9a78e7971c806d09e631eeeb912aec8",
     "fixture": [
       {
-        "after_sha256": "00878a7c74f0b77000f4a5707aa18b600a9e0485b4fc49d092adddcd6516f5bb",
-        "before_sha256": "00878a7c74f0b77000f4a5707aa18b600a9e0485b4fc49d092adddcd6516f5bb",
+        "after_sha256": "5f67e5a7bbe6881f952178cd2a087e7ca408c2e8d4c1747162a9ab0ec909e035",
+        "before_sha256": "5f67e5a7bbe6881f952178cd2a087e7ca408c2e8d4c1747162a9ab0ec909e035",
         "path": "docs/evidence/C101/fixtures/yfinance/HistoricalDividends.json"
       }
     ],
@@ -195,8 +195,8 @@
     ],
     "source": [
       {
-        "after_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
-        "before_sha256": "bf09194c9df3c07fc52c188e15b47a7db3ebfcfd4076355804d850de2d16b54d",
+        "after_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
+        "before_sha256": "dff0db2767bf49bc97b9b9666410b393248d3095700655e4e2f0a31d46f5988b",
         "path": "opendata/data/providers/catalog.py"
       },
       {

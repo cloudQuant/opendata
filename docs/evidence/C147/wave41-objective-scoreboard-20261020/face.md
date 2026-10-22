@@ -1627,3 +1627,52 @@ CJK 路径靠 `GIT_CONFIG_*` 关掉 quotepath 后能被正确列出与复制（w
 
 本轮之后平面 1 仍是 **349/350**（`{OFFLINE_ACCEPTED: 349, UNREVIEWED: 1}`、0 INCOMPLETE、claims 1,745），
 `w156` 只是把 `stockgrid::ShortVolume` 的挂起理由从「端点要 owner 给」升级为「参考实现与后继站都实测不供数」。
+
+
+## 67. 发版前的 CI 修复：成员 1-11 转绿，成员 12 卡在 10 条 owner 红（不假装绿）
+
+owner 要求「解决 CI 之后合并 master、打 tag 与 release」。CI 的实际红点是一个一个揭开的，
+因为 `make gate` 是 fail-closed：前一个成员红，后面的成员根本不会跑。顺序与读数如下。
+
+1. **成员 2 `zero-dep-check`**：冻结的扫描面 census `opendata=580` vs 实走 `615`。差 35 = 自
+   `b15717b66`(10-15) 起新增的 .py，按 provider 归因（seeking_alpha 6 / biztoc 6 / wsj 5 / tmx 3 /
+   yfinance 2 / cboe 2 + 顶层模型 6），删除 0 ⇒ 有意增长，用工具自己的 `--update` 重钉，
+   baseline diff 只动那一格。重钉本身先被拒绝：`refusing to freeze an unusable reference policy:
+   stale sha256: catalog.py` —— 用仓内官方重钉器 `C101/probes/repin_reference_policy.py`（不手改 JSON），
+   87 条登记里 stale=1、finding 复集 head/live=0/0、`dependency_edges_added={}`、brand 行 10/10、
+   load-shape 43/43 ⇒ 登记的断言仍成立；两条臂可动（注入 `import akshare` → REJECT；改一位 hex → 87/87 stale）。
+2. **成员 5 `evidence-traceability`**：两类红分开。5 条是假指控——`_tracked_files()` 用默认
+   `core.quotepath=true`，git 给 CJK 路径加转义引号、磁盘走 rglob 给原名，两个集合永不相交，
+   于是 5 份**已跟踪**的 CJK 叙述被记成 `#untracked`；修在 `_git()` 统一关 quotepath。
+   两面验证：干净树 `untracked gaps=0`；伪造一份未跟踪 CJK 叙述 → `gaps=1` 且点名，删掉 → 0。
+   另 4 条是真缺口（C108/C140/C142/C144 四个 round 只有产物没有叙述档），按包内已提交载体补写四份 README。
+3. **成员 9 `quality-ratchet`**：`mypy_selfdev 0->3`（全在 `market_iter2._screen_rows`，
+   `raw["quotes"]` 是 `object`）与 `ruff_selfdev 148->158`。增量用「快照修订版逐文件差分」定位
+   （`/tmp/ci_snap@3f05f636c` vs 当前），25 处逐点断言替换；重签后 **134 < 148、mypy 0**，
+   `--update` 未被用来掩盖增长（它本来就只许收紧）。
+4. **成员 10 `public-api-quality`**：标准要求 100%/100%，实测 2339/2396。缺的 57 处全在迭代 2 的
+   provider 文件里，逐处读现场代码后写成句，现在 **100.0% / 100.0% (2365/2365)**。
+5. **一次我自己造成的范围溢出与一次真红的处置**：误跑的 `ruff format`（无路径参数时格式化整树）
+   动了 17 个非本意文件，全部还原；把 `federal_reserve/specs.py` 放进载荷时闸门数到
+   `allowlist_suppressed=12`（H.15 公开序列号被登记为列映射的来源键，如 RIFLGFCY20 那一族，其
+   「键名以 key 结尾 + 长令牌值」的形状被内置
+   `generic-api-key` 命中，shipped allowlist 早已登记，A 组 0 发现）。历史 27 份闸门面全是
+   `suppressed=0`，所以 B/C 两条臂对任何碰该文件的提交都不可满足。处置：**不动 `.gitleaks.toml`、
+   不改判定器、不为哄扫描器改产品代码形状**，而是把不属于本轮债的 3 行长行撤出载荷
+   （`git restore --staged --worktree`），ratchet 仍以 134<148 通过。这条留给 owner。
+6. **全树重签**：共享 pin（`opendata/data/models/__init__.py` 的 import 顺序）被顶到，
+   claims 一度 0 accepted。驱动是本轮自己写的分片器（`/tmp/resign58_tree.py`，只调四个 shipped 脚本，
+   中间产物留在被忽略的 `_resign58_tmp/`，不写任何既有载体）；日志 `runs/w158_resign_chain.txt`。
+   终读 `merge claims=1745 identities=349 reviews=349 accepted_identities=349`、
+   `judge 350 identities / 349 offline accepted`，四台仪器 `w105 21/21`、`w111 4/4`、`w130 6/6`、
+   `w113 4/4`，`objective_complete=False` 三项理由不变。
+   （我自己的驱动里有一处空读：`judge_statuses={}` —— 我按 `rows/entries` 取值，报告没有这两个键；
+   它同时打印了真实键名，链本身不受影响。）
+
+**还没解决的、也不该由我抹掉的**：成员 12 `test-cov` 跑全量 pytest，而平面里有 10 条既存红
+（本轮重测 10 failed / 44.32s，逐条与 `runs/test_plane_w55_final.xml` 同集合）：
+3 条 AC2/AC6 自检真负例（台账仍读 `gap`，放宽自检就是改判定器）、4 条
+`test_openbb_inventory_guard` 权利登记（DEC-41-08：需合规作者为 14 个 provider 逐条写权利行 + 原文引用）、
+`test_data_catalog` 的 query 注解通道（DEC-41-01 owner 已裁定保持现状）、
+`test_p0_integration_surface`（DEC-41-03）、`test_port_fidelity[bond_daily_sina]`（DEC-41-04，
+根因是请求里带当天日期）。所以「CI 全绿再合并」这一条我没有做到，也不是靠改测试能做到的。
