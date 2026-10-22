@@ -1,0 +1,25 @@
+# condensed A2 face from /tmp/a2_sim2.log (31446 lines)
+lines_kept=739 blocked_candidates=5055
+A2 files (complete resolver): 1441
+Static-tool execution partition: 1441 file(s), 0 verified immutable snapshot(s) excluded.
+BLOCKED candidate docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/current-output/__init__.py:
+BLOCKED candidate docs/evidence/C100/independent-ac04-current-codemod-replay/runs/20261012T233021Z/current-output/_version.py:
+== failing sub-members ==
+FAIL pinned Gitleaks file scan
+FAIL ruff check
+FAIL ruff format --check
+FAIL mypy (1073 unique target(s))
+FAIL bandit
+== would reformat ==
+Would reformat: docs/evidence/C146/wave40-query-annotation-divergence-20261019/probes/w95_query_annotation_face.py
+Would reformat: docs/evidence/C147/wave41-objective-scoreboard-20261020/probes/w130_counterfact_codes.py
+Would reformat: opendata/data/providers/biztoc/provider.py
+Would reformat: scripts/quality/iter2_witnesses/_parts/fred/series_a.py
+Would reformat: scripts/quality/iter2_witnesses/intrinio.py
+== mypy samples ==
+docs/evidence/C124/batch5-pin-rebase-20261017/probes/b5shadow_rearm.py:41: error: Returning Any from function declared to return "dict[str, str]"  [no-any-return]
+docs/evidence/C125/sloos-witness-20261017/probes/next_wave_predicate.py:113: error: Returning Any from function declared to return "int | str"  [no-any-return]
+docs/evidence/C126/sec-insider-witness-20261017/probes/next_wave_bucket_simulation.py:71: error: Returning Any from function declared to return "dict[str, Any]"  [no-any-return]
+docs/evidence/C127/intrinio-forward-witness-20261017/probes/plane1_delta_row_model.py:373: error: Unused "type: ignore" comment  [unused-ignore]
+docs/evidence/C128/plane1-residue-readiness-20261017/probes/handoff_fallback_counterfact.py:98: error: Argument 1 to "int" has incompatible type "int | None"; expected "str | Buffer | SupportsInt | SupportsIndex | SupportsTrunc"  [arg-type]
+docs/evidence/C128/plane1-residue-readiness-20261017/probes/handoff_fallback_counterfact.py:171: error: Returning Any from function declared to return "type"  [no-any-return]

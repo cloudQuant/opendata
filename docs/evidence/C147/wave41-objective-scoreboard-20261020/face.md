@@ -1686,3 +1686,49 @@ owner 要求「解决 CI 之后合并 master、打 tag 与 release」。CI 的�
 而 `gate_wave64` 副本尚未产生之时；副本是在扫描之后才 cp 并加入，所以提交对象里有 4 个路径，
 而被扫的索引里只有 2 个。两者都是真读数，但说明里应当写**扫描的那一个**。
 不重写历史，只在档上更正（与 §56、§65 同一处置法）。
+
+
+## 69. CI 从成员 2 推进到成员 8；成员 8 的红是 A2 全树模式撞上历史证据语料（数量已测）
+
+CI @`5c0efbda2` 停成员 2，@`16ab0eb8c` 停成员 8。两次都在 `make gate` 的 fail-closed 序列上，
+前面成员转绿是逐个实测的（CI 与本地 `git worktree` 干净树**同判**，两台仪器同一读数）：
+
+| 成员 | 本地干净树 @16ab0eb8c | CI @16ab0eb8c |
+| --- | --- | --- |
+| 2 zero-dep-check | exit 0，`942 walked (opendata=615…)` | 通过（日志推进到 a2-check 才停） |
+| 4 ledger-check | exit 0，`items=130 proven=112 gap=18` | 通过 |
+| 5 evidence-traceability | exit 0，`matches the frozen baseline (0 legacy)` | 通过 |
+| 6/7 js-points / loguru | exit 0 | 通过 |
+| 8 a2-check | **exit 2** | **失败（停在这里）** |
+
+成员 8 的解剖（`/tmp/a2_sim2.log` 30,344 行，A2 人口 1,441 个文件；PR 模式实测只降到 1,286，
+所以**「改用 PR 触发」不是出路**，这点我先测后说）：
+
+* `FAIL pinned Gitleaks file scan` 与 `immutable evidence` ×2：`BLOCKED candidate … 共 **5055** 条`，
+  原因是 `manifest-level trust or schema failure`，并接着报 `no trusted snapshot paths are available for the
+  required file scan`。**5055 正好等于不可变证据 wave-9 的 `exact5055` 人口** —— 这是只有干净检出
+  才暴露得出来的真缺陷：那批不可变信任输入在克隆里不可用。（本地 `git status --ignored` 有 567 项，
+  C113 与新加的 `docs/evidence` 静音规则只是让 `git status` 干净，不影响判定器读磁盘/index。）
+* `FAIL mypy`：**76 处**，按根 `docs/evidence 63` + `scripts/quality 13`，`opendata` 为 0（我这轮把
+  产品面的 mypy 打到 0 了；红在 50 波历史探针语料里）。
+* `FAIL ruff check`：**27 处**（E501 17、B009 7、S607 1），`docs/evidence 22` + `opendata/data 5`。
+* `FAIL ruff format --check`：**5 个文件**——`C146/w95_query_annotation_face.py`、
+  `C147/w130_counterfact_codes.py`、`opendata/data/providers/biztoc/provider.py`、
+  `scripts/quality/iter2_witnesses/_parts/fred/series_a.py`、`scripts/quality/iter2_witnesses/intrinio.py`。
+  这 5 个正是我那次误跑整树 `ruff format` 波及、随后**又按范围纪律还原**的文件；格式化它们能把这一子面
+  立刻转绿（AST 可证只是空白），但它不改变另外 5 个子面的红。
+* `FAIL bandit`：**31 条** test_id（B404 16、B607 10、B108 2、B603/B105/B310 各 1），同样集中在探针语料。
+
+复现（干净树，勿在主工作树上跑，它会写 `.mypy_cache`）：
+
+```bash
+git worktree add --detach /tmp/ci_sim2 HEAD
+cd /tmp/ci_sim2 && make --no-print-directory a2-check      # 约 15-20 分钟
+A2_BASE_REF=origin/master python scripts/quality/a2_check.py | head -1   # 只看作用域计数
+```
+
+**结论与待裁**：成员 8 不是我这轮载荷的缺陷，而是「A2 静态工具人口包含 50 波历史证据探针 +
+不可变快照信任输入在克隆里缺失」这两件事。可执行的四条路（要 owner 选）：
+A 把不可变快照输入纳入 git 或重建 manifest；B 清掉语料里的 76 mypy + 27 ruff + 31 bandit + 5 format；
+C 缩小 A2 人口（把 `docs/evidence/**` 的历史探针移出静态工具作用域）——**这是对 gate 范围的改动，
+属于 owner 裁定，我不自行做**；D 接受成员 8 现状先发 v0.1.0，把这一条作为已知红留档。
