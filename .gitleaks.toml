@@ -132,7 +132,7 @@ paths = [
 [[rules]]
 id = "generic-api-key"
 [rules.allowlist]
-description = "SDMX dataflow keys are public identifiers; API_KEY_FAILURE_DELAY_SECONDS=0.05 is the non-secret delay setting after an empty template value; rows_pointer=refRates is an engine field assignment naming a public release-table section; RIFLGFC*_N.B are the Federal Reserve H.15 maturity series identifiers declared as ColumnSpec.source_key; RIFSGFSW04_N.B is the twelfth, the H.15 4-week bill series the pinned week-4 capture prints last (specs.py:342, capture sha256 23f3ed8ae67b4d7d, header row 5 field 12); environment_variable= is the next kwarg's NAME swallowed as the value of a one-line CredentialSpec whose credential is read from the environment."
+description = "SDMX dataflow keys are public identifiers; API_KEY_FAILURE_DELAY_SECONDS=0.05 is the non-secret delay setting after an empty template value; rows_pointer=refRates is an engine field assignment naming a public release-table section; RIFLGFC*_N.B are the Federal Reserve H.15 maturity series identifiers declared as ColumnSpec.source_key; RIFSGFSW04_N.B is the twelfth, the H.15 4-week bill series the pinned week-4 capture prints last (specs.py:342, capture sha256 23f3ed8ae67b4d7d, header row 5 field 12); environment_variable= is the next kwarg's NAME swallowed as the value of a one-line CredentialSpec whose credential is read from the environment; e53f08f6c9e04bfd9760701085ec93b4 is Cloudflare's public beacon/analytics token shipped in the served HTML of every Finviz page (C149: staging the page captures as member-12 fixtures reported 3 findings on that one literal; the same data-cf-beacon slot holding any other value stays reported)."
 regexTarget = "secret"
 regexes = [
   '''^[A-Z0-9]{1,12}(\.[A-Z0-9_]{1,14}){3,}$''',
@@ -143,6 +143,11 @@ regexes = [
   # drop "this one regex" -- still mean the eleven they were measured on.
   '''^RIFSGFSW04_N\.B$''',
   '''^environment_variable=$''',
+  # C149: Cloudflare public beacon token in captured Finviz HTML. A SECOND [[rules]] block
+  # with this same id was tried first and SILENTLY REPLACED the whole allowlist above (gitleaks
+  # keeps the last duplicate block), resurrecting 65 previously-exempt findings -- duplicate rule
+  # ids are an override, not a merge. One rule id = one block.
+  '''^e53f08f6c9e04bfd9760701085ec93b4$''',
 ]
 
 # C73: the archived gate/run manifests under docs/evidence/ record, for every tracked
@@ -182,23 +187,4 @@ description = "Evidence manifests store sha256 integrity digests of tracked file
 regexTarget = "line"
 regexes = [
   '''"[^"\n]{2,160}?/[^"\n]{1,160}?\.[A-Za-z0-9]{1,6}": "[0-9a-f]{64}"''',
-]
-
-# C149: staging the Finviz page captures (CI member 12 reads them as fixtures) reported
-# 3 findings under generic-api-key, all one literal: `data-cf-beacon='{"token":"e53f08f6..."}'`.
-# That is Cloudflare's *public* beacon/analytics identifier -- it ships in the served HTML of
-# every Finviz page, is the same value in all captures, and grants nothing. Blast radius
-# measured on the tree: exactly 4 occurrences, one line each, all in C100 Finviz captures
-# (finviz-performance/fixtures/{aapl,invalid}.html and
-# remaining-protocol-review/market-six/captures-20261012T171107Z/{aapl,invalid}.html); 0
-# elsewhere. The exemption is the literal token itself under generic-api-key only (regexTarget
-# = "secret"): a different value in the same data-cf-beacon slot stays reported, and specific
-# rules (github-pat, aws-*, ...) never consulted this entry.
-[[rules]]
-id = "generic-api-key"
-[rules.allowlist]
-description = "Cloudflare public beacon token embedded in captured Finviz HTML pages (data-cf-beacon analytics id; same value on every Finviz page, not a credential)."
-regexTarget = "secret"
-regexes = [
-  '''^e53f08f6c9e04bfd9760701085ec93b4$''',
 ]
