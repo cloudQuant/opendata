@@ -2136,8 +2136,7 @@ keys、`environment_variable=`、`rows_pointer=refRates`）——**一个豁免�
 **根因**：为了钉 Cloudflare beacon token，我在文件尾部新开了第二个
 `[[rules]] id = "generic-api-key"` 块。gitleaks 对重复 rule id 的语义是**后者整体替换前者**
 （含其 `[rules.allowlist]`），不是合并——于是第一块的 6 条 regexes 连同全部注释语境一起被
-顶掉，65 条历史豁免复活。对照读数：工作树 stash 回「已提交的重复块」再扫 = 65 条复现；
-合并进既有块后终扫见文末。
+顶掉，65 条历史豁免复活。对照读数：工作树 stash 回「已提交的重复块」再扫 = 65 条复现；合并进既有块后全历史终扫（同一 main 树、含 fixture 提交后的 90373c218）= **0 findings, rc=0**（521.87 MB / 11m3s）。
 
 **修法**（commit `90373c218`）：beacon 字面量并进既有 regexes 列表尾行，块内注释钉住教训
 「duplicate rule id = override, not merge; one rule id = one block」。双侧对照重测：

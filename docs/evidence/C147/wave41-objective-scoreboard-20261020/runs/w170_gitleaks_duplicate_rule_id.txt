@@ -1,0 +1,22 @@
+w170: gitleaks 重复 rule id 覆盖事故与收口（2026-10-23）
+
+== 症状 ==
+CI run 39819933013 secret-scan job: SUCCESS（旧配置，钉住 6 条既有豁免）
+本轮 d9c9085c9 入库后:
+  main 树 make secret-check（stash 后=已提交重复块配置）: 65 leaks rc=1
+  干净 clone + 同配置: 65 leaks rc=1, 全部 generic-api-key, 13 commits, 触点分组:
+    specs.py 23 / test_ecb_series_client 11 / test_ecb_series_fetchers 6 / test_first_model_bindings 4
+    / 其余 21 分布在 ecb 系列与 C75/C89/C104 载体——全部是既有豁免的形状
+
+== 根因 ==
+.gitleaks.toml 出现第二个 [[rules]] id=generic-api-key 块（只为钉 beacon）
+gitleaks 对重复 rule id: 后块整体替换前块（含 [rules.allowlist]）——覆盖语义, 不是合并
+教训落进两处注释: 配置块内 + 探针枚举 C149 注记
+
+== 修法与复验 ==
+1) beacon 字面量并进既有 regexes 尾行（90373c218）: staged 0 findings / 全历史 0 findings rc=0 (521.87MB, 11m3s)
+2) 对照臂不变: /tmp/gitleaks-control 同 beacon 槽植入 ghp_ 假 token -> github-pat + generic-api-key 双报（字面量豁免非形状）
+3) 探针 GENERIC_API_KEY_ALLOWED_REGEXES 扩第 13 条（AC-1|09 逐字钉联动；AC-1|09 不在棘轮基线，
+   只改配置不扩枚举=CI 成员 11 新增 finding 红）: 官方重钉 87/87、注入臂 REJECT、pin-corruption 87/87、
+   post stale=0; 成员 2 先过（942 files, 0 new upstream refs）; py313 单跑 5/5, CI venv -k ac1_09 7/7
+4) 更正: §79/§80 早期把 py313 全量面 3 条多红记为 -n 8 串扰——复验为中间态配置红（三条都读 .gitleaks.toml）
