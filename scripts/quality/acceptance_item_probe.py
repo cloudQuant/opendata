@@ -855,10 +855,10 @@ def measure_ac1_01(ctx: Context) -> Facts:
 
 
 def judge_ac1_01(facts: Facts) -> Verdict:
-    """``AC-1|01``: the deliverable is opendata 0.1.0 and ``opendata/`` is its package."""
+    """``AC-1|01``: the deliverable is opendata 0.1.1 and ``opendata/`` is its package."""
     ok = (
         facts["name"] == "opendata"
-        and facts["version"] == "0.1.0"
+        and facts["version"] == "0.1.1"
         and facts["opendata_pkg"] == "yes"
         and facts["app_pkg_files"] == "0"
         and facts["first_include"].startswith("opendata")
@@ -873,7 +873,7 @@ def judge_ac1_01(facts: Facts) -> Verdict:
     reason = (
         ""
         if ok
-        else "the identity surface does not read opendata / 0.1.0 / opendata/ as its package"
+        else "the identity surface does not read opendata / 0.1.1 / opendata/ as its package"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -16132,7 +16132,7 @@ PROBES: Final[tuple[Probe, ...]] = (
         ),
         repair={
             "name": "opendata",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "opendata_pkg": "yes",
             "app_pkg_files": "0",
             "first_include": "opendata*",

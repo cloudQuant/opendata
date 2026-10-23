@@ -142,6 +142,18 @@ def test_key_observation_archive_distinguishes_metadata_and_live_delivery() -> N
     assert key_monitoring_observations(json.dumps(record))["quota_remaining_observed"] == "no"
 
 
+def test_project_identity_probe_matches_the_release_and_rejects_version_drift() -> None:
+    from scripts.quality import acceptance_item_probe as tool
+
+    ctx = tool.load_context()
+    probe = tool.probe_for("AC-1|01")
+    facts = probe.measure(ctx)
+    assert facts["version"] == "0.1.1"
+    assert probe.judge(facts).state == PROVEN
+    for version in ("0.1.0", "0.0.9", ""):
+        assert probe.judge({**facts, "version": version}).state == tool.GAP
+
+
 def test_item_parser_matches_all_ledger_groups_including_non_ac_planes() -> None:
     """Performance and reliability criteria share exactly the ledger identities."""
     path = REPO_ROOT / "docs/迭代计划/迭代1-重构数据中台/验收文档.md"
