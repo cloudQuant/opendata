@@ -2124,3 +2124,37 @@ generic-api-key + github-pat 双报（carrier `runs/w169_member12_census.txt`）
 阈值 84% 定于 C6 时代，成员 12 近期从未在 CI 跑到过判定）。
 降阈值/补测试/接受红——这是 owner 决策，不在本轮擅动。
 
+
+## 80. gitleaks 重复 rule id 是覆盖不是合并：一次 65 条豁免复活，和它带来的终扫反转
+
+**发现路径**：§79 入库后，CI 同构 fresh clone 的全历史 `make secret-check` 报 **65 条
+generic-api-key**，而 CI run 39819933013 的 secret-scan job 在同一份历史上是绿的。
+两侧唯一差集就是本轮的 `.gitleaks.toml`。按文件分组：65 条全部落在 C36/C75/C104/C89
+注释里逐条豁免过的旧触点（specs.py 的 RIFLGFC×11+RIFSGFSW04、ECB 测试里的 SDMX dataflow
+keys、`environment_variable=`、`rows_pointer=refRates`）——**一个豁免没坏，是整块失效**。
+
+**根因**：为了钉 Cloudflare beacon token，我在文件尾部新开了第二个
+`[[rules]] id = "generic-api-key"` 块。gitleaks 对重复 rule id 的语义是**后者整体替换前者**
+（含其 `[rules.allowlist]`），不是合并——于是第一块的 6 条 regexes 连同全部注释语境一起被
+顶掉，65 条历史豁免复活。对照读数：工作树 stash 回「已提交的重复块」再扫 = 65 条复现；
+合并进既有块后终扫见文末。
+
+**修法**（commit `90373c218`）：beacon 字面量并进既有 regexes 列表尾行，块内注释钉住教训
+「duplicate rule id = override, not merge; one rule id = one block」。双侧对照重测：
+staged 面 0 findings；throwaway 仓库同一 beacon 槽位植入假 ghp_ token 仍被
+generic-api-key + github-pat 双报（豁免仍是字面量不是形状）。
+
+**门禁环境对照**（py313，完整成员 12 命令）：**82.34%**，CI 同构面 82.30%——
+阈值 84% 是 A0 奠基提交定下的常数，`git log -S fail_under` 显示从未随代码增长重新测量过。
+两环境同读数 ⇒ 不是环境差异，是阈值过时。
+门禁面当时多出的 3 条失败（test_env_example_security 1、test_acceptance_item_probe ac1-09 2）
+**初版误记为 `-n 8` 串扰，复验后归因更正**：三条都读 `.gitleaks.toml`，那次运行用的是
+尚未合并的重复块配置（见 §80 根因）；配置与枚举收口后 py313 单跑 5/5 过、CI venv
+`-k ac1_09` 7/7 过。串扰不成立，是中间态配置红。
+
+**AC-1|09 联动收口**：探针的 `GENERIC_API_KEY_ALLOWED_REGEXES` 是对 `.gitleaks.toml`
+allowlist 的逐字钉，且 AC-1|09 **不在成员 11 棘轮基线里**——只改配置不扩枚举，CI 成员 11
+会新增一条 finding 变红。按 C104/C89 同款仪式扩到第 13 条字面量：官方重钉器
+`--apply`（87 entries 不变、注入臂 REJECT、pin-corruption 87/87、post stale=0），
+成员 2 本机先过（942 files, 0 new upstream refs）。
+

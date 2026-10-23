@@ -1837,6 +1837,15 @@ GENERIC_API_KEY_ALLOWED_REGEXES: Final = (
     # removed), so this mirrors an exemption that only covers bytes already in history; specific
     # rules keep reading the value. docs/evidence/C89/gitleaks-counterfactual.py scores both faces.
     r"^environment_variable=$",
+    # C149: staging the Finviz page captures as member-12 fixtures reported 3 findings on ONE
+    # literal -- Cloudflare's public beacon/analytics token, shipped in the served HTML of every
+    # Finviz page (`data-cf-beacon='{"token":"e53f08f6..."}'`). Tree-wide blast radius: 4
+    # occurrences, all in C100 Finviz captures, 0 elsewhere. A thirteenth exact literal: the same
+    # data-cf-beacon slot holding any other value stays reported (docs/evidence/C149 run w169
+    # measures the planted-token arm). NOTE: this literal rode in as a SECOND [[rules]] block
+    # first, and gitleaks treats a duplicate rule id as a whole-block REPLACE -- 65 exemptions
+    # from the C36/C75/C89/C104 lines above came back red. One rule id = one block.
+    r"^e53f08f6c9e04bfd9760701085ec93b4$",
 )
 
 
