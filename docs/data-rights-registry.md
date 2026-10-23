@@ -1,7 +1,7 @@
 # 数据源权利登记表
 
-> 版本：v1.7（迭代2新增 Benzinga / EconDB / Tiingo 三条专属登记（§1 #17—19）；v1.6 新增 Intrinio 专属登记；v1.5 新增美联储理事会专属登记；登记完整性不等于所有用途获准）
-> 日期：2026-10-12（第17—19行本轮审阅；第16行为 2026-10-11；第15行为 2026-10-09；第12—14行为 2026-10-08；C65 既有行复核日期仍为 2026-09-30；首版 2026-09-22）
+> 版本：v1.8（第20—35行补齐已接入源的待复核登记；v1.7 新增 Benzinga / EconDB / Tiingo；登记完整性不等于所有用途获准）
+> 日期：2026-10-23（第20—35行仅登记、未做条款审阅；第17—19行为 2026-10-12；既有行日期和结论不变）
 > 依据：迭代1 决策 D11（数据权利与再分发）、设计 §1.3
 > 维护：数据源变更、条款变更、复核结论变化时必须更新本表
 
@@ -38,6 +38,22 @@
 | 17 | Benzinga（Benzinga Pro API） | 自研 `opendata/data/providers/benzinga`；`api.benzinga.com/api/v2.1/calendar/ratings` 凭据直连（环境变量 `BENZINGA_API_KEY`，以查询参数 `token` 送出；本轮未持有密钥、未发出请求）；PriceTarget 一条 ModelSpec 已接线（2026-10-12 C99 注册面复测为一条） | https://www.benzinga.com/ | 本机客户端（curl 与 WebFetch）对 www.benzinga.com 返回 HTTP 403，未取得可引用的条款原文；Pro 数据接口按订阅协议授权，本项目未签订任何 Benzinga 协议，落库依据不足，暂不批准 | 同上，无书面协议依据即不得向第三方提供，暂不批准 | 同上，商业用途须由订阅协议授予，本项目未取得，暂不批准 | 2026-10-12 | cloudQuant / Codex | 待复核（本迭代已接入，条款原文未取得） |
 | 18 | EconDB（econdb.com 静态名册 CSV） | 自研 `opendata/data/providers/econdb`；`www.econdb.com/static/help/main_tickers.csv` 公开静态文件，无凭据、无分页；AvailableIndicators 一条 ModelSpec 已接线（2026-10-12 C99 注册面复测为一条） | https://www.econdb.com/ | 本机客户端对 www.econdb.com 返回 HTTP 403，站内是否公开条款页未能核实；该文件是各官方统计机构序列的名册索引，数值权利属于发布机构，须逐系列向来源（BLS、ECB、SCB 等）核对，本项目未逐系列核对，暂不批准 | 名册本身不含数值，但再分发会连带指向他方序列；未取得逐系列许可与 EconDB 许可依据，暂不批准 | 同上，暂不批准 | 2026-10-12 | cloudQuant / Codex | 待复核（本迭代已接入，条款原文未取得） |
 | 19 | Tiingo（api.tiingo.com） | 自研 `opendata/data/providers/tiingo`；`api.tiingo.com/tiingo/crypto/prices` 凭据直连（环境变量 `TIINGO_TOKEN`，以查询参数 `token` 送出；本轮未持有令牌、未发出请求）；CryptoHistorical 一条 ModelSpec 已接线（2026-10-12 C99 注册面复测为一条） | https://app.tiingo.com/tos | §1.6(a) 对免费与试用计划明文禁止持久化："If you use a Starter Plan or any free or paid trial plan (each, a \"Trial Plan\"), you may not write, save, archive, back up, or otherwise retain Tiingo Data in any persistent or durable storage."；付费计划存续期内 "you may persist Tiingo Data in storage solely to the extent permitted by that Paid Plan and these Terms"，降级或终止后 "you must promptly and permanently delete all Tiingo Data"；本项目未持有适用 Paid Plan，落库依据不足，暂不批准 | §7.3 "All data via the API is for internal consumption only."，且 "Redistribution is only available upon special request and permission, and comes with additional fees."，获准后仍须附 "Data sourced by Tiingo" 并链接 tiingo.com；本项目未取得该特别许可，暂不批准 | §7.3 要求代表组织或业务者签 Commercial 计划："if you are representing an organization or business, you must sign up for a Commercial plan."；本项目未签订，暂不批准 | 2026-10-12 | cloudQuant / Codex | 已复核（受限） |
+| 20 | EIA（美国能源信息署） | 自研 `opendata/data/providers/eia`；WPSR 与 STEO | https://www.eia.gov/ | 本轮未审阅逐数据集条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 21 | Kenneth French Data Library | 自研 `opendata/data/providers/famafrench`；因子与组合档案 | https://mba.tuck.dartmouth.edu/pages/Faculty/ken.french/data_library.html | 本轮未审阅逐数据集条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 22 | Multpl | 自研 `opendata/data/providers/multpl`；公开估值表 | https://www.multpl.com/ | 本轮未审阅逐数据集条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 23 | Seeking Alpha | 自研 `opendata/data/providers/seeking_alpha`；日历与预测 | https://seekingalpha.com/ | 本轮未审阅逐数据集条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 24 | Trading Economics | 自研 `opendata/data/providers/tradingeconomics`；经济日历 | https://tradingeconomics.com/ | 本轮未审阅逐数据集条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 25 | Biztoc | 自研 `opendata/data/providers/biztoc`；新闻接口 | https://api.biztoc.com | 本轮未审阅逐数据集条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 26 | CFTC（美国商品期货交易委员会） | 自研 `opendata/data/providers/cftc`；COT 与市场目录 | https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm | 本轮未审阅逐数据集条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 27 | Congress.gov | 自研 `opendata/data/providers/congress_gov`；法案与文档 | https://api.congress.gov | 本轮未审阅逐数据集条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 28 | Deribit | 自研 `opendata/data/providers/deribit`；衍生品行情 | https://www.deribit.com/ | 本轮未审阅逐数据集条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 29 | FINRA | 自研 `opendata/data/providers/finra`；OTC 与卖空数据 | https://developer.finra.org/ | 本轮未审阅逐数据集条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 30 | Finviz | 自研 `opendata/data/providers/finviz`；公开页面数据 | https://finviz.com/ | 本轮未审阅逐数据集条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 31 | U.S. Government（USDA / Treasury / NOAA） | 自研 `opendata/data/providers/government_us`；多发布主体 | https://www.usa.gov/ | 各发布主体及数据集须分别复核，暂不批准整体落库 | 各主体授权不可互相代替，暂不批准 | 未取得逐数据集适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 32 | Nasdaq | 自研 `opendata/data/providers/nasdaq`；页面与 Data Link | https://www.nasdaq.com/ | 本轮未审阅逐产品及底层数据条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 33 | SEC（美国证券交易委员会） | 自研 `opendata/data/providers/sec`；EDGAR 与披露文档 | https://www.sec.gov/ | 官方发布与申报方材料须分别复核，暂不批准整体落库 | 未取得逐材料适用许可依据，暂不批准 | 未取得逐材料适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 34 | TMX Money | 自研 `opendata/data/providers/tmx`；公开证券数据 | https://money.tmx.com/ | 本轮未审阅逐产品及底层数据条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
+| 35 | The Wall Street Journal（WSJ） | 自研 `opendata/data/providers/wsj`；ETF 排行 | https://www.wsj.com | 本轮未审阅逐数据集条款，暂不批准 | 未取得适用许可依据，暂不批准 | 未取得适用许可依据，暂不批准 | 2026-10-23 | cloudQuant / Qoder（仅登记） | 待复核（本迭代已接入，条款原文未取得） |
 
 > 经 akshare 接入的源数量众多（涵盖 46 个类别），上表登记**当前及计划使用的主要源**；
 > 新增数据域时必须同步补登记，未登记的源不得进入 `source="auto"` 路由。
@@ -59,6 +75,10 @@ Intrinio 的第16行依据是 [C65 逐源审阅 §11d](evidence/C65/data-rights-
 纽约联储的三个参考利率（FederalFundsRate、SOFR、OvernightBankFundingRate）读的是 `markets.newyorkfed.org`，不属于第15行的 `www.federalreserve.gov` 发布表接口，因此不落在第15行的覆盖声明内；美联储理事会与其纽约联储分行是两个发布主体，条款页也不同，逐源条款行列入 §2 待办第 7 项，本行不为其背书。
 
 登记行链接只证明来源与审阅状态可追溯；BLS/FMP/Cboe/美联储/Intrinio 的新增能力均 `verified=False`，不加入自动选源。本轮源码与 fixture 可以离线验证，没有释放 FMP 或 Cboe 或美联储或 Intrinio 的真实采集、落库或对外分发动作。Benzinga、EconDB、Tiingo 三行同此，公开条款复核不改变第17、18、19 行能力的 `verified=False`，也不构成对本项目落库、再分发或商业使用的许可。
+
+### 1.2 已接入源的待复核登记
+
+第20—35行仅核对本仓 `opendata/data/providers/<source>/provider.py` 的发布主体、站点和接入声明；链接原样取自其 `website` 字段，不代表已取得或审阅条款。本轮没有申请账号、购买订阅或调用这些数据 API；日期是登记日期，不是条款复核日期，责任人列不表示 cloudQuant 人工签名。三项用途均暂不批准，`verified`、自动选源、落库与分发权限不变；本表既有结论与数据免责声明未改变。多发布主体、申报方材料及底层数据须逐项审阅，不能用美国政府门户、公共接口或一个 provider 名称替代全部权利人的许可。
 
 ## 2. 待办与责任
 

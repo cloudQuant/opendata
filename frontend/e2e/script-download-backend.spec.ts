@@ -311,6 +311,7 @@ async function startDownload(
   trace.push({
     method: 'POST',
     path: '/api/v1/data/download#ui-click-result',
+    occurred_at_epoch_ms: Date.now(),
     status: response.status(),
     response_body: body,
   })
@@ -502,6 +503,7 @@ async function clickDownloadError(
   trace.push({
     method: 'POST',
     path: `/api/v1/data/download#ui-error-${options.label}`,
+    occurred_at_epoch_ms: Date.now(),
     status: response.status(),
     request_body: forwardedBody,
     response_body: responseBody,

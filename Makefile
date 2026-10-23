@@ -179,11 +179,13 @@ frontend-typecheck:
 # path it just visited, all in the same green summary. So the run cannot gate
 # itself: the judgment plane reads every leaf first, and only after it is clean
 # does the browser run have to be green. Needs `npx playwright install chromium`
-# once per machine; it starts only the vite dev server, no backend and no
-# warehouse (see docs/evidence/C30/README.md §4 for what that buys and costs).
+# once per machine. The default suite uses only Vite; the backend leaf runs via
+# its owned-MySQL pytest harness, which also needs its pinned Docker image locally.
 frontend-e2e:
 	python scripts/quality/frontend_e2e_plane.py
 	cd frontend && npx playwright test --reporter=list
+	REDIS_URL= python -m pytest --no-cov \
+		tests/test_script_download_backend_iter2.py::test_real_browser_download_chain_against_owned_mysql
 
 # --- Aggregates ------------------------------------------------------------
 

@@ -30,6 +30,10 @@ TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 LIVE_E2E_OPT_IN_ENV = "OPENDATA_ALLOW_LIVE_E2E"
 LIVE_E2E_OPT_IN_TOKEN = "allow-prod-and-upstream-writes"
 LIVE_E2E_MARKER = "e2e"
+OWNED_MYSQL_E2E_NODE = (
+    "tests/test_script_download_backend_iter2.py::"
+    "test_real_browser_download_chain_against_owned_mysql"
+)
 
 
 def live_e2e_allowed() -> bool:
@@ -38,7 +42,7 @@ def live_e2e_allowed() -> bool:
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
-    """Skip every ``e2e`` item unless :data:`LIVE_E2E_OPT_IN_ENV` releases it.
+    """Deny live ``e2e`` items while allowing the exact owned-MySQL harness.
 
     Keyed on the same marker that ``make gate``'s ``-m "not e2e"`` deselects, so
     the two planes cannot disagree about the list: under the gate these items are
@@ -55,6 +59,12 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
         )
     )
     for item in items:
+        if item.nodeid == OWNED_MYSQL_E2E_NODE:
+            from opendata.core.token_blacklist import _InMemoryBlacklist, token_blacklist
+
+            # Global test cleanup must not invalidate sessions in a shared Redis backend.
+            if isinstance(token_blacklist, _InMemoryBlacklist):
+                continue
         if item.get_closest_marker(LIVE_E2E_MARKER) is not None:
             item.add_marker(skip_live)
 

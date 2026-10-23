@@ -41,6 +41,7 @@ from opendata.data.providers import register_providers
 from opendata.data.providers.fred.models.search import FredSearchFetcher
 from opendata.data.registry import ProviderRegistry, get_registry
 from opendata.models.user import User
+from opendata.services.provider_models import resolve_query_model_type
 
 EXPECTED = date(2026, 9, 25)
 PROVIDER_MODEL_DOMAINS = frozenset(
@@ -523,8 +524,8 @@ class TestFiveReadings:
                 "module": type(fetcher).__module__,
                 "name": f"{type(fetcher).__name__}.fetch",
             }
-            query_model = get_type_hints(type(fetcher).transform_query).get("return")
-            query_fields = getattr(query_model, "model_fields", {})
+            query_model = resolve_query_model_type(fetcher)
+            query_fields = query_model.model_fields
             expected_parameters = [
                 {
                     "name": name,

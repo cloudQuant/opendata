@@ -8,6 +8,7 @@ import csv
 import difflib
 import hashlib
 import json
+import os
 import re
 import shutil
 
@@ -23,7 +24,11 @@ if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
 
 UPSTREAM_COMMIT = "3e071fcc2cd9f891cac6040ae60296dba76dab46"
-DEFAULT_UPSTREAM_PATH = Path("/Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform")
+DEFAULT_UPSTREAM_PATH = Path(
+    os.environ.get(
+        "OPENDATA_OPENBB_PATH", "/Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform"
+    )
+)
 LEDGER_RELATIVE_PATH = Path("docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv")
 DEFAULT_MANIFEST_PATH = Path(__file__).resolve().parents[2] / (
     "docs/proposals/openbb-migration/provider-inventory.yaml"

@@ -26,10 +26,14 @@ plan's baseline and the rights registry drift apart again.
 """
 
 import io
+import runpy
 from contextlib import redirect_stdout
 from pathlib import Path
 
+import pytest
+
 from scripts.quality import openbb_inventory_plane as guard
+from scripts.quality import provider_model_inventory
 from scripts.quality.provider_model_inventory import (
     DEFAULT_UPSTREAM_PATH,
     LEDGER_RELATIVE_PATH,
@@ -180,6 +184,43 @@ def kinds(
         One entry per finding, in report order.
     """
     return [finding.kind for finding in guard.findings(text, rights, legs)]
+
+
+# --- upstream boundary configuration -------------------------------------------
+
+
+@pytest.mark.parametrize("configured", [False, True], ids=["fallback", "environment"])
+def test_upstream_defaults_honor_environment_and_cli_override(
+    configured: bool, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """CI may relocate the pinned checkout without changing the metadata authority."""
+    if configured:
+        expected = tmp_path / "read-only OpenBB" / "openbb_platform"
+        monkeypatch.setenv("OPENDATA_OPENBB_PATH", str(expected))
+    else:
+        expected = Path("/Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform")
+        monkeypatch.delenv("OPENDATA_OPENBB_PATH", raising=False)
+
+    isolated_module = runpy.run_path(str(REPO_ROOT / "scripts/quality/provider_model_inventory.py"))
+    assert isolated_module["DEFAULT_UPSTREAM_PATH"] == expected
+    assert isolated_module["UPSTREAM_COMMIT"] == provider_model_inventory.UPSTREAM_COMMIT
+
+    observed: list[Path] = []
+
+    def fake_inventory_report(upstream_path: Path, task_ledger_path: Path) -> dict[str, object]:
+        observed.append(upstream_path)
+        return {"status": "PASS", "reconstructed_models": [], "provider_credentials": {}}
+
+    monkeypatch.setattr(provider_model_inventory, "build_inventory_report", fake_inventory_report)
+    monkeypatch.setattr(provider_model_inventory, "load_task_ledger", lambda path: [])
+    monkeypatch.setattr(guard, "live_legs", lambda: {})
+    monkeypatch.setattr(guard, "git_text", lambda *args: "")
+    monkeypatch.setattr(guard, "report", lambda *args: 0)
+    override = tmp_path / "explicit checkout" / "openbb_platform"
+    with redirect_stdout(io.StringIO()):
+        assert guard.main([]) == 0
+        assert guard.main(["--upstream-path", str(override)]) == 0
+    assert observed == [expected, override]
 
 
 # --- the shipped documents ------------------------------------------------------
@@ -393,6 +434,25 @@ def test_every_named_rights_row_must_exist() -> None:
     assert kinds(text, VERIFIED_LEGS) == ["RIGHTS LINK"]
 
 
+def test_collection_rights_row_cannot_mask_deletion_of_a_specific_row() -> None:
+    """Intrinio embedded in a collection name cannot replace its exact registration."""
+    collection = "商业源（FMP/Tiingo/Alpha Vantage/Intrinio/Tradier…）"
+    specific_line = "| 1 | Intrinio | 直连 | 待复核 |"
+    collection_line = f"| 2 | {collection} | 直连 | 待复核 |"
+    rights = f"## 1. 登记表\n{specific_line}\n{collection_line}\n"
+    text = record(
+        row("intrinio", guard.STATUS_UNVERIFIED, rights=["Intrinio"])
+        + row("alpha_vantage", guard.STATUS_UNVERIFIED, rights=[collection])
+    )
+    legs = {"intrinio": [("quote", False)], "alpha_vantage": [("historical", False)]}
+    assert guard.findings(text, rights, legs) == []
+    for removed, source in ((specific_line, "intrinio"), (collection_line, "alpha_vantage")):
+        found = guard.findings(text, rights.replace(removed, ""), legs)
+        assert [(finding.kind, finding.text.split("`")[1]) for finding in found] == [
+            ("RIGHTS LINK", source)
+        ]
+
+
 def test_new_provider_specific_rights_rows_must_exist_in_registration_table() -> None:
     """The BLS/FMP links stay red if their source-specific registry rows disappear."""
     rights_without_new_sources = "\n".join(
@@ -470,7 +530,7 @@ def test_every_declared_rights_row_is_load_bearing() -> None:
     assert [str(finding) for finding in with_nothing_removed] == []
 
     for link, sources in sorted(declared.items()):
-        targets = [index for index, name in registration_rows(RIGHTS_TEXT) if link in name]
+        targets = [index for index, name in registration_rows(RIGHTS_TEXT) if link == name]
         assert targets, f"`{link}` names no §1 row, so this face measured nothing"
         stripped = "\n".join(line for index, line in enumerate(lines) if index not in targets)
         found = guard.findings(inventory_text, stripped, served, models, credentials, ledger)
@@ -483,7 +543,9 @@ def test_every_declared_rights_row_is_load_bearing() -> None:
 def test_local_rows_may_name_several_rights_rows() -> None:
     text = record(
         row("not_yet", guard.STATUS_TODO),
-        local=row("demo", guard.STATUS_VERIFIED, rights=["同花顺扶摇 API", "东方财富"]),
+        local=row(
+            "demo", guard.STATUS_VERIFIED, rights=["同花顺扶摇 API", "东方财富（网页/接口）"]
+        ),
     )
     assert kinds(text, VERIFIED_LEGS) == []
 

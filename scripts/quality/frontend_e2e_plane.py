@@ -27,10 +27,12 @@ refuses to call a green run a statement about verified behaviour.
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import shutil
-import subprocess  # nosec B404  # one run(): which(npx) list argv, shell=False
+import subprocess  # nosec B404  # fixed config list via which(npx), shell=False
 import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
@@ -366,34 +368,43 @@ def judge(
 
 
 def runner_totals(frontend: Path) -> tuple[int, int] | None:
-    """Ask playwright how many tests and files its plane holds, or ``None``.
-
-    ``--list`` compiles the specs without starting the webServer, so this is a
-    reading of the runner's own view for roughly a second. ``None`` means the
-    plane could not be read, which the caller reports as vacuous rather than
-    as a match.
-    """
+    """Count both fixed suites without executing tests; either unreadable suite returns None."""
     npx = shutil.which("npx")
     if npx is None:
         return None
+    tests = files = 0
     try:
-        result = subprocess.run(  # noqa: S603  # nosec B603  # playwright --list via which(npx)
-            [npx, "--no-install", "playwright", "test", "--list"],
-            cwd=frontend,
-            capture_output=True,
-            text=True,
-            shell=False,
-            check=False,
-            timeout=180,
-        )
+        with tempfile.TemporaryDirectory(prefix=".e2e-list-", dir=frontend) as evidence_dir:
+            env = {
+                **os.environ,
+                "OPENDATA_AC21_EVIDENCE_DIR": evidence_dir,
+                "OPENDATA_AC21_BACKEND_URL": "http://127.0.0.1:41001",
+                "OPENDATA_AC21_FRONTEND_PORT": "41002",
+            }
+            for config in (
+                "playwright.config.ts",
+                "e2e/script-download-backend.playwright.config.ts",
+            ):
+                result = subprocess.run(  # noqa: S603  # nosec B603  # fixed --list argv
+                    [npx, "--no-install", "playwright", "test", "--list", f"--config={config}"],
+                    cwd=frontend,
+                    env=env,
+                    capture_output=True,
+                    text=True,
+                    shell=False,
+                    check=False,
+                    timeout=180,
+                )
+                if result.returncode != 0:
+                    return None
+                match = RUNNER_TOTAL_RE.search(result.stdout)
+                if match is None:
+                    return None
+                tests += int(match.group("tests"))
+                files += int(match.group("files"))
     except (OSError, subprocess.TimeoutExpired):
         return None
-    if result.returncode != 0:
-        return None
-    match = RUNNER_TOTAL_RE.search(result.stdout)
-    if match is None:
-        return None
-    return int(match.group("tests")), int(match.group("files"))
+    return tests, files
 
 
 def main(argv: list[str] | None = None) -> int:

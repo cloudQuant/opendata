@@ -53,14 +53,9 @@ that: ``credential`` plus ``credential_query_key`` puts the token in the query d
 (http_json.py:762-763). Nothing about the key blocks a declaration here -- the blockers are the
 document shapes and request counts above.
 
-Data rights: as of this round there is **no reviewed clause basis for Congress.gov in this repo**.
-``grep -n -i "congress" docs/data-rights-registry.md`` and the same grep over
-``docs/evidence/C65/data-rights-review.md`` match nothing, so the registry holds no 数据源 row for
-api.congress.gov and no row is added here -- a rights row is a human-facing artifact with verbatim
-clause quotes, and fabricating one would be a claim, not a record. Consequently nothing in this
-package asserts that any model is accepted, implemented or verified: the descriptor binds no
-fetcher, ``Provider.is_implemented`` is false, and ``health_check()`` answers ``not_implemented``
-before it looks at a key.
+Data rights: there is **no reviewed clause basis for Congress.gov in this repo**.
+The data-rights registry records only a pending source identity, not permission for storage,
+redistribution or commercial use; no reviewed clause evidence exists in the C65 review.
 """
 
 from __future__ import annotations

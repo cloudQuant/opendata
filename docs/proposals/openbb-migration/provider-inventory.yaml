@@ -28,8 +28,8 @@ version: 1
 upstream_commit: 3e071fcc2cd9f891cac6040ae60296dba76dab46
 upstream_model_count: 350
 unique_upstream_model_count: 202
-registered_source_count: 30
-registered_capability_count: 351
+registered_source_count: 33
+registered_capability_count: 382
 auto_routable_capability_count: 23
 model_implementation_task_status: MIXED
 model_live_verification_status: NOT_RUN
@@ -79,7 +79,7 @@ providers:
     registered_capability_count: 39
     auto_routable_capability_count: 3
     status: 已实现未对照
-    rights_rows: [FRED]
+    rights_rows: [FRED（圣路易斯联储）]
   - provider: imf
     batch: P0
     fetchers: 8
@@ -139,10 +139,10 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: CONFIRMED
-    registered_capability_count: 28
+    registered_capability_count: 30
     auto_routable_capability_count: 1
     status: 已实现未对照
-    rights_rows: [Yahoo Finance]
+    rights_rows: [Yahoo Finance（yfinance）]
   - provider: alpha_vantage
     batch: P1
     fetchers: 3
@@ -159,6 +159,8 @@ providers:
     registered_capability_count: 3
     auto_routable_capability_count: 0
     status: 已实现未对照
+    # 仅指向既有集合登记；逐产品登记/权利复核仍未完成，不代表用途获准。
+    rights_rows: [商业源（FMP/Tiingo/Alpha Vantage/Intrinio/Tradier…）]
   - provider: bls
     batch: P1
     fetchers: 2
@@ -189,11 +191,12 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 6
+    registered_capability_count: 8
     auto_routable_capability_count: 0
     status: 已实现未对照
     rights_rows: [EconDB（econdb.com 静态名册 CSV）]
   - provider: eia
+    rights_rows: [EIA（美国能源信息署）]
     batch: P1
     fetchers: 2
     models: [PetroleumStatusReport, ShortTermEnergyOutlook]
@@ -210,6 +213,7 @@ providers:
     auto_routable_capability_count: 0
     status: 已实现未对照
   - provider: famafrench
+    rights_rows: [Kenneth French Data Library]
     batch: P1
     fetchers: 6
     models: [FamaFrenchBreakpoints, FamaFrenchCountryPortfolioReturns, FamaFrenchFactors, FamaFrenchInternationalIndexReturns, FamaFrenchRegionalPortfolioReturns, FamaFrenchUSPortfolioReturns]
@@ -272,11 +276,12 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 37
+    registered_capability_count: 38
     auto_routable_capability_count: 0
     status: 已实现未对照
     rights_rows: [Intrinio]
   - provider: multpl
+    rights_rows: [Multpl]
     batch: P1
     fetchers: 1
     models: [SP500Multiples]
@@ -293,6 +298,7 @@ providers:
     auto_routable_capability_count: 0
     status: 已实现未对照
   - provider: seeking_alpha
+    rights_rows: [Seeking Alpha]
     batch: P1
     fetchers: 3
     models: [CalendarEarnings, ForwardEpsEstimates, ForwardSalesEstimates]
@@ -305,9 +311,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 3
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: tiingo
     batch: P1
     fetchers: 7
@@ -326,6 +332,7 @@ providers:
     status: 已实现未对照
     rights_rows: [Tiingo（api.tiingo.com）]
   - provider: tradingeconomics
+    rights_rows: [Trading Economics]
     batch: P1
     fetchers: 1
     models: [EconomicCalendar]
@@ -359,6 +366,7 @@ providers:
     status: 已实现未对照
     rights_rows: [Benzinga（Benzinga Pro API）]
   - provider: biztoc
+    rights_rows: [Biztoc]
     batch: P2
     fetchers: 1
     models: [WorldNews]
@@ -371,9 +379,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 1
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
   - provider: cboe
     batch: P2
     fetchers: 11
@@ -387,11 +395,12 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 9
+    registered_capability_count: 11
     auto_routable_capability_count: 0
     status: 已实现未对照
     rights_rows: [Cboe（cdn.cboe.com 公开接口）]
   - provider: cftc
+    rights_rows: [CFTC（美国商品期货交易委员会）]
     batch: P2
     fetchers: 2
     models: [COT, COTSearch]
@@ -408,6 +417,7 @@ providers:
     auto_routable_capability_count: 0
     status: 已实现未对照
   - provider: congress_gov
+    rights_rows: [Congress.gov]
     batch: P2
     fetchers: 8
     models: [CongressBills, CongressBillInfo, CongressBillText, CongressAmendments, CongressAmendmentInfo, CongressAmendmentText, CongressCommitteeInfo, CongressCommitteeDocuments]
@@ -424,6 +434,7 @@ providers:
     auto_routable_capability_count: 0
     status: 已实现未对照
   - provider: deribit
+    rights_rows: [Deribit]
     batch: P2
     fetchers: 5
     models: [FuturesCurve, FuturesHistorical, FuturesInfo, FuturesInstruments, OptionsChains]
@@ -440,6 +451,7 @@ providers:
     auto_routable_capability_count: 0
     status: 已实现未对照
   - provider: finra
+    rights_rows: [FINRA]
     batch: P2
     fetchers: 2
     models: [OTCAggregate, EquityShortInterest]
@@ -456,6 +468,7 @@ providers:
     auto_routable_capability_count: 0
     status: 已实现未对照
   - provider: finviz
+    rights_rows: [Finviz]
     batch: P2
     fetchers: 7
     models: [CompareGroups, EtfPricePerformance, EquityInfo, EquityScreener, KeyMetrics, PricePerformance, PriceTarget]
@@ -472,6 +485,7 @@ providers:
     auto_routable_capability_count: 0
     status: 已实现未对照
   - provider: government_us
+    rights_rows: [U.S. Government（USDA / Treasury / NOAA）]
     batch: P2
     fetchers: 6
     models: [CommodityPsdData, CommodityPsdReport, TreasuryAuctions, TreasuryPrices, WeatherBulletin, WeatherBulletinDownload]
@@ -484,10 +498,11 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 5
+    registered_capability_count: 6
     auto_routable_capability_count: 0
     status: 已实现未对照
   - provider: nasdaq
+    rights_rows: [Nasdaq]
     batch: P2
     fetchers: 9
     models: [CalendarDividend, CalendarEarnings, CalendarIpo, CompanyFilings, EconomicCalendar, EquitySearch, EquityScreener, HistoricalDividends, TopRetail]
@@ -504,6 +519,7 @@ providers:
     auto_routable_capability_count: 0
     status: 已实现未对照
   - provider: sec
+    rights_rows: [SEC（美国证券交易委员会）]
     batch: P2
     fetchers: 24
     models: [BalanceSheet, BalanceSheetGrowth, CashFlowStatement, CashFlowStatementGrowth, CikMap, CompanyFilings, CompareCompanyFacts, EquityFTD, EquitySearch, Filings, Form13FHR, SecHtmFile, IncomeStatement, IncomeStatementGrowth, InsiderTrading, InstitutionsSearch, LatestFinancialReports, ManagementDiscussionAnalysis, NportDisclosure, RssLitigation, SchemaFiles, SecFiling, SicSearch, SymbolMap]
@@ -536,6 +552,7 @@ providers:
     auto_routable_capability_count: 0
     status: 待实现
   - provider: tmx
+    rights_rows: [TMX Money]
     batch: P2
     fetchers: 24
     models: [AvailableIndices, BondPrices, CalendarEarnings, CompanyFilings, CompanyNews, EquityHistorical, EquityInfo, EquityQuote, EquitySearch, EtfSearch, EtfHoldings, EtfSectors, EtfCountries, EtfHistorical, EtfInfo, EquityGainers, HistoricalDividends, IndexConstituents, IndexSectors, IndexSnapshots, InsiderTrading, OptionsChains, PriceTargetConsensus, TreasuryPrices]
@@ -548,7 +565,7 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 8
+    registered_capability_count: 24
     auto_routable_capability_count: 0
     status: 已实现未对照
   - provider: tradier
@@ -567,7 +584,10 @@ providers:
     registered_capability_count: 5
     auto_routable_capability_count: 0
     status: 已实现未对照
+    # 仅指向既有集合登记；逐产品登记/权利复核仍未完成，不代表用途获准。
+    rights_rows: [商业源（FMP/Tiingo/Alpha Vantage/Intrinio/Tradier…）]
   - provider: wsj
+    rights_rows: [The Wall Street Journal（WSJ）]
     batch: P2
     fetchers: 3
     models: [ETFGainers, ETFLosers, ETFActive]
@@ -580,9 +600,9 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 3
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
 # 合计粗估人日（32 provider）：153
 
 # ---------------------------------------------------------------------------
@@ -619,7 +639,7 @@ local_providers:
     registered_capability_count: 10
     auto_routable_capability_count: 0
     status: 已实现未对照
-    rights_rows: [东方财富, 新浪财经, 腾讯财经, 雪球, 交易所官网, 国家统计局]
+    rights_rows: [东方财富（网页/接口）, 新浪财经, 腾讯财经, 雪球, 交易所官网（上交所/深交所/中金所等）, 国家统计局 / 中国人民银行]
     notes: >-
       10 条能力全部 verified=false，Capability.participates_in_auto() 因此为假，
       source="auto" 会跳过它们（registry.resolve 的 ranked 过滤）⇒ 国内域的 auto 腿今天只有

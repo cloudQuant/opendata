@@ -60,6 +60,7 @@ MySQL, no credential is touched. Callers that want to judge a copy of the record
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import shutil
 import subprocess  # nosec B404  # git_text(): GIT const + 3 fixed read-only argvs
@@ -567,7 +568,7 @@ def findings(
                     f"of the registration table",
                 )
                 for link in links
-                if not any(link in name for name in registry)
+                if link not in registry
             )
 
     upstream_rows = [row for row in rows if row.section == "providers"]
@@ -1008,7 +1009,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--upstream-path",
         type=Path,
-        default=Path("/Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform"),
+        default=Path(
+            os.environ.get(
+                "OPENDATA_OPENBB_PATH",
+                "/Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform",
+            )
+        ),
     )
     parser.add_argument(
         "--task-ledger",

@@ -386,17 +386,20 @@ class TestNothingHereIsLiveVerified:
         assert not any(capability.verified for capability in capabilities)
 
     def test_no_reviewed_clause_basis_is_registered_for_congress_gov(self) -> None:
-        """The package's rights statement is re-read from the tree every run, not recalled.
-
-        ``specs`` says no reviewed Congress.gov clause basis exists in-tree and that no row is
-        registered here. Both halves are measured: a data-rights row naming congress would make
-        this fail, and that is the point -- the row is a human artifact with verbatim quotes, so it
-        has to be written by a person, and then this package has to re-read it and re-judge
-        acceptance.
-        """
+        """Pending registration must not become reviewed data-use permission."""
         registry = (REPO_ROOT / "docs/data-rights-registry.md").read_text(encoding="utf-8")
         review = (REPO_ROOT / "docs/evidence/C65/data-rights-review.md").read_text(encoding="utf-8")
-        assert "congress" not in registry.lower()
+        entries = [
+            [cell.strip() for cell in line.strip("|").split("|")]
+            for line in registry.splitlines()
+            if "| Congress.gov |" in line
+        ]
+        assert len(entries) == 1
+        entry = entries[0]
+        assert entry[3] == "https://api.congress.gov"
+        assert all("暂不批准" in entry[index] for index in (4, 5, 6))
+        assert "仅登记" in entry[8]
+        assert entry[9] == "待复核（本迭代已接入，条款原文未取得）"
         assert "congress" not in review.lower()
         docstring = specs.__doc__ or ""
         assert "no reviewed clause basis for Congress.gov in this repo" in docstring

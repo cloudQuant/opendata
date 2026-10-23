@@ -20,6 +20,7 @@ from opendata.data.models.yfinance_iter2 import (
 )
 from opendata.data.protocol import FetchContext
 from opendata.data.providers.yfinance.models import _sdk, _session
+from opendata.data.providers.yfinance.models.futures_curve_iter2 import YfinanceFuturesCurveFetcher
 from opendata.data.providers.yfinance.models.market_iter2 import (
     MAX_EQUITY_HISTORICAL_SYMBOLS,
     YfinanceCompanyNewsFetcher,
@@ -57,6 +58,7 @@ from opendata.data.request_budget import (
     RequestOperation,
 )
 from opendata.services import provider_model_query
+from scripts.quality.iter2_witnesses._parts.yfinance.rows_w34_futures_curve import _chain_document
 
 
 def _sdk_context() -> Any:
@@ -2014,3 +2016,342 @@ def test_yfinance_query_wrappers_call_documented_methods_and_normalize_shape(
     assert calls["valuation"]["symbol"] == "AAPL"
     assert calls["valuation"]["period1"] == _sdk._VALUATION_PERIOD1
     assert calls["option_chain"] == "2027-01-15"
+
+
+def _curve_sdk(
+    monkeypatch: pytest.MonkeyPatch,
+    replies: list[object],
+    sdk_origin: object = "https://query1.finance.yahoo.com",
+) -> list[tuple[str, dict[str, object]]]:
+    """Use the existing fake YfData/nullcontext seam, not require_futures_curve or its parsers."""
+    calls: list[tuple[str, dict[str, object]]] = []
+    session_token = object()
+
+    class YfData:
+        def __init__(self, session: object = None) -> None:
+            assert session is session_token
+
+        def get_raw_json(self, *, url: str, params: dict[str, object]) -> object:
+            calls.append((url, dict(params)))
+            reply = replies[len(calls) - 1]
+            if isinstance(reply, Exception):
+                raise reply
+            return reply
+
+    fake_sdk = types.SimpleNamespace(
+        data=types.SimpleNamespace(YfData=YfData),
+        const=types.SimpleNamespace(_BASE_URL_=sdk_origin),
+    )
+    monkeypatch.setattr(_sdk, "_require_sdk", lambda: fake_sdk)
+    monkeypatch.setattr(_sdk, "governed_yfinance_session", lambda sdk: nullcontext(session_token))
+    return calls
+
+
+def _curve_replies() -> list[dict[str, Any]]:
+    """Wire-shaped witness envelopes are synthetic; these are not official market prices."""
+    return [response["body"] for response in _chain_document()["responses"][2:]]
+
+
+def _run_curve(symbol: str = " es ") -> Any:
+    fetcher = YfinanceFuturesCurveFetcher()
+    query = fetcher.transform_query(symbol=symbol)
+    return fetcher.transform_data(fetcher.extract_data(query, _sdk_context()), query)
+
+
+def test_futures_curve_joins_chain_quotes_encodes_root_and_preserves_each_quote_date(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    replies = _curve_replies()
+    replies[0]["quoteSummary"]["result"][0]["futuresChain"]["futures"].extend(["ESU27.CME", ""])
+    # Even if quoted, the continuous root has no expiration and must be skipped.
+    replies[1]["quoteResponse"]["result"].append({"symbol": "ES=F"})
+    calls = _curve_sdk(monkeypatch, replies)
+    rows = _run_curve()
+    assert [row.model_dump(mode="json") for row in rows] == [
+        {"symbol": "ES", "date": "2026-10-16", "expiration": "2026-12-01", "price": 6211.0},
+        {"symbol": "ES", "date": "2026-10-15", "expiration": "2027-03-01", "price": 6345.75},
+        {"symbol": "ES", "date": "2026-10-15", "expiration": "2027-06-01", "price": None},
+    ]
+    assert calls == [
+        (
+            "https://query1.finance.yahoo.com/v10/finance/quoteSummary/ES%3DF",
+            {"modules": "futuresChain"},
+        ),
+        (
+            "https://query1.finance.yahoo.com/v7/finance/quote",
+            {"symbols": "ES=F,ESZ26.CME,ESH27.CME,ESM27.CME,ESU27.CME"},
+        ),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("code", "month"),
+    [
+        ("F", 1),
+        ("G", 2),
+        ("H", 3),
+        ("J", 4),
+        ("K", 5),
+        ("M", 6),
+        ("N", 7),
+        ("Q", 8),
+        ("U", 9),
+        ("V", 10),
+        ("X", 11),
+        ("Z", 12),
+    ],
+)
+def test_futures_curve_decodes_every_contract_month_through_the_two_leg_request(
+    code: str,
+    month: int,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    symbol = f"CL{code}28.NYM"
+    replies = _curve_replies()
+    replies[0]["quoteSummary"]["result"][0]["futuresChain"]["futures"] = [symbol]
+    replies[1]["quoteResponse"]["result"] = [
+        {"symbol": symbol, "regularMarketTime": 1792161000, "lastMarket": 71.25}
+    ]
+    calls = _curve_sdk(monkeypatch, replies)
+    row = _run_curve(" cl ")[0]
+    assert row.model_dump() == {
+        "symbol": "CL",
+        "date": date(2026, 10, 16),
+        "expiration": date(2028, month, 1),
+        "price": 71.25,
+    }
+    assert calls == [
+        (
+            "https://query1.finance.yahoo.com/v10/finance/quoteSummary/CL%3DF",
+            {"modules": "futuresChain"},
+        ),
+        ("https://query1.finance.yahoo.com/v7/finance/quote", {"symbols": symbol}),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("quote", "price"),
+    [
+        ({"bid": 100.1, "ask": 100.15, "lastMarket": 900}, 100.12),
+        ({"bid": 0, "ask": 0, "lastMarket": 900}, 0.0),
+        ({"bid": 100, "lastMarket": 101, "regularMarketPrice": 102, "previousClose": 103}, 101.0),
+        ({"ask": 100, "lastMarket": "101", "regularMarketPrice": 102, "previousClose": 103}, 102.0),
+        (
+            {
+                "bid": True,
+                "ask": 100,
+                "lastMarket": float("nan"),
+                "regularMarketPrice": False,
+                "previousClose": 103,
+            },
+            103.0,
+        ),
+        (
+            {
+                "bid": float("inf"),
+                "ask": 100,
+                "lastMarket": None,
+                "regularMarketPrice": None,
+                "previousClose": -1.5,
+            },
+            -1.5,
+        ),
+        (
+            {
+                "bid": "100",
+                "ask": 100,
+                "lastMarket": {},
+                "regularMarketPrice": float("inf"),
+                "previousClose": "103",
+            },
+            None,
+        ),
+        ({}, None),
+    ],
+)
+def test_futures_curve_midpoint_fallback_precedence_and_null_price(
+    quote: dict[str, object],
+    price: float | None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    replies = _curve_replies()
+    replies[0]["quoteSummary"]["result"][0]["futuresChain"]["futures"] = ["ESZ26.CME"]
+    replies[1]["quoteResponse"]["result"] = [
+        {"symbol": "ESZ26.CME", "regularMarketTime": 1792161000, **quote}
+    ]
+    calls = _curve_sdk(monkeypatch, replies)
+    assert _run_curve()[0].model_dump(mode="json") == {
+        "symbol": "ES",
+        "date": "2026-10-16",
+        "expiration": "2026-12-01",
+        "price": price,
+    }
+    assert calls[1][1] == {"symbols": "ESZ26.CME"}
+
+
+@pytest.mark.parametrize("stamp", [None, 0, -1, True, "1792161000", float("nan"), float("inf")])
+def test_futures_curve_refuses_missing_or_invalid_quote_timestamp_instead_of_stamping_now(
+    stamp: object,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    replies = _curve_replies()
+    replies[1]["quoteResponse"]["result"][0]["regularMarketTime"] = stamp
+    calls = _curve_sdk(monkeypatch, replies)
+    with pytest.raises(YfinanceProviderError) as error:
+        _run_curve()
+    assert error.value.code == "YFINANCE_FUTURES_CURVE_AS_OF_MISSING"
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize("symbol", ["ES=F", "X", "ESZXX.CME", "ESA26.CME", "ESU27.CME"])
+def test_futures_curve_refuses_when_every_chain_entry_is_undecodable_or_unquoted(
+    symbol: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    replies = _curve_replies()
+    replies[0]["quoteSummary"]["result"][0]["futuresChain"]["futures"] = [symbol]
+    replies[1]["quoteResponse"]["result"] = [] if symbol == "ESU27.CME" else [{"symbol": symbol}]
+    calls = _curve_sdk(monkeypatch, replies)
+    with pytest.raises(YfinanceProviderError) as error:
+        _run_curve()
+    assert error.value.code == "YFINANCE_FUTURES_CURVE_EMPTY"
+    assert calls[1][1] == {"symbols": symbol}
+
+
+@pytest.mark.parametrize(
+    ("body", "code"),
+    [
+        ([], "SHAPE_INVALID"),
+        ({}, "SHAPE_INVALID"),
+        ({"quoteSummary": []}, "SHAPE_INVALID"),
+        ({"quoteSummary": {"result": {}}}, "SHAPE_INVALID"),
+        ({"quoteSummary": {"result": []}}, "EMPTY"),
+        ({"quoteSummary": {"result": [None]}}, "SHAPE_INVALID"),
+        ({"quoteSummary": {"result": [{"futuresChain": []}]}}, "SHAPE_INVALID"),
+        ({"quoteSummary": {"result": [{"futuresChain": {"futures": {}}}]}}, "SHAPE_INVALID"),
+        ({"quoteSummary": {"result": [{"futuresChain": {"futures": [True]}}]}}, "SHAPE_INVALID"),
+    ],
+)
+def test_futures_curve_invalid_chain_envelope_refuses_before_quote_request(
+    body: object,
+    code: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = _curve_sdk(monkeypatch, [body])
+    with pytest.raises(YfinanceProviderError) as error:
+        _run_curve()
+    assert error.value.code == f"YFINANCE_FUTURES_CHAIN_{code}"
+    assert calls == [
+        (
+            "https://query1.finance.yahoo.com/v10/finance/quoteSummary/ES%3DF",
+            {"modules": "futuresChain"},
+        )
+    ]
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        [],
+        {},
+        {"quoteResponse": []},
+        {"quoteResponse": {"result": {}}},
+        {"quoteResponse": {"result": [None]}},
+    ],
+)
+def test_futures_curve_invalid_quote_envelope_refuses_after_exactly_two_legs(
+    body: object,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = _curve_sdk(monkeypatch, [_curve_replies()[0], body])
+    with pytest.raises(YfinanceProviderError) as error:
+        _run_curve()
+    assert error.value.code == "YFINANCE_FUTURES_QUOTES_SHAPE_INVALID"
+    assert len(calls) == 2
+    assert calls[1] == (
+        "https://query1.finance.yahoo.com/v7/finance/quote",
+        {"symbols": "ES=F,ESZ26.CME,ESH27.CME,ESM27.CME"},
+    )
+
+
+def test_futures_curve_ignores_quote_rows_without_symbol_attribution(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    replies = _curve_replies()
+    replies[1]["quoteResponse"]["result"] = [{}, {"symbol": True}, {"symbol": ""}]
+    calls = _curve_sdk(monkeypatch, replies)
+    with pytest.raises(YfinanceProviderError) as error:
+        _run_curve()
+    assert error.value.code == "YFINANCE_FUTURES_CURVE_EMPTY"
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize("sdk_origin", [None, 42, "http://query1.finance.yahoo.com"])
+def test_futures_curve_missing_sdk_query_surface_refuses_without_a_request(
+    sdk_origin: object,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = _curve_sdk(monkeypatch, [], sdk_origin)
+    with pytest.raises(YfinanceProviderError) as error:
+        _run_curve()
+    assert error.value.code == "YFINANCE_SDK_SURFACE_MISSING"
+    assert calls == []
+
+
+@pytest.mark.parametrize("stage", [0, 1])
+def test_futures_curve_wraps_sdk_transport_failure_and_preserves_budget_refusal(
+    stage: int,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    replies: list[object] = _curve_replies()
+    transport_error = OSError("fixture send failed")
+    replies[stage] = transport_error
+    calls = _curve_sdk(monkeypatch, replies)
+    with pytest.raises(YfinanceProviderError) as error:
+        _run_curve()
+    assert error.value.code == "YFINANCE_REQUEST_FAILED"
+    assert error.value.__cause__ is transport_error
+    assert len(calls) == stage + 1
+
+    budget_error = RequestAttemptLimitError("fixture budget exhausted")
+    replies[stage] = budget_error
+    calls = _curve_sdk(monkeypatch, replies)
+    with pytest.raises(RequestAttemptLimitError) as error:
+        _run_curve()
+    assert error.value is budget_error
+    assert len(calls) == stage + 1
+
+
+def test_futures_curve_dated_query_is_refused_before_sdk_or_transport(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sdk_calls: list[str] = []
+    monkeypatch.setattr(_sdk, "_require_sdk", lambda: sdk_calls.append("sdk"))
+    with pytest.raises(YfinanceProviderError) as error:
+        YfinanceFuturesCurveFetcher().fetch(symbol="ES", date="2026-10-16")
+    assert error.value.code == "YFINANCE_BAD_QUERY"
+    assert sdk_calls == []
+
+
+@pytest.mark.parametrize("raw", [None, [], (), ([],), ({}, {}), ([], []), ([True], {})])
+def test_futures_curve_refuses_invalid_stage_envelope(raw: object) -> None:
+    fetcher = YfinanceFuturesCurveFetcher()
+    query = fetcher.transform_query(symbol="ES")
+    with pytest.raises(YfinanceProviderError) as error:
+        fetcher.transform_data(raw, query)
+    assert error.value.code == "YFINANCE_FUTURES_CURVE_SHAPE_INVALID"
+
+
+def test_futures_curve_rejects_the_wrong_query_type_at_both_stage_handoffs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = _curve_sdk(monkeypatch, [])
+    fetcher = YfinanceFuturesCurveFetcher()
+    for stage in (
+        lambda: fetcher.extract_data(types.SimpleNamespace(symbol="ES"), _sdk_context()),
+        lambda: fetcher.transform_data(([], {}), types.SimpleNamespace(symbol="ES")),
+    ):
+        with pytest.raises(YfinanceProviderError) as error:
+            stage()
+        assert error.value.code == "YFINANCE_BAD_QUERY"
+    assert calls == []

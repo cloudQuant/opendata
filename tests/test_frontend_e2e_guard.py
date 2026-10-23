@@ -16,6 +16,7 @@ about which pages it covers. The required-page floor is the rule that replaced
 it, and it is asserted here in both directions too.
 """
 
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -352,6 +353,100 @@ def test_a_size_disagreement_with_the_runner_is_a_finding(
     # The cross-check on the classifier itself: playwright counts its own plane,
     # so a shape the regexes never see reddens the gate instead of shrinking it.
     monkeypatch.setattr(guard, "runner_totals", lambda _frontend: (999, 3))
+
+    assert guard.main(["--frontend-dir", str(FRONTEND)]) == 1
+    assert "COUNT-MISMATCH" in capsys.readouterr().out
+
+
+def test_runner_aggregates_default_and_owned_backend_suites(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    configs: list[str] = []
+    evidence_paths: list[Path] = []
+
+    def list_suite(arguments: list[str], **options: object) -> subprocess.CompletedProcess[str]:
+        config = arguments[-1]
+        configs.append(config)
+        assert arguments[1:5] == ["--no-install", "playwright", "test", "--list"]
+        assert options["cwd"] == FRONTEND
+        assert options["shell"] is False
+        if config == "--config=e2e/script-download-backend.playwright.config.ts":
+            env = options["env"]
+            assert isinstance(env, dict)
+            evidence = Path(env["OPENDATA_AC21_EVIDENCE_DIR"])
+            assert evidence.is_dir()
+            assert evidence.parent == FRONTEND
+            evidence_paths.append(evidence)
+            assert env["OPENDATA_AC21_BACKEND_URL"] == "http://127.0.0.1:41001"
+            assert env["OPENDATA_AC21_FRONTEND_PORT"] == "41002"
+            total = "Total: 1 test in 1 file"
+        else:
+            assert config == "--config=playwright.config.ts"
+            total = "Total: 29 tests in 4 files"
+        return subprocess.CompletedProcess(arguments, 0, stdout=total, stderr="")
+
+    monkeypatch.setattr(guard.shutil, "which", lambda _name: "/owned/bin/npx")
+    monkeypatch.setattr(guard.subprocess, "run", list_suite)
+
+    assert guard.main(["--frontend-dir", str(FRONTEND)]) == 0
+    output = capsys.readouterr().out
+    assert "30 tests in 5 files" in output
+    assert "static vs runner  : MATCH" in output
+    assert configs == [
+        "--config=playwright.config.ts",
+        "--config=e2e/script-download-backend.playwright.config.ts",
+    ]
+    assert len(evidence_paths) == 1
+    assert not evidence_paths[0].exists(), "listing evidence must be temporary"
+
+
+@pytest.mark.parametrize(
+    "config",
+    ["--config=playwright.config.ts", "--config=e2e/script-download-backend.playwright.config.ts"],
+)
+@pytest.mark.parametrize("failure", ["exit", "no-total", "os-error", "timeout"])
+def test_an_unreadable_runner_suite_cannot_pass(
+    config: str,
+    failure: str,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    def list_suite(arguments: list[str], **_options: object) -> subprocess.CompletedProcess[str]:
+        backend = arguments[-1] == "--config=e2e/script-download-backend.playwright.config.ts"
+        total = "Total: 1 test in 1 file" if backend else "Total: 29 tests in 4 files"
+        if arguments[-1] == config:
+            if failure == "os-error":
+                raise OSError("listing unavailable")
+            if failure == "timeout":
+                raise subprocess.TimeoutExpired(arguments, 180)
+            return subprocess.CompletedProcess(
+                arguments, 1 if failure == "exit" else 0, stdout="unreadable", stderr=""
+            )
+        return subprocess.CompletedProcess(arguments, 0, stdout=total, stderr="")
+
+    monkeypatch.setattr(guard.shutil, "which", lambda _name: "/owned/bin/npx")
+    monkeypatch.setattr(guard.subprocess, "run", list_suite)
+
+    assert guard.main(["--frontend-dir", str(FRONTEND)]) == 2
+    assert "RUNNER-UNREADABLE" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("backend_count", [0, 2])
+def test_a_backend_runner_count_mismatch_cannot_pass(
+    backend_count: int,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    def list_suite(arguments: list[str], **_options: object) -> subprocess.CompletedProcess[str]:
+        backend = arguments[-1] == "--config=e2e/script-download-backend.playwright.config.ts"
+        total = (
+            f"Total: {backend_count} tests in 1 file" if backend else "Total: 29 tests in 4 files"
+        )
+        return subprocess.CompletedProcess(arguments, 0, stdout=total, stderr="")
+
+    monkeypatch.setattr(guard.shutil, "which", lambda _name: "/owned/bin/npx")
+    monkeypatch.setattr(guard.subprocess, "run", list_suite)
 
     assert guard.main(["--frontend-dir", str(FRONTEND)]) == 1
     assert "COUNT-MISMATCH" in capsys.readouterr().out

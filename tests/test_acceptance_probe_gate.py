@@ -24,6 +24,7 @@ from __future__ import annotations
 import hashlib
 import subprocess
 import sys
+from dataclasses import replace
 from typing import TYPE_CHECKING
 
 import pytest
@@ -479,6 +480,31 @@ class TestCounterfactReading:
         assert findings == list(unmeasured.values()), "the reason is forwarded, not paraphrased"
         assert "0/1" in reading, reading
         assert "0 条" in reading, reading
+
+    def test_measurement_reports_progress_without_changing_facts(
+        self, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        monkeypatch.setattr(tool, "PROBES", (self.stub_probe(),))
+        readings, unmeasured = tool.measured_readings(self.stub_context())
+        assert readings == {"AC-99|01": {"gated": "yes"}}
+        assert unmeasured == {}
+        output = capsys.readouterr().out
+        assert "MEASURE AC-99|01 start" in output
+        assert "MEASURE AC-99|01 complete (" in output
+
+    def test_measurement_failure_is_reported_and_remains_a_finding(
+        self, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        def fail_measurement(ctx: tool.Context) -> tool.Facts:
+            raise tool.ProbeError("instrument unavailable")
+
+        monkeypatch.setattr(tool, "PROBES", (replace(self.stub_probe(), measure=fail_measurement),))
+        readings, unmeasured = tool.measured_readings(self.stub_context())
+        assert readings == {}
+        assert unmeasured == {"AC-99|01": "AC-99|01: cannot measure: instrument unavailable"}
+        output = capsys.readouterr().out
+        assert "MEASURE AC-99|01 start" in output
+        assert "MEASURE AC-99|01 failed (" in output
 
 
 class TestC51ZeroDepCells:

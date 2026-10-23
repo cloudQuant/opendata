@@ -163,7 +163,13 @@ def test_non_base_or_external_cli_path_is_environment_blocked() -> None:
     assert "TOOL_CLI_OUTSIDE_BASE" in codes
 
 
-def test_fixed_module_version_command_is_non_shell_and_timed(monkeypatch: Any) -> None:
+def test_fixed_module_version_command_is_non_shell_and_timed(
+    tmp_path: Any, monkeypatch: Any
+) -> None:
+    executable = tmp_path / "python"
+    executable.write_text("stub", encoding="utf-8")
+    monkeypatch.setattr(toolchain_preflight.sys, "prefix", str(tmp_path))
+    monkeypatch.setattr(toolchain_preflight.sys, "executable", str(executable))
     calls: list[tuple[list[str], dict[str, Any]]] = []
 
     def fake_run(command: list[str], **options: Any) -> SimpleNamespace:
@@ -280,6 +286,12 @@ def test_path_cli_symlink_escape_is_rejected_before_run(tmp_path: Any, monkeypat
 def test_capture_runtime_records_but_does_not_execute_external_path_cli(
     tmp_path: Any, monkeypatch: Any
 ) -> None:
+    prefix = tmp_path / "base"
+    prefix.mkdir()
+    executable = prefix / "python"
+    executable.write_text("stub", encoding="utf-8")
+    monkeypatch.setattr(toolchain_preflight.sys, "prefix", str(prefix))
+    monkeypatch.setattr(toolchain_preflight.sys, "executable", str(executable))
     external_cli = tmp_path / "outside" / "ruff"
     external_cli.parent.mkdir()
     external_cli.write_text("stub", encoding="utf-8")

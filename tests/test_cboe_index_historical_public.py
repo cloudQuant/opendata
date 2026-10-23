@@ -18,7 +18,9 @@ from opendata.data.http_client import GovernedHttpClient, HttpClientConfig
 from opendata.data.models.cboe_index_historical import CboeIndexHistorical
 from opendata.data.protocol import FetchContext
 from opendata.data.providers.catalog import register_provider
+from opendata.data.providers.cboe.models import futures_settlement_public as settlement
 from opendata.data.providers.cboe.models import index_historical_public as history
+from opendata.data.providers.cboe.models import index_snapshots_public as snapshots
 from opendata.data.registry import ProviderRegistry
 from opendata.data.request_budget import (
     GrantDecision,
@@ -132,17 +134,22 @@ class _ReplaySession(requests.Session):
         return response
 
 
-def _request_budget(*, attempts: int = 8) -> RequestBudget:
+def _request_budget(
+    *,
+    attempts: int = 8,
+    model: str = "IndexHistorical",
+    host: str = "cdn-api.cboe.com",
+) -> RequestBudget:
     profile = RequestBudgetProfile.BOUNDED_REQUEST
     grant = RequestGrant(
         source="cboe",
-        canonical_model="IndexHistorical",
+        canonical_model=model,
         operation=RequestOperation.QUERY,
         decision=GrantDecision.ALLOWED,
         rights_evidence="offline Cboe-linked CSV replay fixture; no storage/export rights",
         task_attempts=attempts,
         source_attempts=attempts,
-        allowed_hosts={"cdn-api.cboe.com"},
+        allowed_hosts={host},
         expires_at=datetime.now(timezone.utc) + timedelta(minutes=5),
         profile=profile,
     )
@@ -157,6 +164,8 @@ def _request_budget(*, attempts: int = 8) -> RequestBudget:
 def _client(
     monkeypatch: pytest.MonkeyPatch,
     replies: dict[str, tuple[int, bytes]],
+    *,
+    module: Any = history,
 ) -> _ReplaySession:
     session = _ReplaySession(replies)
     client = GovernedHttpClient(
@@ -178,7 +187,7 @@ def _client(
         return original_get(url, **kwargs)
 
     client.get = observed_get  # type: ignore[method-assign]
-    monkeypatch.setattr(history, "get_shared_http_client", lambda: client)
+    monkeypatch.setattr(module, "get_shared_http_client", lambda: client)
     return session
 
 
@@ -686,3 +695,411 @@ def test_integration_handoff_declares_only_the_limited_candidate_domain() -> Non
         "permissions": ["query"],
     }
     assert set(handoff["remaining_fixed_identities"]) == {"FuturesCurve", "IndexSnapshots"}
+
+
+_SETTLEMENT_CAPTURE = _REPOSITORY_ROOT / (
+    "docs/evidence/C144/wave39-unauthenticated-access-20261019/sources/"
+    "cboe-futures-settlement-csv-dt-2026-10-16.csv"
+)
+_PANEL_CAPTURE = _REPOSITORY_ROOT / (
+    "docs/evidence/C140/wave37-unauthenticated-access-20261019/sources/cboe-all-us-indices.json"
+)
+_SETTLEMENT_HEADER = b"Product,Symbol,Expiration Date,Price\n"
+_SETTLEMENT_URL = "https://www.cboe.com/us/futures/market_statistics/settlement/csv"
+_PANEL_URL = "https://cdn.cboe.com/api/global/delayed_quotes/quotes/all_us_indices.json"
+
+
+def _public_context(model: str, host: str) -> FetchContext:
+    return FetchContext(
+        timeout=5,
+        request_budget=_request_budget(attempts=1, model=model, host=host),
+    )
+
+
+@pytest.mark.parametrize("product,count", [(" vx ", 14), ("vxm", 6)])
+@pytest.mark.parametrize("day", [None, date(2026, 10, 16)])
+def test_settlement_recorded_product_selection_and_dated_url(monkeypatch, product, count, day):
+    url = _SETTLEMENT_URL + ("/" if day is None else "?dt=2026-10-16")
+    session = _client(
+        monkeypatch, {url: (200, _SETTLEMENT_CAPTURE.read_bytes())}, module=settlement
+    )
+    rows = settlement.CboeFuturesCurveFetcher().fetch(
+        ctx=_public_context("FuturesCurve", "www.cboe.com"),
+        symbol=product,
+        date=day,
+        use_cache=False,
+    )
+    assert len(rows) == count
+    assert {row.symbol for row in rows} == {product.strip().upper()}
+    assert {row.date for row in rows} == {day}
+    assert rows[0].model_dump(mode="json") == {
+        "symbol": product.strip().upper(),
+        "date": None if day is None else "2026-10-16",
+        "expiration": "2026-10-21",
+        "price": 19.9075,
+    }
+    if product.strip().upper() == "VX":
+        assert rows[3].expiration == date(2026, 11, 11)
+        assert rows[3].price == 19.9075
+        assert rows[4].price == 19.2382
+    assert len(session.calls) == 1
+    assert session.calls[0]["url"] == url
+    assert session.calls[0]["params"] is None
+    assert session.calls[0]["headers"]["Accept"] == "text/csv"
+    assert session.governed_get_calls[0]["use_cache"] is False
+
+
+@pytest.mark.parametrize("use_cache", [None, True])
+def test_settlement_bom_and_local_limit(monkeypatch, use_cache):
+    session = _client(
+        monkeypatch,
+        {_SETTLEMENT_URL + "/": (200, b"\xef\xbb\xbf" + _SETTLEMENT_CAPTURE.read_bytes())},
+        module=settlement,
+    )
+    rows = settlement.CboeFuturesCurveFetcher().fetch(
+        ctx=_public_context("FuturesCurve", "www.cboe.com"),
+        symbol="VX",
+        limit=2,
+        use_cache=use_cache,
+    )
+    assert [(row.expiration, row.price) for row in rows] == [
+        (date(2026, 10, 21), 19.9075),
+        (date(2026, 10, 28), 19.9075),
+    ]
+    assert session.governed_get_calls[0]["use_cache"] is True
+    assert session.calls[0]["params"] is None
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        {"symbol": "VX", "limit": 0},
+        {"symbol": "VX", "limit": -1},
+        {"symbol": "VX", "limit": True},
+        {"symbol": "VX", "use_cache": "false"},
+        {"symbol": 1},
+        {"symbol": "VX", "date": "invalid"},
+    ],
+)
+def test_settlement_invalid_queries_never_send(monkeypatch, query):
+    session = _client(monkeypatch, {}, module=settlement)
+    with pytest.raises(ValidationError):
+        settlement.CboeFuturesCurveFetcher().fetch(
+            ctx=_public_context("FuturesCurve", "www.cboe.com"),
+            **query,
+        )
+    assert session.calls == []
+
+
+@pytest.mark.parametrize(
+    "body,code",
+    [
+        (_SETTLEMENT_HEADER, "EMPTY_TABLE"),
+        (b"\n", "BAD_CSV"),
+        (b"Product,Symbol,Price\nVX,VX/V6,20\n", "BAD_HEADER"),
+        (_SETTLEMENT_HEADER + b",VX/V6,2026-10-21,20\n", "BAD_PRODUCT_CELL"),
+        (_SETTLEMENT_HEADER + b"VX,VX/V6,,20\n", "BAD_EXPIRATION"),
+        (_SETTLEMENT_HEADER + b"VX,VX/V6,2026-02-30,20\n", "BAD_EXPIRATION"),
+        (_SETTLEMENT_HEADER + b"VX,VX/V6,2026-10-21,\n", "BAD_NUMERIC_FIELD"),
+        (_SETTLEMENT_HEADER + b"VX,VX/V6,2026-10-21,broken\n", "BAD_NUMERIC_FIELD"),
+        (_SETTLEMENT_HEADER + b"VX,VX/V6,2026-10-21,NaN\n", "BAD_NUMERIC_FIELD"),
+        (_SETTLEMENT_HEADER + b"VX,VX/V6,2026-10-21,inf\n", "BAD_NUMERIC_FIELD"),
+        (_SETTLEMENT_HEADER + b"VX,VX/V6,2026-10-21\n", "BAD_NUMERIC_FIELD"),
+        (b"", "BAD_RESPONSE"),
+        (b"\xff", "BAD_RESPONSE"),
+        (b"x" * (4 * 1024 * 1024 + 1), "RESPONSE_TOO_LARGE"),
+        (_SETTLEMENT_HEADER + b"VX,VX/V6,2026-10-21,20\n" * 5001, "RESPONSE_TOO_LARGE"),
+    ],
+    ids=lambda value: f"bytes-{len(value)}" if isinstance(value, bytes) else str(value),
+)
+def test_settlement_malformed_documents_fail_with_exact_code(monkeypatch, body, code):
+    url = _SETTLEMENT_URL + "?dt=2026-10-17"
+    session = _client(monkeypatch, {url: (200, body)}, module=settlement)
+    with pytest.raises(settlement.CboeFuturesCurveError) as caught:
+        settlement.CboeFuturesCurveFetcher().fetch(
+            ctx=_public_context("FuturesCurve", "www.cboe.com"),
+            symbol="VX",
+            date="2026-10-17",
+            limit=1,
+        )
+    assert caught.value.code == "CBOE_FUTURES_CURVE_" + code
+    assert caught.value.status is None
+    assert len(session.calls) == 1
+
+
+def test_settlement_unknown_product_is_not_an_empty_curve(monkeypatch):
+    session = _client(
+        monkeypatch,
+        {_SETTLEMENT_URL + "/": (200, _SETTLEMENT_CAPTURE.read_bytes())},
+        module=settlement,
+    )
+    with pytest.raises(settlement.CboeFuturesCurveError) as caught:
+        settlement.CboeFuturesCurveFetcher().fetch(
+            ctx=_public_context("FuturesCurve", "www.cboe.com"),
+            symbol="UNKNOWN",
+        )
+    assert caught.value.code == "CBOE_FUTURES_CURVE_UNKNOWN_PRODUCT"
+    assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize(
+    "module,fetcher,model,host,url,query,prefix",
+    [
+        (
+            settlement,
+            settlement.CboeFuturesCurveFetcher,
+            "FuturesCurve",
+            "www.cboe.com",
+            _SETTLEMENT_URL + "/",
+            {"symbol": "VX"},
+            "CBOE_FUTURES_CURVE",
+        ),
+        (
+            snapshots,
+            snapshots.CboeIndexSnapshotsFetcher,
+            "IndexSnapshots",
+            "cdn.cboe.com",
+            _PANEL_URL,
+            {},
+            "CBOE_INDEX_SNAPSHOTS",
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "status,suffix",
+    [
+        (403, "FORBIDDEN"),
+        (404, "NOT_FOUND"),
+        (429, "RATE_LIMITED"),
+        (503, "UPSTREAM_ERROR"),
+        (400, "HTTP_ERROR"),
+    ],
+)
+def test_public_cboe_governed_http_classification(
+    monkeypatch, module, fetcher, model, host, url, query, prefix, status, suffix
+):
+    session = _client(monkeypatch, {url: (status, b"private upstream detail")}, module=module)
+    with pytest.raises(
+        (settlement.CboeFuturesCurveError, snapshots.CboeIndexSnapshotsError)
+    ) as caught:
+        fetcher().fetch(ctx=_public_context(model, host), **query)
+    assert caught.value.code == prefix + "_" + suffix
+    assert caught.value.status == status
+    assert str(caught.value) == f"{prefix}_{suffix} status={status}"
+    assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize(
+    "module,fetcher,model,query",
+    [
+        (settlement, settlement.CboeFuturesCurveFetcher, "FuturesCurve", {"symbol": "VX"}),
+        (snapshots, snapshots.CboeIndexSnapshotsFetcher, "IndexSnapshots", {}),
+    ],
+)
+def test_public_cboe_governance_refuses_ungranted_host(monkeypatch, module, fetcher, model, query):
+    session = _client(monkeypatch, {}, module=module)
+    with pytest.raises(RequestAuthorizationError):
+        fetcher().fetch(ctx=_public_context(model, "ungranted.example"), **query)
+    assert session.calls == []
+
+
+@pytest.mark.parametrize("alias", [" vix ", "^vix"])
+def test_index_panel_recorded_vix_alias_output(monkeypatch, alias):
+    session = _client(
+        monkeypatch, {_PANEL_URL: (200, _PANEL_CAPTURE.read_bytes())}, module=snapshots
+    )
+    rows = snapshots.CboeIndexSnapshotsFetcher().fetch(
+        ctx=_public_context("IndexSnapshots", "cdn.cboe.com"),
+        symbol=alias,
+    )
+    assert len(rows) == 1
+    assert rows[0].model_dump(mode="json") == {
+        "symbol": "^VIX",
+        "price": 19.99,
+        "open": 15.81,
+        "high": 22.31,
+        "low": 15.72,
+        "close": 19.99,
+        "prev_close": 19.99,
+        "change": 3.53,
+        "change_percent": 0.176588,
+        "bid": None,
+        "ask": None,
+        "volume": None,
+        "last_trade_time": "2026-10-16T16:15:01-05:00",
+        "name": None,
+        "currency": None,
+        "status": None,
+    }
+    assert rows[0].last_trade_time.astimezone(timezone.utc) == datetime(
+        2026, 10, 16, 21, 15, 1, tzinfo=timezone.utc
+    )
+    assert len(session.calls) == 1
+    assert session.calls[0]["url"] == _PANEL_URL
+    assert session.calls[0]["params"] is None
+    assert session.calls[0]["headers"]["Accept"] == "application/json"
+
+
+@pytest.mark.parametrize(
+    "limit,expected", [(None, ["^SPX", "^VIX", "^VVIX"]), (2, ["^SPX", "^VIX"])]
+)
+def test_index_panel_recorded_multi_selection_preserves_panel_order(monkeypatch, limit, expected):
+    session = _client(
+        monkeypatch, {_PANEL_URL: (200, _PANEL_CAPTURE.read_bytes())}, module=snapshots
+    )
+    rows = snapshots.CboeIndexSnapshotsFetcher().fetch(
+        ctx=_public_context("IndexSnapshots", "cdn.cboe.com"),
+        symbol=["vvix", "^vix", "spx"],
+        limit=limit,
+        use_cache=False,
+    )
+    assert [row.symbol for row in rows] == expected
+    assert rows[0].price == 7659.4399
+    assert rows[0].change_percent == -0.011048
+    assert session.governed_get_calls[0]["use_cache"] is False
+    assert len(session.calls) == 1
+
+
+def test_index_panel_whole_recorded_panel_and_unknown_symbol(monkeypatch):
+    session = _client(
+        monkeypatch, {_PANEL_URL: (200, _PANEL_CAPTURE.read_bytes())}, module=snapshots
+    )
+    rows = snapshots.CboeIndexSnapshotsFetcher().fetch(
+        ctx=_public_context("IndexSnapshots", "cdn.cboe.com")
+    )
+    assert len(rows) == 810
+    with pytest.raises(snapshots.CboeIndexSnapshotsError) as caught:
+        snapshots.CboeIndexSnapshotsFetcher().fetch(
+            ctx=_public_context("IndexSnapshots", "cdn.cboe.com"),
+            symbol=["VIX", "NOT_AN_INDEX"],
+            limit=1,
+        )
+    assert caught.value.code == "CBOE_INDEX_SNAPSHOTS_UNKNOWN_SYMBOL"
+    assert len(session.calls) == 2
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        {"symbol": ["VIX", "^VIX"]},
+        {"symbol": ["vix", " VIX "]},
+        {"limit": 0},
+        {"limit": True},
+        {"use_cache": "false"},
+        {"symbol": [1]},
+    ],
+)
+def test_index_panel_invalid_selection_never_sends(monkeypatch, query):
+    session = _client(monkeypatch, {}, module=snapshots)
+    with pytest.raises(ValidationError):
+        snapshots.CboeIndexSnapshotsFetcher().fetch(
+            ctx=_public_context("IndexSnapshots", "cdn.cboe.com"), **query
+        )
+    assert session.calls == []
+
+
+def _panel_bytes(records):
+    return json.dumps({"symbol": "all_us_indices", "data": records}).encode()
+
+
+@pytest.mark.parametrize(
+    "volume,trade_time,expected_volume,expected_time",
+    [
+        (12.0, "2026-01-02T16:00:00", 12, "2026-01-02T22:00:00+00:00"),
+        (None, "2026-10-16T21:15:01+00:00", None, "2026-10-16T21:15:01+00:00"),
+        (0, "", None, None),
+    ],
+)
+def test_index_panel_nullable_integral_counts_and_clock(
+    monkeypatch, volume, trade_time, expected_volume, expected_time
+):
+    session = _client(
+        monkeypatch,
+        {
+            _PANEL_URL: (
+                200,
+                b"\xef\xbb\xbf"
+                + _panel_bytes(
+                    [
+                        {
+                            "symbol": "^VIX",
+                            "current_price": 0,
+                            "volume": volume,
+                            "price_change_percent": 0,
+                            "last_trade_time": trade_time,
+                        }
+                    ]
+                ),
+            )
+        },
+        module=snapshots,
+    )
+    row = snapshots.CboeIndexSnapshotsFetcher().fetch(
+        ctx=_public_context("IndexSnapshots", "cdn.cboe.com"), symbol="VIX"
+    )[0]
+    assert row.price is None and row.change_percent is None
+    assert row.volume == expected_volume
+    assert (
+        None
+        if row.last_trade_time is None
+        else row.last_trade_time.astimezone(timezone.utc).isoformat()
+    ) == expected_time
+    assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize(
+    "field,value,code",
+    [
+        ("current_price", True, "BAD_NUMERIC_FIELD"),
+        ("current_price", "19.99", "BAD_NUMERIC_FIELD"),
+        ("current_price", float("nan"), "BAD_NUMERIC_FIELD"),
+        ("current_price", float("inf"), "BAD_NUMERIC_FIELD"),
+        ("volume", True, "BAD_INTEGER_FIELD"),
+        ("volume", 1.5, "BAD_INTEGER_FIELD"),
+        ("volume", "10", "BAD_INTEGER_FIELD"),
+        ("volume", float("inf"), "BAD_INTEGER_FIELD"),
+        ("last_trade_time", "not-a-date", "BAD_TIME"),
+    ],
+)
+def test_index_panel_bad_cells_have_exact_refusal(monkeypatch, field, value, code):
+    session = _client(
+        monkeypatch,
+        {_PANEL_URL: (200, _panel_bytes([{"symbol": "^VIX", field: value}]))},
+        module=snapshots,
+    )
+    with pytest.raises(snapshots.CboeIndexSnapshotsError) as caught:
+        snapshots.CboeIndexSnapshotsFetcher().fetch(
+            ctx=_public_context("IndexSnapshots", "cdn.cboe.com")
+        )
+    assert caught.value.code == "CBOE_INDEX_SNAPSHOTS_" + code
+    assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize(
+    "body,code",
+    [
+        (b"", "BAD_RESPONSE"),
+        (b"\xff", "BAD_JSON"),
+        (b"{", "BAD_JSON"),
+        (b"[]", "BAD_PANEL"),
+        (b'{"symbol":"other","data":[]}', "BAD_PANEL"),
+        (b'{"symbol":"all_us_indices"}', "EMPTY_PANEL"),
+        (_panel_bytes([]), "EMPTY_PANEL"),
+        (_panel_bytes({}), "EMPTY_PANEL"),
+        (_panel_bytes([None]), "BAD_ROW"),
+        (_panel_bytes([{}]), "BAD_ROW"),
+        (_panel_bytes([{"symbol": 1}]), "BAD_ROW"),
+        (_panel_bytes([{"symbol": ""}]), "BAD_ROW"),
+        (b"x" * (8 * 1024 * 1024 + 1), "RESPONSE_TOO_LARGE"),
+        (_panel_bytes([{"symbol": "^VIX"}] * 5001), "RESPONSE_TOO_LARGE"),
+    ],
+    ids=lambda value: f"bytes-{len(value)}" if isinstance(value, bytes) else str(value),
+)
+def test_index_panel_malformed_envelopes_fail_closed(monkeypatch, body, code):
+    session = _client(monkeypatch, {_PANEL_URL: (200, body)}, module=snapshots)
+    with pytest.raises(snapshots.CboeIndexSnapshotsError) as caught:
+        snapshots.CboeIndexSnapshotsFetcher().fetch(
+            ctx=_public_context("IndexSnapshots", "cdn.cboe.com"), limit=1
+        )
+    assert caught.value.code == "CBOE_INDEX_SNAPSHOTS_" + code
+    assert len(session.calls) == 1

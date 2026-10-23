@@ -29,6 +29,7 @@ from tests.conftest import (
     LIVE_E2E_MARKER,
     LIVE_E2E_OPT_IN_ENV,
     LIVE_E2E_OPT_IN_TOKEN,
+    OWNED_MYSQL_E2E_NODE,
     live_e2e_allowed,
     pytest_collection_modifyitems,
 )
@@ -103,6 +104,31 @@ def test_an_exact_token_releases_the_live_plane(monkeypatch):
     live, unit = _collect()
     assert _skipped(live) is False
     assert _skipped(unit) is False
+
+
+def test_owned_mysql_allowance_does_not_release_other_live_tests(monkeypatch):
+    monkeypatch.delenv(LIVE_E2E_OPT_IN_ENV, raising=False)
+    owned = _FakeItem(OWNED_MYSQL_E2E_NODE, (LIVE_E2E_MARKER,))
+    others = [
+        _FakeItem("tests/test_partition_maintenance.py::test_live", (LIVE_E2E_MARKER,)),
+        _FakeItem(OWNED_MYSQL_E2E_NODE + "_other", (LIVE_E2E_MARKER,)),
+        _FakeItem("other/" + OWNED_MYSQL_E2E_NODE, (LIVE_E2E_MARKER,)),
+    ]
+    pytest_collection_modifyitems(items=[owned, *others])
+    assert not _skipped(owned)
+    assert all(_skipped(item) for item in others)
+    assert not live_e2e_allowed()
+
+
+def test_owned_mysql_is_denied_with_a_shared_token_blacklist(monkeypatch):
+    from opendata.core import token_blacklist as blacklist_module
+
+    monkeypatch.delenv(LIVE_E2E_OPT_IN_ENV, raising=False)
+    monkeypatch.setattr(blacklist_module, "token_blacklist", object())
+    owned = _FakeItem(OWNED_MYSQL_E2E_NODE, (LIVE_E2E_MARKER,))
+    pytest_collection_modifyitems(items=[owned])
+    assert _skipped(owned)
+    assert not live_e2e_allowed()
 
 
 #: Values a shell profile or a hurried operator might leave behind. None of them
@@ -328,18 +354,25 @@ def makefile_pytest_planes(text: str) -> list[str]:
     """Command lines in the Makefile that invoke pytest."""
     return [
         line.strip()
-        for line in text.splitlines()
-        if re.search(r"^\s*\S*\s*pytest\s", line) and not line.lstrip().startswith("#")
+        for line in text.replace("\\\n", " ").splitlines()
+        if re.search(r"^\s*(?:[A-Z_][A-Z0-9_]*=\S*\s+)*(?:\S+\s+-m\s+)?pytest\s", line)
+        and not line.lstrip().startswith("#")
     ]
 
 
 def planes_that_do_not_deselect_e2e(lines: Sequence[str]) -> list[str]:
-    return [line for line in lines if "not e2e" not in line.replace('"', "").replace("'", "")]
+    owned_command = f"REDIS_URL= python -m pytest --no-cov {OWNED_MYSQL_E2E_NODE}"
+    return [
+        line
+        for line in lines
+        if "not e2e" not in line.replace('"', "").replace("'", "")
+        and " ".join(line.split()) != owned_command
+    ]
 
 
 def test_every_makefile_pytest_plane_deselects_the_live_legs():
     planes = makefile_pytest_planes((REPO_ROOT / "Makefile").read_text(encoding="utf-8"))
-    assert len(planes) == 2, planes
+    assert len(planes) == 3, planes
     assert planes_that_do_not_deselect_e2e(planes) == []
 
 
@@ -353,6 +386,15 @@ def test_the_gate_never_sets_the_release_token():
         (['pytest tests -n 8 -m "not e2e"', 'pytest tests -m "not e2e" --cov-branch'], []),
         (["pytest tests -n 8"], ["pytest tests -n 8"]),
         (['pytest tests -m "e2e"'], ['pytest tests -m "e2e"']),
+        ([f"REDIS_URL= python -m pytest --no-cov {OWNED_MYSQL_E2E_NODE}"], []),
+        (
+            [f"python -m pytest --no-cov {OWNED_MYSQL_E2E_NODE}"],
+            [f"python -m pytest --no-cov {OWNED_MYSQL_E2E_NODE}"],
+        ),
+        (
+            [f"REDIS_URL= python -m pytest --no-cov {OWNED_MYSQL_E2E_NODE} tests/test_other.py"],
+            [f"REDIS_URL= python -m pytest --no-cov {OWNED_MYSQL_E2E_NODE} tests/test_other.py"],
+        ),
     ],
 )
 def test_the_plane_census_bites_in_both_directions(lines, expected):

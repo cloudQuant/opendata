@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 from datetime import date, datetime, timedelta, timezone
 from types import SimpleNamespace
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
@@ -24,6 +26,10 @@ from opendata.data.providers.econdb.models.iter2 import (
     EconDBGdpRealFetcher,
     EconDBPortVolumeFetcher,
     EconDBYieldCurveFetcher,
+)
+from opendata.data.providers.econdb.models.profiles import (
+    EconDBCountryProfileFetcher,
+    EconDBExportDestinationsFetcher,
 )
 from opendata.data.providers.tiingo.models.iter2 import (
     TiingoCompanyNewsFetcher,
@@ -997,3 +1003,278 @@ def test_provider_model_query_injects_benzinga_identity_and_serializes_typed_res
     assert response["source"] == "benzinga"
     assert response["model"] == "CompanyNews"
     assert response["results"] == [expected.model_dump(mode="json")]
+
+
+def _synthetic_profile():
+    from scripts.quality.iter2_witnesses.econdb import _econdb_country_profile_document
+
+    return _econdb_country_profile_document()
+
+
+def _synthetic_exports():
+    from scripts.quality.iter2_witnesses.econdb import _econdb_export_destinations_document
+
+    return _econdb_export_destinations_document()
+
+
+def _public_econdb_fetcher(fetcher_type, document, *, status=200):
+    transport = Recorder(HttpResponse(status, document))
+    fetcher = type("PublicFixtureFetcher", (fetcher_type,), {"http_transport": transport})()
+    return transport, fetcher
+
+
+def _public_econdb_context(fetcher_type):
+    return _request_context("econdb", fetcher_type.canonical_model, "global", "www.econdb.com")
+
+
+def test_econdb_public_profile_requests_thirteen_tickers_and_scales_outputs(monkeypatch):
+    monkeypatch.delenv("ECONDB_API_KEY")
+    document = _synthetic_profile()
+    for item in document:
+        item["dataarray"].reverse()
+        item["dataarray"].extend(
+            [
+                None,
+                {"date": "2027-01-01", item["id"]: "null"},
+                {"date": "2026-01-01", item["id"]: True},
+            ]
+        )
+    population = document[3]
+    population["dataarray"].insert(0, {"date": "2025-03-01", "POPUS": "344,000"})
+    transport, fetcher = _public_econdb_fetcher(EconDBCountryProfileFetcher, document)
+    rows = fetcher.fetch(ctx=_public_econdb_context(EconDBCountryProfileFetcher), country=" us ")
+    assert len(rows) == 1
+    assert rows[0].model_dump(mode="json") == {
+        "country": "United States",
+        "population": 344000000,
+        "gdp_usd": 8000.0,
+        "gdp_qoq": 0.0055000000000000005,
+        "gdp_yoy": 0.022000000000000002,
+        "cpi_yoy": 0.037000000000000005,
+        "core_yoy": 0.025,
+        "retail_sales_yoy": 0.062,
+        "industrial_production_yoy": 0.022000000000000002,
+        "policy_rate": 0.0375,
+        "yield_10y": 0.0499,
+        "govt_debt_gdp": 4.875,
+        "current_account_gdp": -0.0084,
+        "jobless_rate": 0.042,
+    }
+    assert len(transport.calls) == 1
+    call = transport.calls[0]
+    assert urlsplit(call["url"]).scheme == "https"
+    assert urlsplit(call["url"]).netloc == "www.econdb.com"
+    assert urlsplit(call["url"]).path == "/series/context/"
+    assert parse_qs(urlsplit(call["url"]).query) == {
+        "tickers": [
+            "[GDPUS~TUSD,RGDPUS~TPOP,RGDPUS~TOYA,POPUS,CPIUS~TOYA,COREUS~TOYA,"
+            "RETAUS~TOYA,IPUS~TOYA,POLIRUS,Y10YDUS,GDEBTUS~TUSD,CAUS~TPGP,URATEUS]"
+        ]
+    }
+    assert call["params"] == {}
+    assert call["headers"] == {"Accept": "application/json"}
+    assert call["timeout"] == 3 and call["source"] == "econdb"
+
+
+@pytest.mark.parametrize(
+    "country,name,expected_gdp,expected_population",
+    [
+        ("US", "United States", 4.0, 80000000),
+        ("DE", "Germany", 10.0, 80000),
+        ("CN", "China", 10.0, 800000000),
+    ],
+)
+def test_econdb_four_quarter_vs_adjusted_gdp_and_population(
+    country, name, expected_gdp, expected_population
+):
+    document = _synthetic_profile()
+    for item in document:
+        old_id = item["id"]
+        new_id = old_id.replace("US", country, 1)
+        item["id"] = new_id
+        item["geography"] = {"name": name}
+        item["dataarray"] = [
+            {"date": entry["date"], new_id: entry[old_id]} for entry in item["dataarray"]
+        ]
+    document[0]["td"]["scale"] = "Billions"
+    document[0]["dataarray"] = [
+        {"date": f"2025-{index:02d}-01", document[0]["id"]: index} for index in [4, 1, 3, 2]
+    ]
+    document[3]["dataarray"] = [{"date": "2025-01-01", document[3]["id"]: 80000}]
+    document[10]["td"]["scale"] = "Billions"
+    document[10]["dataarray"] = [{"date": "2025-01-01", document[10]["id"]: 20}]
+    transport, fetcher = _public_econdb_fetcher(EconDBCountryProfileFetcher, document)
+    row = fetcher.fetch(ctx=_public_econdb_context(EconDBCountryProfileFetcher), country=country)[0]
+    assert row.gdp_usd == expected_gdp
+    assert row.govt_debt_gdp == 20 / expected_gdp
+    assert row.population == expected_population
+    assert row.country == name
+    assert len(transport.calls) == 1
+
+
+@pytest.mark.parametrize("value", ["343\u00a0008", "343 008", "343,008", 343008.0])
+def test_econdb_population_source_number_formats(value):
+    document = _synthetic_profile()
+    document[3]["dataarray"][0]["POPUS"] = value
+    transport, fetcher = _public_econdb_fetcher(EconDBCountryProfileFetcher, document)
+    row = fetcher.fetch(ctx=_public_econdb_context(EconDBCountryProfileFetcher), country="US")[0]
+    assert row.population == 343008000
+    assert len(transport.calls) == 1
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "missing-debt",
+        "missing-gdp-id",
+        "empty-series",
+        "zero-gdp",
+        "invalid-number",
+        "null-number",
+        "short-four-quarter",
+    ],
+)
+def test_econdb_profile_incomplete_context_refuses(mutation):
+    document = _synthetic_profile()
+    if mutation == "missing-debt":
+        document.pop(10)
+    elif mutation == "missing-gdp-id":
+        document[0]["id"] = "UNKNOWN"
+    elif mutation == "empty-series":
+        document[1]["dataarray"] = []
+    elif mutation == "zero-gdp":
+        for entry in document[0]["dataarray"]:
+            entry["GDPUS~TUSD"] = 0
+    elif mutation == "invalid-number":
+        document[3]["dataarray"][0]["POPUS"] = "not-a-number"
+    elif mutation == "null-number":
+        document[3]["dataarray"][0]["POPUS"] = None
+    else:
+        for item in document:
+            old_id = item["id"]
+            new_id = old_id.replace("US", "DE", 1)
+            item["id"] = new_id
+            item["geography"] = {"name": "Germany"}
+            item["dataarray"] = [{"date": "2025-01-01", new_id: 1}]
+    transport, fetcher = _public_econdb_fetcher(EconDBCountryProfileFetcher, document)
+    with pytest.raises(ProviderEngineError) as caught:
+        fetcher.fetch(
+            ctx=_public_econdb_context(EconDBCountryProfileFetcher),
+            country="DE" if mutation == "short-four-quarter" else "US",
+        )
+    assert caught.value.code == "ECONDB_SHAPE_INVALID"
+    assert len(transport.calls) == 1
+
+
+@pytest.mark.parametrize("country,origin", [(" us ", "United States"), ("xy", "Xy")])
+def test_econdb_public_exports_widget_format_units_and_footnote(monkeypatch, country, origin):
+    monkeypatch.delenv("ECONDB_API_KEY")
+    document = _synthetic_exports()
+    document["plots"][0]["data"][0]["Country"] = "south_korea"
+    transport, fetcher = _public_econdb_fetcher(EconDBExportDestinationsFetcher, document)
+    rows = fetcher.fetch(
+        ctx=_public_econdb_context(EconDBExportDestinationsFetcher), country=country
+    )
+    assert [row.model_dump(mode="json") for row in rows] == [
+        {
+            "origin_country": origin,
+            "destination_country": "South Korea",
+            "value": 123.4,
+            "units": "Millions of USD",
+            "title": "Exports from United States",
+            "footnote": "Public widget fixture.",
+        },
+        {
+            "origin_country": origin,
+            "destination_country": "Canada",
+            "value": 98.7,
+            "units": "Millions of USD",
+            "title": "Exports from United States",
+            "footnote": "Public widget fixture.",
+        },
+    ]
+    assert len(transport.calls) == 1
+    assert transport.calls[0] == {
+        "url": f"https://www.econdb.com/widgets/top-trade-items/data/?country={country.strip().upper()}&split_by=country",
+        "params": {},
+        "timeout": 3.0,
+        "source": "econdb",
+        "headers": {"Accept": "application/json"},
+    }
+
+
+def test_econdb_exports_absent_optional_plot_metadata():
+    document = {"plots": [{"data": [{"Country": "canada", "Value million USD": 0}]}]}
+    transport, fetcher = _public_econdb_fetcher(EconDBExportDestinationsFetcher, document)
+    row = fetcher.fetch(ctx=_public_econdb_context(EconDBExportDestinationsFetcher), country="US")[
+        0
+    ]
+    assert row.model_dump(mode="json") == {
+        "origin_country": "United States",
+        "destination_country": "Canada",
+        "value": 0.0,
+        "units": "",
+        "title": "",
+        "footnote": None,
+    }
+    assert len(transport.calls) == 1
+
+
+@pytest.mark.parametrize(
+    "document",
+    [
+        [],
+        {},
+        {"plots": []},
+        {"plots": {}},
+        {"plots": [None]},
+        {"plots": [{"data": []}]},
+        {"plots": [{"data": {}}]},
+        {"plots": [{"data": [{"Value million USD": 1}]}]},
+        {"plots": [{"data": [{"Country": " ", "Value million USD": 1}]}]},
+        {"plots": [{"data": [{"Country": 1, "Value million USD": 1}]}]},
+        {"plots": [{"data": [{"Country": "Canada", "Value million USD": True}]}]},
+        {"plots": [{"data": [{"Country": "Canada", "Value million USD": "1"}]}]},
+        {"plots": [{"data": [{"Country": "Canada"}]}]},
+    ],
+)
+def test_econdb_exports_invalid_plots_and_values(document):
+    transport, fetcher = _public_econdb_fetcher(
+        EconDBExportDestinationsFetcher, copy.deepcopy(document)
+    )
+    with pytest.raises(ProviderEngineError) as caught:
+        fetcher.fetch(ctx=_public_econdb_context(EconDBExportDestinationsFetcher), country="US")
+    assert caught.value.code == "ECONDB_SHAPE_INVALID"
+    assert len(transport.calls) == 1
+
+
+@pytest.mark.parametrize(
+    "fetcher_type", [EconDBCountryProfileFetcher, EconDBExportDestinationsFetcher]
+)
+def test_econdb_public_blank_country_refuses_before_transport(fetcher_type):
+    transport, fetcher = _public_econdb_fetcher(fetcher_type, {})
+    with pytest.raises(ProviderEngineError) as caught:
+        fetcher.fetch(ctx=_public_econdb_context(fetcher_type), country=" \t ")
+    assert caught.value.code == "ECONDB_QUERY_INVALID"
+    assert caught.value.invalid == ("country",)
+    assert transport.calls == []
+
+
+@pytest.mark.parametrize(
+    "fetcher_type", [EconDBCountryProfileFetcher, EconDBExportDestinationsFetcher]
+)
+def test_econdb_public_http_status_is_classified(fetcher_type):
+    transport, fetcher = _public_econdb_fetcher(fetcher_type, {}, status=503)
+    with pytest.raises(ProviderEngineError) as caught:
+        fetcher.fetch(ctx=_public_econdb_context(fetcher_type), country="US")
+    assert caught.value.code == "ECONDB_HTTP_ERROR"
+    assert caught.value.status == 503
+    assert len(transport.calls) == 1
+
+
+def test_econdb_profile_wrong_outer_envelope_refuses():
+    transport, fetcher = _public_econdb_fetcher(EconDBCountryProfileFetcher, {})
+    with pytest.raises(ProviderEngineError) as caught:
+        fetcher.fetch(ctx=_public_econdb_context(EconDBCountryProfileFetcher), country="US")
+    assert caught.value.code == "ECONDB_SHAPE_INVALID"
+    assert len(transport.calls) == 1

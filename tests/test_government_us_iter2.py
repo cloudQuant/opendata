@@ -11,7 +11,10 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+import requests
+from pydantic import ValidationError
 
+from opendata.data.http_client import GovernedHttpClient, HttpClientConfig
 from opendata.data.models.government_us import (
     CommodityPsdData,
     TreasuryAuction,
@@ -19,7 +22,7 @@ from opendata.data.models.government_us import (
     WeatherBulletinDownload,
 )
 from opendata.data.protocol import FetchContext
-from opendata.data.providers.government_us.models import _client
+from opendata.data.providers.government_us.models import _client, treasury_prices
 from opendata.data.providers.government_us.models.commodity_psd_data import (
     CommodityPsdDataFetcher,
 )
@@ -38,6 +41,7 @@ from opendata.data.providers.government_us.models.weather_bulletin_download impo
 )
 from opendata.data.request_budget import (
     GrantDecision,
+    RequestAuthorizationError,
     RequestBudget,
     RequestBudgetProfile,
     RequestGrant,
@@ -544,3 +548,256 @@ def test_weather_bulletin_download_preserves_media_type_and_rejects_foreign_url(
     )
     with pytest.raises(ValueError, match="plain official HTTPS URL"):
         WeatherBulletinDownloadQuery.model_validate({"urls": "https://example.com/report.txt"})
+
+
+_TREASURY_URL = "https://treasurydirect.gov/GA-FI/FedInvest/securityPriceDetail"
+_TREASURY_HEADER = b"cusip,security_type,rate,maturity_date,call_date,bid,offer,eod_price\n"
+
+
+@pytest.fixture
+def treasury_clock(monkeypatch):
+    class FrozenDate(date):
+        @classmethod
+        def today(cls):
+            return cls(2024, 6, 29)
+
+    monkeypatch.setattr(treasury_prices, "date", FrozenDate)
+
+
+def _transcribed_treasury_listing():
+    from scripts.quality.iter2_witnesses._parts.government_us.rows_w33_treasury_prices import (
+        _document,
+    )
+
+    return ("\n".join(_document()["responses"][0]["body"]) + "\n").encode()
+
+
+class _TreasuryReplaySession(requests.Session):
+    def __init__(self, body, content_type, failure):
+        super().__init__()
+        self.body = body
+        self.content_type = content_type
+        self.failure = failure
+        self.calls = []
+
+    def request(self, method, url, **kwargs):
+        self.calls.append({"method": method, "url": url, **kwargs})
+        assert method == "POST" and url == _TREASURY_URL
+        if self.failure is not None:
+            raise self.failure
+        response = requests.Response()
+        response.status_code = 200
+        response.url = url
+        response._content = self.body
+        response.headers["Content-Type"] = self.content_type
+        return response
+
+
+def _treasury_replay(monkeypatch, body, *, content_type="text/csv", failure=None):
+    session = _TreasuryReplaySession(body, content_type, failure)
+    client = GovernedHttpClient(
+        HttpClientConfig(max_attempts=1, rate_limit_per_host=None, default_headers={}),
+        session=session,
+        raw_response_cache=None,
+        sleep=lambda _: None,
+    )
+    monkeypatch.setattr(_client, "get_shared_http_client", lambda: client)
+    return session
+
+
+def _treasury_context():
+    return _service_context("TreasuryPrices", frozenset({"treasurydirect.gov"}))
+
+
+@pytest.mark.parametrize("header", [b"", _TREASURY_HEADER])
+def test_treasury_transcribed_2024_prices_retain_first_headerless_row(
+    monkeypatch, treasury_clock, header
+):
+    session = _treasury_replay(monkeypatch, header + _transcribed_treasury_listing())
+    rows = treasury_prices.TreasuryPricesFetcher().fetch(ctx=_treasury_context(), date="2024-06-26")
+    assert [row.cusip for row in rows] == ["912796Y45", "912797KH9", "912796Y52"]
+    assert rows[0].model_dump(mode="json") == {
+        "cusip": "912796Y45",
+        "security_type": "MARKET BASED BILL",
+        "rate": 0.0,
+        "maturity_date": "2024-06-27",
+        "call_date": None,
+        "bid": 0.0,
+        "offer": 99.9855,
+        "eod_price": 0.0,
+        "issuer_name": None,
+        "isin": None,
+        "issue_date": None,
+        "last_traded_date": None,
+        "total_trades": None,
+        "last_price": None,
+        "highest_price": None,
+        "lowest_price": None,
+        "ytm": None,
+        "date": "2024-06-26",
+    }
+    assert rows[2].bid == 99.869125 and rows[2].offer == 99.86875
+    assert len(session.calls) == 1
+    call = session.calls[0]
+    assert call["params"] == {
+        "priceDateDay": "26",
+        "priceDateMonth": "6",
+        "priceDateYear": "2024",
+        "fileType": "csv",
+        "csv": "CSV FORMAT",
+    }
+    assert "json" not in call and "data" not in call
+    assert call["timeout"] == 2
+    assert call["headers"]["Content-Type"] == "application/x-www-form-urlencoded"
+
+
+@pytest.mark.parametrize(
+    "query,expected",
+    [
+        ({"cusip": " 912796y45 "}, ["912796Y45"]),
+        ({"security_type": "bill"}, ["912796Y45", "912797KH9", "912796Y52"]),
+        ({"security_type": "bill", "cusip": "912796Y52"}, ["912796Y52"]),
+    ],
+)
+def test_treasury_local_cusip_and_security_type_selectors(
+    monkeypatch, treasury_clock, query, expected
+):
+    session = _treasury_replay(monkeypatch, _transcribed_treasury_listing())
+    rows = treasury_prices.TreasuryPricesFetcher().fetch(
+        ctx=_treasury_context(), date="2024-06-26", **query
+    )
+    assert [row.cusip for row in rows] == expected
+    assert len(session.calls) == 1
+    assert "cusip" not in session.calls[0]["params"]
+    assert "security_type" not in session.calls[0]["params"]
+
+
+@pytest.mark.parametrize("query", [{"cusip": "912796Y46"}, {"security_type": "note"}])
+def test_treasury_no_matching_security_refuses(monkeypatch, treasury_clock, query):
+    session = _treasury_replay(monkeypatch, _transcribed_treasury_listing())
+    with pytest.raises(_client.GovernmentUSProviderError) as caught:
+        treasury_prices.TreasuryPricesFetcher().fetch(
+            ctx=_treasury_context(), date="2024-06-26", **query
+        )
+    assert caught.value.code == "TREASURY_PRICE_NO_MATCHING_ROW"
+    assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize(
+    "today,expected",
+    [
+        (date(2024, 6, 28), date(2024, 6, 28)),
+        (date(2024, 6, 29), date(2024, 6, 28)),
+        (date(2024, 6, 30), date(2024, 6, 28)),
+        (date(2024, 7, 1), date(2024, 7, 1)),
+    ],
+)
+def test_treasury_business_day_default(today, expected):
+    assert treasury_prices.last_business_day(today) == expected
+
+
+def test_treasury_default_date_uses_frozen_weekday_not_current_quotes(monkeypatch, treasury_clock):
+    session = _treasury_replay(monkeypatch, _transcribed_treasury_listing())
+    rows = treasury_prices.TreasuryPricesFetcher().fetch(ctx=_treasury_context(), cusip="912796Y45")
+    assert rows[0].date == date(2024, 6, 28)
+    assert session.calls[0]["params"]["priceDateDay"] == "28"
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        {"date": "2024-06-30"},
+        {"symbol": "912796Y45"},
+        {"start_date": "2024-06-26"},
+        {"end_date": "2024-06-26"},
+        {"cusip": "bad"},
+        {"cusip": "912796Y4!"},
+        {"security_type": "stock"},
+    ],
+)
+def test_treasury_invalid_queries_refuse_before_http(monkeypatch, treasury_clock, query):
+    session = _treasury_replay(monkeypatch, b"")
+    with pytest.raises(ValidationError):
+        treasury_prices.TreasuryPricesFetcher().fetch(ctx=_treasury_context(), **query)
+    assert session.calls == []
+
+
+def test_treasury_old_date_refuses_before_http(monkeypatch, treasury_clock):
+    session = _treasury_replay(monkeypatch, b"")
+    with pytest.raises(_client.GovernmentUSProviderError) as caught:
+        treasury_prices.TreasuryPricesFetcher().fetch(ctx=_treasury_context(), date="2024-05-29")
+    assert caught.value.code == "TREASURY_PRICE_DATE_TOO_OLD"
+    assert session.calls == []
+
+
+@pytest.mark.parametrize(
+    "body,content_type,code",
+    [
+        (b"", "text/csv", "EMPTY_DOCUMENT"),
+        (b" \n", "text/csv", "EMPTY_DOCUMENT"),
+        (_TREASURY_HEADER, "text/csv", "EMPTY_DOCUMENT"),
+        (b"<html>not prices</html>", "text/csv", "HTML_RESPONSE"),
+        (_transcribed_treasury_listing(), "text/html; charset=utf-8", "HTML_RESPONSE"),
+        (b"912796Y45,BILL,0,06/27/2024,,1,2\n", "text/csv", "BAD_COLUMN_COUNT"),
+        (b"912796Y45,BILL,0,06/27/2024,,1,2,3\n" * 5001, "text/csv", "TOO_MANY_ROWS"),
+    ],
+    ids=lambda value: f"bytes-{len(value)}" if isinstance(value, bytes) else str(value),
+)
+def test_treasury_document_guards(monkeypatch, treasury_clock, body, content_type, code):
+    session = _treasury_replay(monkeypatch, body, content_type=content_type)
+    with pytest.raises(_client.GovernmentUSProviderError) as caught:
+        treasury_prices.TreasuryPricesFetcher().fetch(ctx=_treasury_context(), date="2024-06-26")
+    assert caught.value.code == "TREASURY_PRICE_" + code
+    assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize(
+    "column,value,code",
+    [
+        (2, "not-numeric", "BAD_VALUE"),
+        (5, "NaN", "BAD_VALUE"),
+        (6, "inf", "BAD_VALUE"),
+        (7, "-inf", "BAD_VALUE"),
+        (3, "02/30/2024", "BAD_DATE"),
+        (4, "not-a-date", "BAD_DATE"),
+    ],
+)
+def test_treasury_bad_price_and_date_cells(monkeypatch, treasury_clock, column, value, code):
+    cells = _transcribed_treasury_listing().decode().splitlines()[0].split(",")
+    cells[column] = value
+    session = _treasury_replay(monkeypatch, (",".join(cells) + "\n").encode())
+    with pytest.raises(_client.GovernmentUSProviderError) as caught:
+        treasury_prices.TreasuryPricesFetcher().fetch(ctx=_treasury_context(), date="2024-06-26")
+    assert caught.value.code == "TREASURY_PRICE_" + code
+    assert len(session.calls) == 1
+
+
+def test_treasury_blank_numerics_call_date_and_latin1_text(monkeypatch, treasury_clock):
+    session = _treasury_replay(
+        monkeypatch, b"912796Y45,MARKET BASED NOTE \xe9,,06/27/2024,06/26/2024,,99.5,\n"
+    )
+    row = treasury_prices.TreasuryPricesFetcher().fetch(ctx=_treasury_context(), date="2024-06-26")[
+        0
+    ]
+    assert row.security_type == "MARKET BASED NOTE é"
+    assert row.rate is None and row.bid is None and row.eod_price is None
+    assert row.offer == 99.5
+    assert row.call_date == date(2024, 6, 26)
+    assert len(session.calls) == 1
+
+
+def test_treasury_governed_timeout_is_sanitized(monkeypatch, treasury_clock):
+    session = _treasury_replay(monkeypatch, b"", failure=requests.Timeout("private detail"))
+    with pytest.raises(_client.GovernmentUSProviderError) as caught:
+        treasury_prices.TreasuryPricesFetcher().fetch(ctx=_treasury_context(), date="2024-06-26")
+    assert caught.value.code == "GOV_US_HTTP_ERROR"
+    assert caught.value.status is None
+    assert str(caught.value) == "GOV_US_HTTP_ERROR"
+    assert len(session.calls) == 1
+
+
+def test_treasury_missing_grant_never_sends(monkeypatch, treasury_clock):
+    session = _treasury_replay(monkeypatch, _transcribed_treasury_listing())
+    with pytest.raises(RequestAuthorizationError):
+        treasury_prices.TreasuryPricesFetcher().fetch(date="2024-06-26")
+    assert session.calls == []

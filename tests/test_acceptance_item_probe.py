@@ -6,10 +6,12 @@ import json
 import shutil
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import tomllib
 
+from scripts.quality import acceptance_item_probe as tool
 from scripts.quality.acceptance_item_probe import (
     DWD_MERGE_REL,
     DWD_REVISION_NODES,
@@ -283,12 +285,8 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     facts = measure_ac1_08(Context(REPO_ROOT, (), {}))
 
     assert facts["table_valid"] == "yes"
-    # 19 rows: rows 17/18/19 (Benzinga / EconDB / Tiingo) joined with the C99 provider packages, and
-    # every row still carries a 复核日期, which is what ``dated == rows`` is for. The per-row接线
-    # counts in rows 14/15/16 are asserted below against the registry's own cells, so a model wave
-    # that lands without moving a cell is a failure here rather than a stale sentence nobody reads.
-    assert facts["rows"] == "19"
-    assert facts["dated"] == facts["rows"] == "19"
+    assert facts["rows"] == "35"
+    assert facts["dated"] == facts["rows"] == "35"
     assert facts["undecided"] == "0"
     assert facts["unlinked"] == "0"
     assert facts["responsible_missing"] == "0"
@@ -319,7 +317,7 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
         10: "ECB / IMF / OECD",
         11: "商业源（FMP/Tiingo/Alpha Vantage/Intrinio/Tradier…）",
     }
-    assert set(rows) == set(range(1, 20))
+    assert set(rows) == set(range(1, 36))
     assert {row_id: rows[row_id]["数据源"] for row_id in historical_sources} == (historical_sources)
     assert rows[12]["数据源"] == "BLS（美国劳工统计局）"
     assert rows[13]["数据源"] == "FMP（EquityHistorical / EquityQuote）"
@@ -343,6 +341,13 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert rows[17]["状态"] == pending_clause
     assert rows[18]["状态"] == pending_clause
     assert rows[19]["状态"] == restricted
+    for row_id in range(20, 36):
+        assert rows[row_id]["状态"] == pending_clause
+        assert rows[row_id]["复核日期"] == "2026-10-23"
+        assert "仅登记" in rows[row_id]["责任人"]
+        for use in ("允许本项目落库", "允许再分发", "允许商业使用"):
+            assert "暂不批准" in rows[row_id][use]
+    assert "日期是登记日期，不是条款复核日期" in registry
     assert {rows[row_id]["复核日期"] for row_id in range(1, 12)} == {"2026-09-30"}
     assert rows[12]["复核日期"] == rows[13]["复核日期"] == "2026-10-08"
     assert rows[14]["复核日期"] == "2026-10-08"
@@ -1052,6 +1057,273 @@ def test_ac9_07_actual_merge_flow_passes_affected_keys_through_all_paths() -> No
     assert probe.judge(clean).state == PROVEN
     for counterfact in probe.breaks:
         assert probe.judge({**clean, **dict(counterfact.facts)}).state == GAP
+
+
+@pytest.fixture
+def temporary_git(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """Use throwaway history with environment identities, without changing git configuration."""
+    for role in ("AUTHOR", "COMMITTER"):
+        monkeypatch.setenv(f"GIT_{role}_NAME", "Acceptance probe test")
+        monkeypatch.setenv(f"GIT_{role}_EMAIL", "acceptance-probe@example.test")
+
+    def git(*args: str) -> str:
+        code, output = run_argv(["git", *args], cwd=tmp_path)
+        assert code == 0, output
+        return output.strip()
+
+    git("init", "--quiet", "--initial-branch=main")
+    return tmp_path, git
+
+
+@pytest.fixture
+def clean_history_facts() -> tool.Facts:
+    """Reachable commits need not all produce fragments: 588 / 587 is a valid reading."""
+    return resolve_repair(
+        {
+            "scanner_pin": "8.30.1",
+            "argv_tokens": "gitleaks detect --redact",
+            "reads_scanner_root": "yes",
+            "git_commits_head": "588",
+            "git_commits_all": "588",
+            "fragment_population": "587",
+            "bytes_scanned": "100",
+            "allowlist_global": "1",
+            "allowlist_global_regexes": "1",
+            "allowlist_rules": "2",
+            "allowlist_rule_regexes": "2",
+            "pair_samples": "1",
+            "pair_variants": "4",
+            "tree_pair_lines": "1",
+            "tree_files_read": "1",
+            "tree_files_skipped": "0",
+            "tree_pair_stale": "0",
+            "tree_pair_changed": "0",
+            "control_shipped_exit": "1",
+            "control_stripped_exit": "1",
+        },
+        tool.AC16_09.repair,
+    )
+
+
+def test_fragment_census_counts_all_ref_text_diffs_not_nonfragments(temporary_git) -> None:
+    root, git = temporary_git
+    expected: set[str] = set()
+
+    def commit(label: str, *, fragment: bool) -> str:
+        git("add", "--all")
+        git("commit", "--quiet", "--allow-empty", "-m", label)
+        sha = git("rev-parse", "HEAD")
+        if fragment:
+            expected.add(sha)
+        assert tool.fragment_population(root) == str(len(expected)), label
+        return sha
+
+    text = root / "text.txt"
+    text.write_text("one\ntwo\n", encoding="utf-8")
+    (root / "rename.txt").write_text("unchanged\n", encoding="utf-8")
+    base = commit("text add", fragment=True)
+    text.write_text("one\ntwo changed\nthree\n", encoding="utf-8")
+    commit("text modify", fragment=True)
+    text.write_text("one\n", encoding="utf-8")
+    commit("delete lines without additions", fragment=True)
+    text.unlink()
+    commit("whole text file deletion", fragment=False)
+    binary = root / "artifact.bin"
+    binary.write_bytes(b"\x00binary one")
+    commit("binary add", fragment=False)
+    binary.write_bytes(b"\x00binary two")
+    commit("binary modify", fragment=False)
+    binary.unlink()
+    commit("binary deletion", fragment=False)
+    (root / "empty.txt").touch()
+    commit("empty file add", fragment=False)
+    commit("empty commit", fragment=False)
+    git("mv", "rename.txt", "renamed.txt")
+    commit("pure rename", fragment=False)
+    (root / "renamed.txt").chmod(0o755)
+    commit("mode only", fragment=False)
+    head = git("rev-parse", "HEAD")
+    git("switch", "--quiet", "-c", "credential-side", base)
+    (root / "credential.txt").write_text(
+        "Authorization: Bearer ghp_" + "0123456789abcdef" * 2 + "0123\n", encoding="utf-8"
+    )
+    branch = commit("credential on non-HEAD branch", fragment=True)
+    git("switch", "--quiet", "main")
+    assert git("rev-parse", "HEAD") == head
+    assert branch not in git("rev-list", "HEAD").splitlines()
+    assert branch in git("rev-list", "--all").splitlines()
+    assert tool.fragment_population(root) == str(len(expected)) == "4"
+    assert int(git("rev-list", "--count", "--all")) > len(expected)
+
+
+@pytest.mark.parametrize(
+    "output",
+    [
+        "",
+        "commit:bad\n1\t0\ttext.txt\n",
+        "1\t0\ttext.txt\n",
+        "commit:" + "a" * 40 + "\n1\t0\n",
+        "commit:" + "a" * 40 + "\n1\t0\t\n",
+        "commit:" + "a" * 40 + "\n-\t1\ttext.txt\n",
+        "commit:" + "a" * 40 + "\n1\tnan\ttext.txt\n",
+        "commit:" + "a" * 40 + "\n1\t0\ttext.txt\nunexpected stderr\n",
+    ],
+)
+def test_fragment_census_rejects_malformed_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, output: str
+) -> None:
+    monkeypatch.setattr(tool, "run_argv", lambda argv, **kwargs: (0, output))
+    assert tool.fragment_population(tmp_path) == "(unread)"
+
+
+def test_fragment_census_deduplicates_shas_and_fails_closed_on_command_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sha = "a" * 40
+    output = f"commit:{sha}\n0\t1\ttext.txt\ncommit:{sha}\n1\t0\tother.txt\n"
+    monkeypatch.setattr(tool, "run_argv", lambda argv, **kwargs: (0, output))
+    assert tool.fragment_population(tmp_path) == "1"
+    monkeypatch.setattr(tool, "run_argv", lambda argv, **kwargs: (128, output))
+    assert tool.fragment_population(tmp_path) == "(unread)"
+
+
+def test_history_judge_matches_independent_census_exactly(clean_history_facts: tool.Facts) -> None:
+    assert tool.judge_ac16_09(clean_history_facts).state == PROVEN
+    for field, value in (
+        ("commits_scanned", "586"),
+        ("commits_scanned", "588"),
+        ("commits_scanned", "(unread)"),
+        ("fragment_population", "(unread)"),
+        ("fragment_population", "0"),
+        ("git_commits_head", "0"),
+        ("git_commits_all", "0"),
+        ("git_commits_all", "586"),
+        ("git_commits_all", "(unread)"),
+        ("git_shallow", "true"),
+        ("git_shallow", "(unread)"),
+        ("argv_scope_limits", "1"),
+    ):
+        assert tool.judge_ac16_09({**clean_history_facts, field: value}).state == GAP, field
+    assert (
+        tool.judge_ac16_09(
+            {**clean_history_facts, "report_items": "1", "stderr_leaks": "1", "scan_exit": "1"}
+        ).state
+        == GAP
+    )
+
+
+def test_history_self_test_still_reaches_proven_and_checks_all_breaks(
+    monkeypatch: pytest.MonkeyPatch, clean_history_facts: tool.Facts
+) -> None:
+    monkeypatch.setattr(tool, "PROBES", (tool.AC16_09,))
+    findings, reading = tool.self_test_findings(
+        tool.load_context(), {tool.ITEM: {**clean_history_facts, "commits_scanned": "586"}}, {}
+    )
+    assert findings == []
+    assert "1/1" in reading
+    assert f"{len(tool.AC16_09.breaks)} 条" in reading
+
+
+@pytest.mark.parametrize(
+    ("shallow", "scope"), [(False, ""), (True, ""), (False, "--log-opts=HEAD")]
+)
+def test_history_measure_keeps_scan_argv_and_rejects_shallow_or_scoped_history(
+    temporary_git,
+    monkeypatch: pytest.MonkeyPatch,
+    clean_history_facts: tool.Facts,
+    shallow: bool,
+    scope: str,
+) -> None:
+    root, git = temporary_git
+    text = root / "text.txt"
+    for value in ("first\n", "second\n"):
+        text.write_text(value, encoding="utf-8")
+        git("add", "text.txt")
+        git("commit", "--quiet", "-m", value.strip())
+    scan_root = root
+    if shallow:
+        scan_root = root / "shallow"
+        git("clone", "--quiet", "--depth=1", root.as_uri(), str(scan_root))
+    (scan_root / tool.CONFIG_REL).write_text(
+        (REPO_ROOT / tool.CONFIG_REL).read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    manifest = tool.script_module(tool.SCANNER_REL).load_manifest()
+    argv = [*manifest.scan_argv, *([scope] if scope else [])]
+    mod = SimpleNamespace(
+        REPO_ROOT=scan_root,
+        load_manifest=lambda: SimpleNamespace(scan_argv=argv, gitleaks_version="8.30.1"),
+        local_tool_version=lambda manifest: "8.30.1",
+        check_ci_wiring=lambda manifest: [],
+    )
+    monkeypatch.setattr(tool, "script_module", lambda rel: mod)
+    monkeypatch.setattr(
+        tool,
+        "_pair_census",
+        lambda *args: {
+            "exempted": 1,
+            "files_read": 1,
+            "files_skipped": 0,
+            "stale": 0,
+            "changed": 0,
+            "pairs": [("docs/fixture.txt", "a" * 64)],
+        },
+    )
+    monkeypatch.setattr(
+        tool,
+        "_control_scan",
+        lambda *args: {
+            key: value
+            for key, value in clean_history_facts.items()
+            if key.startswith("control_") or key == "allowlist_blocks"
+        },
+    )
+
+    def fake_scan(command, *, cwd):
+        if command[0] == "git":
+            return run_argv(command, cwd=cwd)
+        assert command == [
+            *argv,
+            "--report-format",
+            "json",
+            "--report-path",
+            command[-1],
+        ]
+        Path(command[-1]).write_text("[]", encoding="utf-8")
+        count = 1 if shallow else 2
+        return 0, f"{count} commits scanned\nscanned ~100 bytes\nno leaks found\n"
+
+    monkeypatch.setattr(tool, "run_argv", fake_scan)
+    facts = tool.measure_ac16_09(Context(scan_root, tool.load_context().doc_items, {}))
+    assert facts["fragment_population"] == ("1" if shallow else "2")
+    assert facts["git_shallow"] == ("true" if shallow else "false")
+    assert facts["argv_scope_limits"] == ("1" if scope else "0")
+    assert tool.judge_ac16_09(facts).state == (GAP if shallow or scope else PROVEN)
+
+
+def test_evidence_deletions_excludes_only_bytecode_from_both_sets(
+    temporary_git, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root, git = temporary_git
+    evidence = root / tool.EVIDENCE_DIR
+    evidence.mkdir(parents=True)
+    for name, contents in (
+        ("generated.pyc", b"\x00bytecode"),
+        ("generated.pyo", b"\x00bytecode"),
+        ("removed.txt", b"text evidence\n"),
+        ("removed.json", b"{}\n"),
+        ("removed.bin", b"\x00binary evidence"),
+        ("retained.txt", b"retained evidence\n"),
+        ("retained.pyc", b"\x00retained bytecode"),
+        ("retained.pyo", b"\x00retained bytecode"),
+    ):
+        (evidence / name).write_bytes(contents)
+    git("add", tool.EVIDENCE_DIR)
+    git("commit", "--quiet", "-m", "evidence and accidental caches")
+    for name in ("generated.pyc", "generated.pyo", "removed.txt", "removed.json", "removed.bin"):
+        git("rm", "--quiet", f"{tool.EVIDENCE_DIR}/{name}")
+    git("commit", "--quiet", "-m", "remove caches and real archives")
+    monkeypatch.setattr(tool, "run_argv", lambda argv: run_argv(argv, cwd=root))
+    assert tool.evidence_deletions() == ("3", "1")
 
 
 @pytest.mark.parametrize(

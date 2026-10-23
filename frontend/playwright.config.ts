@@ -18,6 +18,8 @@ const previewUrl = `http://127.0.0.1:${previewPort}`
 
 export default defineConfig({
   testDir: './e2e',
+  // The owned-MySQL pytest harness runs this leaf with its dedicated config.
+  testIgnore: '**/script-download-backend.spec.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,

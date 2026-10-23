@@ -192,10 +192,10 @@ _TOOL_CACHE: dict[tuple[str, ...], tuple[int, str]] = {}
 
 def tool(argv: Sequence[str]) -> tuple[int, str]:
     """Run a repo tool once per process and return ``(exit, stdout+stderr)``. No shell."""
-    key = tuple(argv)
+    key = (sys.executable, *argv[1:]) if argv[0] == "python" else tuple(argv)
     if key not in _TOOL_CACHE:
         proc = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
-            list(argv),
+            list(key),
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
@@ -2444,7 +2444,12 @@ PROBES: Final = (
         "327 文件清单、锁与快照双向一致、逐节点改写与人工差异标记、重放幂等。",
         measure_ac2_04,
         judge_ac2_04,
-        {"signature_differing_unregistered": "0"},
+        {
+            "signature_rows_compared": "325",
+            "signature_checkout_ok": "True",
+            "signature_fidelity_exit": "0",
+            "signature_differing_unregistered": "0",
+        },
         (
             Break("锁记录少一条", {"lock_records": "326"}),
             Break("清单与锁路径集不同", {"path_sets_equal": "False"}),

@@ -67,6 +67,22 @@ def tally_ok(row: dict, expected: int) -> bool:
     return len(parts) == 2 and parts == [str(expected), str(expected)]
 
 
+def test_repo_python_tools_use_the_selected_interpreter_and_share_the_cache(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[list[str]] = []
+
+    def run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0, "result", "")
+
+    monkeypatch.setattr(plane, "_TOOL_CACHE", {})
+    monkeypatch.setattr(plane.subprocess, "run", run)
+    assert plane.tool(["python", "script.py"]) == (0, "result")
+    assert plane.tool([sys.executable, "script.py"]) == (0, "result")
+    assert calls == [[sys.executable, "script.py"]]
+
+
 def test_denominator_is_the_documents_not_the_authors() -> None:
     cases, malformed = plane.parse_cases(DOC_TEXT)
     assert malformed == []
@@ -139,6 +155,44 @@ def test_tally_reader_accepts_the_real_form_and_rejects_a_pad() -> None:
     assert not tally_ok({"counter_examples": "8/7"}, 8)
     assert not tally_ok({"counter_examples": "9/9"}, 8)
     assert not tally_ok({"counter_examples": "-"}, 8)
+
+
+def test_signature_counterfactual_is_independent_of_checkout_availability() -> None:
+    item = plane.probes_by_case()["AC2-04"]
+    facts = {
+        "lock_python": "325",
+        "lock_resources": "2",
+        "lock_records": "327",
+        "manifest_files": "325",
+        "manifest_resources": "2",
+        "control_file_rows_in_lock": "0",
+        "path_sets_equal": "True",
+        "disk_python_files": "325",
+        "census_files": "166",
+        "census_rows": "166",
+        "census_sha_rows": "166",
+        "census_statements": "532",
+        "census_row_sum": "532",
+        "census_line_sum": "532",
+        "stale_pin_outside_census": "0",
+        "archive_rows_missing_for_census": "0",
+        "archive_census_pin_gap_rows": "0",
+        "archive_census_replay_gap_rows": "0",
+        "archive_rewrite_rows_outside_census": "0",
+        "archive_rows_carrying_rewrite_counts": "166",
+        "line_changed_unflagged": "0",
+        "signature_rows_compared": "0",
+        "signature_checkout_ok": "False",
+        "signature_differing_unregistered": "0",
+        "signature_fidelity_exit": "2",
+        "retired_root_import_nodes": "0",
+    }
+    assert item.judge(facts).state == plane.GAP
+    report = plane.self_test(item, facts)
+    assert report["closure"] == plane.HOLDS
+    assert report["breaks"] == report["flipped"] == 17
+    assert report["notes"] == []
+    assert item.judge(facts).state == plane.GAP
 
 
 def test_ledger_agrees_with_the_code_that_wrote_it() -> None:

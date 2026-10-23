@@ -20,7 +20,8 @@ jobs:
   # the installed binary against that manifest and fails on drift.
   secret-scan:
     name: secret scan (full history)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,7 +40,8 @@ jobs:
 
   quality-gate:
     name: quality gate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
     services:
       mysql:
         image: mysql:8.0
@@ -73,6 +75,8 @@ jobs:
       APP_ENV: testing
       ENABLE_SCHEDULER: "false"
       SCHEDULER_BOOTSTRAP_ON_STARTUP: "false"
+      PYTHONUNBUFFERED: "1"
+      OPENDATA_OPENBB_PATH: ${{ runner.temp }}/opendata-openbb/openbb_platform
       # On pull requests, diff the A2 gate against the target branch's merge base.
       # On pushes this is empty, so a2-check falls back to docs/quality/baseline.json.
       A2_BASE_REF: ${{ github.base_ref }}
@@ -104,8 +108,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[web,dev,providers]"
 
+      - name: Fetch pinned upstream metadata checkout
+        run: |
+          COMMIT=$(python -c "from scripts.quality.provider_model_inventory import UPSTREAM_COMMIT; print(UPSTREAM_COMMIT)")
+          CHECKOUT="$RUNNER_TEMP/opendata-openbb"
+          git init "$CHECKOUT"
+          git -C "$CHECKOUT" fetch --depth=1 https://github.com/OpenBB-finance/OpenBB.git "$COMMIT"
+          git -C "$CHECKOUT" checkout --detach FETCH_HEAD
+          test "$(git -C "$CHECKOUT" rev-parse HEAD)" = "$COMMIT"
+
       - name: Install frontend dependencies
         run: npm ci --prefix frontend
+
+      - name: Install Playwright Chromium and system dependencies
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Pull pinned MySQL image for owned browser integration
+        run: |
+          IMAGE=$(python -c "from tests.script_download_backend_harness import MYSQL_IMAGE_REFERENCE; print(MYSQL_IMAGE_REFERENCE)")
+          docker pull "$IMAGE"
 
       - name: Install gitleaks (gate runs secret-check; version from the manifest)
         run: |
