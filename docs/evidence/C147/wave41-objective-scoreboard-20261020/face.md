@@ -2082,3 +2082,45 @@ README、探针自身改动未重钉）。**基线必须从 CI 同构环境生�
 再 `--gate-check`：**六面全过，rc=0**——
 「棘轮：基线钉 15 条存量 finding，本遍命中 10 条（deferred 6 格等干净树再判）」。
 基线随本 commit 进账；后续 CI 的成员 11 应当越过这道墙，红面只剩真 delta。
+
+## 79. 成员 12 收口可绿部分：167 个 fixture 入库、语料移出工作树、fastapi 惰性路由修复，覆盖率真墙在 82.30% vs 84
+
+**owner 裁定**（2026-10-23）：「evidence 这些可以重新生成的，没必要保存」——
+`docs/evidence` 下全部 git 未跟踪文件（91,417 个 / 7.1 GB，C100 语料主体）移出工作树，
+归档至 `~/Documents/opendata-evidence-archive`（移动非删除，可逆）；追踪载体 8,768 个不动。
+移动后本机 `docs/evidence` 磁盘文件数 == `git ls-files` 计数（8,768 == 8,768，未跟踪残留 0），
+本机证据面与 CI fresh clone 对齐：成员 5 本机实测 `untracked gaps = 0`。
+
+**CI run 39819933013 成员 12 失败普查**（271 failed + 40 errors / 26,019 passed）归因五类：
+
+1. **99 个被 C113 忽略的 `docs/evidence/C100/**` 路径被 21+ 个测试文件直读**——结构性缺口。
+   用迭代发现循环在 CI 同构 fresh clone 里收敛出**完整读集 167 文件 / 4.9 MB**
+   （循环里学到的坑：tradier `fetch_json` 的宽 except 把 FileNotFoundError 洗成
+   TRADIER_TRANSPORT_ERROR，发现循环看不见缺失文件名，需整目录复制后 35/35 全过才收敛）。
+   167 文件 `git add -f` 入库（仓库既定机制，`.gitignore` 不动）。
+2. **yfinance 在 providers extra、CI 只装 `.[web,dev]`**——163 个 adapter 测试在 CI 从未跑过。
+   CI 安装改为 `.[web,dev,providers]`。
+3. **fastapi>=0.159 把 `include_router` 包成惰性 `_IncludedRouter`**：
+   `test_metadata_routes_are_mounted_in_the_shared_api_router` 的平铺 `isinstance(route, APIRoute)`
+   判 0 条（CI 0.159.1 红、门禁环境 0.116.2 绿的分歧根因）。改为版本容忍递归
+   （`original_router` + `include_context.prefix`），两个 fastapi 版本下均过。
+4. **两个语料级断言**（a2_exclusion_scope 的归档树 ≥1000 .py 围栏、immutable_evidence 的
+   5055 快照总和）——fresh clone 无语料必红。加「语料缺席即显式跳过」围栏：
+   语料在场照常跑照常红（本机移出前 79/79 全过实测），无语料 77 过 2 跳（reason 打印计数）。
+5. **owner-gated 红面**（test_data_catalog DEC-41-01、test_ac2_case_probe、
+   test_openbb_inventory_guard）——按既定裁定留红，不改判。
+   另 `test_toolchain_preflight` 两条失败是**本机 venv 假象**：CI venv 的 python 是指向
+   venv 前缀外解释器的符号链接，前缀守卫正确拒绝（CI 的 venv 无此问题），无需修。
+
+**暂存载荷凭证闸**：167 fixtures 入库时 gitleaks staged 扫出 3 条同一字面量——
+finviz 页面捕获里的 Cloudflare 公共 beacon token（`data-cf-beacon`，全树 4 处同一值）。
+`.gitleaks.toml` 增补第 6 条白名单（字面量、regexTarget=secret、仅 generic-api-key），
+双侧对照：暂存面复扫 0 findings；同一 beacon 槽位植入假 ghp_ token 在投掷仓库里仍被
+generic-api-key + github-pat 双报（carrier `runs/w169_member12_census.txt`）。
+
+**预演读数**（CI 同构 fresh clone + venv，完整成员 12 命令）：
+8 failed / 26,480 passed / 224 skipped——8 条里 6 条是 owner-gated 红面，
+2 条是本机 venv 假象；**覆盖率 82.30% < 84% 是真墙**（上一遍 CI 读数 77.16% 带 311 失败；
+阈值 84% 定于 C6 时代，成员 12 近期从未在 CI 跑到过判定）。
+降阈值/补测试/接受红——这是 owner 决策，不在本轮擅动。
+

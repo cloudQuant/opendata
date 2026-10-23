@@ -1,0 +1,37 @@
+w169: CI member 12 收口证据面（2026-10-23）
+
+== 1. 迭代发现循环收敛（CI 同构 fresh clone /tmp/opendata-ratchet-clone, venv python 3.11）==
+command: bash /tmp/c100_discovery_loop.sh (28 个 C100 引用测试文件 × 迭代复制缺失文件)
+round1 rc=2 new_missing=5 -> round15..18: round18 new_missing=0 converged
+终态（tradier 整 fixtures 目录补齐后）: 0 failed / 830 passed / 2 skipped
+完整读集: 167 文件 / 4.9 MB (comm -23 <(find clone C100) <(git ls-files clone C100))
+
+== 2. 入库后 28 文件复验 ==
+本机(语料已移出): 835 passed, 2 skipped in 8.27s
+clone(同步围栏后): 94 passed, 2 skipped in 3.35s (SKIPPED 2 条 reason 均打印语料缺席计数)
+本机(语料在场时,移出前): 79 passed in 102s — 围栏未静音在场臂
+
+== 3. gitleaks 双侧对照 ==
+staged 扫描(167 fixtures): BEFORE 3 findings (generic-api-key ×3, 同一 Cloudflare beacon token e53f08f6...)
+  触点: finviz-performance/fixtures/{aapl,invalid}.html:575/3110, remaining-protocol-review/market-six/captures-.../aapl.html:3110
+  全树 blast radius: 4 处同一字面量(C100 内 grep 实测), 每文件 1 次, 全部是 finviz 公开页面捕获
+AFTER(.gitleaks.toml 第 6 条白名单: 字面量 regexTarget=secret): staged 复扫 0 findings, rc=0
+对照臂(throwaway repo /tmp/gitleaks-control, 同 beacon 槽位植入 ghp_a1b2c3...): 2 findings
+  generic-api-key aapl.html:3110 + github-pat aapl.html:3110 — 白名单是字面量不是形状
+
+== 4. 成员 12 完整命令预演（CI 同构 clone）==
+command: pytest tests -n 8 -m 'not e2e' --cov-branch --cov-report=term-missing --cov-fail-under=84
+8 failed / 26,480 passed / 224 skipped in 599.41s
+失败 8 = owner-gated 6 (data_catalog 1, ac2_case_probe 1, openbb_inventory_guard 4)
+         + 本机 venv 假象 2 (toolchain_preflight: venv python 符号链接指向 venv 前缀外, CI 无此问题)
+TOTAL coverage: 69380 stmts, 82.30% — FAIL Required 84% not reached
+对照: CI run 39819933013 旧读数 77.16% (311 失败时)
+
+== 5. 语料移出核验 ==
+command: python3 /tmp/move_untracked_evidence.py (幂等三轮: 只读文件先补 u+w; 符号链接按链接移动)
+moved=18664(末轮) dirs_pruned=13707; 磁盘 8768 == tracked 8768; 未跟踪残留 0
+归档: /Users/yunjinqi/Documents/opendata-evidence-archive 91,417 文件 / 7.1 GB
+成员 5 本机实测: identity/command/exit/untracked gaps = 0
+
+== 6. 新提交终扫 ==
+gitleaks git --log-opts=-2: 1 commit scanned ~4.37MB no leaks rc=0
