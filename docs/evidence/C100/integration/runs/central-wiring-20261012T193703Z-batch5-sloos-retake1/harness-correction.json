@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "purpose": "Correct the prior guarded metadata smoke predicate and record the export-count classification erratum without changing product files.",
+  "prior_run": {
+    "run_id": "central-wiring-20261012T192822Z-batch5-sloos",
+    "path": "docs/evidence/C100/integration/runs/central-wiring-20261012T192822Z-batch5-sloos/run.json",
+    "sha256": "bcb5e6374e7d087296f216a257f5f253a779360c9b82b409492701b75f5fab36",
+    "observed_error": "fixed inventory has missing or duplicate runtime bindings",
+    "observation_was_empty": true,
+    "reason": "The runner raised before serializing its computed observation. Its predicate treated every non-empty missing set as failure even though the reviewed fixed inventory allows 33 unbound identities."
+  },
+  "predicate_correction": {
+    "old": "if missing_from_runtime or duplicate_runtime_rows: fail",
+    "new": "require the exact runtime-missing set to equal the independent batch4 fixed-unbound set minus fred::SeniorLoanOfficerSurvey; require duplicate_runtime_rows to be empty",
+    "fixed_unbound_source": "docs/evidence/C100/acceptance-central-batch4/runs/independent-retake-20261012T1855Z-priority-null/receipt.json",
+    "fixed_unbound_source_sha256": "59400c28c9f26d3e9343538dbada3d746030ea430cc116cd0641d823bc38fed5",
+    "newly_bound_identity": ["fred", "SeniorLoanOfficerSurvey"],
+    "expected_fixed_unbound_count_after_addition": 33
+  },
+  "identity_reconstruction": {
+    "batch3_manifest": "docs/evidence/C100/integration/runs/central-wiring-20261012T144316Z-batch3/run.json",
+    "batch3_manifest_sha256": "a1f9a75a1d36fc28129b8323c3e2bbf8a2e19d7b36e74dc6fb4964ed6a254c03",
+    "batch4_delta": "docs/evidence/C100/integration/runs/central-wiring-20261012T175242Z-batch4-finviz-retake1/run.json",
+    "batch4_delta_sha256": "cf5d49076d5c8bef35c2ceeb778dd452fb59776db57f36615bb0c62c1849f07e",
+    "result": "The reconstructed batch5 33-item missing set equals the independent batch4 34-item fixed-unbound set minus fred::SeniorLoanOfficerSurvey; reconstructed runtime rows=350, unique identities=350, duplicates=0, fixed intersection=317, outside-fixed rows=33. The new guarded run records its own direct runtime observation."
+  },
+  "count_erratum": {
+    "candidate_path": "docs/evidence/C100/integration/candidates/central-wiring-batch5-candidate.json",
+    "candidate_sha256": "775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e",
+    "static_freeze_path": "docs/evidence/C100/integration/candidates/central-wiring-batch5-static-freeze.json",
+    "static_freeze_sha256": "988bf1feef4b37cb9688ed4bd3377447b9a282ce2480898ea0fdd9e72392aaba",
+    "superseded_label": "329 public_contract_model_exports",
+    "corrected_counts": {
+      "contract_model_exports": 326,
+      "public_all_symbols": 330
+    },
+    "non_contract_exports": [
+      "BlsCatalogPage",
+      "FredOutputType",
+      "FredSeniorLoanOfficerSurveyQuery",
+      "FredTransformUnits"
+    ],
+    "basis": "Anaconda runtime introspection: 326 exported types subclass ContractModel; four other names in __all__ do not. No product exports are removed to force a count."
+  }
+}

@@ -1,0 +1,16 @@
+command=OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /Users/yunjinqi/opt/anaconda3/bin/conda run --no-capture-output -n base python scripts/quality/a2_check.py --files opendata/data/providers/fred/provider.py opendata/data/models/__init__.py
+exit_code=0
+stdout:
+A2 files (complete resolver): 2
+  opendata/data/providers/fred/provider.py
+  opendata/data/models/__init__.py
+
+Static-tool execution partition: 2 file(s), 0 verified immutable snapshot(s) excluded.
+Historical Ruff findings: 2110 (NOT GREEN; historical evidence only).
+ok  pinned Gitleaks file scan (78 snapshot file(s))
+ok   ruff check
+ok   ruff format --check
+ok   mypy
+ok   bandit
+
+OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit).

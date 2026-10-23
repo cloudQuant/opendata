@@ -1,0 +1,177 @@
+{
+  "provider": "federal_reserve",
+  "status": "source_slice_ready_pending_central_domain_wiring",
+  "clean_room": {
+    "oracle_implementation_read": false,
+    "basis": "Official public source pages, API documentation and workbook shape; handwritten fixtures."
+  },
+  "official_documentation": [
+    "https://www.federalreserve.gov/datadownload/choose.aspx?rel=h15",
+    "https://www.federalreserve.gov/datadownload/help/default.htm",
+    "https://www.newyorkfed.org/markets/counterparties/primary-dealers-statistics",
+    "https://markets.newyorkfed.org/static/docs/markets-api.html",
+    "https://www.newyorkfed.org/markets/soma-holdings.html",
+    "https://www.philadelphiafed.org/surveys-and-data/real-time-data-research/inflation-forecasts",
+    "https://www.philadelphiafed.org/surveys-and-data/real-time-data-research/survey-of-professional-forecasters",
+    "https://www.philadelphiafed.org/-/media/FRBP/Assets/Surveys-And-Data/survey-of-professional-forecasters/historical-data/Inflation.xlsx?hash=0E7FC9E86818CF8A1C512953603AA6D8&sc_lang=en",
+    "https://markets.newyorkfed.org/api/pd/list/timeseries.json",
+    "https://www.frbsf.org/research-and-insights/data-and-indicators/total-factor-productivity-tfp/",
+    "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+    "https://www.federalreserve.gov/monetarypolicy/fomc_historical.htm"
+  ],
+  "imports": {
+    "contracts": [
+      "opendata.data.models.federal_reserve_macro.FederalReserveYieldCurve",
+      "opendata.data.models.federal_reserve_macro.FederalReservePrimaryDealerFail",
+      "opendata.data.models.federal_reserve_macro.FederalReservePrimaryDealerPosition",
+      "opendata.data.models.federal_reserve_macro.FederalReserveCentralBankHolding",
+      "opendata.data.models.federal_reserve_macro.FederalReserveInflationExpectations",
+      "opendata.data.models.federal_reserve_macro.FederalReserveTotalFactorProductivity",
+      "opendata.data.models.federal_reserve_macro.FederalReserveFomcDocument"
+    ],
+    "provider_descriptor": "opendata.data.providers.federal_reserve.provider.PROVIDER",
+    "fetchers": [
+      "opendata.data.providers.federal_reserve.models.yield_curve.FederalReserveYieldCurveFetcher",
+      "opendata.data.providers.federal_reserve.models.primary_dealer_fails.FederalReservePrimaryDealerFailsFetcher",
+      "opendata.data.providers.federal_reserve.models.primary_dealer_positioning.FederalReservePrimaryDealerPositioningFetcher",
+      "opendata.data.providers.federal_reserve.models.central_bank_holdings.FederalReserveCentralBankHoldingsFetcher",
+      "opendata.data.providers.federal_reserve.models.inflation_expectations.FederalReserveInflationExpectationsFetcher",
+      "opendata.data.providers.federal_reserve.models.total_factor_productivity.FederalReserveTotalFactorProductivityFetcher",
+      "opendata.data.providers.federal_reserve.models.fomc_documents.FederalReserveFomcDocumentsFetcher"
+    ]
+  },
+  "existing": {
+    "OvernightBankFundingRate": {
+      "status": "already_in_provider_and_central_domains",
+      "contract": "opendata.data.models.federal_reserve_macro.FederalReserveOvernightBankFundingRate"
+    }
+  },
+  "contract_references": [
+    "https://docs.openbb.co/odp/v4/python/reference/economy/survey/inflation_expectations",
+    "https://docs.openbb.co/odp/v4/python/reference/economy/central_bank_holdings"
+  ],
+  "domains": {
+    "federal_reserve_yield_curve": {
+      "display_name": "Federal Reserve Treasury Yield Curve",
+      "rest_path": "federal-reserve/yield-curve",
+      "contract": "FederalReserveYieldCurve",
+      "temporal_kind": "series",
+      "time_field": "date",
+      "natural_key": [
+        "date",
+        "maturity"
+      ],
+      "filter_dims": [
+        "maturity"
+      ],
+      "storage_mode": "upsert",
+      "permissions": [
+        "query"
+      ]
+    },
+    "federal_reserve_primary_dealer_fails": {
+      "display_name": "Federal Reserve Primary Dealer Fails",
+      "rest_path": "macro/federal-reserve-primary-dealer-fails",
+      "contract": "PrimaryDealerFails",
+      "priority": null,
+      "temporal_kind": "series",
+      "time_field": "date",
+      "natural_key": [
+        "date",
+        "symbol"
+      ],
+      "filter_dims": [],
+      "storage_mode": "upsert",
+      "permissions": [
+        "query"
+      ]
+    },
+    "federal_reserve_primary_dealer_positioning": {
+      "display_name": "Federal Reserve Primary Dealer Positioning",
+      "rest_path": "macro/federal-reserve-primary-dealer-positioning",
+      "contract": "PrimaryDealerPositioning",
+      "priority": null,
+      "temporal_kind": "series",
+      "time_field": "date",
+      "natural_key": [
+        "date",
+        "symbol"
+      ],
+      "filter_dims": [],
+      "storage_mode": "upsert",
+      "permissions": [
+        "query"
+      ]
+    },
+    "federal_reserve_central_bank_holdings": {
+      "display_name": "Federal Reserve SOMA Holdings",
+      "rest_path": "federal-reserve/central-bank-holdings",
+      "contract": "FederalReserveCentralBankHolding",
+      "temporal_kind": "snapshot",
+      "time_field": "date",
+      "natural_key": [
+        "date",
+        "security_type",
+        "cusip"
+      ],
+      "filter_dims": [
+        "security_type",
+        "cusip"
+      ],
+      "storage_mode": "upsert",
+      "permissions": [
+        "query"
+      ]
+    },
+    "federal_reserve_inflation_expectations": {
+      "display_name": "Federal Reserve Inflation Expectations",
+      "rest_path": "federal-reserve/inflation-expectations",
+      "contract": "FederalReserveInflationExpectations",
+      "temporal_kind": "series",
+      "time_field": "date",
+      "natural_key": [
+        "date"
+      ],
+      "filter_dims": [],
+      "storage_mode": "upsert",
+      "permissions": [
+        "query"
+      ]
+    },
+    "federal_reserve_total_factor_productivity": {
+      "display_name": "Federal Reserve Total Factor Productivity",
+      "rest_path": "federal-reserve/total-factor-productivity",
+      "contract": "FederalReserveTotalFactorProductivity",
+      "temporal_kind": "series",
+      "time_field": "period",
+      "natural_key": [
+        "period",
+        "vintage_date"
+      ],
+      "filter_dims": [],
+      "storage_mode": "upsert",
+      "permissions": [
+        "query"
+      ]
+    },
+    "federal_reserve_fomc_documents": {
+      "display_name": "Federal Reserve FOMC Documents",
+      "rest_path": "federal-reserve/fomc-documents",
+      "contract": "FederalReserveFomcDocument",
+      "temporal_kind": "document",
+      "time_field": "document_date",
+      "natural_key": [
+        "url"
+      ],
+      "filter_dims": [
+        "document_type",
+        "format"
+      ],
+      "storage_mode": "upsert",
+      "permissions": [
+        "query"
+      ]
+    }
+  },
+  "not_ready": []
+}

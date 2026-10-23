@@ -1,0 +1,74 @@
+{
+  "CompanyNews": {
+    "positive": {"symbol": "AAPL", "publishedDate": "2026-07-30 13:15:49", "publisher": "Zacks Investment Research", "title": "Apple reports quarterly results", "image": "https://images.example.test/apple.jpg", "site": "example.test", "text": "Revenue grew during the quarter.", "url": "https://example.test/apple-news"},
+    "negative": {"symbol": "AAPL", "publishedDate": "2026-07-30", "publisher": "Example", "title": "Apple reports quarterly results", "url": "https://example.test/apple-news"}
+  },
+  "WorldNews": {
+    "positive": {"symbol": null, "publishedDate": "2026-07-30 12:53:41", "publisher": "Seeking Alpha", "title": "Market update", "image": null, "site": "seekingalpha.com", "text": "Markets opened higher.", "url": "https://example.test/market-news"},
+    "negative": {"symbol": null, "publishedDate": "2026-07-30 12:53:41", "publisher": "Seeking Alpha", "title": "Market update", "url": " "}
+  },
+  "CompanyFilings": {
+    "positive": {"symbol": "AAPL", "cik": "0000320193", "filingDate": "2024-03-04 00:00:00", "acceptedDate": "2024-03-01 22:47:48", "formType": "10-K", "hasFinancials": true, "link": "https://www.sec.gov/Archives/edgar/data/320193/example-index.htm", "finalLink": "https://www.sec.gov/Archives/edgar/data/320193/example.htm"},
+    "negative": {"symbol": "AAPL", "cik": "0000320193", "filingDate": "2024-03-04 00:00:00", "acceptedDate": "2024-03-01 22:47:48", "formType": "10-K", "hasFinancials": "yes", "link": "https://www.sec.gov/Archives/edgar/data/320193/example-index.htm"}
+  },
+  "DiscoveryFilings": {
+    "positive": {"symbol": "DNN", "cik": "0001063259", "filingDate": "2024-03-01 00:00:00", "acceptedDate": "2024-03-01 16:52:35", "formType": "6-K", "hasFinancials": true, "link": "https://www.sec.gov/Archives/edgar/data/1063259/example-index.htm", "finalLink": "https://www.sec.gov/Archives/edgar/data/1063259/example.htm"},
+    "negative": {"symbol": "DNN", "cik": "0001063259", "filingDate": "March 1, 2024", "acceptedDate": "2024-03-01 16:52:35", "formType": "6-K", "hasFinancials": true, "link": "https://www.sec.gov/Archives/edgar/data/1063259/example-index.htm"}
+  },
+  "HistoricalDividends": {
+    "positive": {"symbol": "AAPL", "date": "2023-08-11", "recordDate": "2023-08-14", "paymentDate": "2023-08-17", "declarationDate": "2023-08-03", "adjDividend": 0.24, "dividend": 0.24, "yield": 0.005, "frequency": "Quarterly"},
+    "negative": {"symbol": "AAPL", "date": "2023-08-11", "adjDividend": "Infinity", "dividend": 0.24}
+  },
+  "HistoricalSplits": {
+    "positive": {"symbol": "AAPL", "date": "2020-08-31", "numerator": 4, "denominator": 1, "splitType": "stock-split"},
+    "negative": {"symbol": "AAPL", "date": "2020-08-31", "numerator": 4.5, "denominator": 1, "splitType": "stock-split"}
+  },
+  "HistoricalEps": {
+    "positive": {"symbol": "AAPL", "date": "2026-07-30", "epsActual": 1.25, "epsEstimated": 1.2, "revenueActual": 1000000000, "revenueEstimated": 990000000, "lastUpdated": "2026-07-30"},
+    "negative": {"symbol": "AAPL", "date": "2026-07-30", "epsActual": "1.25", "epsEstimated": 1.2}
+  },
+  "HistoricalEmployees": {
+    "positive": {"symbol": "AAPL", "cik": "0000320193", "acceptanceTime": "2025-10-31 06:01:26", "periodOfReport": "2025-09-27", "companyName": "Apple Inc.", "formType": "10-K", "filingDate": "2025-10-31", "employeeCount": 166000, "source": "https://www.sec.gov/Archives/edgar/data/320193/example-index.htm"},
+    "negative": {"symbol": "AAPL", "cik": "0000320193", "acceptanceTime": "2025-10-31 06:01:26", "periodOfReport": "2025-09-27", "companyName": "Apple Inc.", "formType": "10-K", "filingDate": "2025-10-31", "employeeCount": "166000", "source": "https://www.sec.gov/Archives/edgar/data/320193/example-index.htm"}
+  },
+  "HistoricalMarketCap": {
+    "positive": {"symbol": "AAPL", "date": "2026-07-30", "marketCap": 4879177245542},
+    "negative": {"symbol": "AAPL", "date": "2026-07-30", "marketCap": "NaN"}
+  },
+  "EarningsCallTranscript": {
+    "positive": {"symbol": "AAPL", "period": "Q3", "year": 2020, "date": "2020-07-30", "content": "Operator: Welcome to the quarterly earnings call."},
+    "negative": {"symbol": "AAPL", "period": "Q3", "year": 2020.0, "date": "2020-07-30", "content": "Operator: Welcome to the quarterly earnings call."}
+  },
+  "PriceTarget": {
+    "positive": {"symbol": "AAPL", "publishedDate": "2026-07-30 13:00:00", "newsURL": "https://example.test/analyst-note", "newsTitle": "Analyst raises target", "analystName": "Analyst One", "priceTarget": 250, "adjPriceTarget": 250, "priceWhenPosted": 220, "newsPublisher": "Example Research", "newsBaseURL": "example.test", "analystCompany": "Example Securities"},
+    "negative": {"symbol": "AAPL", "publishedDate": "2026-07-30 13:00:00", "newsURL": "https://example.test/analyst-note", "newsTitle": "Analyst raises target", "analystName": "Analyst One", "priceTarget": "250", "analystCompany": "Example Securities"}
+  },
+  "PriceTargetConsensus": {
+    "positive": {"symbol": "AAPL", "targetHigh": 400, "targetLow": 250, "targetConsensus": 337.67, "targetMedian": 340},
+    "negative": {"symbol": "AAPL", "targetHigh": 400, "targetLow": 250, "targetConsensus": null, "targetMedian": 340}
+  },
+  "KeyExecutives": {
+    "positive": {"symbol": "AAPL", "title": "Chief Executive Officer", "name": "Tim Cook", "pay": 3000000, "currencyPay": "USD", "gender": "male", "yearBorn": 1960, "titleSince": 1676248586, "active": true},
+    "negative": {"symbol": "AAPL", "title": "Chief Executive Officer", "name": "Tim Cook", "pay": 3000000, "currencyPay": "USD", "gender": "male", "yearBorn": 1960, "titleSince": 1676248586, "active": "yes"}
+  },
+  "ExecutiveCompensation": {
+    "positive": {"cik": "0000320193", "symbol": "AAPL", "companyName": "Apple Inc.", "filingDate": "2026-01-08", "acceptedDate": "2026-01-08 16:31:36", "nameAndPosition": "Luca Maestri Former Senior Vice President, Chief Financial Officer", "year": 2025, "salary": 819231, "bonus": 0, "stockAward": 13003031, "optionAward": 0, "incentivePlanCompensation": 1638462, "allOtherCompensation": 22204, "total": 15482928, "link": "https://www.sec.gov/Archives/edgar/data/320193/example-index.htm"},
+    "negative": {"cik": "0000320193", "symbol": "AAPL", "companyName": "Apple Inc.", "filingDate": "2026-01-08", "acceptedDate": "2026-01-08 16:31:36", "nameAndPosition": "Luca Maestri, CFO", "year": 2025, "salary": "Infinity", "link": "https://www.sec.gov/Archives/edgar/data/320193/example-index.htm"}
+  },
+  "GovernmentTrades": {
+    "positive": {"symbol": "AAPL", "chamber": "senate", "senateID": "W000802", "disclosureDate": "2026-07-08", "transactionDate": "2026-06-24", "firstName": "Sheldon", "lastName": "Whitehouse", "office": "Sheldon Whitehouse", "district": "RI", "owner": "Spouse", "assetDescription": "Apple Inc", "assetType": "Stock", "type": "Sale", "amount": "$15,001 - $50,000", "capitalGainsOver200USD": "False", "comment": "", "link": "https://efdsearch.senate.gov/search/view/ptr/example/"},
+    "negative": {"symbol": "AAPL", "chamber": "federal", "senateID": "W000802", "disclosureDate": "2026-07-08", "transactionDate": "2026-06-24", "firstName": "Sheldon", "lastName": "Whitehouse", "office": "Sheldon Whitehouse", "district": "RI", "owner": "Spouse", "assetDescription": "Apple Inc", "assetType": "Stock", "type": "Sale", "amount": "$15,001 - $50,000", "link": "https://efdsearch.senate.gov/search/view/ptr/example/"}
+  },
+  "InsiderTrading": {
+    "positive": {"symbol": "TRMK", "filingDate": "2026-07-30", "transactionDate": "2026-07-28", "reportingCik": "0001661867", "companyCik": "0000036146", "transactionType": "A-Award", "securitiesOwned": 62959, "reportingName": "Tate Granville Jr", "typeOfOwner": "officer: Secretary", "acquisitionOrDisposition": "A", "directOrIndirect": "D", "formType": "4", "securitiesTransacted": 1608, "price": 0, "securityName": "Common Stock", "url": "https://www.sec.gov/Archives/edgar/data/36146/example-index.htm"},
+    "negative": {"symbol": "TRMK", "filingDate": "2026-07-30", "transactionDate": "not-a-date", "reportingCik": "0001661867", "companyCik": "0000036146", "transactionType": "A-Award", "securitiesOwned": 62959, "reportingName": "Tate Granville Jr", "typeOfOwner": "officer: Secretary", "acquisitionOrDisposition": "A", "directOrIndirect": "D", "formType": "4", "securitiesTransacted": 1608, "price": 0, "securityName": "Common Stock", "url": "https://www.sec.gov/Archives/edgar/data/36146/example-index.htm"}
+  },
+  "InstitutionalOwnership": {
+    "positive": {"symbol": "AAPL", "cik": "0000320193", "date": "2023-09-30", "investorsHolding": 4863, "lastInvestorsHolding": 4805, "investorsHoldingChange": 58, "numberOf13Fshares": 9139920744, "lastNumberOf13Fshares": 9360939709, "numberOf13FsharesChange": -221018965, "totalInvested": 1575774922899, "lastTotalInvested": 1820827010085, "totalInvestedChange": -245052087186, "ownershipPercent": 58.5914, "lastOwnershipPercent": 59.6329, "ownershipPercentChange": -1.0415, "newPositions": 162, "lastNewPositions": 191, "newPositionsChange": -29, "increasedPositions": 1941, "lastIncreasedPositions": 1789, "increasedPositionsChange": 152, "closedPositions": 158, "lastClosedPositions": 122, "closedPositionsChange": 36, "reducedPositions": 2408, "lastReducedPositions": 2543, "reducedPositionsChange": -135, "totalCalls": 173627138, "lastTotalCalls": 198895582, "totalCallsChange": -25268444, "totalPuts": 192913290, "lastTotalPuts": 177042062, "totalPutsChange": 15871228, "putCallRatio": 1.1111, "lastPutCallRatio": 0.8901, "putCallRatioChange": 22.0952},
+    "negative": {"symbol": "AAPL", "cik": "0000320193", "date": "2023-09-30", "investorsHolding": "4863", "lastInvestorsHolding": 4805, "investorsHoldingChange": 58, "numberOf13Fshares": 9139920744, "lastNumberOf13Fshares": 9360939709, "numberOf13FsharesChange": -221018965, "totalInvested": 1575774922899, "lastTotalInvested": 1820827010085, "totalInvestedChange": -245052087186, "ownershipPercent": 58.5914, "lastOwnershipPercent": 59.6329, "ownershipPercentChange": -1.0415, "newPositions": 162, "lastNewPositions": 191, "newPositionsChange": -29, "increasedPositions": 1941, "lastIncreasedPositions": 1789, "increasedPositionsChange": 152, "closedPositions": 158, "lastClosedPositions": 122, "closedPositionsChange": 36, "reducedPositions": 2408, "lastReducedPositions": 2543, "reducedPositionsChange": -135, "totalCalls": 173627138, "lastTotalCalls": 198895582, "totalCallsChange": -25268444, "totalPuts": 192913290, "lastTotalPuts": 177042062, "totalPutsChange": 15871228, "putCallRatio": 1.1111, "lastPutCallRatio": 0.8901, "putCallRatioChange": 22.0952}
+  },
+  "EquityOwnership": {
+    "positive": {"cik": "0000320193", "symbol": "AAPL", "filingDate": "2026-04-29", "acceptedDate": "2026-04-29", "cusip": "037833100", "nameOfReportingPerson": "Vanguard Capital Management", "citizenshipOrPlaceOfOrganization": "PENNSYLVANIA", "soleVotingPower": "0", "sharedVotingPower": "0", "soleDispositivePower": "0", "sharedDispositivePower": "0", "amountBeneficiallyOwned": "1099168953", "percentOfClass": "7.48", "typeOfReportingPerson": "IA", "url": "https://www.sec.gov/Archives/edgar/data/320193/example-primary.xml"},
+    "negative": {"cik": "0000320193", "symbol": "AAPL", "filingDate": "2026-04-29", "acceptedDate": "2026-04-29", "cusip": "037833100", "nameOfReportingPerson": "Vanguard Capital Management", "citizenshipOrPlaceOfOrganization": "PENNSYLVANIA", "soleVotingPower": "0", "sharedVotingPower": "0", "soleDispositivePower": "0", "sharedDispositivePower": "0", "amountBeneficiallyOwned": "1099168953", "percentOfClass": "7.48", "typeOfReportingPerson": "IA", "url": "https://www.sec.gov/Archives/edgar/data/320193/example-primary.xml", "unpublishedField": "unsupported"}
+  }
+}

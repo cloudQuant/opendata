@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "kind": "source_freeze",
+  "version": 2,
+  "created_at_utc": "2026-10-12T18:16:17Z",
+  "scope": "SLOOS aggregate max_records pre-dispatch cap fix; includes prior runtime annotation repair unchanged",
+  "frozen_files": {
+    "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
+    "opendata/data/providers/fred/models/sloos.py": "d960cb231bc4b9cc51f4df2f02111c7c18f630f9e223a67bda665908a36e0f39",
+    "opendata/data/providers/fred/sloos_series.py": "2b45fe84a37ffb2596f1e22c6b50fc4b028ccf24c924d410041eed550d2fe228",
+    "tests/test_fred_sloos.py": "dd8dae40ad1355156b9a7ef6287db5f3b5cf55d1703fa59debd72021ce2d04d3"
+  },
+  "previous_freeze": {
+    "path": "docs/evidence/C100/fred-sloos/source-freeze.json",
+    "sha256": "8685d0d051598a08aad8bfcdc91cbbb3ed4cebc08e9d4ca504b7c21b332f34e6",
+    "preserved": true
+  },
+  "pre_repair_files": {
+    "opendata/data/providers/fred/models/sloos.py": "8cdf83e7a721d40a46dde950a85919ed986dc39c9774d4bd873ad3b7437058ea",
+    "tests/test_fred_sloos.py": "ee2a48036d2d79aee34edef337a26d857828bf7d3edbf6d5b15881bbd4c9f777"
+  },
+  "pre_repair_archive": {
+    "path": "docs/evidence/C100/fred-sloos/quality-repairs/max-records-cap/pre-repair-originals.tar.gz",
+    "sha256": "f44591de5bc2b7df6cecbf94572b42e6913ca188f499ed5893080193ce98214f"
+  },
+  "source_provenance_pin": {
+    "path": "docs/evidence/C100/fred-sloos/source-manifest.json",
+    "sha256": "1f84938e715d666bec4123ea8c6eb844c88425bf20dd7c1aa58926d119eec23f",
+    "role": "source provenance only; not a source freeze"
+  },
+  "trigger_receipt_pin": {
+    "path": "docs/evidence/C100/acceptance-fred-sloos/runs/20261012T180940.444349Z/result.json",
+    "sha256": "070438e3a2827afca84065d04492efd0743572f11b3266969238cb5d414d8365",
+    "preserved_unchanged": true
+  },
+  "repair_evidence": {
+    "path": "docs/evidence/C100/fred-sloos/quality-repairs/max-records-cap/repair-evidence.json",
+    "sha256": "ab996f8abd09816df395f54a22c2adcfb168286b124f817172ac74a9b034d1f6"
+  },
+  "validation": {
+    "ruff_check": "PASS",
+    "ruff_format_check": "PASS",
+    "mypy_scoped": "PASS",
+    "bandit_scoped": "PASS, zero findings",
+    "targeted_pytest": "24 passed; offline guarded test_fred_sloos.py",
+    "independent_reacceptance": "PENDING"
+  }
+}

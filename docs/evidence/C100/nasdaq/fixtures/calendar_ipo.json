@@ -1,0 +1,82 @@
+{
+  "data": {
+    "priced": {
+      "asOf": null,
+      "headers": {
+        "proposedTickerSymbol": "Symbol",
+        "companyName": "Company Name",
+        "proposedExchange": "Exchange/ Market",
+        "proposedSharePrice": "Price",
+        "sharesOffered": "Shares",
+        "pricedDate": "Date",
+        "dollarValueOfSharesOffered": "Offer Amount",
+        "dealStatus": "Actions"
+      },
+      "rows": [
+        {
+          "dealID": "fixture-priced-1",
+          "proposedTickerSymbol": "ACME",
+          "companyName": "Acme Example Corporation",
+          "proposedExchange": "NASDAQ Global Select",
+          "proposedSharePrice": "10.00",
+          "sharesOffered": "1,000,000",
+          "pricedDate": "10/08/2026",
+          "dollarValueOfSharesOffered": "$10,000,000",
+          "dealStatus": "Priced"
+        }
+      ]
+    },
+    "upcoming": {
+      "upcomingTable": {
+        "asOf": null,
+        "headers": {
+          "proposedTickerSymbol": "Symbol",
+          "companyName": "Company Name",
+          "proposedExchange": "Exchange/ Market",
+          "proposedSharePrice": "Price",
+          "sharesOffered": "Shares",
+          "expectedPriceDate": "Expected Price Date",
+          "dollarValueOfSharesOffered": "Offer Amount"
+        },
+        "rows": [
+          {
+            "proposedTickerSymbol": "ACMEU",
+            "companyName": "Acme Example Corporation Units",
+            "proposedExchange": "NASDAQ Capital",
+            "proposedSharePrice": "$8.00 - $10.00",
+            "sharesOffered": "2,000,000",
+            "expectedPriceDate": "10/30/2026",
+            "dollarValueOfSharesOffered": "$18,000,000"
+          }
+        ]
+      },
+      "lastUpdatedTime": "fixture last updated"
+    },
+    "filed": {
+      "asOf": null,
+      "headers": {
+        "proposedTickerSymbol": "Symbol",
+        "companyName": "Company Name",
+        "filedDate": "Date Filed",
+        "dollarValueOfSharesOffered": "Offer Amount"
+      },
+      "rows": [
+        {
+          "dealID": "fixture-filed-1",
+          "proposedTickerSymbol": "ACMEF",
+          "companyName": "Acme Example Corporation",
+          "filedDate": "10/06/2026",
+          "dollarValueOfSharesOffered": "$20,000,000"
+        }
+      ]
+    },
+    "withdrawn": {
+      "asOf": null,
+      "headers": null,
+      "rows": null
+    },
+    "month": 10,
+    "year": 2026,
+    "totalResults": 3
+  }
+}

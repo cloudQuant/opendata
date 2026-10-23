@@ -1,0 +1,263 @@
+{
+  "provider": "cboe",
+  "descriptor_reference": "opendata.data.providers.cboe.provider:PROVIDER",
+  "provider_collection_entry": "CBOE_PROVIDER",
+  "imports": {
+    "provider": "from opendata.data.providers.cboe.provider import PROVIDER as CBOE_PROVIDER",
+    "models": "from opendata.data.models.congress_cboe_iter2 import CboeEquityHistorical, CboeEquityQuote, CboeEtfHistorical, CboeOptionsChains",
+    "index_historical_contract": "from opendata.data.models.cboe_index_historical import CboeIndexHistorical",
+    "search_contract": "from opendata.data.models.cboe_index import CboeEquitySearchListing",
+    "fetchers": "from opendata.data.providers.cboe.models.all_access import CboeEquityHistoricalFetcher, CboeEtfHistoricalFetcher, CboeEquityQuoteFetcher, CboeEquitySearchFetcher, CboeOptionsChainsFetcher",
+    "index_historical_fetcher": "from opendata.data.providers.cboe.models.index_historical_public import CboeIndexHistoricalFetcher"
+  },
+  "bindings": [
+    {"module": "opendata.data.providers.cboe.models.all_access", "class_name": "CboeEquityHistoricalFetcher", "canonical_model_id": "EquityHistorical", "domain": "cboe_equity_historical", "contract": "CboeEquityHistorical"},
+    {"module": "opendata.data.providers.cboe.models.all_access", "class_name": "CboeEtfHistoricalFetcher", "canonical_model_id": "EtfHistorical", "domain": "cboe_etf_historical", "contract": "CboeEtfHistorical"},
+    {"module": "opendata.data.providers.cboe.models.all_access", "class_name": "CboeEquityQuoteFetcher", "canonical_model_id": "EquityQuote", "domain": "cboe_equity_quote", "contract": "CboeEquityQuote"},
+    {"module": "opendata.data.providers.cboe.models.all_access", "class_name": "CboeEquitySearchFetcher", "canonical_model_id": "EquitySearch", "domain": "cboe_equity_search", "contract": "CboeEquitySearchListing"},
+    {"module": "opendata.data.providers.cboe.models.all_access", "class_name": "CboeOptionsChainsFetcher", "canonical_model_id": "OptionsChains", "domain": "cboe_options_chains", "contract": "CboeOptionsChains"},
+    {"module": "opendata.data.providers.cboe.models.index_historical_public", "class_name": "CboeIndexHistoricalFetcher", "canonical_model_id": "IndexHistorical", "domain": "cboe_index_historical", "contract": "CboeIndexHistorical"}
+  ],
+  "domains": {
+    "cboe_equity_historical": {
+      "display_name": "Cboe 股票历史日线",
+      "rest_path": "cboe/equity/historical",
+      "contract": "CboeEquityHistorical",
+      "temporal_kind": "series",
+      "time_field": "date",
+      "natural_key": ["symbol", "date"],
+      "filter_dims": ["symbol", "date"],
+      "storage_mode": "transient",
+      "permissions": ["query"]
+    },
+    "cboe_etf_historical": {
+      "display_name": "Cboe ETF 历史日线",
+      "rest_path": "cboe/etf/historical",
+      "contract": "CboeEtfHistorical",
+      "temporal_kind": "series",
+      "time_field": "date",
+      "natural_key": ["symbol", "date"],
+      "filter_dims": ["symbol", "date"],
+      "storage_mode": "transient",
+      "permissions": ["query"]
+    },
+    "cboe_equity_quote": {
+      "display_name": "Cboe 股票行情快照",
+      "rest_path": "cboe/equity/quote",
+      "contract": "CboeEquityQuote",
+      "temporal_kind": "snapshot",
+      "time_field": null,
+      "natural_key": ["symbol"],
+      "filter_dims": ["symbol"],
+      "storage_mode": "transient",
+      "permissions": ["query"]
+    },
+    "cboe_equity_search": {
+      "display_name": "Cboe 股票目录检索",
+      "rest_path": "cboe/equity/search",
+      "contract": "CboeEquitySearchListing",
+      "temporal_kind": "snapshot",
+      "time_field": null,
+      "natural_key": ["symbol"],
+      "filter_dims": ["symbol", "name"],
+      "storage_mode": "transient",
+      "permissions": ["query"]
+    },
+    "cboe_options_chains": {
+      "display_name": "Cboe 期权链快照",
+      "rest_path": "cboe/options/chains",
+      "contract": "CboeOptionsChains",
+      "temporal_kind": "snapshot",
+      "time_field": "eod_date",
+      "natural_key": ["underlying_symbol", "contract_symbol", "eod_date"],
+      "filter_dims": ["underlying_symbol", "expiration", "strike", "option_type"],
+      "storage_mode": "transient",
+      "permissions": ["query"]
+    },
+    "cboe_index_historical": {
+      "display_name": "Cboe volatility index daily history",
+      "rest_path": "index/cboe-index-historical",
+      "contract": "CboeIndexHistorical",
+      "priority": null,
+      "temporal_kind": "series",
+      "time_field": "date",
+      "natural_key": ["symbol", "date"],
+      "filter_dims": ["symbol", "date"],
+      "storage_mode": "transient",
+      "permissions": ["query"]
+    }
+  },
+  "public_contract_references": {
+    "AvailableIndices": "https://docs.openbb.co/odp/python/reference/index/available/",
+    "IndexSearch": "https://docs.openbb.co/odp/python/reference/index/search/",
+    "IndexConstituents": "https://docs.openbb.co/odp/python/reference/cboe/index/constituents",
+    "EquityHistorical": "https://docs.openbb.co/odp/python/data_models/CboeEquityHistorical",
+    "EquityQuote": "https://docs.openbb.co/odp/python/data_models/CboeEquityQuote",
+    "EquitySearch": "https://docs.openbb.co/odp/python/reference/cboe/equity/search",
+    "OptionsChains": "https://docs.openbb.co/odp/python/data_models/CboeOptionsChains",
+    "IndexHistorical": "https://docs.openbb.co/odp/v4/python/data_models/IndexHistorical",
+    "IndexHistorical_query": "https://docs.openbb.co/odp/v4/python/reference/index/price/historical"
+  },
+  "official_source_references": {
+    "all_access_api_overview": "https://api.livevol.com/v1/docs/Help?apiGroupName=allaccess",
+    "underlying_quotes": "https://api.livevol.com/v1/docs/Help/Api?apiId=GET-allaccess-market-underlying-quotes_symbols_date_seq_no",
+    "option_and_underlying_quotes": "https://api.livevol.com/v1/docs/Help/Api/GET-allaccess-market-option-and-underlying-quotes_root_option_type_date_min_expiry_max_expiry_min_strike_max_strike_symbol",
+    "symbols": "https://api.livevol.com/v1/docs/Help/Api/GET-allaccess-reference-symbols",
+    "trading_days": "https://api.livevol.com/v1/docs/Help/Api/GET-allaccess-reference-trading-days_start_date_end_date",
+    "symbol_with_options_response": "https://api.livevol.com/v1/docs/Help/ResourceModel?apiGroupName=allaccess&modelName=WebAPI.Services.AllAccess.Market.Model.Output.SymbolWithOptions",
+    "option_data_response": "https://api.livevol.com/v1/docs/Help/ResourceModel?apiGroupName=allaccess&modelName=WebAPI.Services.AllAccess.Market.Model.Output.OptionData",
+    "authentication": "https://api.livevol.com/v1/docs/Home/Authentication",
+    "all_access_subscription": "https://datashop.cboe.com/cboe-all-access-api",
+    "index_history_links": "https://www.cboe.com/tradable_products/vix/vix_historical_data"
+  },
+  "baseline_contract_reconciliation": {
+    "AvailableIndices_and_IndexSearch": {
+      "public_types": {
+        "AvailableIndices.symbol": "str",
+        "AvailableIndices.name": "str | None",
+        "IndexSearch.symbol": "str",
+        "IndexSearch.name": "str",
+        "data_delay": "int | None",
+        "open_time": "datetime.time | None",
+        "close_time": "datetime.time | None"
+      },
+      "local_behavior": "Directory contracts enforce public symbol/name nullability, parse a non-negative minute count (including zero and null), and parse local ISO clock text to timezone-free datetime.time; invalid values fail closed.",
+      "official_source_wire_schema": "NOT_FOUND: reviewed official Cboe Global Indices Feed pages/specification establish the feed and index-definition messages but do not specify the public CDN JSON keys' scalar encodings. Current hand-authored strings are fixtures, not raw-source evidence."
+    },
+    "IndexConstituents": {
+      "public_types": {
+        "symbol": "str",
+        "name": "str | None",
+        "last_trade_time": "datetime | None",
+        "change_percent": "float | None (normalized percentage)"
+      },
+      "local_behavior": "last_trade_time parses ISO datetime text and preserves null; change_percent is preserved as the source numeric without rescaling.",
+      "change_percent_source_scale": "UNVERIFIED: official Cboe documentation reviewed here does not define the raw price_change_percent scale. No conversion is claimed; public percentage-semantic parity is not established."
+    },
+    "source_review": {
+      "official_references": [
+        "https://www.cboe.com/data/global-indices-feed/",
+        "https://cdn.cboe.com/resources/membership/CBOEStreamingIndex-pdf.pdf"
+      ],
+      "raw_cdn_response": "NOT_REQUESTED: no live endpoint call was made in this correction."
+    }
+  },
+  "bounds_and_contract_differences": [
+    "EquityHistorical and EtfHistorical accept one validated symbol, explicit start_date/end_date, and interval=1d only. The public Cboe history query lists 1m and 1d and permits multiple symbols; the official All Access endpoint documents historical end-of-day snapshots from 2011, not a one-minute bar aggregation endpoint. The local adapter therefore does not synthesize 1m bars and does not fetch an unbounded default window.",
+    "Daily history windows are limited locally to 28 calendar days and at most 20 trading dates; each query first reads the bounded trading-day range and then fetches one end-of-day quote collection per trading date. The adapter fails closed if the API returns more than 20 dates; it does not silently truncate. The current New York market date is not accepted for daily history, matching the official historical-request rule.",
+    "The official underlying-quotes schema says SIP subscription is required for delayed bid/ask/size and OHLC fields; without the subscription several fields may be null. CboeEquityQuote preserves unavailable nullable fields as null. CboeEquityHistorical's public OHLC contract requires numeric values, so a history row with missing required OHLC fails closed instead of fabricating prices.",
+    "EquityQuote accepts one symbol and a date extension (default: current New York date); the official underlying-quotes endpoint requires date and seq_no, so the adapter explicitly sends seq_no=0. Public model fields unavailable from this endpoint remain null. The documented Cboe public query allows multiple symbols; this local adapter is deliberately single-symbol and does not silently discard additional symbols.",
+    "EquitySearch query is optional and defaults to the complete official reference/symbols collection; is_symbol defaults false. Filtering is local and case-insensitive. The Cboe public row also contains dpm_name and post_station; the official symbols API publishes only name/company_name, so those two fields are null. The adapter rejects malformed rows and excessive response size rather than truncating.",
+    "OptionsChains requires one symbol and defaults date to the current New York market date. Optional root, option_type, min_expiry, max_expiry, min_strike, and max_strike are sent using the documented source query names. The official route returns a list of SymbolWithOptions objects, so the adapter selects exactly one requested symbol and maps its option collection into the public column-oriented output. More than 5,000 contracts is an explicit error, not a partial result.",
+    "All All Access requests require an externally provisioned CBOE_LIVEVOL_ACCESS_TOKEN bearer token. The adapter does not perform OAuth token exchange, persist responses, or claim storage/redistribution rights. Source docs identify point-based delayed API calls and SIP subscription requirements for some quote fields; this code has bounded RequestBudget/shared-host controls but no dedicated hourly point or call ledger and does not claim an exact provider quota."
+  ],
+  "source_rights_state": "UNASSESSED: current Cboe rights review covers only the previously reviewed delayed index interfaces. This handoff grants no All Access, storage, export, or redistribution rights.",
+  "live_source_validation": "NOT_RUN: all service-path tests use hand-authored JSON fixtures and a fake governed HTTP transport; no credentials or live calls were used.",
+  "remaining_fixed_identities": {
+    "FuturesCurve": "NO_RUNTIME_SOURCE_BINDING. Official product metadata documents individual TWAV/TWLV mid-morning TWAP and UZ* 4 p.m. marks; CFE settlement routes publish separate contract settlement prices. No documented curve retrieval request, date-effective expiry join, complete response schema, or settlement-to-mark equivalence. See remaining-models-source-review.md.",
+    "IndexSnapshots": "NO_RUNTIME_SOURCE_BINDING. CGIF is documented as licensed streaming/EOD/history delivery; Main EOD is delayed and partial. No documented regional one-shot snapshot endpoint, complete row mapping, or freshness/coverage contract. See remaining-models-source-review.md."
+  },
+  "remaining_model_source_review": {
+    "document": "docs/evidence/C100/congress-cboe/remaining-models-source-review.md",
+    "reviewed_on": "2026-10-12",
+    "implementation_status": "PARTIAL: IndexHistorical has one limited unverified binding; FuturesCurve and IndexSnapshots have no source bindings.",
+    "no_paid_data_request": true,
+    "official_source_references": {
+      "global_indices_feed": "https://www.cboe.com/data/global-indices-feed/",
+      "vix_historical_page": "https://www.cboe.com/tradable_products/vix/vix_historical_data",
+      "global_indices_products": "https://www.cboe.com/us/indices/indicesproducts/",
+      "global_indices_definition_feed": "https://cdn.cboe.com/api/global/us_indices/definitions/GlobalIndices.csv",
+      "main_channel_eod_product": "https://datashop.cboe.com/main-channel-end-of-day-summary",
+      "main_channel_eod_file_specification": "https://datashop.cboe.com/documents/Main_Channel_End_of_Day_Summary_v1.pdf",
+      "cgi_tick_product": "https://datashop.cboe.com/cboe-global-indices-channel-tick-data",
+      "cgi_tick_file_specification": "https://datashop.cboe.com/documents/CGI_Channel_Tick_Data_v1.pdf",
+      "europe_index_file_specification": "https://cdn.cboe.com/resources/europe/indices/participant_resources/CboeEuropeIndexFileSpecification.pdf",
+      "cfe_settlement_prices": "https://www.cboe.com/markets/us/futures/market-statistics/settlement/futures/daily/",
+      "cfe_settlement_message_fields": "https://www.cboe.com/document/tech-spec/content/technical-specifications/cboe-titanium-cboe-global-cloud-feed-specification/cboe-futures-top-feed/top-messages/settlement-message-fields",
+      "cfe_summary_product": "https://datashop.cboe.com/cfe-summary",
+      "cfe_summary_file_specification": "https://datashop.cboe.com/documents/CFESummarySpecifications.pdf",
+      "all_access_api_product": "https://datashop.cboe.com/cboe-all-access-api",
+      "all_access_api_reference": "https://api.livevol.com/v1/docs/Help?apiGroupName=allaccess"
+    },
+    "models": {
+      "FuturesCurve": {
+        "status": "NO_RUNTIME_SOURCE_BINDING",
+        "official_facts": [
+          "Cboe product metadata names TWAV/TWLV VIX futures mid-morning TWAP products and UZF as a January VIX futures 4 p.m. Eastern mark.",
+          "CFE settlement protocol carries trade date, settlement price, and indicative/approved/re-issued issue state; CFE settlement is not proven equivalent to VX_AM or VX_EOD curve marks."
+        ],
+        "missing": [
+          "Documented retrieval endpoint/delivery request, authentication, date and symbol parameters, and complete-result behavior.",
+          "Date-effective join from each mark series to output futures expiration strings.",
+          "Complete output field units, timestamps, missing-contract rules, and approved-versus-indicative selection semantics.",
+          "Official equivalence evidence before substituting CFE settlement prices for curve mark values."
+        ]
+      },
+      "IndexHistorical": {
+        "status": "PARTIAL_IMPLEMENTED_UNVERIFIED",
+        "official_facts": [
+          "Cboe's VIX historical page explicitly links the VIX daily CSV for 1990-present and seven other volatility-index CSVs: VVIX, VIX9D, OVX, GVZ, VXAPL, VXAZN, and VXEEM.",
+          "The VIX capture is 473584 bytes with SHA-256 51ea1e59bfeaf400f6816300c39145df5e3fb437e7c60bdb8ca2178f8c96f436 and header DATE,OPEN,HIGH,LOW,CLOSE. The other seven officially linked CSVs were also fetched into bounded investigation captures; all returned HTTP 200, text/csv, and complete bodies below the 4 MiB capture limit.",
+          "Observed strict headers: VVIX, OVX, and GVZ use DATE plus their same-named index value; VIX9D, VXAPL, VXAZN, and VXEEM use DATE,OPEN,HIGH,LOW,CLOSE. The parser maps one-value files to close and OHLC files to their matching fields; all observed files have no volume column, so volume and the three options-volume extension fields are null.",
+          "The page describes daily closing values. The adapter preserves the values as published without scaling and retains each CSV's final published row. Whether that final row always satisfies a separate latest-trading-day freshness rule remains unresolved."
+        ],
+        "missing": [
+          "General index-symbol and regional coverage beyond the eight listed volatility indices, plus the separate older VXO file mapping.",
+          "1-minute OHLCV, sourced volume, and any tick-to-bar rules; only daily CSV rows are implemented.",
+          "The public latest-trading-day selection/freshness rule; no published source row is discarded to approximate it."
+        ],
+        "raw_csv_structure_investigation": {
+          "manifest": "docs/evidence/C100/congress-cboe/non-vix-csv-structure-investigation.json",
+          "manifest_sha256": "1c6e15b497fa6b39dff192ba03ea2d2c5ff2e0cd016639e1a9efb8fcd5c61462",
+          "captured_symbols": ["VVIX", "VIX9D", "OVX", "GVZ", "VXAPL", "VXAZN", "VXEEM"],
+          "observed_headers": {
+            "VVIX": ["DATE", "VVIX"],
+            "VIX9D": ["DATE", "OPEN", "HIGH", "LOW", "CLOSE"],
+            "OVX": ["DATE", "OVX"],
+            "GVZ": ["DATE", "GVZ"],
+            "VXAPL": ["DATE", "OPEN", "HIGH", "LOW", "CLOSE"],
+            "VXAZN": ["DATE", "OPEN", "HIGH", "LOW", "CLOSE"],
+            "VXEEM": ["DATE", "OPEN", "HIGH", "LOW", "CLOSE"]
+          },
+          "all_responses_complete": true,
+          "all_responses_http_status": 200,
+          "all_responses_content_type": "text/csv",
+          "capture_limit_bytes": 4194304,
+          "raw_captures_are_source_investigation_not_provider_acceptance": true
+        },
+        "contract_output_fields": ["symbol", "date", "open", "high", "low", "close", "volume", "calls_volume", "puts_volume", "total_options_volume"],
+        "cache_semantics": "use_cache controls only the governed raw HTTP response cache for the fixed CSV GETs; it does not assert freshness or bypass behavior for a separate public directory/metadata source, which this adapter does not query.",
+        "latest_published_row_semantics": "The source's final published CSV row is retained. Whether that row is the canonical latest-trading-day result remains PARTIAL/UNRESOLVED."
+      },
+      "IndexSnapshots": {
+        "status": "NO_RUNTIME_SOURCE_BINDING",
+        "official_facts": [
+          "Cboe describes CGIF as a licensed streaming feed plus EOD and historical DataShop deliveries.",
+          "The Main-channel EOD product publishes delayed OHLC for a subset, not a complete current regional snapshot.",
+          "Global Indices Definition Feed is symbol/channel metadata and does not provide current quote rows."
+        ],
+        "missing": [
+          "Documented regional one-shot snapshot endpoint or authorized subscription request contract.",
+          "Complete mapping for price, OHLC, index volume, previous close, change, normalized change percent, name, currency, timestamp, and status.",
+          "Complete US/EU symbol coverage, freshness, stale/missing symbol behavior, and null semantics.",
+          "A retrieval mechanism compatible with the repository's governed HTTP transport; feed docs describe licensed stream connectivity instead."
+        ]
+      }
+    }
+  },
+  "notes": [
+    "This is a central integration handoff only. Normal provider.py bindings remain runtime registration truth; this file adds no loader or registry.",
+    "The listed public OpenBB pages are output-contract references only. No OpenBB implementation code was consulted.",
+    "The CboeEquityHistorical row follows the documented public OHLCV contract and includes symbol as a repository-local identity extension; vwap and daily-only-inapplicable options volume fields remain null.",
+    "IndexHistorical raw response shape evidence is limited to the eight captures listed in remaining_model_source_review.models.IndexHistorical.raw_csv_structure_investigation; it is not a source acceptance or rights conclusion.",
+    "The five All Access bindings and limited IndexHistorical candidate are local code state, not an acceptance claim."
+  ],
+  "index_historical_source_pins": {
+    "fetcher": {"path": "opendata/data/providers/cboe/models/index_historical_public.py", "sha256": "3e47d925d00d491a6fbca71f8a4f231317a696915633094b5d67dd6ef5cbc61f"},
+    "typed_contract": {"path": "opendata/data/models/cboe_index_historical.py", "sha256": "25f180b6a08228796d6f2a80215187410eb11b96158cf77ccabf2ab94b804b16"},
+    "target_test": {"path": "tests/test_cboe_index_historical_public.py", "sha256": "0f0f3277b4aed416c5ddc47118dd7769625e789eb685bdf7c76dc58fde7dd046"},
+    "source_map": {"path": "docs/evidence/C100/congress-cboe/index-historical-public-source.json", "sha256": "1af1a2f13ba7b0afbe8b221aff9f6ac436c25ec6d5094a786519e673f86ecd5"},
+    "structure_investigation": {"path": "docs/evidence/C100/congress-cboe/non-vix-csv-structure-investigation.json", "sha256": "1c6e15b497fa6b39dff192ba03ea2d2c5ff2e0cd016639e1a9efb8fcd5c61462"},
+    "test_result": "46 passed; source investigation only, not independent acceptance or live capability acceptance"
+  }
+}

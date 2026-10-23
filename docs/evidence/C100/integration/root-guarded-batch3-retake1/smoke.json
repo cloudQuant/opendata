@@ -1,0 +1,3194 @@
+{
+  "domain_count": 334,
+  "legacy_domain_count": 20,
+  "provider_count": 34,
+  "provider_model_identity_count": 347,
+  "providers": {
+    "akshare": [
+      {
+        "binding": "opendata.data.providers.akshare.models.bond_daily:AkshareBondDailyFetcher",
+        "contract": "Bar",
+        "domain": "bond_daily",
+        "model": "bond_daily",
+        "scenario_present": true,
+        "source": "akshare",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.akshare.models.financial_indicator:AkshareFinancialIndicatorFetcher",
+        "contract": "FinancialIndicator",
+        "domain": "financial_indicator",
+        "model": "financial_indicator",
+        "scenario_present": true,
+        "source": "akshare",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.akshare.models.financial_statement:AkshareFinancialStatementFetcher",
+        "contract": "FinancialStatement",
+        "domain": "financial_statement",
+        "model": "financial_statement",
+        "scenario_present": true,
+        "source": "akshare",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.akshare.models.fund_etf_daily:AkshareFundEtfDailyFetcher",
+        "contract": "Bar",
+        "domain": "fund_etf_daily",
+        "model": "fund_etf_daily",
+        "scenario_present": true,
+        "source": "akshare",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.akshare.models.futures_daily:AkshareFuturesDailyFetcher",
+        "contract": "Bar",
+        "domain": "futures_daily",
+        "model": "futures_daily",
+        "scenario_present": true,
+        "source": "akshare",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.akshare.models.index_constituent:AkshareIndexConstituentFetcher",
+        "contract": "IndexConstituent",
+        "domain": "index_constituent",
+        "model": "index_constituent",
+        "scenario_present": true,
+        "source": "akshare",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.akshare.models.index_daily:AkshareIndexDailyFetcher",
+        "contract": "Bar",
+        "domain": "index_daily",
+        "model": "index_daily",
+        "scenario_present": true,
+        "source": "akshare",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.akshare.models.option_daily:AkshareOptionDailyFetcher",
+        "contract": "Bar",
+        "domain": "option_daily",
+        "model": "option_daily",
+        "scenario_present": true,
+        "source": "akshare",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.akshare.models.stock_action:AkshareStockActionFetcher",
+        "contract": "CorporateAction",
+        "domain": "stock_action",
+        "model": "stock_action",
+        "scenario_present": true,
+        "source": "akshare",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.akshare.models.stock_daily:AkshareStockDailyFetcher",
+        "contract": "Bar",
+        "domain": "stock_daily",
+        "model": "stock_daily",
+        "scenario_present": true,
+        "source": "akshare",
+        "verified": false
+      }
+    ],
+    "alpha_vantage": [
+      {
+        "binding": "opendata.data.providers.alpha_vantage.models.equity_historical:AlphaVantageEquityHistoricalFetcher",
+        "contract": "AlphaVantageEquityHistorical",
+        "domain": "alpha_vantage_equity_historical",
+        "model": "EquityHistorical",
+        "scenario_present": true,
+        "source": "alpha_vantage",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.alpha_vantage.models.etf_historical:AlphaVantageEtfHistoricalFetcher",
+        "contract": "AlphaVantageEtfHistorical",
+        "domain": "alpha_vantage_etf_historical",
+        "model": "EtfHistorical",
+        "scenario_present": true,
+        "source": "alpha_vantage",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.alpha_vantage.models.historical_eps:AlphaVantageHistoricalEpsFetcher",
+        "contract": "AlphaVantageHistoricalEps",
+        "domain": "alpha_vantage_historical_eps",
+        "model": "HistoricalEps",
+        "scenario_present": true,
+        "source": "alpha_vantage",
+        "verified": false
+      }
+    ],
+    "benzinga": [
+      {
+        "binding": "opendata.data.providers.benzinga.models.iter2:BenzingaAnalystSearchFetcher",
+        "contract": "BenzingaAnalystSearch",
+        "domain": "benzinga_analyst_search",
+        "model": "AnalystSearch",
+        "scenario_present": true,
+        "source": "benzinga",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.benzinga.models.iter2:BenzingaCompanyNewsFetcher",
+        "contract": "BenzingaCompanyNews",
+        "domain": "benzinga_company_news",
+        "model": "CompanyNews",
+        "scenario_present": true,
+        "source": "benzinga",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.benzinga.models.price_target:BenzingaPriceTargetFetcher",
+        "contract": "BenzingaPriceTarget",
+        "domain": "benzinga_price_target",
+        "model": "PriceTarget",
+        "scenario_present": true,
+        "source": "benzinga",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.benzinga.models.iter2:BenzingaWorldNewsFetcher",
+        "contract": "BenzingaWorldNews",
+        "domain": "benzinga_world_news",
+        "model": "WorldNews",
+        "scenario_present": true,
+        "source": "benzinga",
+        "verified": false
+      }
+    ],
+    "bls": [
+      {
+        "binding": "opendata.data.providers.bls.models.search:BlsSearchFetcher",
+        "contract": "BlsCatalogItem",
+        "domain": "bls_search",
+        "model": "BlsSearch",
+        "scenario_present": true,
+        "source": "bls",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.bls.models.series:BlsSeriesFetcher",
+        "contract": "BlsObservation",
+        "domain": "bls_series",
+        "model": "BlsSeries",
+        "scenario_present": true,
+        "source": "bls",
+        "verified": false
+      }
+    ],
+    "cboe": [
+      {
+        "binding": "opendata.data.providers.cboe.models.available_indices:CboeAvailableIndicesFetcher",
+        "contract": "CboeAvailableIndex",
+        "domain": "cboe_available_indices",
+        "model": "AvailableIndices",
+        "scenario_present": true,
+        "source": "cboe",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.cboe.models.all_access:CboeEquityHistoricalFetcher",
+        "contract": "CboeEquityHistorical",
+        "domain": "cboe_equity_historical",
+        "model": "EquityHistorical",
+        "scenario_present": true,
+        "source": "cboe",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.cboe.models.all_access:CboeEquityQuoteFetcher",
+        "contract": "CboeEquityQuote",
+        "domain": "cboe_equity_quote",
+        "model": "EquityQuote",
+        "scenario_present": true,
+        "source": "cboe",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.cboe.models.all_access:CboeEquitySearchFetcher",
+        "contract": "CboeEquitySearchListing",
+        "domain": "cboe_equity_search",
+        "model": "EquitySearch",
+        "scenario_present": true,
+        "source": "cboe",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.cboe.models.all_access:CboeEtfHistoricalFetcher",
+        "contract": "CboeEtfHistorical",
+        "domain": "cboe_etf_historical",
+        "model": "EtfHistorical",
+        "scenario_present": true,
+        "source": "cboe",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.cboe.models.index_constituents:CboeIndexConstituentsFetcher",
+        "contract": "CboeIndexConstituentQuote",
+        "domain": "cboe_index_constituent_quotes",
+        "model": "IndexConstituents",
+        "scenario_present": true,
+        "source": "cboe",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.cboe.models.index_historical_public:CboeIndexHistoricalFetcher",
+        "contract": "CboeIndexHistorical",
+        "domain": "cboe_index_historical",
+        "model": "IndexHistorical",
+        "scenario_present": true,
+        "source": "cboe",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.cboe.models.index_search:CboeIndexSearchFetcher",
+        "contract": "CboeSearchedIndex",
+        "domain": "cboe_index_search",
+        "model": "IndexSearch",
+        "scenario_present": true,
+        "source": "cboe",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.cboe.models.all_access:CboeOptionsChainsFetcher",
+        "contract": "CboeOptionsChains",
+        "domain": "cboe_options_chains",
+        "model": "OptionsChains",
+        "scenario_present": true,
+        "source": "cboe",
+        "verified": false
+      }
+    ],
+    "cftc": [
+      {
+        "binding": "opendata.data.providers.cftc.models.cot:COTFetcher",
+        "contract": "COT",
+        "domain": "cftc_commitment_of_traders",
+        "model": "COT",
+        "scenario_present": false,
+        "source": "cftc",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.cftc.models.cot_search:COTSearchFetcher",
+        "contract": "COTSearch",
+        "domain": "cftc_market_directory",
+        "model": "COTSearch",
+        "scenario_present": false,
+        "source": "cftc",
+        "verified": false
+      }
+    ],
+    "congress_gov": [
+      {
+        "binding": "opendata.data.providers.congress_gov.models.iter2:CongressAmendmentInfoFetcher",
+        "contract": "CongressAmendmentInfo",
+        "domain": "congress_amendment_info",
+        "model": "CongressAmendmentInfo",
+        "scenario_present": true,
+        "source": "congress_gov",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.congress_gov.models.iter2:CongressAmendmentTextFetcher",
+        "contract": "CongressAmendmentText",
+        "domain": "congress_amendment_text",
+        "model": "CongressAmendmentText",
+        "scenario_present": true,
+        "source": "congress_gov",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.congress_gov.models.iter2:CongressAmendmentsFetcher",
+        "contract": "CongressAmendment",
+        "domain": "congress_amendments",
+        "model": "CongressAmendments",
+        "scenario_present": true,
+        "source": "congress_gov",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.congress_gov.models.iter2:CongressBillInfoFetcher",
+        "contract": "CongressBillInfo",
+        "domain": "congress_bill_info",
+        "model": "CongressBillInfo",
+        "scenario_present": true,
+        "source": "congress_gov",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.congress_gov.models.iter2:CongressBillTextFetcher",
+        "contract": "CongressBillText",
+        "domain": "congress_bill_text",
+        "model": "CongressBillText",
+        "scenario_present": true,
+        "source": "congress_gov",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.congress_gov.models.iter2:CongressBillsFetcher",
+        "contract": "CongressBill",
+        "domain": "congress_bills",
+        "model": "CongressBills",
+        "scenario_present": true,
+        "source": "congress_gov",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.congress_gov.models.iter2:CongressCommitteeDocumentsFetcher",
+        "contract": "CongressCommitteeDocument",
+        "domain": "congress_committee_documents",
+        "model": "CongressCommitteeDocuments",
+        "scenario_present": true,
+        "source": "congress_gov",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.congress_gov.models.iter2:CongressCommitteeInfoFetcher",
+        "contract": "CongressCommitteeInfo",
+        "domain": "congress_committee_info",
+        "model": "CongressCommitteeInfo",
+        "scenario_present": true,
+        "source": "congress_gov",
+        "verified": false
+      }
+    ],
+    "deribit": [
+      {
+        "binding": "opendata.data.providers.deribit.models.fetchers:DeribitFuturesCurveFetcher",
+        "contract": "DeribitFuturesCurve",
+        "domain": "deribit_futures_curve",
+        "model": "FuturesCurve",
+        "scenario_present": true,
+        "source": "deribit",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.deribit.models.fetchers:DeribitFuturesHistoricalFetcher",
+        "contract": "DeribitFuturesHistorical",
+        "domain": "deribit_futures_historical",
+        "model": "FuturesHistorical",
+        "scenario_present": true,
+        "source": "deribit",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.deribit.models.fetchers:DeribitFuturesInfoFetcher",
+        "contract": "DeribitFuturesInfo",
+        "domain": "deribit_futures_info",
+        "model": "FuturesInfo",
+        "scenario_present": true,
+        "source": "deribit",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.deribit.models.fetchers:DeribitFuturesInstrumentsFetcher",
+        "contract": "DeribitFuturesInstruments",
+        "domain": "deribit_futures_instruments",
+        "model": "FuturesInstruments",
+        "scenario_present": true,
+        "source": "deribit",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.deribit.models.fetchers:DeribitOptionsChainsFetcher",
+        "contract": "DeribitOptionsChains",
+        "domain": "deribit_options_chains",
+        "model": "OptionsChains",
+        "scenario_present": true,
+        "source": "deribit",
+        "verified": false
+      }
+    ],
+    "ecb": [
+      {
+        "binding": "opendata.data.providers.ecb.models.balance_of_payments:EcbBalanceOfPaymentsFetcher",
+        "contract": "EcbBalanceOfPaymentsObservation",
+        "domain": "balance_of_payments",
+        "model": "BalanceOfPayments",
+        "scenario_present": true,
+        "source": "ecb",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.ecb.models.reference_rates:EcbCurrencyReferenceRatesFetcher",
+        "contract": "CurrencyReferenceRate",
+        "domain": "currency_reference_rates",
+        "model": "CurrencyReferenceRates",
+        "scenario_present": true,
+        "source": "ecb",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.ecb.models.yield_curve:EcbYieldCurveFetcher",
+        "contract": "EcbYieldCurveObservation",
+        "domain": "yield_curve",
+        "model": "YieldCurve",
+        "scenario_present": true,
+        "source": "ecb",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.ecb.models.cpi:EcbCpiFetcher",
+        "contract": "MacroSeries",
+        "domain": "economy_cpi",
+        "model": "cpi",
+        "scenario_present": true,
+        "source": "ecb",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.ecb.models.gdp:EcbGdpFetcher",
+        "contract": "MacroSeries",
+        "domain": "economy_gdp",
+        "model": "gdp",
+        "scenario_present": true,
+        "source": "ecb",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.ecb.models.rate:EcbRateFetcher",
+        "contract": "MacroSeries",
+        "domain": "economy_rate",
+        "model": "rate",
+        "scenario_present": true,
+        "source": "ecb",
+        "verified": true
+      }
+    ],
+    "econdb": [
+      {
+        "binding": "opendata.data.providers.econdb.models.available_indicators:EcondbAvailableIndicatorsFetcher",
+        "contract": "EconDBAvailableIndicators",
+        "domain": "econdb_available_indicators",
+        "model": "AvailableIndicators",
+        "scenario_present": true,
+        "source": "econdb",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.econdb.models.iter2:EconDBEconomicIndicatorsFetcher",
+        "contract": "EconDBEconomicIndicator",
+        "domain": "econdb_economic_indicators",
+        "model": "EconomicIndicators",
+        "scenario_present": true,
+        "source": "econdb",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.econdb.models.iter2:EconDBGdpNominalFetcher",
+        "contract": "EconDBGdpNominal",
+        "domain": "econdb_gdp_nominal",
+        "model": "GdpNominal",
+        "scenario_present": true,
+        "source": "econdb",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.econdb.models.iter2:EconDBGdpRealFetcher",
+        "contract": "EconDBGdpReal",
+        "domain": "econdb_gdp_real",
+        "model": "GdpReal",
+        "scenario_present": true,
+        "source": "econdb",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.econdb.models.iter2:EconDBPortVolumeFetcher",
+        "contract": "EconDBPortVolume",
+        "domain": "econdb_port_volume",
+        "model": "PortVolume",
+        "scenario_present": true,
+        "source": "econdb",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.econdb.models.iter2:EconDBYieldCurveFetcher",
+        "contract": "EconDBYieldCurve",
+        "domain": "econdb_yield_curve",
+        "model": "YieldCurve",
+        "scenario_present": true,
+        "source": "econdb",
+        "verified": false
+      }
+    ],
+    "eia": [
+      {
+        "binding": "opendata.data.providers.eia.models.petroleum_status_report:PetroleumStatusReportFetcher",
+        "contract": "PetroleumStatusReport",
+        "domain": "energy_petroleum_status_report",
+        "model": "PetroleumStatusReport",
+        "scenario_present": false,
+        "source": "eia",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.eia.models.short_term_energy_outlook:ShortTermEnergyOutlookFetcher",
+        "contract": "ShortTermEnergyOutlook",
+        "domain": "energy_short_term_energy_outlook",
+        "model": "ShortTermEnergyOutlook",
+        "scenario_present": false,
+        "source": "eia",
+        "verified": false
+      }
+    ],
+    "famafrench": [
+      {
+        "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchBreakpointsFetcher",
+        "contract": "FamaFrenchBreakpoint",
+        "domain": "famafrench_breakpoints",
+        "model": "FamaFrenchBreakpoints",
+        "scenario_present": true,
+        "source": "famafrench",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchCountryPortfolioReturnsFetcher",
+        "contract": "FamaFrenchCountryPortfolioReturn",
+        "domain": "famafrench_country_portfolio_returns",
+        "model": "FamaFrenchCountryPortfolioReturns",
+        "scenario_present": true,
+        "source": "famafrench",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchFactorsFetcher",
+        "contract": "FamaFrenchFactorObservation",
+        "domain": "famafrench_factors",
+        "model": "FamaFrenchFactors",
+        "scenario_present": true,
+        "source": "famafrench",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchInternationalIndexReturnsFetcher",
+        "contract": "FamaFrenchInternationalIndexReturn",
+        "domain": "famafrench_international_index_returns",
+        "model": "FamaFrenchInternationalIndexReturns",
+        "scenario_present": true,
+        "source": "famafrench",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchRegionalPortfolioReturnsFetcher",
+        "contract": "FamaFrenchPortfolioReturn",
+        "domain": "famafrench_regional_portfolio_returns",
+        "model": "FamaFrenchRegionalPortfolioReturns",
+        "scenario_present": true,
+        "source": "famafrench",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchUSPortfolioReturnsFetcher",
+        "contract": "FamaFrenchPortfolioReturn",
+        "domain": "famafrench_us_portfolio_returns",
+        "model": "FamaFrenchUSPortfolioReturns",
+        "scenario_present": true,
+        "source": "famafrench",
+        "verified": false
+      }
+    ],
+    "federal_reserve": [
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_economy:CentralBankHoldingsFetcher",
+        "contract": "CentralBankHoldings",
+        "domain": "central_bank_holdings",
+        "model": "CentralBankHoldings",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_rates:FederalFundsRateFetcher",
+        "contract": "FederalReserveFederalFundsRate",
+        "domain": "federal_reserve_federal_funds_rate",
+        "model": "FederalFundsRate",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_documents:FomcDocumentsFetcher",
+        "contract": "FederalReserveFomcDocument",
+        "domain": "federal_reserve_fomc_documents",
+        "model": "FomcDocuments",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_economy:InflationExpectationsFetcher",
+        "contract": "InflationExpectations",
+        "domain": "inflation_expectations",
+        "model": "InflationExpectations",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_rates:MoneyMeasuresFetcher",
+        "contract": "FederalReserveMoneyMeasure",
+        "domain": "federal_reserve_money_measures",
+        "model": "MoneyMeasures",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_rates:OvernightBankFundingRateFetcher",
+        "contract": "FederalReserveOvernightBankFundingRate",
+        "domain": "federal_reserve_overnight_bank_funding_rate",
+        "model": "OvernightBankFundingRate",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_nyfed:PrimaryDealerFailsFetcher",
+        "contract": "PrimaryDealerFails",
+        "domain": "federal_reserve_primary_dealer_fails",
+        "model": "PrimaryDealerFails",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_nyfed:PrimaryDealerPositioningFetcher",
+        "contract": "PrimaryDealerPositioning",
+        "domain": "federal_reserve_primary_dealer_positioning",
+        "model": "PrimaryDealerPositioning",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_nyfed:SOFRFetcher",
+        "contract": "SOFR",
+        "domain": "federal_reserve_sofr",
+        "model": "SOFR",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_rates:SvenssonYieldCurveFetcher",
+        "contract": "FederalReserveSvenssonYieldCurve",
+        "domain": "federal_reserve_svensson_yield_curve",
+        "model": "SvenssonYieldCurve",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_economy:TotalFactorProductivityFetcher",
+        "contract": "TotalFactorProductivity",
+        "domain": "total_factor_productivity",
+        "model": "TotalFactorProductivity",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_rates:TreasuryRatesFetcher",
+        "contract": "FederalReserveTreasuryRate",
+        "domain": "federal_reserve_treasury_rates",
+        "model": "TreasuryRates",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.federal_reserve.models.clean_documents:YieldCurveFetcher",
+        "contract": "FederalReserveYieldCurveObservation",
+        "domain": "federal_reserve_yield_curve",
+        "model": "YieldCurve",
+        "scenario_present": false,
+        "source": "federal_reserve",
+        "verified": false
+      }
+    ],
+    "finra": [
+      {
+        "binding": "opendata.data.providers.finra.models.equity_short_interest:EquityShortInterestFetcher",
+        "contract": "EquityShortInterest",
+        "domain": "finra_equity_short_interest",
+        "model": "EquityShortInterest",
+        "scenario_present": true,
+        "source": "finra",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.finra.models.otc_aggregate:OTCAggregateFetcher",
+        "contract": "OTCAggregate",
+        "domain": "finra_otc_aggregate",
+        "model": "OTCAggregate",
+        "scenario_present": true,
+        "source": "finra",
+        "verified": false
+      }
+    ],
+    "finviz": [
+      {
+        "binding": "opendata.data.providers.finviz.models.fetchers:FinvizCompareGroupsFetcher",
+        "contract": "FinvizGroupComparison",
+        "domain": "finviz_compare_groups",
+        "model": "CompareGroups",
+        "scenario_present": true,
+        "source": "finviz",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.finviz.models.fetchers:FinvizEquityInfoFetcher",
+        "contract": "FinvizEquityInfo",
+        "domain": "finviz_equity_info",
+        "model": "EquityInfo",
+        "scenario_present": true,
+        "source": "finviz",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.finviz.models.fetchers:FinvizKeyMetricsFetcher",
+        "contract": "FinvizKeyMetrics",
+        "domain": "finviz_key_metrics",
+        "model": "KeyMetrics",
+        "scenario_present": true,
+        "source": "finviz",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.finviz.models.fetchers:FinvizPriceTargetFetcher",
+        "contract": "FinvizPriceTarget",
+        "domain": "finviz_price_target",
+        "model": "PriceTarget",
+        "scenario_present": true,
+        "source": "finviz",
+        "verified": false
+      }
+    ],
+    "fmp": [
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:AnalystEstimatesFetcher",
+        "contract": "AnalystEstimate",
+        "domain": "fmp_analyst_estimates",
+        "model": "AnalystEstimates",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2:AvailableIndicesFetcher",
+        "contract": "AvailableIndex",
+        "domain": "fmp_index_directory",
+        "model": "AvailableIndices",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_financials:BalanceSheetFetcher",
+        "contract": "BalanceSheet",
+        "domain": "fmp_balance_sheet",
+        "model": "BalanceSheet",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_financials:BalanceSheetGrowthFetcher",
+        "contract": "BalanceSheetGrowth",
+        "domain": "fmp_balance_sheet_growth",
+        "model": "BalanceSheetGrowth",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2:CalendarDividendFetcher",
+        "contract": "DividendCalendarEvent",
+        "domain": "fmp_dividend_calendar",
+        "model": "CalendarDividend",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2:CalendarEarningsFetcher",
+        "contract": "EarningsCalendarEvent",
+        "domain": "fmp_earnings_calendar",
+        "model": "CalendarEarnings",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2:CalendarEventsFetcher",
+        "contract": "FmpCalendarEvent",
+        "domain": "fmp_calendar_events",
+        "model": "CalendarEvents",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2:CalendarIpoFetcher",
+        "contract": "IpoCalendarEvent",
+        "domain": "fmp_ipo_calendar",
+        "model": "CalendarIpo",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2:CalendarSplitsFetcher",
+        "contract": "SplitsCalendarEvent",
+        "domain": "fmp_splits_calendar",
+        "model": "CalendarSplits",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_financials:CashFlowStatementFetcher",
+        "contract": "CashFlowStatement",
+        "domain": "fmp_cash_flow_statement",
+        "model": "CashFlowStatement",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_financials:CashFlowStatementGrowthFetcher",
+        "contract": "CashFlowStatementGrowth",
+        "domain": "fmp_cash_flow_statement_growth",
+        "model": "CashFlowStatementGrowth",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:CompanyFilingsFetcher",
+        "contract": "FmpCompanyFiling",
+        "domain": "fmp_company_filings",
+        "model": "CompanyFilings",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:CompanyNewsFetcher",
+        "contract": "FmpCompanyNews",
+        "domain": "fmp_company_news",
+        "model": "CompanyNews",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:CryptoHistoricalFetcher",
+        "contract": "CryptoHistorical",
+        "domain": "fmp_crypto_historical",
+        "model": "CryptoHistorical",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:CryptoSearchFetcher",
+        "contract": "CryptoSearch",
+        "domain": "fmp_crypto_search",
+        "model": "CryptoSearch",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:CurrencyHistoricalFetcher",
+        "contract": "CurrencyHistorical",
+        "domain": "fmp_currency_historical",
+        "model": "CurrencyHistorical",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:CurrencyPairsFetcher",
+        "contract": "CurrencyPair",
+        "domain": "fmp_currency_pairs",
+        "model": "CurrencyPairs",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:CurrencySnapshotsFetcher",
+        "contract": "CurrencySnapshot",
+        "domain": "fmp_currency_snapshots",
+        "model": "CurrencySnapshots",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:DiscoveryFilingsFetcher",
+        "contract": "FmpDiscoveryFiling",
+        "domain": "fmp_discovery_filings",
+        "model": "DiscoveryFilings",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:EarningsCallTranscriptFetcher",
+        "contract": "FmpEarningsCallTranscript",
+        "domain": "fmp_earnings_call_transcript",
+        "model": "EarningsCallTranscript",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2:EconomicCalendarFetcher",
+        "contract": "EconomicCalendarEvent",
+        "domain": "fmp_economic_calendar",
+        "model": "EconomicCalendar",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:EquityActiveFetcher",
+        "contract": "EquityActive",
+        "domain": "fmp_equity_active",
+        "model": "EquityActive",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:EquityGainersFetcher",
+        "contract": "EquityGainers",
+        "domain": "fmp_equity_gainers",
+        "model": "EquityGainers",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.equity_historical:EquityHistoricalFetcher",
+        "contract": "EquityHistorical",
+        "domain": "equity_historical",
+        "model": "EquityHistorical",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:EquityInfoFetcher",
+        "contract": "EquityInfo",
+        "domain": "fmp_equity_info",
+        "model": "EquityInfo",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:EquityLosersFetcher",
+        "contract": "EquityLosers",
+        "domain": "fmp_equity_losers",
+        "model": "EquityLosers",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:EquityOwnershipFetcher",
+        "contract": "FmpEquityOwnership",
+        "domain": "fmp_equity_ownership",
+        "model": "EquityOwnership",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:EquityPeersFetcher",
+        "contract": "EquityPeers",
+        "domain": "fmp_equity_peers",
+        "model": "EquityPeers",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.equity_quote:EquityQuoteFetcher",
+        "contract": "EquityQuote",
+        "domain": "equity_quote",
+        "model": "EquityQuote",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:EquityScreenerFetcher",
+        "contract": "EquityScreener",
+        "domain": "fmp_equity_screener",
+        "model": "EquityScreener",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:EsgScoreFetcher",
+        "contract": "FmpEsgScore",
+        "domain": "fmp_esg_score",
+        "model": "EsgScore",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfCountriesFetcher",
+        "contract": "FmpEtfCountry",
+        "domain": "fmp_etf_countries",
+        "model": "EtfCountries",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfEquityExposureFetcher",
+        "contract": "FmpEtfEquityExposure",
+        "domain": "fmp_etf_equity_exposure",
+        "model": "EtfEquityExposure",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfHistoricalFetcher",
+        "contract": "FmpEtfHistorical",
+        "domain": "fmp_etf_historical",
+        "model": "EtfHistorical",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfHoldingsFetcher",
+        "contract": "FmpEtfHolding",
+        "domain": "fmp_etf_holdings",
+        "model": "EtfHoldings",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfInfoFetcher",
+        "contract": "FmpEtfInfo",
+        "domain": "fmp_etf_info",
+        "model": "EtfInfo",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfPricePerformanceFetcher",
+        "contract": "FmpEtfPricePerformance",
+        "domain": "fmp_etf_price_performance",
+        "model": "EtfPricePerformance",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfSearchFetcher",
+        "contract": "FmpEtfSearch",
+        "domain": "fmp_etf_search",
+        "model": "EtfSearch",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfSectorsFetcher",
+        "contract": "FmpEtfSector",
+        "domain": "fmp_etf_sectors",
+        "model": "EtfSectors",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:ExecutiveCompensationFetcher",
+        "contract": "FmpExecutiveCompensation",
+        "domain": "fmp_executive_compensation",
+        "model": "ExecutiveCompensation",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_financials:FinancialRatiosFetcher",
+        "contract": "FinancialRatios",
+        "domain": "fmp_financial_ratios",
+        "model": "FinancialRatios",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:ForwardEbitdaEstimatesFetcher",
+        "contract": "ForwardEbitdaEstimate",
+        "domain": "fmp_forward_ebitda_estimates",
+        "model": "ForwardEbitdaEstimates",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:ForwardEpsEstimatesFetcher",
+        "contract": "ForwardEpsEstimate",
+        "domain": "fmp_forward_eps_estimates",
+        "model": "ForwardEpsEstimates",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:GovernmentTradesFetcher",
+        "contract": "FmpGovernmentTrade",
+        "domain": "fmp_government_trades",
+        "model": "GovernmentTrades",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalDividendsFetcher",
+        "contract": "FmpHistoricalDividend",
+        "domain": "fmp_historical_dividends",
+        "model": "HistoricalDividends",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalEmployeesFetcher",
+        "contract": "FmpHistoricalEmployee",
+        "domain": "fmp_historical_employees",
+        "model": "HistoricalEmployees",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalEpsFetcher",
+        "contract": "FmpHistoricalEps",
+        "domain": "fmp_historical_eps",
+        "model": "HistoricalEps",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalMarketCapFetcher",
+        "contract": "FmpHistoricalMarketCap",
+        "domain": "fmp_historical_market_cap",
+        "model": "HistoricalMarketCap",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalSplitsFetcher",
+        "contract": "FmpHistoricalSplit",
+        "domain": "fmp_historical_splits",
+        "model": "HistoricalSplits",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_financials:IncomeStatementFetcher",
+        "contract": "IncomeStatement",
+        "domain": "fmp_income_statement",
+        "model": "IncomeStatement",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_financials:IncomeStatementGrowthFetcher",
+        "contract": "IncomeStatementGrowth",
+        "domain": "fmp_income_statement_growth",
+        "model": "IncomeStatementGrowth",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:IndexConstituentsFetcher",
+        "contract": "FmpIndexConstituent",
+        "domain": "fmp_index_constituents",
+        "model": "IndexConstituents",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:IndexHistoricalFetcher",
+        "contract": "IndexHistorical",
+        "domain": "fmp_index_historical",
+        "model": "IndexHistorical",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:InsiderTradingFetcher",
+        "contract": "FmpInsiderTrade",
+        "domain": "fmp_insider_trading",
+        "model": "InsiderTrading",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:InstitutionalOwnershipFetcher",
+        "contract": "FmpInstitutionalOwnership",
+        "domain": "fmp_institutional_ownership",
+        "model": "InstitutionalOwnership",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:KeyExecutivesFetcher",
+        "contract": "FmpKeyExecutive",
+        "domain": "fmp_key_executives",
+        "model": "KeyExecutives",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_financials:KeyMetricsFetcher",
+        "contract": "KeyMetrics",
+        "domain": "fmp_key_metrics",
+        "model": "KeyMetrics",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:MarketSnapshotsFetcher",
+        "contract": "MarketSnapshot",
+        "domain": "fmp_market_snapshots",
+        "model": "MarketSnapshots",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:NportDisclosureFetcher",
+        "contract": "NportDisclosureHolding",
+        "domain": "fmp_nport_disclosure",
+        "model": "NportDisclosure",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:PricePerformanceFetcher",
+        "contract": "PricePerformance",
+        "domain": "fmp_price_performance",
+        "model": "PricePerformance",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:PriceTargetFetcher",
+        "contract": "FmpPriceTarget",
+        "domain": "fmp_price_target",
+        "model": "PriceTarget",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:PriceTargetConsensusFetcher",
+        "contract": "FmpPriceTargetConsensus",
+        "domain": "fmp_price_target_consensus",
+        "model": "PriceTargetConsensus",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_financials:RevenueBusinessLineFetcher",
+        "contract": "RevenueBusinessLine",
+        "domain": "fmp_revenue_business_line",
+        "model": "RevenueBusinessLine",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_financials:RevenueGeographicFetcher",
+        "contract": "RevenueGeographic",
+        "domain": "fmp_revenue_geographic",
+        "model": "RevenueGeographic",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2:MarketRiskPremiumFetcher",
+        "contract": "MarketRiskPremium",
+        "domain": "fmp_market_risk_premium",
+        "model": "RiskPremium",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_market:ShareStatisticsFetcher",
+        "contract": "ShareStatistics",
+        "domain": "fmp_share_statistics",
+        "model": "ShareStatistics",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2:TreasuryRatesFetcher",
+        "contract": "TreasuryRateObservation",
+        "domain": "fmp_treasury_rates",
+        "model": "TreasuryRates",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_disclosures:WorldNewsFetcher",
+        "contract": "FmpWorldNews",
+        "domain": "fmp_world_news",
+        "model": "WorldNews",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:YieldCurveFetcher",
+        "contract": "FmpYieldCurveObservation",
+        "domain": "fmp_yield_curve",
+        "model": "YieldCurve",
+        "scenario_present": true,
+        "source": "fmp",
+        "verified": false
+      }
+    ],
+    "fred": [
+      {
+        "binding": "opendata.data.providers.fred.models.fixed_rates:AmeriborFetcher",
+        "contract": "FredAmeribor",
+        "domain": "fred_ameribor",
+        "model": "Ameribor",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_auxiliary:BalanceOfPaymentsFetcher",
+        "contract": "FredBalanceOfPayments",
+        "domain": "fred_balance_of_payments",
+        "model": "BalanceOfPayments",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_rates_extra:BondIndicesFetcher",
+        "contract": "FredBondIndices",
+        "domain": "bond_indices",
+        "model": "BondIndices",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_rates_extra:CommercialPaperFetcher",
+        "contract": "FredCommercialPaper",
+        "domain": "commercial_paper",
+        "model": "CommercialPaper",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_rates_extra:CommoditySpotPricesFetcher",
+        "contract": "FredCommoditySpotPrices",
+        "domain": "commodity_spot_prices",
+        "model": "CommoditySpotPrices",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_macro:ConsumerPriceIndexFetcher",
+        "contract": "FredConsumerPriceIndex",
+        "domain": "fred_consumer_price_index",
+        "model": "ConsumerPriceIndex",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.fixed_rates:DiscountWindowPrimaryCreditRateFetcher",
+        "contract": "FredDiscountWindowPrimaryCreditRate",
+        "domain": "fred_discount_window_primary_credit_rate",
+        "model": "DiscountWindowPrimaryCreditRate",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_auxiliary:EconomicCalendarFetcher",
+        "contract": "FredEconomicCalendar",
+        "domain": "fred_economic_calendar",
+        "model": "EconomicCalendar",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_rates_extra:EuroShortTermRateFetcher",
+        "contract": "FredEuroShortTermRate",
+        "domain": "euro_short_term_rate",
+        "model": "EuroShortTermRate",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.fixed_rates:EuropeanCentralBankInterestRatesFetcher",
+        "contract": "FredEuropeanCentralBankInterestRate",
+        "domain": "fred_european_central_bank_interest_rates",
+        "model": "EuropeanCentralBankInterestRates",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.federal_funds:FederalFundsRateFetcher",
+        "contract": "FredFederalFundsRate",
+        "domain": "fred_federal_funds_rate",
+        "model": "FederalFundsRate",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_auxiliary:FredRegionalFetcher",
+        "contract": "FredRegional",
+        "domain": "fred_regional",
+        "model": "FredRegional",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_auxiliary:FredReleaseTableFetcher",
+        "contract": "FredReleaseTable",
+        "domain": "fred_release_table",
+        "model": "FredReleaseTable",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.search:FredSearchFetcher",
+        "contract": "SeriesCatalogItem",
+        "domain": "fred_search",
+        "model": "FredSearch",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.series:FredSeriesFetcher",
+        "contract": "SeriesObservation",
+        "domain": "fred_series",
+        "model": "FredSeries",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_rates_extra:HighQualityMarketCorporateBondFetcher",
+        "contract": "FredHighQualityMarketCorporateBond",
+        "domain": "hqm_corporate_bond",
+        "model": "HighQualityMarketCorporateBond",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iorb:FredIorbFetcher",
+        "contract": "FredIorbObservation",
+        "domain": "iorb",
+        "model": "IORB",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_macro:ManufacturingOutlookNYFetcher",
+        "contract": "FredManufacturingOutlookNY",
+        "domain": "fred_manufacturing_outlook_ny",
+        "model": "ManufacturingOutlookNY",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_macro:ManufacturingOutlookTexasFetcher",
+        "contract": "FredManufacturingOutlookTexas",
+        "domain": "fred_manufacturing_outlook_texas",
+        "model": "ManufacturingOutlookTexas",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_macro:MortgageIndicesFetcher",
+        "contract": "FredMortgageIndex",
+        "domain": "fred_mortgage_indices",
+        "model": "MortgageIndices",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_macro:NonFarmPayrollsFetcher",
+        "contract": "FredNonFarmPayroll",
+        "domain": "fred_nonfarm_payrolls",
+        "model": "NonFarmPayrolls",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.federal_funds:OvernightBankFundingRateFetcher",
+        "contract": "FredOvernightBankFundingRate",
+        "domain": "fred_overnight_bank_funding_rate",
+        "model": "OvernightBankFundingRate",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_auxiliary:ProjectionsFetcher",
+        "contract": "FredPROJECTIONS",
+        "domain": "fred_projections",
+        "model": "PROJECTIONS",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_macro:PersonalConsumptionExpendituresFetcher",
+        "contract": "FredPersonalConsumptionExpenditure",
+        "domain": "fred_personal_consumption_expenditures",
+        "model": "PersonalConsumptionExpenditures",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_macro_remaining:RetailPricesRemainingFetcher",
+        "contract": "FredRetailPrice",
+        "domain": "fred_retail_prices",
+        "model": "RetailPrices",
+        "scenario_present": false,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.sofr:FredSofrFetcher",
+        "contract": "FredSofrObservation",
+        "domain": "sofr",
+        "model": "SOFR",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.sonia:FredSoniaFetcher",
+        "contract": "FredSoniaObservation",
+        "domain": "sonia",
+        "model": "SONIA",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.treasury_rates:SelectedTreasuryBillFetcher",
+        "contract": "FredSelectedTreasuryBill",
+        "domain": "fred_selected_treasury_bill",
+        "model": "SelectedTreasuryBill",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.treasury_rates:SelectedTreasuryConstantMaturityFetcher",
+        "contract": "FredSelectedTreasuryConstantMaturity",
+        "domain": "fred_selected_treasury_constant_maturity",
+        "model": "SelectedTreasuryConstantMaturity",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_rates_extra:SpotRateFetcher",
+        "contract": "FredSpotRate",
+        "domain": "spot_rate",
+        "model": "SpotRate",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_macro:SurveyOfEconomicConditionsChicagoFetcher",
+        "contract": "FredSurveyOfEconomicConditionsChicago",
+        "domain": "fred_survey_of_economic_conditions_chicago",
+        "model": "SurveyOfEconomicConditionsChicago",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.fixed_rates:TipsYieldsFetcher",
+        "contract": "FredTipsYield",
+        "domain": "fred_tips_yields",
+        "model": "TipsYields",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.treasury_rates:TreasuryConstantMaturityFetcher",
+        "contract": "FredTreasuryConstantMaturity",
+        "domain": "fred_treasury_constant_maturity",
+        "model": "TreasuryConstantMaturity",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_macro:UniversityOfMichiganFetcher",
+        "contract": "FredUniversityOfMichigan",
+        "domain": "fred_university_of_michigan",
+        "model": "UniversityOfMichigan",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.iter2_rates_extra:YieldCurveFetcher",
+        "contract": "FredYieldCurve",
+        "domain": "fred_yield_curve",
+        "model": "YieldCurve",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.cpi:FredCpiFetcher",
+        "contract": "MacroSeries",
+        "domain": "economy_cpi",
+        "model": "cpi",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.gdp:FredGdpFetcher",
+        "contract": "MacroSeries",
+        "domain": "economy_gdp",
+        "model": "gdp",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.fred.models.unemployment:FredUnemploymentFetcher",
+        "contract": "MacroSeries",
+        "domain": "economy_unemployment",
+        "model": "unemployment",
+        "scenario_present": true,
+        "source": "fred",
+        "verified": true
+      }
+    ],
+    "government_us": [
+      {
+        "binding": "opendata.data.providers.government_us.models.commodity_psd_data:CommodityPsdDataFetcher",
+        "contract": "CommodityPsdData",
+        "domain": "government_us_commodity_psd_data",
+        "model": "CommodityPsdData",
+        "scenario_present": true,
+        "source": "government_us",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.government_us.models.commodity_psd_report:CommodityPsdReportFetcher",
+        "contract": "CommodityPsdReport",
+        "domain": "government_us_commodity_psd_report",
+        "model": "CommodityPsdReport",
+        "scenario_present": true,
+        "source": "government_us",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.government_us.models.treasury_auctions:TreasuryAuctionsFetcher",
+        "contract": "TreasuryAuction",
+        "domain": "government_us_treasury_auctions",
+        "model": "TreasuryAuctions",
+        "scenario_present": true,
+        "source": "government_us",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.government_us.models.weather_bulletin:WeatherBulletinFetcher",
+        "contract": "WeatherBulletin",
+        "domain": "government_us_weather_bulletin",
+        "model": "WeatherBulletin",
+        "scenario_present": true,
+        "source": "government_us",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.government_us.models.weather_bulletin_download:WeatherBulletinDownloadFetcher",
+        "contract": "WeatherBulletinDownload",
+        "domain": "government_us_weather_bulletin_download",
+        "model": "WeatherBulletinDownload",
+        "scenario_present": true,
+        "source": "government_us",
+        "verified": false
+      }
+    ],
+    "imf": [
+      {
+        "binding": "opendata.data.providers.imf.models.iter2:ImfAvailableIndicatorsFetcher",
+        "contract": "ImfAvailableIndicator",
+        "domain": "economy_imf_available_indicators",
+        "model": "AvailableIndicators",
+        "scenario_present": false,
+        "source": "imf",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.imf.models.iter2:ImfConsumerPriceIndexFetcher",
+        "contract": "ImfConsumerPriceIndex",
+        "domain": "economy_imf_cpi",
+        "model": "ConsumerPriceIndex",
+        "scenario_present": false,
+        "source": "imf",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.imf.models.iter2:ImfDirectionOfTradeFetcher",
+        "contract": "ImfDirectionOfTrade",
+        "domain": "economy_imf_direction_of_trade",
+        "model": "DirectionOfTrade",
+        "scenario_present": false,
+        "source": "imf",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.imf.models.iter2:ImfEconomicIndicatorFetcher",
+        "contract": "ImfEconomicIndicator",
+        "domain": "economy_imf_indicators",
+        "model": "EconomicIndicators",
+        "scenario_present": false,
+        "source": "imf",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.imf.models.portwatch:ImfChokePointInfoFetcher",
+        "contract": "ImfMaritimeChokePointInfo",
+        "domain": "imf_maritime_chokepoint_info",
+        "model": "MaritimeChokePointInfo",
+        "scenario_present": false,
+        "source": "imf",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.imf.models.portwatch:ImfChokePointVolumeFetcher",
+        "contract": "ImfMaritimeChokePointVolume",
+        "domain": "imf_maritime_chokepoint_volume",
+        "model": "MaritimeChokePointVolume",
+        "scenario_present": false,
+        "source": "imf",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.imf.models.portwatch:ImfPortInfoFetcher",
+        "contract": "ImfPortInfo",
+        "domain": "imf_port_info",
+        "model": "PortInfo",
+        "scenario_present": false,
+        "source": "imf",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.imf.models.portwatch:ImfPortVolumeFetcher",
+        "contract": "ImfPortVolume",
+        "domain": "imf_port_volume",
+        "model": "PortVolume",
+        "scenario_present": false,
+        "source": "imf",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.imf.models.cpi:ImfCpiFetcher",
+        "contract": "MacroSeries",
+        "domain": "economy_cpi",
+        "model": "cpi",
+        "scenario_present": true,
+        "source": "imf",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.imf.models.gdp:ImfGdpFetcher",
+        "contract": "MacroSeries",
+        "domain": "economy_gdp",
+        "model": "gdp",
+        "scenario_present": true,
+        "source": "imf",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.imf.models.unemployment:ImfUnemploymentFetcher",
+        "contract": "MacroSeries",
+        "domain": "economy_unemployment",
+        "model": "unemployment",
+        "scenario_present": true,
+        "source": "imf",
+        "verified": true
+      }
+    ],
+    "intrinio": [
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioBalanceSheetFetcher",
+        "contract": "IntrinioBalanceSheet",
+        "domain": "intrinio_balance_sheet",
+        "model": "BalanceSheet",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.calendar_ipo:IntrinioCalendarIpoFetcher",
+        "contract": "IntrinioPublicOffering",
+        "domain": "intrinio_calendar_ipo",
+        "model": "CalendarIpo",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioCashFlowStatementFetcher",
+        "contract": "IntrinioCashFlowStatement",
+        "domain": "intrinio_cash_flow_statement",
+        "model": "CashFlowStatement",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioCompanyFilingsFetcher",
+        "contract": "IntrinioCompanyFiling",
+        "domain": "intrinio_company_filings",
+        "model": "CompanyFilings",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioCompanyNewsFetcher",
+        "contract": "IntrinioCompanyNews",
+        "domain": "intrinio_company_news",
+        "model": "CompanyNews",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.currency_pairs:IntrinioCurrencyPairsFetcher",
+        "contract": "IntrinioCurrencyPair",
+        "domain": "intrinio_currency_pairs",
+        "model": "CurrencyPairs",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEquityHistoricalFetcher",
+        "contract": "IntrinioEquityHistorical",
+        "domain": "intrinio_equity_historical",
+        "model": "EquityHistorical",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEquityInfoFetcher",
+        "contract": "IntrinioEquityInfo",
+        "domain": "intrinio_equity_info",
+        "model": "EquityInfo",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEquityQuoteFetcher",
+        "contract": "IntrinioEquityQuote",
+        "domain": "intrinio_equity_quote",
+        "model": "EquityQuote",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.equity_search:IntrinioEquitySearchFetcher",
+        "contract": "IntrinioSearchedCompany",
+        "domain": "intrinio_equity_search",
+        "model": "EquitySearch",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEtfHistoricalFetcher",
+        "contract": "IntrinioEtfHistorical",
+        "domain": "intrinio_etf_historical",
+        "model": "EtfHistorical",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEtfHoldingsFetcher",
+        "contract": "IntrinioEtfHolding",
+        "domain": "intrinio_etf_holdings",
+        "model": "EtfHoldings",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEtfInfoFetcher",
+        "contract": "IntrinioEtfInfo",
+        "domain": "intrinio_etf_info",
+        "model": "EtfInfo",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_snapshots_clean:IntrinioEtfPricePerformanceFetcher",
+        "contract": "IntrinioEtfPricePerformance",
+        "domain": "intrinio_etf_price_performance",
+        "model": "EtfPricePerformance",
+        "scenario_present": false,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEtfSearchFetcher",
+        "contract": "IntrinioEtfSearch",
+        "domain": "intrinio_etf_search",
+        "model": "EtfSearch",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioFinancialRatiosFetcher",
+        "contract": "IntrinioFinancialRatios",
+        "domain": "intrinio_financial_ratios",
+        "model": "FinancialRatios",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioForwardEbitdaEstimatesFetcher",
+        "contract": "IntrinioForwardEbitdaEstimate",
+        "domain": "intrinio_forward_ebitda_estimates",
+        "model": "ForwardEbitdaEstimates",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioForwardEpsEstimatesFetcher",
+        "contract": "IntrinioForwardEpsEstimate",
+        "domain": "intrinio_forward_eps_estimates",
+        "model": "ForwardEpsEstimates",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioForwardPeEstimatesFetcher",
+        "contract": "IntrinioForwardPeEstimate",
+        "domain": "intrinio_forward_pe_estimates",
+        "model": "ForwardPeEstimates",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioForwardSalesEstimatesFetcher",
+        "contract": "IntrinioForwardSalesEstimate",
+        "domain": "intrinio_forward_sales_estimates",
+        "model": "ForwardSalesEstimates",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioFredSeriesFetcher",
+        "contract": "IntrinioFredSeries",
+        "domain": "intrinio_fred_series",
+        "model": "FredSeries",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioHistoricalAttributesFetcher",
+        "contract": "IntrinioHistoricalAttribute",
+        "domain": "intrinio_historical_attributes",
+        "model": "HistoricalAttributes",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.historical_dividends:IntrinioHistoricalDividendsFetcher",
+        "contract": "IntrinioDividendAdjustment",
+        "domain": "intrinio_historical_dividends",
+        "model": "HistoricalDividends",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioHistoricalMarketCapFetcher",
+        "contract": "IntrinioHistoricalMarketCap",
+        "domain": "intrinio_historical_market_cap",
+        "model": "HistoricalMarketCap",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioIncomeStatementFetcher",
+        "contract": "IntrinioIncomeStatement",
+        "domain": "intrinio_income_statement",
+        "model": "IncomeStatement",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioIndexHistoricalFetcher",
+        "contract": "IntrinioIndexHistorical",
+        "domain": "intrinio_index_historical",
+        "model": "IndexHistorical",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.insider_trading:IntrinioInsiderTradingFetcher",
+        "contract": "IntrinioInsiderTransaction",
+        "domain": "intrinio_insider_trading",
+        "model": "InsiderTrading",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioKeyMetricsFetcher",
+        "contract": "IntrinioKeyMetrics",
+        "domain": "intrinio_key_metrics",
+        "model": "KeyMetrics",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioLatestAttributesFetcher",
+        "contract": "IntrinioLatestAttribute",
+        "domain": "intrinio_latest_attributes",
+        "model": "LatestAttributes",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_snapshots_clean:IntrinioMarketSnapshotsFetcher",
+        "contract": "IntrinioMarketSnapshot",
+        "domain": "intrinio_market_snapshots",
+        "model": "MarketSnapshots",
+        "scenario_present": false,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioOptionsChainsFetcher",
+        "contract": "IntrinioOptionsChain",
+        "domain": "intrinio_options_chains",
+        "model": "OptionsChains",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioOptionsUnusualFetcher",
+        "contract": "IntrinioOptionsUnusual",
+        "domain": "intrinio_options_unusual",
+        "model": "OptionsUnusual",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioPriceTargetConsensusFetcher",
+        "contract": "IntrinioPriceTargetConsensus",
+        "domain": "intrinio_price_target_consensus",
+        "model": "PriceTargetConsensus",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioReportedFinancialsFetcher",
+        "contract": "IntrinioReportedFinancials",
+        "domain": "intrinio_reported_financials",
+        "model": "ReportedFinancials",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioSearchAttributesFetcher",
+        "contract": "IntrinioSearchAttribute",
+        "domain": "intrinio_search_attributes",
+        "model": "SearchAttributes",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioShareStatisticsFetcher",
+        "contract": "IntrinioShareStatistics",
+        "domain": "intrinio_share_statistics",
+        "model": "ShareStatistics",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioWorldNewsFetcher",
+        "contract": "IntrinioWorldNews",
+        "domain": "intrinio_world_news",
+        "model": "WorldNews",
+        "scenario_present": true,
+        "source": "intrinio",
+        "verified": false
+      }
+    ],
+    "multpl": [
+      {
+        "binding": "opendata.data.providers.multpl.models.sp500_multiples:SP500MultiplesFetcher",
+        "contract": "SP500Multiples",
+        "domain": "sp500_multiples",
+        "model": "SP500Multiples",
+        "scenario_present": true,
+        "source": "multpl",
+        "verified": false
+      }
+    ],
+    "nasdaq": [
+      {
+        "binding": "opendata.data.providers.nasdaq.models.calendar_dividend:CalendarDividendFetcher",
+        "contract": "NasdaqCalendarDividend",
+        "domain": "nasdaq_calendar_dividend",
+        "model": "CalendarDividend",
+        "scenario_present": true,
+        "source": "nasdaq",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.nasdaq.models.calendar_earnings:CalendarEarningsFetcher",
+        "contract": "NasdaqCalendarEarnings",
+        "domain": "nasdaq_calendar_earnings",
+        "model": "CalendarEarnings",
+        "scenario_present": true,
+        "source": "nasdaq",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.nasdaq.models.calendar_ipo:CalendarIpoFetcher",
+        "contract": "NasdaqCalendarIpo",
+        "domain": "nasdaq_calendar_ipo",
+        "model": "CalendarIpo",
+        "scenario_present": true,
+        "source": "nasdaq",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.nasdaq.models.company_filings:CompanyFilingsFetcher",
+        "contract": "NasdaqCompanyFiling",
+        "domain": "nasdaq_company_filings",
+        "model": "CompanyFilings",
+        "scenario_present": true,
+        "source": "nasdaq",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.nasdaq.models.economic_calendar:EconomicCalendarFetcher",
+        "contract": "NasdaqEconomicEvent",
+        "domain": "nasdaq_economic_calendar",
+        "model": "EconomicCalendar",
+        "scenario_present": true,
+        "source": "nasdaq",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.nasdaq.models.equity_screener:EquityScreenerFetcher",
+        "contract": "NasdaqEquityScreener",
+        "domain": "nasdaq_equity_screener",
+        "model": "EquityScreener",
+        "scenario_present": true,
+        "source": "nasdaq",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.nasdaq.models.equity_search:EquitySearchFetcher",
+        "contract": "NasdaqEquitySearch",
+        "domain": "nasdaq_equity_search",
+        "model": "EquitySearch",
+        "scenario_present": true,
+        "source": "nasdaq",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.nasdaq.models.historical_dividends:HistoricalDividendsFetcher",
+        "contract": "NasdaqHistoricalDividend",
+        "domain": "nasdaq_historical_dividends",
+        "model": "HistoricalDividends",
+        "scenario_present": true,
+        "source": "nasdaq",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.nasdaq.models.top_retail:TopRetailFetcher",
+        "contract": "NasdaqTopRetail",
+        "domain": "nasdaq_top_retail",
+        "model": "TopRetail",
+        "scenario_present": true,
+        "source": "nasdaq",
+        "verified": false
+      }
+    ],
+    "oecd": [
+      {
+        "binding": "opendata.data.providers.oecd.models.iter2:OecdCompositeLeadingIndicatorFetcher",
+        "contract": "OecdCompositeLeadingIndicator",
+        "domain": "economy_oecd_cli",
+        "model": "CompositeLeadingIndicator",
+        "scenario_present": false,
+        "source": "oecd",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.oecd.models.iter2:OecdConsumerPriceIndexFetcher",
+        "contract": "OecdConsumerPriceIndex",
+        "domain": "economy_oecd_cpi",
+        "model": "ConsumerPriceIndex",
+        "scenario_present": false,
+        "source": "oecd",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.oecd.models.iter2:OecdCountryInterestRateFetcher",
+        "contract": "OecdCountryInterestRate",
+        "domain": "economy_oecd_interest_rates",
+        "model": "CountryInterestRates",
+        "scenario_present": false,
+        "source": "oecd",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.oecd.models.iter2:OecdGdpForecastFetcher",
+        "contract": "OecdGdpForecast",
+        "domain": "economy_oecd_gdp_forecast",
+        "model": "GdpForecast",
+        "scenario_present": false,
+        "source": "oecd",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.oecd.models.iter2:OecdGdpNominalFetcher",
+        "contract": "OecdGdpNominal",
+        "domain": "economy_oecd_gdp_nominal",
+        "model": "GdpNominal",
+        "scenario_present": false,
+        "source": "oecd",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.oecd.models.iter2:OecdGdpRealFetcher",
+        "contract": "OecdGdpReal",
+        "domain": "economy_oecd_gdp_real",
+        "model": "GdpReal",
+        "scenario_present": false,
+        "source": "oecd",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.oecd.models.iter2:OecdHousePriceIndexFetcher",
+        "contract": "OecdHousePriceIndex",
+        "domain": "economy_oecd_house_price_index",
+        "model": "HousePriceIndex",
+        "scenario_present": false,
+        "source": "oecd",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.oecd.models.iter2:OecdSharePriceIndexFetcher",
+        "contract": "OecdSharePriceIndex",
+        "domain": "economy_oecd_share_price_index",
+        "model": "SharePriceIndex",
+        "scenario_present": false,
+        "source": "oecd",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.oecd.models.iter2:OecdUnemploymentFetcher",
+        "contract": "OecdUnemployment",
+        "domain": "economy_oecd_unemployment",
+        "model": "Unemployment",
+        "scenario_present": false,
+        "source": "oecd",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.oecd.models.cpi:OecdCpiFetcher",
+        "contract": "MacroSeries",
+        "domain": "economy_cpi",
+        "model": "cpi",
+        "scenario_present": true,
+        "source": "oecd",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.oecd.models.unemployment:OecdUnemploymentFetcher",
+        "contract": "MacroSeries",
+        "domain": "economy_unemployment",
+        "model": "unemployment",
+        "scenario_present": true,
+        "source": "oecd",
+        "verified": true
+      }
+    ],
+    "sec": [
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_financial:BalanceSheetFetcher",
+        "contract": "SecBalanceSheetStatement",
+        "domain": "sec_balance_sheet",
+        "model": "BalanceSheet",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_financial:BalanceSheetGrowthFetcher",
+        "contract": "SecBalanceSheetGrowthRow",
+        "domain": "sec_balance_sheet_growth",
+        "model": "BalanceSheetGrowth",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_financial:CashFlowStatementFetcher",
+        "contract": "SecCashFlowStatementRow",
+        "domain": "sec_cash_flow_statement",
+        "model": "CashFlowStatement",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_financial:CashFlowStatementGrowthFetcher",
+        "contract": "SecCashFlowStatementGrowthRow",
+        "domain": "sec_cash_flow_statement_growth",
+        "model": "CashFlowStatementGrowth",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_directory:CikMapFetcher",
+        "contract": "SecCikMapRecord",
+        "domain": "sec_cik_map",
+        "model": "CikMap",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_documents:CompanyFilingsFetcher",
+        "contract": "SecCompanyFiling",
+        "domain": "sec_company_filings",
+        "model": "CompanyFilings",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_financial:CompareCompanyFactsFetcher",
+        "contract": "SecCompanyFactComparison",
+        "domain": "sec_compare_company_facts",
+        "model": "CompareCompanyFacts",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_ftd:EquityFtdFetcher",
+        "contract": "SecFtdRecord",
+        "domain": "sec_equity_ftd",
+        "model": "EquityFTD",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_directory:EquitySearchFetcher",
+        "contract": "SecEquitySearchRecord",
+        "domain": "sec_equity_search",
+        "model": "EquitySearch",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_documents:FilingsFetcher",
+        "contract": "SecCompanyFiling",
+        "domain": "sec_filings",
+        "model": "Filings",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_documents:Form13FHRFetcher",
+        "contract": "SecForm13FHRHolding",
+        "domain": "sec_form_13f_hr",
+        "model": "Form13FHR",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_financial:IncomeStatementFetcher",
+        "contract": "SecIncomeStatementRow",
+        "domain": "sec_income_statement",
+        "model": "IncomeStatement",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_financial:IncomeStatementGrowthFetcher",
+        "contract": "SecIncomeStatementGrowthRow",
+        "domain": "sec_income_statement_growth",
+        "model": "IncomeStatementGrowth",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_insider:InsiderTradingFetcher",
+        "contract": "SecInsiderTransaction",
+        "domain": "sec_insider_trading",
+        "model": "InsiderTrading",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_institutions:InstitutionsSearchFetcher",
+        "contract": "SecInstitutionSearchResult",
+        "domain": "sec_institutions_search",
+        "model": "InstitutionsSearch",
+        "scenario_present": false,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_documents:LatestFinancialReportsFetcher",
+        "contract": "SecLatestFinancialReport",
+        "domain": "sec_latest_financial_reports",
+        "model": "LatestFinancialReports",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_documents:ManagementDiscussionAnalysisFetcher",
+        "contract": "SecManagementDiscussionAnalysis",
+        "domain": "sec_management_discussion_analysis",
+        "model": "ManagementDiscussionAnalysis",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_documents:NportDisclosureFetcher",
+        "contract": "SecNportDisclosureHolding",
+        "domain": "sec_nport_disclosure",
+        "model": "NportDisclosure",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_documents:RssLitigationFetcher",
+        "contract": "SecRssLitigationItem",
+        "domain": "sec_rss_litigation",
+        "model": "RssLitigation",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_documents:SchemaFilesFetcher",
+        "contract": "SecSchemaFile",
+        "domain": "sec_schema_files",
+        "model": "SchemaFiles",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_documents:SecFilingFetcher",
+        "contract": "SecFilingHeader",
+        "domain": "sec_filing",
+        "model": "SecFiling",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_documents:SecHtmFileFetcher",
+        "contract": "SecHtmFileData",
+        "domain": "sec_htm_file",
+        "model": "SecHtmFile",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_directory:SicSearchFetcher",
+        "contract": "SecSicCode",
+        "domain": "sec_sic_search",
+        "model": "SicSearch",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.sec.models.iter2_directory:SymbolMapFetcher",
+        "contract": "SecSymbolMapRecord",
+        "domain": "sec_symbol_map",
+        "model": "SymbolMap",
+        "scenario_present": true,
+        "source": "sec",
+        "verified": false
+      }
+    ],
+    "ths": [
+      {
+        "binding": "opendata.data.providers.ths.models.financial_statement:ThsFinancialStatementFetcher",
+        "contract": "FinancialStatement",
+        "domain": "financial_statement",
+        "model": "financial_statement",
+        "scenario_present": true,
+        "source": "ths",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.ths.models.fund_action:ThsFundActionFetcher",
+        "contract": "CorporateAction",
+        "domain": "fund_action",
+        "model": "fund_action",
+        "scenario_present": true,
+        "source": "ths",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.ths.models.fund_etf_daily:ThsFundEtfDailyFetcher",
+        "contract": "Bar",
+        "domain": "fund_etf_daily",
+        "model": "fund_etf_daily",
+        "scenario_present": true,
+        "source": "ths",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.ths.models.futures_daily:ThsFuturesDailyFetcher",
+        "contract": "Bar",
+        "domain": "futures_daily",
+        "model": "futures_daily",
+        "scenario_present": true,
+        "source": "ths",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.ths.models.index_constituent:ThsIndexConstituentFetcher",
+        "contract": "IndexConstituent",
+        "domain": "index_constituent",
+        "model": "index_constituent",
+        "scenario_present": true,
+        "source": "ths",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.ths.models.index_daily:ThsIndexDailyFetcher",
+        "contract": "Bar",
+        "domain": "index_daily",
+        "model": "index_daily",
+        "scenario_present": true,
+        "source": "ths",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.ths.models.instrument:ThsInstrumentFetcher",
+        "contract": "Instrument",
+        "domain": "instrument",
+        "model": "instrument",
+        "scenario_present": true,
+        "source": "ths",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.ths.models.option_daily:ThsOptionDailyFetcher",
+        "contract": "Bar",
+        "domain": "option_daily",
+        "model": "option_daily",
+        "scenario_present": true,
+        "source": "ths",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.ths.models.stock_action:ThsStockActionFetcher",
+        "contract": "CorporateAction",
+        "domain": "stock_action",
+        "model": "stock_action",
+        "scenario_present": true,
+        "source": "ths",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.ths.models.stock_daily:ThsStockDailyFetcher",
+        "contract": "Bar",
+        "domain": "stock_daily",
+        "model": "stock_daily",
+        "scenario_present": true,
+        "source": "ths",
+        "verified": true
+      },
+      {
+        "binding": "opendata.data.providers.ths.models.trading_calendar:ThsTradingCalendarFetcher",
+        "contract": "TradingCalendar",
+        "domain": "trading_calendar",
+        "model": "trading_calendar",
+        "scenario_present": true,
+        "source": "ths",
+        "verified": true
+      }
+    ],
+    "tiingo": [
+      {
+        "binding": "opendata.data.providers.tiingo.models.iter2:TiingoCompanyNewsFetcher",
+        "contract": "TiingoCompanyNews",
+        "domain": "tiingo_company_news",
+        "model": "CompanyNews",
+        "scenario_present": true,
+        "source": "tiingo",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tiingo.models.crypto_historical:TiingoCryptoHistoricalFetcher",
+        "contract": "TiingoCryptoHistorical",
+        "domain": "tiingo_crypto_historical",
+        "model": "CryptoHistorical",
+        "scenario_present": true,
+        "source": "tiingo",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tiingo.models.iter2:TiingoCurrencyHistoricalFetcher",
+        "contract": "TiingoCurrencyHistorical",
+        "domain": "tiingo_currency_historical",
+        "model": "CurrencyHistorical",
+        "scenario_present": true,
+        "source": "tiingo",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tiingo.models.iter2:TiingoEquityHistoricalFetcher",
+        "contract": "TiingoEquityHistorical",
+        "domain": "tiingo_equity_historical",
+        "model": "EquityHistorical",
+        "scenario_present": true,
+        "source": "tiingo",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tiingo.models.iter2:TiingoEtfHistoricalFetcher",
+        "contract": "TiingoEtfHistorical",
+        "domain": "tiingo_etf_historical",
+        "model": "EtfHistorical",
+        "scenario_present": true,
+        "source": "tiingo",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tiingo.models.iter2:TiingoTrailingDividendYieldFetcher",
+        "contract": "TiingoTrailingDividendYield",
+        "domain": "tiingo_trailing_dividend_yield",
+        "model": "TrailingDividendYield",
+        "scenario_present": true,
+        "source": "tiingo",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tiingo.models.iter2:TiingoWorldNewsFetcher",
+        "contract": "TiingoWorldNews",
+        "domain": "tiingo_world_news",
+        "model": "WorldNews",
+        "scenario_present": true,
+        "source": "tiingo",
+        "verified": false
+      }
+    ],
+    "tmx": [
+      {
+        "binding": "opendata.data.providers.tmx.models.fetchers:CompanyFilingsFetcher",
+        "contract": "TmxCompanyFiling",
+        "domain": "tmx_company_filings",
+        "model": "CompanyFilings",
+        "scenario_present": true,
+        "source": "tmx",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tmx.models.fetchers:EquityHistoricalFetcher",
+        "contract": "TmxEquityHistorical",
+        "domain": "tmx_equity_historical",
+        "model": "EquityHistorical",
+        "scenario_present": true,
+        "source": "tmx",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tmx.models.fetchers:EquityInfoFetcher",
+        "contract": "TmxEquityInfo",
+        "domain": "tmx_equity_info",
+        "model": "EquityInfo",
+        "scenario_present": true,
+        "source": "tmx",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tmx.models.fetchers:EquityQuoteFetcher",
+        "contract": "TmxEquityQuote",
+        "domain": "tmx_equity_quote",
+        "model": "EquityQuote",
+        "scenario_present": true,
+        "source": "tmx",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tmx.models.fetchers:EquitySearchFetcher",
+        "contract": "TmxEquitySearch",
+        "domain": "tmx_equity_search",
+        "model": "EquitySearch",
+        "scenario_present": true,
+        "source": "tmx",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tmx.models.fetchers:HistoricalDividendsFetcher",
+        "contract": "TmxHistoricalDividend",
+        "domain": "tmx_historical_dividends",
+        "model": "HistoricalDividends",
+        "scenario_present": true,
+        "source": "tmx",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tmx.models.fetchers:IndexConstituentsFetcher",
+        "contract": "TmxIndexConstituent",
+        "domain": "tmx_index_constituents",
+        "model": "IndexConstituents",
+        "scenario_present": true,
+        "source": "tmx",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tmx.models.fetchers:PriceTargetConsensusFetcher",
+        "contract": "TmxPriceTargetConsensus",
+        "domain": "tmx_price_target_consensus",
+        "model": "PriceTargetConsensus",
+        "scenario_present": true,
+        "source": "tmx",
+        "verified": false
+      }
+    ],
+    "tradier": [
+      {
+        "binding": "opendata.data.providers.tradier.models.equity_historical:TradierEquityHistoricalFetcher",
+        "contract": "TradierEquityHistorical",
+        "domain": "tradier_equity_historical",
+        "model": "EquityHistorical",
+        "scenario_present": true,
+        "source": "tradier",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tradier.models.equity_quote:TradierEquityQuoteFetcher",
+        "contract": "TradierEquityQuote",
+        "domain": "tradier_equity_quote",
+        "model": "EquityQuote",
+        "scenario_present": true,
+        "source": "tradier",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tradier.models.equity_search:TradierEquitySearchFetcher",
+        "contract": "TradierEquitySearch",
+        "domain": "tradier_equity_search",
+        "model": "EquitySearch",
+        "scenario_present": true,
+        "source": "tradier",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tradier.models.etf_historical:TradierEtfHistoricalFetcher",
+        "contract": "TradierEtfHistorical",
+        "domain": "tradier_etf_historical",
+        "model": "EtfHistorical",
+        "scenario_present": true,
+        "source": "tradier",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.tradier.models.options_chains:TradierOptionsChainsFetcher",
+        "contract": "TradierOptionChain",
+        "domain": "tradier_options_chains",
+        "model": "OptionsChains",
+        "scenario_present": true,
+        "source": "tradier",
+        "verified": false
+      }
+    ],
+    "tradingeconomics": [
+      {
+        "binding": "opendata.data.providers.tradingeconomics.models.economic_calendar:TradingEconomicsEconomicCalendarFetcher",
+        "contract": "TradingEconomicsEconomicCalendar",
+        "domain": "economic_calendar",
+        "model": "EconomicCalendar",
+        "scenario_present": true,
+        "source": "tradingeconomics",
+        "verified": false
+      }
+    ],
+    "yfinance": [
+      {
+        "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceBalanceSheetFetcher",
+        "contract": "YfinanceFinancialStatementObservation",
+        "domain": "yfinance_balance_sheet",
+        "model": "BalanceSheet",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceCashFlowStatementFetcher",
+        "contract": "YfinanceFinancialStatementObservation",
+        "domain": "yfinance_cash_flow_statement",
+        "model": "CashFlowStatement",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceCompanyNewsFetcher",
+        "contract": "YfinanceCompanyNewsObservation",
+        "domain": "yfinance_company_news",
+        "model": "CompanyNews",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceCryptoHistoricalFetcher",
+        "contract": "YfinanceHistoricalBar",
+        "domain": "yfinance_crypto_historical",
+        "model": "CryptoHistorical",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceCurrencyHistoricalFetcher",
+        "contract": "YfinanceHistoricalBar",
+        "domain": "yfinance_currency_historical",
+        "model": "CurrencyHistorical",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityActiveFetcher",
+        "contract": "YfinanceScreenerObservation",
+        "domain": "yfinance_equity_active",
+        "model": "EquityActive",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityAggressiveSmallCapsFetcher",
+        "contract": "YfinanceScreenerObservation",
+        "domain": "yfinance_equity_aggressive_small_caps",
+        "model": "EquityAggressiveSmallCaps",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityGainersFetcher",
+        "contract": "YfinanceScreenerObservation",
+        "domain": "yfinance_equity_gainers",
+        "model": "EquityGainers",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityHistoricalFetcher",
+        "contract": "YfinanceHistoricalBar",
+        "domain": "yfinance_equity_historical",
+        "model": "EquityHistorical",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityInfoFetcher",
+        "contract": "YfinancePayloadObservation",
+        "domain": "yfinance_equity_info",
+        "model": "EquityInfo",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityLosersFetcher",
+        "contract": "YfinanceScreenerObservation",
+        "domain": "yfinance_equity_losers",
+        "model": "EquityLosers",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityQuoteFetcher",
+        "contract": "YfinancePayloadObservation",
+        "domain": "yfinance_equity_quote",
+        "model": "EquityQuote",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityScreenerFetcher",
+        "contract": "YfinanceScreenerObservation",
+        "domain": "yfinance_equity_screener",
+        "model": "EquityScreener",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityUndervaluedGrowthFetcher",
+        "contract": "YfinanceScreenerObservation",
+        "domain": "yfinance_equity_undervalued_growth",
+        "model": "EquityUndervaluedGrowth",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityUndervaluedLargeCapsFetcher",
+        "contract": "YfinanceScreenerObservation",
+        "domain": "yfinance_equity_undervalued_large_caps",
+        "model": "EquityUndervaluedLargeCaps",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEtfHistoricalFetcher",
+        "contract": "YfinanceHistoricalBar",
+        "domain": "yfinance_etf_historical",
+        "model": "EtfHistorical",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEtfInfoFetcher",
+        "contract": "YfinancePayloadObservation",
+        "domain": "yfinance_etf_info",
+        "model": "EtfInfo",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceFuturesHistoricalFetcher",
+        "contract": "YfinanceHistoricalBar",
+        "domain": "yfinance_futures_historical",
+        "model": "FuturesHistorical",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceGrowthTechEquitiesFetcher",
+        "contract": "YfinanceScreenerObservation",
+        "domain": "yfinance_growth_tech_equities",
+        "model": "GrowthTechEquities",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceHistoricalDividendsFetcher",
+        "contract": "YfinanceDividendObservation",
+        "domain": "yfinance_dividend_history",
+        "model": "HistoricalDividends",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceIncomeStatementFetcher",
+        "contract": "YfinanceFinancialStatementObservation",
+        "domain": "yfinance_income_statement",
+        "model": "IncomeStatement",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceIndexHistoricalFetcher",
+        "contract": "YfinanceHistoricalBar",
+        "domain": "yfinance_index_historical",
+        "model": "IndexHistorical",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceKeyExecutivesFetcher",
+        "contract": "YfinancePayloadObservation",
+        "domain": "yfinance_key_executives",
+        "model": "KeyExecutives",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceKeyMetricsFetcher",
+        "contract": "YfinanceKeyMetricObservation",
+        "domain": "yfinance_key_metrics",
+        "model": "KeyMetrics",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceOptionsChainsFetcher",
+        "contract": "YfinanceOptionChainObservation",
+        "domain": "yfinance_options_chains",
+        "model": "OptionsChains",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinancePriceTargetFetcher",
+        "contract": "YfinancePriceTargetConsensus",
+        "domain": "yfinance_price_target_consensus",
+        "model": "PriceTargetConsensus",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceShareStatisticsFetcher",
+        "contract": "YfinancePayloadObservation",
+        "domain": "yfinance_share_statistics",
+        "model": "ShareStatistics",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": false
+      },
+      {
+        "binding": "opendata.data.providers.yfinance.models.stock_daily:YfinanceStockDailyFetcher",
+        "contract": "OverseasBar",
+        "domain": "stock_daily_overseas",
+        "model": "stock_daily",
+        "scenario_present": true,
+        "source": "yfinance",
+        "verified": true
+      }
+    ]
+  },
+  "public_model_export_count": 325,
+  "registered_capability_count": 347,
+  "semantic_domain_count": 314
+}

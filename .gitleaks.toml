@@ -183,3 +183,22 @@ regexTarget = "line"
 regexes = [
   '''"[^"\n]{2,160}?/[^"\n]{1,160}?\.[A-Za-z0-9]{1,6}": "[0-9a-f]{64}"''',
 ]
+
+# C149: staging the Finviz page captures (CI member 12 reads them as fixtures) reported
+# 3 findings under generic-api-key, all one literal: `data-cf-beacon='{"token":"e53f08f6..."}'`.
+# That is Cloudflare's *public* beacon/analytics identifier -- it ships in the served HTML of
+# every Finviz page, is the same value in all captures, and grants nothing. Blast radius
+# measured on the tree: exactly 4 occurrences, one line each, all in C100 Finviz captures
+# (finviz-performance/fixtures/{aapl,invalid}.html and
+# remaining-protocol-review/market-six/captures-20261012T171107Z/{aapl,invalid}.html); 0
+# elsewhere. The exemption is the literal token itself under generic-api-key only (regexTarget
+# = "secret"): a different value in the same data-cf-beacon slot stays reported, and specific
+# rules (github-pat, aws-*, ...) never consulted this entry.
+[[rules]]
+id = "generic-api-key"
+[rules.allowlist]
+description = "Cloudflare public beacon token embedded in captured Finviz HTML pages (data-cf-beacon analytics id; same value on every Finviz page, not a credential)."
+regexTarget = "secret"
+regexes = [
+  '''^e53f08f6c9e04bfd9760701085ec93b4$''',
+]

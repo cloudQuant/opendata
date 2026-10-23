@@ -1,0 +1,313 @@
+{
+  "purpose": "Bounded source-structure investigation of the seven other CSVs linked directly from Cboe's public VIX historical-data page; not live-provider acceptance or rights evidence.",
+  "page_url": "https://www.cboe.com/tradable_products/vix/vix_historical_data",
+  "capture_limits": {
+    "per_request_timeout_seconds": 30,
+    "max_saved_body_bytes": 4194304,
+    "redirects_followed": false
+  },
+  "requests": [
+    {
+      "symbol": "VVIX",
+      "request": {
+        "method": "GET",
+        "url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VVIX_History.csv",
+        "headers": {
+          "Accept": "text/csv"
+        },
+        "started_at_utc": "2026-10-12T14:18:22.795047+00:00"
+      },
+      "response": {
+        "status": 200,
+        "final_url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VVIX_History.csv",
+        "redirect_location": null,
+        "date_header": "Mon, 12 Oct 2026 14:18:23 GMT",
+        "content_type": "text/csv",
+        "content_length_header": null,
+        "content_range_header": null,
+        "saved_body_bytes": 109003,
+        "body_truncated_at_limit": false,
+        "body_sha256": "0c8b79bf3aaefa48a9f37cb410ba980e39bf975379f9a68e9fd6a4d1c4128bbe",
+        "capture_file": "docs/evidence/C100/congress-cboe/captures/vvix-history-investigation-20261012.csv"
+      },
+      "observed_header": [
+        "DATE",
+        "VVIX"
+      ],
+      "observed_first_data_row": [
+        "03/06/2006",
+        "71.730000"
+      ],
+      "observed_last_data_row": [
+        "10/09/2026",
+        "84.880000"
+      ],
+      "observed_first_data_date": "03/06/2006",
+      "observed_last_data_date": "10/09/2026"
+    },
+    {
+      "symbol": "VIX9D",
+      "request": {
+        "method": "GET",
+        "url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX9D_History.csv",
+        "headers": {
+          "Accept": "text/csv"
+        },
+        "started_at_utc": "2026-10-12T14:18:23.214198+00:00"
+      },
+      "response": {
+        "status": 200,
+        "final_url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX9D_History.csv",
+        "redirect_location": null,
+        "date_header": "Mon, 12 Oct 2026 14:18:23 GMT",
+        "content_type": "text/csv",
+        "content_length_header": null,
+        "content_range_header": null,
+        "saved_body_bytes": 201407,
+        "body_truncated_at_limit": false,
+        "body_sha256": "9c2476680030afa10a7008764b70865094ec97f2fa64e5113f0f0216506bb89a",
+        "capture_file": "docs/evidence/C100/congress-cboe/captures/vix9d-history-investigation-20261012.csv"
+      },
+      "observed_header": [
+        "DATE",
+        "OPEN",
+        "HIGH",
+        "LOW",
+        "CLOSE"
+      ],
+      "observed_first_data_row": [
+        "01/04/2011",
+        "16.060000",
+        "16.060000",
+        "16.060000",
+        "16.060000"
+      ],
+      "observed_last_data_row": [
+        "10/09/2026",
+        "11.760000",
+        "11.840000",
+        "11.040000",
+        "11.260000"
+      ],
+      "observed_first_data_date": "01/04/2011",
+      "observed_last_data_date": "10/09/2026"
+    },
+    {
+      "symbol": "OVX",
+      "request": {
+        "method": "GET",
+        "url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/OVX_History.csv",
+        "headers": {
+          "Accept": "text/csv"
+        },
+        "started_at_utc": "2026-10-12T14:18:23.583460+00:00"
+      },
+      "response": {
+        "status": 200,
+        "final_url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/OVX_History.csv",
+        "redirect_location": null,
+        "date_header": "Mon, 12 Oct 2026 14:18:23 GMT",
+        "content_type": "text/csv",
+        "content_length_header": null,
+        "content_range_header": null,
+        "saved_body_bytes": 90125,
+        "body_truncated_at_limit": false,
+        "body_sha256": "70d756e1300ee7d2f4cc375fe6b435b1049dc8440c9005bce49bee71fea8b7b2",
+        "capture_file": "docs/evidence/C100/congress-cboe/captures/ovx-history-investigation-20261012.csv"
+      },
+      "observed_header": [
+        "DATE",
+        "OVX"
+      ],
+      "observed_first_data_row": [
+        "09/18/2009",
+        "41.670000"
+      ],
+      "observed_last_data_row": [
+        "10/09/2026",
+        "48.900000"
+      ],
+      "observed_first_data_date": "09/18/2009",
+      "observed_last_data_date": "10/09/2026"
+    },
+    {
+      "symbol": "GVZ",
+      "request": {
+        "method": "GET",
+        "url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/GVZ_History.csv",
+        "headers": {
+          "Accept": "text/csv"
+        },
+        "started_at_utc": "2026-10-12T14:18:23.844284+00:00"
+      },
+      "response": {
+        "status": 200,
+        "final_url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/GVZ_History.csv",
+        "redirect_location": null,
+        "date_header": "Mon, 12 Oct 2026 14:18:24 GMT",
+        "content_type": "text/csv",
+        "content_length_header": null,
+        "content_range_header": null,
+        "saved_body_bytes": 90018,
+        "body_truncated_at_limit": false,
+        "body_sha256": "f19436d8165084197c2abb1c60a723c5645f780d5cf17123d36973fc5042d3ae",
+        "capture_file": "docs/evidence/C100/congress-cboe/captures/gvz-history-investigation-20261012.csv"
+      },
+      "observed_header": [
+        "DATE",
+        "GVZ"
+      ],
+      "observed_first_data_row": [
+        "09/18/2009",
+        "22.620000"
+      ],
+      "observed_last_data_row": [
+        "10/09/2026",
+        "22.790000"
+      ],
+      "observed_first_data_date": "09/18/2009",
+      "observed_last_data_date": "10/09/2026"
+    },
+    {
+      "symbol": "VXAPL",
+      "request": {
+        "method": "GET",
+        "url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VXAPL_History.csv",
+        "headers": {
+          "Accept": "text/csv"
+        },
+        "started_at_utc": "2026-10-12T14:18:24.117489+00:00"
+      },
+      "response": {
+        "status": 200,
+        "final_url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VXAPL_History.csv",
+        "redirect_location": null,
+        "date_header": "Mon, 12 Oct 2026 14:18:24 GMT",
+        "content_type": "text/csv",
+        "content_length_header": null,
+        "content_range_header": null,
+        "saved_body_bytes": 201887,
+        "body_truncated_at_limit": false,
+        "body_sha256": "ef6fa254af0471ca3d7bb3b337809c7c9665d3a6c753abb0bb89e704d9d3d9b5",
+        "capture_file": "docs/evidence/C100/congress-cboe/captures/vxapl-history-investigation-20261012.csv"
+      },
+      "observed_header": [
+        "DATE",
+        "OPEN",
+        "HIGH",
+        "LOW",
+        "CLOSE"
+      ],
+      "observed_first_data_row": [
+        "01/07/2011",
+        "31.860000",
+        "32.410000",
+        "31.330000",
+        "31.570000"
+      ],
+      "observed_last_data_row": [
+        "10/09/2026",
+        "29.330000",
+        "29.330000",
+        "27.550000",
+        "27.700000"
+      ],
+      "observed_first_data_date": "01/07/2011",
+      "observed_last_data_date": "10/09/2026"
+    },
+    {
+      "symbol": "VXAZN",
+      "request": {
+        "method": "GET",
+        "url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VXAZN_History.csv",
+        "headers": {
+          "Accept": "text/csv"
+        },
+        "started_at_utc": "2026-10-12T14:18:24.452045+00:00"
+      },
+      "response": {
+        "status": 200,
+        "final_url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VXAZN_History.csv",
+        "redirect_location": null,
+        "date_header": "Mon, 12 Oct 2026 14:18:24 GMT",
+        "content_type": "text/csv",
+        "content_length_header": null,
+        "content_range_header": null,
+        "saved_body_bytes": 201870,
+        "body_truncated_at_limit": false,
+        "body_sha256": "67df3c078a1bf7475d45c3cbfcbce6825a9e25b5551b00382d7bb9a0db556009",
+        "capture_file": "docs/evidence/C100/congress-cboe/captures/vxazn-history-investigation-20261012.csv"
+      },
+      "observed_header": [
+        "DATE",
+        "OPEN",
+        "HIGH",
+        "LOW",
+        "CLOSE"
+      ],
+      "observed_first_data_row": [
+        "01/07/2011",
+        "38.460000",
+        "39.380000",
+        "37.170000",
+        "37.290000"
+      ],
+      "observed_last_data_row": [
+        "10/09/2026",
+        "41.520000",
+        "41.640000",
+        "40.610000",
+        "40.720000"
+      ],
+      "observed_first_data_date": "01/07/2011",
+      "observed_last_data_date": "10/09/2026"
+    },
+    {
+      "symbol": "VXEEM",
+      "request": {
+        "method": "GET",
+        "url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VXEEM_History.csv",
+        "headers": {
+          "Accept": "text/csv"
+        },
+        "started_at_utc": "2026-10-12T14:18:24.782652+00:00"
+      },
+      "response": {
+        "status": 200,
+        "final_url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VXEEM_History.csv",
+        "redirect_location": null,
+        "date_header": "Mon, 12 Oct 2026 14:18:25 GMT",
+        "content_type": "text/csv",
+        "content_length_header": null,
+        "content_range_header": null,
+        "saved_body_bytes": 199531,
+        "body_truncated_at_limit": false,
+        "body_sha256": "29140018e7af4303cc098726c4cd02d39e4f48993efb83e5de64f3bc65374c5f",
+        "capture_file": "docs/evidence/C100/congress-cboe/captures/vxeem-history-investigation-20261012.csv"
+      },
+      "observed_header": [
+        "DATE",
+        "OPEN",
+        "HIGH",
+        "LOW",
+        "CLOSE"
+      ],
+      "observed_first_data_row": [
+        "03/16/2011",
+        "29.180000",
+        "34.320000",
+        "28.530000",
+        "32.860000"
+      ],
+      "observed_last_data_row": [
+        "10/09/2026",
+        "29.040000",
+        "29.040000",
+        "23.660000",
+        "23.780000"
+      ],
+      "observed_first_data_date": "03/16/2011",
+      "observed_last_data_date": "10/09/2026"
+    }
+  ]
+}

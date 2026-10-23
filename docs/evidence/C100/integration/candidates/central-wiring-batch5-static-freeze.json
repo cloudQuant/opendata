@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "central-wiring-batch5-static-freeze",
+  "status": "STATIC_CANDIDATE_AWAITING_GUARDED_SMOKE",
+  "purpose": "Static file-hash snapshot for the authorized SLOOS-only central metadata delta. This is not a guarded import result, runtime result, central service acceptance, or live-source validation.",
+  "candidate_path": "docs/evidence/C100/integration/candidates/central-wiring-batch5-candidate.json",
+  "candidate_sha256": "775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e",
+  "baseline": {
+    "run_id": "central-wiring-20261012T175242Z-batch4-finviz-retake1",
+    "run_path": "docs/evidence/C100/integration/runs/central-wiring-20261012T175242Z-batch4-finviz-retake1/run.json",
+    "run_sha256": "cf5d49076d5c8bef35c2ceeb778dd452fb59776db57f36615bb0c62c1849f07e",
+    "preimage_archive": "docs/evidence/C100/integration/preimages/central-wiring-batch5-preimages.tar",
+    "preimage_archive_sha256": "199504b85daa64da366036868cfe675a100860718c09b277714447af398251dc"
+  },
+  "delta": {
+    "source": "fred",
+    "canonical_model": "SeniorLoanOfficerSurvey",
+    "domain": "senior_loan_officer_survey",
+    "fetcher": "opendata.data.providers.fred.models.sloos:FredSeniorLoanOfficerSurveyFetcher",
+    "contract": "FredSeniorLoanOfficerSurvey",
+    "query_contract": "FredSeniorLoanOfficerSurveyQuery",
+    "capability": {
+      "period": "quarterly",
+      "market": "us",
+      "source": "fred",
+      "verified": false,
+      "scenario": null
+    },
+    "domain_spec": {
+      "temporal_kind": "series",
+      "time_field": "date",
+      "natural_key": [
+        "date",
+        "symbol",
+        "category",
+        "transform"
+      ],
+      "filter_dims": [
+        "date",
+        "symbol",
+        "category",
+        "transform"
+      ],
+      "storage_mode": "transient",
+      "permissions": [
+        "query"
+      ]
+    },
+    "fixed_identity_count_delta": 1,
+    "provider_model_leg_count_delta": 1,
+    "domain_count_delta": 1,
+    "contract_export_count_delta": 1,
+    "models_all_symbol_count_delta": 2,
+    "scenario_basis": "No matching explicit C65-approved scenario found; scenario remains unset.",
+    "source_status": "PARTIAL; direct offline source receipt PASS; central service and live FRED NOT_RUN."
+  },
+  "expected_counts": {
+    "fixed_identities": 350,
+    "fixed_bound": 317,
+    "fixed_unbound": 33,
+    "domain_specs": 337,
+    "provider_model_legs": 350,
+    "contract_model_exports": 329,
+    "models_all_symbols": 330,
+    "registered_sources_or_descriptors": 34
+  },
+  "hashes": {
+    "opendata/data/providers/fred/provider.py": {
+      "sha256": "1407bfb6a930e8366346273e54bed652c71ce541e9f3fcee7ac52e4febe6a4fb",
+      "role": "Fred provider binding and descriptor metadata"
+    },
+    "opendata/data/domains.yaml": {
+      "sha256": "59e3888662d4ccc575db2421d38f76e34592ca9362245db6d14ab35f2ec8aee5",
+      "role": "SeniorLoanOfficerSurvey DomainSpec"
+    },
+    "opendata/data/models/__init__.py": {
+      "sha256": "9dac556073190eff37c045b0c3a1880709840453ee12919534032f3428bb2509",
+      "role": "Public typed contract and query exports"
+    },
+    "opendata/data/models/fred_sloos.py": {
+      "sha256": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
+      "role": "Frozen typed contract and query model"
+    },
+    "opendata/data/providers/fred/models/sloos.py": {
+      "sha256": "d960cb231bc4b9cc51f4df2f02111c7c18f630f9e223a67bda665908a36e0f39",
+      "role": "Frozen source fetcher"
+    },
+    "opendata/data/providers/fred/sloos_series.py": {
+      "sha256": "2b45fe84a37ffb2596f1e22c6b50fc4b028ccf24c924d410041eed550d2fe228",
+      "role": "Frozen source series map"
+    },
+    "docs/evidence/C100/fred-sloos/source-freeze-v2.json": {
+      "sha256": "1166b7e9b821dedad4f52cb80d197b5baae3545d11183a142b89d704429ea893",
+      "role": "Source freeze manifest"
+    },
+    "docs/evidence/C100/acceptance-fred-sloos/runs/20261012T181729.721761Z/receipt.json": {
+      "sha256": "6bbf32147907ddc9729865cbe54e7b7446bd7f47e93b5d345883e2e1de6cf4c5",
+      "role": "Direct offline acceptance receipt"
+    },
+    "docs/evidence/C100/integration/candidates/central-wiring-batch4-candidate.json": {
+      "sha256": "48f64d8a564ec37c02e3cdd63e6f406b20f1c23e53ed0045ada565bbf20cc207",
+      "role": "Batch4 manual expected baseline"
+    },
+    "docs/evidence/C100/integration/runs/central-wiring-20261012T175242Z-batch4-finviz-retake1/run.json": {
+      "sha256": "cf5d49076d5c8bef35c2ceeb778dd452fb59776db57f36615bb0c62c1849f07e",
+      "role": "Batch4 guarded baseline run"
+    },
+    "docs/evidence/C100/integration/preimages/central-wiring-batch5-preimages.tar": {
+      "sha256": "199504b85daa64da366036868cfe675a100860718c09b277714447af398251dc",
+      "role": "Exact preimage archive"
+    },
+    "docs/evidence/C100/integration/candidates/central-wiring-batch5-candidate.json": {
+      "sha256": "775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e",
+      "role": "Batch5 manual expected candidate"
+    }
+  },
+  "validation_state": {
+    "preimage_diff_review": "PASS: only the one FRED provider binding, one SLOOS domain block, and two public exports changed from the archived three-file preimage.",
+    "json_parse": "PASS: jq empty on candidate and static freeze",
+    "load_domains_or_registry_import": "WAITING_FOR_PARENT_GUARD_PASS",
+    "provider_model_query_smoke": "WAITING_FOR_PARENT_GUARD_PASS",
+    "central_acceptance": "NOT_RUN",
+    "live_source": "NOT_RUN"
+  }
+}

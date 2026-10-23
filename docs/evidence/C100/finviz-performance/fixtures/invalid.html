@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" class=" dark">
+<head>
+<title>Stock Quote</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=1024"><meta name="description" content="">
+
+            <link rel="preload" href="/fonts/ibm-plex-sans-latin-normal.woff2" as="font" type="font/woff2" crossorigin>
+            <link rel="preload" href="/fonts/ibm-plex-sans-latin-italic.woff2" as="font" type="font/woff2" crossorigin>
+            <script>
+        window.notificationsArray = [];
+        window.renderScriptNotLoaded = function () {};
+        window.handleScriptNotLoaded = function (element) {
+            window.notificationsArray.push(element);
+            window.sentryDisabled = true;
+            window.handleScriptNotLoaded = function () {};
+        };
+        // window.openEliteFeaturesDialog ... MUST NOT HAVE FALLBACK!
+        window.openGenericAlertDialog ??= (message) => new Promise(resolve => resolve(alert(message)));
+        window.openGenericConfirmDialog ??= (message) => new Promise(resolve => resolve(confirm(message) || undefined));
+        window.openGenericDeleteDialog ??= (message) => new Promise(resolve => resolve(confirm(message) || undefined));
+        window.openGenericPromptDialog ??= (message, value = "") => new Promise(resolve => resolve(prompt(message, value) ?? undefined));
+        window.showFailureNotification ??= (message) => alert(message);
+        window.showSuccessNotification ??= (message) => alert(message);
+        window.showDefaultNotification ??= (message) => alert(message);
+    </script><link rel="stylesheet" href="/assets/dist-legacy/redesign.1ca43dac.css" type="text/css" onerror="window.handleScriptNotLoaded(this)">
+<link rel="stylesheet" href="/assets/dist-legacy/main.60a310ff.css" type="text/css" onerror="window.handleScriptNotLoaded(this)">
+<script src="/assets/dist-legacy/1378.v1.017bdd92.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/finviz_t.v1.344cd71c.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-537M973G');</script>
+
+<script>
+    window.dataLayer = window.dataLayer || [];
+
+    function getFvt() {
+        var cookie = document.cookie.split('; ').find(function(row) { return row.startsWith('finviz_t='); });
+        if (cookie) return decodeURIComponent(cookie.split('=')[1]);
+        try { return localStorage.getItem('finviz_t'); } catch (e) { return null; }
+    }
+
+    function gtag(command, key, value) {
+        var fvt = getFvt();
+        if (command === 'set' && key === 'page_path') {
+            var pageviewData = {
+                event: 'virtual_pageview',
+                page_path: value,
+                ...(fvt && { anon_id: fvt })
+            };
+            dataLayer.push(pageviewData);
+            return;
+        }
+
+        if (command === 'event') {
+            var eventData = {
+                event: key,
+                ...(value || {}),
+                ...(fvt && { anon_id: fvt })
+            };
+            dataLayer.push(eventData);
+            return;
+        }
+
+        dataLayer.push(arguments);
+    }
+</script><link rel="icon" type="image/png" href="/favicon_2x.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/favicon.png" sizes="16x16">
+<script async=true>
+    !(function(q,_name){q[_name]=q[_name]||function k(){(k.q=k.q||[]).push(arguments)},q[_name].v=q[_name].v||2,q[_name].s="1";!(function(q,k,F,H){function m(F,H){try{m=q.localStorage,(F=JSON.parse(m[decodeURI(decodeURI('%67%25%365%25%37%34I%257%34e%6d'))]("_aQS01OUU2MkU1RURCQzRDMzUyMTIwQkM4ODYtMTE0")).lgk||[])&&(H=q[k].pubads())&&F.forEach((function(q){q&&q[0]&&H.setTargeting(q[0],q[1]||"")}))}catch(N){}var m}try{(H=q[k]=q[k]||{}).cmd=H.cmd||[],typeof H.pubads===F?m():typeof H.cmd.unshift===F?H.cmd.unshift(m):H.cmd.push(m)}catch(N){}})(window,decodeURI(decodeURI('%25%367o%25%36fg%256c%25%36%35%2574%256%31%25%36%37')),"function");;!(function(q){q.__admiral_getConsentForGTM=function(k){function F(q,F){k((function(q,k){const F=q&&q.purpose&&q.purpose.consents||{};return{adConsentGranted:k||!!F[1],adUserData:k||!!F[7],adPersonalization:k||!!F[3],analyticsConsentGranted:k||!!F[1],personalizationConsentGranted:k||!!F[5],functionalityConsentGranted:k||!1,securityConsentGranted:k||!0}})(q,!F))}q[_name]("after","cmp.loaded",(function(k){k&&k.tcData&&k.tcData.gdprApplies?(k.consentKnown&&F(k.tcData,!0),q[_name]("after","cmp.updated",(function(q){F(q.tcData,!0)}))):F({},!1)}))}})(window);})(window,decodeURI(decodeURI('a%256%34m%25%369%25%37%32%256%31l')));!(function(q,k,F,H){F=q.createElement(k),q=q.getElementsByTagName(k)[0],F.async=1,F.src="https://urbanlaurel.com/assets/js/q2o3um29vhadcznq.vendor.js",(H=0)&&H(F),q.parentNode.insertBefore(F,q)})(document,"script");;;!(function(q,k,F,H,m){function N(){for(var q=[],F=0;F<arguments.length;F++)q.push(arguments[F]);if(!q.length)return m;"ping"===q[0]?q[2]({gdprAppliesGlobally:!!k[decodeURI(decodeURI('_%25%35%66c%6d%25%37%30%254%37%25%364%25%370%257%32A%2570%25%370%256%63%2569%65%73%2547%256%63o%25%36%32%25%361%25%36%63%6c%79'))],cmpLoaded:!1,cmpStatus:"stub"}):q.length>0&&m.push(q)}function L(q){if(q&&q.data&&q.source){var H,m=q.source,N="__tcfapiCall",L="string"==typeof q.data&&q.data.indexOf(N)>=0;(H=L?((function(q){try{return JSON.parse(q)}catch(k){}})(q.data)||{})[N]:(q.data||{})[N])&&k[F](H.command,H.version,(function(q,k){var F={__tcfapiReturn:{returnValue:q,success:k,callId:H.callId}};m&&m.postMessage(L?JSON.stringify(F):F,"*")}),H.parameter)}}!(function t(){if(!k.frames[H]){var F=q.body;if(F){var m=q.createElement("iframe");m.style.display="none",m.name=H,F.appendChild(m)}else setTimeout(t,5)}})(),N.v=1,"function"!=typeof k[F]&&(k[F]=k[F]||N,k.addEventListener?k.addEventListener("message",L,!1):k.attachEvent&&k.attachEvent("onmessage",L))})(document,window,"__tcfapi","__tcfapiLocator",[]);;;!(function(q,k,F,H,m,N,L,t,A,K,R){function Y(){for(var q=[],k=arguments.length,F=0;F<k;F++)q.push(arguments[F]);var H,m=q[1],N=typeof m===L,t=q[2],Y={gppVersion:"1.1",cmpStatus:"stub",cmpDisplayStatus:"hidden",signalStatus:"not ready",supportedAPIs:["7:usnat"].reduce((function(q,k){return k&&q.push(k),q}),[]),cmpId:9,sectionList:[],applicableSections:[0],gppString:"",parsedSections:{}};function v(q){N&&m(q,!0)}switch(q[0]){case"ping":return v(Y);case"queue":return A;case"events":return K;case"addEventListener":return N&&(H=++R,K.push({id:H,callback:m,parameter:t})),v({eventName:"listenerRegistered",listenerId:H,data:!0,pingData:Y});case"removeEventListener":for(H=!1,F=0;F<K.length;F++)if(K[F].id===t){K.splice(F,1),H=!0;break}return v(H);case"hasSection":case"getSection":case"getField":return v(null);default:return void A.push(q)}}Y.v=2,typeof k[F]!==L&&(k[F]=k[F]||Y,k[t]&&k[t]("message",(function(q,H){var L="string"==typeof q.data;(H=L?((function(q){try{return JSON.parse(q)}catch(k){}})(q.data)||{})[m]:(q.data||{})[m])&&k[F](H.command,(function(k,F){var m={__gppReturn:{returnValue:k,success:F,callId:H.callId}};q.source&&q.source.postMessage(L?JSON.stringify(m):m,"*")}),N in H?H[N]:null,H.version||1)}),!1),(function v(){if(!k.frames[H]){var F=q.body;if(F){var m=q.createElement("iframe");m.style.display="none",m.name=H,F.appendChild(m)}else setTimeout(v,5)}})())})(document,window,"__gpp","__gppLocator","__gppCall","parameter","function","addEventListener",[],[],0);
+    ;(function () {
+        window.ic_privacySelectorLoaded = false;
+
+        function checkBanners() {
+            if (window.checkBannersLoaded) checkBannersLoaded();
+        }
+
+        window.admiral("after", "candidate.dismissed", checkBanners);
+
+        // A blocked consent script means neither the dialog nor the ads will ever
+        // show up, so empty slots can be filled right away.
+        var consentScript = document.querySelector('script[src*="urbanlaurel.com"]');
+        if (consentScript) consentScript.addEventListener('error', checkBanners);
+
+        // Admiral wraps #whisper-anchor in a body child with an unlayered `min-height: 1px`,
+        // and it can append that child after cmp.loaded.
+        // Do not use a `div:has()` rule here, because it restyles the ancestors of each inserted node.
+        function collapseAdmiralHost() {
+            function collapse() {
+                var admiralHost = document.getElementById('whisper-anchor')?.parentElement;
+                if (admiralHost?.parentElement !== document.body) return false;
+                admiralHost.classList.add('min-h-0!');
+                return true;
+            }
+
+            if (collapse()) return;
+            var observer = new MutationObserver(function () {
+                if (collapse()) observer.disconnect();
+            });
+            observer.observe(document.body, { childList: true });
+        }
+
+        window.admiral("after", "cmp.loaded", function (eventArg) {
+            console.log("Admiral CMP Loaded ", eventArg);
+            collapseAdmiralHost();
+            if (eventArg.euVisitor) return;
+            // Users outside EU don't get a consent dialog. Don't wait for it.
+            checkBanners();
+            try {
+                __gpp("addEventListener", function (tcData) {
+                    window.ic_privacySelectorLoaded = true;
+                });
+            } catch (e) {
+                console.error(e)
+            }
+        });
+    })();
+
+    function openCCPADialog() {
+        document.querySelector('#ic_us_privacy a')?.click()
+    }
+</script><script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "unkwe89mcc");
+</script><script>
+            FinvizSettings = {
+                versionImages: 1131476478,
+                iconSprites: {"icons":"icons.4ede4ca4.svg","icons_blogs":"icons_blogs.37b5403f.svg","icons_calendar":"icons_calendar.5a6f733b.svg","icons_careers":"icons_careers.8c558ad5.svg","icons_chart-layouts":"icons_chart-layouts.6d5730f1.svg","icons_chart-tools":"icons_chart-tools.43b28dd8.svg","icons_chart-types":"icons_chart-types.68df96b3.svg","icons_companies":"icons_companies.d6ef954b.svg","icons_crypto":"icons_crypto.3f55894f.svg","icons_news-content":"icons_news-content.5b347035.svg","icons_news":"icons_news.24dc76d2.svg","icons_screener":"icons_screener.e3e3b175.svg","icons_signals":"icons_signals.0e727212.svg","icons_social":"icons_social.629cf97e.svg"},
+                versionLogo: "53b44e68",
+                hasUserPremium: false,
+                trialLength: null,
+                isTrialWithCC: true,
+                isUserInternal: false,
+                userId: null,
+                name: "",
+                email: "",
+                nodeChartsDomain: "https://charts2-node.finviz.com",
+                hasUserStickyHeader: false,
+                adsProvider: 1,
+                hasRedesignEnabled: true,
+                hasRedesignPortfolio: false,
+                hasDarkTheme: true,
+                quoteSearchExt: '',
+                isJoinBannerVisible: false,
+                hasKnowledgeBase: true,
+                showTickerLogos: true,
+                hasDiscountCampaign: false,
+                discountCampaign: null,
+                featureFlags: {"knowledgebase":true,"googleonetap":true,"subscriptionredesign":true,"stockswhymoving":true,"redesign":true},
+                featureDiscovery: [{"id":"futures-performance","label":"New","tier":"standard","variant":"badge","hideStrategy":"timeInteraction","releasedAt":"2026-09-15","durationDays":28,"maxSessions":null,"targets":["futures.performance"],"tooltipTitle":"New: Futures Performance","tooltipDescription":"Performance table and chart for futures.","analyticsName":"futures_performance"},{"id":"forex-performance","label":"New","tier":"standard","variant":"badge","hideStrategy":"timeInteraction","releasedAt":"2026-09-15","durationDays":28,"maxSessions":null,"targets":["forex.performance"],"tooltipTitle":"New: Forex Performance","tooltipDescription":"Performance table and chart for forex.","analyticsName":"forex_performance"},{"id":"crypto-performance","label":"New","tier":"standard","variant":"badge","hideStrategy":"timeInteraction","releasedAt":"2026-09-15","durationDays":28,"maxSessions":null,"targets":["crypto.performance"],"tooltipTitle":"New: Crypto Performance","tooltipDescription":"Performance table and chart for crypto.","analyticsName":"crypto_performance"}]
+            };
+        
+FinvizSettings.hoverCharts = { stock: { timeframe: 'd', dateRange: null, width: 466, height: 219, barWidth: 1, barMargin: 1, borderWidth: 1 }, forex: { timeframe: 'd', dateRange: null, width: 466, height: 219, barWidth: 2, barMargin: 1, borderWidth: 1 }, futures: { timeframe: 'd', dateRange: null, width: 466, height: 219, barWidth: 2, barMargin: 1, borderWidth: 1 } }</script><script src="/assets/dist-legacy/script/browser_check.v1.1605ca48.js?v=4"></script><script src="/assets/dist-legacy/script/notice.v1.f13b0329.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/runtime.v1.73a644ee.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/libs_init.v1.f49324c2.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/1378.v1.017bdd92.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/8672.v1.24256d24.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/2019.v1.7f3297b0.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/8028.v1.c4fcc176.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/816.v1.ae333d12.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/1571.v1.54eb8840.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/3580.v1.ca4d1a33.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/2347.v1.483746a6.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/header.v1.8bf760d6.js" onerror="window.handleScriptNotLoaded(this)" defer></script></head>
+<body class="m-0 is-quote table w-full">    <div class="flex w-full items-center justify-center overflow-hidden py-2.5">
+        <div id="banner_position" class="flex items-center justify-center">
+            <div id="IC_D_728x90_1"class="relative overflow-hidden flex items-center justify-center w-full mx-auto" style="width:728px;height:90px;max-height:90px"></div>
+        </div>
+    </div>    <script src="/assets/dist-legacy/script/notice.v1.f13b0329.js" onerror="window.handleScriptNotLoaded(this)" defer></script>
+    <div class="flex w-full items-start border-y border-violet-500/16 bg-violet-500/12 px-4 py-2 font-sans text-sm text-violet-500 dark:text-violet-300 sm:items-center sm:py-1.5" data-fv-notice="elite-top-banner-anonymous" data-nosnippet>
+        <div class="flex flex-1 flex-col items-center justify-center gap-2 text-center sm:flex-row sm:text-left">
+            <div class="flex items-center gap-2">
+                <svg width="16" height="16" class="shrink-0 fill-current">
+    <use href="/assets/dist-icons/icons.4ede4ca4.svg#starOutlined"/>
+</svg>
+                <span><strong class="font-medium">Elite members</strong> get real-time data, technical charting, alerts, and no ads - starting at $24.96/mo.</span>
+            </div>
+            <a href="/register?poster=trial&utm_source=finviz&utm_medium=banner&utm_campaign=elite-top-banner" onclick="window.TrackPromotionEvent && window.TrackPromotionEvent('select_promotion', { creative_slot: 'top-banner', creative_name: 'bannerEliteTopAnonymous', promotion_id: 'elite_top_banner', promotion_name: 'Elite Top Banner' });" class="inline-flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-md border-none bg-violet-500 px-3 text-2xs font-medium text-white outline-none ring-gray-200 hover:bg-violet-600 active:bg-violet-700 focus-visible:ring-2 dark:ring-gray-500 dark:hover:bg-violet-400">
+                Try Elite for Free
+                <svg width="16" height="16" class="shrink-0 fill-current">
+    <use href="/assets/dist-icons/icons.4ede4ca4.svg#arrowLongRight"/>
+</svg>
+            </a>
+        </div>
+            <a title="Close" class="ml-2 flex size-5 shrink-0 items-center justify-center rounded-full hover:bg-violet-500/20 max-lg:size-7" href="javascript:void(0)" onclick="window.FinvizCloseNotice('elite-top-banner-anonymous')">
+        <svg width="16" height="16" class="shrink-0 max-lg:size-5">
+    <use href="/assets/dist-icons/icons.4ede4ca4.svg#clear"/>
+</svg>
+    </a>
+    </div>
+    <script>window.TrackPromotionEvent && window.TrackPromotionEvent('view_promotion', { creative_slot: 'top-banner', creative_name: 'bannerEliteTopAnonymous', promotion_id: 'elite_top_banner', promotion_name: 'Elite Top Banner' });</script><div id="js-elite-features-root"></div><span class="absolute invisible size-0 overflow-hidden"><span id="ic_us_privacy"></span></span>
+            <script>
+                window.adLayoutVersion = 'control';
+                window.adLoggedIn = 'NotLoggedIn';
+
+                var cookieName = 'fv_block';
+                var selector = '[data-google-query-id]';
+                var selectorFrame = selector + ' iframe, ' + selector + ' [id*=aax]';
+                var cookieExpiry = 5 * 60 * 1000; // 5min
+                var checkTimeout = 20 * 1000; // 20sec
+
+                function getCookie(value) {
+                    var expiration = +new Date() + cookieExpiry;
+                    return cookieName + '=' + value + '; expires=' + (new Date(expiration)).toUTCString() + '; path=/';
+                }
+
+                var finvizBannersLoaded = false;
+                function loadFinvizBanners(setCookie) {
+                    
+                    if (setCookie) document.cookie = getCookie('block');
+                    if (finvizBannersLoaded) return;
+                    finvizBannersLoaded = true;
+                    var s = document.createElement('script');
+                    s.type = 'text/javascript';
+                    s.async = true;
+                    s.src = '/assets/dist-legacy/script/finviz_b.v1.66b6f4ed.js';
+                    document.head.appendChild(s);
+                }
+
+                function checkBannersLoaded() {
+                    var checkEnd = +new Date() + checkTimeout;
+                    function asyncCheckIfExists(selector, resolve) {
+                        var now = +new Date();
+                        var container = document.querySelector(selector);
+                        if (!container && checkEnd > now) return setTimeout(function () { asyncCheckIfExists(selector, resolve) }, 1000)
+                        resolve(!!container);
+                    }
+
+                    asyncCheckIfExists(selector, function (exists) {
+                        if (!exists) return loadFinvizBanners(true);
+
+                        asyncCheckIfExists(selectorFrame, function (hasIframe) {
+                            if (!hasIframe) return loadFinvizBanners(true);
+                        })
+                    })
+                }
+
+                if (document.cookie.indexOf(cookieName) >= 0) {
+                    loadFinvizBanners(false);
+                } else {
+                    var s = document.createElement('script');
+                    s.type = 'text/javascript';
+                    s.async = true;
+                    s.onerror = loadFinvizBanners;
+                    s.src = 'https://u5.investingchannel.com/static/uat.js';
+                    document.head.appendChild(s);
+
+                    InvestingChannelQueue = window.InvestingChannelQueue || [];
+                    var ic_page;
+
+                    function refreshAd(container, refreshes) {
+                        var placementTag, adslot;
+                        window.InvestingChannelQueue.push(function () {
+                            var pubTags = ic_page.getPubTag.call(ic_page, container.id);
+                            if (!pubTags) return;
+                            var pubTag = pubTags[0];
+                            placementTag = pubTag.mPlacements[0].mTagToRender;
+                            adslot = pubTag.mPlacements[0].mPublisherKval.adslot[0];
+                            // Update div ID
+                            var id = container.id.split('_');
+                            var numberOfDivs = document.querySelectorAll('[id*=' + id.slice(0, id.length - 1).join('_') + ']').length;
+                            var newDivNumber = Number(id.pop()) + numberOfDivs * refreshes;
+                            container.setAttribute('id', id.join('_') + '_' + newDivNumber);
+                            // Destroy previous pubtag & reset container html (loading span)
+                            pubTag.destroy();
+                            container.innerHTML = '';
+                        });
+                        window.InvestingChannelQueue.push(function () {
+                            if (!placementTag || !adslot) return
+                            // Create new pub tag
+                            var newTag;
+                            var layoutId = placementTag.mNativeLayout ? placementTag.mNativeLayout.nativelayoutid : null;
+                            if (layoutId) {
+                                newTag = ic_page.defineNativeTag('finviz/' + placementTag.mTarget.dfpkeyname, placementTag.mAdSize, container.id, layoutId);
+                                var nativeLayout, layoutData
+
+                                try {
+                                  nativeLayout = newTag.mPlacements[0].mTags[0].mNativeLayout;
+                                } catch (e) {
+                                    console.log(e.message)
+                                }
+
+                                try {
+                                  layoutData = newTag.mTemplate.mNativeLayout[layoutId].Data
+                                  if (layoutData && nativeLayout && !nativeLayout.layout) {
+                                    newTag.mPlacements[0].mTags[0].mNativeLayout = layoutData
+                                  }
+                                } catch (e) {
+                                    console.log(e.message)
+                                }
+                            } else {
+                                newTag = ic_page.defineTag('finviz/' + placementTag.mTarget.dfpkeyname, placementTag.mAdSize, container.id);
+                            }
+                            // Set adslot param
+                            newTag.setKval({ adslot: adslot });
+                            newTag.setKval({ kw: 'ajax' });
+                            newTag.render();
+                        });
+                    }
+
+                    var refreshCount = 1;
+                    function refreshAds(selectors) {
+                        if (window.ic_page) {
+                            document.querySelectorAll(selectors).forEach(function (element) {
+                                try {
+                                    refreshAd(element, refreshCount);
+                                } catch (e) {
+                                    console.log('Ad refresh error for:', element, e);
+                                }
+                            });
+                            window.ic_page.loadMore();
+                            refreshCount++;
+                        }
+                    }
+
+
+                    InvestingChannelQueue.push(function() {
+                        var icConfig = window['FINVIZ_IC_UAT_CONFIG'] = {};
+                        
+                        ic_page = InvestingChannel.UAT.Run('df0d0d52-cc7f-11e8-82a5-0abbb61c4a6a', icConfig);
+                    });
+
+                    var hash = null;
+                    if (typeof hash === 'string') {
+                      InvestingChannelQueue.push(function() {
+                          if (ic_page) {
+                              ic_page.setUser({'SHA256': hash}, 'hash', '');
+                          }
+                      });
+                    }
+                }
+            </script>
+            <script>
+                (function () {
+                    var detectionEl = document.createElement('div');
+                    detectionEl.style.position='absolute';
+                    detectionEl.style.top='-9999px';
+                    detectionEl.style.width='100px';
+                    detectionEl.style.height='100px';
+                    detectionEl.style.overflow='scroll';
+                    document.body.appendChild(detectionEl);
+                    document.documentElement.style.setProperty('--fv-scrollbar-width', (detectionEl.offsetWidth - detectionEl.clientWidth) + 'px');
+                    document.body.removeChild(detectionEl);
+                })()
+            </script>
+        <div id="notifications-container"></div><div id="notifications-react-root"></div><div id="dialogs-react-root"></div><div id="dialog-portal-root" style="display:contents"></div>
+<div class="header  flex items-center">
+    <div class="header-container flex items-center">
+        <div class="pr-6.75">
+            <a href="/" class="flex items-center gap-2.5">
+<svg width="213" height="32" class="block">
+    
+<use href="/img/logo.svg?rev=53b44e68#free-v2" class="dark:hidden" />
+<use href="/img/logo.svg?rev=53b44e68#free-v2-dark" class="hidden dark:block" />
+</svg>            </a>
+        </div>
+        <div class="flex items-center">
+            <div id="search" class="w-95">
+                <form action="/search">
+    <div class="navbar-search-placeholder max-w-95">
+        <span class="icon-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24" width="16" height="16">
+                <path d="M16.9 15.5l4 4c.2.2.1.5 0 .7l-.7.7a.5.5 0 01-.8 0l-4-4c0-.2-.2-.3-.3-.4l-.7-1a7 7 0 01-11.2-4 7 7 0 1112.2 3l1 .6.5.4zM5 10a5 5 0 1010 0 5 5 0 00-10 0z" />
+            </svg>
+        </span>
+        <input name="p" placeholder="Search ticker, company or profile" class="search-input is-free"/>
+    </div>
+</form>
+            </div>
+            <div id="microbar_position" class="flex items-center pl-2"><div><div id="IC_D_88x31_1"class="relative overflow-hidden flex items-center justify-center w-full mx-auto" style="width:88px;height:31px;max-height:31px"></div></div></div>
+        </div>
+        <div class="flex-1"></div>
+        <div class="flex items-center gap-2.5">
+                <div class="relative">
+        <a data-testid="chart-layout-theme" href="#" class="!flex !bg-transparent !border-b-0 !p-0" title="Toggle Light/Dark mode" onclick="setChartThemeCookie('light', true)">
+            <div class="relative box-content flex rounded-full w-10 h-5 border border-white text-default bg-primary dark:border-gray-750 justify-end">
+                <div class="box-border w-1/2 rounded-full p-px border border-white bg-gray-100 dark:border-gray-800 dark:bg-gray-600 flex justify-center items-center">
+                    <svg width="16" height="16" class="fill-current inline-block -ml-px">
+    <use href="/assets/dist-icons/icons.4ede4ca4.svg#moonOutlined"/>
+</svg>
+                </div>
+            </div>
+        </a>
+    </div>
+
+            <div class="flex items-center gap-4">
+                    <a href="/login" class="flex items-center gap-1 rounded px-2 py-1.5 text-2xs leading-4 font-medium whitespace-nowrap hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 hover:text-gray-900 dark:text-gray-50 dark:hover:text-white">
+                        <svg width="16" height="16" class="shrink-0 fill-current text-muted-2">
+    <use href="/assets/dist-icons/icons.4ede4ca4.svg#userBig"/>
+</svg>
+                        Login
+                    </a>
+                    <a href="/register" class="inline-flex h-7 items-center justify-center rounded-md bg-blue-400 px-3 text-2xs leading-4 font-medium whitespace-nowrap text-white hover:bg-blue-500 active:bg-blue-600">Sign up free</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="navbar  flex items-center min-h-8.5">
+    <div class="header-container flex items-center">
+                <a class="nav-link is-first" href="/">Home</a>
+                <a class="nav-link" href="/screener">Screener</a>
+                <a class="nav-link" href="/map">Maps</a>
+                <a class="nav-link" href="javascript:window.openEliteFeaturesDialog?.(&#x27;multi-charts&#x27;, event)">Charts</a>
+                <a class="nav-link" href="/news">News</a>
+                <a class="nav-link" href="/groups">Groups</a>
+                <a class="nav-link" href="/insidertrading">Insider</a>
+                <a class="nav-link" href="/futures">Futures</a>
+                <a class="nav-link" href="/forex">Forex</a>
+                <a class="nav-link" href="/crypto">Crypto</a>
+                <a class="nav-link" href="/portfolio">Portfolio</a>
+                <a class="nav-link" href="/calendar/earnings/season-preview">Calendar</a>
+        <div class="relative flex-1">
+            <div class="absolute inset-0 flex items-center justify-end">
+                <div id="time" class="w-full"></div>
+            </div>
+        </div>
+        <div class="mx-2 h-3.5 w-px bg-gray-200/30 dark:bg-gray-500/30"></div>
+            <a class="nav-link is-elite" href="/elite">Pricing</a>
+        <div id="js-knowledge-base-static">
+            <a href="/knowledge-base" class="nav-link is-help px-4">Help</a>
+        </div>
+            <div id="js-knowledge-base-root" class="hidden"></div>
+        
+
+    </div>
+</div>
+
+          <script>
+            // Dropping the published-page theme pin lets an explicit toggle win over it.
+            function reloadPage () {
+              var url = new URL(location.href)
+              if (!url.searchParams.has('th')) { location.reload(); return }
+              url.searchParams.delete('th')
+              location.replace(url.toString())
+            }
+            function setChartThemeCookie(chartsTheme) {
+              fetch('/api/set_cookie?cookie=chartsTheme&value=' + chartsTheme ).catch(function(){}).then(function(){
+                window.gtag && window.gtag('event', 'click', { event_category: 'theme', event_label: 'toggle', value: chartsTheme, eventCallback: reloadPage });
+                setTimeout(reloadPage,1000);
+              })
+            }
+          </script><div id="js-feature-discovery-root"></div>    <div class="w-full flex justify-center dark:bg-violet-800 bg-violet-600 font-sans" data-fv-notice="promo-api" data-nosnippet>
+        <div class="h-10 relative flex gap-2.5 items-center dark:text-violet-200 text-white">
+            <div class="py-3 text-sm font-medium dark:text-violet-200 text-violet-100">
+                    <p><span class="text-white">The Finviz API:</span>&nbsp;&nbsp;&nbsp;Higher Limits, Clearer Data, and More Ways to Connect</p>
+            </div>
+            <a title="Get Started Now" href="/blog/our-upgraded-api-higher-limits-clearer-data-and-more-ways-to-connect/" class="inline-flex items-center justify-center rounded-md border-none outline-none ring-gray-200 font-medium focus-visible:ring-2 dark:ring-gray-500 bg-violet-500 hover:bg-gray-200/50 dark:bg-gray-500/30 dark:text-gray-50 text-white dark:hover:bg-gray-500/50 h-7 min-w-8 px-2.5 text-2xs" onclick="window.FinvizCloseNoticeRedirect(event, 'promo-api', this.href)">Get Started Now</a>
+            <a title="Close" class="flex h-6 w-6 items-center justify-center" style="filter: drop-shadow(0.5px 0.5px 0px rgba(34, 38, 47, 0.8));" href="javascript:void(0)" onclick="window.FinvizCloseNotice('promo-api');">
+                <svg width="20" height="20" class="shrink-0">
+    <use href="/assets/dist-icons/icons.4ede4ca4.svg#clear"/>
+</svg>
+            </a>
+        </div>
+    </div><div class="content "><div class="fv-container "><script>window.location = '/search?p=ZZZZC100NOSYMBOL20261012';</script><tr><td align="center" class="body-text">Ticker <b>"ZZZZC100NOSYMBOL20261012"</b> not found.<br><a href="search?p=ZZZZC100NOSYMBOL20261012" class="tab-link-u">Search <b>"ZZZZC100NOSYMBOL20261012"</b></a><br><br><br><br>We cover only stocks and ETFs listed on NYSE, NASDAQ, and AMEX. International and OTC/PK are not available.<script type="text/javascript">function StocktwitsInit() { }</script></td></tr></div></div>
+            <div class="footer" style="margin-top: 20px;padding-bottom: 215px">
+                <div class="footer_links">
+                    <a class="tab-link" href="/affiliate">Affiliate</a>
+                    <span class="footer_dot"> • </span>
+                    <a class="tab-link" href="/advertise">Advertise</a>
+                    <span class="footer_dot"> • </span>
+                    <a class="tab-link" href="/api-and-exports">API and Exports</a>
+                    <span class="footer_dot"> • </span>
+                    <a class="tab-link" href="/careers">Careers</a>
+                    <span class="footer_dot"> • </span>
+                    <a class="tab-link" href="/contact">Contact</a>
+                    <span class="footer_dot"> • </span>
+                    <a class="tab-link" href="/blog">Blog</a>
+                    <span class="footer_dot"> • </span>
+                    <a class="tab-link" href="/knowledge-base">Help</a>
+                    <span class="footer_dot"> • </span>
+                    <a class="tab-link" href="/privacy">Privacy</a>
+                    <span class="footer_dot"> • </span>
+                    <a class="tab-link" href="https://x.com/finviz_com" target="_blank">Follow us on X</a>    </div>
+    Stock quotes delayed by 1 minute. Futures and options delayed by 15 minutes.
+    <br>
+    Copyright © 2007-2026 Finviz.com. All Rights Reserved.
+    
+    <a href="/api/v1/screener-export-csv" class="internal-data-link" rel="nofollow">Export All Screener Data (CSV)</a>
+</div><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-537M973G" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript><script>window.addEventListener('Finviz:SearchFocus', () => window.SearchFocus(), {once: true});</script><script>window.GoogleOneTapConfig={clientId:'1033214272054-5de9gp5rii5o7cuv4qf1ephgaic4r1e3.apps.googleusercontent.com',autoSelect:true};</script>
+<script src="/assets/dist-legacy/1378.v1.017bdd92.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/google_one_tap.v1.f61e7d0d.js" onerror="window.handleScriptNotLoaded(this)" defer></script>    <script>
+      function getSystemTheme() {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'Dark';
+        }
+        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          return 'Light';
+        }
+        return 'No Preference';
+      }
+
+      var systemTheme = getSystemTheme()
+
+      const webdriver = navigator.webdriver === true
+      const isBotFlagHeadlessChrome = navigator.userAgent.includes('HeadlessChrome')
+      const isBotFlagFvSegmentAudit = document.cookie.includes('fv_segment_audit=true')
+      const isBotFlagNoLanguages = navigator.languages.length === 0
+      const isChrome = navigator.userAgent.includes('Chrome')
+      const isBotFlagChromeWithoutRuntime = isChrome && typeof window.chrome === 'undefined'
+      const isBotFlagChromeWithoutPlugins = isChrome && navigator.plugins.length === 0
+      const isBotFlagChromeWithoutDeviceMemory = isChrome && navigator.deviceMemory === undefined
+      const isBotFlagNoOuterSize = window.outerWidth === 0 && window.innerWidth > 0
+      const isBotFlagAutomationGlobals = (
+        ['__playwright__', '__pw_manual', '__PW_inspect', '_phantom', 'callPhantom', '__nightmare', 'domAutomation', 'domAutomationController', 'Cypress', '__selenium_unwrapped', '__selenium_evaluate', '__webdriver_evaluate', '__webdriver_script_function', '__webdriver_script_func', '__webdriver_script_fn', '__webdriver_unwrapped', '__driver_evaluate', '__driver_unwrapped', '__fxdriver_evaluate', '__fxdriver_unwrapped'].some(function(n) { return n in window }) ||
+        Object.getOwnPropertyNames(document).some(function(n) { return n.indexOf('$cdc_') === 0 || n.indexOf('$chrome_asyncScriptInfo') === 0 })
+      )
+      const fvt = window.getFvt?.()
+
+      dataLayer.push({
+            event: 'ga_context',
+            
+            dimension1: 'NotLoggedIn',
+            dimension3: window.devicePixelRatio,
+            layoutTheme: 'dark',
+            systemTheme: systemTheme,
+            bundle: 'legacy',
+            prefTheme: 'dark',
+            themeFlag: 'modern',
+            innerWidth: window.innerWidth,
+            innerHeight: window.innerHeight,
+            webdriver: webdriver,
+            isBotFlagHeadlessChrome: isBotFlagHeadlessChrome,
+            isBotFlagNoLanguages: isBotFlagNoLanguages,
+            isBotFlagChromeWithoutRuntime: isBotFlagChromeWithoutRuntime,
+            isBotFlagChromeWithoutPlugins: isBotFlagChromeWithoutPlugins,
+            isBotFlagChromeWithoutDeviceMemory: isBotFlagChromeWithoutDeviceMemory,
+            isBotFlagNoOuterSize: isBotFlagNoOuterSize,
+            isBotFlagFvSegmentAudit: isBotFlagFvSegmentAudit,
+            isBotFlagAutomationGlobals: isBotFlagAutomationGlobals,
+            isBot: isBotFlagHeadlessChrome || webdriver || isBotFlagFvSegmentAudit,
+            icAdsVariant: 'control',
+            ...(fvt && { anon_id: fvt })
+          });
+
+      if(window.__fv_deferred_gtag){
+        window.__fv_deferred_gtag.forEach(function(e){
+          if(window.gtag){ window.gtag('event',e[0],e[1]); }
+        });
+      }
+
+    </script>    <script type="text/javascript">
+        window._qevents = window._qevents || [];
+
+        (function() {
+            var elem = document.createElement('script');
+            elem.src = (document.location.protocol == "https:" ? "https://secure" : "http://edge") + ".quantserve.com/quant.js";
+            elem.async = true;
+            elem.type = "text/javascript";
+            var scpt = document.getElementsByTagName('script')[0];
+            scpt.parentNode.insertBefore(elem, scpt);
+        })();
+
+        window._qevents.push({
+            qacct:"p-c2W8esUZ6Q8oA"
+        });
+    </script>
+    <noscript>
+        <div style="display:none;">
+            <img src="//pixel.quantserve.com/pixel/p-c2W8esUZ6Q8oA.gif" border="0" height="1" width="1" alt="Quantcast"/>
+        </div>
+    </noscript><div id="IC_D_1x1_1"class="relative overflow-hidden flex items-center justify-center w-full mx-auto"></div><div id="modal-elite-ad" class="modal-elite-ad">
+                            <div id="modal-elite-ad_content" class="modal-elite-ad_content">
+			                    <button id="modal-elite-ad-close" type="button" class="modal-elite-ad_close">×</button>
+
+                                <!--<div id="modal-elite-ad-content-0" style="display: none">
+			                        <h2>Ever heard of Finviz Elite?</h2>
+                                    <p>
+                                        Our premium service offers you real-time quotes, advanced visualizations, technical studies, and much more.<br>
+                                        Become Elite and make informed financial decisions.
+                                    </p>
+                                    <a href="/elite?utm_source=finviz&utm_medium=banner&utm_campaign=modal-0" id="modal-elite-ad-btn-0" class="" target="_blank">Find out more</a>
+                                </div>-->
+
+                                <div id="modal-elite-ad-content-1" style="display: block">
+			                        <h2>Upgrade your Finviz experience</h2>
+                                    <p>
+                                        Join thousands of traders who make more informed decisions with&nbsp;our&nbsp;premium features.
+                                        Real-time quotes, advanced&nbsp;visualizations, alerts, and much more.
+                                    </p>
+                                    <a href="/elite?utm_source=finviz&utm_medium=banner&utm_campaign=modal-1" id="modal-elite-ad-btn-1" class="modal-elite_button" target="_blank">Learn more about Finviz Elite</a>
+                                </div>
+                            </div>
+                         </div><script src="/assets/dist-legacy/script/pv.v1.b5e0f9bc.js" async></script><script>window.renderScriptNotLoaded();</script>
+<div id="js-knowledge-base-root"></div><script src="/assets/dist-legacy/5179.v1.5b59e078.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/5432.v1.534edc19.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/1378.v1.017bdd92.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/8672.v1.24256d24.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/2019.v1.7f3297b0.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/8028.v1.c4fcc176.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/816.v1.ae333d12.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/1571.v1.54eb8840.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/6000.v1.42ec9825.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/635.v1.96915f9f.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/4482.v1.724887d0.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/4839.v1.93268cf1.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/1417.v1.1780481d.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/knowledge_base_dialog.v1.196214c8.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/1378.v1.017bdd92.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/8672.v1.24256d24.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/8028.v1.c4fcc176.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/1571.v1.54eb8840.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script src="/assets/dist-legacy/elite_features_dialog.v1.6e650cbd.js" onerror="window.handleScriptNotLoaded(this)" defer></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4bc70e2c01a94c73b74392e4234840661791215815920" integrity="sha512-L0ha0OXavK/8okipN9F8BtP84dg9DUhPERbBXzwI6dgTA55d2+yweo3pn5CSFYs45/r8md2+xvUPtTdvTNRfjA==" data-cf-beacon='{"version":"2024.11.0","token":"e53f08f6c9e04bfd9760701085ec93b4","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

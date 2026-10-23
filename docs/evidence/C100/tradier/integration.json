@@ -1,0 +1,115 @@
+{
+  "provider": "tradier",
+  "descriptor_reference": "opendata.data.providers.tradier.provider:PROVIDER",
+  "imports": {
+    "catalog": "from opendata.data.providers.tradier.provider import PROVIDER as TRADIER_PROVIDER",
+    "models": "from opendata.data.models.tradier import TradierEquityHistorical, TradierEtfHistorical, TradierEquityQuote, TradierEquitySearch, TradierOptionChain",
+    "registration": "from opendata.data.providers.tradier.registration import register as register_tradier"
+  },
+  "provider_collection_entry": "TRADIER_PROVIDER",
+  "bindings": [
+    {
+      "module": "opendata.data.providers.tradier.models.equity_historical",
+      "class_name": "TradierEquityHistoricalFetcher",
+      "canonical_model_id": "EquityHistorical",
+      "domain": "tradier_equity_historical"
+    },
+    {
+      "module": "opendata.data.providers.tradier.models.etf_historical",
+      "class_name": "TradierEtfHistoricalFetcher",
+      "canonical_model_id": "EtfHistorical",
+      "domain": "tradier_etf_historical"
+    },
+    {
+      "module": "opendata.data.providers.tradier.models.equity_quote",
+      "class_name": "TradierEquityQuoteFetcher",
+      "canonical_model_id": "EquityQuote",
+      "domain": "tradier_equity_quote"
+    },
+    {
+      "module": "opendata.data.providers.tradier.models.equity_search",
+      "class_name": "TradierEquitySearchFetcher",
+      "canonical_model_id": "EquitySearch",
+      "domain": "tradier_equity_search"
+    },
+    {
+      "module": "opendata.data.providers.tradier.models.options_chains",
+      "class_name": "TradierOptionsChainsFetcher",
+      "canonical_model_id": "OptionsChains",
+      "domain": "tradier_options_chains"
+    }
+  ],
+  "domains": {
+    "tradier_equity_historical": {
+      "display_name": "Tradier美股历史行情",
+      "rest_path": "tradier/equity/historical",
+      "contract": "TradierEquityHistorical",
+      "temporal_kind": "series",
+      "time_field": "date",
+      "natural_key": ["symbol", "date"],
+      "filter_dims": ["symbol", "date", "interval", "dividend_adjustment_semantics", "split_adjustment_semantics"],
+      "storage_mode": "upsert",
+      "permissions": ["query", "store", "export"]
+    },
+    "tradier_etf_historical": {
+      "display_name": "Tradier ETF历史行情",
+      "rest_path": "tradier/etf/historical",
+      "contract": "TradierEtfHistorical",
+      "temporal_kind": "series",
+      "time_field": "date",
+      "natural_key": ["symbol", "date"],
+      "filter_dims": ["symbol", "date", "interval", "dividend_adjustment_semantics", "split_adjustment_semantics"],
+      "storage_mode": "upsert",
+      "permissions": ["query", "store", "export"]
+    },
+    "tradier_equity_quote": {
+      "display_name": "Tradier美股报价快照",
+      "rest_path": "tradier/equity/quote",
+      "contract": "TradierEquityQuote",
+      "temporal_kind": "snapshot",
+      "time_field": null,
+      "natural_key": ["symbol"],
+      "filter_dims": ["symbol", "security_type"],
+      "storage_mode": "transient",
+      "permissions": ["query"]
+    },
+    "tradier_equity_search": {
+      "display_name": "Tradier证券目录检索",
+      "rest_path": "tradier/equity/search",
+      "contract": "TradierEquitySearch",
+      "temporal_kind": "snapshot",
+      "time_field": null,
+      "natural_key": ["symbol", "exchange"],
+      "filter_dims": ["symbol", "exchange", "security_type"],
+      "storage_mode": "transient",
+      "permissions": ["query"]
+    },
+    "tradier_options_chains": {
+      "display_name": "Tradier期权链快照",
+      "rest_path": "tradier/options/chains",
+      "contract": "TradierOptionChain",
+      "temporal_kind": "snapshot",
+      "time_field": null,
+      "natural_key": ["symbol"],
+      "filter_dims": ["symbol", "underlying", "expiration_date", "option_type", "strike"],
+      "storage_mode": "transient",
+      "permissions": ["query"]
+    }
+  },
+  "sources": {
+    "historical": "https://docs.tradier.com/reference/brokerage-api-markets-get-history",
+    "historical_guide_shape": "https://docs.tradier.com/docs/historical",
+    "historical_adjustment": "https://docs.tradier.com/docs/historical-data",
+    "quotes": "https://docs.tradier.com/reference/brokerage-api-markets-get-quotes",
+    "search": "https://docs.tradier.com/reference/brokerage-api-markets-get-search",
+    "lookup": "https://docs.tradier.com/reference/brokerage-api-markets-get-lookup",
+    "options_chains": "https://docs.tradier.com/reference/brokerage-api-markets-get-options-chains",
+    "rate_limits": "https://docs.tradier.com/docs/rate-limiting",
+    "response_format": "https://docs.tradier.com/docs/response-format"
+  },
+  "notes": [
+    "All provider/model/domain wiring is proposed here; central catalog, domains.yaml, models/__init__.py, authority manifests, and engine files are outside this slice.",
+    "Tradier's historical-data guide says prices may not be dividend adjusted. The official guide does not specify split adjustment, so neither output contract asserts a split-adjusted or unadjusted state.",
+    "Historical, search, quote, and chain APIs document one response page. The adapter does not invent pagination and rejects record-limit overflow rather than truncating."
+  ]
+}

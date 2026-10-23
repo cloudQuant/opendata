@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "candidate_id": "central-wiring-batch5-count-adjudication",
+  "status": "ADJUDICATED_STATIC_CANDIDATE_NOT_NEW_RUNTIME",
+  "created_at_utc": "2026-10-12T19:50:49Z",
+  "supersedes_label_only": "329 public_contract_model_exports",
+  "baseline_candidate": {
+    "path": "docs/evidence/C100/integration/candidates/central-wiring-batch5-candidate.json",
+    "sha256": "775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e"
+  },
+  "runtime_observation": {
+    "path": "docs/evidence/C100/integration/runs/central-wiring-20261012T193703Z-batch5-sloos-retake1/run.json",
+    "sha256": "2e9251d4b9d54f7df6ebc46b407bc112d0d4af16afa7b973e3dd6245e48e7f81"
+  },
+  "counts": {
+    "fixed_identities": 350,
+    "fixed_bound": 317,
+    "fixed_unbound": 33,
+    "domain_specs": 337,
+    "provider_model_legs": 350,
+    "provider_descriptors": 34,
+    "public_all_symbols": 330,
+    "issubclass_contract_model_exports_including_base": 326,
+    "non_base_contract_model_class_exports": 325,
+    "non_contract_public_symbols": [
+      "BlsCatalogPage",
+      "FredOutputType",
+      "FredSeniorLoanOfficerSurveyQuery",
+      "FredTransformUnits"
+    ]
+  },
+  "domain_capability_adjudication": {
+    "domain_ids_without_capability": [
+      "futures_fundamentals",
+      "stock_adjust"
+    ],
+    "classification": "LEGACY_DOMAIN_CAPABILITY_GAP",
+    "not_queryable": true,
+    "not_covered_or_complete": true,
+    "any_additional_domain_or_capability_difference": "FAIL"
+  },
+  "lineage_delta": [
+    {
+      "source": "finviz",
+      "canonical_model": "PricePerformance",
+      "domain": "finviz_price_performance",
+      "fetcher": "opendata.data.providers.finviz.models.price_performance:FinvizPricePerformanceFetcher",
+      "contract": "FinvizPricePerformance"
+    },
+    {
+      "source": "finviz",
+      "canonical_model": "EtfPricePerformance",
+      "domain": "finviz_etf_price_performance",
+      "fetcher": "opendata.data.providers.finviz.models.price_performance:FinvizEtfPricePerformanceFetcher",
+      "contract": "FinvizEtfPricePerformance"
+    },
+    {
+      "source": "fred",
+      "canonical_model": "SeniorLoanOfficerSurvey",
+      "domain": "senior_loan_officer_survey",
+      "fetcher": "opendata.data.providers.fred.models.sloos:FredSeniorLoanOfficerSurveyFetcher",
+      "contract": "FredSeniorLoanOfficerSurvey"
+    }
+  ],
+  "missing_fixed_identities": [
+    [
+      "biztoc",
+      "WorldNews"
+    ],
+    [
+      "cboe",
+      "FuturesCurve"
+    ],
+    [
+      "cboe",
+      "IndexSnapshots"
+    ],
+    [
+      "econdb",
+      "CountryProfile"
+    ],
+    [
+      "econdb",
+      "ExportDestinations"
+    ],
+    [
+      "finviz",
+      "EquityScreener"
+    ],
+    [
+      "government_us",
+      "TreasuryPrices"
+    ],
+    [
+      "intrinio",
+      "OptionsSnapshots"
+    ],
+    [
+      "seeking_alpha",
+      "CalendarEarnings"
+    ],
+    [
+      "seeking_alpha",
+      "ForwardEpsEstimates"
+    ],
+    [
+      "seeking_alpha",
+      "ForwardSalesEstimates"
+    ],
+    [
+      "stockgrid",
+      "ShortVolume"
+    ],
+    [
+      "tmx",
+      "AvailableIndices"
+    ],
+    [
+      "tmx",
+      "BondPrices"
+    ],
+    [
+      "tmx",
+      "CalendarEarnings"
+    ],
+    [
+      "tmx",
+      "CompanyNews"
+    ],
+    [
+      "tmx",
+      "EquityGainers"
+    ],
+    [
+      "tmx",
+      "EtfCountries"
+    ],
+    [
+      "tmx",
+      "EtfHistorical"
+    ],
+    [
+      "tmx",
+      "EtfHoldings"
+    ],
+    [
+      "tmx",
+      "EtfInfo"
+    ],
+    [
+      "tmx",
+      "EtfSearch"
+    ],
+    [
+      "tmx",
+      "EtfSectors"
+    ],
+    [
+      "tmx",
+      "IndexSectors"
+    ],
+    [
+      "tmx",
+      "IndexSnapshots"
+    ],
+    [
+      "tmx",
+      "InsiderTrading"
+    ],
+    [
+      "tmx",
+      "OptionsChains"
+    ],
+    [
+      "tmx",
+      "TreasuryPrices"
+    ],
+    [
+      "wsj",
+      "ETFActive"
+    ],
+    [
+      "wsj",
+      "ETFGainers"
+    ],
+    [
+      "wsj",
+      "ETFLosers"
+    ],
+    [
+      "yfinance",
+      "AvailableIndices"
+    ],
+    [
+      "yfinance",
+      "FuturesCurve"
+    ]
+  ],
+  "runtime_status_unchanged": "FAIL_GUARDED_METADATA_SMOKE"
+}

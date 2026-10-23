@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "freeze_id": "central-wiring-batch5-adjudicated-static-freeze",
+  "created_at_utc": "2026-10-12T19:50:49Z",
+  "status": "STATIC_SOURCE_FREEZE_NO_NEW_RUNTIME",
+  "runtime_receipt": {
+    "path": "docs/evidence/C100/integration/runs/central-wiring-20261012T193703Z-batch5-sloos-retake1/run.json",
+    "sha256": "2e9251d4b9d54f7df6ebc46b407bc112d0d4af16afa7b973e3dd6245e48e7f81",
+    "runtime_status": "FAIL_GUARDED_METADATA_SMOKE",
+    "exit_code": 1
+  },
+  "adjudication": {
+    "path": "docs/evidence/C100/integration/runs/central-wiring-20261012T193703Z-batch5-sloos-retake1/batch5-adjudication.json",
+    "sha256": "90407a6be98b5dc514c40d18dad5e46e392c175394c4abaac06ad15dc012d2a9"
+  },
+  "candidate_count_addendum": {
+    "path": "docs/evidence/C100/integration/candidates/central-wiring-batch5-count-adjudication.json",
+    "sha256": "2a929fd8614af09e28aa2ae16fa781c7da49d7692dcd6a3b6c78f2118c0906de"
+  },
+  "judge_script": {
+    "path": "docs/evidence/C100/integration/runs/central-wiring-20261012T193703Z-batch5-sloos-retake1/judge_batch5_adjudication.py",
+    "sha256": "efdadff9773c613bcc599650e227741991477c78ddfcf0705c860a23a80a47f0",
+    "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /Users/yunjinqi/opt/anaconda3/bin/conda run -n base python docs/evidence/C100/integration/runs/central-wiring-20261012T193703Z-batch5-sloos-retake1/judge_batch5_adjudication.py"
+  },
+  "git": {
+    "head": "85f95a40a57995c9e46c9a3be1528f416b4f0c70",
+    "head_domains_file_sha256": "0662f5e55e455cfbf30b43e7a203956d5b4bc9f154dee2103f25f1cbfaecee5d"
+  },
+  "preimage": {
+    "archive_path": "docs/evidence/C100/integration/preimages/central-wiring-batch5-preimages.tar",
+    "archive_sha256": "199504b85daa64da366036868cfe675a100860718c09b277714447af398251dc",
+    "domains_yaml_sha256": "d2452e0abc3509441f5eb3cf4d2d01da8f71d1f55c1f8125c2457a2cca4c90ee",
+    "domains_yaml_sha256_runtime_before": "59e3888662d4ccc575db2421d38f76e34592ca9362245db6d14ab35f2ec8aee5",
+    "domains_yaml_sha256_runtime_after": "59e3888662d4ccc575db2421d38f76e34592ca9362245db6d14ab35f2ec8aee5",
+    "archive_is_earlier_pre_sloos_snapshot": true
+  },
+  "core_hashes_from_retaken_runtime_and_current_files": {
+    "opendata/data/domains.py": "2d5ecdea36d743a89a3cdf04ce02d90810d306ac8d0390202b48ae3f57fd1e77",
+    "opendata/data/domains.yaml": "59e3888662d4ccc575db2421d38f76e34592ca9362245db6d14ab35f2ec8aee5",
+    "opendata/data/models/__init__.py": "9dac556073190eff37c045b0c3a1880709840453ee12919534032f3428bb2509",
+    "opendata/data/providers/catalog.py": "7e0b6ec404b032984fdc06ca3da710e8c134d6d9c9a7a1d9b69238b0c80493d0",
+    "opendata/data/provider.py": "1e3c88859feda61a05bf9fcf0a6aba3b99d71769d00bba034dda4212835537f5",
+    "opendata/data/registry.py": "e9425d7b285bf5a09984b835a6c77cbd720be0b92fe8f9519bec75d2e202405b",
+    "opendata/data/capability.py": "9921e3ea3ad9ff18366c631c794109bb9fcc620ffbea306a211781a5753aab97",
+    "opendata/data/providers/_engine/spec.py": "85f33cdf6b262a7e15df293351719b550e1fcd89e5147c469595299e68b54dd3",
+    "opendata/data/providers/_engine/http_json.py": "9a6146f526ef2e6662baf00929eb89c2354c170461d58dbc8ef6224de977d439",
+    "opendata/data/providers/_engine/row_expansion.py": "561a0fabb17c51faa121e06fb23c22aea6b4f0a1fdb648b0f8d2062d30369bf4",
+    "opendata/data/http_client.py": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+    "opendata/data/request_budget.py": "3e5688689bbfff1f65d39d58be9eb5aacf3853d4a4f4c2e28e01aa85ce8a64ad",
+    "opendata/services/provider_models.py": "bbca5d7a1e7d46ff8b127cd9f4e25fa10ce318493b52cd2a1bbc74ba528529b4",
+    "opendata/services/provider_model_query.py": "b4af8e041d03b59772d11658efef035cd58e2efb53e78f239054ed6d8329c163",
+    "opendata/api/provider_models.py": "c2362a7ef8b20db1c129148d3698846a6ca0bbccfc2eaa81de6e192def728e20",
+    "opendata/api/provider_model_query.py": "9cd250b50527fe3775a52f6baefc82aaba5a966892cc1ab7372ff0a9543a496e",
+    "opendata/data/providers/fred/provider.py": "1407bfb6a930e8366346273e54bed652c71ce541e9f3fcee7ac52e4febe6a4fb",
+    "opendata/data/providers/fred/models/sloos.py": "d960cb231bc4b9cc51f4df2f02111c7c18f630f9e223a67bda665908a36e0f39",
+    "opendata/data/providers/fred/sloos_series.py": "2b45fe84a37ffb2596f1e22c6b50fc4b028ccf24c924d410041eed550d2fe228",
+    "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
+    "docs/evidence/C100/fred-sloos/source-freeze-v2.json": "1166b7e9b821dedad4f52cb80d197b5baae3545d11183a142b89d704429ea893",
+    "docs/evidence/C100/acceptance-fred-sloos/runs/20261012T181729.721761Z/receipt.json": "6bbf32147907ddc9729865cbe54e7b7446bd7f47e93b5d345883e2e1de6cf4c5"
+  },
+  "sloos_source_hashes": {
+    "opendata/data/providers/fred/provider.py": "1407bfb6a930e8366346273e54bed652c71ce541e9f3fcee7ac52e4febe6a4fb",
+    "opendata/data/providers/fred/models/sloos.py": "d960cb231bc4b9cc51f4df2f02111c7c18f630f9e223a67bda665908a36e0f39",
+    "opendata/data/providers/fred/sloos_series.py": "2b45fe84a37ffb2596f1e22c6b50fc4b028ccf24c924d410041eed550d2fe228",
+    "opendata/data/models/fred_sloos.py": "ce3714862f9841d4f221274addfb64a086f6e46eda77a9aafde0b796c61741ce",
+    "docs/evidence/C100/fred-sloos/source-freeze-v2.json": "1166b7e9b821dedad4f52cb80d197b5baae3545d11183a142b89d704429ea893",
+    "docs/evidence/C100/acceptance-fred-sloos/runs/20261012T181729.721761Z/receipt.json": "6bbf32147907ddc9729865cbe54e7b7446bd7f47e93b5d345883e2e1de6cf4c5"
+  },
+  "static_context_hashes": {
+    "tests/test_domains.py": "20b1b726e3df907eb3109cfa87c3d5a86be6d216c69832cfac3a4e29aa89d890",
+    "opendata/data/providers/ths/endpoint_map.yaml": "b391ee24ad40a1eefc306083cddbd10c463dfd0f4f13477bb90cb98ecd99e777",
+    "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5"
+  },
+  "source_facts": {
+    "legacy_domain_gap_ids": [
+      "futures_fundamentals",
+      "stock_adjust"
+    ],
+    "legacy_domain_raw_fields": {
+      "stock_adjust": {
+        "display_name": "A股复权因子",
+        "rest_path": "stock/adjust",
+        "contract": "AdjustFactor",
+        "priority": "P0"
+      },
+      "futures_fundamentals": {
+        "display_name": "期货合约基本面",
+        "rest_path": "futures/fundamentals",
+        "contract": "FuturesFundamentals",
+        "priority": "P0"
+      }
+    },
+    "legacy_domains_have_no_query_semantics": true,
+    "test_domains_p0_assertion_methods": {
+      "test_all_p0_domains_registered": 76,
+      "test_explicit_p0_priorities_match_requirement_scope": 89
+    },
+    "ths_futures_fundamentals_endpoint": {
+      "path": "/api/futures/fundamentals/indicators-historical",
+      "status": "client_only",
+      "domain": "futures_fundamentals",
+      "endpoint_map_line": 147,
+      "endpoint_map_text": "- {section: futures-fundamentals, family: 期货, method: GET, path: /api/futures/fundamentals/indicators-historical, title: '期货F10宏观指标历史数据', status: client_only, domain: futures_fundamentals, scenario: '期货 F10 宏观指标：端外暂不开放'}"
+    },
+    "sloos": {
+      "identity": [
+        "fred",
+        "SeniorLoanOfficerSurvey"
+      ],
+      "domain": "senior_loan_officer_survey",
+      "verified": false,
+      "scenario_present": false,
+      "domain_semantics": {
+        "contract": "FredSeniorLoanOfficerSurvey",
+        "contract_fields": [
+          "bank_size",
+          "board_series_id",
+          "categories_are_additive",
+          "category",
+          "date",
+          "fred_series_id",
+          "loan_type",
+          "measure",
+          "panel",
+          "selection_scope",
+          "source_frequency_code",
+          "source_unit_label",
+          "source_unit_multiplier",
+          "symbol",
+          "terms",
+          "title",
+          "transform",
+          "value"
+        ],
+        "display_name": "FRED Senior Loan Officer Survey",
+        "filter_dims": [
+          "date",
+          "symbol",
+          "category",
+          "transform"
+        ],
+        "natural_key": [
+          "date",
+          "symbol",
+          "category",
+          "transform"
+        ],
+        "permissions": [
+          "query"
+        ],
+        "priority": null,
+        "rest_path": "fred/economy/survey/senior-loan-officer",
+        "storage_mode": "transient",
+        "temporal_kind": "series",
+        "time_field": "date"
+      }
+    },
+    "batch5_domain_diff": {
+      "added": [
+        "senior_loan_officer_survey"
+      ],
+      "deleted": [],
+      "changed_existing": []
+    },
+    "batch5_binding_delta": [
+      {
+        "source": "finviz",
+        "canonical_model": "PricePerformance",
+        "domain": "finviz_price_performance",
+        "fetcher": "opendata.data.providers.finviz.models.price_performance:FinvizPricePerformanceFetcher",
+        "contract": "FinvizPricePerformance"
+      },
+      {
+        "source": "finviz",
+        "canonical_model": "EtfPricePerformance",
+        "domain": "finviz_etf_price_performance",
+        "fetcher": "opendata.data.providers.finviz.models.price_performance:FinvizEtfPricePerformanceFetcher",
+        "contract": "FinvizEtfPricePerformance"
+      },
+      {
+        "source": "fred",
+        "canonical_model": "SeniorLoanOfficerSurvey",
+        "domain": "senior_loan_officer_survey",
+        "fetcher": "opendata.data.providers.fred.models.sloos:FredSeniorLoanOfficerSurveyFetcher",
+        "contract": "FredSeniorLoanOfficerSurvey"
+      }
+    ],
+    "fixed_identity_counts": {
+      "total": 350,
+      "bound": 317,
+      "unbound": 33
+    },
+    "export_count_classification": {
+      "public_all_symbols": 330,
+      "issubclass_contract_model_exports_including_base": 326,
+      "non_base_contract_model_class_exports": 325,
+      "base_class_export": "ContractModel",
+      "non_contract_symbols": [
+        "BlsCatalogPage",
+        "FredOutputType",
+        "FredSeniorLoanOfficerSurveyQuery",
+        "FredTransformUnits"
+      ],
+      "business_model_count_claim": false,
+      "definition": "The 326 runtime issubclass count includes ContractModel itself because issubclass(ContractModel, ContractModel) is true; 325 are non-base subclasses. These are export-class counts, not a business-model count."
+    },
+    "no_freeform_capability_notes_in_summary": true
+  },
+  "no_new_runtime_execution": true,
+  "acceptance": "NOT_CLAIMED; independent central/provider acceptance remains separate"
+}

@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "central-wiring-batch5-exact-legacy-domain-gap",
+  "created_at_utc": "2026-10-12T19:50:49Z",
+  "status": "ADJUDICATED_WITH_EXACT_LEGACY_DOMAIN_CAPABILITY_GAP",
+  "runtime_execution": false,
+  "runtime_receipt": {
+    "path": "docs/evidence/C100/integration/runs/central-wiring-20261012T193703Z-batch5-sloos-retake1/run.json",
+    "sha256": "2e9251d4b9d54f7df6ebc46b407bc112d0d4af16afa7b973e3dd6245e48e7f81",
+    "status": "FAIL_GUARDED_METADATA_SMOKE",
+    "exit_code": 1
+  },
+  "scope": "Static adjudication of the recorded batch5 SLOOS metadata observation. No new product import, registry load, service query, or smoke was run.",
+  "adjudication": {
+    "allowed_domain_ids_without_capability": [
+      "futures_fundamentals",
+      "stock_adjust"
+    ],
+    "classification": "LEGACY_DOMAIN_CAPABILITY_GAP",
+    "queryable": false,
+    "complete_coverage_claim": false,
+    "reason": "Both unchanged P0 DomainSpecs contain only display_name/rest_path/contract/priority and have no capability binding or query semantics. tests/test_domains.py requires their P0 presence; THS documents the futures_fundamentals endpoint as client_only. These checks do not create provider capability, queryability, or source coverage.",
+    "all_other_domain_capability_gaps": "FAIL_IF_NONEMPTY",
+    "observed_capability_domains_without_domain": [],
+    "observed_query_contract_failure_count": 0,
+    "observed_output_contract_mismatch_count": 0
+  },
+  "domain_delta_from_archived_batch5_preimage": {
+    "added": [
+      "senior_loan_officer_survey"
+    ],
+    "deleted": [],
+    "changed_existing": [],
+    "expected_exact_addition": "senior_loan_officer_survey",
+    "legacy_domain_raw_entries_identical_across_head_preimage_current": true
+  },
+  "binding_lineage": {
+    "batch3_run": {
+      "path": "docs/evidence/C100/integration/runs/central-wiring-20261012T144316Z-batch3/run.json",
+      "sha256": "a1f9a75a1d36fc28129b8323c3e2bbf8a2e19d7b36e74dc6fb4964ed6a254c03",
+      "unique_identity_count": 347
+    },
+    "batch4_delta_run": {
+      "path": "docs/evidence/C100/integration/runs/central-wiring-20261012T175242Z-batch4-finviz-retake1/run.json",
+      "sha256": "cf5d49076d5c8bef35c2ceeb778dd452fb59776db57f36615bb0c62c1849f07e",
+      "identities": [
+        {
+          "source": "finviz",
+          "canonical_model": "PricePerformance",
+          "domain": "finviz_price_performance",
+          "fetcher": "opendata.data.providers.finviz.models.price_performance:FinvizPricePerformanceFetcher",
+          "contract": "FinvizPricePerformance"
+        },
+        {
+          "source": "finviz",
+          "canonical_model": "EtfPricePerformance",
+          "domain": "finviz_etf_price_performance",
+          "fetcher": "opendata.data.providers.finviz.models.price_performance:FinvizEtfPricePerformanceFetcher",
+          "contract": "FinvizEtfPricePerformance"
+        }
+      ]
+    },
+    "batch5_sloos_addition": {
+      "source": "fred",
+      "canonical_model": "SeniorLoanOfficerSurvey",
+      "domain": "senior_loan_officer_survey",
+      "fetcher": "opendata.data.providers.fred.models.sloos:FredSeniorLoanOfficerSurveyFetcher",
+      "contract": "FredSeniorLoanOfficerSurvey"
+    },
+    "current_unique_binding_identities": 350,
+    "current_binding_ids_equal_exact_lineage": true
+  },
+  "fixed_identity_reconciliation": {
+    "fixed_inventory_path": "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv",
+    "fixed_inventory_sha256": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5",
+    "fixed_identity_count": 350,
+    "fixed_bound_count": 317,
+    "fixed_unbound_count": 33,
+    "missing_fixed_identities": [
+      [
+        "biztoc",
+        "WorldNews"
+      ],
+      [
+        "cboe",
+        "FuturesCurve"
+      ],
+      [
+        "cboe",
+        "IndexSnapshots"
+      ],
+      [
+        "econdb",
+        "CountryProfile"
+      ],
+      [
+        "econdb",
+        "ExportDestinations"
+      ],
+      [
+        "finviz",
+        "EquityScreener"
+      ],
+      [
+        "government_us",
+        "TreasuryPrices"
+      ],
+      [
+        "intrinio",
+        "OptionsSnapshots"
+      ],
+      [
+        "seeking_alpha",
+        "CalendarEarnings"
+      ],
+      [
+        "seeking_alpha",
+        "ForwardEpsEstimates"
+      ],
+      [
+        "seeking_alpha",
+        "ForwardSalesEstimates"
+      ],
+      [
+        "stockgrid",
+        "ShortVolume"
+      ],
+      [
+        "tmx",
+        "AvailableIndices"
+      ],
+      [
+        "tmx",
+        "BondPrices"
+      ],
+      [
+        "tmx",
+        "CalendarEarnings"
+      ],
+      [
+        "tmx",
+        "CompanyNews"
+      ],
+      [
+        "tmx",
+        "EquityGainers"
+      ],
+      [
+        "tmx",
+        "EtfCountries"
+      ],
+      [
+        "tmx",
+        "EtfHistorical"
+      ],
+      [
+        "tmx",
+        "EtfHoldings"
+      ],
+      [
+        "tmx",
+        "EtfInfo"
+      ],
+      [
+        "tmx",
+        "EtfSearch"
+      ],
+      [
+        "tmx",
+        "EtfSectors"
+      ],
+      [
+        "tmx",
+        "IndexSectors"
+      ],
+      [
+        "tmx",
+        "IndexSnapshots"
+      ],
+      [
+        "tmx",
+        "InsiderTrading"
+      ],
+      [
+        "tmx",
+        "OptionsChains"
+      ],
+      [
+        "tmx",
+        "TreasuryPrices"
+      ],
+      [
+        "wsj",
+        "ETFActive"
+      ],
+      [
+        "wsj",
+        "ETFGainers"
+      ],
+      [
+        "wsj",
+        "ETFLosers"
+      ],
+      [
+        "yfinance",
+        "AvailableIndices"
+      ],
+      [
+        "yfinance",
+        "FuturesCurve"
+      ]
+    ],
+    "batch4_unbound_receipt": {
+      "path": "docs/evidence/C100/acceptance-central-batch4/runs/independent-retake-20261012T1855Z-priority-null/receipt.json",
+      "sha256": "59400c28c9f26d3e9343538dbada3d746030ea430cc116cd0641d823bc38fed5"
+    },
+    "batch4_unbound_count": 34,
+    "expected_missing_is_exact_batch4_unbound_minus_sloos": true,
+    "duplicate_runtime_identity_rows": []
+  },
+  "export_count_erratum": {
+    "public_all_symbols": 330,
+    "issubclass_contract_model_exports_including_base": 326,
+    "non_base_contract_model_class_exports": 325,
+    "base_class_export": "ContractModel",
+    "non_contract_symbols": [
+      "BlsCatalogPage",
+      "FredOutputType",
+      "FredSeniorLoanOfficerSurveyQuery",
+      "FredTransformUnits"
+    ],
+    "business_model_count_claim": false,
+    "definition": "The 326 runtime issubclass count includes ContractModel itself because issubclass(ContractModel, ContractModel) is true; 325 are non-base subclasses. These are export-class counts, not a business-model count."
+  },
+  "preserved_historical_artifacts": {
+    "old_candidate": {
+      "path": "docs/evidence/C100/integration/candidates/central-wiring-batch5-candidate.json",
+      "sha256": "775dd322e145d84f0a1a850d46fd5f0754814ac68445c3b02bab4a41239e047e"
+    },
+    "old_static_freeze": {
+      "path": "docs/evidence/C100/integration/candidates/central-wiring-batch5-static-freeze.json",
+      "sha256": "988bf1feef4b37cb9688ed4bd3377447b9a282ce2480898ea0fdd9e72392aaba"
+    },
+    "original_failed_smoke_receipts_modified": false
+  }
+}

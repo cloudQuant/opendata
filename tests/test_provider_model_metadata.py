@@ -286,10 +286,28 @@ def test_registry_listing_is_exact_and_an_empty_registry_stays_empty() -> None:
         assert client.get("/providers/models").json()["data"] == []
 
 
+def _mounted_api_paths(router: Any) -> set[str]:
+    # fastapi >=0.159 keeps include_router results as lazy _IncludedRouter
+    # wrappers instead of flattening APIRoute objects into .routes, so a flat
+    # isinstance() walk sees nothing on a fresh CI install.
+    paths: set[str] = set()
+    for route in router.routes:
+        included_router = getattr(route, "original_router", None)
+        include_context = getattr(route, "include_context", None)
+        if included_router is not None and include_context is not None:
+            paths.update(
+                include_context.prefix + sub_path
+                for sub_path in _mounted_api_paths(included_router)
+            )
+        elif isinstance(route, APIRoute):
+            paths.add(route.path)
+    return paths
+
+
 def test_metadata_routes_are_mounted_in_the_shared_api_router() -> None:
     from opendata.api import api_router
 
-    paths = {route.path for route in api_router.routes if isinstance(route, APIRoute)}
+    paths = _mounted_api_paths(api_router)
     assert "/providers/models" in paths
     assert "/providers/{source}/models/{model}/schema" in paths
 
