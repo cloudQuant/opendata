@@ -383,7 +383,13 @@ def test_the_gate_never_sets_the_release_token():
 @pytest.mark.parametrize(
     ("lines", "expected"),
     [
-        (['pytest tests -n 8 -m "not e2e"', 'pytest tests -m "not e2e" --cov-branch'], []),
+        (
+            [
+                'pytest tests -n 8 -m "not e2e"',
+                'pytest tests -m "not e2e" -o faulthandler_timeout=1200 --cov-branch',
+            ],
+            [],
+        ),
         (["pytest tests -n 8"], ["pytest tests -n 8"]),
         (['pytest tests -m "e2e"'], ['pytest tests -m "e2e"']),
         ([f"REDIS_URL= python -m pytest --no-cov {OWNED_MYSQL_E2E_NODE}"], []),

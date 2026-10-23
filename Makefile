@@ -93,7 +93,7 @@ test:
 	pytest tests -n 8 -m "not e2e"
 
 test-cov:
-	pytest tests -n 8 -m "not e2e" --cov-branch \
+	pytest tests -n auto -m "not e2e" -o faulthandler_timeout=1200 --cov-branch \
 		--cov-report=term-missing --cov-report=xml:coverage.xml --cov-report=html:htmlcov \
 		--cov-fail-under=84
 

@@ -41,7 +41,7 @@ jobs:
   quality-gate:
     name: quality gate
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 120
     services:
       mysql:
         image: mysql:8.0
@@ -160,4 +160,18 @@ jobs:
         run: alembic check
 
       - name: Run fail-closed quality gate
-        run: make gate
+        run: |
+          # Process names only: command lines can carry the owned-MySQL harness's generated passwords.
+          monitor() {
+            while sleep 60; do
+              echo "::group::runner resources $(date -u +%H:%M:%SZ)"
+              free -m
+              df -h / | tail -n 1
+              ps -eo rss=,comm= --sort=-rss | head -n 8
+              echo "::endgroup::"
+            done
+          }
+          monitor &
+          monitor_pid=$!
+          trap 'kill "$monitor_pid"' EXIT
+          make gate
