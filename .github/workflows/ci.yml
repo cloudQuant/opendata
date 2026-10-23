@@ -124,6 +124,11 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps chromium
 
+      - name: Install earlyoom (memory exhaustion must fail a named process, not freeze the runner)
+        run: |
+          sudo apt-get install -y -qq earlyoom || (sudo apt-get update -qq && sudo apt-get install -y -qq earlyoom)
+          sudo systemctl disable --now earlyoom
+
       - name: Pull pinned MySQL image for owned browser integration
         run: |
           IMAGE=$(python -c "from tests.script_download_backend_harness import MYSQL_IMAGE_REFERENCE; print(MYSQL_IMAGE_REFERENCE)")
@@ -160,18 +165,34 @@ jobs:
         run: alembic check
 
       - name: Run fail-closed quality gate
+        timeout-minutes: 100
         run: |
           # Process names only: command lines can carry the owned-MySQL harness's generated passwords.
           monitor() {
-            while sleep 60; do
+            set +e +o pipefail
+            while true; do
+              sleep 10
               echo "::group::runner resources $(date -u +%H:%M:%SZ)"
-              free -m
-              df -h / | tail -n 1
-              ps -eo rss=,comm= --sort=-rss | head -n 8
+              free -m | sed -n '2,3p'
+              df -h / | sed -n '2p'
+              echo "processes=$(ps -e --no-headers | wc -l) load=$(cut -d' ' -f1-3 /proc/loadavg)"
+              ps -eo pid=,ppid=,nlwp=,rss=,etimes=,comm= --sort=-rss | sed -n '1,12p'
               echo "::endgroup::"
             done
           }
           monitor &
           monitor_pid=$!
-          trap 'kill "$monitor_pid"' EXIT
+          sudo earlyoom -r 60 -m 8,4 -s 100,100 -p \
+            --avoid '^(Runner\.Worker|Runner\.Listener|provjobd[0-9]*|dockerd|containerd|mysqld|systemd.*|earlyoom)$' \
+            2>&1 | sed -u 's/^/[earlyoom] /' &
+          trap 'kill "$monitor_pid" 2>/dev/null; sudo pkill -x earlyoom 2>/dev/null; true' EXIT
           make gate
+
+      - name: Runner diagnostics after the gate
+        if: always()
+        run: |
+          set +e +o pipefail
+          free -m
+          df -h /
+          sudo dmesg -T | grep -iE 'out of memory|oom-kill|killed process' | tail -n 20
+          ps -eo pid=,ppid=,nlwp=,rss=,etimes=,comm= --sort=-rss | sed -n '1,15p'
