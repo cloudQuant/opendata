@@ -167,26 +167,64 @@ jobs:
       - name: Run fail-closed quality gate
         timeout-minutes: 100
         run: |
-          # Process names only: command lines can carry the owned-MySQL harness's generated passwords.
-          monitor() {
+          # The gate's own output goes to a file that is uploaded afterwards; the Actions
+          # pipe only ever sees one short heartbeat line per 30s. Runs 40000463253,
+          # 40014879802 and 40040759684 each went silent at 8.43 MB of job log - mid
+          # test-cov, with xdist, this monitor and earlyoom's 60s status all stopping in
+          # the same second while memory, disk and load stayed healthy - and then sat
+          # there until the 120m job limit killed them. One line per collected test is
+          # what filled the log. A stalled gate must name the member it stalled in.
+          LOG="${{ runner.temp }}/gate.log"
+          : > "$LOG"
+          heartbeat() {
             set +e +o pipefail
-            while true; do
-              sleep 10
-              echo "::group::runner resources $(date -u +%H:%M:%SZ)"
-              free -m | sed -n '2,3p'
-              df -h / | sed -n '2p'
-              echo "processes=$(ps -e --no-headers | wc -l) load=$(cut -d' ' -f1-3 /proc/loadavg)"
-              ps -eo pid=,ppid=,nlwp=,rss=,etimes=,comm= --sort=-rss | sed -n '1,12p'
-              echo "::endgroup::"
+            local started=$SECONDS
+            while sleep 30; do
+              local elapsed=$(( SECONDS - started )) size
+              size=$(( $(stat -c%s "$LOG" 2>/dev/null || echo 0) / 1024 ))
+              printf '[beat %dm%02ds] log=%dKB member=%s tail=%s mem=%sMB procs=%s load=%s\n' \
+                "$(( elapsed / 60 ))" "$(( elapsed % 60 ))" "$size" \
+                "$(grep -a '===== gate:' "$LOG" | tail -n 1 | sed -e 's/.*gate: //' -e 's/ =====.*//')" \
+                "$(LC_ALL=C tail -c 90 "$LOG" | tr -cd '[:print:]' | tr '#' '_' | tr '\n' ' ')" \
+                "$(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo)" \
+                "$(ps -e --no-headers | wc -l)" \
+                "$(cut -d' ' -f1 /proc/loadavg)"
             done
           }
-          monitor &
-          monitor_pid=$!
+          heartbeat &
+          heartbeat_pid=$!
+          # Process names only in the log: command lines can carry the owned-MySQL harness's
+          # generated passwords, so nothing here echoes a full argv.
           sudo earlyoom -r 60 -m 8,4 -s 100,100 -p \
             --avoid '^(Runner\.Worker|Runner\.Listener|provjobd[0-9]*|dockerd|containerd|mysqld|systemd.*|earlyoom)$' \
-            2>&1 | sed -u 's/^/[earlyoom] /' &
-          trap 'kill "$monitor_pid" 2>/dev/null; sudo pkill -x earlyoom 2>/dev/null; true' EXIT
-          make gate
+            >> "$LOG" 2>&1 &
+          earlyoom_pid=$!
+          trap 'kill "$heartbeat_pid" 2>/dev/null; sudo kill "$earlyoom_pid" 2>/dev/null; true' EXIT
+          status=0
+          make gate > "$LOG" 2>&1 || status=$?
+          set +e +o pipefail
+          kill "$heartbeat_pid" 2>/dev/null
+          sudo kill "$earlyoom_pid" 2>/dev/null
+          echo "===== gate finished with status $status ====="
+          echo "::group::gate member progress"
+          grep -aE '^===== gate:|^Required test coverage|^TOTAL|passed.*[0-9]+s$|Test failed' "$LOG" | tail -n 40
+          echo "::endgroup::"
+          echo "::group::failing member output"
+          awk '/^===== gate:/{buf=""} {buf=buf $0 ORS} END{printf "%s", buf}' "$LOG" \
+            | tail -n 250 | cut -c1-500
+          echo "::endgroup::"
+          free -m
+          df -h / | sed -n '2p'
+          exit "$status"
+
+      - name: Upload the gate log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-log
+          path: ${{ runner.temp }}/gate.log
+          retention-days: 14
+          if-no-files-found: ignore
 
       - name: Runner diagnostics after the gate
         if: always()
