@@ -210,8 +210,8 @@ jobs:
           grep -aE '^===== gate:|^Required test coverage|^TOTAL|passed.*[0-9]+s$|Test failed' "$LOG" | tail -n 40
           echo "::endgroup::"
           echo "::group::failing member output"
-          awk '/^===== gate:/{buf=""} {buf=buf $0 ORS} END{printf "%s", buf}' "$LOG" \
-            | tail -n 250 | cut -c1-500
+          last_marker=$(grep -an '===== gate:' "$LOG" | tail -n 1 | cut -d: -f1)
+          sed -n "${last_marker:-1},\$p" "$LOG" | tail -n 250 | cut -c1-500
           echo "::endgroup::"
           free -m
           df -h / | sed -n '2p'
