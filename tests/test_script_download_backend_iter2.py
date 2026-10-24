@@ -708,6 +708,42 @@ def test_mysql_start_uses_publishable_bridge_and_loopback_only(
     assert target.schema == lease.schema
 
 
+def test_mysql_publish_failure_names_the_container_verdict(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A container that exits before publishing must report why, not a stderr digest."""
+    lease = OwnedMysql()
+    network_id = "b" * 64
+    container_id = "c" * 64
+
+    def fake_docker(args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
+        if args[:2] == ["image", "inspect"]:
+            stdout = json.dumps([ac21_harness.MYSQL_IMAGE_REFERENCE]) + "\n"
+        elif args[:2] == ["network", "create"]:
+            stdout = f"{network_id}\n"
+        elif args[:2] == ["volume", "create"]:
+            stdout = f"{lease.volume_name}\n"
+        elif args[0] == "run":
+            stdout = f"{container_id}\n"
+        elif args[0] == "port":
+            raise DockerCommandError(
+                failure_class="CalledProcessError", stage="container-port", return_code=1
+            )
+        elif args[0] == "inspect":
+            stdout = "exited|2|exec format error\n"
+        else:
+            stdout = ""
+        return subprocess.CompletedProcess(args, 0, stdout=stdout, stderr="")
+
+    monkeypatch.setattr(lease, "_docker", fake_docker)
+
+    with pytest.raises(RuntimeError, match="exec format error") as raised:
+        lease.start()
+
+    assert str(raised.value).startswith("AC21 MySQL container was not published after start:")
+    assert lease.host_port is None
+
+
 def test_mysql_diagnostics_redact_passwords_and_omit_environment(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

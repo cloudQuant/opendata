@@ -24,7 +24,14 @@ from typing import Any
 from sqlalchemy.engine import URL, make_url
 
 MYSQL_IMAGE_REPOSITORY = "docker.io/library/mysql"
-MYSQL_IMAGE_DIGEST = "sha256:ca3f0494c0f1fc86eb45f5e4786a1bb9f64d2f85b562cc74a9595046f6519a42"
+#: MySQL 8.4.11 as the OCI *index* digest, not a per-architecture child manifest.
+#: This pin was the linux/arm64/v8 child (sha256:ca3f0494...): an amd64 runner accepted
+#: `docker run` for it, the kernel could not exec the binary, and the container died
+#: before `docker port` could read its publish - so the node was green on arm64 dev
+#: machines and red in CI with only a 112-byte stderr hash to show for it. An index
+#: digest resolves to this host's own platform, and Docker still records the index
+#: digest in RepoDigests, so the pinned-digest check below keeps working either way.
+MYSQL_IMAGE_DIGEST = "sha256:0f51e63e537a1f176423fa03ef559aabe6fa4372a53160a44bc7e75da7d15364"
 MYSQL_IMAGE_REFERENCE = f"{MYSQL_IMAGE_REPOSITORY}@{MYSQL_IMAGE_DIGEST}"
 MYSQL_IMAGE_SHORT_REPO_DIGEST = f"mysql@{MYSQL_IMAGE_DIGEST}"
 
@@ -420,7 +427,26 @@ class OwnedMysql:
             raise RuntimeError("Docker did not return a valid AC21 container ID")
         self.container_id = returned_container_id
 
-        published = self._docker(["port", self.container_id, "3306/tcp"]).stdout.strip()
+        try:
+            published = self._docker(["port", self.container_id, "3306/tcp"]).stdout.strip()
+        except DockerCommandError as port_failure:
+            # "no public port published" is what `docker port` says about a container that
+            # already exited, and its stderr is deliberately hashed here (argv can carry
+            # generated passwords). Name the container's own verdict instead of a digest.
+            state = self._docker(
+                [
+                    "inspect",
+                    "--format",
+                    "{{.State.Status}}|{{.State.ExitCode}}|{{.State.Error}}",
+                    self.container_id,
+                ],
+                check=False,
+            )
+            raise RuntimeError(
+                "AC21 MySQL container was not published after start: "
+                f"{self._redact(state.stdout.strip()) or 'container inspect unavailable'} "
+                f"(port lookup exit={port_failure.return_code})"
+            ) from None
         self.host_port = self._parse_loopback_port(published)
         self._wait_ready()
         return MysqlTarget(
