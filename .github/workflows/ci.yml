@@ -164,6 +164,45 @@ jobs:
       - name: Verify migrations match the models (no drift)
         run: alembic check
 
+      # The owned-MySQL lease reports a failed `docker port` as a sha256 of stderr only
+      # (correct: argv carries generated passwords). That made run 40054080199 red with
+      # no readable cause. Start the same lease here first and print the diagnostics the
+      # harness already redacts, so the container's own reason reaches the log.
+      - name: Preflight the owned MySQL lease
+        timeout-minutes: 12
+        run: |
+          set +e +o pipefail
+          python - <<'PY'
+          import sys
+          import tempfile
+          import traceback
+          from pathlib import Path
+
+          from tests.script_download_backend_harness import OwnedMysql
+
+          lease = OwnedMysql()
+          try:
+              target = lease.start()
+              print(f"PREFLIGHT: owned MySQL ready on 127.0.0.1:{target.host_port}")
+          except BaseException:  # noqa: BLE001 - the verdict, not the exception, matters
+              print("PREFLIGHT: owned MySQL start FAILED")
+              traceback.print_exc()
+              with tempfile.TemporaryDirectory() as tmp:
+                  try:
+                      diagnostics = lease.capture_diagnostics(Path(tmp))
+                      print("PREFLIGHT diagnostics:", diagnostics)
+                      logs = Path(tmp) / "mysql-container-logs-redacted.txt"
+                      if logs.is_file():
+                          print("---- redacted container log tail ----")
+                          print(logs.read_text(encoding="utf-8")[-4000:])
+                  except BaseException:  # noqa: BLE001
+                      print("PREFLIGHT: diagnostics capture failed")
+                      traceback.print_exc()
+          finally:
+              print("PREFLIGHT cleanup:", lease.cleanup())
+          PY
+          echo "PREFLIGHT step is advisory; the gate still owns the verdict."
+
       - name: Run fail-closed quality gate
         timeout-minutes: 100
         run: |
@@ -223,6 +262,17 @@ jobs:
         with:
           name: gate-log
           path: ${{ runner.temp }}/gate.log
+          retention-days: 14
+          if-no-files-found: ignore
+
+      # The AC21 node's own finally-block writes redacted container logs and the runtime
+      # inspect here, so a failed owned-MySQL start is readable after the run.
+      - name: Upload the owned-MySQL evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ac21-evidence
+          path: docs/evidence/C100/frontend-download/runs
           retention-days: 14
           if-no-files-found: ignore
 
