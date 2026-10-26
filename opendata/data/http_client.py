@@ -32,7 +32,7 @@ import uuid
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import TYPE_CHECKING, Any, cast
 from urllib.parse import urlsplit
@@ -40,6 +40,7 @@ from urllib.parse import urlsplit
 import requests
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field
+from urllib3.exceptions import ReadTimeoutError
 
 from opendata.data.raw_response_cache import (
     CachedRawResponse,
@@ -64,6 +65,64 @@ if TYPE_CHECKING:
 
 
 _SENSITIVE_PARAMETER_PARTS = ("api_key", "apikey", "token", "secret", "password", "credential")
+_STREAM_CHUNK_BYTES = 64 * 1024
+
+
+class _OverallTimeoutError(Exception):
+    """Internal signal that a bounded request exhausted its wall-time budget."""
+
+
+class _ResponseBodyPolicyError(Exception):
+    """Internal signal for a bounded response rejected by local body policy."""
+
+    def __init__(self, category: FailureCategory) -> None:
+        self.category = category
+
+
+@dataclass(frozen=True, slots=True)
+class BoundedHttpResponse:
+    """Immutable result of a successful body-limited HTTP GET.
+
+    Attributes:
+        body: Response body bytes, bounded by the call's application-level cap.
+        status_code: The actual successful HTTP status code.
+        retrieved_at: UTC time when the response body finished streaming.
+    """
+
+    body: bytes
+    status_code: int
+    retrieved_at: datetime
+
+
+def _strict_positive_seconds(name: str, value: object) -> float:
+    """Validate one finite positive duration, rejecting bool and numeric lookalikes."""
+    if type(value) is int:
+        try:
+            seconds = float(value)
+        except OverflowError:
+            raise ValueError(f"{name} must be a finite positive number") from None
+    elif type(value) is float:
+        seconds = value
+    else:
+        raise TypeError(f"{name} must be an int or float")
+    if not math.isfinite(seconds) or seconds <= 0.0:
+        raise ValueError(f"{name} must be a finite positive number")
+    return seconds
+
+
+def _strict_timeout(
+    timeout: float | tuple[float, float] | None,
+) -> float | tuple[float, float] | None:
+    """Validate a bounded GET's connect/read timeout override."""
+    if timeout is None:
+        return None
+    if type(timeout) in (int, float):
+        return _strict_positive_seconds("timeout", timeout)
+    if type(timeout) is not tuple or len(timeout) != 2:
+        raise TypeError("timeout must be a positive number or a pair of positive numbers")
+    connect_timeout = _strict_positive_seconds("connect timeout", timeout[0])
+    read_timeout = _strict_positive_seconds("read timeout", timeout[1])
+    return connect_timeout, read_timeout
 
 
 def _safe_endpoint(url: str) -> str:
@@ -149,7 +208,10 @@ class FailureCategory(str, Enum):
     TIMEOUT = "timeout"
     RATE_LIMITED = "rate_limited"
     BLOCKED = "blocked"
+    REDIRECT = "redirect"
     UPSTREAM_ERROR = "upstream_error"
+    BODY_TOO_LARGE = "body_too_large"
+    UNSUPPORTED_CONTENT_ENCODING = "unsupported_content_encoding"
 
 
 class HttpFetchError(RuntimeError):
@@ -423,6 +485,78 @@ class GovernedHttpClient:
             use_cache=use_cache,
         )
 
+    def get_bounded(
+        self,
+        url: str,
+        *,
+        max_body_bytes: int,
+        overall_timeout: float,
+        params: Mapping[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
+        timeout: float | tuple[float, float] | None = None,
+        source: str = "unspecified",
+    ) -> BoundedHttpResponse:
+        """Stream a governed GET into a body bounded by an explicit byte cap.
+
+        Args:
+            url: Absolute URL.
+            max_body_bytes: Maximum response-body bytes retained by this call.
+            overall_timeout: Cooperative wall-time budget in seconds. It is checked
+                during rate-token, local semaphore, and shared scoped host-slot waits,
+                before retries, after EOF, and between body chunks. Active request
+                scope deadline/cancellation checks remain in force alongside it.
+                Connect/read timeouts remain socket-operation limits; a blocking read
+                can overrun this budget by up to its read timeout before control returns.
+            params: Optional query parameters.
+            headers: Per-request headers merged over defaults. Any supplied
+                ``Accept-Encoding`` value is replaced with ``identity``.
+            timeout: Optional connect/read timeout override in seconds or as a pair.
+            source: Stable source name included in structured events.
+
+        Returns:
+            The actual HTTP status, UTC retrieval time, and bounded body bytes.
+
+        Raises:
+            TypeError: If either explicit bound has the wrong exact type.
+            ValueError: If a bound is non-finite, non-positive, or the URL has no host.
+            HttpFetchError: On transport, status, deadline, size, or encoding failure.
+
+        The method does not read from or write to the raw-response cache. It asks
+        for identity encoding and rejects other content encodings before reading,
+        because Requests decodes compressed bodies while iterating. The byte cap
+        limits response-body bytes collected and returned. It is not a hard limit on
+        transient allocations, transport buffers, or process RSS.
+        """
+        if type(max_body_bytes) is not int:
+            raise TypeError("max_body_bytes must be an exact int")
+        if max_body_bytes <= 0:
+            raise ValueError("max_body_bytes must be positive")
+        total_seconds = _strict_positive_seconds("overall_timeout", overall_timeout)
+        checked_timeout = _strict_timeout(timeout)
+        started = self._time()
+        deadline = started + total_seconds
+        if not math.isfinite(deadline):
+            raise ValueError("overall_timeout produces an invalid deadline")
+        bounded_headers = dict(headers or {})
+        for name in tuple(bounded_headers):
+            if name.lower() == "accept-encoding":
+                del bounded_headers[name]
+        bounded_headers["Accept-Encoding"] = "identity"
+        result = self._request(
+            "GET",
+            url,
+            params=params,
+            headers=bounded_headers,
+            timeout=checked_timeout,
+            source=source,
+            use_cache=False,
+            body_limit=max_body_bytes,
+            deadline=deadline,
+        )
+        if not isinstance(result, BoundedHttpResponse):
+            raise RuntimeError("bounded HTTP attempt returned an ordinary response")
+        return result
+
     def request(
         self,
         method: str,
@@ -458,8 +592,41 @@ class GovernedHttpClient:
             TypeError: If ``use_cache`` is not a bool.
             HttpFetchError: On terminal, classified failure.
         """
+        result = self._request(
+            method,
+            url,
+            params=params,
+            headers=headers,
+            timeout=timeout,
+            source=source,
+            cache_context=cache_context,
+            json_body=json_body,
+            use_cache=use_cache,
+        )
+        if not isinstance(result, requests.Response):
+            raise RuntimeError("ordinary HTTP request returned a bounded response")
+        return result
+
+    def _request(
+        self,
+        method: str,
+        url: str,
+        *,
+        params: Mapping[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
+        timeout: float | tuple[float, float] | None = None,
+        source: str = "unspecified",
+        cache_context: Mapping[str, Any] | None = None,
+        json_body: Mapping[str, Any] | None = None,
+        use_cache: bool = True,
+        body_limit: int | None = None,
+        deadline: float | None = None,
+    ) -> requests.Response | BoundedHttpResponse:
+        """Run the shared governed loop for ordinary and bounded requests."""
         if type(use_cache) is not bool:
             raise TypeError("use_cache must be a bool")
+        if body_limit is not None and (type(body_limit) is not int or body_limit <= 0):
+            raise ValueError("body_limit must be a positive exact int")
         request_body = _snapshot_json_body(json_body)
         method_upper = method.upper()
         if request_body is not None and method_upper in {"GET", "HEAD"}:
@@ -472,16 +639,21 @@ class GovernedHttpClient:
             authorize_request(scopes, source, host)
             # Authorization precedes both cache access and lazy Session creation.
             self._validate_scoped_session(self._get_session())
+        elif body_limit is not None:
+            # Response hooks and adapter retries can read bodies or issue
+            # unaccounted requests before this bounded reader sees them.
+            self._validate_scoped_session(self._get_session())
         is_get = method_upper == "GET"
         attempts = self._config.max_attempts if is_get else 1
         request_id = uuid.uuid4().hex
+        request_started = self._time() if deadline is not None else 0.0
         raw_cache: RawResponseCache | None = None
-        if use_cache:
+        if use_cache and body_limit is None:
             raw_cache = self._raw_response_cache_override
             if raw_cache is None and is_get:
                 raw_cache = get_configured_raw_response_cache()
         cache_identity: _CacheRequestIdentity | None = None
-        if use_cache and raw_cache is not None and is_get:
+        if use_cache and body_limit is None and raw_cache is not None and is_get:
             session = self._get_session()
             cache_identity = self._prepare_cache_identity(
                 session, url, params=params, headers=headers
@@ -509,9 +681,27 @@ class GovernedHttpClient:
                     )
                     return cached_response
         attempt = 0
+        last_error: HttpFetchError | None = None
         while True:
             if scoped:
                 check_scope_liveness(scopes)
+            if deadline is not None and self._time() >= deadline:
+                if last_error is not None:
+                    raise last_error
+                deadline_error = self._error(
+                    FailureCategory.TIMEOUT, url, host, attempt, retryable=False
+                )
+                self._log_request_event(
+                    source,
+                    url,
+                    params,
+                    request_id,
+                    attempt,
+                    request_started,
+                    None,
+                    deadline_error.category.value,
+                )
+                raise deadline_error
             attempt += 1
             attempt_response, error = self._attempt_once(
                 method,
@@ -528,16 +718,31 @@ class GovernedHttpClient:
                 cache_context,
                 cache_identity,
                 scopes,
+                body_limit=body_limit,
+                deadline=deadline,
             )
             if error is None:
                 if attempt_response is None:  # pragma: no cover - invariant guard
                     raise RuntimeError("successful HTTP attempt returned no response")
                 return attempt_response
+            last_error = error
             if not is_get or not error.retryable or attempt >= attempts:
                 raise error
             if scoped:
                 check_scope_liveness(scopes)
-            self._sleep_backoff(attempt)
+            if deadline is None:
+                self._sleep_backoff(attempt)
+            else:
+                remaining = deadline - self._time()
+                if remaining <= 0.0:
+                    delay = None
+                else:
+                    delay = self._config.backoff_base * (2 ** (attempt - 1)) + self._jitter()
+                if delay is None or delay >= remaining:
+                    raise error
+                if not math.isfinite(delay) or delay < 0.0:
+                    raise ValueError("retry delay must be a finite non-negative number")
+                self._sleep(delay)
             if scoped:
                 check_scope_liveness(scopes)
 
@@ -557,7 +762,10 @@ class GovernedHttpClient:
         cache_context: Mapping[str, Any] | None,
         cache_identity: _CacheRequestIdentity | None,
         scopes: tuple[RequestExecutionScope, ...],
-    ) -> tuple[requests.Response | None, HttpFetchError | None]:
+        *,
+        body_limit: int | None = None,
+        deadline: float | None = None,
+    ) -> tuple[requests.Response | BoundedHttpResponse | None, HttpFetchError | None]:
         """Run one governed transport attempt.
 
         Args:
@@ -576,43 +784,142 @@ class GovernedHttpClient:
             cache_identity: Prepared URL and headers, including merged session
                 credentials and query parameters.
             scopes: The active Fetcher execution scopes, if any.
+            body_limit: Optional application-level body cap that enables streaming.
+            deadline: Optional cooperative monotonic deadline for a bounded request.
 
         Returns:
             ``(response, None)`` on success or ``(None, error)`` on
-            classified failure.
+            classified failure. Bounded calls return ``BoundedHttpResponse``.
         """
         started = self._time()
         probe_in_flight = False
+        transport_started = False
+        response: requests.Response | None = None
+        streamed_body: bytes | None = None
         try:
             if scopes:
                 check_scope_liveness(scopes)
-            self._acquire_token(host, url)
+            if deadline is None:
+                self._acquire_token(host, url)
+            else:
+                self._acquire_token(host, url, deadline=deadline)
+            self._check_deadline(deadline)
             if scopes:
                 check_scope_liveness(scopes)
             probe_in_flight = self._guard_breaker(host, url)
             if scopes:
-                with self._scoped_semaphore(host, scopes):
+                scoped_semaphore = (
+                    self._scoped_semaphore(host, scopes)
+                    if deadline is None
+                    else self._scoped_semaphore(host, scopes, deadline=deadline)
+                )
+                with scoped_semaphore:
                     check_scope_liveness(scopes)
-                    with scoped_host_slot(scopes, source, host):
+                    self._check_deadline(deadline)
+                    with scoped_host_slot(
+                        scopes,
+                        source,
+                        host,
+                        check_wait_liveness=(
+                            None if deadline is None else lambda: self._check_deadline(deadline)
+                        ),
+                    ):
                         check_scope_liveness(scopes)
+                        self._check_deadline(deadline)
+                        request_timeout = self._remaining_timeout(timeout, deadline)
+                        transport_started = True
                         response = self._send(
                             method,
                             url,
                             params,
                             headers,
-                            timeout,
+                            request_timeout,
                             json_body,
                             scopes=scopes,
                             source=source,
                             host=host,
+                            stream=body_limit is not None,
                         )
+                        if self._should_read_bounded_response(response, body_limit):
+                            streamed_body = self._read_bounded_response(
+                                response,
+                                body_limit=body_limit,
+                                deadline=deadline,
+                                scopes=scopes,
+                            )
             else:
-                with self._semaphore_for(host):
-                    response = self._send(method, url, params, headers, timeout, json_body)
+                with self._request_semaphore(host, deadline):
+                    self._check_deadline(deadline)
+                    request_timeout = self._remaining_timeout(timeout, deadline)
+                    transport_started = True
+                    response = self._send(
+                        method,
+                        url,
+                        params,
+                        headers,
+                        request_timeout,
+                        json_body,
+                        stream=body_limit is not None,
+                    )
+                    if self._should_read_bounded_response(response, body_limit):
+                        streamed_body = self._read_bounded_response(
+                            response,
+                            body_limit=body_limit,
+                            deadline=deadline,
+                            scopes=scopes,
+                        )
         except RequestBudgetError:
             if probe_in_flight:
                 self._release_probe_slot(host)
             raise
+        except _OverallTimeoutError:
+            if probe_in_flight:
+                self._record_probe_failure(host, FailureCategory.TIMEOUT)
+            timeout_error = self._error(
+                FailureCategory.TIMEOUT,
+                url,
+                host,
+                attempt if transport_started else attempt - 1,
+                status=response.status_code if response is not None else None,
+                retryable=False,
+            )
+            self._log_request_event(
+                source,
+                url,
+                params,
+                request_id,
+                attempt if transport_started else attempt - 1,
+                started,
+                response.status_code if response is not None else None,
+                timeout_error.category.value,
+            )
+            if response is not None and body_limit is not None:
+                response.close()
+            return None, timeout_error
+        except _ResponseBodyPolicyError as policy_error:
+            if probe_in_flight:
+                self._record_success(host, probe_in_flight=True)
+            if response is None:
+                raise RuntimeError("body policy rejected a missing HTTP response") from None
+            policy_failure = self._error(
+                policy_error.category,
+                url,
+                host,
+                attempt,
+                status=response.status_code,
+                retryable=False,
+            )
+            self._log_request_event(
+                source,
+                url,
+                params,
+                request_id,
+                attempt,
+                started,
+                response.status_code,
+                policy_failure.category.value,
+            )
+            return None, policy_failure
         except HttpFetchError as preflight_error:
             self._log_request_event(
                 source,
@@ -633,6 +940,7 @@ class GovernedHttpClient:
                 url,
                 host,
                 attempt,
+                status=response.status_code if response is not None else None,
                 retryable=not probe_in_flight,
             )
             self._log_request_event(
@@ -642,7 +950,7 @@ class GovernedHttpClient:
                 request_id,
                 attempt,
                 started,
-                None,
+                response.status_code if response is not None else None,
                 timeout_error.category.value,
             )
             return None, timeout_error
@@ -654,6 +962,7 @@ class GovernedHttpClient:
                 url,
                 host,
                 attempt,
+                status=response.status_code if response is not None else None,
                 retryable=not probe_in_flight,
             )
             self._log_request_event(
@@ -663,10 +972,37 @@ class GovernedHttpClient:
                 request_id,
                 attempt,
                 started,
-                None,
+                response.status_code if response is not None else None,
                 network_error.category.value,
             )
             return None, network_error
+        if response is None:
+            raise RuntimeError("transport attempt returned no response")
+        if body_limit is not None and 300 <= response.status_code < 400:
+            response.close()
+            if probe_in_flight:
+                self._record_probe_failure(host, FailureCategory.REDIRECT)
+            else:
+                self._record_success(host)
+            redirect_error = self._error(
+                FailureCategory.REDIRECT,
+                url,
+                host,
+                attempt,
+                status=response.status_code,
+                retryable=False,
+            )
+            self._log_request_event(
+                source,
+                url,
+                params,
+                request_id,
+                attempt,
+                started,
+                response.status_code,
+                redirect_error.category.value,
+            )
+            return None, redirect_error
         if scopes and 300 <= response.status_code < 400:
             if probe_in_flight:
                 self._record_probe_failure(host, FailureCategory.BLOCKED)
@@ -674,7 +1010,8 @@ class GovernedHttpClient:
         category, retryable = _classify_status(response.status_code)
         if category is None:
             if (
-                raw_cache is not None
+                body_limit is None
+                and raw_cache is not None
                 and cache_identity is not None
                 and 200 <= response.status_code < 300
             ):
@@ -692,6 +1029,17 @@ class GovernedHttpClient:
             self._log_request_event(
                 source, url, params, request_id, attempt, started, response.status_code, None
             )
+            if body_limit is not None:
+                if streamed_body is None:
+                    raise RuntimeError("bounded response body was not streamed")
+                return (
+                    BoundedHttpResponse(
+                        body=streamed_body,
+                        status_code=response.status_code,
+                        retrieved_at=datetime.now(timezone.utc),
+                    ),
+                    None,
+                )
             return response, None
         if probe_in_flight:
             self._record_probe_failure(host, category)
@@ -715,7 +1063,81 @@ class GovernedHttpClient:
             response.status_code,
             category.value,
         )
+        if body_limit is not None:
+            response.close()
         return None, status_error
+
+    @staticmethod
+    def _should_read_bounded_response(
+        response: requests.Response,
+        body_limit: int | None,
+    ) -> bool:
+        """Return whether a response is eligible for bounded body consumption."""
+        if body_limit is None:
+            return False
+        category, _retryable = _classify_status(response.status_code)
+        return category is None and not 300 <= response.status_code < 400
+
+    def _read_bounded_response(
+        self,
+        response: requests.Response,
+        *,
+        body_limit: int | None,
+        deadline: float | None,
+        scopes: tuple[RequestExecutionScope, ...],
+    ) -> bytes:
+        """Read a response in bounded chunks and always close its transport."""
+        if body_limit is None:
+            raise RuntimeError("bounded response reading requires a body cap")
+        try:
+            encoding = response.headers.get("Content-Encoding", "")
+            normalized_encoding = encoding.strip().lower()
+            if normalized_encoding not in ("", "identity"):
+                raise _ResponseBodyPolicyError(FailureCategory.UNSUPPORTED_CONTENT_ENCODING)
+            declared_length = self._declared_content_length(response)
+            if declared_length is not None and declared_length > body_limit:
+                raise _ResponseBodyPolicyError(FailureCategory.BODY_TOO_LARGE)
+            chunks = iter(
+                response.iter_content(chunk_size=min(_STREAM_CHUNK_BYTES, body_limit + 1))
+            )
+            body = bytearray()
+            while True:
+                self._check_deadline(deadline)
+                if scopes:
+                    check_scope_liveness(scopes)
+                try:
+                    chunk = next(chunks)
+                except StopIteration:
+                    self._check_deadline(deadline)
+                    if scopes:
+                        check_scope_liveness(scopes)
+                    break
+                if not isinstance(chunk, bytes):
+                    raise requests.RequestException("response stream yielded non-bytes data")
+                if len(body) + len(chunk) > body_limit:
+                    raise _ResponseBodyPolicyError(FailureCategory.BODY_TOO_LARGE)
+                body.extend(chunk)
+            return bytes(body)
+        except requests.ConnectionError as error:
+            if any(isinstance(reason, ReadTimeoutError) for reason in error.args):
+                raise requests.Timeout("response body read timed out") from None
+            raise
+        finally:
+            response.close()
+
+    @staticmethod
+    def _declared_content_length(response: requests.Response) -> int | None:
+        """Return a strictly decimal Content-Length, treating malformed values as unknown."""
+        declared = response.headers.get("Content-Length")
+        if declared is None:
+            return None
+        normalized = declared.strip()
+        if not normalized or not normalized.isascii() or not normalized.isdecimal():
+            return None
+        try:
+            return int(normalized)
+        except ValueError:
+            return None
 
     def _send(
         self,
@@ -729,6 +1151,7 @@ class GovernedHttpClient:
         scopes: tuple[RequestExecutionScope, ...] = (),
         source: str = "unspecified",
         host: str = "",
+        stream: bool = False,
     ) -> requests.Response:
         """Send one request through the session with governance kwargs."""
         merged = {**self._config.default_headers, **(headers or {})}
@@ -747,9 +1170,12 @@ class GovernedHttpClient:
             "timeout": request_timeout,
             "proxies": self._config.proxies,
         }
-        if scopes:
+        if scopes or stream:
             request_kwargs["allow_redirects"] = False
+        if scopes:
             self._validate_scoped_session(session)
+        if stream:
+            request_kwargs["stream"] = True
         if json_body is not None:
             request_kwargs["json"] = json_body
 
@@ -831,13 +1257,41 @@ class GovernedHttpClient:
         self,
         host: str,
         scopes: tuple[RequestExecutionScope, ...],
+        *,
+        deadline: float | None = None,
     ) -> Iterator[None]:
         """Acquire this client's host gate while honoring scope cancellation."""
         semaphore = self._semaphore_for(host)
-        while not semaphore.acquire(timeout=0.05):
+        while True:
+            self._check_deadline(deadline)
+            remaining = 0.05 if deadline is None else min(0.05, deadline - self._time())
+            if remaining <= 0.0:
+                raise _OverallTimeoutError
+            if semaphore.acquire(timeout=remaining):
+                break
             check_scope_liveness(scopes)
         try:
             check_scope_liveness(scopes)
+            self._check_deadline(deadline)
+            yield
+        finally:
+            semaphore.release()
+
+    @contextmanager
+    def _request_semaphore(self, host: str, deadline: float | None) -> Iterator[None]:
+        """Acquire a host gate, bounding a bounded request's wait by its deadline."""
+        semaphore = self._semaphore_for(host)
+        if deadline is None:
+            semaphore.acquire()
+        else:
+            while True:
+                remaining = deadline - self._time()
+                if remaining <= 0.0:
+                    raise _OverallTimeoutError
+                if semaphore.acquire(timeout=min(0.05, remaining)):
+                    break
+        try:
+            self._check_deadline(deadline)
             yield
         finally:
             semaphore.release()
@@ -963,7 +1417,39 @@ class GovernedHttpClient:
             raise ValueError(f"URL has no host: {_safe_endpoint(url)}")
         return host.lower()
 
-    def _acquire_token(self, host: str, url: str) -> None:
+    def _check_deadline(self, deadline: float | None) -> None:
+        """Stop a bounded request when its cooperative monotonic budget expires."""
+        if deadline is not None and self._time() >= deadline:
+            raise _OverallTimeoutError
+
+    def _remaining_timeout(
+        self,
+        timeout: float | tuple[float, float] | None,
+        deadline: float | None,
+    ) -> float | tuple[float, float] | None:
+        """Clamp connect/read timeouts to the remaining total budget at send time."""
+        if deadline is None:
+            return timeout
+        remaining = deadline - self._time()
+        if remaining <= 0.0:
+            raise _OverallTimeoutError
+        if timeout is None:
+            connect_timeout = self._config.connect_timeout
+            read_timeout = self._config.read_timeout
+        elif isinstance(timeout, tuple):
+            connect_timeout, read_timeout = timeout
+        else:
+            connect_timeout = float(timeout)
+            read_timeout = float(timeout)
+        return min(float(connect_timeout), remaining), min(float(read_timeout), remaining)
+
+    def _acquire_token(
+        self,
+        host: str,
+        url: str,
+        *,
+        deadline: float | None = None,
+    ) -> None:
         """Consume a rate-limit token, waiting up to the configured max.
 
         Raises:
@@ -972,18 +1458,25 @@ class GovernedHttpClient:
         """
         limit = self._config.rate_limit_per_host
         if limit is None:
+            self._check_deadline(deadline)
             return
         with self._lock:
             bucket = self._buckets.setdefault(
                 host, TokenBucket(limit, self._config.rate_burst, self._time)
             )
             if bucket.try_acquire(self._time()):
+                self._check_deadline(deadline)
                 return
             wait = bucket.wait_seconds(self._time())
         if wait > self._config.rate_max_wait:
             raise self._error(FailureCategory.RATE_LIMITED, url, host, attempts=0, retryable=False)
+        if deadline is not None:
+            remaining = deadline - self._time()
+            if remaining <= 0.0 or wait >= remaining:
+                raise _OverallTimeoutError
         if wait > 0.0:
             self._sleep(wait)
+        self._check_deadline(deadline)
         with self._lock:
             if not bucket.try_acquire(self._time()):
                 raise self._error(
