@@ -1,0 +1,223 @@
+{
+  "archive_note": "Same-host private ignored evidence; not an independent backup. Archive creation assumes a trusted workspace and a current-UID-owned parent; it is not a security boundary against same-UID or same-group actors. Generated public JSON requires a separate secret scan.",
+  "archive_path": "var/reports/afi204/2026-10-27-wave11",
+  "created_at": "2026-10-26T23:12:38.741731+00:00",
+  "environment_history": [
+    {
+      "exact_requirement_pins": 48,
+      "revision": "v1",
+      "runtime_claim": false,
+      "status": "PROPOSAL_ONLY"
+    },
+    {
+      "bootstrap_distributions": 1,
+      "exact_requirement_pins": 51,
+      "revision": "v2",
+      "runtime_test_failure": "email-validator missing during collection",
+      "status": "SETUP_PASS; INITIAL_COLLECTION_FAIL"
+    },
+    {
+      "bootstrap_distributions": 1,
+      "exact_requirement_pins": 53,
+      "revision": "v3",
+      "status": "PASS"
+    }
+  ],
+  "external_ci_deploy_push_or_merge": "NOT_PERFORMED",
+  "focused_core_tests": {
+    "coverage_percent_unrounded": {
+      "alembic_data/versions/20261027-0012_instrument_capture_scope.py": 100.0,
+      "opendata/api/published_data.py": 89.65517241379311,
+      "opendata/data/capture_selection.py": 100.0,
+      "opendata/data/platform_contracts.py": 93.06122448979592,
+      "opendata/data/providers/sina/financial_statement_publication.py": 90.80882352941177,
+      "opendata/pipeline/contract_publication.py": 99.53271028037383,
+      "opendata/pipeline/publication_store.py": 94.13919413919415,
+      "opendata_client/opendata_client/snapshots.py": 90.05328596802842
+    },
+    "deselected": 1,
+    "excluded_node": "tests/test_snapshot_client.py::test_real_fastapi_sqlite_delta_snapshots_preserve_origin_publications",
+    "passed": 469,
+    "pytest_summary": "469 passed, 1 deselected in 238.35s (0:03:58)",
+    "selection": [
+      "tests/test_capture_selection.py",
+      "tests/test_publication_capture_scope.py",
+      "tests/test_publication_capture_scope_migration.py",
+      "tests/test_published_capture_api.py",
+      "tests/test_snapshot_client_capture_scope.py",
+      "tests/test_sina_financial_statement_publication.py",
+      "tests/test_publication_store.py",
+      "tests/test_contract_publication.py",
+      "tests/test_published_data_api.py",
+      "tests/test_published_table_api.py",
+      "tests/test_snapshot_client.py",
+      "tests/test_sina_financial_statement_publication_bridge.py",
+      "tests/test_platform_contracts.py"
+    ],
+    "status": "PASS"
+  },
+  "focused_environment": {
+    "distribution_count_including_bootstrap_pip": 54,
+    "environment_revision": "v3",
+    "exact_dependency_pins": 53,
+    "pip_version": "25.1.1",
+    "plan_sha256": "55dec3bd96cab770b092c35c1994d40d8e935a2b6062e1c79156da28c5479d5f",
+    "python_version": "3.13.5",
+    "requirements_sha256": "aad5aba4ab1e7e29ec0c0a3a85bf37bebdb91583b5d780c0a1967b429eaf6191",
+    "setup_sha256": "6e3aa69a08c18735bfd279653e856cbe6edfb285eff3ec8db28fbfe75730f267",
+    "status": "PASS",
+    "system_site_packages": false,
+    "upstream_sdks_absent": true
+  },
+  "git_commit_history_secret_scan": {
+    "commits_scanned": 976,
+    "no_leaks_reported": true,
+    "scope": "Existing pinned full-history Gitleaks component; no tests or application imports",
+    "status": "PASS",
+    "tool_version": "8.30.1"
+  },
+  "historical_attempts": [
+    {
+      "note": "Initial v2 environment collection failure; retained as failure history.",
+      "receipt": "wave11-core-first-root-command.json",
+      "status": "FAIL"
+    },
+    {
+      "note": "First v3 core attempt retained with its test failures and warnings.",
+      "receipt": "wave11-core-v3-first-root-command.json",
+      "status": "FAIL",
+      "summary": "7 failed, 332 passed, 1 deselected, 6 warnings in 165.35s (0:02:45)"
+    },
+    {
+      "note": "Initial scoped static attempt retained; final static acceptance is the later c receipt.",
+      "receipt": "wave11-od-static-first-20261027-a-command.json",
+      "status": "FAIL"
+    }
+  ],
+  "historical_coverage": "OPEN",
+  "historical_data_recovery": "OPEN",
+  "iteration": 204,
+  "openapi_gate": {
+    "coverage_percent_unrounded": 95.46925566343042,
+    "passed": 24,
+    "selection": [
+      "tests/test_published_openapi_gate.py"
+    ],
+    "status": "PASS"
+  },
+  "prior_archives_unchanged": {
+    "wave10_files": 49,
+    "wave7_files": 106,
+    "wave8_files": 162,
+    "wave9_files": 80
+  },
+  "production_status": "NOT_PRODUCTION_APPROVED",
+  "python310_runtime": "NOT_RUN",
+  "resolver_a2_component": {
+    "blocked_archived_candidates": 5055,
+    "blocked_manifest_errors": 19,
+    "complete_resolver_files": 1222,
+    "full_history_coverage": "OPEN",
+    "full_history_data_recovery": "OPEN",
+    "full_make_gate": "NOT_RUN",
+    "historical_evidence_and_support_gaps": "OPEN",
+    "historical_ruff_findings": 149323,
+    "historical_ruff_status": "NOT GREEN",
+    "immutable_evidence_validation": "BLOCKED",
+    "mypy_nonzero_roots": 0,
+    "mypy_reported_roots": 796,
+    "status": "PASS",
+    "summary_sha256": "0fecc9fe1d4b01494bd2dfbf8bfcbab1c7684caf80a1ad597d32c3fa9c518f6a"
+  },
+  "scope_limits": [
+    "Offline source-native capture and publication validation only; no production approval, activation, or live upstream request.",
+    "The one explicitly deselected legacy real-FastAPI/SQLite node was not run; no full test suite or make gate is claimed.",
+    "The private archive is same-host trusted-workspace evidence and does not defend against same-UID or same-group actors.",
+    "The A2 resolver component passed, while 149323 historical Ruff findings remain NOT GREEN and immutable-evidence/support gaps remain OPEN.",
+    "Full-history Gitleaks status is a separate Git commit-history secret scan; it does not establish full-history market-data recovery or coverage.",
+    "No Python 3.10 runtime, remote CI, deployment, push, or merge validation was performed."
+  ],
+  "scoped_static": {
+    "checks": [
+      "bandit",
+      "brand",
+      "mypy",
+      "public-api",
+      "ruff-check",
+      "ruff-format",
+      "zero-dep-full-scan",
+      "zero-dep-selftest"
+    ],
+    "new_test_targets": [
+      "tests/test_capture_selection.py",
+      "tests/test_publication_capture_scope.py",
+      "tests/test_publication_capture_scope_migration.py",
+      "tests/test_published_capture_api.py",
+      "tests/test_snapshot_client_capture_scope.py",
+      "tests/test_sina_financial_statement_publication.py",
+      "tests/test_sina_financial_statement_publication_bridge.py"
+    ],
+    "production_targets": [
+      "opendata/data/capture_selection.py",
+      "opendata/data/platform_contracts.py",
+      "scripts/quality/check_published_openapi.py",
+      "opendata/pipeline/publication_store.py",
+      "opendata/pipeline/contract_publication.py",
+      "opendata/api/published_data.py",
+      "opendata_client/opendata_client/snapshots.py",
+      "opendata/data/providers/sina/financial_statement_publication.py",
+      "alembic_data/versions/20261027-0012_instrument_capture_scope.py"
+    ],
+    "public_api_annotation_percent": 100.0,
+    "public_api_callables": 2507,
+    "public_api_docstring_percent": 100.0,
+    "status": "PASS",
+    "zero_dependency": {
+      "client_files": 3,
+      "files_walked": 983,
+      "first_party_files": 655,
+      "policy_exclusions_added": 0,
+      "prior_first_party_files": 653,
+      "reviewed_census_delta": 2,
+      "scanner_version": 5,
+      "status": "PASS",
+      "vendor_files": 325
+    }
+  },
+  "snapshot_head": "fbec7066f9ea58e2e4dcdcf445a4af46b37a8b1e",
+  "source_runs": [
+    {
+      "label": "wave11-core-second-root",
+      "name": "focused_core_tests",
+      "receipt_sha256": "9d76758e7072fcc7716fa2699c662d71e9a8015fdd810980a7883e2fe990da7f",
+      "source_commit": "fbec7066f9ea58e2e4dcdcf445a4af46b37a8b1e"
+    },
+    {
+      "label": "wave11-od-static-final-20261027-c",
+      "name": "scoped_static",
+      "receipt_sha256": "0e12dd02e757450cc1a894c774cccd1cf6d53a4bb1d72e5adceaceea8fe0b438",
+      "source_commit": "fbec7066f9ea58e2e4dcdcf445a4af46b37a8b1e"
+    },
+    {
+      "label": "wave11-openapi-gate-first-root",
+      "name": "openapi_gate",
+      "receipt_sha256": "ecdb824b911dd0690ad995a6d4b27dd0db5c87024c74ccd3b03b168c4f51577e",
+      "source_commit": "fbec7066f9ea58e2e4dcdcf445a4af46b37a8b1e"
+    },
+    {
+      "label": "wave11-a2-final-root",
+      "name": "resolver_a2_component",
+      "receipt_sha256": "526b4845e3ab90def6261c802a5a38059862ca01a4ff8c91ed3bc24494d7455b",
+      "source_commit": "fbec7066f9ea58e2e4dcdcf445a4af46b37a8b1e"
+    },
+    {
+      "label": "wave11-secret-final-root",
+      "name": "git_commit_history_secret_scan",
+      "receipt_sha256": "ee554f9ad904e552fe1ef432a97b934504b6d4cd5ae5f17cd17d566ab18a8e39",
+      "source_commit": "fbec7066f9ea58e2e4dcdcf445a4af46b37a8b1e"
+    }
+  ],
+  "status": "SCOPED_OFFLINE_VALIDATION",
+  "wave": 11,
+  "whole_make_gate": "NOT_RUN"
+}
