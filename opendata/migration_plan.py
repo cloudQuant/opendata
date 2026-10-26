@@ -590,7 +590,8 @@ def _read_mapping(
         return {}, []
     if set(document) != {"schema_version", "inputs", "tasks"}:
         raise MigrationPlanError("reviewed_mapping_root_shape_invalid")
-    if document.get("schema_version") != 1:
+    schema_version = document.get("schema_version")
+    if type(schema_version) is not int or schema_version != 1:
         raise MigrationPlanError("reviewed_mapping_schema_version_unsupported")
     pins = _mapping(document.get("inputs"), "reviewed mapping inputs")
     if set(pins) != {
@@ -631,7 +632,8 @@ def _read_target_allowlist(
         return set(), set(), ["target_allowlist_missing"]
     if set(document) != {"schema_version", "warehouse_fingerprints", "targets"}:
         raise MigrationPlanError("target_allowlist_root_shape_invalid")
-    if document.get("schema_version") != 1:
+    schema_version = document.get("schema_version")
+    if type(schema_version) is not int or schema_version != 1:
         raise MigrationPlanError("target_allowlist_schema_version_unsupported")
     raw_fingerprints = document.get("warehouse_fingerprints")
     if not isinstance(raw_fingerprints, list) or len(raw_fingerprints) > 1000:

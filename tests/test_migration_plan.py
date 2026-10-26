@@ -815,6 +815,33 @@ def test_mapping_root_pins_and_target_allowlist_schemas_fail_closed() -> None:
         _build(inventory, catalog, mapping, allowlist)
 
 
+def test_mapping_boolean_schema_version_is_rejected_with_complete_hash_pins() -> None:
+    inventory, catalog, mapping, allowlist = _inputs()
+    mapping["schema_version"] = True
+
+    assert mapping["inputs"] == {
+        "runtime_inventory_sha256": canonical_json_sha256(inventory),
+        "static_catalog_sha256": canonical_json_sha256(catalog),
+        "target_allowlist_sha256": canonical_json_sha256(allowlist),
+    }
+    with pytest.raises(MigrationPlanError, match="reviewed_mapping_schema_version_unsupported"):
+        _build(inventory, catalog, mapping, allowlist)
+
+
+def test_allowlist_boolean_schema_version_is_rejected_with_complete_reviewed_mapping() -> None:
+    inventory, catalog, mapping, allowlist = _inputs()
+    allowlist["schema_version"] = True
+    mapping["inputs"]["target_allowlist_sha256"] = canonical_json_sha256(allowlist)
+
+    assert mapping["inputs"] == {
+        "runtime_inventory_sha256": canonical_json_sha256(inventory),
+        "static_catalog_sha256": canonical_json_sha256(catalog),
+        "target_allowlist_sha256": canonical_json_sha256(allowlist),
+    }
+    with pytest.raises(MigrationPlanError, match="target_allowlist_schema_version_unsupported"):
+        _build(inventory, catalog, mapping, allowlist)
+
+
 def test_allowlist_invalid_hashes_targets_and_duplicate_entries_are_reported() -> None:
     inventory, catalog, mapping, allowlist = _inputs()
     allowlist["warehouse_fingerprints"] = ["bad", WAREHOUSE_HASH, WAREHOUSE_HASH]
