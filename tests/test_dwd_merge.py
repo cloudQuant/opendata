@@ -902,6 +902,24 @@ class TestRecomputeIdempotence:
         assert DwdWriter(engine).write(merged, table="dwd_stock_daily", key=KEY) == 0
         assert engine.calls == []
 
+    def test_writer_rejects_non_string_column_labels_without_database_io(self):
+        engine = _RecordingEngine()
+        malformed = pd.DataFrame([["600519"]], columns=[0])
+
+        with pytest.raises(ValueError, match="column names must be strings"):
+            DwdWriter(engine).write(malformed, table="dwd_stock_daily", key=KEY)
+
+        assert engine.calls == []
+
+    def test_writer_rejects_duplicate_column_labels_before_record_conversion(self):
+        engine = _RecordingEngine()
+        malformed = pd.DataFrame([["600519", "000001"]], columns=["symbol", "symbol"])
+
+        with pytest.raises(ValueError, match="column names must be unique"):
+            DwdWriter(engine).write(malformed, table="dwd_stock_daily", key=KEY)
+
+        assert engine.calls == []
+
 
 class _RecordingConnection:
     """The connection face ``DwdWriter.write`` uses, recording what it sent."""

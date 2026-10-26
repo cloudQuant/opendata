@@ -544,7 +544,7 @@ def require_valuation_measures(symbol: str, *, frequency: str, periods: int) -> 
     frame = pd.DataFrame(
         {
             column: [
-                current.get(label) if column == "Current" else dated.get(label, {}).get(stamp)
+                current.get(label) if stamp is None else dated.get(label, {}).get(stamp)
                 for _, label in _VALUATION_MEASURE_TYPES
             ]
             for column, stamp in zip(columns, [None, *kept], strict=True)

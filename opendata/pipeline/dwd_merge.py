@@ -192,10 +192,23 @@ class DwdWriter:
         """
         from sqlalchemy import text
 
+        columns: list[str] = []
+        for column in frame.columns:
+            if not isinstance(column, str):
+                raise ValueError("DWD frame column names must be strings")
+            columns.append(column)
+        if len(columns) != len(set(columns)):
+            raise ValueError("DWD frame column names must be unique")
         if frame.empty and not financial_versions:
             return 0
-        columns = list(frame.columns)
-        records = frame.astype(object).where(frame.notna(), None).to_dict("records")
+        raw_records = frame.astype(object).where(frame.notna(), None).to_dict("records")
+        records: list[dict[str, object]] = []
+        for raw_record in raw_records:
+            record: dict[str, object] = {}
+            for column in columns:
+                value: object = raw_record[column]
+                record[column] = value
+            records.append(record)
         for record in records:
             for column, value in record.items():
                 if isinstance(value, pd.Timestamp):
