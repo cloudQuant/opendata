@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import json
 import os
+import stat
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from sqlalchemy import create_engine, select
@@ -189,6 +191,14 @@ def _context() -> RunExecutionContext:
         fencing_token=1,
         _checkpoint=lambda: None,
     )
+
+
+def _make_private_artifact_root(root: Path) -> None:
+    """Create the writer's fixed private root and managed directory layout."""
+    root.mkdir(mode=0o700)
+    (root / "objects").mkdir(mode=0o700)
+    (root / "objects" / "pending").mkdir(mode=0o700)
+    (root / "manifests").mkdir(mode=0o700)
 
 
 def test_disabled_unreviewed_job_cannot_be_submitted(tmp_path: Path) -> None:
@@ -458,6 +468,18 @@ def test_run_service_publishes_verified_raw_bars_with_market_and_observation_tim
         "issue_count": 0,
     }
     engine.dispose()
+
+
+def test_normalize_rejects_capture_replayed_for_different_window(tmp_path: Path) -> None:
+    """Captured evidence is bound to the exact canonical request window."""
+    job = _make_job(
+        tmp_path,
+        lambda _query: StockDailyJsonResponse(_wire_body(), 200, OBSERVED_AT),
+    )
+    captured = job.fetch(_request(), _context())
+    wider_request = _request(end="2026-10-28")
+    with pytest.raises(ValueError, match="does not match the current normalized query"):
+        job.normalize(captured, wider_request, _context())
 
 
 @pytest.mark.parametrize(
@@ -746,14 +768,17 @@ def test_capture_reader_rejects_symlink_fifo_missing_and_unsafe_paths(
 ) -> None:
     """Evidence reads are bounded regular-file reads through no-follow handles."""
     root = tmp_path / "managed"
-    root.mkdir()
+    _make_private_artifact_root(root)
     regular = root / "regular.bin"
     regular.write_bytes(b"ok")
+    regular.chmod(0o600)
     assert stock_daily_job._read_private_managed_file(root, ("regular.bin",), maximum=2) == b"ok"
     with pytest.raises(ValueError, match="absolute"):
         stock_daily_job._read_private_managed_file(Path("relative"), ("x",), maximum=1)
     with pytest.raises(ValueError, match="unsafe component"):
         stock_daily_job._read_private_managed_file(root, ("..", "x"), maximum=1)
+    with pytest.raises(ValueError, match="unsafe component"):
+        stock_daily_job._read_private_managed_file(root / ".." / "other", ("x",), maximum=1)
     with pytest.raises(ValueError, match="unavailable or unsafe"):
         stock_daily_job._read_private_managed_file(root, ("missing.bin",), maximum=1)
     too_large = root / "too-large.bin"
@@ -775,12 +800,113 @@ def test_capture_reader_rejects_symlink_fifo_missing_and_unsafe_paths(
         stock_daily_job._read_private_managed_file(root, ("regular.bin",), maximum=10)
 
 
+@pytest.mark.parametrize(
+    ("target", "mode", "message"),
+    [
+        ("root", 0o755, "managed artifact directory must have mode 0700"),
+        ("objects", 0o755, "managed artifact directory must have mode 0700"),
+        ("pending", 0o755, "managed artifact directory must have mode 0700"),
+        ("manifests", 0o755, "managed artifact directory must have mode 0700"),
+        ("body_prefix", 0o755, "managed artifact directory must have mode 0700"),
+        ("manifest_prefix", 0o755, "managed artifact directory must have mode 0700"),
+        ("body", 0o644, "managed artifact file must have mode 0600"),
+        ("manifest", 0o644, "managed artifact file must have mode 0600"),
+    ],
+)
+def test_normalize_rejects_public_artifact_modes(
+    tmp_path: Path,
+    target: str,
+    mode: int,
+    message: str,
+) -> None:
+    """Every managed directory and artifact file remains owner-private."""
+    job = _make_job(
+        tmp_path,
+        lambda _query: StockDailyJsonResponse(_wire_body(), 200, OBSERVED_AT),
+    )
+    captured = job.fetch(_request(), _context())
+    artifact_root = tmp_path / "private-raw"
+    targets = {
+        "root": artifact_root,
+        "objects": artifact_root / "objects",
+        "pending": artifact_root / "objects" / "pending",
+        "manifests": artifact_root / "manifests",
+        "body_prefix": captured.capture.artifact_path.parent,
+        "manifest_prefix": captured.capture.manifest_path.parent,
+        "body": captured.capture.artifact_path,
+        "manifest": captured.capture.manifest_path,
+    }
+    targets[target].chmod(mode)
+    with pytest.raises(ValueError, match=message):
+        job.normalize(captured, _request(), _context())
+
+
+def test_normalize_rejects_symlinked_managed_directory(tmp_path: Path) -> None:
+    """Managed directory opens stay anchored and refuse symlink substitutions."""
+    job = _make_job(
+        tmp_path,
+        lambda _query: StockDailyJsonResponse(_wire_body(), 200, OBSERVED_AT),
+    )
+    captured = job.fetch(_request(), _context())
+    pending = tmp_path / "private-raw" / "objects" / "pending"
+    external = tmp_path / "external-pending"
+    external.mkdir(mode=0o700)
+    pending.rmdir()
+    pending.symlink_to(external, target_is_directory=True)
+    with pytest.raises(ValueError, match="unavailable or unsafe"):
+        job.normalize(captured, _request(), _context())
+    assert list(external.iterdir()) == []
+
+
+def test_normalize_rejects_artifacts_owned_by_another_user(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The descriptor checks bind the private artifact chain to the current user."""
+    job = _make_job(
+        tmp_path,
+        lambda _query: StockDailyJsonResponse(_wire_body(), 200, OBSERVED_AT),
+    )
+    captured = job.fetch(_request(), _context())
+    current_uid = os.geteuid()
+    monkeypatch.setattr(stock_daily_job.os, "geteuid", lambda: current_uid + 1)
+    with pytest.raises(ValueError, match="must be owned by the current user"):
+        job.normalize(captured, _request(), _context())
+
+
+def test_normalize_rejects_artifact_file_owned_by_another_user(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Leaf-file ownership is checked on the opened file descriptor itself."""
+    job = _make_job(
+        tmp_path,
+        lambda _query: StockDailyJsonResponse(_wire_body(), 200, OBSERVED_AT),
+    )
+    captured = job.fetch(_request(), _context())
+    current_uid = os.geteuid()
+    real_fstat = os.fstat
+
+    def report_other_file_owner(descriptor: int) -> os.stat_result | SimpleNamespace:
+        info = real_fstat(descriptor)
+        if stat.S_ISREG(info.st_mode):
+            return SimpleNamespace(
+                st_mode=info.st_mode,
+                st_size=info.st_size,
+                st_uid=current_uid + 1,
+            )
+        return info
+
+    monkeypatch.setattr(stock_daily_job.os, "fstat", report_other_file_owner)
+    with pytest.raises(ValueError, match="must be owned by the current user"):
+        job.normalize(captured, _request(), _context())
+
+
 def test_capture_reader_detects_in_place_file_growth(tmp_path: Path, monkeypatch) -> None:
     """The file descriptor size is rechecked after the bounded read completes."""
     root = tmp_path / "managed"
-    root.mkdir()
+    _make_private_artifact_root(root)
     content = root / "content.bin"
     content.write_bytes(b"before")
+    content.chmod(0o600)
     real_read = os.read
     did_append = False
 
@@ -801,9 +927,10 @@ def test_capture_reader_detects_in_place_file_growth(tmp_path: Path, monkeypatch
 def test_capture_reader_stops_after_growth_crosses_limit(tmp_path: Path, monkeypatch) -> None:
     """The bounded read loop stops once a concurrently grown file exceeds its cap."""
     root = tmp_path / "managed"
-    root.mkdir()
+    _make_private_artifact_root(root)
     content = root / "content.bin"
     content.write_bytes(b"")
+    content.chmod(0o600)
     real_read = os.read
 
     def append_before_read(descriptor: int, count: int) -> bytes:

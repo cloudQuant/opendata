@@ -181,17 +181,7 @@ def build_stock_daily_job(
         response = response_source(query.model_copy(deep=True))
         context.checkpoint()
         _validate_source_response(response)
-        summary_hash = request_summary_sha256(
-            {
-                "adjust": query.adjust,
-                "end_date": query.end_date,
-                "market": query.market,
-                "source": query.source,
-                "start_date": query.start_date,
-                "symbol": query.symbol,
-            },
-            allowed_fields=("adjust", "end_date", "market", "source", "start_date", "symbol"),
-        )
+        summary_hash = _request_summary_hash(query)
         capture = artifact_writer.capture(
             (response.body,),
             source=source_identity,
@@ -215,10 +205,12 @@ def build_stock_daily_job(
         if not isinstance(raw, CapturedStockDailyResponse):
             raise ValueError("stock daily job requires its captured raw response")
         observed_at = _validated_observation_time(raw.observed_at)
+        request_hash = _request_summary_hash(query)
         body, manifest, manifest_sha256 = _verified_capture(
             raw.capture,
             artifact_writer=artifact_writer,
             expected_source=source_identity,
+            expected_request_summary_sha256=request_hash,
         )
         expected_market_code = 1 if query.symbol.startswith("6") else 0
         source_frame = parse_stock_daily_wire(
@@ -323,6 +315,21 @@ def _validate_stock_contract(task: TaskDefinition, contract: DatasetContract) ->
         raise ValueError("stock daily contract currency metadata must identify CNY fields")
 
 
+def _request_summary_hash(query: StockDailyQuery) -> str:
+    """Hash the canonical stock query using the same safe evidence allowlist."""
+    return request_summary_sha256(
+        {
+            "adjust": query.adjust,
+            "end_date": query.end_date,
+            "market": query.market,
+            "source": query.source,
+            "start_date": query.start_date,
+            "symbol": query.symbol,
+        },
+        allowed_fields=("adjust", "end_date", "market", "source", "start_date", "symbol"),
+    )
+
+
 def _validated_query(fetcher: AkshareStockDailyFetcher, request: RunRequest) -> StockDailyQuery:
     """Revalidate the request and bind its single-symbol inclusive date window."""
     if not isinstance(request, RunRequest):
@@ -403,6 +410,7 @@ def _verified_capture(
     *,
     artifact_writer: RawResponseArtifactWriter,
     expected_source: RawResponseSource,
+    expected_request_summary_sha256: str,
 ) -> tuple[bytes, RawResponseManifest, str]:
     """Revalidate manifest and content-addressed files before parsing bytes."""
     if not isinstance(capture, CapturedRawResponse):
@@ -417,6 +425,8 @@ def _verified_capture(
         raise ValueError("stock daily evidence manifest failed boundary validation") from exc
     if manifest.source != expected_source or manifest.http_status != 200:
         raise ValueError("stock daily evidence source identity or HTTP status changed")
+    if manifest.request_summary_sha256 != expected_request_summary_sha256:
+        raise ValueError("stock daily evidence request does not match the current normalized query")
     if manifest.response_size_bytes > MAX_RAW_RESPONSE_BYTES:
         raise ValueError("stock daily evidence body exceeds the wire response limit")
 
@@ -469,21 +479,57 @@ def _verified_capture(
 
 
 def _read_private_managed_file(root: Path, parts: tuple[str, ...], *, maximum: int) -> bytes:
-    """Read one bounded regular file through no-follow directory descriptors."""
-    if not root.is_absolute() or not parts:
+    """Read one private bounded file through no-follow directory descriptors.
+
+    The artifact root, managed directories, and leaf file must remain owned by
+    the current effective user with the writer's private modes (0700/0600).
+    Ancestors such as ``/tmp`` are opened without following symlinks but are
+    not required to use private modes.
+    """
+    if not root.is_absolute() or len(root.parts) < 2 or not parts:
         raise ValueError("managed evidence path must be absolute and non-empty")
-    if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_DIRECTORY"):
+    if any(
+        not component or component in {".", ".."} or "/" in component or "\\" in component
+        for component in parts
+    ):
+        raise ValueError("managed evidence path contains an unsafe component")
+    root_components = root.parts[1:]
+    if any(
+        not component or component in {".", ".."} or "/" in component or "\\" in component
+        for component in root_components
+    ):
+        raise ValueError("managed evidence path contains an unsafe component")
+    if (
+        not hasattr(os, "O_NOFOLLOW")
+        or not hasattr(os, "O_DIRECTORY")
+        or not hasattr(os, "geteuid")
+    ):
         raise ValueError("platform cannot safely verify raw evidence paths")
     directory_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
     directory_fd = os.open("/", directory_flags)
+    directory_fds = [directory_fd]
+    managed_directory_fds: list[int] = []
     file_fd: int | None = None
+    root_component_index = len(root_components) - 1
     try:
-        for component in (*root.parts[1:], *parts[:-1]):
-            if component in {"", ".", ".."}:
-                raise ValueError("managed evidence path contains an unsafe component")
+        for index, component in enumerate((*root_components, *parts[:-1])):
             next_fd = os.open(component, directory_flags, dir_fd=directory_fd)
-            os.close(directory_fd)
+            directory_fds.append(next_fd)
+            info = os.fstat(next_fd)
+            if not stat.S_ISDIR(info.st_mode):
+                raise ValueError("managed evidence path component is not a directory")
+            if index >= root_component_index:
+                _require_private_owner(
+                    info,
+                    required_mode=0o700,
+                    description="managed artifact directory",
+                )
             directory_fd = next_fd
+        root_fd = directory_fds[root_component_index + 1]
+        objects_fd = _open_private_child_directory(root_fd, "objects")
+        managed_directory_fds.append(objects_fd)
+        managed_directory_fds.append(_open_private_child_directory(objects_fd, "pending"))
+        managed_directory_fds.append(_open_private_child_directory(root_fd, "manifests"))
         file_fd = os.open(
             parts[-1],
             os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
@@ -492,6 +538,11 @@ def _read_private_managed_file(root: Path, parts: tuple[str, ...], *, maximum: i
         before = os.fstat(file_fd)
         if not stat.S_ISREG(before.st_mode) or before.st_size > maximum:
             raise ValueError("managed evidence file is not a bounded regular file")
+        _require_private_owner(
+            before,
+            required_mode=0o600,
+            description="managed artifact file",
+        )
         content = bytearray()
         while len(content) <= maximum:
             chunk = os.read(file_fd, min(64 * 1024, maximum + 1 - len(content)))
@@ -505,13 +556,55 @@ def _read_private_managed_file(root: Path, parts: tuple[str, ...], *, maximum: i
             or after.st_size != before.st_size
         ):
             raise ValueError("managed evidence file changed or exceeded its size limit")
+        _require_private_owner(
+            after,
+            required_mode=0o600,
+            description="managed artifact file",
+        )
+        for descriptor in directory_fds[root_component_index + 1 :] + managed_directory_fds:
+            _require_private_owner(
+                os.fstat(descriptor),
+                required_mode=0o700,
+                description="managed artifact directory",
+            )
         return bytes(content)
     except OSError as exc:
         raise ValueError("managed evidence file is unavailable or unsafe") from exc
     finally:
         if file_fd is not None:
             os.close(file_fd)
-        os.close(directory_fd)
+        for descriptor in reversed(managed_directory_fds):
+            os.close(descriptor)
+        for descriptor in reversed(directory_fds):
+            os.close(descriptor)
+
+
+def _require_private_owner(info: os.stat_result, *, required_mode: int, description: str) -> None:
+    """Require one opened artifact inode to be private and owned by this user."""
+    if info.st_uid != os.geteuid():
+        raise ValueError(f"{description} must be owned by the current user")
+    if stat.S_IMODE(info.st_mode) != required_mode:
+        mode = f"{required_mode:04o}"
+        raise ValueError(f"{description} must have mode {mode}")
+
+
+def _open_private_child_directory(parent_fd: int, name: str) -> int:
+    """Open and verify a fixed writer-managed subdirectory without following links."""
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    descriptor = os.open(name, flags, dir_fd=parent_fd)
+    try:
+        info = os.fstat(descriptor)
+        if not stat.S_ISDIR(info.st_mode):
+            raise ValueError("managed evidence path component is not a directory")
+        _require_private_owner(
+            info,
+            required_mode=0o700,
+            description="managed artifact directory",
+        )
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        raise
 
 
 __all__ = [
