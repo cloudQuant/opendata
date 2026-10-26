@@ -310,8 +310,87 @@ def test_invalid_cron_expression_fails_before_enqueue(
     engine, _, _ = dispatch_setup
     catalog = ReviewedTaskCatalog((make_job(expression="not-a-five-field-cron"),))
     dispatcher = RunDispatcher(RunLedger(engine), catalog, clock=lambda: NOW)
-    with pytest.raises(ValueError, match="cron schedule expression"):
+    with pytest.raises(ValueError, match="five fields"):
         dispatcher.dispatch_scheduled("dispatch-daily", "v1", occurrence=SCHEDULED)
+    assert row_count(engine) == 0
+
+
+@pytest.mark.parametrize(
+    "occurrence",
+    [
+        datetime(2026, 10, 26, 16, tzinfo=UTC),
+        datetime(2026, 10, 30, 16, tzinfo=UTC),
+    ],
+)
+def test_named_workday_cron_accepts_monday_and_friday(
+    dispatch_setup: tuple[Engine, RunLedger, RunDispatcher],
+    occurrence: datetime,
+) -> None:
+    """Accept explicit Monday and Friday slots using the named weekday dialect."""
+    engine, _, _ = dispatch_setup
+    catalog = ReviewedTaskCatalog((make_job(timezone_name="UTC", expression="0 16 * * mon-fri"),))
+    dispatcher = RunDispatcher(RunLedger(engine), catalog, clock=lambda: NOW)
+
+    receipt = dispatcher.dispatch_scheduled("dispatch-daily", "v1", occurrence=occurrence)
+
+    assert receipt.status == "queued"
+    assert row_count(engine) == 1
+
+
+def test_named_workday_cron_rejects_saturday_without_enqueue(
+    dispatch_setup: tuple[Engine, RunLedger, RunDispatcher],
+) -> None:
+    """Reject a weekend slot under an explicitly named Monday-to-Friday schedule."""
+    engine, _, _ = dispatch_setup
+    catalog = ReviewedTaskCatalog((make_job(timezone_name="UTC", expression="0 16 * * mon-fri"),))
+    dispatcher = RunDispatcher(RunLedger(engine), catalog, clock=lambda: NOW)
+
+    with pytest.raises(ValueError, match="outside the configured cron slot"):
+        dispatcher.dispatch_scheduled(
+            "dispatch-daily", "v1", occurrence=datetime(2026, 10, 31, 16, tzinfo=UTC)
+        )
+    assert row_count(engine) == 0
+
+
+@pytest.mark.parametrize(
+    ("expression", "occurrence"),
+    [
+        ("0 16 * * mon,wed,fri", datetime(2026, 10, 28, 16, tzinfo=UTC)),
+        ("0 16 * * mon-fri/2", datetime(2026, 10, 30, 16, tzinfo=UTC)),
+    ],
+)
+def test_named_weekday_lists_and_steps_are_accepted(
+    dispatch_setup: tuple[Engine, RunLedger, RunDispatcher],
+    expression: str,
+    occurrence: datetime,
+) -> None:
+    """Allow APScheduler-validated lists and steps when weekday values are named."""
+    engine, _, _ = dispatch_setup
+    catalog = ReviewedTaskCatalog((make_job(timezone_name="UTC", expression=expression),))
+    dispatcher = RunDispatcher(RunLedger(engine), catalog, clock=lambda: NOW)
+
+    assert dispatcher.dispatch_scheduled("dispatch-daily", "v1", occurrence=occurrence).status == (
+        "queued"
+    )
+    assert row_count(engine) == 1
+
+
+def test_numeric_weekday_cron_is_rejected_by_dispatch_and_registration(
+    dispatch_setup: tuple[Engine, RunLedger, RunDispatcher],
+) -> None:
+    """Require manual dialect mapping rather than silently shifting numeric weekdays."""
+    engine, _, _ = dispatch_setup
+    catalog = ReviewedTaskCatalog((make_job(timezone_name="UTC", expression="0 16 * * 1-5"),))
+    dispatcher = RunDispatcher(RunLedger(engine), catalog, clock=lambda: NOW)
+
+    with pytest.raises(ValueError, match="manually map the original schedule dialect"):
+        dispatcher.dispatch_scheduled(
+            "dispatch-daily", "v1", occurrence=datetime(2026, 10, 26, 16, tzinfo=UTC)
+        )
+    with pytest.raises(ValueError, match="manually map the original schedule dialect"):
+        dispatcher.apscheduler_callback("dispatch-daily", "v1").register(
+            BackgroundScheduler(timezone="UTC")
+        )
     assert row_count(engine) == 0
 
 
@@ -571,7 +650,7 @@ def test_ap_scheduler_callback_constructor_and_interval_registration_errors(
     interval_catalog = ReviewedTaskCatalog((make_job(kind="interval", expression="1 hour"),))
     interval_dispatcher = RunDispatcher(ledger, interval_catalog)
     interval_callback = interval_dispatcher.apscheduler_callback("dispatch-daily", "v1")
-    with pytest.raises(ValueError, match="cron schedules only"):
+    with pytest.raises(ValueError, match="require cron schedules"):
         interval_callback.register(BackgroundScheduler())
 
 

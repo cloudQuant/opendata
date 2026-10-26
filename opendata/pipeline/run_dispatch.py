@@ -39,6 +39,9 @@ if TYPE_CHECKING:  # pragma: no cover
 
 _MAX_EVENT_SLOTS = 128
 _EXCEPTION_CODE = re.compile(r"^_?[A-Za-z][A-Za-z0-9_]{0,79}$")
+_WEEKDAY_NAME = r"(?:mon|tue|wed|thu|fri|sat|sun)"
+_NAMED_WEEKDAY_ITEM = rf"{_WEEKDAY_NAME}(?:-{_WEEKDAY_NAME})?(?:/\d+)?"
+_NAMED_WEEKDAY_FIELD = re.compile(rf"^{_NAMED_WEEKDAY_ITEM}(?:,{_NAMED_WEEKDAY_ITEM})*$", re.I)
 _PAYLOAD_FIELDS: Mapping[str, frozenset[str]] = MappingProxyType(
     {
         "scheduled": frozenset({"query", "partition", "shard"}),
@@ -301,7 +304,12 @@ class APSchedulerSubmissionCallback:
     independently. A ``max_instances`` rejection emits no submission event, so
     those slots are not synthesized. Operators must monitor ``last_receipt``
     and the run ledger; APScheduler logs but does not propagate listener
-    exceptions to the scheduler caller.
+    exceptions to the scheduler caller. Cron expressions use APScheduler 3's
+    five-field dialect; weekday fields must be ``*`` or named weekdays
+    (``mon`` through ``sun``). Prefer ``mon-fri`` for business days. Numeric
+    weekday fields are rejected because source dialects disagree about their
+    numbering; occurrence inputs remain explicit UTC instants matched against
+    the task's configured IANA timezone.
     """
 
     def __init__(
@@ -367,8 +375,10 @@ class APSchedulerSubmissionCallback:
         """
         if self._registered:
             raise ValueError("APScheduler callback is already registered")
-        if self._task.schedule is None or self._task.schedule.kind != "cron":
-            raise ValueError("APScheduler bridge supports cron schedules only")
+        _validate_cron_dialect(self._task)
+        schedule = self._task.schedule
+        if schedule is None:
+            raise ValueError("scheduled runs require explicit schedule metadata")
         try:
             from apscheduler.events import EVENT_JOB_SUBMITTED
             from apscheduler.triggers.cron import CronTrigger
@@ -379,7 +389,7 @@ class APSchedulerSubmissionCallback:
             if not callable(add_job) or not callable(add_listener) or not callable(remove_listener):
                 raise TypeError("scheduler must provide add_job, add_listener, and remove_listener")
             trigger = CronTrigger.from_crontab(
-                self._task.schedule.expression,
+                schedule.expression,
                 timezone=self._task.timezone,
             )
             add_listener(self, EVENT_JOB_SUBMITTED)
@@ -491,10 +501,10 @@ def _validate_scheduled_occurrence(task: TaskDefinition, occurrence: datetime) -
         raise ValueError("scheduled occurrence must be an explicit datetime")
     if not _is_explicit_utc(occurrence):
         raise ValueError("scheduled occurrence must use an explicit UTC timezone")
-    if task.schedule is None:
+    _validate_cron_dialect(task)
+    schedule = task.schedule
+    if schedule is None:
         raise ValueError("scheduled runs require explicit schedule metadata")
-    if task.schedule.kind != "cron":
-        raise ValueError("scheduled slot validation currently requires a cron schedule")
     try:
         zone = ZoneInfo(task.timezone)
         local = occurrence.astimezone(zone)
@@ -516,7 +526,7 @@ def _validate_scheduled_occurrence(task: TaskDefinition, occurrence: datetime) -
     try:
         from apscheduler.triggers.cron import CronTrigger
 
-        trigger = CronTrigger.from_crontab(task.schedule.expression, timezone=zone)
+        trigger = CronTrigger.from_crontab(schedule.expression, timezone=zone)
         previous_microsecond = local - timedelta(microseconds=1)
         next_slot = trigger.get_next_fire_time(None, previous_microsecond)
     except (ImportError, TypeError, ValueError):
@@ -525,6 +535,33 @@ def _validate_scheduled_occurrence(task: TaskDefinition, occurrence: datetime) -
         timezone.utc
     ):
         raise ValueError("scheduled occurrence is outside the configured cron slot")
+
+
+def _validate_cron_dialect(task: TaskDefinition) -> None:
+    """Require APScheduler 3 five-field cron with named or wildcard weekdays.
+
+    APScheduler 3 treats numeric weekday zero as Monday, while common POSIX
+    cron uses one for Monday. Reject numeric weekday syntax instead of silently
+    accepting a schedule that may move its collection days. Numeric step values
+    remain valid only when attached to named weekday expressions, such as
+    ``mon-fri/2``.
+    """
+    if task.schedule is None:
+        raise ValueError("scheduled runs require explicit schedule metadata")
+    if task.schedule.kind != "cron":
+        raise ValueError("scheduled dispatch and APScheduler bridge require cron schedules")
+    fields = task.schedule.expression.split()
+    if len(fields) != 5:
+        raise ValueError("APScheduler cron schedule must contain five fields")
+    weekday_field = fields[4]
+    if weekday_field == "*" or _NAMED_WEEKDAY_FIELD.fullmatch(weekday_field):
+        return
+    if re.search(r"\d", weekday_field):
+        raise ValueError(
+            "numeric weekday cron fields are ambiguous; manually map the original "
+            "schedule dialect to named weekdays or '*'"
+        )
+    raise ValueError("cron weekday field must be '*' or use named weekdays mon through sun")
 
 
 def _utc_from_scheduler_slot(value: object, task: TaskDefinition) -> datetime:
