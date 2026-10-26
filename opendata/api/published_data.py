@@ -711,12 +711,6 @@ async def get_dataset_records(
             was_supplied=selector_was_supplied,
         )
         _require_supported_record_contract(contract, start_date, end_date)
-        selection_kwargs: dict[str, object] = {}
-        if selection is not None:
-            selection_kwargs = {
-                "instrument_id": selection.instrument_id,
-                "capture_id": selection.capture_id,
-            }
         snapshot = await asyncio.to_thread(
             store.create_snapshot,
             dataset_id,
@@ -725,7 +719,8 @@ async def get_dataset_records(
             end_date=end_date,
             page_size=page_size or 100,
             access_scope=data_access.binding_sha256,
-            **selection_kwargs,
+            instrument_id=selection.instrument_id if selection is not None else None,
+            capture_id=selection.capture_id if selection is not None else None,
         )
         publication = await _publication_for_snapshot(store, snapshot, data_access)
         contract, contract_hash = _resolve_contract(contracts, data_access, publication)
@@ -825,12 +820,6 @@ async def create_snapshot(
         was_supplied=selector_was_supplied,
     )
     _require_supported_record_contract(contract, body.start_date, body.end_date)
-    selection_kwargs: dict[str, object] = {}
-    if selection is not None:
-        selection_kwargs = {
-            "instrument_id": selection.instrument_id,
-            "capture_id": selection.capture_id,
-        }
     snapshot = await asyncio.to_thread(
         store.create_snapshot,
         body.dataset_id,
@@ -839,7 +828,8 @@ async def create_snapshot(
         end_date=body.end_date,
         page_size=body.page_size,
         access_scope=context.binding_sha256,
-        **selection_kwargs,
+        instrument_id=selection.instrument_id if selection is not None else None,
+        capture_id=selection.capture_id if selection is not None else None,
     )
     publication = await _publication_for_snapshot(store, snapshot, context)
     contract, contract_hash = _resolve_contract(contracts, context, publication)
