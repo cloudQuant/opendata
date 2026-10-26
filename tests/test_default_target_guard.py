@@ -253,31 +253,30 @@ def test_published_data_constructor_guards_before_dbapi_connect(monkeypatch) -> 
 
 
 def test_default_pre_ping_guard_rejects_before_dbapi_ping() -> None:
-    """A default Engine's pre-ping hook rejects before its fake DBAPI cursor runs."""
-    fixture_engine = api_published_data.create_engine("sqlite://", pool_pre_ping=True)
-    ping_calls: list[str] = []
+    """A warmed local pool is blocked before its dialect pre-ping delegate runs."""
+    fixture_engine = create_engine("sqlite://", pool_pre_ping=True)
+    with fixture_engine.connect():
+        pass
 
-    class RecordingCursor:
-        """Record calls made by SQLAlchemy's dialect ping implementation."""
+    ping_calls: list[object] = []
+    original_do_ping = fixture_engine.dialect.do_ping
 
-        def execute(self, statement: str) -> None:
-            ping_calls.append(statement)
+    def record_do_ping(dbapi_connection: object) -> object:
+        ping_calls.append(dbapi_connection)
+        return original_do_ping(dbapi_connection)
 
-        def close(self) -> None:
-            ping_calls.append("close")
-
-    class RecordingConnection:
-        """Provide a fake DBAPI connection for the dialect-only pre-ping path."""
-
-        def cursor(self) -> RecordingCursor:
-            ping_calls.append("cursor")
-            return RecordingCursor()
-
+    fixture_engine.dialect.do_ping = record_do_ping
+    conftest._install_default_engine_guards(fixture_engine, "probe")
     try:
         with pytest.raises(RuntimeError, match="before DBAPI ping"):
-            fixture_engine.dialect._do_ping_w_event(RecordingConnection())
+            fixture_engine.connect()
         assert ping_calls == []
     finally:
+        guards = conftest._GUARDED_DEFAULT_ENGINE_GUARDS.pop(id(fixture_engine))
+        for event_name, listener in guards[1]:
+            event.remove(fixture_engine, event_name, listener)
+        conftest._GUARDED_DEFAULT_ENGINE_PING_GUARDS.pop(id(fixture_engine), None)
+        fixture_engine.dialect.do_ping = original_do_ping
         fixture_engine.dispose()
 
 
