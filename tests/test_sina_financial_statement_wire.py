@@ -9,10 +9,12 @@ import io
 import json
 import threading
 import time
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
+from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
@@ -27,6 +29,7 @@ from opendata.data.providers.sina.financial_statement_contract import (
     SINA_FZB_HOST,
     SINA_FZB_URL,
     SinaFzbAdmissionError,
+    SinaFzbFetchedSnapshot,
     SinaFzbQuery,
     SinaFzbTransportError,
 )
@@ -127,65 +130,59 @@ class _TrackedRaw(HTTPResponse):
         super().close()
 
 
-class _RecordingGovernedHttpClient(GovernedHttpClient):
-    """Record bounded-call arguments while retaining the real Requests pipeline."""
+@dataclass
+class _OfflineTransport:
+    """Pair an exact governed client with a scoped, test-only call recorder."""
 
-    def __init__(
-        self,
-        session: requests.Session,
-        *,
-        after_response: Callable[[], None] | None = None,
-    ) -> None:
-        super().__init__(
-            HttpClientConfig(
-                connect_timeout=3.0,
-                read_timeout=5.0,
-                max_attempts=1,
-                rate_limit_per_host=None,
-            ),
-            session=session,
-            sleep=lambda _seconds: None,
-            raw_response_cache=None,
-        )
-        self.bounded_calls: list[dict[str, Any]] = []
-        self.responses: list[BoundedHttpResponse] = []
-        self.after_response = after_response
+    client: GovernedHttpClient
+    adapter: _ReplayAdapter
+    after_response: Callable[[], None] | None = None
+    bounded_calls: list[dict[str, Any]] = field(default_factory=list)
+    responses: list[BoundedHttpResponse] = field(default_factory=list)
 
-    def get_bounded(
-        self,
-        url: str,
-        *,
-        max_body_bytes: int,
-        overall_timeout: float,
-        params: Mapping[str, str] | None = None,
-        headers: Mapping[str, str] | None = None,
-        timeout: float | tuple[float, float] | None = None,
-        source: str = "unspecified",
-    ) -> BoundedHttpResponse:
-        self.bounded_calls.append(
-            {
-                "url": url,
-                "max_body_bytes": max_body_bytes,
-                "overall_timeout": overall_timeout,
-                "params": dict(params or {}),
-                "headers": dict(headers or {}),
-                "timeout": timeout,
-                "source": source,
-            }
-        )
-        response = super().get_bounded(
-            url,
-            max_body_bytes=max_body_bytes,
-            overall_timeout=overall_timeout,
-            params=params,
-            headers=headers,
-            timeout=timeout,
-            source=source,
-        )
-        self.responses.append(response)
-        if self.after_response is not None:
-            self.after_response()
-        return response
+    def fetch(self, context: FetchContext) -> SinaFzbFetchedSnapshot:
+        """Record one call while restoring the client's original method on exit."""
+        original_get_bounded = self.client.get_bounded
+
+        def recording_get_bounded(
+            url: str,
+            *,
+            max_body_bytes: int,
+            overall_timeout: float,
+            params: Mapping[str, str] | None = None,
+            headers: Mapping[str, str] | None = None,
+            timeout: float | tuple[float, float] | None = None,
+            source: str = "unspecified",
+        ) -> BoundedHttpResponse:
+            self.bounded_calls.append(
+                {
+                    "url": url,
+                    "max_body_bytes": max_body_bytes,
+                    "overall_timeout": overall_timeout,
+                    "params": dict(params or {}),
+                    "headers": dict(headers or {}),
+                    "timeout": timeout,
+                    "source": source,
+                }
+            )
+            response = original_get_bounded(
+                url,
+                max_body_bytes=max_body_bytes,
+                overall_timeout=overall_timeout,
+                params=params,
+                headers=headers,
+                timeout=timeout,
+                source=source,
+            )
+            self.responses.append(response)
+            if self.after_response is not None:
+                self.after_response()
+            return response
+
+        with patch.object(self.client, "get_bounded", recording_get_bounded):
+            return fetch_sina_fzb_raw(
+                SinaFzbQuery("600519.SH"), context=context, client=self.client
+            )
 
 
 def _make_context(
@@ -236,24 +233,34 @@ def _make_transport(
     status_code: int = 200,
     after_response: Callable[[], None] | None = None,
     transport_error: requests.RequestException | None = None,
-) -> tuple[_RecordingGovernedHttpClient, _ReplayAdapter]:
+) -> _OfflineTransport:
     selected_body = _recorded_body() if body is None else body
     adapter = _ReplayAdapter(status_code, selected_body, transport_error=transport_error)
     session = requests.Session()
     session.trust_env = False
     session.adapters.clear()
     session.mount("", adapter)
-    client = _RecordingGovernedHttpClient(session, after_response=after_response)
-    return client, adapter
+    client = GovernedHttpClient(
+        HttpClientConfig(
+            connect_timeout=3.0,
+            read_timeout=5.0,
+            max_attempts=1,
+            rate_limit_per_host=None,
+        ),
+        session=session,
+        sleep=lambda _seconds: None,
+        raw_response_cache=None,
+    )
+    return _OfflineTransport(client, adapter, after_response=after_response)
 
 
 def _fetch_error(
-    client: GovernedHttpClient,
+    transport: _OfflineTransport,
     context: FetchContext,
     code: str,
 ) -> SinaFzbTransportError | SinaFzbAdmissionError:
     with pytest.raises((SinaFzbTransportError, SinaFzbAdmissionError)) as raised:
-        fetch_sina_fzb_raw(SinaFzbQuery("600519.SH"), context=context, client=client)
+        transport.fetch(context)
     assert raised.value.code == code
     return raised.value
 
@@ -264,19 +271,19 @@ def test_bounded_fetch_uses_exact_query_and_propagates_the_execution_scope() -> 
     context = _make_context(timeout=1.25, deadline=deadline, cancellation=cancellation)
     budget = context.request_budget
     assert budget is not None
-    client, adapter = _make_transport()
+    transport = _make_transport()
 
-    snapshot = fetch_sina_fzb_raw(SinaFzbQuery("600519.SH"), context=context, client=client)
+    snapshot = transport.fetch(context)
 
     assert SINA_FZB_HOST == "quotes.sina.cn"
     assert SINA_FZB_URL == (
         "https://quotes.sina.cn/cn/api/openapi.php/CompanyFinanceService.getFinanceReport2022"
     )
-    assert len(adapter.requests) == 1
+    assert len(transport.adapter.requests) == 1
     assert budget.attempts_used == 1
     assert budget.attempts_used_for(_SOURCE) == 1
-    assert len(client.bounded_calls) == 1
-    bounded = client.bounded_calls[0]
+    assert len(transport.bounded_calls) == 1
+    bounded = transport.bounded_calls[0]
     assert bounded["url"] == SINA_FZB_URL
     assert bounded["source"] == _SOURCE
     assert bounded["params"] == {
@@ -290,7 +297,7 @@ def test_bounded_fetch_uses_exact_query_and_propagates_the_execution_scope() -> 
     assert bounded["overall_timeout"] == 1.25
     assert bounded["timeout"] == (1.25, 1.25)
 
-    request = adapter.requests[0]
+    request = transport.adapter.requests[0]
     assert request.method == "GET"
     assert request.headers["Accept-Encoding"] == "identity"
     parsed_url = urlsplit(request.url or "")
@@ -305,7 +312,7 @@ def test_bounded_fetch_uses_exact_query_and_propagates_the_execution_scope() -> 
         "num": ["1000"],
     }
 
-    scope_stack = adapter.scopes[0]
+    scope_stack = transport.adapter.scopes[0]
     assert len(scope_stack) == 1
     scope = scope_stack[0]
     assert scope.source == _SOURCE
@@ -316,18 +323,18 @@ def test_bounded_fetch_uses_exact_query_and_propagates_the_execution_scope() -> 
     assert scope.cancellation is cancellation
     assert snapshot.query.symbol == "600519.SH"
     assert len(snapshot.reports) == 103
-    assert snapshot.retrieved_at_utc == client.responses[0].retrieved_at
+    assert snapshot.retrieved_at_utc == transport.responses[0].retrieved_at
     assert snapshot.retrieved_at_utc.tzinfo is timezone.utc
 
 
 def test_context_timeout_is_tightened_against_the_fixed_socket_bounds() -> None:
     context = _make_context(timeout=12.0)
-    client, adapter = _make_transport()
+    transport = _make_transport()
 
-    fetch_sina_fzb_raw(SinaFzbQuery("600519.SH"), context=context, client=client)
+    transport.fetch(context)
 
-    assert len(adapter.requests) == 1
-    bounded = client.bounded_calls[0]
+    assert len(transport.adapter.requests) == 1
+    bounded = transport.bounded_calls[0]
     assert bounded["overall_timeout"] == 12.0
     assert bounded["timeout"] == (3.0, 5.0)
 
@@ -335,27 +342,27 @@ def test_context_timeout_is_tightened_against_the_fixed_socket_bounds() -> None:
 def test_non_200_success_status_is_rejected_before_parser_use(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    client, adapter = _make_transport(b"{}", status_code=206)
+    transport = _make_transport(b"{}", status_code=206)
     context = _make_context()
 
     def unexpected_parse(*_args: object, **_kwargs: object) -> object:
         raise AssertionError("a non-200 response must not reach the JSON parser")
 
     monkeypatch.setattr(wire_module, "parse_sina_fzb_response", unexpected_parse)
-    _fetch_error(client, context, "http_status")
-    assert len(adapter.requests) == 1
-    assert client.responses[0].status_code == 206
+    _fetch_error(transport, context, "http_status")
+    assert len(transport.adapter.requests) == 1
+    assert transport.responses[0].status_code == 206
 
 
 def test_redirect_response_is_not_followed_to_another_host() -> None:
-    client, adapter = _make_transport(b"redirect body", status_code=302)
+    transport = _make_transport(b"redirect body", status_code=302)
 
-    _fetch_error(client, _make_context(), "http_status")
+    _fetch_error(transport, _make_context(), "http_status")
 
-    assert len(adapter.requests) == 1
-    assert adapter.raw_streams[0].closed_by_test
-    assert adapter.requests[0].url is not None
-    assert urlsplit(adapter.requests[0].url).hostname == SINA_FZB_HOST
+    assert len(transport.adapter.requests) == 1
+    assert transport.adapter.raw_streams[0].closed_by_test
+    assert transport.adapter.requests[0].url is not None
+    assert urlsplit(transport.adapter.requests[0].url).hostname == SINA_FZB_HOST
 
 
 @pytest.mark.parametrize(
@@ -368,27 +375,27 @@ def test_redirect_response_is_not_followed_to_another_host() -> None:
 def test_bounded_transport_failures_are_sanitized_and_never_retried(
     transport_error: requests.RequestException, code: str
 ) -> None:
-    client, adapter = _make_transport(transport_error=transport_error)
+    transport = _make_transport(transport_error=transport_error)
     context = _make_context()
 
-    mapped = _fetch_error(client, context, code)
+    mapped = _fetch_error(transport, context, code)
 
-    assert len(adapter.requests) == 1
-    assert client.responses == []
-    assert len(client.bounded_calls) == 1
+    assert len(transport.adapter.requests) == 1
+    assert transport.responses == []
+    assert len(transport.bounded_calls) == 1
     assert context.request_budget is not None
     assert context.request_budget.attempts_used == 1
     assert "do-not-echo" not in str(mapped)
 
 
 def test_transport_response_over_the_byte_cap_fails_before_json_parsing() -> None:
-    client, adapter = _make_transport(b"x" * (MAX_RAW_RESPONSE_BYTES + 1))
+    transport = _make_transport(b"x" * (MAX_RAW_RESPONSE_BYTES + 1))
 
-    _fetch_error(client, _make_context(), "response_too_large")
+    _fetch_error(transport, _make_context(), "response_too_large")
 
-    assert len(adapter.requests) == 1
-    assert client.responses == []
-    assert adapter.raw_streams[0].closed_by_test
+    assert len(transport.adapter.requests) == 1
+    assert transport.responses == []
+    assert transport.adapter.raw_streams[0].closed_by_test
 
 
 @pytest.mark.parametrize(
@@ -503,7 +510,7 @@ def test_admission_denials_happen_before_any_transport_attempt(
     hosts: frozenset[str] | None,
     code: str,
 ) -> None:
-    client, adapter = _make_transport(b"unused")
+    transport = _make_transport(b"unused")
     context = _make_context(
         request_budget=RequestBudget() if budget == "empty" else None,
         operation=context_operation,
@@ -514,29 +521,29 @@ def test_admission_denials_happen_before_any_transport_attempt(
         allowed_hosts=hosts,
     )
 
-    _fetch_error(client, context, code)
+    _fetch_error(transport, context, code)
 
-    assert adapter.requests == []
+    assert transport.adapter.requests == []
     assert context.request_budget is None or context.request_budget.attempts_used == 0
 
 
 def test_absent_request_budget_is_reported_before_the_client_is_called() -> None:
-    client, adapter = _make_transport(b"unused")
+    transport = _make_transport(b"unused")
     context = FetchContext(timeout=2.0)
 
-    _fetch_error(client, context, "admission_required")
+    _fetch_error(transport, context, "admission_required")
 
-    assert adapter.requests == []
-    assert client.bounded_calls == []
+    assert transport.adapter.requests == []
+    assert transport.bounded_calls == []
 
 
 def test_expired_deadline_is_distinct_from_cancellation_and_sends_no_request() -> None:
-    client, adapter = _make_transport(b"unused")
+    transport = _make_transport(b"unused")
     context = _make_context(deadline=time.monotonic() - 1.0)
 
-    _fetch_error(client, context, "deadline_exceeded")
+    _fetch_error(transport, context, "deadline_exceeded")
 
-    assert adapter.requests == []
+    assert transport.adapter.requests == []
     assert context.request_budget is not None
     assert context.request_budget.attempts_used == 0
 
@@ -544,12 +551,12 @@ def test_expired_deadline_is_distinct_from_cancellation_and_sends_no_request() -
 def test_cancellation_before_transport_has_its_own_code_and_consumes_no_attempt() -> None:
     cancellation = threading.Event()
     cancellation.set()
-    client, adapter = _make_transport(b"unused")
+    transport = _make_transport(b"unused")
     context = _make_context(cancellation=cancellation)
 
-    _fetch_error(client, context, "cancelled")
+    _fetch_error(transport, context, "cancelled")
 
-    assert adapter.requests == []
+    assert transport.adapter.requests == []
     assert context.request_budget is not None
     assert context.request_budget.attempts_used == 0
 
@@ -558,7 +565,7 @@ def test_cancellation_after_bounded_response_prevents_parser_use(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     cancellation = threading.Event()
-    client, adapter = _make_transport(
+    transport = _make_transport(
         after_response=cancellation.set,
     )
     context = _make_context(cancellation=cancellation)
@@ -567,19 +574,19 @@ def test_cancellation_after_bounded_response_prevents_parser_use(
         raise AssertionError("cancellation observed after transport must stop parsing")
 
     monkeypatch.setattr(wire_module, "parse_sina_fzb_response", unexpected_parse)
-    _fetch_error(client, context, "cancelled")
+    _fetch_error(transport, context, "cancelled")
 
-    assert len(adapter.requests) == 1
-    assert client.responses
-    assert client.responses[0].status_code == 200
-    assert adapter.raw_streams[0].closed_by_test
+    assert len(transport.adapter.requests) == 1
+    assert transport.responses
+    assert transport.responses[0].status_code == 200
+    assert transport.adapter.raw_streams[0].closed_by_test
 
 
 def test_cancellation_after_parsing_prevents_snapshot_return(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     cancellation = threading.Event()
-    client, adapter = _make_transport()
+    transport = _make_transport()
     context = _make_context(cancellation=cancellation)
     original_parse = wire_module.parse_sina_fzb_response
 
@@ -589,8 +596,8 @@ def test_cancellation_after_parsing_prevents_snapshot_return(
         return reports
 
     monkeypatch.setattr(wire_module, "parse_sina_fzb_response", parse_then_cancel)
-    _fetch_error(client, context, "cancelled")
+    _fetch_error(transport, context, "cancelled")
 
-    assert len(adapter.requests) == 1
-    assert client.responses[0].status_code == 200
-    assert adapter.raw_streams[0].closed_by_test
+    assert len(transport.adapter.requests) == 1
+    assert transport.responses[0].status_code == 200
+    assert transport.adapter.raw_streams[0].closed_by_test
