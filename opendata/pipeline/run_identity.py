@@ -14,6 +14,7 @@ import re
 from datetime import date, datetime
 from datetime import timezone as dt_timezone
 from typing import Annotated, Final, Literal
+from urllib.parse import parse_qsl, urlsplit
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import (
@@ -42,8 +43,21 @@ _SENSITIVE_KEY_PARTS = (
     "authorization",
     "cookie",
     "credential",
+    "databaseurl",
+    "databaseuri",
+    "dburl",
+    "dburi",
+    "connectionstring",
+    "connectionurl",
+    "connectionuri",
+    "dsn",
+    "jdbcurl",
+    "jdbcuri",
+    "jdbcstring",
+    "odbcconnectionstring",
     "password",
     "passwd",
+    "pwd",
     "privatekey",
     "secret",
     "token",
@@ -52,6 +66,11 @@ _BEARER_VALUE = re.compile(r"^\s*bearer\s+\S+", re.IGNORECASE)
 _COMMON_SECRET_VALUE = re.compile(
     r"^(?:sk-[A-Za-z0-9]{16,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,})$"
 )
+_URL_CANDIDATE = re.compile(r"(?i)[a-z][a-z0-9+.-]*://[^\s\"'<>]+")
+_JDBC_CONNECTION_PREFIX = re.compile(r"(?i)\bjdbc\s*:\s*[a-z0-9_.-]+\s*:")
+_CREDENTIAL_ASSIGNMENT = re.compile(r"(?i)(?:^|[;,\s])(?:pwd|password|passwd)\s*=\s*[^;,\s]*")
+_ODBC_SELECTOR_ASSIGNMENT = re.compile(r"(?i)(?:^|;)\s*(?:driver|dsn)\s*=")
+_ODBC_USER_ASSIGNMENT = re.compile(r"(?i)(?:^|;)\s*(?:uid|user\s+id)\s*=")
 
 Identifier = Annotated[
     str,
@@ -71,7 +90,7 @@ BoundedText = Annotated[str, StringConstraints(strict=True, min_length=1, max_le
 class _StrictModel(BaseModel):
     """Base configuration shared by the declarative contract models."""
 
-    model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
+    model_config = ConfigDict(extra="forbid", strict=True, frozen=True, hide_input_in_errors=True)
 
 
 class ScheduleMetadata(_StrictModel):
@@ -440,8 +459,7 @@ def _validate_json_value(
                 if type(key) is not str:
                     raise ValueError(f"JSON object keys at {path} must be strings")
                 _validate_json_string(key, f"{path}.<key>")
-                normalized_key = re.sub(r"[^a-z0-9]", "", key.lower())
-                if any(part in normalized_key for part in _SENSITIVE_KEY_PARTS):
+                if _is_sensitive_parameter_name(key):
                     raise ValueError(f"sensitive parameter name is not allowed at {path}.{key}")
                 validated_dict[str(key)] = _validate_json_value(
                     item,
@@ -462,5 +480,41 @@ def _validate_json_string(value: str, path: str) -> None:
         raise ValueError(f"JSON string at {path} exceeds {MAX_JSON_STRING_LENGTH} characters")
     if any(ord(character) < 32 for character in value):
         raise ValueError(f"JSON string at {path} must not contain control characters")
-    if _BEARER_VALUE.match(value) or _COMMON_SECRET_VALUE.fullmatch(value):
-        raise ValueError(f"credential-like value is not allowed at {path}")
+    if (
+        _BEARER_VALUE.match(value)
+        or _COMMON_SECRET_VALUE.fullmatch(value)
+        or _contains_connection_credentials(value)
+    ):
+        raise ValueError(f"connection or credential-like value is not allowed at {path}")
+
+
+def _is_sensitive_parameter_name(value: str) -> bool:
+    """Match credential and connection-string selectors across separators/case."""
+    normalized = re.sub(r"[^a-z0-9]", "", value.casefold())
+    return any(part in normalized for part in _SENSITIVE_KEY_PARTS)
+
+
+def _contains_connection_credentials(value: str) -> bool:
+    """Detect JDBC configuration, URL credentials, and DSN passwords."""
+    if (
+        _JDBC_CONNECTION_PREFIX.search(value)
+        or _CREDENTIAL_ASSIGNMENT.search(value)
+        or (_ODBC_SELECTOR_ASSIGNMENT.search(value) and _ODBC_USER_ASSIGNMENT.search(value))
+    ):
+        return True
+    for match in _URL_CANDIDATE.finditer(value):
+        candidate = match.group().rstrip(".,;)]}")
+        try:
+            parsed = urlsplit(candidate)
+        except ValueError:
+            continue
+        if not parsed.scheme or not parsed.netloc:
+            continue
+        if parsed.username is not None or parsed.password is not None:
+            return True
+        query = parsed.query.replace(";", "&")
+        if any(
+            _is_sensitive_parameter_name(key) for key, _ in parse_qsl(query, keep_blank_values=True)
+        ):
+            return True
+    return False

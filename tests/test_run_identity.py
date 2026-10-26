@@ -450,6 +450,142 @@ def test_query_rejects_non_json_non_finite_and_credential_values(
         RunRequest(run_type="manual", idempotency_key="manual-1", query=query)
 
 
+@pytest.mark.parametrize(
+    "selector",
+    [
+        "database_url",
+        "Database-URL",
+        "connection_string",
+        "Connection-URI",
+        "DSN",
+        "jdbc_url",
+        "db_uri",
+    ],
+)
+def test_nested_connection_selectors_are_rejected_without_echoing_values(selector: str) -> None:
+    """Reject common credential-bearing connection selectors at any nesting depth."""
+    canary = "credential-canary"
+    query = {
+        "filters": [{"provider_options": {selector: f"mysql://reader:{canary}@db.invalid/data"}}]
+    }
+
+    with pytest.raises(ValidationError) as caught:
+        RunRequest(run_type="manual", idempotency_key="manual-selector", query=query)
+
+    assert canary not in str(caught.value)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "mysql://readonly:credential-canary@db.invalid/warehouse",
+        "jdbc:postgresql://readonly:credential-canary@db.invalid/warehouse",
+        "jdbc:oracle:thin:readonly/credential-canary@db.invalid:1521/prod",
+        "Database settings: jdbc:mysql://readonly:credential-canary@db.invalid/warehouse",
+        "Driver=ODBC Driver 18;Server=db.invalid;UID=readonly;PWD=credential-canary;",
+        "Driver=ODBC Driver 18;Server=db.invalid;UID=readonly;",
+        "PWD=credential-canary",
+        "password=credential-canary",
+        "passwd=credential-canary",
+        "https://data.example.test/prices?password=credential-canary",
+        "https://data.example.test/prices?token=credential-canary",
+        "https://data.example.test/prices?symbol=600519&api_key=credential-canary",
+        "https://data.example.test/prices?X-API-Key=credential-canary",
+        "https://data.example.test/prices?access%5Ftoken=credential-canary",
+    ],
+)
+def test_credential_bearing_urls_are_rejected_without_echoing_values(value: str) -> None:
+    """Reject URI userinfo and HTTP query credentials before identity creation."""
+    with pytest.raises(ValidationError) as caught:
+        RunRequest(
+            run_type="manual",
+            idempotency_key="manual-url-credential",
+            query={"endpoint": value},
+        )
+
+    assert "credential-canary" not in str(caught.value)
+
+
+def test_jdbc_connection_configuration_is_rejected_without_credentials() -> None:
+    """Do not accept raw JDBC connection strings as replayable business inputs."""
+    with pytest.raises(ValidationError):
+        RunRequest(
+            run_type="manual",
+            idempotency_key="manual-jdbc-config",
+            query={"endpoint": "jdbc:postgresql://db.invalid/warehouse"},
+        )
+
+
+def test_public_url_and_business_symbols_remain_valid() -> None:
+    """Allow ordinary public endpoints and market identifiers in a replayable query."""
+    request = RunRequest(
+        run_type="manual",
+        idempotency_key="manual-public-endpoint",
+        query={
+            "endpoint": "https://data.example.test/prices?symbol=600519&from=2025-03-01",
+            "symbols": ["600519", "AAPL"],
+            "notes": "Prices are delayed; use the published endpoint.",
+        },
+    )
+
+    identity = build_run_identity(make_task(), request)
+
+    assert "https://data.example.test/prices?symbol=600519&from=2025-03-01" in (
+        identity.canonical_json
+    )
+    assert '"symbols":["600519","AAPL"]' in identity.canonical_json
+
+
+def test_driver_only_public_connection_metadata_remains_valid() -> None:
+    """Allow connection metadata without a user identity or credential assignment."""
+    request = RunRequest(
+        run_type="manual",
+        idempotency_key="manual-public-driver",
+        query={"source": "Driver=ODBC Driver 18;Server=db.invalid;Database=market;"},
+    )
+
+    identity = build_run_identity(make_task(), request)
+
+    assert "Driver=ODBC Driver 18;Server=db.invalid;Database=market;" in identity.canonical_json
+
+
+def test_embedded_jdbc_credentials_in_nested_array_are_rejected() -> None:
+    """Revalidate strings recursively when JDBC URIs are nested in arrays."""
+    canary = "credential-canary"
+    request = RunRequest.model_construct(
+        run_type="manual",
+        idempotency_key="manual-nested-jdbc",
+        query={"sources": [{"endpoint": f"jdbc:postgresql://readonly:{canary}@db.invalid/data"}]},
+        partition={},
+    )
+
+    with pytest.raises(ValidationError) as caught:
+        build_run_identity(make_task(), request)
+
+    assert canary not in str(caught.value)
+
+
+def test_model_construct_and_model_copy_cannot_replay_credential_payloads() -> None:
+    """Run-boundary revalidation rejects credential payloads bypassing Pydantic init."""
+    canary = "credential-canary"
+    constructed = RunRequest.model_construct(
+        run_type="manual",
+        idempotency_key="manual-constructed",
+        query={"source": f"mysql://readonly:{canary}@db.invalid/warehouse"},
+        partition={},
+    )
+    copied = RunRequest(run_type="manual", idempotency_key="manual-copied").model_copy(
+        update={
+            "query": {"nested": [{"Endpoint": f"https://api.example.test/data?token={canary}"}]}
+        }
+    )
+
+    for request in (constructed, copied):
+        with pytest.raises(ValidationError) as caught:
+            build_run_identity(make_task(), request)
+        assert canary not in str(caught.value)
+
+
 def test_query_size_and_depth_are_bounded() -> None:
     """Bound nested and encoded query size before identity generation."""
     oversized_text = "x" * 2_049
