@@ -782,6 +782,7 @@ def test_parser_output_item_values_and_identity_are_rechecked(
         "gapped_ordinals",
         "too_many_occurrences",
         "overlapping_entries",
+        "descending_order",
         "negative_ordinal",
         "repeated_ordinal",
         "empty_entry_sequence",
@@ -818,6 +819,12 @@ def test_parser_output_entry_order_and_occurrence_bounds_are_rechecked(
         entries = (replace(item, source_ordinals=tuple(range(MAX_SINA_FZB_ROWS_PER_REPORT + 1))),)
         expected_code = "limit_exceeded"
     elif case == "overlapping_entries":
+        entries = (
+            replace(item, source_ordinals=(0, 2)),
+            replace(item, source_item_id="ANOTHER_ITEM", source_ordinals=(1, 2)),
+        )
+        expected_code = "invalid_response"
+    elif case == "descending_order":
         entries = (item, replace(item, source_item_id="ANOTHER_ITEM", source_ordinals=(0,)))
         expected_code = "invalid_response"
     elif case == "negative_ordinal":
