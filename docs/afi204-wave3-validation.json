@@ -1,0 +1,429 @@
+{
+  "afi_code_commit": "2931dd8f7",
+  "afi_source_changes_this_wave": false,
+  "archived_validation_serialization": "The immutable wave3 archive retains the original basename-key serialization. The public receipt now qualifies those same file hashes with actual archive-relative paths; source pins, test results and artifact bytes are unchanged.",
+  "environment": {
+    "bandit": "1.9.4",
+    "mypy": "2.3.1",
+    "python": "3.13.5",
+    "python310": "AST grammar PASS; actual runtime matrix NOT_RUN",
+    "ruff": "0.15.20"
+  },
+  "inventory": {
+    "dry_run_plan_sha256": "6ff154d118c7a830b816bc3ce2d7208a5449d00ce45b0ded03b642e92433e972",
+    "dry_run_summary": {
+      "blocked_task_count": 1103,
+      "mapping_row_count": 0,
+      "missing_mapping_count": 1103,
+      "non_scheduled_helper_count": 10,
+      "ready_disabled_task_count": 0,
+      "runtime_static_anti_join_issue_count": 0,
+      "scheduled_task_count": 1103,
+      "scheduled_tasks_with_mapping": 0,
+      "script_registry_count": 1066,
+      "static_catalog_file_count": 1066,
+      "task_blocked_reason_counts": {
+        "mapping_review_missing": 1103,
+        "reviewed_mapping_missing": 1103,
+        "static_missing_provider": 881,
+        "static_requires_manual": 222,
+        "target_allowlist_missing": 1103,
+        "target_mapping_missing": 1103,
+        "target_warehouse_fingerprint_missing": 1103
+      }
+    },
+    "host_known_unknowns": [
+      "systemd remains UNKNOWN because three systemctl show calls returned nonzero_exit",
+      "proc census remains PARTIAL with four permission_denied and one process_raced observation",
+      "checkpoint scan remains PARTIAL due per-project entry limit",
+      "source-writer identity is unproven; all related processes remain unclassified candidates"
+    ],
+    "host_observed_at_utc": "2026-10-26T12:54:26.363649+00:00",
+    "host_summary": {
+      "checkpoint_candidates": {
+        "by_project": {
+          "afi": 71,
+          "opendata": 12
+        },
+        "candidate_count": 83,
+        "error_counts": {
+          "afi_scan_limit": 1,
+          "scan_limit": 1
+        },
+        "status": "PARTIAL"
+      },
+      "configuration_hashes": {
+        "by_project": {
+          "afi": 18,
+          "opendata": 15
+        },
+        "error_counts": {},
+        "file_count": 33,
+        "status": "OK",
+        "total_bytes_hashed": 283904
+      },
+      "crontab": {
+        "absence": "no_user_crontab",
+        "related_entry_count": 0,
+        "status": "OK"
+      },
+      "processes": {
+        "classification_counts": {
+          "project_related_unclassified": 77
+        },
+        "error_counts": {
+          "permission_denied": 4,
+          "process_raced": 1
+        },
+        "interpretation": "Project-associated process candidates may include development, test, and agent tools; this count is not a data-worker count. Cwd or project-path association alone does not prove a source writer. No process-to-script/service binding was established.",
+        "owned_test_infrastructure_processes_seen": 0,
+        "proc_entries_examined": 579,
+        "project_related_candidates": 77,
+        "same_uid_processes_examined": 260,
+        "source_writer_process_count": null,
+        "status": "PARTIAL"
+      },
+      "scope_labels": [
+        "afi",
+        "opendata"
+      ],
+      "systemd_user": {
+        "active_related_units": 12,
+        "error_codes": {
+          "nonzero_exit": 3
+        },
+        "installed_related_units": 16,
+        "installed_units_seen": 137,
+        "loaded_units_seen": 97,
+        "related_unit_form_counts": {
+          "instance": 4,
+          "regular": 16
+        },
+        "related_unit_origin_counts": {
+          "unit_file": 20
+        },
+        "related_units": 20,
+        "status": "UNKNOWN",
+        "timer_service_targets_seen": 8,
+        "timers_seen_by_list_timers_all": 8
+      }
+    },
+    "non_scheduled_helpers": 10,
+    "registered_scripts": 1066,
+    "scheduled_tasks": 1103,
+    "static_entrypoints": 1056,
+    "static_matching_note": "MISSING_PROVIDER means no registered Fetcher statically matched, not proof every script requires a new adapter.",
+    "static_script_classes": {
+      "MISSING_PROVIDER": 877,
+      "REQUIRES_MANUAL": 189
+    }
+  },
+  "iteration": 204,
+  "opendata_code_commit": "f250940f663b44ebcd6f663d4b82098531892a3a",
+  "opendata_integration_branch": "codex/od204-subagent-integration",
+  "private_receipt_path_base": "Original opendata repository root; exact paths under the ignored private persistent archive.",
+  "private_receipt_sha256": {
+    "var/reports/afi204/2026-10-26-wave3/afi-wave3-doc-sync.json": "70206a8e008f302074d3de302708b10271069a986eefcd6d378e382e5a11af16",
+    "var/reports/afi204/2026-10-26-wave3/host-runtime-wave3-fixed.json": "754ee778d7454164979070145f27347517c44afcb118b0651b2c4e5d984e20d5",
+    "var/reports/afi204/2026-10-26-wave3/host-validation-wave3-fixed.json": "ec0dfaa51c0bd31795cf8c3825aa5e6cbf038a71cadf759e44d286e985935cc2",
+    "var/reports/afi204/2026-10-26-wave3/migration-catalog-wave3.json": "bb735f31d29bca2f28139cc0b0ee214a78187bdd846b6b3305f9273cac86211f",
+    "var/reports/afi204/2026-10-26-wave3/migration-plan-wave3-integrated-cli.txt": "18029eb5da70f29d85ca320345ec23f42a29d793ad25ede0ea2c7f7ae8392e41",
+    "var/reports/afi204/2026-10-26-wave3/migration-plan-wave3-integrated.json": "14f42cd3fa9dd19be65fadbd4d8dbd11d7df0a1f31d6f92aef7f1789480f7470",
+    "var/reports/afi204/2026-10-26-wave3/process-review-wave3-final/RESULTS.txt": "94f39fcdc0fc434cb36abaeae521e7116337c62e39cf616efa359d501fb0130c",
+    "var/reports/afi204/2026-10-26-wave3/process-review-wave3-final/race_repro.py": "1bbe76fbfb60b8fec7becb1fb894250a7f3e5ed00ff3701823e45a681ec78140",
+    "var/reports/afi204/2026-10-26-wave3/process-review-wave3-final/race_worker.py": "682055838ea3871108549ebc01aefefbef5602d597a3a84e7c8d53868bcb1730",
+    "var/reports/afi204/2026-10-26-wave3/process-review-wave3-final/readiness-cleanup-race.txt": "02425b251994fa66087b54549001682d7dab1478e670c5bfdd004a8304dc8bdf",
+    "var/reports/afi204/2026-10-26-wave3/stock-source-20261026T123030Z/manifest.json": "c61ea2a59b35d2bd1a0c3043fccdcaaa8288f3879607fbe3997edb5517a8b37c",
+    "var/reports/afi204/2026-10-26-wave3/wave3-bandit-final.json": "3afa0bf10343db241e52fe374f39bfe624b0412ede1030d81dd383c7147d064b",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-command.json": "b98fce4805fd6cbb668f48bd82b8ad58b6a466b88f9bf620f7fc2ee4302e6774",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-coverage.ini": "4b4fc59310cdb4ff49153fd6e071993e769ae5f0660df55e38d04306fecf72a6",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-coverage.json": "f7e6c16e49bce75d9389c761b918bd0f4b7670adcfb71e721d33f2ff503182ef",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-coverage.xml": "12173ca942bdf36d6a49175b5425ebcf06ce11678417b3d9817eb6970bab66e0",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-descendant-failure-command.json": "000c0099ad492783dc7085e31538766f51835e3bb938c9bd8adfe585c7e8a41b",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-descendant-failure-coverage.json": "87e1533816a35560111274508dc1d93caca46afe7ae9909d348e81200f253191",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-descendant-failure-coverage.xml": "9571d60af2cf02fe9390a2cec80239e87b4115d1dd7af653ae4142c8eafea917",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-descendant-failure-pytest.txt": "ee8acf52d540f59902f056f9b1968b3a12fbf0c77847b5fd249dec7b515e5179",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-initial-failure-command.json": "698e905277e451792bd9b25c3cfc14be4b7cfd073197469b7b5014dfb511cbb1",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-initial-failure-coverage.json": "e6a2efc79704b87ed8a89303e3b0816505fcd4a34a1a5cbc531de2ab2b4819d4",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-initial-failure-coverage.xml": "3c9ede0e9c2ed401b47aace34d9128271b01d6f2324e49566195b3b07004d2d1",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-initial-failure-pytest.txt": "66708ca35faae19bb3048fac5045f5e4262f71b86f7c3e0c7d2dd510499c7cc6",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined-pytest.txt": "f3f6e0a240f3a9ce6fe213295db2f1af518041ccf01bc4a132f7ee335f54feb7",
+    "var/reports/afi204/2026-10-26-wave3/wave3-combined.coverage": "b9f816396070459ffa3005b6fdd9b6eb495bbb287314ad5df3f9a09bb07924e2",
+    "var/reports/afi204/2026-10-26-wave3/wave3-compatibility-fix-tests.txt": "efc6856c5a50751c816b1d516d43a9ffaa993140f4f7c4f501ec72b0478f751a",
+    "var/reports/afi204/2026-10-26-wave3/wave3-descendant-review.txt": "b5345b36198d64eec4ef6ecfdcb2be0e623a28584ad7a2ea48f384de92d9eaa9",
+    "var/reports/afi204/2026-10-26-wave3/wave3-final-quality.txt": "2424933d405d0c0ad3cfa484af01a7ee333bc24470fc2bcbac2b1f9480da160c",
+    "var/reports/afi204/2026-10-26-wave3/wave3-immutable-evidence-audit.json": "4fa4855970e3d47ccd217444d5ba5371a30e99cf434a7181c4f89080f97db57c",
+    "var/reports/afi204/2026-10-26-wave3/wave3-mypy-final.json": "10ea48c0c9456f53f135e9424697ac4d09d033d6aff885db068a1b92d314819d",
+    "var/reports/afi204/2026-10-26-wave3/wave3-openapi-gate.txt": "b75ddb3893f1277a49a180d3e2978bdfce5ae50af431c7fe77a0ca789441200e",
+    "var/reports/afi204/2026-10-26-wave3/wave3-process-final-tests.txt": "cd95d0e386e4413aaf6962a112a44ac21f0f9255a04f3510de4d721b683e89e1",
+    "var/reports/afi204/2026-10-26-wave3/wave3-process-fix-quality.json": "448339ad0d7e43616b1911f5ef7db49a5bf5e5d028dfb890f1cb9e88a33e7765",
+    "var/reports/afi204/2026-10-26-wave3/wave3-reference-reconcile.json": "661d4eba5e3765eefddc0559768bfa380e53266d848ef9dd14e085c591f95305",
+    "var/reports/afi204/2026-10-26-wave3/wave3-reviewed-chain-final.txt": "51fc4418301b2671b48f96e42252a45c302dfb286968b20a9e30e5a8b4ee4e98",
+    "var/reports/afi204/2026-10-26-wave3/wave3-secret-check-receipt.json": "745165dcbd8077dd6e11220181a68b6e1dd87036658b60bdf85d343473d3ec12",
+    "var/reports/afi204/2026-10-26-wave3/wave3-secret-check.txt": "00d7876ab2208a13bc8facc582972d5e3fcb9ba771f4d2ff261294cb732fd4c7",
+    "var/reports/afi204/2026-10-26-wave3/wave3-static-final.json": "eb4628d2eba7b90c21765d75aa872193a1128b5dfd5f5fbe26c710d9b647344a",
+    "var/reports/afi204/2026-10-26-wave3/wave3-whole-gate.txt": "8ae5bfa823767bd93216935bcab5000bb35ff4cf8c50b805e2c912275f19d325"
+  },
+  "production_changes": "NONE. Original source/running recovery jobs preserved; only read-only source metadata and host inventory. DDL/facts restricted to owned test databases; local ignored receipt archive only.",
+  "public_artifact_sha256": {
+    "docs/afi204-host-inventory.json": "af08f1df41e2c3ab560a2b84c111599fcddabfe4d281f03bc2c119fa6498ced8",
+    "docs/afi204-v1-openapi.json": "2b738ff5ab2d2aa8a2603c908a05256a1b8b7522f72aa5a699ba963d4271bf74",
+    "docs/afi204-v2-openapi.json": "ff35866742273bf4e442fbb3c2cdc64740021712fd150092b44631185430365f"
+  },
+  "real_source": {
+    "business_window_inclusive": [
+      "2026-10-22",
+      "2026-10-23"
+    ],
+    "receipt": "stock-source-20261026T123030Z/manifest.json",
+    "requests": 2,
+    "rights_and_retention": "UNKNOWN; no successful normalization comparison",
+    "status": "RemoteDisconnected before HTTP status/body",
+    "symbols": [
+      "600519",
+      "000001"
+    ],
+    "verified": false
+  },
+  "recorded_at": "2026-10-26T13:30:02.418542+00:00",
+  "remaining_limits": [
+    "No actual durable worker, CLI/admin API/scheduler startup/systemd deployment wiring; global concurrency and database heartbeat IO bounds still required.",
+    "Executor is POSIX-only trusted-function isolation, not a Python sandbox; inherits environment and OS access. Native fd output discarded without byte accounting.",
+    "Raw crash/SIGKILL temporary and orphan object cleanup plus retention enforcement not implemented; actual filesystem durability not validated.",
+    "Stock GovernedHttpClient buffers response before 2 MiB check; no streaming ingress hard cap; new source parameters not validated against successful live response.",
+    "Source/license/master data/calendar/PIT/full-history and row-level migration mapping remain open; 1103 jobs BLOCKED and zero ready.",
+    "Host systemd UNKNOWN, processes/checkpoints PARTIAL; project-path candidates not identified as source writers.",
+    "Full make gate FAIL; Python3.10 runtime, PostgreSQL, real natural cycles, external backup/restore, production single-writer cutover, PR merge and remote CI NOT_RUN."
+  ],
+  "repairs_during_integration": [
+    "Popen start_new_session establishes process-group isolation before ready IPC; record it at launch so timeout before ready consumption cannot leak descendants. Independent real-process reproduction and deterministic pre-ready-fork regression retained.",
+    "Nonblocking framed JSON IPC and incremental command send preserve deadline/cancel/checkpoint across backpressure; fixed helper prevents import-time output leakage.",
+    "Cron weekday names required to avoid POSIX/APScheduler numeric interpretation drift; original occurrence retained.",
+    "Raw evidence revalidates constructed models, rejects FIFO/symlink/oversized integer summaries, cleans ordinary failure temporaries and verifies no-clobber winners.",
+    "Host inventory rejects config/output aliases and FIFOs, uses absolute read-only executables and shared enumeration bounds.",
+    "Migration plan rejects bool schema_version and distinguishes task/script parameter hashes and task/helper denominators.",
+    "Stock identity checked on wire code/market before rows are built; catalog regression no longer assumes native wire must call a vendor wrapper."
+  ],
+  "schema_version": 1,
+  "source_sha256": {
+    "alembic_data/versions/20261026-0010_run_ledger.py": "840837f5c6a1ecb9e38955d754acc805aa6f91431f63817f88e663d049b3742d",
+    "alembic_data/versions/20261026-0011_publication_snapshots.py": "69a9203b0a34a1da0b71438d3d310f96c70683c594fecf328a85d1c54d4b08f0",
+    "opendata/api/__init__.py": "cf360233a410eb6baf331e6d5ef7e1f04b8033ec56fb820ad4f036fcb38cfaa5",
+    "opendata/api/published_access.py": "0176fe21ab38b0bdd6e8dd7fe39c30eb0caffe7402653c7d72b4b8a85c62deb0",
+    "opendata/api/published_data.py": "accecc37d3cbd8700dbdae010a471cf004fdc64f38fafc2f1ec5ba94500b7620",
+    "opendata/data/dataset_contract_registry.py": "522e2f798bb04bbe10035698278945867d0aafec6942f5723841cb61d032eb81",
+    "opendata/data/models/base.py": "22ffac413395ebf1951cf938119ec2476b12d2ffb063c5eeafafd06b49a16ee8",
+    "opendata/data/platform_contracts.py": "c890798e8c217efc6ee86fee236be97688036d30e9ad97cd9c96d3f7d7dd5726",
+    "opendata/data/providers/akshare/models/stock_daily.py": "fc83a9bbf83d13b1f5829bc81202c069356ec60488504631c263a1aeab6b739f",
+    "opendata/data/providers/akshare/stock_daily_wire.py": "7497656eeb141b927ccaabeb62a9425cfa004865c1c333ca7f4dd862a41c083b",
+    "opendata/host_inventory.py": "039e02b8391bfe2f2b291c9950f08ad454db8c02ea83ee86eaafd5806c407a87",
+    "opendata/main.py": "ba87561e3a0422979e1ee4a9330ad05119445bf7ca8c64ce2c23b878f6bb6a1e",
+    "opendata/migration_catalog.py": "42e435e271d125990ac5592025fc410f51035ea072df00517a09c52cbc10d3ec",
+    "opendata/migration_inventory.py": "094b101808c97621dd569468ac9ba7e398c1dc058288f308ef0d3ac442c83292",
+    "opendata/migration_plan.py": "2549d4d2160c138d05a8a5d88809d99ae917d4aa0fe94fed4a20c3f2c7505a9d",
+    "opendata/pipeline/contract_publication.py": "74dca4fa81a437e28ccf9d02d926e07d323ce5be69fe1b4dc79cbe89ce2c7148",
+    "opendata/pipeline/history_coverage.py": "32da5309b8ce51ac0a67d595a3222e292e9206821021d1d4b369a4bd66950bcd",
+    "opendata/pipeline/process_executor.py": "c2e162975723228cdc83b862f547518b0735de0ba6517774a76112dc91adb131",
+    "opendata/pipeline/process_executor_worker.py": "8d64dc48bc744e79f3d087cbebadc4879122749b71c8bac03ce30391f4f5eb7b",
+    "opendata/pipeline/publication_store.py": "1322f256897f1612dc73868f7f59424f438bbbbeb9daa7cdc47d6fd24b108049",
+    "opendata/pipeline/raw_evidence.py": "3a1f9e74beba5ccb5ff06db4b3e532e51cd7da3284c943dfecd8db7484c37665",
+    "opendata/pipeline/run_dispatch.py": "7b9ebc55e98e1cf4784f553467d3c9a61fd113539d9e3897941ed1b4f71f236b",
+    "opendata/pipeline/run_identity.py": "53b0b207eb0f0202867fcb7c0a97f2eeefc33fb4ab6f4d2b9a77ecabff4e6e50",
+    "opendata/pipeline/run_ledger.py": "e59ce21b0cc1d7ee47520042be2f9b85f7955900fd9c77c6927d13bd33430891",
+    "opendata/pipeline/run_service.py": "6bfc5a3f1add383ab89ae75cf929cfbf00fec0da571c43c0c68a165ba7772f27",
+    "opendata/runtime_inventory.py": "4cf91723250ee4d5f27fcae6ed107d0027f8df68ef815605a64c0832491620a5",
+    "opendata_client/opendata_client/__init__.py": "550e287816aec0ac8e702f96919feaee210a30e1d15595f2bdb8cc6d405d9daa",
+    "opendata_client/opendata_client/client.py": "ec817286e0535ca3eaa12af2be9763c2a91a5f562515303242e6d1111c9b6735",
+    "opendata_client/opendata_client/snapshots.py": "bb62147fd604e4587a72652ed11e71c3f564914269823545d229ff9b8566b28d",
+    "scripts/codemod/verify_no_akshare.py": "c92f70109415f7b0b736460c28e9c0a0bd46345fd150dab447915d3dd89b2cc7",
+    "scripts/ops/build_migration_catalog.py": "a54a8d69828d38069768a9870945b8dc70b497d20e4016b1a7479bb183616c79",
+    "scripts/ops/inventory_host_runtime.py": "0546e5c32c822d23ef3f6421875da4ec4d9b2a1efa744aa462997c99f354e6cf",
+    "scripts/ops/inventory_legacy_runtime.py": "71b50d0c7871ec71607131a9f7bae1008d9811450f6b2a53b7c12400282127ef",
+    "scripts/ops/inventory_legacy_scripts.py": "a7c01a851329f1002c6bef71df6c37ca7c75963af0a5e7d6bb92a47dbba38ce1",
+    "scripts/ops/plan_legacy_migration.py": "4137eae5c9930905316a16647815f5d5f381945864192b3baff09b7d41c29ec2",
+    "scripts/quality/check_brand.py": "7cbf155f06b7e75d49a151c60c80b9bbb1db0d10d112de3182924af8df67a8dd",
+    "scripts/quality/check_published_openapi.py": "ec4a3667c6152b6049ec54be74eff29bc4d77a38b4f2e8ba3f2854b8d69643c1",
+    "tests/test_afi204_owned_mysql.py": "80d22760e4daa936654203870da55fd95f94c71e54cb5f6e308ca2c51a1ab74d",
+    "tests/test_check_brand.py": "64c7b0a4d0278b14c9ca0429d8ebb388d5d4f901e06338d59d6f6731b82b6dcb",
+    "tests/test_contract_publication.py": "bb9b1d055c846ad21e33057842c5d80483c14176d73302bcaece046f1dd68bb6",
+    "tests/test_dataset_contract_registry.py": "af302e68506b9a3c337026806af0d32be87f3aed69e4768e97e7fd86b0f47529",
+    "tests/test_financial_pit_sdk.py": "dcc3ab3f4fd1bacfbdb6fd28d080cf6bd5b44925ef282fa767b34e1172b2152c",
+    "tests/test_history_coverage.py": "a1df1b1dafb177686a23712e25af1652e72b1fb1e320b1e01cdee281a7ae6c07",
+    "tests/test_host_inventory.py": "72fa11fce338bb193f864cfc7095e9fba0885c05004b515daa34b0628cb17295",
+    "tests/test_migration_catalog.py": "403a885bfffbbe2815ad9f65616f5278398bfabfccffc5b41f230ff9b30256a3",
+    "tests/test_migration_inventory.py": "2fc1ddd5769ee4ae3e2f9e7abce7cf3dab4432ab235117bdb2dd843d060e2ca6",
+    "tests/test_migration_plan.py": "cd8b2b0a8334edc9a05ad26ed6e1967e3477663a5abb914459700aea62213f26",
+    "tests/test_opendata_client.py": "f4e9fca81c5f52cfe52c861b564b6063fa1d8c0ce3bd38ace13a689f70c0a526",
+    "tests/test_p0_providers.py": "e1da8251b2291da90f72bb0387723658f69be8b3464cdfed3fa572cbb8596110",
+    "tests/test_platform_contracts.py": "cb9264f5a070a1131c15a97134a8274f2172016dccae305b4f03436835d9fd73",
+    "tests/test_process_executor.py": "c7c5da3a7c2c5c97dd9e1e8147560e7dc32f97c6a67d79b9cdfcc56e817effe7",
+    "tests/test_publication_store.py": "ccd0e02299aa2fb5813e2d84249829633240059322a06b0902254bf26170cf14",
+    "tests/test_published_access.py": "5ca9b7e5d134bd59e2bc594c94d9f3191dc12f252cd1f2dc31db8f151d69cdeb",
+    "tests/test_published_data_api.py": "0d7a46b2de18850f7cba126b768e6fdef9b407dc4d3146d64b048574235ff6be",
+    "tests/test_published_openapi_gate.py": "1c5e69e7df27795f82001f7853ac414b49c7ea611d69090aedaf5b23af0c94eb",
+    "tests/test_raw_evidence.py": "e5c104359f382a3ddb5208affdb6785b26a48433dac0d7834791c5cb0b775bf7",
+    "tests/test_reviewed_run_chain.py": "3c16f80e81c9420e6f071388ced2839cfcc253aa5715a4dd15aba593d0fbcb72",
+    "tests/test_run_dispatch.py": "d2acebf5f89392cfd75d887953fccff55026e0c6632901a327a9c144ea1e7ca7",
+    "tests/test_run_identity.py": "11e485226e68941fe236164136155ac09e726cc5ecfa841d632c613510fdddab",
+    "tests/test_run_identity_ledger_integration.py": "bd89f972ab3d943bc9013ab0e0f403875721d4bb8b6bcc698d979836cdc78a43",
+    "tests/test_run_ledger.py": "e0a074483ef776aadc52e5bdfbb6403d011568fa79007ea6294a61de08308504",
+    "tests/test_run_ledger_atomic.py": "1bd2dd8e8058d333e065b60fa028c07105975b77cb58b4f612f1c8c08a506331",
+    "tests/test_run_ledger_database_clock.py": "102831a38eec70c8080a05c63c81a71aa87d0af35e4ce90c46e0d5325544dade",
+    "tests/test_run_service.py": "c10fb4d3dfbe6030fd279c508dcac72ad058f4c0fa29c315c9df5eff82495c72",
+    "tests/test_runtime_inventory.py": "08993b187bebe5211c80f8b5d6ed848562da9ae04be66d971b7c1d837c7d4dd9",
+    "tests/test_snapshot_client.py": "19ebf1687e8c26892f4815a10609fad5aab927c2b9d41a698c88a923d379e422",
+    "tests/test_stock_daily_migration.py": "2714d4d92f099a3c3a0f9e2540388549d215d1b2ba5aac16515101b470df70e0",
+    "tests/test_upstream_reference_policy.py": "ba5d5cba335ac268ec33219ed42c09588fc223a435612e02220d5d9bf3b7b6b8"
+  },
+  "status": "CODE_AND_ISOLATED_INTEGRATION_VALIDATED; NOT_PRODUCTION_ACCEPTED",
+  "validation": {
+    "bandit": {
+      "production_file_count": 37,
+      "receipt": "wave3-bandit-final.json",
+      "status": "PASS"
+    },
+    "combined": {
+      "command_receipt": "wave3-combined-command.json",
+      "deselected": 24,
+      "exit_code": 0,
+      "input": "Synthetic fixtures / MockTransport / owned temporary SQLite; no production data fetch or writes",
+      "passed": 1491,
+      "scope": "Selected 40 test files and 25 coverage targets, not whole repository; e2e excluded",
+      "seconds": 139.78,
+      "test_file_count": 40,
+      "warnings": 2
+    },
+    "coverage": {
+      "files_percent": {
+        "opendata/api/published_access.py": 87.20538720538721,
+        "opendata/api/published_data.py": 88.8,
+        "opendata/data/dataset_contract_registry.py": 96.61016949152543,
+        "opendata/data/models/base.py": 93.05555555555556,
+        "opendata/data/platform_contracts.py": 93.26530612244898,
+        "opendata/data/providers/akshare/models/stock_daily.py": 82.8996282527881,
+        "opendata/data/providers/akshare/stock_daily_wire.py": 90.29126213592232,
+        "opendata/host_inventory.py": 86.29441624365482,
+        "opendata/migration_catalog.py": 93.67209971236817,
+        "opendata/migration_inventory.py": 85.43543543543544,
+        "opendata/migration_plan.py": 94.3298969072165,
+        "opendata/pipeline/contract_publication.py": 100.0,
+        "opendata/pipeline/history_coverage.py": 100.0,
+        "opendata/pipeline/process_executor.py": 93.16546762589928,
+        "opendata/pipeline/process_executor_worker.py": 100.0,
+        "opendata/pipeline/publication_store.py": 93.76623376623377,
+        "opendata/pipeline/raw_evidence.py": 95.38461538461539,
+        "opendata/pipeline/run_dispatch.py": 96.90721649484536,
+        "opendata/pipeline/run_identity.py": 96.37462235649546,
+        "opendata/pipeline/run_ledger.py": 85.83333333333333,
+        "opendata/pipeline/run_service.py": 92.3076923076923,
+        "opendata/runtime_inventory.py": 80.95238095238095,
+        "opendata_client/opendata_client/client.py": 89.14167528438469,
+        "opendata_client/opendata_client/snapshots.py": 89.76930792377131,
+        "scripts/quality/check_published_openapi.py": 95.46925566343042
+      },
+      "module_groups": {
+        "opendata/data/": {
+          "covered_statements_and_branches": 1468,
+          "denominator": 1601,
+          "percent": 91.69269206745784
+        },
+        "opendata/pipeline/": {
+          "covered_statements_and_branches": 4550,
+          "denominator": 4835,
+          "percent": 94.10548086866598
+        }
+      },
+      "runtime_inventory_note": "Unit-only 81%; source-identical separate read-only runtime inventory measured 91% in prior isolated worktree. No completeness inferred.",
+      "statement_branch_percent": 91.22590382108801,
+      "whole_repository": "NOT_MEASURED"
+    },
+    "mypy": {
+      "receipt": "wave3-mypy-final.json",
+      "scope": "34 core plus 3 SDK production targets, --follow-imports=silent; not a whole transitive import claim",
+      "status": "PASS"
+    },
+    "named_gates": {
+      "docs_and_types": "100% of 2475 public callables",
+      "receipt": "wave3-final-quality.txt",
+      "status": "PASS",
+      "targets": [
+        "brand-check",
+        "zero-dep-check",
+        "public-api-quality",
+        "published-openapi-check"
+      ],
+      "zero_dependency": "scanner 5; 963 runtime files = 635 core + 325 vendor + 3 client; frozen references 0"
+    },
+    "openapi": {
+      "compatibility_behavior_tests": 24,
+      "remote_ci": "NOT_RUN; current CI calls make gate and the named checker is wired into it",
+      "v1_operations": 166,
+      "v1_paths": 140,
+      "v1_schemas": 32,
+      "v2_paths": 6,
+      "v2_schemas": 18
+    },
+    "process_chain": {
+      "input": "SYNTHETIC",
+      "passed": 4,
+      "receipt": "wave3-reviewed-chain-final.txt",
+      "scope": "Actual isolated child -> raw manifest -> fenced publication -> snapshot; timeout/cancel/corrupt body do not publish"
+    },
+    "reference_policy": {
+      "actual_tracked_file_reconciliation": "PASS",
+      "exact_ast_exceptions": 12,
+      "metadata_entries": 92,
+      "note": "Existing docs/tests/vendor/codemod buckets unchanged; source/CLI entries and exact file pins reconciled. No new blanket exclusion.",
+      "receipt": "wave3-reference-reconcile.json",
+      "scope_expansion": false
+    },
+    "reused_wave2_receipts": {
+      "afi_consumers": {
+        "passed": 157,
+        "rerun_this_wave": false
+      },
+      "client_install": {
+        "passed": 5,
+        "rerun_this_wave": false
+      },
+      "evidence": "docs/afi204-wave2-validation.json; these historical receipts do not claim coverage of new wave3 modules",
+      "owned_mysql": {
+        "passed": 7,
+        "rerun_this_wave": false,
+        "version": "8.0.46"
+      }
+    },
+    "ruff_format_grammar": {
+      "changed_python_files": 68,
+      "receipt": "wave3-static-final.json",
+      "status": "PASS"
+    },
+    "warnings": [
+      "Two ResourceWarning reports for unclosed SQLite connections; final test failures zero."
+    ]
+  },
+  "wave": 3,
+  "whole_repository_gate": {
+    "actual_scanned_commits": 0,
+    "command": "PATH=/tmp/od204-quality-env/bin:$PATH make gate",
+    "earlier_targets": [
+      "brand-check PASS",
+      "zero-dep-check PASS"
+    ],
+    "exit_code": 2,
+    "findings": null,
+    "historical_evidence_missing": {
+      "active_entrypoint_paths": 16,
+      "candidate_copies_without_match": 1031,
+      "classification_approval_originals_without_match": 2,
+      "git_blob_exact_candidate_copies": 4024,
+      "restoration_or_pin_changes": "NONE",
+      "support_paths": 5130,
+      "unique_receipts_without_match": 73
+    },
+    "later_targets": "NOT_RUN in aggregate due fail-closed short circuit; named checks above run independently",
+    "reason": "Pinned Gitleaks 8.30.1 missing; archive download timed out; no substituted scanner or allowlist change",
+    "status": "FAIL",
+    "stopped_at": "secret-check"
+  }
+}
