@@ -122,6 +122,7 @@ class FakeResponse(requests.Response):
         super().__init__()
         self.status_code = status_code
         self._content = content
+        self._content_consumed = True
         self.encoding = "utf-8"
         self.headers["Content-Type"] = "application/json"
 
@@ -167,6 +168,8 @@ class OfflineAdapter(requests.adapters.BaseAdapter):
         response.url = request.url
         response.request = request
         response.connection = self
+        if status == 302:
+            response.headers["Location"] = "https://other.example.test/redirect-target"
         if status == 401:
             response.headers["WWW-Authenticate"] = (
                 'Digest realm="offline", nonce="offline-nonce", qop="auth"'
@@ -588,16 +591,26 @@ def test_bounded_deadline_covers_wait_for_shared_scope_host_slot() -> None:
 
     clock = AdjustableClock()
 
-    class NeverCalledSession(requests.Session):
+    class NeverCalledAdapter(requests.adapters.BaseAdapter):
+        max_retries = requests.adapters.Retry(total=0)
+
         def __init__(self) -> None:
-            super().__init__()
             self.calls = 0
 
-        def request(self, method: str, url: str, **kwargs: object) -> requests.Response:
+        def send(
+            self,
+            _request: requests.PreparedRequest,
+            **_kwargs: object,
+        ) -> requests.Response:
             self.calls += 1
             raise AssertionError("host-slot deadline must expire before transport")
 
-    session = NeverCalledSession()
+        def close(self) -> None:
+            """Close no resources because this adapter never opens a socket."""
+
+    session = requests.Session()
+    adapter = NeverCalledAdapter()
+    session.mount("https://", adapter)
     client = GovernedHttpClient(
         HttpClientConfig(
             max_attempts=1,
@@ -635,7 +648,7 @@ def test_bounded_deadline_covers_wait_for_shared_scope_host_slot() -> None:
 
         assert error.value.category is FailureCategory.TIMEOUT
         assert error.value.attempts == 0
-        assert session.calls == 0
+        assert adapter.calls == 0
         assert not gate_released.is_set()
     finally:
         advance_deadline.cancel()
@@ -744,7 +757,9 @@ def test_redirects_are_disabled_and_rejected_without_cache_or_followup() -> None
 
 def test_bounded_scoped_redirect_is_an_http_error_with_actual_status() -> None:
     budget = make_budget(task_attempts=1, source_attempts=1)
-    session = FakeSession((FakeResponse(302, b"redirect body"),))
+    session = requests.Session()
+    adapter = OfflineAdapter((302, 200))
+    session.mount("https://", adapter)
     client = make_client(session)
 
     with (
@@ -766,8 +781,7 @@ def test_bounded_scoped_redirect_is_an_http_error_with_actual_status() -> None:
     assert error.value.category is FailureCategory.REDIRECT
     assert error.value.status == 302
     assert error.value.attempts == 1
-    assert len(session.calls) == 1
-    assert session.calls[0][2]["allow_redirects"] is False
+    assert len(adapter.calls) == 1
     assert budget.attempts_used == 1
 
 

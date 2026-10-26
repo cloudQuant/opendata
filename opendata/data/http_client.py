@@ -66,6 +66,15 @@ if TYPE_CHECKING:
 
 _SENSITIVE_PARAMETER_PARTS = ("api_key", "apikey", "token", "secret", "password", "credential")
 _STREAM_CHUNK_BYTES = 64 * 1024
+_BOUNDED_SESSION_METHODS = (
+    "request",
+    "prepare_request",
+    "send",
+    "merge_environment_settings",
+    "get_adapter",
+    "resolve_redirects",
+    "get_redirect_target",
+)
 
 
 class _OverallTimeoutError(Exception):
@@ -77,6 +86,14 @@ class _ResponseBodyPolicyError(Exception):
 
     def __init__(self, category: FailureCategory) -> None:
         self.category = category
+
+
+class _BoundedRedirectError(Exception):
+    """Internal signal raised before Requests can consume a redirect body."""
+
+    def __init__(self, response: requests.Response) -> None:
+        super().__init__("bounded request redirect rejected")
+        self.response = response
 
 
 @dataclass(frozen=True, slots=True)
@@ -519,13 +536,20 @@ class GovernedHttpClient:
         Raises:
             TypeError: If either explicit bound has the wrong exact type.
             ValueError: If a bound is non-finite, non-positive, or the URL has no host.
+            RequestAuthorizationError: If the session does not use the standard Requests
+                request/response pipeline or has session-level response hooks.
+            RequestAdapterRetryError: If a mounted adapter can retry outside this client.
             HttpFetchError: On transport, status, deadline, size, or encoding failure.
 
         The method does not read from or write to the raw-response cache. It asks
         for identity encoding and rejects other content encodings before reading,
         because Requests decodes compressed bodies while iterating. The byte cap
         limits response-body bytes collected and returned. It is not a hard limit on
-        transient allocations, transport buffers, or process RSS.
+        transient allocations, transport buffers, or process RSS. Bounded calls
+        require the standard Requests session request/prepare/send/redirect pipeline,
+        empty session response hooks, and adapters with retries disabled. Injected
+        adapters are trusted transport components and must honor streaming without
+        reading bodies or issuing hidden attempts.
         """
         if type(max_body_bytes) is not int:
             raise TypeError("max_body_bytes must be an exact int")
@@ -638,11 +662,13 @@ class GovernedHttpClient:
             self._validate_scoped_url(url, host)
             authorize_request(scopes, source, host)
             # Authorization precedes both cache access and lazy Session creation.
-            self._validate_scoped_session(self._get_session())
+            session = self._get_session()
+            if body_limit is None:
+                self._validate_scoped_session(session)
+            else:
+                self._validate_bounded_session(session)
         elif body_limit is not None:
-            # Response hooks and adapter retries can read bodies or issue
-            # unaccounted requests before this bounded reader sees them.
-            self._validate_scoped_session(self._get_session())
+            self._validate_bounded_session(self._get_session())
         is_get = method_upper == "GET"
         attempts = self._config.max_attempts if is_get else 1
         request_id = uuid.uuid4().hex
@@ -868,6 +894,32 @@ class GovernedHttpClient:
                             deadline=deadline,
                             scopes=scopes,
                         )
+        except _BoundedRedirectError as redirect_signal:
+            response = redirect_signal.response
+            response.close()
+            if probe_in_flight:
+                self._record_probe_failure(host, FailureCategory.REDIRECT)
+            else:
+                self._record_success(host)
+            redirect_error = self._error(
+                FailureCategory.REDIRECT,
+                url,
+                host,
+                attempt,
+                status=response.status_code,
+                retryable=False,
+            )
+            self._log_request_event(
+                source,
+                url,
+                params,
+                request_id,
+                attempt,
+                started,
+                response.status_code,
+                redirect_error.category.value,
+            )
+            return None, redirect_error
         except RequestBudgetError:
             if probe_in_flight:
                 self._release_probe_slot(host)
@@ -1078,6 +1130,16 @@ class GovernedHttpClient:
         category, _retryable = _classify_status(response.status_code)
         return category is None and not 300 <= response.status_code < 400
 
+    @staticmethod
+    def _reject_bounded_redirect_before_requests_resolution(
+        response: requests.Response,
+        **_kwargs: object,
+    ) -> requests.Response:
+        """Stop redirect resolution in the response-hook phase, before body reads."""
+        if 300 <= response.status_code < 400:
+            raise _BoundedRedirectError(response)
+        return response
+
     def _read_bounded_response(
         self,
         response: requests.Response,
@@ -1176,6 +1238,11 @@ class GovernedHttpClient:
             self._validate_scoped_session(session)
         if stream:
             request_kwargs["stream"] = True
+            # The bounded-only request hook runs before Session.send resolves redirects.
+            # Session-level hooks are rejected by _validate_bounded_session.
+            request_kwargs["hooks"] = {
+                "response": [self._reject_bounded_redirect_before_requests_resolution]
+            }
         if json_body is not None:
             request_kwargs["json"] = json_body
 
@@ -1218,7 +1285,7 @@ class GovernedHttpClient:
             raise RequestAuthorizationError("scoped requests require an exact HTTPS host")
 
     def _validate_scoped_session(self, session: object) -> None:
-        """Reject opaque authentication, hooks, or adapter retries when scoped."""
+        """Reject opaque authentication, response hooks, or adapter retries."""
         if not isinstance(session, requests.Session):
             return
         session_auth = session.auth
@@ -1234,23 +1301,36 @@ class GovernedHttpClient:
         )
         if session_auth is not None and not (basic_tuple or pure_basic_auth):
             raise RequestAuthorizationError(
-                "scoped requests reject unsupported session authentication"
+                "governed requests reject unsupported session authentication"
             )
         if any(session.hooks.values()):
-            raise RequestAuthorizationError("scoped requests reject session response hooks")
+            raise RequestAuthorizationError("governed requests reject session response hooks")
         for adapter in session.adapters.values():
             retries = getattr(adapter, "max_retries", None)
             if retries is None or getattr(retries, "total", None) != 0:
                 raise RequestAdapterRetryError(
-                    "scoped requests require adapters with retries disabled"
+                    "governed requests require adapters with retries disabled"
                 )
             if any(
                 getattr(retries, attribute, 0) not in (None, 0, False)
                 for attribute in ("connect", "read", "redirect", "status", "other")
             ):
                 raise RequestAdapterRetryError(
-                    "scoped requests require adapters with retries disabled"
+                    "governed requests require adapters with retries disabled"
                 )
+
+    def _validate_bounded_session(self, session: object) -> None:
+        """Require the standard Requests hook and redirect-resolution pipeline."""
+        if not isinstance(session, requests.Session):
+            raise RequestAuthorizationError("bounded requests require a standard requests.Session")
+        for method_name in _BOUNDED_SESSION_METHODS:
+            actual_method = getattr(getattr(session, method_name), "__func__", None)
+            expected_method = getattr(requests.Session, method_name)
+            if actual_method is not expected_method:
+                raise RequestAuthorizationError(
+                    "bounded requests require standard requests.Session methods"
+                )
+        self._validate_scoped_session(session)
 
     @contextmanager
     def _scoped_semaphore(

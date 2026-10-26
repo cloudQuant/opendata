@@ -19,9 +19,10 @@ from opendata.data.http_client import (
     HttpClientConfig,
     HttpFetchError,
 )
+from opendata.data.request_budget import RequestAuthorizationError
 
 if TYPE_CHECKING:
-    from collections.abc import Generator, Iterable
+    from collections.abc import Generator, Iterable, Iterator
 
 URL = "https://example.invalid/archive"
 TEST_POOL = HTTPConnectionPool("example.invalid")
@@ -175,14 +176,58 @@ class SingleResponseAdapter(requests.adapters.BaseAdapter):
         """Close no resources because this adapter never opens a socket."""
 
 
+class QueuedResponseAdapter(requests.adapters.BaseAdapter):
+    """Replay synthetic responses through a standard Requests session pipeline."""
+
+    max_retries = requests.adapters.Retry(total=0)
+
+    def __init__(self, responses: Iterable[requests.Response]) -> None:
+        self.responses = list(responses)
+        self.calls: list[tuple[str, str, dict[str, object]]] = []
+
+    def send(
+        self,
+        request: requests.PreparedRequest,
+        **kwargs: object,
+    ) -> requests.Response:
+        if not self.responses:
+            raise AssertionError("unexpected transport attempt")
+        call_kwargs = dict(kwargs)
+        call_kwargs["headers"] = dict(request.headers)
+        method = request.method or ""
+        url = request.url or ""
+        self.calls.append((method, url, call_kwargs))
+        response = self.responses.pop(0)
+        response.url = url
+        response.request = request
+        response.connection = self
+        return response
+
+    def close(self) -> None:
+        """Close no resources because this adapter never opens a socket."""
+
+
+class RedirectOverrideSession(requests.Session):
+    """Session with a redirect method override, rejected by bounded requests."""
+
+    def resolve_redirects(
+        self,
+        *_args: object,
+        **_kwargs: object,
+    ) -> Iterator[requests.Response]:
+        raise AssertionError("bounded validation must reject overridden redirect handling")
+
+
 def make_client(
     responses: Iterable[requests.Response],
     *,
     config: HttpClientConfig | None = None,
     clock: FakeClock | None = None,
-) -> tuple[GovernedHttpClient, ScriptedSession, FakeClock]:
+) -> tuple[GovernedHttpClient, QueuedResponseAdapter, FakeClock]:
     selected_clock = clock if clock is not None else FakeClock()
-    session = ScriptedSession(responses)
+    session = requests.Session()
+    adapter = QueuedResponseAdapter(responses)
+    session.mount("https://", adapter)
     client = GovernedHttpClient(
         config
         or HttpClientConfig(
@@ -196,7 +241,7 @@ def make_client(
         jitter_fn=lambda: 0.0,
         raw_response_cache=None,
     )
-    return client, session, selected_clock
+    return client, adapter, selected_clock
 
 
 def test_bounded_success_streams_and_preserves_http_metadata() -> None:
@@ -320,10 +365,55 @@ def test_redirect_status_is_rejected_without_following_or_reading_body(
     assert error.value.status == 302
     assert error.value.attempts == 1
     assert len(adapter.calls) == 1
-    assert adapter.calls[0][1]["allow_redirects"] is False
     assert raw.read_calls == 0
     assert raw.closed
     assert response.close_called
+
+
+def test_bounded_request_rejects_preconfigured_session_response_hooks() -> None:
+    response, raw = make_response([b"unread"], status_code=302)
+    adapter = QueuedResponseAdapter([response])
+    session = requests.Session()
+    session.mount("https://", adapter)
+
+    def unexpected_hook(
+        _response: requests.Response,
+        **_kwargs: object,
+    ) -> requests.Response:
+        raise AssertionError("preconfigured response hook must not run")
+
+    session.hooks["response"] = [unexpected_hook]
+    client = GovernedHttpClient(
+        HttpClientConfig(rate_limit_per_host=None, max_attempts=1),
+        session=session,
+        raw_response_cache=None,
+    )
+
+    with pytest.raises(RequestAuthorizationError):
+        client.get_bounded(URL, max_body_bytes=1, overall_timeout=10.0)
+
+    assert not adapter.calls
+    assert raw.read_calls == 0
+    assert not response.close_called
+
+
+def test_bounded_request_rejects_overridden_session_redirect_handler() -> None:
+    response, raw = make_response([b"unread"], status_code=302)
+    adapter = QueuedResponseAdapter([response])
+    session = RedirectOverrideSession()
+    session.mount("https://", adapter)
+    client = GovernedHttpClient(
+        HttpClientConfig(rate_limit_per_host=None, max_attempts=1),
+        session=session,
+        raw_response_cache=None,
+    )
+
+    with pytest.raises(RequestAuthorizationError):
+        client.get_bounded(URL, max_body_bytes=1, overall_timeout=10.0)
+
+    assert not adapter.calls
+    assert raw.read_calls == 0
+    assert not response.close_called
 
 
 def test_wrapped_urllib3_read_timeout_is_classified_as_timeout() -> None:
@@ -509,7 +599,12 @@ def test_bounded_request_inputs_reject_nonfinite_and_bool_values(
 
 def test_default_get_keeps_nonstream_transport_behavior() -> None:
     response, raw = make_response([b"not eagerly read"])
-    client, session, _clock = make_client([response])
+    session = ScriptedSession([response])
+    client = GovernedHttpClient(
+        HttpClientConfig(rate_limit_per_host=None),
+        session=session,
+        raw_response_cache=None,
+    )
 
     result = client.get(URL, use_cache=False)
 
