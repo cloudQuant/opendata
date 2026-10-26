@@ -110,3 +110,5 @@ python -m pytest -o addopts='' -q \
 没有修改旧业务库、运行中的scheduler、systemd、源Key或生产API开关；新DDL只在测试拥有的数据库验证。离线通过不能替代完整 `make gate`、真实源及部署验收。
 
 首批历史收据见 [afi204-offline-validation.json](afi204-offline-validation.json)；第二批集成结果见 [afi204-wave2-validation.json](afi204-wave2-validation.json)。两份收据均不能替代生产切换验收。
+
+本轮22份测试日志、覆盖数据、安装wheel和脱敏库存已按hash复制到原OpenData仓库的 `var/reports/afi204/2026-10-26-wave2`（Git忽略，目录0700/文件0600）；归档索引见 [afi204-wave2-archive.json](afi204-wave2-archive.json)。这是同主机的持久目录，不是异机备份或恢复演练。历史门禁缺失5130个支撑引用的只读审计中，有4024个候选副本可匹配本地Git blob的精确SHA；仍有1031个候选、73份收据及分类/审批原件无匹配，未恢复或改pin。
