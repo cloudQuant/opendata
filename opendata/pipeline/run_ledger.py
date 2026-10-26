@@ -1,0 +1,573 @@
+"""Persistent run identity, lease, and state transitions for pipeline jobs.
+
+The table declaration is available for a future Alembic migration. This module
+does not create the table, connect to application settings, or wire itself into
+the production scheduler. The fencing token protects run-ledger transitions;
+it does not fence writes to warehouse repositories.
+"""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from typing import Literal
+from uuid import uuid4
+
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    Column,
+    Index,
+    MetaData,
+    String,
+    Table,
+    Text,
+    and_,
+    case,
+    insert,
+    or_,
+    select,
+    update,
+)
+from sqlalchemy.engine import Connection, Engine, RowMapping
+from sqlalchemy.exc import IntegrityError
+
+RunStatus = Literal["queued", "running", "succeeded", "failed", "cancelled"]
+
+QUEUED: RunStatus = "queued"
+RUNNING: RunStatus = "running"
+SUCCEEDED: RunStatus = "succeeded"
+FAILED: RunStatus = "failed"
+CANCELLED: RunStatus = "cancelled"
+TERMINAL_STATUSES = (SUCCEEDED, FAILED, CANCELLED)
+
+MIN_TTL = timedelta(seconds=1)
+MAX_TTL = timedelta(days=1)
+MAX_RUN_KEY_LENGTH = 255
+MAX_WORKER_LENGTH = 255
+MAX_SNAPSHOT_BYTES = 1_048_576
+
+RUN_LEDGER_METADATA = MetaData()
+RUN_LEDGER_TABLE = Table(
+    "od_run_ledger",
+    RUN_LEDGER_METADATA,
+    Column("run_key", String(MAX_RUN_KEY_LENGTH), primary_key=True),
+    Column("job_snapshot_json", Text, nullable=False),
+    Column("status", String(16), nullable=False),
+    Column("worker", String(MAX_WORKER_LENGTH), nullable=True),
+    Column("lease_id", String(32), nullable=True),
+    Column("fencing_token", BigInteger, nullable=False, default=0),
+    Column("lease_expires_at_us", BigInteger, nullable=True),
+    Column("created_at_us", BigInteger, nullable=False),
+    Column("updated_at_us", BigInteger, nullable=False),
+    Column("started_at_us", BigInteger, nullable=True),
+    Column("heartbeat_at_us", BigInteger, nullable=True),
+    Column("finished_at_us", BigInteger, nullable=True),
+    Column("error_text", Text, nullable=True),
+    CheckConstraint(
+        "status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')",
+        name="ck_od_run_ledger_status",
+    ),
+    CheckConstraint("fencing_token >= 0", name="ck_od_run_ledger_fencing_token"),
+)
+Index(
+    "ix_od_run_ledger_claim",
+    RUN_LEDGER_TABLE.c.status,
+    RUN_LEDGER_TABLE.c.lease_expires_at_us,
+    RUN_LEDGER_TABLE.c.created_at_us,
+)
+
+_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
+_MICROSECONDS_PER_SECOND = 1_000_000
+
+
+@dataclass(frozen=True, slots=True)
+class RunRecord:
+    """A read-only snapshot of one pipeline run's ledger state."""
+
+    run_key: str
+    job_snapshot_json: str
+    status: RunStatus
+    worker: str | None
+    lease_id: str | None
+    fencing_token: int
+    lease_expires_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
+    started_at: datetime | None
+    heartbeat_at: datetime | None
+    finished_at: datetime | None
+    error_text: str | None
+
+
+class RunLedgerConflictError(ValueError):
+    """Raised when one idempotency key is reused for a different job snapshot."""
+
+
+class RunLedger:
+    """Operate on an explicitly supplied synchronous SQLAlchemy engine.
+
+    The caller owns table creation and engine lifetime. Instantiate this class
+    only after the table exists; the constructor performs no database I/O.
+    """
+
+    def __init__(self, engine: Engine) -> None:
+        """Create a repository bound to ``engine`` without opening a connection."""
+        if not isinstance(engine, Engine):
+            raise TypeError("engine must be a synchronous SQLAlchemy Engine")
+        self._engine = engine
+
+    def enqueue(self, run_key: str, jobsnapshot_json: str) -> RunRecord:
+        """Insert a queued run once and return the stored record on retries.
+
+        Reusing a key with a different immutable job snapshot raises
+        :class:`RunLedgerConflictError` so a changed payload cannot be hidden by
+        an idempotent retry.
+        """
+        _validate_run_key(run_key)
+        _validate_snapshot(jobsnapshot_json)
+        now_us = _datetime_to_epoch_us(datetime.now(timezone.utc))
+        try:
+            with self._engine.begin() as connection:
+                connection.execute(
+                    insert(RUN_LEDGER_TABLE).values(
+                        run_key=run_key,
+                        job_snapshot_json=jobsnapshot_json,
+                        status=QUEUED,
+                        worker=None,
+                        lease_id=None,
+                        fencing_token=0,
+                        lease_expires_at_us=None,
+                        created_at_us=now_us,
+                        updated_at_us=now_us,
+                        started_at_us=None,
+                        heartbeat_at_us=None,
+                        finished_at_us=None,
+                        error_text=None,
+                    )
+                )
+                row = _select_run(connection, run_key)
+        except IntegrityError:
+            existing = self.get(run_key)
+            if existing is None:
+                raise
+            if existing.job_snapshot_json != jobsnapshot_json:
+                raise RunLedgerConflictError(
+                    "run_key already exists with a different job snapshot"
+                ) from None
+            return existing
+        if row is None:
+            raise RuntimeError("inserted run ledger row could not be read")
+        return row
+
+    def claim(self, worker: str, now: datetime, ttl: timedelta) -> RunRecord | None:
+        """Atomically claim one queued run or reclaim an expired lease.
+
+        A successful claim increments the fencing token. A live lease is never
+        stolen, and an expired worker's token cannot be used after reclamation.
+        """
+        _validate_worker(worker)
+        now_us = _datetime_to_epoch_us(now)
+        ttl_us = _timedelta_to_ttl_us(ttl)
+        lease_id = uuid4().hex
+        claimable = or_(
+            RUN_LEDGER_TABLE.c.status == QUEUED,
+            and_(
+                RUN_LEDGER_TABLE.c.status == RUNNING,
+                RUN_LEDGER_TABLE.c.lease_expires_at_us <= now_us,
+            ),
+        )
+        with self._engine.begin() as connection:
+            candidate_key = (
+                select(RUN_LEDGER_TABLE.c.run_key)
+                .where(claimable)
+                .order_by(RUN_LEDGER_TABLE.c.created_at_us, RUN_LEDGER_TABLE.c.run_key)
+                .limit(1)
+            )
+            if self._engine.dialect.name in {"mysql", "postgresql"}:
+                candidate = connection.execute(
+                    candidate_key.with_for_update(skip_locked=True)
+                ).scalar_one_or_none()
+                if candidate is None:
+                    return None
+                claim_filter = RUN_LEDGER_TABLE.c.run_key == candidate
+            else:
+                claim_filter = RUN_LEDGER_TABLE.c.run_key == candidate_key.scalar_subquery()
+            result = connection.execute(
+                update(RUN_LEDGER_TABLE)
+                .where(claim_filter, claimable)
+                .values(
+                    status=RUNNING,
+                    worker=worker,
+                    lease_id=lease_id,
+                    fencing_token=RUN_LEDGER_TABLE.c.fencing_token + 1,
+                    lease_expires_at_us=now_us + ttl_us,
+                    updated_at_us=now_us,
+                    started_at_us=case(
+                        (RUN_LEDGER_TABLE.c.started_at_us.is_(None), now_us),
+                        else_=RUN_LEDGER_TABLE.c.started_at_us,
+                    ),
+                    heartbeat_at_us=now_us,
+                    finished_at_us=None,
+                    error_text=None,
+                )
+            )
+            if result.rowcount != 1:
+                return None
+            return _select_run_by_lease(connection, lease_id)
+
+    def heartbeat(
+        self,
+        run_key: str,
+        worker: str,
+        fencing_token: int,
+        now: datetime,
+        ttl: timedelta,
+    ) -> RunRecord | None:
+        """Extend a live lease only when its current owner and token match."""
+        _validate_run_key(run_key)
+        _validate_worker(worker)
+        _validate_fencing_token(fencing_token)
+        now_us = _datetime_to_epoch_us(now)
+        ttl_us = _timedelta_to_ttl_us(ttl)
+        return self._leased_transition(
+            run_key,
+            worker,
+            fencing_token,
+            now_us,
+            {
+                "lease_expires_at_us": now_us + ttl_us,
+                "heartbeat_at_us": now_us,
+                "updated_at_us": now_us,
+            },
+        )
+
+    def finish(
+        self, run_key: str, worker: str, fencing_token: int, now: datetime
+    ) -> RunRecord | None:
+        """Mark a live run successful if the owner and fencing token still match."""
+        _validate_run_key(run_key)
+        _validate_worker(worker)
+        _validate_fencing_token(fencing_token)
+        now_us = _datetime_to_epoch_us(now)
+        return self._leased_transition(
+            run_key,
+            worker,
+            fencing_token,
+            now_us,
+            {
+                "status": SUCCEEDED,
+                "worker": None,
+                "lease_id": None,
+                "lease_expires_at_us": None,
+                "updated_at_us": now_us,
+                "finished_at_us": now_us,
+                "error_text": None,
+            },
+        )
+
+    def fail(
+        self,
+        run_key: str,
+        worker: str,
+        fencing_token: int,
+        now: datetime,
+        error_text: str,
+    ) -> RunRecord | None:
+        """Mark a live run failed if the owner and fencing token still match."""
+        _validate_run_key(run_key)
+        _validate_worker(worker)
+        _validate_fencing_token(fencing_token)
+        if not isinstance(error_text, str) or not error_text.strip():
+            raise ValueError("error_text must be a non-empty string")
+        now_us = _datetime_to_epoch_us(now)
+        return self._leased_transition(
+            run_key,
+            worker,
+            fencing_token,
+            now_us,
+            {
+                "status": FAILED,
+                "worker": None,
+                "lease_id": None,
+                "lease_expires_at_us": None,
+                "updated_at_us": now_us,
+                "finished_at_us": now_us,
+                "error_text": error_text,
+            },
+        )
+
+    def cancel(self, run_key: str, now: datetime) -> RunRecord | None:
+        """Cancel a queued or running run and invalidate its current token.
+
+        Repeated cancellation of a terminal run returns that terminal record;
+        terminal state never moves back to an active state.
+        """
+        _validate_run_key(run_key)
+        now_us = _datetime_to_epoch_us(now)
+        with self._engine.begin() as connection:
+            connection.execute(
+                update(RUN_LEDGER_TABLE)
+                .where(
+                    and_(
+                        RUN_LEDGER_TABLE.c.run_key == run_key,
+                        RUN_LEDGER_TABLE.c.status.in_((QUEUED, RUNNING)),
+                    )
+                )
+                .values(
+                    status=CANCELLED,
+                    worker=None,
+                    lease_id=None,
+                    fencing_token=RUN_LEDGER_TABLE.c.fencing_token + 1,
+                    lease_expires_at_us=None,
+                    updated_at_us=now_us,
+                    finished_at_us=now_us,
+                    error_text=None,
+                )
+            )
+            return _select_run(connection, run_key)
+
+    def get(self, run_key: str) -> RunRecord | None:
+        """Return the current record for ``run_key``, if it exists."""
+        _validate_run_key(run_key)
+        with self._engine.connect() as connection:
+            return _select_run(connection, run_key)
+
+    def _leased_transition(
+        self,
+        run_key: str,
+        worker: str,
+        fencing_token: int,
+        now_us: int,
+        values: dict[str, object],
+    ) -> RunRecord | None:
+        """Apply one live-lease compare-and-set transition."""
+        with self._engine.begin() as connection:
+            result = connection.execute(
+                update(RUN_LEDGER_TABLE)
+                .where(
+                    and_(
+                        RUN_LEDGER_TABLE.c.run_key == run_key,
+                        RUN_LEDGER_TABLE.c.status == RUNNING,
+                        RUN_LEDGER_TABLE.c.worker == worker,
+                        RUN_LEDGER_TABLE.c.fencing_token == fencing_token,
+                        RUN_LEDGER_TABLE.c.lease_expires_at_us > now_us,
+                    )
+                )
+                .values(**values)
+            )
+            if result.rowcount != 1:
+                return None
+            return _select_run(connection, run_key)
+
+
+def _select_run(connection: Connection, run_key: str) -> RunRecord | None:
+    """Read a single row and convert its integer UTC timestamps."""
+    result = (
+        connection.execute(select(RUN_LEDGER_TABLE).where(RUN_LEDGER_TABLE.c.run_key == run_key))
+        .mappings()
+        .one_or_none()
+    )
+    if result is None:
+        return None
+    return _record_from_row(result)
+
+
+def _record_from_row(row: RowMapping) -> RunRecord:
+    """Convert a validated SQL row mapping to a public immutable record."""
+    return RunRecord(
+        run_key=_as_string(row["run_key"], "run_key"),
+        job_snapshot_json=_as_string(row["job_snapshot_json"], "job_snapshot_json"),
+        status=_as_status(row["status"]),
+        worker=_as_optional_string(row["worker"], "worker"),
+        lease_id=_as_optional_string(row["lease_id"], "lease_id"),
+        fencing_token=_as_integer(row["fencing_token"], "fencing_token"),
+        lease_expires_at=_as_optional_datetime(row["lease_expires_at_us"]),
+        created_at=_epoch_us_to_datetime(row["created_at_us"]),
+        updated_at=_epoch_us_to_datetime(row["updated_at_us"]),
+        started_at=_as_optional_datetime(row["started_at_us"]),
+        heartbeat_at=_as_optional_datetime(row["heartbeat_at_us"]),
+        finished_at=_as_optional_datetime(row["finished_at_us"]),
+        error_text=_as_optional_string(row["error_text"], "error_text"),
+    )
+
+
+def _select_run_by_lease(connection: Connection, lease_id: str) -> RunRecord:
+    """Read the single run row written by the current claim statement."""
+    result = (
+        connection.execute(select(RUN_LEDGER_TABLE).where(RUN_LEDGER_TABLE.c.lease_id == lease_id))
+        .mappings()
+        .one_or_none()
+    )
+    if result is None:
+        raise RuntimeError("claimed run ledger row could not be read")
+    return _record_from_row(result)
+
+
+def _validate_run_key(run_key: str) -> None:
+    """Reject empty or oversized run identities before database access."""
+    if not isinstance(run_key, str) or not run_key.strip():
+        raise ValueError("run_key must be a non-empty string")
+    if len(run_key) > MAX_RUN_KEY_LENGTH:
+        raise ValueError(f"run_key must be at most {MAX_RUN_KEY_LENGTH} characters")
+
+
+def _validate_worker(worker: str) -> None:
+    """Reject invalid lease owner identifiers before database access."""
+    if not isinstance(worker, str) or not worker.strip():
+        raise ValueError("worker must be a non-empty string")
+    if len(worker) > MAX_WORKER_LENGTH:
+        raise ValueError(f"worker must be at most {MAX_WORKER_LENGTH} characters")
+
+
+def _validate_snapshot(jobsnapshot_json: str) -> None:
+    """Require canonical JSON and reject oversized or secret-bearing snapshots."""
+    if not isinstance(jobsnapshot_json, str):
+        raise ValueError("jobsnapshot_json must be a JSON string")
+    try:
+        encoded_snapshot = jobsnapshot_json.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise ValueError("jobsnapshot_json must be valid UTF-8") from exc
+    if len(encoded_snapshot) > MAX_SNAPSHOT_BYTES:
+        raise ValueError(f"jobsnapshot_json exceeds {MAX_SNAPSHOT_BYTES} UTF-8 bytes")
+
+    def reject_constant(value: str) -> None:
+        """Reject NaN and Infinity, which are outside the JSON standard."""
+        raise ValueError(f"invalid JSON constant: {value}")
+
+    def reject_duplicate_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        """Reject duplicate object keys instead of silently keeping the last one."""
+        values: dict[str, object] = {}
+        for key, value in pairs:
+            if key in values:
+                raise ValueError("duplicate JSON object key")
+            values[key] = value
+        return values
+
+    try:
+        snapshot: object = json.loads(
+            jobsnapshot_json,
+            object_pairs_hook=reject_duplicate_keys,
+            parse_constant=reject_constant,
+        )
+    except (json.JSONDecodeError, ValueError) as exc:
+        raise ValueError("jobsnapshot_json must contain valid JSON") from exc
+    if not isinstance(snapshot, dict):
+        raise ValueError("jobsnapshot_json must encode a JSON object")
+    _reject_secret_fields(snapshot)
+    canonical_json = json.dumps(
+        snapshot,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    )
+    try:
+        canonical_json.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise ValueError("jobsnapshot_json must be valid UTF-8") from exc
+    if canonical_json != jobsnapshot_json:
+        raise ValueError("jobsnapshot_json must use canonical JSON encoding")
+
+
+def _reject_secret_fields(value: object) -> None:
+    """Prevent snapshots from persisting credential-like fields."""
+    if isinstance(value, dict):
+        for key, nested in value.items():
+            if not isinstance(key, str):
+                raise ValueError("snapshot object keys must be strings")
+            normalized_key = key.casefold().replace("_", "").replace("-", "")
+            if any(
+                marker in normalized_key
+                for marker in (
+                    "apikey",
+                    "secret",
+                    "password",
+                    "credential",
+                    "authorization",
+                    "cookie",
+                    "token",
+                    "privatekey",
+                )
+            ):
+                raise ValueError("jobsnapshot_json must not contain credential-like fields")
+            _reject_secret_fields(nested)
+    elif isinstance(value, list):
+        for nested in value:
+            _reject_secret_fields(nested)
+
+
+def _validate_fencing_token(fencing_token: int) -> None:
+    """Require a non-negative integer fencing token."""
+    if isinstance(fencing_token, bool) or not isinstance(fencing_token, int):
+        raise ValueError("fencing_token must be an integer")
+    if fencing_token < 0:
+        raise ValueError("fencing_token must be non-negative")
+
+
+def _datetime_to_epoch_us(value: datetime) -> int:
+    """Validate an aware UTC timestamp and encode it as integer microseconds."""
+    if not isinstance(value, datetime) or value.tzinfo is None:
+        raise ValueError("timestamps must be timezone-aware UTC datetimes")
+    if value.utcoffset() != timedelta(0):
+        raise ValueError("timestamps must use UTC")
+    delta = value.astimezone(timezone.utc) - _EPOCH
+    return (delta.days * 86_400 + delta.seconds) * _MICROSECONDS_PER_SECOND + delta.microseconds
+
+
+def _timedelta_to_ttl_us(ttl: timedelta) -> int:
+    """Validate a lease duration and convert it to integer microseconds."""
+    if not isinstance(ttl, timedelta) or ttl < MIN_TTL or ttl > MAX_TTL:
+        raise ValueError(f"ttl must be between {MIN_TTL} and {MAX_TTL}")
+    return (ttl.days * 86_400 + ttl.seconds) * _MICROSECONDS_PER_SECOND + ttl.microseconds
+
+
+def _epoch_us_to_datetime(value: object) -> datetime:
+    """Convert a stored UTC microsecond timestamp to an aware datetime."""
+    return _EPOCH + timedelta(microseconds=_as_integer(value, "timestamp"))
+
+
+def _as_optional_datetime(value: object) -> datetime | None:
+    """Convert an optional stored integer timestamp."""
+    if value is None:
+        return None
+    return _epoch_us_to_datetime(value)
+
+
+def _as_integer(value: object, field: str) -> int:
+    """Return an integer database value or report a corrupt ledger row."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise RuntimeError(f"run ledger has invalid {field}")
+    return value
+
+
+def _as_string(value: object, field: str) -> str:
+    """Return a string database value or report a corrupt ledger row."""
+    if not isinstance(value, str):
+        raise RuntimeError(f"run ledger has invalid {field}")
+    return value
+
+
+def _as_optional_string(value: object, field: str) -> str | None:
+    """Return an optional string database value or report a corrupt row."""
+    if value is None:
+        return None
+    return _as_string(value, field)
+
+
+def _as_status(value: object) -> RunStatus:
+    """Convert a stored status to the run-state literal type."""
+    if value in (QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED):
+        return value
+    raise RuntimeError("run ledger has invalid status")
+
+
+__all__ = [
+    "RUN_LEDGER_METADATA",
+    "RUN_LEDGER_TABLE",
+    "RunLedger",
+    "RunLedgerConflictError",
+    "RunRecord",
+    "RunStatus",
+]
