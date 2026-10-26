@@ -91,16 +91,22 @@ WHITELISTED_FILES = (
     "tests/test_legacy_transfer.py",
 )
 
-# These two files describe the same read-only legacy source used by
-# ``legacy_transfer.py``. Allow only this schema token in these exact paths; they
-# remain subject to every other brand-token and package-reference check.
+# These exact paths describe a read-only predecessor source or preserve its
+# factual file names in the AFI204 inventory. Rewriting those identifiers would
+# break endpoint verification and path/hash joins. Allow only the specific
+# historical token; all other brand and package-reference checks still apply.
 TOKEN_PATH_ALLOWLIST: dict[str, frozenset[str]] = {
     "akshare_data": frozenset(
         {
             "scripts/ops/migrate_legacy_stock_daily.py",
             "tests/test_legacy_stock_daily_transfer.py",
+            "opendata/runtime_inventory.py",
+            "tests/test_runtime_inventory.py",
+            "docs/afi204-runtime-inventory.json",
+            "docs/afi204-migration-catalog.json",
         }
     ),
+    "akshare_network": frozenset({"docs/afi204-migration-catalog.json"}),
 }
 
 

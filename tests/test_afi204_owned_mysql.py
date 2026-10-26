@@ -9,10 +9,11 @@ dropped in ``finally``. An ordinary test run explicitly skips this suite.
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import re
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from threading import Barrier
 from uuid import uuid4
@@ -79,6 +80,19 @@ def _run_ledger_revision():
     """Load the literal warehouse revision independently of runtime metadata."""
     path = Path(__file__).resolve().parents[1] / "alembic_data/versions/20261026-0010_run_ledger.py"
     spec = importlib.util.spec_from_file_location("afi204_run_ledger_revision", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _publication_revision():
+    """Load the frozen publication revision for both dialect acceptance legs."""
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "alembic_data/versions/20261026-0011_publication_snapshots.py"
+    )
+    spec = importlib.util.spec_from_file_location("afi204_publication_revision", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -210,3 +224,166 @@ def test_owned_mysql_concurrent_claim_and_fenced_atomic_writes(owned_mysql):
         assert called == []
     finally:
         other_engine.dispose()
+
+
+def test_owned_mysql_ledger_exact_identity_and_large_snapshot(owned_mysql):
+    """MySQL collation and TEXT capacity must honor the public ledger bounds."""
+    RUN_LEDGER_METADATA.create_all(owned_mysql)
+    ledger = RunLedger(owned_mysql)
+    payload = json.dumps({"padding": "x" * 70_000}, sort_keys=True, separators=(",", ":"))
+    ledger.enqueue("CaseKey", payload)
+    ledger.enqueue("casekey", payload)
+    assert ledger.get("CaseKey").run_key == "CaseKey"
+    assert ledger.get("casekey").run_key == "casekey"
+    assert ledger.get("CaseKey").job_snapshot_json == payload
+    now = datetime.now(timezone.utc)
+    claim = ledger.claim("CaseWorker", now, timedelta(seconds=30))
+    assert claim is not None
+    assert (
+        ledger.heartbeat(
+            claim.run_key, "caseworker", claim.fencing_token, now, timedelta(seconds=30)
+        )
+        is None
+    )
+    assert ledger.get(claim.run_key).worker == "CaseWorker"
+
+
+def test_owned_mysql_publication_migration_revisions_and_snapshot(owned_mysql):
+    """Read fixed snapshots from literal MySQL DDL, retaining 70 KiB rows."""
+    from opendata.pipeline.publication_store import (
+        PUBLICATION_METADATA,
+        PublicationConflictError,
+        PublicationStore,
+        PublishedRecordInput,
+    )
+
+    engine = owned_mysql
+    revision = _publication_revision()
+    with engine.begin() as connection:
+        with Operations.context(MigrationContext.configure(connection)):
+            revision.upgrade()
+        observed = inspect(connection)
+        assert set(observed.get_table_names()) == set(PUBLICATION_METADATA.tables)
+        for name, table in PUBLICATION_METADATA.tables.items():
+            assert {column["name"] for column in observed.get_columns(name)} == {
+                column.name for column in table.columns
+            }
+            actual_indexes = {
+                (tuple(index["column_names"]), bool(index["unique"]))
+                for index in observed.get_indexes(name)
+            }
+            declared_indexes = {
+                (tuple(column.name for column in index.columns), index.unique)
+                for index in table.indexes
+            }
+            # InnoDB adds a supporting index for each foreign key unless an
+            # explicitly declared index already covers it.
+            implicit_foreign_key_indexes = {
+                ((foreign_key.parent.name,), False) for foreign_key in table.foreign_keys
+            }
+            assert declared_indexes <= actual_indexes
+            assert actual_indexes <= declared_indexes | implicit_foreign_key_indexes
+    store = PublicationStore(engine, cursor_signing_key=b"mysql-owned-signing-key-only-204!!!")
+    day = date(2026, 10, 20)
+    arguments = {
+        "dataset_id": "stock.daily",
+        "source_id": "fixture",
+        "schema_version": "1.0",
+        "semantic_version": "1.0",
+        "unit": "field units declared separately",
+        "adjustment_basis": "unadjusted",
+        "quality": {"coverage": "UNKNOWN"},
+        "provenance": {"fixture": "synthetic, not real source evidence"},
+        "watermark": {"last_business_date": day.isoformat()},
+    }
+    records = [
+        PublishedRecordInput("AssetA", {"value": 1, "raw": "x" * 70_000}, business_date=day),
+        PublishedRecordInput("asseta", {"value": 2}, business_date=day),
+    ]
+    first = store.publish(**arguments, idempotency_key="initial", records=records)
+    same = store.publish(**arguments, idempotency_key="initial", records=records)
+    assert same.publication_id == first.publication_id
+    snapshot = store.create_snapshot("stock.daily", page_size=1)
+    initial = store.read_page(snapshot.snapshot_id)
+    assert len(initial.records) == 1
+    assert initial.next_cursor is not None
+    store.publish(
+        **arguments,
+        idempotency_key="revision",
+        records=[PublishedRecordInput("AssetA", {"value": 9}, business_date=day)],
+    )
+    later = store.read_page(snapshot.snapshot_id, cursor=initial.next_cursor)
+    assert [row.business_key for row in initial.records + later.records] == ["AssetA", "asseta"]
+    assert [row.payload["value"] for row in initial.records + later.records] == [1, 2]
+    assert len(initial.records[0].payload["raw"]) == 70_000
+    assert later.next_cursor is None
+    latest = store.create_snapshot("stock.daily", page_size=10)
+    assert [row.payload["value"] for row in store.read_page(latest.snapshot_id).records] == [9, 2]
+    with pytest.raises(PublicationConflictError):
+        store.publish(**arguments, idempotency_key="initial", records=[])
+    with engine.begin() as connection:
+        with Operations.context(MigrationContext.configure(connection)):
+            revision.downgrade()
+        assert inspect(connection).get_table_names() == []
+
+
+def test_owned_mysql_run_and_publication_share_one_fenced_transaction(owned_mysql):
+    """Savepoints inside a publisher never commit ahead of its run ledger."""
+    from opendata.pipeline.publication_store import (
+        PUBLICATION_METADATA,
+        PublicationStore,
+        PublishedRecordInput,
+        publish_in_connection,
+    )
+
+    RUN_LEDGER_METADATA.create_all(owned_mysql)
+    PUBLICATION_METADATA.create_all(owned_mysql)
+    ledger = RunLedger(owned_mysql)
+    store = PublicationStore(owned_mysql, cursor_signing_key=b"mysql-owned-signing-key-only-204!!!")
+    ledger.enqueue("publish-run", '{"dataset":"stock.daily"}')
+    now = datetime.now(timezone.utc)
+    claim = ledger.claim("publisher", now, timedelta(minutes=1))
+    assert claim is not None
+
+    def publish(connection):
+        return publish_in_connection(
+            connection,
+            dataset_id="stock.daily",
+            source_id="fixture",
+            schema_version="1.0",
+            semantic_version="1.0",
+            unit="per-field",
+            adjustment_basis="unadjusted",
+            quality={"status": "unknown", "report_id": None, "issue_count": 0},
+            provenance={"fixture": "synthetic"},
+            idempotency_key=claim.run_key,
+            records=[
+                PublishedRecordInput("asset", {"close": 10}, business_date=date(2026, 10, 20))
+            ],
+            watermark={"date": "2026-10-20"},
+        )
+
+    def publish_then_fail(connection):
+        publish(connection)
+        raise ValueError("publication callback failed")
+
+    with pytest.raises(ValueError, match="publication callback failed"):
+        ledger.commit_result(
+            claim.run_key,
+            worker="publisher",
+            fencing_token=claim.fencing_token,
+            now=now,
+            operation=publish_then_fail,
+        )
+    assert store.list_publications("stock.daily") == ()
+    assert ledger.get(claim.run_key).status == "running"
+    completed = ledger.commit_result(
+        claim.run_key,
+        worker="publisher",
+        fencing_token=claim.fencing_token,
+        now=now,
+        operation=publish,
+    )
+    assert completed is not None and completed[0].status == "succeeded"
+    assert len(store.list_publications("stock.daily")) == 1
+    assert store.list_publications("stock.daily")[0].watermark == {"date": "2026-10-20"}
