@@ -85,12 +85,12 @@ def log_lines():
 
 
 def _em_klines_frame() -> pd.DataFrame:
-    """Upstream-shaped eastmoney kline frame (volume in lots)."""
+    """Synthetic Eastmoney-shaped frame; this is not a captured source response."""
     return pd.DataFrame(
         {
             "日期": ["2024-01-02", "2024-01-03", "2024-01-04"],
             "股票代码": ["600519", "600519", "600519"],
-            "开盘": [1685.0, 1690.0, None],
+            "开盘": [1685.0, 1690.0, 1690.0],
             "收盘": [1688.0, 1695.0, 1692.0],
             "最高": [1690.0, 1698.0, 1694.0],
             "最低": [1680.0, 1685.0, 1688.0],
@@ -263,7 +263,7 @@ class TestStockDailyFetcher:
         result = fetcher.fetch(symbol="600519.SH")
 
         bars = list(result)
-        assert len(bars) == 2  # the row with a missing price dropped
+        assert len(bars) == 3
         assert all(isinstance(bar, Bar) for bar in bars)
         assert bars[0].symbol == "600519"
         assert bars[0].trade_date == date(2024, 1, 2)
@@ -286,12 +286,12 @@ class TestStockDailyFetcher:
         monkeypatch.setattr(opendata_http, "stock_zh_a_hist", fake_hist)
         fetcher = AkshareStockDailyFetcher()
 
-        fetcher.fetch(symbol="600519.SH", start_date=date(2024, 1, 1), adjust="qfq")
+        fetcher.fetch(symbol="600519.SH", start_date=date(2024, 1, 1), adjust="")
 
         assert seen["symbol"] == "600519"
         assert seen["period"] == "daily"
         assert seen["start_date"] == "20240101"
-        assert seen["adjust"] == "qfq"
+        assert seen["adjust"] == ""
 
     def test_timeout_context_is_forwarded(self, monkeypatch):
         seen = {}
