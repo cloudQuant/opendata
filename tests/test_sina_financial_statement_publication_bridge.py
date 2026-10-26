@@ -11,10 +11,6 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from opendata.data.providers.sina.financial_statement_publication import (
-    build_sina_fzb_observation_contract,
-    serialize_sina_fzb_response,
-)
 from opendata_client.snapshots import SnapshotClient
 from sqlalchemy import create_engine
 
@@ -28,6 +24,10 @@ from opendata.api.published_data import (
 )
 from opendata.data.dataset_contract_registry import DatasetContractRegistry
 from opendata.data.providers.sina.financial_statement_contract import SinaFzbQuery
+from opendata.data.providers.sina.financial_statement_publication import (
+    build_sina_fzb_observation_contract,
+    serialize_sina_fzb_response,
+)
 from opendata.models.user import User, UserRole
 from opendata.pipeline.contract_publication import ValidatedPublicationWriter
 from opendata.pipeline.publication_store import PUBLICATION_METADATA, PublicationStore
