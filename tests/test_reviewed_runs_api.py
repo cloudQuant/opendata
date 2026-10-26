@@ -538,17 +538,23 @@ async def test_manual_submit_requires_json_before_reading_or_persisting_payload(
     headers = _admin_headers(api_harness)
     if content_type is not None:
         headers["Content-Type"] = content_type
+    body_reads: list[bool] = []
+
+    async def body() -> AsyncGenerator[bytes, None]:
+        body_reads.append(True)
+        yield b"credential-canary: not JSON"
 
     response = await api_harness.client.post(
         "/api/v1/reviewed/runs",
         headers=headers,
-        content=b"credential-canary: not JSON",
+        content=body(),
     )
 
     assert response.status_code == 415
     assert response.json() == {"detail": "json_required"}
     assert "credential-canary" not in response.text
     assert _ledger_count(api_harness.metadata_engine) == 0
+    assert body_reads == []
 
 
 async def test_request_size_duplicate_nonfinite_depth_and_field_guards(
