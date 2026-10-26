@@ -73,23 +73,25 @@ if TYPE_CHECKING:
 
 MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_CATALOG_ITEMS = 10_000
+_ATEMPORAL_TABLE_BUSINESS_DATE_SEMANTICS = (
+    "null for atemporal table records; not a historical business date"
+)
 _ROUTER_PREFIX = "/api/v2"
 _CONFIGURED_STORE: PublicationStore | None = None
 _CONFIGURED_ENGINE: Engine | None = None
 _STORE_LOCK = threading.Lock()
+_IDENTITY_TEMPORAL_FIELDS: dict[str, str] = {
+    "business_date": "business-date bucket; null ordering last (route rejects null time values)",
+    "observed_at": "source observation time",
+    "source_published_at": "source publication time",
+    "available_at": "platform availability time",
+    "event_at": "source event time",
+}
 _IDENTITY_SEMANTICS: dict[str, object] = {
     "version": 1,
     "identity_key_encoding": "canonical-json-array-v1",
     "revision": "latest non-deleted revision per business_key at the pinned publication sequence",
-    "temporal_fields": {
-        "business_date": (
-            "business-date bucket; null ordering last (route rejects null time values)"
-        ),
-        "observed_at": "source observation time",
-        "source_published_at": "source publication time",
-        "available_at": "platform availability time",
-        "event_at": "source event time",
-    },
+    "temporal_fields": _IDENTITY_TEMPORAL_FIELDS,
 }
 
 
@@ -947,6 +949,43 @@ def _require_supported_record_contract(
     end_date: date | None,
 ) -> None:
     """Reject request semantics the current date-window store cannot guarantee."""
+    if contract.record_kind == "table":
+        if contract.temporal_semantics != "none" or contract.time_field is not None:
+            raise _http_problem(
+                422,
+                "unsupported_time_semantics",
+                "Table reads require atemporal records without a time field",
+            )
+        if start_date is not None or end_date is not None:
+            raise _http_problem(
+                422,
+                "date_bounds_unsupported",
+                "Atemporal table reads do not accept business-date bounds",
+            )
+        if contract.pit_policy != "unsupported":
+            raise _http_problem(
+                422,
+                "unsupported_point_in_time_policy",
+                "Atemporal table reads do not provide point-in-time selection",
+            )
+        if contract.ordering != contract.business_key:
+            raise _http_problem(
+                422,
+                "unsupported_ordering",
+                "Atemporal table reads require ordering by business key fields",
+            )
+        field_by_name = {field.name: field for field in contract.fields}
+        if any(
+            field_by_name[name].data_type not in {"string", "date"}
+            for name in contract.business_key
+        ):
+            raise _http_problem(
+                422,
+                "unsupported_business_key",
+                "This API supports string and date business key fields only",
+            )
+        return
+
     if contract.temporal_semantics != "business_date" or contract.time_field is None:
         raise _http_problem(
             422,
@@ -1034,6 +1073,14 @@ def _validate_published_records(
             raise _service_unavailable() from None
         if record.business_key != expected_key:
             raise _service_unavailable()
+        if contract.record_kind == "table":
+            if (
+                contract.temporal_semantics != "none"
+                or contract.time_field is not None
+                or record.business_date is not None
+            ):
+                raise _service_unavailable()
+            continue
         if record.business_date is None:
             raise _service_unavailable()
         if contract.time_field is None:
@@ -1115,6 +1162,19 @@ def _contract_metadata(
             "comparison": "binary_lexicographic",
         },
     ]
+    temporal_fields = dict(_IDENTITY_TEMPORAL_FIELDS)
+    if contract.record_kind == "table" and contract.temporal_semantics == "none":
+        temporal_fields["business_date"] = _ATEMPORAL_TABLE_BUSINESS_DATE_SEMANTICS
+    identity_semantics = {
+        **_IDENTITY_SEMANTICS,
+        "temporal_fields": temporal_fields,
+        "business_key_fields": list(contract.business_key),
+        "ordering_fields": list(contract.ordering),
+        "identity_key_encoding": "canonical-json-array-v1",
+        "storage_order": storage_order,
+        "temporal_semantics": contract.temporal_semantics,
+        "time_field": contract.time_field,
+    }
     return {
         "dataset_id": publication.dataset_id,
         "publication_id": publication.publication_id,
@@ -1145,15 +1205,7 @@ def _contract_metadata(
         "timezone": contract.timezone,
         "pit_policy": contract.pit_policy,
         "as_of": _iso(as_of),
-        "identity_semantics": {
-            **_IDENTITY_SEMANTICS,
-            "business_key_fields": list(contract.business_key),
-            "ordering_fields": list(contract.ordering),
-            "identity_key_encoding": "canonical-json-array-v1",
-            "storage_order": storage_order,
-            "temporal_semantics": contract.temporal_semantics,
-            "time_field": contract.time_field,
-        },
+        "identity_semantics": identity_semantics,
     }
 
 
