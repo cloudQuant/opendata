@@ -153,57 +153,14 @@ def build_stock_daily_process_source(
         TypeError: If the dependency is not a reviewed process executor.
         ValueError: If its IPC caps, handler registration, or timeout margin are invalid.
     """
-    from opendata.data.providers.akshare.stock_daily_wire import fetch_stock_daily_process
     from opendata.pipeline.process_executor import (
-        MAX_JSON_TEXT_BYTES,
         ReviewedProcessExecutor,
-        ReviewedProcessRegistry,
     )
     from opendata.pipeline.reviewed_worker import ProcessFetchHandler
 
-    if not isinstance(executor, ReviewedProcessExecutor):
+    if type(executor) is not ReviewedProcessExecutor:
         raise TypeError("executor must be a ReviewedProcessExecutor")
-    registry = executor._registry
-    if not isinstance(registry, ReviewedProcessRegistry):
-        raise ValueError("executor must use the reviewed stock daily process registry")
-    registered_handler = registry.resolve(STOCK_DAILY_PROCESS_OPERATION_ID)
-    if (
-        registered_handler is None
-        or registered_handler.module != fetch_stock_daily_process.__module__
-        or registered_handler.qualified_name != fetch_stock_daily_process.__qualname__
-    ):
-        raise ValueError("executor must register the fixed stock daily child handler")
-    max_parameter_bytes = executor._max_parameter_bytes
-    if (
-        type(max_parameter_bytes) is not int
-        or max_parameter_bytes < MAX_STOCK_DAILY_PROCESS_PARAMETER_BYTES
-    ):
-        raise ValueError("process parameter cap cannot carry the stock daily request")
-    max_result_bytes = executor._max_result_bytes
-    if (
-        type(max_result_bytes) is not int
-        or max_result_bytes < MAX_PROCESS_RESULT_JSON_BYTES
-        or MAX_JSON_TEXT_BYTES < MAX_PROCESS_RESULT_JSON_BYTES
-    ):
-        raise ValueError("process result cap cannot carry the maximum stock daily response")
-    shutdown_grace_value: object = executor._shutdown_grace
-    if isinstance(shutdown_grace_value, bool) or not isinstance(shutdown_grace_value, (int, float)):
-        raise ValueError("process executor shutdown grace is invalid")
-    shutdown_grace = float(shutdown_grace_value)
-    if not math.isfinite(shutdown_grace) or shutdown_grace < 0:
-        raise ValueError("process executor shutdown grace is invalid")
-    maximum_http_block = max(
-        STOCK_DAILY_HTTP_CONNECT_TIMEOUT_SECONDS,
-        STOCK_DAILY_HTTP_READ_TIMEOUT_SECONDS,
-    )
-    required_timeout = (
-        STOCK_DAILY_HTTP_OVERALL_TIMEOUT_SECONDS
-        + maximum_http_block
-        + STOCK_DAILY_PROCESS_STARTUP_MARGIN_SECONDS
-        + 2 * shutdown_grace
-    )
-    if required_timeout >= STOCK_DAILY_PROCESS_TIMEOUT_SECONDS:
-        raise ValueError("process deadline does not leave HTTP startup and cleanup margin")
+    _validate_stock_daily_process_executor(executor)
     return ProcessFetchHandler(
         executor,
         STOCK_DAILY_PROCESS_OPERATION_ID,
@@ -407,29 +364,137 @@ def _revalidate_task(task: TaskDefinition) -> TaskDefinition:
 
 
 def _validate_stock_daily_process_handler(process_source: object) -> None:
-    """Require the exact registered stock worker behind the process adapter."""
-    from opendata.data.providers.akshare.stock_daily_wire import fetch_stock_daily_process
-    from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
+    """Require an exactly bound adapter and validated executor configuration."""
+    from opendata.pipeline.process_executor import ReviewedProcessExecutor
     from opendata.pipeline.reviewed_worker import ProcessFetchHandler
 
+    if type(process_source) is not ProcessFetchHandler:
+        raise TypeError("process_source must be the fixed ProcessFetchHandler")
     if not isinstance(process_source, ProcessFetchHandler):
         raise TypeError("process_source must be the fixed ProcessFetchHandler")
+    if process_source._parameters_builder is not _stock_daily_process_parameters:
+        raise ValueError("process_source parameter builder is not the fixed stock query builder")
+    if process_source._result_decoder is not _decode_stock_daily_process_result:
+        raise ValueError("process_source result decoder is not the fixed stock response decoder")
+    timeout_value: object = process_source._timeout_seconds
+    if (
+        isinstance(timeout_value, bool)
+        or not isinstance(timeout_value, (int, float))
+        or not math.isfinite(timeout_value)
+        or timeout_value != STOCK_DAILY_PROCESS_TIMEOUT_SECONDS
+    ):
+        raise ValueError("process_source timeout is not the fixed stock process deadline")
     executor = process_source._executor
-    operation_id = process_source._operation_id
-    if not isinstance(executor, ReviewedProcessExecutor):
+    if type(executor) is not ReviewedProcessExecutor:
         raise ValueError("process_source must use a ReviewedProcessExecutor")
-    if operation_id != STOCK_DAILY_PROCESS_OPERATION_ID:
+    if process_source._operation_id != STOCK_DAILY_PROCESS_OPERATION_ID:
         raise ValueError("process_source operation ID is not the fixed stock worker")
+    _validate_stock_daily_process_executor(executor)
+    checkpoint_value: object = executor._checkpoint_interval
+    if process_source.heartbeat_interval_seconds != checkpoint_value:
+        raise ValueError(
+            "process_source heartbeat interval does not match executor checkpoint config"
+        )
+
+
+def _validate_stock_daily_process_executor(executor: ReviewedProcessExecutor) -> None:
+    """Validate the exact process implementation and stock-specific bounds."""
+    from opendata.data.providers.akshare.stock_daily_wire import fetch_stock_daily_process
+    from opendata.pipeline.process_executor import (
+        MAX_JSON_TEXT_BYTES,
+        MAX_PARAMETER_BYTES,
+        MAX_RESULT_BYTES,
+        MAX_STDIO_BYTES,
+        ReviewedProcessExecutor,
+        ReviewedProcessRegistry,
+    )
+
+    if type(executor) is not ReviewedProcessExecutor:
+        raise TypeError("executor must be an exact ReviewedProcessExecutor")
+    run_method = executor.run
+    if (
+        getattr(run_method, "__self__", None) is not executor
+        or getattr(run_method, "__func__", None) is not ReviewedProcessExecutor.run
+    ):
+        raise ValueError("executor run method is not the reviewed implementation")
     registry = executor._registry
+    if type(registry) is not ReviewedProcessRegistry:
+        raise ValueError("executor must use the exact reviewed stock daily process registry")
     if not isinstance(registry, ReviewedProcessRegistry):
-        raise ValueError("process_source executor must use a reviewed operation registry")
-    registered_handler = registry.resolve(STOCK_DAILY_PROCESS_OPERATION_ID)
+        raise ValueError("executor must use the exact reviewed stock daily process registry")
+    resolve_method = registry.resolve
+    if (
+        getattr(resolve_method, "__self__", None) is not registry
+        or getattr(resolve_method, "__func__", None) is not ReviewedProcessRegistry.resolve
+    ):
+        raise ValueError("executor registry resolver is not the reviewed implementation")
+    registered_handler = resolve_method(STOCK_DAILY_PROCESS_OPERATION_ID)
     if (
         registered_handler is None
         or registered_handler.module != fetch_stock_daily_process.__module__
         or registered_handler.qualified_name != fetch_stock_daily_process.__qualname__
     ):
-        raise ValueError("process_source registry does not bind the fixed stock worker")
+        raise ValueError("executor registry does not bind the fixed stock worker")
+    max_parameter_bytes = executor._max_parameter_bytes
+    if (
+        type(max_parameter_bytes) is not int
+        or max_parameter_bytes > MAX_PARAMETER_BYTES
+        or max_parameter_bytes < MAX_STOCK_DAILY_PROCESS_PARAMETER_BYTES
+    ):
+        raise ValueError("process parameter cap cannot carry the stock daily request")
+    max_result_bytes = executor._max_result_bytes
+    if (
+        type(max_result_bytes) is not int
+        or max_result_bytes > MAX_RESULT_BYTES
+        or max_result_bytes < MAX_PROCESS_RESULT_JSON_BYTES
+        or MAX_JSON_TEXT_BYTES < MAX_PROCESS_RESULT_JSON_BYTES
+    ):
+        raise ValueError("process result cap cannot carry the maximum stock daily response")
+    stdout_limit_bytes = executor._stdout_limit_bytes
+    stderr_limit_bytes = executor._stderr_limit_bytes
+    if (
+        type(stdout_limit_bytes) is not int
+        or not 0 <= stdout_limit_bytes <= MAX_STDIO_BYTES
+        or type(stderr_limit_bytes) is not int
+        or not 0 <= stderr_limit_bytes <= MAX_STDIO_BYTES
+    ):
+        raise ValueError("process executor stdio limits are invalid")
+    poll_interval_value: object = executor._poll_interval
+    if (
+        isinstance(poll_interval_value, bool)
+        or not isinstance(poll_interval_value, (int, float))
+        or not math.isfinite(poll_interval_value)
+        or not 0.005 <= poll_interval_value <= 1.0
+    ):
+        raise ValueError("process executor poll interval is invalid")
+    shutdown_grace_value: object = executor._shutdown_grace
+    if (
+        isinstance(shutdown_grace_value, bool)
+        or not isinstance(shutdown_grace_value, (int, float))
+        or not math.isfinite(shutdown_grace_value)
+        or not 0.01 <= shutdown_grace_value <= 5.0
+    ):
+        raise ValueError("process executor shutdown grace is invalid")
+    checkpoint_value: object = executor._checkpoint_interval
+    if (
+        isinstance(checkpoint_value, bool)
+        or not isinstance(checkpoint_value, (int, float))
+        or not math.isfinite(checkpoint_value)
+        or not 0.01 <= checkpoint_value <= 60.0
+    ):
+        raise ValueError("process executor checkpoint interval is invalid")
+    maximum_http_block = max(
+        STOCK_DAILY_HTTP_CONNECT_TIMEOUT_SECONDS,
+        STOCK_DAILY_HTTP_READ_TIMEOUT_SECONDS,
+    )
+    required_timeout = (
+        STOCK_DAILY_HTTP_OVERALL_TIMEOUT_SECONDS
+        + maximum_http_block
+        + STOCK_DAILY_PROCESS_STARTUP_MARGIN_SECONDS
+        + 2 * float(shutdown_grace_value)
+    )
+    if required_timeout >= STOCK_DAILY_PROCESS_TIMEOUT_SECONDS:
+        raise ValueError("process deadline does not leave HTTP startup and cleanup margin")
 
 
 def _stock_daily_process_parameters(request: RunRequest) -> dict[str, JsonValue]:

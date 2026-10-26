@@ -1383,6 +1383,204 @@ def test_stock_daily_job_rejects_callable_that_is_not_a_process_handler(
         )
 
 
+@pytest.mark.parametrize(
+    ("custom_binding", "message"),
+    [
+        ("parameters_builder", "parameter builder.*fixed"),
+        ("result_decoder", "result decoder.*fixed"),
+        ("timeout", "timeout.*fixed"),
+    ],
+)
+def test_stock_daily_job_rejects_unbound_process_handler_configuration(
+    tmp_path: Path,
+    custom_binding: str,
+    message: str,
+) -> None:
+    """Custom IPC conversions and deadlines cannot enter the job fetch path."""
+    from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
+    from opendata.pipeline.reviewed_worker import ProcessFetchHandler
+
+    executor = ReviewedProcessExecutor(
+        ReviewedProcessRegistry(
+            {
+                stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID: (
+                    stock_daily_wire.fetch_stock_daily_process
+                )
+            }
+        ),
+        max_result_bytes=stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES,
+    )
+    fixed_source = build_stock_daily_process_source(executor)
+
+    def custom_parameters(_request: RunRequest) -> dict[str, str]:
+        return {"symbol": "000001", "start_date": "20260101", "end_date": "20261231"}
+
+    def custom_decoder(value: object) -> object:
+        return value
+
+    parameters_builder = fixed_source._parameters_builder
+    result_decoder = fixed_source._result_decoder
+    timeout_seconds = fixed_source._timeout_seconds
+    if custom_binding == "parameters_builder":
+        parameters_builder = custom_parameters
+    elif custom_binding == "result_decoder":
+        result_decoder = custom_decoder
+    else:
+        timeout_seconds += 1.0
+    custom_source = ProcessFetchHandler(
+        executor,
+        stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID,
+        parameters_builder,
+        result_decoder,
+        timeout_seconds=timeout_seconds,
+    )
+
+    with pytest.raises(ValueError, match=message):
+        build_stock_daily_job(
+            _task(),
+            schema_version=SCHEMA_VERSION,
+            semantic_version=SEMANTIC_VERSION,
+            contract_registry=DatasetContractRegistry([_contract()]),
+            artifact_writer=RawResponseArtifactWriter(tmp_path / "private-process-raw"),
+            process_source=custom_source,
+        )
+
+
+def test_stock_daily_job_rejects_process_handler_subclass_before_execution(
+    tmp_path: Path,
+) -> None:
+    """A subclass cannot replace the fixed process adapter's __call__ behavior."""
+    from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
+    from opendata.pipeline.reviewed_worker import ProcessFetchHandler
+
+    class ReplacedCallHandler(ProcessFetchHandler):
+        def __call__(self, request: RunRequest, context: RunExecutionContext) -> object:
+            raise AssertionError("subclass handler must not execute")
+
+    executor = ReviewedProcessExecutor(
+        ReviewedProcessRegistry(
+            {
+                stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID: (
+                    stock_daily_wire.fetch_stock_daily_process
+                )
+            }
+        ),
+        max_result_bytes=stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES,
+    )
+    fixed_source = build_stock_daily_process_source(executor)
+    subclass_source = ReplacedCallHandler(
+        executor,
+        stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID,
+        fixed_source._parameters_builder,
+        fixed_source._result_decoder,
+        timeout_seconds=fixed_source._timeout_seconds,
+    )
+
+    with pytest.raises(TypeError, match="fixed ProcessFetchHandler"):
+        build_stock_daily_job(
+            _task(),
+            schema_version=SCHEMA_VERSION,
+            semantic_version=SEMANTIC_VERSION,
+            contract_registry=DatasetContractRegistry([_contract()]),
+            artifact_writer=RawResponseArtifactWriter(tmp_path / "private-process-raw"),
+            process_source=subclass_source,
+        )
+
+
+def test_stock_daily_process_source_rejects_executor_subclass_with_overridden_run(
+    tmp_path: Path,
+) -> None:
+    """Only the concrete reviewed executor implementation can reach this adapter."""
+    from opendata.pipeline.process_executor import (
+        ReviewedProcessExecutor,
+        ReviewedProcessRegistry,
+    )
+    from opendata.pipeline.reviewed_worker import ProcessFetchHandler
+
+    class ReplacedRunExecutor(ReviewedProcessExecutor):
+        def run(self, *_args: object, **_kwargs: object) -> object:
+            raise AssertionError("subclass executor must not run")
+
+    registry = ReviewedProcessRegistry(
+        {
+            stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID: (
+                stock_daily_wire.fetch_stock_daily_process
+            )
+        }
+    )
+    executor = ReplacedRunExecutor(
+        registry,
+        max_result_bytes=stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES,
+    )
+    with pytest.raises(TypeError, match="ReviewedProcessExecutor"):
+        build_stock_daily_process_source(executor)
+
+    custom_source = ProcessFetchHandler(
+        executor,
+        stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID,
+        stock_daily_job._stock_daily_process_parameters,
+        stock_daily_job._decode_stock_daily_process_result,
+        timeout_seconds=stock_daily_wire.STOCK_DAILY_PROCESS_TIMEOUT_SECONDS,
+    )
+    with pytest.raises(ValueError, match="ReviewedProcessExecutor"):
+        build_stock_daily_job(
+            _task(),
+            schema_version=SCHEMA_VERSION,
+            semantic_version=SEMANTIC_VERSION,
+            contract_registry=DatasetContractRegistry([_contract()]),
+            artifact_writer=RawResponseArtifactWriter(tmp_path / "private-process-raw"),
+            process_source=custom_source,
+        )
+
+
+@pytest.mark.parametrize(
+    ("changed_config", "message"),
+    [
+        ("result_cap", "result cap"),
+        ("poll_interval", "poll interval"),
+        ("shutdown_margin", "deadline.*margin"),
+        ("checkpoint", "heartbeat interval.*checkpoint config"),
+    ],
+)
+def test_stock_daily_job_revalidates_process_executor_configuration(
+    tmp_path: Path,
+    changed_config: str,
+    message: str,
+) -> None:
+    """A once-valid adapter is rejected if its resource or heartbeat config drifts."""
+    from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
+
+    executor = ReviewedProcessExecutor(
+        ReviewedProcessRegistry(
+            {
+                stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID: (
+                    stock_daily_wire.fetch_stock_daily_process
+                )
+            }
+        ),
+        max_result_bytes=stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES,
+    )
+    process_source = build_stock_daily_process_source(executor)
+    if changed_config == "result_cap":
+        executor._max_result_bytes = stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES - 1
+    elif changed_config == "poll_interval":
+        executor._poll_interval = 0.0
+    elif changed_config == "shutdown_margin":
+        executor._shutdown_grace = 2.5
+    else:
+        executor._checkpoint_interval = process_source.heartbeat_interval_seconds + 1.0
+
+    with pytest.raises(ValueError, match=message):
+        build_stock_daily_job(
+            _task(),
+            schema_version=SCHEMA_VERSION,
+            semantic_version=SEMANTIC_VERSION,
+            contract_registry=DatasetContractRegistry([_contract()]),
+            artifact_writer=RawResponseArtifactWriter(tmp_path / "private-process-raw"),
+            process_source=process_source,
+        )
+
+
 def test_stock_daily_process_path_captures_actual_status_and_separates_business_date(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
