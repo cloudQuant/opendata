@@ -145,7 +145,7 @@ class ReviewedProcessRegistry:
 
 
 class ReviewedProcessExecutor:
-    """Execute registered callables with spawn, JSON IPC, and bounded cleanup."""
+    """Execute registered callables in bounded fixed-helper subprocesses."""
 
     def __init__(
         self,
@@ -253,6 +253,9 @@ class ReviewedProcessExecutor:
                     pass_fds=(sender.fileno(),),
                     start_new_session=True,
                 )
+                # Popen creates the isolated POSIX session before the worker can
+                # run. Retain this fact even if the worker has not sent `ready`.
+                isolated_group = True
             except Exception:
                 raise ProcessExecutionCrashedError("process_start_failed") from None
             command_frame = _encode_message_frame(
@@ -300,7 +303,7 @@ class ReviewedProcessExecutor:
                         if type(isolated_value) is not bool:
                             raise ProcessExecutionProtocolError("process_message_shape_invalid")
                         ready = True
-                        isolated_group = isolated_value
+                        isolated_group = isolated_group or isolated_value
                         continue
                     if message_type == "result" and ready:
                         response = message

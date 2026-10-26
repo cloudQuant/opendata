@@ -11,6 +11,7 @@ import subprocess
 import sys
 import threading
 import time
+from contextlib import suppress
 from pathlib import Path
 from typing import cast
 
@@ -151,6 +152,17 @@ while True:
         body = """
 with open(marker, 'w', encoding='utf-8') as marker_file:
     marker_file.write(str(os.getpid()))
+while True:
+    time.sleep(0.02)
+"""
+    elif mode == "before_ready_fork":
+        body = """
+child_pid = os.fork()
+if child_pid == 0:
+    while True:
+        time.sleep(0.02)
+with open(marker, 'w', encoding='utf-8') as marker_file:
+    marker_file.write(str(child_pid))
 while True:
     time.sleep(0.02)
 """
@@ -542,6 +554,32 @@ def test_cancellation_before_ready_remains_responsive(tmp_path: Path, monkeypatc
 
     assert calls > 1
     assert _wait_until_stopped(int(marker.read_text(encoding="utf-8")))
+
+
+def test_timeout_before_ready_kills_descendant_in_launch_isolated_group(
+    tmp_path: Path, monkeypatch
+) -> None:
+    if os.name != "posix":
+        pytest.skip("process groups are POSIX-specific")
+    marker = tmp_path / "before-ready-descendant-pid"
+    monkeypatch.setattr(
+        process_executor_module,
+        "_WORKER_SCRIPT",
+        _write_test_worker(tmp_path, "before_ready_fork"),
+    )
+    executor = ReviewedProcessExecutor(
+        _registry(echo=_echo), poll_interval_seconds=0.005, shutdown_grace_seconds=0.05
+    )
+
+    with pytest.raises(ProcessExecutionTimeoutError, match="process_execution_timeout"):
+        executor.run("echo", {"marker": str(marker)}, timeout_seconds=3)
+
+    descendant_pid = int(marker.read_text(encoding="utf-8"))
+    stopped = _wait_until_stopped(descendant_pid)
+    if not stopped:
+        with suppress(ProcessLookupError):
+            os.kill(descendant_pid, 9)
+    assert stopped
 
 
 def test_cancellation_after_result_during_process_join_is_responsive(
