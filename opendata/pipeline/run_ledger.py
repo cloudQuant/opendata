@@ -1,9 +1,9 @@
 """Persistent run identity, lease, and state transitions for pipeline jobs.
 
-The table declaration is available for a future Alembic migration. This module
-does not create the table, connect to application settings, or wire itself into
-the production scheduler. The fencing token protects run-ledger transitions;
-it does not fence writes to warehouse repositories.
+The table is stored in the warehouse database so a successful run transition
+can commit atomically with the facts it produced. This module does not create
+the table, connect to application settings, or wire itself into the production
+scheduler. Callers must construct it with the warehouse engine.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Literal
+from typing import TYPE_CHECKING, Literal, TypeVar
 from uuid import uuid4
 
 from sqlalchemy import (
@@ -32,6 +32,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.engine import Connection, Engine, RowMapping
 from sqlalchemy.exc import IntegrityError
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 RunStatus = Literal["queued", "running", "succeeded", "failed", "cancelled"]
 
@@ -80,6 +83,7 @@ Index(
 
 _EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
 _MICROSECONDS_PER_SECOND = 1_000_000
+_ResultT = TypeVar("_ResultT")
 
 
 @dataclass(frozen=True, slots=True)
@@ -105,11 +109,16 @@ class RunLedgerConflictError(ValueError):
     """Raised when one idempotency key is reused for a different job snapshot."""
 
 
+class RunLeaseExpiredError(RuntimeError):
+    """Raised when a lease expires while its fenced warehouse write is running."""
+
+
 class RunLedger:
-    """Operate on an explicitly supplied synchronous SQLAlchemy engine.
+    """Operate on an explicitly supplied warehouse SQLAlchemy engine.
 
     The caller owns table creation and engine lifetime. Instantiate this class
-    only after the table exists; the constructor performs no database I/O.
+    only after the table exists; the constructor performs no database I/O. The
+    engine must target the same database as facts written by ``commit_result``.
     """
 
     def __init__(self, engine: Engine) -> None:
@@ -267,6 +276,134 @@ class RunLedger:
             },
         )
 
+    def commit_result(
+        self,
+        run_key: str,
+        *,
+        worker: str,
+        fencing_token: int,
+        now: datetime,
+        operation: Callable[[Connection], _ResultT],
+        clock: Callable[[], datetime] | None = None,
+    ) -> tuple[RunRecord, _ResultT] | None:
+        """Commit warehouse writes and run success under the current lease.
+
+        ``operation`` receives the connection holding the run-ledger lock. It
+        must perform only bounded SQL writes through that connection: it must
+        not fetch from a provider, open another engine, commit, or otherwise
+        end the transaction. Its return value is paired with the succeeded
+        record. A stale, cancelled, or already expired lease returns ``None``
+        without invoking ``operation``. If the lease expires while the
+        operation runs, :class:`RunLeaseExpiredError` is raised and both the
+        operation's writes and the success transition roll back.
+
+        SQLite acquires its reserved write lock through a conditional update
+        before reading the lease; MySQL and PostgreSQL lock the row with
+        ``SELECT FOR UPDATE``. This prevents cancellation or lease reclamation
+        from racing the warehouse write. ``clock`` exists for deterministic
+        expiry tests; normal callers should leave it unset so commit-time
+        validation uses the current UTC clock.
+        """
+        _validate_run_key(run_key)
+        _validate_worker(worker)
+        _validate_fencing_token(fencing_token)
+        now_us = _datetime_to_epoch_us(now)
+        if not callable(operation):
+            raise TypeError("operation must be callable")
+        if clock is not None and not callable(clock):
+            raise TypeError("clock must be callable")
+        commit_clock = clock or (lambda: datetime.now(timezone.utc))
+
+        try:
+            with self._engine.begin() as connection:
+                if self._engine.dialect.name == "sqlite":
+                    # SQLite has no row-level FOR UPDATE. This CAS obtains its
+                    # database-wide reserved write lock before user SQL runs.
+                    locked = connection.execute(
+                        update(RUN_LEDGER_TABLE)
+                        .where(
+                            and_(
+                                RUN_LEDGER_TABLE.c.run_key == run_key,
+                                RUN_LEDGER_TABLE.c.status == RUNNING,
+                                RUN_LEDGER_TABLE.c.worker == worker,
+                                RUN_LEDGER_TABLE.c.fencing_token == fencing_token,
+                                RUN_LEDGER_TABLE.c.lease_expires_at_us > now_us,
+                            )
+                        )
+                        .values(
+                            updated_at_us=case(
+                                (RUN_LEDGER_TABLE.c.updated_at_us < now_us, now_us),
+                                else_=RUN_LEDGER_TABLE.c.updated_at_us,
+                            )
+                        )
+                    )
+                    if locked.rowcount != 1:
+                        return None
+                else:
+                    locked_row = (
+                        connection.execute(
+                            select(RUN_LEDGER_TABLE)
+                            .where(RUN_LEDGER_TABLE.c.run_key == run_key)
+                            .with_for_update()
+                        )
+                        .mappings()
+                        .one_or_none()
+                    )
+                    if not _row_has_live_lease(locked_row, worker, fencing_token, now_us):
+                        return None
+
+                before_operation = _select_run(connection, run_key)
+                if before_operation is None:
+                    return None
+                if not _record_has_live_lease(before_operation, worker, fencing_token, now_us):
+                    return None
+
+                operation_result = operation(connection)
+                commit_us = _datetime_to_epoch_us(commit_clock())
+                if commit_us >= _record_lease_expiry_us(before_operation):
+                    raise RunLeaseExpiredError("run lease expired before warehouse result commit")
+
+                # Re-read inside the still-held transaction in case the
+                # callback accidentally touched the ledger row. The guarded
+                # update ensures it cannot silently turn another state into
+                # success.
+                current = _select_run(connection, run_key)
+                if current != before_operation or not _record_has_live_lease(
+                    current, worker, fencing_token, commit_us
+                ):
+                    raise _LostRunLeaseError
+                finished = connection.execute(
+                    update(RUN_LEDGER_TABLE)
+                    .where(
+                        and_(
+                            RUN_LEDGER_TABLE.c.run_key == run_key,
+                            RUN_LEDGER_TABLE.c.status == RUNNING,
+                            RUN_LEDGER_TABLE.c.worker == worker,
+                            RUN_LEDGER_TABLE.c.fencing_token == fencing_token,
+                            RUN_LEDGER_TABLE.c.lease_expires_at_us > commit_us,
+                        )
+                    )
+                    .values(
+                        status=SUCCEEDED,
+                        worker=None,
+                        lease_id=None,
+                        lease_expires_at_us=None,
+                        updated_at_us=commit_us,
+                        finished_at_us=commit_us,
+                        error_text=None,
+                    )
+                )
+                if finished.rowcount != 1:
+                    raise _LostRunLeaseError
+                record = _select_run(connection, run_key)
+                if record is None:
+                    raise RuntimeError("committed run ledger row could not be read")
+            return record, operation_result
+        except _LostRunLeaseError:
+            # Raising inside engine.begin() rolls back callback writes before
+            # the stale-worker outcome is translated back to the public API.
+            return None
+
     def fail(
         self,
         run_key: str,
@@ -372,6 +509,45 @@ def _select_run(connection: Connection, run_key: str) -> RunRecord | None:
     if result is None:
         return None
     return _record_from_row(result)
+
+
+def _row_has_live_lease(
+    row: RowMapping | None, worker: str, fencing_token: int, now_us: int
+) -> bool:
+    """Check a locked database row against the requested live lease."""
+    return (
+        row is not None
+        and row["status"] == RUNNING
+        and row["worker"] == worker
+        and row["fencing_token"] == fencing_token
+        and isinstance(row["lease_expires_at_us"], int)
+        and row["lease_expires_at_us"] > now_us
+    )
+
+
+def _record_has_live_lease(
+    record: RunRecord | None, worker: str, fencing_token: int, now_us: int
+) -> bool:
+    """Check a public ledger snapshot against the requested live lease."""
+    return (
+        record is not None
+        and record.status == RUNNING
+        and record.worker == worker
+        and record.fencing_token == fencing_token
+        and record.lease_expires_at is not None
+        and _datetime_to_epoch_us(record.lease_expires_at) > now_us
+    )
+
+
+def _record_lease_expiry_us(record: RunRecord) -> int:
+    """Return the required lease deadline from a claimed record."""
+    if record.lease_expires_at is None:
+        raise RuntimeError("running run ledger row has no lease expiry")
+    return _datetime_to_epoch_us(record.lease_expires_at)
+
+
+class _LostRunLeaseError(RuntimeError):
+    """Force rollback when ownership changes during a fenced callback."""
 
 
 def _record_from_row(row: RowMapping) -> RunRecord:
@@ -568,6 +744,7 @@ __all__ = [
     "RUN_LEDGER_TABLE",
     "RunLedger",
     "RunLedgerConflictError",
+    "RunLeaseExpiredError",
     "RunRecord",
     "RunStatus",
 ]
