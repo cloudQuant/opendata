@@ -17,7 +17,7 @@ from opendata import reviewed_app as reviewed_app_module
 from opendata.reviewed_app import create_reviewed_app
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Callable, Mapping
     from pathlib import Path
 
     from fastapi import FastAPI
@@ -240,6 +240,30 @@ def _expected_routes() -> set[tuple[str, frozenset[str]]]:
     }
 
 
+def _assert_runtime_field_rejected(
+    runtime: ReviewedRuntime,
+    auth_session_factory: async_sessionmaker[AsyncSession],
+    *,
+    field_name: str,
+    replacement: object,
+    error_type: type[Exception],
+    error_match: str,
+) -> None:
+    """Model a corrupted/deserialized runtime field and restore it reliably."""
+    previous_value: object = {
+        "runtime_plan": runtime.runtime_plan,
+        "catalog": runtime.catalog,
+        "dispatcher": runtime.dispatcher,
+        "ledger": runtime.ledger,
+    }[field_name]
+    object.__setattr__(runtime, field_name, replacement)
+    try:
+        with pytest.raises(error_type, match=error_match):
+            create_reviewed_app(runtime, auth_session_factory=auth_session_factory)
+    finally:
+        object.__setattr__(runtime, field_name, previous_value)
+
+
 def test_invalid_runtime_is_rejected_before_fastapi_construction(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -260,6 +284,96 @@ def test_invalid_runtime_is_rejected_before_fastapi_construction(
             invalid_runtime,
             auth_session_factory=async_sessionmaker[AsyncSession](),
         )
+
+
+def test_runtime_composition_fields_fail_closed_before_app_construction(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Reject runtime field corruption before routes or database connections exist."""
+    from opendata.pipeline.runtime_roles import build_runtime_role_plan
+
+    engine = create_engine("sqlite://")
+    runtime: ReviewedRuntime | None = None
+    try:
+        auth_session_factory = async_sessionmaker[AsyncSession]()
+        connections: list[bool] = []
+        event.listen(
+            engine,
+            "connect",
+            lambda _dbapi_connection, _connection_record: connections.append(True),
+        )
+
+        def unexpected_app_construction(**_kwargs: object) -> FastAPI:
+            raise AssertionError("FastAPI must not be constructed for an invalid runtime")
+
+        monkeypatch.setattr(reviewed_app_module, "FastAPI", unexpected_app_construction)
+        runtime = _make_runtime(engine)
+        _assert_runtime_field_rejected(
+            runtime,
+            auth_session_factory,
+            field_name="runtime_plan",
+            replacement=object(),
+            error_type=TypeError,
+            error_match="RuntimeRolePlan",
+        )
+        _assert_runtime_field_rejected(
+            runtime,
+            auth_session_factory,
+            field_name="runtime_plan",
+            replacement=build_runtime_role_plan(
+                profile="legacy_compatible",
+                roles={"api"},
+            ),
+            error_type=ValueError,
+            error_match="reviewed runtime profile",
+        )
+        for field_name, expected_message in (
+            ("catalog", "catalog is invalid"),
+            ("dispatcher", "dispatcher is invalid"),
+            ("ledger", "ledger is invalid"),
+        ):
+            _assert_runtime_field_rejected(
+                runtime,
+                auth_session_factory,
+                field_name=field_name,
+                replacement=object(),
+                error_type=TypeError,
+                error_match=expected_message,
+            )
+        assert connections == []
+    finally:
+        if runtime is not None:
+            runtime.close()
+        engine.dispose()
+
+
+def test_invalid_auth_session_factory_is_rejected_before_app_construction(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Reject a wrong auth-factory type without opening the caller Engine."""
+    engine = create_engine("sqlite://")
+    runtime: ReviewedRuntime | None = None
+    try:
+        connections: list[bool] = []
+        event.listen(
+            engine,
+            "connect",
+            lambda _dbapi_connection, _connection_record: connections.append(True),
+        )
+
+        def unexpected_app_construction(**_kwargs: object) -> FastAPI:
+            raise AssertionError("FastAPI must not be constructed for an invalid auth factory")
+
+        monkeypatch.setattr(reviewed_app_module, "FastAPI", unexpected_app_construction)
+        dynamic_factory_call: Callable[..., FastAPI] = create_reviewed_app
+        runtime = _make_runtime(engine)
+        with pytest.raises(TypeError, match="must be an async_sessionmaker"):
+            dynamic_factory_call(runtime, auth_session_factory=None)
+        assert connections == []
+    finally:
+        if runtime is not None:
+            runtime.close()
+        engine.dispose()
 
 
 @pytest.mark.asyncio
@@ -337,6 +451,27 @@ async def test_app_route_allowlist_and_borrowed_runtime_lifecycle(tmp_path: Path
     finally:
         engine.dispose()
         await auth_engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_lifespan_rejects_runtime_closed_after_app_creation() -> None:
+    """Do not start an app whose borrowed runtime closed after factory return."""
+    engine = create_engine("sqlite://")
+    runtime: ReviewedRuntime | None = None
+    try:
+        runtime = _make_runtime(engine)
+        app = create_reviewed_app(
+            runtime,
+            auth_session_factory=async_sessionmaker[AsyncSession](),
+        )
+        runtime.close()
+        with pytest.raises(RuntimeError, match="reviewed runtime is closed"):
+            async with app.router.lifespan_context(app):
+                pytest.fail("closed runtime must not enter the app lifespan")
+    finally:
+        if runtime is not None:
+            runtime.close()
+        engine.dispose()
 
 
 @pytest.mark.asyncio
