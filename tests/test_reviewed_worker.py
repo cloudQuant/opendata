@@ -227,6 +227,35 @@ def _run_worker_process(
     result_queue.put(None if outcome is None else outcome.record.status)
 
 
+def _expect_inherited_engine_rejected(engine: object) -> None:
+    """Assert a worker cannot adopt a parent-process Engine after ``fork``."""
+    try:
+        PersistentRunWorker(
+            engine,  # type: ignore[arg-type]
+            ReviewedJobRegistry(),
+            worker_id="fork-child-worker",
+            lease_ttl=timedelta(seconds=2),
+            heartbeat_interval_seconds=0.05,
+            database_io_timeout_seconds=0.05,
+        )
+    except ValueError as exc:
+        if "cannot be reused across process boundaries" not in str(exc):
+            raise
+        return
+    raise AssertionError("parent-process worker Engine was accepted after fork")
+
+
+def _expect_inherited_worker_run_rejected(worker: PersistentRunWorker) -> None:
+    """Assert an already-bound facade stops before touching its inherited pool."""
+    try:
+        worker.run_once()
+    except ValueError as exc:
+        if "cannot be reused across process boundaries" not in str(exc):
+            raise
+        return
+    raise AssertionError("parent-process worker was allowed to run after fork")
+
+
 def _request(query: dict[str, JsonValue] | None = None) -> RunRequest:
     """Build a bounded manual request with stable idempotency."""
     return RunRequest(
@@ -557,6 +586,34 @@ def test_external_warmed_engine_is_rejected_even_after_path_replacement(
             heartbeat_interval_seconds=0.05,
             database_io_timeout_seconds=0.05,
         )
+
+
+@pytest.mark.skipif(not hasattr(os, "fork"), reason="requires POSIX fork semantics")
+def test_factory_engine_cannot_be_reused_by_child_process(tmp_path: Path) -> None:
+    """Engine registration is process-local and inherited pools fail closed."""
+    database_path = tmp_path / "forked-engine.sqlite"
+    _setup_database(database_path)
+    engine = create_worker_engine(database_path, database_io_timeout_seconds=0.05)
+    context = multiprocessing.get_context("fork")
+    process = context.Process(target=_expect_inherited_engine_rejected, args=(engine,))
+    process.start()
+    process.join(10)
+
+    assert process.exitcode == 0
+
+
+@pytest.mark.skipif(not hasattr(os, "fork"), reason="requires POSIX fork semantics")
+def test_persistent_worker_cannot_run_after_fork(tmp_path: Path) -> None:
+    """An inherited facade rejects work before using its parent-owned pool."""
+    database_path = tmp_path / "forked-worker.sqlite"
+    _setup_database(database_path)
+    worker = _make_worker(database_path, "fork-parent-worker")
+    context = multiprocessing.get_context("fork")
+    process = context.Process(target=_expect_inherited_worker_run_rejected, args=(worker,))
+    process.start()
+    process.join(10)
+
+    assert process.exitcode == 0
 
 
 def test_worker_rechecks_busy_timeout_on_each_engine_checkout(tmp_path: Path) -> None:

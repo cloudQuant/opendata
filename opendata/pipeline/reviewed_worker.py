@@ -9,6 +9,7 @@ and plain JSON parameters cross into the provider child process.
 from __future__ import annotations
 
 import math
+import os
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import timedelta
@@ -62,6 +63,7 @@ class _WorkerEngineBinding:
     database: _SQLiteFileIdentity
     database_io_timeout_seconds: float
     pool_creator: object
+    owner_process_id: int
 
 
 _WORKER_ENGINE_BINDINGS: WeakKeyDictionary[Engine, _WorkerEngineBinding] = WeakKeyDictionary()
@@ -75,15 +77,18 @@ class _SQLiteConnectionGuard:
         self,
         database: _SQLiteFileIdentity,
         pool_creator: object,
+        owner_process_id: int,
         maximum_wait_seconds: float,
     ) -> None:
         """Capture the physical database identity and connection wait limit."""
         self._database = database
         self._pool_creator = pool_creator
+        self._owner_process_id = owner_process_id
         self._maximum_wait_seconds = maximum_wait_seconds
 
     def validate(self, connection: Connection) -> None:
         """Reject a checkout whose file identity or SQLite lock wait drifted."""
+        _verify_process_owner(self._owner_process_id)
         had_transaction = connection.in_transaction()
         try:
             _verify_pool_wait_bound(
@@ -102,6 +107,7 @@ class _SQLiteConnectionGuard:
 
     def validate_commit(self, connection: Connection) -> None:
         """Reject a commit if the database pathname changed during its transaction."""
+        _verify_process_owner(self._owner_process_id)
         _verify_actual_sqlite_connection(
             connection,
             expected_database=self._database,
@@ -119,9 +125,11 @@ def create_worker_engine(
     The factory accepts only a canonical absolute regular file with no symlink
     path components. It creates a one-connection standard :class:`QueuePool`
     using SQLAlchemy's built-in SQLite creator, and records the file inode,
-    creator identity, and timeout in a weak registry. A persistent worker
-    accepts only an Engine registered here and rechecks that binding before
-    each run. Direct Engines remain available to other pipeline services.
+    creator identity, timeout, and creating process ID in a weak registry. The
+    Engine must be created in the process that will use it because SQLAlchemy
+    pools and DBAPI connections cannot be inherited across ``fork``. A
+    persistent worker accepts only an Engine registered here and rechecks that
+    binding before each run. Direct Engines remain available to other services.
 
     Args:
         database_path: Existing absolute warehouse file path.
@@ -170,7 +178,7 @@ def create_worker_engine(
     except Exception:
         engine.dispose()
         raise
-    binding = _WorkerEngineBinding(database, maximum_wait, creator)
+    binding = _WorkerEngineBinding(database, maximum_wait, creator, os.getpid())
     with _WORKER_ENGINE_BINDINGS_LOCK:
         _WORKER_ENGINE_BINDINGS[engine] = binding
     return engine
@@ -328,6 +336,7 @@ class PersistentRunWorker:
         guard = _SQLiteConnectionGuard(
             binding.database,
             binding.pool_creator,
+            binding.owner_process_id,
             database_io_timeout,
         )
         event.listen(engine, "engine_connect", guard.validate)
@@ -349,6 +358,7 @@ class PersistentRunWorker:
 
     def submit(self, job_id: str, version: str, request: RunRequest) -> RunRecord:
         """Persist one validated request using the reviewed run service."""
+        _verify_process_owner(self._engine_binding.owner_process_id)
         _verify_pool_wait_bound(
             self._engine,
             self._database_io_timeout_seconds,
@@ -358,6 +368,7 @@ class PersistentRunWorker:
 
     def run_once(self) -> RunOutcome | None:
         """Claim at most one durable run and execute it to a fenced outcome."""
+        _verify_process_owner(self._engine_binding.owner_process_id)
         _verify_pool_wait_bound(
             self._engine,
             self._database_io_timeout_seconds,
@@ -402,6 +413,12 @@ def _canonical_file_identity(database_path: Path) -> _SQLiteFileIdentity:
     return _SQLiteFileIdentity(database_path, path_stat.st_dev, path_stat.st_ino)
 
 
+def _verify_process_owner(owner_process_id: int) -> None:
+    """Reject an Engine inherited by a process other than its creator."""
+    if os.getpid() != owner_process_id:
+        raise ValueError("worker Engine cannot be reused across process boundaries")
+
+
 def _require_worker_engine_binding(
     engine: Engine, maximum_wait_seconds: float
 ) -> _WorkerEngineBinding:
@@ -410,6 +427,7 @@ def _require_worker_engine_binding(
         binding = _WORKER_ENGINE_BINDINGS.get(engine)
     if binding is None:
         raise ValueError("persistent worker Engine must come from create_worker_engine")
+    _verify_process_owner(binding.owner_process_id)
     if not math.isclose(
         binding.database_io_timeout_seconds,
         maximum_wait_seconds,
