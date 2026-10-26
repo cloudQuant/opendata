@@ -182,7 +182,7 @@ def serialize_sina_fzb_response(
         SinaFzbPublicationError: If input, response identity, or downstream
             bounds are invalid. The exception text is sanitized.
     """
-    _validate_inputs(body, query, retrieved_at_utc, capture_id)
+    normalized_retrieved_at = _validate_inputs(body, query, retrieved_at_utc, capture_id)
     try:
         reports = parse_sina_fzb_response(body, query=query)
     except SinaFzbWireError as exc:
@@ -191,7 +191,6 @@ def serialize_sina_fzb_response(
         )
         raise SinaFzbPublicationError(code) from exc
 
-    normalized_retrieved_at = retrieved_at_utc.astimezone(_UTC)
     retrieved_text = _utc_iso(normalized_retrieved_at)
     paper_code = _paper_code(query.symbol)
     report_payloads: list[dict[str, JsonValue]] = []
@@ -263,8 +262,8 @@ def _validate_inputs(
     query: object,
     retrieved_at_utc: object,
     capture_id: object,
-) -> None:
-    """Validate explicit public inputs before parser work begins."""
+) -> datetime:
+    """Validate inputs and normalize retrieval time once to builtin UTC."""
     if type(body) is not bytes:
         _raise_publication("invalid_input")
     if type(query) is not SinaFzbQuery or type(query.symbol) is not str:
@@ -275,16 +274,21 @@ def _validate_inputs(
         _raise_publication("invalid_input")
     if type(retrieved_at_utc) is not datetime:
         _raise_publication("invalid_input")
+    if retrieved_at_utc.tzinfo is None:
+        _raise_publication("invalid_input")
     try:
         offset = retrieved_at_utc.utcoffset()
-    except (OverflowError, ValueError):
-        _raise_publication("invalid_input")
-    if retrieved_at_utc.tzinfo is None or offset != timedelta(0):
+    except Exception:
+        raise SinaFzbPublicationError("invalid_input") from None
+    if type(offset) is not timedelta or offset != timedelta(0):
         _raise_publication("invalid_input")
     try:
-        retrieved_at_utc.astimezone(_UTC)
-    except (OverflowError, ValueError):
+        normalized = retrieved_at_utc.astimezone(_UTC)
+    except Exception:
+        raise SinaFzbPublicationError("invalid_input") from None
+    if type(normalized) is not datetime or normalized.tzinfo is not _UTC:
         _raise_publication("invalid_input")
+    return normalized
 
 
 def _report_payload(
@@ -533,7 +537,9 @@ def _business_key(*, symbol: str, capture_id: str, report_period: object) -> str
 
 def _utc_iso(value: datetime) -> str:
     """Render a normalized UTC timestamp with microseconds and a Z suffix."""
-    return value.astimezone(_UTC).isoformat(timespec="microseconds").replace("+00:00", "Z")
+    if type(value) is not datetime or value.tzinfo is not _UTC:
+        _raise_publication("invalid_response")
+    return value.isoformat(timespec="microseconds").replace("+00:00", "Z")
 
 
 def _canonical_json_bytes(value: object) -> bytes:
