@@ -255,6 +255,10 @@ def test_import_persists_only_disabled_definition_and_is_idempotent(
     assert record.provenance["target_identity"]["sink_id"] == "warehouse.market_daily_bars"
     assert record.provenance["plan_sha256"] == first.plan_sha256
     assert record.provenance["warehouse_observation_scope"]["target_quiescence_required"] is True
+    assert (
+        record.provenance["warehouse_observation_scope"]["sqlite_connection_locking"]
+        == "nolock;caller_must_serialize_writes"
+    )
     assert len(store.list_all()) == 1
 
 
@@ -699,6 +703,36 @@ def test_wal_target_is_rejected_without_creating_sidecars(
         inspect_warehouse_fingerprint(engine)
     after = {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()}
     assert after == before
+    assert not target_path.with_name(f"{target_path.name}-wal").exists()
+    assert not target_path.with_name(f"{target_path.name}-shm").exists()
+
+
+def test_target_switching_to_wal_after_preflight_does_not_create_sidecars(
+    tmp_path: Path, request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    target_path = tmp_path / "racing-wal-warehouse.sqlite"
+    engine = create_engine(f"sqlite:///{target_path}", poolclass=NullPool)
+    request.addfinalizer(engine.dispose)
+    with engine.begin() as connection:
+        connection.execute(text("CREATE TABLE warehouse_rows (id INTEGER PRIMARY KEY)"))
+
+    def file_bytes() -> dict[str, bytes]:
+        return {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()}
+
+    original_reject_sidecars = migration_apply._reject_sqlite_sidecars
+    snapshot_after_external_mutation: dict[str, bytes] = {}
+
+    def switch_to_wal_after_preflight(path: Path) -> None:
+        original_reject_sidecars(path)
+        with sqlite3.connect(path) as writer:
+            assert writer.execute("PRAGMA journal_mode=WAL").fetchone()[0] == "wal"
+        snapshot_after_external_mutation.update(file_bytes())
+
+    monkeypatch.setattr(migration_apply, "_reject_sqlite_sidecars", switch_to_wal_after_preflight)
+    with pytest.raises(MigrationApplyError, match="catalog_unreadable"):
+        inspect_warehouse_fingerprint(engine)
+
+    assert file_bytes() == snapshot_after_external_mutation
     assert not target_path.with_name(f"{target_path.name}-wal").exists()
     assert not target_path.with_name(f"{target_path.name}-shm").exists()
 
@@ -1212,6 +1246,7 @@ def test_provenance_revalidates_mapping_and_hash_pins(
     receipt = _build_provenance(**args)
     observation_scope = receipt["warehouse_observation_scope"]
     assert observation_scope["target_quiescence_required"] is True
+    assert observation_scope["sqlite_connection_locking"] == "nolock;caller_must_serialize_writes"
     assert observation_scope["concurrent_external_mutation"].startswith("unsupported;")
     assert (
         receipt["input_sha256"]["runtime_inventory_sha256"]

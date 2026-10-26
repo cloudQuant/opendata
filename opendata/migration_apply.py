@@ -134,11 +134,12 @@ def inspect_warehouse_fingerprint(engine: Engine) -> WarehouseFingerprintObserva
     apply remains blocked until catalog visibility and grants can be proven.
     Only stable rollback-journal SQLite files are supported. WAL-mode files
     and pre-existing ``-wal``, ``-shm``, or ``-journal`` sidecars are rejected
-    before opening SQLite, because a read-only SQLite WAL connection can still
-    create shared-memory and WAL sidecar files. The caller must keep the
-    target quiescent for the full inspection: concurrent external mutation
-    between the header check and SQLite open is unsupported and can create
-    sidecars before a later check rejects the file.
+    before opening SQLite, because a normal read-only WAL connection can still
+    create shared-memory and WAL sidecar files. The connection uses SQLite's
+    ``nolock=1`` URI option so a switch to WAL between preflight and open fails
+    without creating those sidecars. The caller must keep the target quiescent
+    for the full inspection: SQLite warns that ``nolock=1`` requires writes
+    to be externally serialized. See https://www.sqlite.org/uri.html.
 
     Args:
         engine: Engine whose plain absolute SQLite URL names the target file.
@@ -225,9 +226,9 @@ def apply_reviewed_job_definition(
     shared-memory, or journal sidecars are rejected before opening the target.
     The caller must provide a quiescent target for the full inspection; a
     concurrent external mutation between preflight checks and SQLite open is
-    unsupported and may create sidecars before a later check rejects it. A
-    formal consistent snapshot must be prepared as a separate isolated file
-    and have its target fingerprint reviewed again.
+    unsupported and has no consistency guarantee. A formal consistent
+    snapshot must be prepared as a separate isolated file and have its target
+    fingerprint reviewed again.
 
     Every JSON input is copied and bounded, all hashes and the complete plan
     are recomputed, and the target schema is checked again inside the metadata
@@ -579,10 +580,9 @@ def _build_provenance(
             "subject": "plain_absolute_sqlite_file_named_by_engine_url",
             "connector": "module_owned_fresh_readonly_sqlite3_connection",
             "sqlite_journal_scope": "rollback_only;_wal_and_existing_sidecars_rejected",
+            "sqlite_connection_locking": "nolock;caller_must_serialize_writes",
             "target_quiescence_required": True,
-            "concurrent_external_mutation": (
-                "unsupported; sidecars may be created before rejection"
-            ),
+            "concurrent_external_mutation": ("unsupported; no consistency guarantee"),
             "caller_engine_pool_equivalence_verified": False,
             "caller_custom_creator_equivalence_verified": False,
             "encoded_catalog_byte_limit": "64MiB_after_materialization_not_peak_memory",
@@ -838,8 +838,15 @@ def _reject_sqlite_sidecars(path: Path) -> None:
 
 
 def _open_readonly_sqlite(path: Path) -> sqlite3.Connection:
-    """Open a fresh read-only SQLite connection for a verified plain file."""
-    connection = sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True, timeout=1.0)
+    """Open a fresh read-only, no-lock SQLite connection for a verified file.
+
+    The caller must guarantee that the target is quiescent. ``nolock=1`` keeps
+    a race into WAL mode from making SQLite create ``-wal`` or ``-shm`` files;
+    it is not safe for a database another process may mutate concurrently.
+    SQLite says writes must be serialized when this URI option is enabled:
+    https://www.sqlite.org/uri.html
+    """
+    connection = sqlite3.connect(f"{path.as_uri()}?mode=ro&nolock=1", uri=True, timeout=1.0)
     connection.row_factory = sqlite3.Row
     return connection
 
