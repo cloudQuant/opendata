@@ -12,7 +12,13 @@ from typing import TYPE_CHECKING, NoReturn, TypeAlias
 
 from pydantic import ValidationError
 
-from opendata.data.platform_contracts import DatasetContract
+from opendata.data.platform_contracts import (
+    DatasetContract,
+    _canonical_contract_json,
+)
+from opendata.data.platform_contracts import (
+    canonical_sha256 as _contract_sha256,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -111,10 +117,7 @@ class DatasetContractRegistry:
 
 def canonical_sha256(contract: DatasetContract) -> str:
     """Return the SHA-256 of a contract's normalized, sorted native JSON."""
-    if not isinstance(contract, DatasetContract):
-        raise TypeError("contract must be a DatasetContract")
-    payload = _canonical_payload(contract)
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return _contract_sha256(contract)
 
 
 def load_dataset_contract_registry(path: str | Path) -> DatasetContractRegistry:
@@ -168,13 +171,7 @@ def load_dataset_contract_registry(path: str | Path) -> DatasetContractRegistry:
 
 def _canonical_payload(contract: DatasetContract) -> str:
     """Serialize one validated contract to its stable native JSON form."""
-    return json.dumps(
-        contract.model_dump(mode="json"),
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-        allow_nan=False,
-    )
+    return _canonical_contract_json(contract)
 
 
 def _validate_contract_payload(index: int, payload: object) -> DatasetContract:

@@ -12,7 +12,7 @@ import hashlib
 import json
 import re
 from datetime import date, datetime, timezone
-from typing import Annotated, Literal, TypeAlias
+from typing import Annotated, Literal, TypeAlias, TypeVar
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import (
@@ -21,6 +21,7 @@ from pydantic import (
     Field,
     JsonValue,
     StringConstraints,
+    ValidationError,
     field_validator,
     model_validator,
 )
@@ -36,6 +37,9 @@ Identifier = Annotated[
 ]
 Sha256 = Annotated[str, StringConstraints(strict=True, pattern=r"^[0-9a-f]{64}$")]
 TimeBound: TypeAlias = date | datetime
+_MAX_CONTRACT_JSON_BYTES = 1024 * 1024
+_MAX_QUERY_JSON_BYTES = 128 * 1024
+_MAX_PAGE_JSON_BYTES = 9 * 1024 * 1024
 
 AssetClass = Literal[
     "equity",
@@ -90,9 +94,17 @@ CoverageScope = Literal[
 
 
 class _ContractModel(BaseModel):
-    """Immutable, strict base configuration for public platform payloads."""
+    """Strict models with frozen top-level attributes and mutable nested data.
+
+    Pydantic's ``frozen=True`` is attribute-frozen only: nested dictionaries
+    and JSON containers remain mutable. Treat them as untrusted at boundaries
+    and copy/revalidate before hashing or applying dataset-specific rules.
+    """
 
     model_config = ConfigDict(extra="forbid", frozen=True, allow_inf_nan=False, strict=True)
+
+
+_ModelT = TypeVar("_ModelT", bound=_ContractModel)
 
 
 class TimeRange(_ContractModel):
@@ -285,16 +297,202 @@ class DatasetContract(_ContractModel):
         return value
 
 
+def _revalidated_model_json(
+    model: _ModelT,
+    model_type: type[_ModelT],
+    *,
+    label: str,
+    max_bytes: int,
+) -> tuple[bytes, _ModelT]:
+    """Serialize a bounded model graph and validate the resulting strict JSON."""
+    if not isinstance(model, model_type):
+        raise TypeError(f"{label} must be a {model_type.__name__}")
+    _validate_model_graph(
+        model,
+        path=label,
+        depth=0,
+        node_budget=[0],
+        size_budget=[0],
+        active=set(),
+        max_bytes=max_bytes,
+    )
+    _validate_json_model_fields(model)
+    try:
+        document = model.model_dump(mode="json")
+        encoded = json.dumps(
+            document,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    except (RecursionError, TypeError, ValueError) as exc:
+        raise ValueError(f"{label} must be bounded, acyclic strict JSON") from exc
+    if len(encoded) > max_bytes:
+        raise ValueError(f"{label} exceeds the {max_bytes}-byte limit")
+    try:
+        # JSON has arrays but no tuple token. Parse those arrays, verify that
+        # Pydantic did not coerce any other JSON value, then run the model's
+        # strict Python validation over the parsed tuples and scalar types.
+        parsed = model_type.model_validate_json(encoded, strict=False)
+        round_trip = json.dumps(
+            parsed.model_dump(mode="json"),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+        if round_trip != encoded:
+            raise ValueError(f"{label} JSON changed during model validation")
+        validated = model_type.model_validate(parsed.model_dump(mode="python"), strict=True)
+    except ValidationError as exc:
+        raise ValueError(f"{label} no longer satisfies its declared model") from exc
+    return encoded, validated
+
+
+def _validate_model_graph(
+    value: object,
+    *,
+    path: str,
+    depth: int,
+    node_budget: list[int],
+    size_budget: list[int],
+    active: set[int],
+    max_bytes: int,
+) -> None:
+    """Bound model/container traversal and reject cycles before ``model_dump``."""
+    node_budget[0] += 1
+    if node_budget[0] > 100_000:
+        raise ValueError(f"{path} exceeds the maximum JSON node count")
+    if depth > 32:
+        raise ValueError(f"{path} exceeds the maximum JSON nesting depth")
+    size_budget[0] += 3
+    if size_budget[0] > max_bytes:
+        raise ValueError(f"{path} exceeds the {max_bytes}-byte limit")
+
+    if value is None or isinstance(value, bool):
+        return
+    if isinstance(value, str):
+        if len(value) > max_bytes:
+            raise ValueError(f"{path} contains a string larger than the JSON byte limit")
+        size_budget[0] += len(value.encode("utf-8"))
+    elif isinstance(value, int):
+        try:
+            size_budget[0] += len(str(value))
+        except ValueError as exc:
+            raise ValueError(f"{path} contains an integer larger than the JSON byte limit") from exc
+    elif isinstance(value, float):
+        if value != value or value in (float("inf"), float("-inf")):
+            raise ValueError(f"{path} contains a non-finite number")
+        size_budget[0] += 32
+    elif isinstance(value, (date, datetime)):
+        size_budget[0] += len(value.isoformat())
+    elif isinstance(value, _ContractModel):
+        identity = id(value)
+        if identity in active:
+            raise ValueError(f"{path} contains a cycle")
+        active.add(identity)
+        try:
+            values = object.__getattribute__(value, "__dict__")
+            known_fields = set(type(value).model_fields)
+            unknown_fields = set(values) - known_fields
+            if unknown_fields or value.model_extra:
+                raise ValueError(f"{path} contains undeclared model fields")
+            for field_name, field_value in values.items():
+                _validate_model_graph(
+                    field_value,
+                    path=f"{path}.{field_name}",
+                    depth=depth + 1,
+                    node_budget=node_budget,
+                    size_budget=size_budget,
+                    active=active,
+                    max_bytes=max_bytes,
+                )
+        finally:
+            active.remove(identity)
+    elif isinstance(value, dict):
+        identity = id(value)
+        if identity in active:
+            raise ValueError(f"{path} contains a cycle")
+        active.add(identity)
+        try:
+            for key, item in value.items():
+                if not isinstance(key, str):
+                    raise ValueError(f"{path} contains a non-string object key")
+                _validate_model_graph(
+                    key,
+                    path=f"{path}.<key>",
+                    depth=depth + 1,
+                    node_budget=node_budget,
+                    size_budget=size_budget,
+                    active=active,
+                    max_bytes=max_bytes,
+                )
+                _validate_model_graph(
+                    item,
+                    path=f"{path}.{key}",
+                    depth=depth + 1,
+                    node_budget=node_budget,
+                    size_budget=size_budget,
+                    active=active,
+                    max_bytes=max_bytes,
+                )
+        finally:
+            active.remove(identity)
+    elif isinstance(value, (list, tuple)):
+        identity = id(value)
+        if identity in active:
+            raise ValueError(f"{path} contains a cycle")
+        active.add(identity)
+        try:
+            for index, item in enumerate(value):
+                _validate_model_graph(
+                    item,
+                    path=f"{path}[{index}]",
+                    depth=depth + 1,
+                    node_budget=node_budget,
+                    size_budget=size_budget,
+                    active=active,
+                    max_bytes=max_bytes,
+                )
+        finally:
+            active.remove(identity)
+    else:
+        raise ValueError(f"{path} contains a non-JSON value")
+
+    if size_budget[0] > max_bytes:
+        raise ValueError(f"{path} exceeds the {max_bytes}-byte limit")
+
+
+def _validate_json_model_fields(model: _ContractModel) -> None:
+    """Keep JsonValue fields JSON-native before Pydantic's JSON-mode conversion."""
+    if isinstance(model, DataQuery):
+        _validate_json(model.filters, path="query.filters", depth=0, budget=[0])
+    elif isinstance(model, DataPage):
+        _validate_json(model.request.filters, path="page.request.filters", depth=0, budget=[0])
+        _validate_json(model.rows, path="page.rows", depth=0, budget=[0])
+
+
 def canonical_sha256(contract: DatasetContract) -> str:
-    """Return the stable SHA-256 of the normalized native dataset contract JSON."""
-    encoded = json.dumps(
-        contract.model_dump(mode="json"),
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-        allow_nan=False,
-    ).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
+    """Return the stable SHA-256 after bounded JSON revalidation.
+
+    Pydantic's frozen models still expose mutable nested containers, and
+    ``model_copy(update=...)`` can bypass validation. This boundary therefore
+    serializes only a bounded acyclic graph and validates the JSON again before
+    hashing it.
+    """
+    return hashlib.sha256(_canonical_contract_json(contract).encode("utf-8")).hexdigest()
+
+
+def _canonical_contract_json(contract: DatasetContract) -> str:
+    """Return bounded, revalidated canonical JSON for registry storage."""
+    encoded, _ = _revalidated_model_json(
+        contract,
+        DatasetContract,
+        label="dataset contract",
+        max_bytes=_MAX_CONTRACT_JSON_BYTES,
+    )
+    return encoded.decode("utf-8")
 
 
 class DataCoverage(_ContractModel):
@@ -531,7 +729,24 @@ class DataQuery(_ContractModel):
         return self
 
     def validate_for(self, contract: DatasetContract) -> DataQuery:
-        """Validate dataset-specific time and point-in-time request semantics."""
+        """Revalidate this request and check dataset-specific semantics."""
+        _, checked_contract = _revalidated_model_json(
+            contract,
+            DatasetContract,
+            label="dataset contract",
+            max_bytes=_MAX_CONTRACT_JSON_BYTES,
+        )
+        _, checked_query = _revalidated_model_json(
+            self,
+            DataQuery,
+            label="data query",
+            max_bytes=_MAX_QUERY_JSON_BYTES,
+        )
+        checked_query._validate_for_contract(checked_contract)
+        return self
+
+    def _validate_for_contract(self, contract: DatasetContract) -> DataQuery:
+        """Apply dataset-specific semantics to already revalidated models."""
         if self.dataset_id != contract.dataset_id:
             raise ValueError("query dataset_id does not match dataset contract")
         if self.schema_version is not None and self.schema_version != contract.schema_version:
@@ -695,8 +910,25 @@ class DataPage(_ContractModel):
         return self
 
     def validate_for(self, contract: DatasetContract) -> DataPage:
-        """Validate the query and response semantics against a dataset contract."""
-        self.request.validate_for(contract)
+        """Revalidate this page and check query/response semantics."""
+        _, checked_contract = _revalidated_model_json(
+            contract,
+            DatasetContract,
+            label="dataset contract",
+            max_bytes=_MAX_CONTRACT_JSON_BYTES,
+        )
+        _, checked_page = _revalidated_model_json(
+            self,
+            DataPage,
+            label="data page",
+            max_bytes=_MAX_PAGE_JSON_BYTES,
+        )
+        checked_page._validate_for_contract(checked_contract)
+        return self
+
+    def _validate_for_contract(self, contract: DatasetContract) -> DataPage:
+        """Apply dataset-specific semantics to already revalidated models."""
+        self.request._validate_for_contract(contract)
         if self.meta.schema_version != contract.schema_version:
             raise ValueError("page schema_version does not match dataset contract")
         if self.meta.semantic_version != contract.semantic_version:

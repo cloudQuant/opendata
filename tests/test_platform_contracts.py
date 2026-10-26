@@ -8,6 +8,7 @@ from typing import Literal
 import pytest
 from pydantic import ValidationError
 
+from opendata.data.dataset_contract_registry import canonical_sha256 as registry_canonical_sha256
 from opendata.data.platform_contracts import (
     DataCoverage,
     DataPage,
@@ -428,6 +429,53 @@ def test_schema_and_semantic_versions_pin_queries_and_response_hashes() -> None:
     assert canonical_sha256(contract) != canonical_sha256(
         contract.model_copy(update={"semantic_version": "equity-bars-v2"})
     )
+
+
+def test_contract_hash_revalidates_mutated_models_and_rejects_cycles() -> None:
+    """Hash boundaries reject shallow mutations and unchecked model_copy updates."""
+    mutated_contract = equity_contract()
+    mutated_contract.field_units["undeclared_field"] = "USD"
+    with pytest.raises(ValueError, match="dataset contract"):
+        canonical_sha256(mutated_contract)
+    with pytest.raises(ValueError, match="dataset contract"):
+        registry_canonical_sha256(mutated_contract)
+
+    unchecked_copy = equity_contract().model_copy(
+        update={"field_units": {"undeclared_field": "USD"}}
+    )
+    with pytest.raises(ValueError, match="dataset contract"):
+        canonical_sha256(unchecked_copy)
+
+    cyclic_contract = equity_contract()
+    cyclic_units: dict[str, object] = {}
+    cyclic_units["cycle"] = cyclic_units
+    cyclic_contract.field_units["close"] = cyclic_units  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="cycle"):
+        canonical_sha256(cyclic_contract)
+
+
+def test_query_and_page_validation_revalidate_shallow_mutations() -> None:
+    """Dataset-specific checks use detached, revalidated query/page snapshots."""
+    contract = equity_contract()
+    query = DataQuery(
+        dataset_id=contract.dataset_id,
+        start=date(2026, 1, 5),
+        end=date(2026, 1, 6),
+        filters={"instrument_id": "SSE:600000"},
+    )
+    query.filters["instrument_id"] = float("nan")
+    with pytest.raises(ValueError, match="non-finite"):
+        query.validate_for(contract)
+
+    page = equity_page()
+    page.rows[0]["close"] = float("nan")
+    with pytest.raises(ValueError, match="non-finite"):
+        page.validate_for(contract)
+
+    mutated_contract = equity_contract()
+    mutated_contract.field_units["undeclared_field"] = "USD"
+    with pytest.raises(ValueError, match="dataset contract"):
+        query.model_copy(update={"filters": {}}).validate_for(mutated_contract)
 
 
 def test_publication_requires_contract_hash_provenance() -> None:
