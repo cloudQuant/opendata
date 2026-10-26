@@ -135,7 +135,10 @@ def inspect_warehouse_fingerprint(engine: Engine) -> WarehouseFingerprintObserva
     Only stable rollback-journal SQLite files are supported. WAL-mode files
     and pre-existing ``-wal``, ``-shm``, or ``-journal`` sidecars are rejected
     before opening SQLite, because a read-only SQLite WAL connection can still
-    create shared-memory and WAL sidecar files.
+    create shared-memory and WAL sidecar files. The caller must keep the
+    target quiescent for the full inspection: concurrent external mutation
+    between the header check and SQLite open is unsupported and can create
+    sidecars before a later check rejects the file.
 
     Args:
         engine: Engine whose plain absolute SQLite URL names the target file.
@@ -220,7 +223,10 @@ def apply_reviewed_job_definition(
     blocked until complete catalog visibility is proven. Only stable
     rollback-journal SQLite files are supported; WAL mode and existing WAL,
     shared-memory, or journal sidecars are rejected before opening the target.
-    A formal consistent snapshot must be prepared as a separate isolated file
+    The caller must provide a quiescent target for the full inspection; a
+    concurrent external mutation between preflight checks and SQLite open is
+    unsupported and may create sidecars before a later check rejects it. A
+    formal consistent snapshot must be prepared as a separate isolated file
     and have its target fingerprint reviewed again.
 
     Every JSON input is copied and bounded, all hashes and the complete plan
@@ -573,6 +579,10 @@ def _build_provenance(
             "subject": "plain_absolute_sqlite_file_named_by_engine_url",
             "connector": "module_owned_fresh_readonly_sqlite3_connection",
             "sqlite_journal_scope": "rollback_only;_wal_and_existing_sidecars_rejected",
+            "target_quiescence_required": True,
+            "concurrent_external_mutation": (
+                "unsupported; sidecars may be created before rejection"
+            ),
             "caller_engine_pool_equivalence_verified": False,
             "caller_custom_creator_equivalence_verified": False,
             "encoded_catalog_byte_limit": "64MiB_after_materialization_not_peak_memory",

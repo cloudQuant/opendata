@@ -254,6 +254,7 @@ def test_import_persists_only_disabled_definition_and_is_idempotent(
     assert record is not None
     assert record.provenance["target_identity"]["sink_id"] == "warehouse.market_daily_bars"
     assert record.provenance["plan_sha256"] == first.plan_sha256
+    assert record.provenance["warehouse_observation_scope"]["target_quiescence_required"] is True
     assert len(store.list_all()) == 1
 
 
@@ -1209,6 +1210,9 @@ def test_provenance_revalidates_mapping_and_hash_pins(
         "metadata_identity_sha256": _inspect_database_identity(metadata),
     }
     receipt = _build_provenance(**args)
+    observation_scope = receipt["warehouse_observation_scope"]
+    assert observation_scope["target_quiescence_required"] is True
+    assert observation_scope["concurrent_external_mutation"].startswith("unsupported;")
     assert (
         receipt["input_sha256"]["runtime_inventory_sha256"]
         == plan["inputs"]["runtime_inventory_sha256"]
