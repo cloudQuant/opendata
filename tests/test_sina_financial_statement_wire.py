@@ -122,7 +122,8 @@ class _TrackedRaw(HTTPResponse):
     """In-memory urllib3 response that records bounded-client cleanup."""
 
     def __init__(self, body: bytes) -> None:
-        super().__init__(body=io.BytesIO(body), preload_content=False)
+        self.body_stream = io.BytesIO(body)
+        super().__init__(body=self.body_stream, preload_content=False)
         self.closed_by_test = False
 
     def close(self) -> None:
@@ -579,7 +580,7 @@ def test_cancellation_after_bounded_response_prevents_parser_use(
     assert len(transport.adapter.requests) == 1
     assert transport.responses
     assert transport.responses[0].status_code == 200
-    assert transport.adapter.raw_streams[0].closed_by_test
+    assert transport.adapter.raw_streams[0].body_stream.closed
 
 
 def test_cancellation_after_parsing_prevents_snapshot_return(
@@ -600,4 +601,4 @@ def test_cancellation_after_parsing_prevents_snapshot_return(
 
     assert len(transport.adapter.requests) == 1
     assert transport.responses[0].status_code == 200
-    assert transport.adapter.raw_streams[0].closed_by_test
+    assert transport.adapter.raw_streams[0].body_stream.closed

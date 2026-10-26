@@ -63,6 +63,11 @@ def _encode(document: dict[str, Any]) -> bytes:
     return json.dumps(document, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
 
 
+def _encode_escaped_text(document: dict[str, Any]) -> bytes:
+    """Encode synthetic lone surrogates as JSON escapes for parser-boundary tests."""
+    return json.dumps(document, ensure_ascii=True, separators=(",", ":")).encode("utf-8")
+
+
 def _assert_wire_error(body: bytes, code: str) -> None:
     with pytest.raises(SinaFzbWireError) as raised:
         parse_sina_fzb_response(body, query=_QUERY)
@@ -220,6 +225,7 @@ def test_bracket_characters_and_escaped_quotes_inside_strings_are_not_depth() ->
         b'{"result":{"extension":NaN}}',
         b'{"result":{"extension":Infinity}}',
         b'{"result":{"extension":-Infinity}}',
+        b'{"result":{"extension":1e999}}',
     ],
 )
 def test_invalid_utf8_json_duplicates_and_non_finite_constants_are_rejected(body: bytes) -> None:
@@ -257,6 +263,39 @@ def test_invalid_status_envelope_is_not_treated_as_empty_data() -> None:
     _assert_wire_error(b'{"result":{"status":{"code":0}}}', "invalid_envelope")
 
 
+def test_each_envelope_level_requires_its_source_json_container_type() -> None:
+    _assert_wire_error(b"[]", "invalid_envelope")
+    _assert_wire_error(b'{"result":[]}', "invalid_envelope")
+
+    wrong_status = _recorded_document()
+    wrong_status["result"]["status"] = []
+    _assert_document_error(wrong_status, "invalid_envelope")
+
+    wrong_data = _recorded_document()
+    wrong_data["result"]["data"] = []
+    _assert_document_error(wrong_data, "invalid_envelope")
+
+    wrong_dates = _recorded_document()
+    _data(wrong_dates)["report_date"] = {}
+    _assert_document_error(wrong_dates, "invalid_envelope")
+
+    wrong_report_map = _recorded_document()
+    _data(wrong_report_map)["report_list"] = []
+    _assert_document_error(wrong_report_map, "invalid_envelope")
+
+    wrong_period = _recorded_document()
+    _data(wrong_period)["report_date"][0] = None
+    _assert_document_error(wrong_period, "invalid_envelope")
+
+    wrong_report = _recorded_document()
+    _data(wrong_report)["report_list"]["20260630"] = None
+    _assert_document_error(wrong_report, "invalid_envelope")
+
+    wrong_row = _recorded_document()
+    _first_report_wire(wrong_row)["data"][1] = []
+    _assert_document_error(wrong_row, "invalid_envelope")
+
+
 def test_date_list_and_report_map_must_be_a_unique_exact_match() -> None:
     duplicate_date = _recorded_document()
     _data(duplicate_date)["report_date"][1]["date_value"] = "20260630"
@@ -276,6 +315,10 @@ def test_period_publication_and_update_time_are_validated_independently() -> Non
     invalid_period = _recorded_document()
     _data(invalid_period)["report_date"][0]["date_value"] = "20260230"
     _assert_document_error(invalid_period, "invalid_date")
+
+    invalid_period_format = _recorded_document()
+    _data(invalid_period_format)["report_date"][0]["date_value"] = "2026063"
+    _assert_document_error(invalid_period_format, "invalid_date")
 
     invalid_publication = _recorded_document()
     _first_report_wire(invalid_publication)["publish_date"] = "20261301"
@@ -316,6 +359,36 @@ def test_unknown_scalar_source_metadata_is_preserved() -> None:
     assert dict(report.period_metadata)["future_period_flag"] == 7
     assert dict(report.report_metadata)["future_report_flag"] is False
     assert dict(_row_by_id(report, "CURFDS").source_metadata)["future_item_flag"] == "kept verbatim"
+
+
+def test_json_null_source_metadata_remains_a_json_null() -> None:
+    document = _recorded_document()
+    _first_report_wire(document)["data"][1]["future_item_flag"] = None
+
+    report = parse_sina_fzb_response(_encode(document), query=_QUERY)[0]
+
+    assert dict(_row_by_id(report, "CURFDS").source_metadata)["future_item_flag"] is None
+
+
+@pytest.mark.parametrize(
+    ("location", "code"),
+    [
+        ("title", "invalid_value"),
+        ("metadata_value", "invalid_value"),
+        ("metadata_key", "invalid_json"),
+    ],
+)
+def test_escaped_lone_surrogates_are_rejected_at_text_boundaries(location: str, code: str) -> None:
+    document = _recorded_document()
+    unpaired_surrogate = chr(0xD800)
+    if location == "title":
+        _first_report_wire(document)["data"][1]["item_title"] = unpaired_surrogate
+    elif location == "metadata_value":
+        _first_report_wire(document)["data"][1]["future_text"] = unpaired_surrogate
+    else:
+        _data(document)["report_date"][0][unpaired_surrogate] = "future metadata key"
+
+    _assert_wire_error(_encode_escaped_text(document), code)
 
 
 @pytest.mark.parametrize(
