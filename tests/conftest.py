@@ -144,13 +144,34 @@ def _guard_default_engine_factory(
     return guarded_factory
 
 
+def _guard_default_engine_constructor(
+    module: object, factory: Callable[..., object], engine_name: str
+) -> None:
+    """Guard one module-local Engine constructor without changing its factory identity."""
+    cache_info = getattr(factory, "cache_info", None)
+    if callable(cache_info) and cache_info().currsize:
+        # Guard any Engine cached before conftest was loaded without connecting it.
+        _install_default_engine_guards(factory(), engine_name)
+
+    constructor_attribute = "create_engine"
+    constructor = getattr(module, constructor_attribute)
+
+    @wraps(constructor)
+    def guarded_constructor(*args: object, **kwargs: object) -> object:
+        default_engine = constructor(*args, **kwargs)
+        _install_default_engine_guards(default_engine, engine_name)
+        return default_engine
+
+    setattr(module, constructor_attribute, guarded_constructor)
+
+
 _CONTROL_DB_GUARDS = _install_default_engine_guards(engine, "control")
 _DATA_DB_GUARDS = _install_default_engine_guards(data_engine, "data")
 _CONTROL_DB_CONNECT_GUARD, _CONTROL_DB_CHECKOUT_GUARD, _CONTROL_DB_CURSOR_GUARD = _CONTROL_DB_GUARDS
 _DATA_DB_CONNECT_GUARD, _DATA_DB_CHECKOUT_GUARD, _DATA_DB_CURSOR_GUARD = _DATA_DB_GUARDS
 
 # Install before importing ``opendata.main`` and before pytest imports any test
-# modules. These four known default targets are guarded at DBAPI connect,
+# modules. These six known default targets are guarded at DBAPI connect,
 # checkout, and SQLAlchemy cursor execution. Direct DBAPI use is outside scope.
 from opendata.pipeline import jobs as pipeline_jobs  # noqa: E402  # protect before app/test imports
 
@@ -159,6 +180,19 @@ pipeline_jobs.warehouse_engine = _guard_default_engine_factory(
 )
 pipeline_jobs.control_engine = _guard_default_engine_factory(
     pipeline_jobs.control_engine, "pipeline control"
+)
+
+# The API router has already captured this getter in ``Depends`` objects. Guard
+# its module-local constructor so those references keep their identity and
+# still receive guarded Engines, including after the factory cache is cleared.
+from opendata.api import data_query as api_data_query  # noqa: E402  # guard before route use
+from opendata.data import minute_archive  # noqa: E402  # guard before app/test imports
+
+_guard_default_engine_constructor(
+    api_data_query, api_data_query.get_warehouse_engine, "API warehouse"
+)
+_guard_default_engine_constructor(
+    minute_archive, minute_archive.get_minute_archive_engine, "minute archive index"
 )
 
 from opendata.main import app  # noqa: E402  # default-engine guards must be installed first

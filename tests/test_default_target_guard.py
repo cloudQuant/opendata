@@ -2,13 +2,17 @@
 
 import os
 import sqlite3
+from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
 from sqlalchemy import create_engine, event
 
-from opendata.core import database
+from opendata.api import data_query as api_data_query
+from opendata.api import minute_data as api_minute_data
+from opendata.core import config, database
 from opendata.core.token_blacklist import _InMemoryBlacklist, _RedisBlacklist, token_blacklist
+from opendata.data import minute_archive
 from opendata.pipeline import jobs as pipeline_jobs
 from tests import conftest
 
@@ -130,40 +134,96 @@ def test_cursor_guard_rejects_sql_on_an_already_checked_out_sqlite_connection(
 
 
 @pytest.mark.parametrize(
-    ("factory", "engine_name"),
+    ("factory", "engine_name", "settings_values"),
     [
-        (pipeline_jobs.warehouse_engine, "pipeline warehouse"),
-        (pipeline_jobs.control_engine, "pipeline control"),
+        (
+            pipeline_jobs.warehouse_engine,
+            "pipeline warehouse",
+            {"data_database_url": "sqlite://"},
+        ),
+        (
+            pipeline_jobs.control_engine,
+            "pipeline control",
+            {"database_url_sync": "sqlite://"},
+        ),
+        (
+            api_data_query.get_warehouse_engine,
+            "API warehouse",
+            {"data_database_url": "sqlite://"},
+        ),
+        (
+            minute_archive.get_minute_archive_engine,
+            "minute archive index",
+            {"database_url_sync": "sqlite://"},
+        ),
     ],
 )
-def test_pipeline_default_factories_reject_before_dbapi_connect(
-    factory, engine_name: str, monkeypatch
+def test_known_default_factories_reject_before_dbapi_connect(
+    factory, engine_name: str, settings_values: dict[str, str], monkeypatch
 ) -> None:
-    """Both known pipeline factories guard returned Engines before driver access."""
+    """Each known cached factory guards a local Engine before driver access."""
     assert callable(factory.cache_clear)
     assert callable(factory.cache_info)
     assert callable(factory.cache_parameters)
     assert factory.cache_info().maxsize == 1
     assert factory.cache_parameters()["maxsize"] == 1
 
-    default_engine = factory()
-    registered_guards = conftest._GUARDED_DEFAULT_ENGINE_GUARDS[id(default_engine)][1]
-    for event_name, listener in registered_guards:
-        assert event.contains(default_engine, event_name, listener)
-
-    dbapi_connect_calls: list[object] = []
-
-    def record_dbapi_connect(*args: object, **kwargs: object) -> None:
-        dbapi_connect_calls.append((args, kwargs))
-        raise AssertionError("DBAPI connect must be unreachable behind the guard")
-
-    monkeypatch.setattr(default_engine.dialect.dbapi, "connect", record_dbapi_connect)
+    monkeypatch.setattr(config, "settings", SimpleNamespace(**settings_values))
+    factory.cache_clear()
+    default_engine = None
     try:
+        if factory is api_data_query.get_warehouse_engine:
+            assert factory in _route_dependency_calls(api_data_query.router)
+        default_engine = factory()
+        registered_guards = conftest._GUARDED_DEFAULT_ENGINE_GUARDS[id(default_engine)][1]
+        for event_name, listener in registered_guards:
+            assert event.contains(default_engine, event_name, listener)
+
+        dbapi_connect_calls: list[object] = []
+
+        def record_dbapi_connect(*args: object, **kwargs: object) -> None:
+            dbapi_connect_calls.append((args, kwargs))
+            raise AssertionError("DBAPI connect must be unreachable behind the guard")
+
+        monkeypatch.setattr(default_engine.dialect.dbapi, "connect", record_dbapi_connect)
         with pytest.raises(RuntimeError, match="before driver connect"):
             default_engine.raw_connection()
         assert dbapi_connect_calls == []
     finally:
-        default_engine.dispose()
+        if default_engine is not None:
+            default_engine.dispose()
+        factory.cache_clear()
+
+
+def _route_dependency_calls(router: object) -> list[object]:
+    """Collect function identities from a router's existing dependency tree."""
+    pending = [
+        dependant
+        for route in getattr(router, "routes", ())
+        if (dependant := getattr(route, "dependant", None)) is not None
+    ]
+    visited: set[int] = set()
+    calls: list[object] = []
+    while pending:
+        dependant = pending.pop()
+        if id(dependant) in visited:
+            continue
+        visited.add(id(dependant))
+        calls.append(getattr(dependant, "call", None))
+        pending.extend(getattr(dependant, "dependencies", ()))
+    return calls
+
+
+def test_api_routes_keep_the_original_guarded_factory_identities() -> None:
+    """Existing Depends nodes retain both cached getter objects after guard setup."""
+    api_factory = api_data_query.get_warehouse_engine
+    minute_factory = minute_archive.get_minute_archive_engine
+    assert api_factory in _route_dependency_calls(api_data_query.router)
+    assert minute_factory in _route_dependency_calls(api_minute_data.router)
+    for factory in (api_factory, minute_factory):
+        assert callable(factory.cache_clear)
+        assert callable(factory.cache_info)
+        assert callable(factory.cache_parameters)
 
 
 class _ProtocolItem:
