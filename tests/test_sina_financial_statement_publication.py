@@ -7,6 +7,7 @@ import copy
 import gzip
 import hashlib
 import json
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone, tzinfo
 from functools import lru_cache
 from pathlib import Path
@@ -14,12 +15,17 @@ from typing import Any
 
 import pytest
 
+import opendata.data.providers.sina.financial_statement_publication as publication
 from opendata.data.providers.sina.financial_statement_contract import (
     MAX_RAW_RESPONSE_BYTES,
     MAX_SINA_FZB_ROWS_PER_REPORT,
+    SinaFzbGroupMarker,
+    SinaFzbItem,
     SinaFzbQuery,
+    SinaFzbReport,
     SinaFzbWireError,
 )
+from opendata.data.providers.sina.financial_statement_parser import parse_sina_fzb_response
 from opendata.data.providers.sina.financial_statement_publication import (
     SinaFzbPublicationError,
     build_sina_fzb_observation_contract,
@@ -88,6 +94,21 @@ class _SingleReadTimezone(tzinfo):
         raise RuntimeError(self.canary)
 
 
+class _ShanghaiOffsetFailureTimezone(tzinfo):
+    """Look like the parser's Shanghai zone but fail during offset validation."""
+
+    key = "Asia/Shanghai"
+
+    def utcoffset(self, dt: datetime | None) -> timedelta:
+        raise ValueError("source-update-offset-canary")
+
+    def dst(self, dt: datetime | None) -> timedelta:
+        return timedelta(0)
+
+    def fromutc(self, dt: datetime) -> datetime:
+        return dt
+
+
 @lru_cache(maxsize=1)
 def _recorded_capture() -> tuple[dict[str, Any], bytes]:
     """Return the original response bytes and their pinned outer recording."""
@@ -121,6 +142,29 @@ def _recorded_document() -> dict[str, Any]:
     document = json.loads(_recorded_body())
     assert isinstance(document, dict)
     return document
+
+
+@lru_cache(maxsize=1)
+def _parsed_reports() -> tuple[SinaFzbReport, ...]:
+    """Return typed reports parsed from the exact pinned W9 body."""
+    return parse_sina_fzb_response(_recorded_body(), query=_QUERY)
+
+
+def _captured_2024_report() -> SinaFzbReport:
+    return next(
+        report for report in _parsed_reports() if report.report_period.isoformat() == "2024-12-31"
+    )
+
+
+def _patch_parser_reports(monkeypatch: pytest.MonkeyPatch, reports: tuple[Any, ...]) -> None:
+    """Simulate parser seam corruption while testing only the public serializer."""
+
+    def corrupted_parser(body: bytes, *, query: SinaFzbQuery) -> tuple[Any, ...]:
+        assert body == b"parser-seam-input"
+        assert query == _QUERY
+        return reports
+
+    monkeypatch.setattr(publication, "parse_sina_fzb_response", corrupted_parser)
 
 
 def _encode_document(document: dict[str, Any], *, sort_keys: bool = False) -> bytes:
@@ -170,6 +214,21 @@ def _assert_publication_error(
         assert secret not in str(raised.value)
         assert secret not in repr(raised.value)
     return raised.value
+
+
+def _assert_parser_seam_error(
+    monkeypatch: pytest.MonkeyPatch,
+    reports: tuple[Any, ...],
+    *,
+    code: str = "invalid_response",
+    secret: str | None = None,
+) -> SinaFzbPublicationError:
+    _patch_parser_reports(monkeypatch, reports)
+    return _assert_publication_error(
+        code,
+        body=b"parser-seam-input",
+        secret=secret,
+    )
 
 
 def test_factory_declares_the_source_native_atemporal_capture_contract() -> None:
@@ -464,6 +523,19 @@ def test_invalid_query_time_or_capture_identity_is_rejected(
     assert error.__cause__ is None
 
 
+def test_mutated_query_symbol_is_revalidated_before_parser_invocation() -> None:
+    query = SinaFzbQuery("600519.SH")
+    object.__setattr__(query, "symbol", "invalid-query-canary")
+
+    error = _assert_publication_error(
+        "invalid_input",
+        body=_recorded_body(),
+        query=query,
+        secret="invalid-query-canary",
+    )
+    assert error.__cause__ is None
+
+
 @pytest.mark.parametrize(
     ("callback", "error_type"),
     [
@@ -514,15 +586,339 @@ def test_stateful_timezone_normalizes_once_or_fails_with_a_safe_error() -> None:
     assert batch.records[0].payload["retrieved_at_utc"] == "2026-10-27T02:00:00.000000Z"
 
 
-def test_wrong_query_and_malformed_body_are_sanitized_and_keep_wire_cause() -> None:
-    wrong_query_error = _assert_publication_error(
-        "invalid_response",
-        body=_recorded_body(),
-        query=SinaFzbQuery("000001.SZ"),
-        secret="sh600519",
-    )
-    assert isinstance(wrong_query_error.__cause__, SinaFzbWireError)
+def test_recorded_response_without_identity_echo_uses_its_explicit_request() -> None:
+    """The response alone cannot prove symbol ownership when it omits identity echoes."""
+    call, body = _recorded_capture()
+    document = json.loads(body)
+    data = document["result"]["data"]
+    assert not {"paperCode", "source", "type"}.intersection(data)
+    # With no body echo, the pinned outer request is the only recorded symbol binding.
+    assert call["params"]["paperCode"] == "sh600519"
 
+    batch = serialize_sina_fzb_response(
+        body,
+        query=_QUERY,
+        retrieved_at_utc=_RETRIEVED_AT,
+        capture_id=_CAPTURE_ID,
+    )
+    assert all(row.payload["instrument_id"] == "600519.SH" for row in batch.records)
+
+
+def test_matching_optional_identity_echoes_preserve_explicit_request_binding() -> None:
+    document = _recorded_document()
+    data = document["result"]["data"]
+    data.update({"paperCode": "sh600519", "source": "fzb", "type": "0"})
+
+    batch = serialize_sina_fzb_response(
+        _encode_document(document),
+        query=_QUERY,
+        retrieved_at_utc=_RETRIEVED_AT,
+        capture_id=_CAPTURE_ID,
+    )
+
+    assert all(row.payload["source_paper_code"] == "sh600519" for row in batch.records)
+
+
+@pytest.mark.parametrize(
+    ("echo_field", "echo_value"),
+    [("paperCode", "sh000001"), ("source", "other-source"), ("type", "1")],
+)
+def test_mismatched_source_identity_echo_is_rejected(echo_field: str, echo_value: str) -> None:
+    document = _recorded_document()
+    document["result"]["data"][echo_field] = echo_value
+
+    error = _assert_publication_error(
+        "invalid_response",
+        body=_encode_document(document),
+        secret=echo_value,
+    )
+    assert isinstance(error.__cause__, SinaFzbWireError)
+    assert error.__cause__.code == "invalid_identity"
+
+
+def test_parser_output_report_cap_fails_closed_before_any_batch_is_returned(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured = _parsed_reports()[0]
+    reports = (captured,) * 257
+
+    _assert_parser_seam_error(monkeypatch, reports, code="limit_exceeded")
+
+
+def test_parser_output_must_remain_a_report_dto(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _assert_parser_seam_error(monkeypatch, (object(),))
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("symbol", "000001.SZ"),
+        ("source_paper_code", "sz000001"),
+        ("statement_code", "bzk"),
+    ],
+)
+def test_parser_output_identity_must_match_the_explicit_query(
+    monkeypatch: pytest.MonkeyPatch, field: str, value: str
+) -> None:
+    report = replace(_captured_2024_report(), **{field: value})
+
+    _assert_parser_seam_error(monkeypatch, (report,), secret=value)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("report_period", "not-a-date"),
+        ("published_on", "not-a-date"),
+        ("publication_precision", "timestamp"),
+        ("currency", ""),
+    ],
+)
+def test_parser_output_report_fields_reject_invalid_values(
+    monkeypatch: pytest.MonkeyPatch, field: str, value: str
+) -> None:
+    report = replace(_captured_2024_report(), **{field: value})
+
+    _assert_parser_seam_error(monkeypatch, (report,))
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "boolean_epoch",
+        "zero_epoch",
+        "wrong_timezone",
+        "wrong_datetime_type",
+        "offset_callback_error",
+        "unrepresentable_epoch",
+        "clock_skew",
+        "fold_mismatch",
+    ],
+)
+def test_parser_output_source_update_timezone_and_epoch_are_consistent(
+    monkeypatch: pytest.MonkeyPatch, case: str
+) -> None:
+    report = _captured_2024_report()
+    fields: dict[str, object] = {}
+    if case == "boolean_epoch":
+        fields["source_update_epoch_seconds"] = True
+    elif case == "zero_epoch":
+        fields["source_update_epoch_seconds"] = 0
+    elif case == "wrong_timezone":
+        fields["source_updated_at"] = datetime(2025, 4, 2, 13, 15, 11, tzinfo=timezone.utc)
+    elif case == "wrong_datetime_type":
+        fields["source_updated_at"] = None
+    elif case == "offset_callback_error":
+        fields["source_updated_at"] = datetime(
+            2025, 4, 2, 21, 15, 11, tzinfo=_ShanghaiOffsetFailureTimezone()
+        )
+    elif case == "unrepresentable_epoch":
+        fields["source_update_epoch_seconds"] = 10**100
+    elif case == "clock_skew":
+        fields["source_updated_at"] = report.source_updated_at + timedelta(seconds=1)
+    else:
+        fields["source_updated_at"] = report.source_updated_at.replace(fold=1)
+    invalid = replace(report, **fields)
+
+    _assert_parser_seam_error(monkeypatch, (invalid,))
+
+
+@pytest.mark.parametrize(
+    "case",
+    ["not_tuple", "bad_pair", "empty_key", "unsorted_keys", "nonfinite", "unsupported"],
+)
+def test_parser_output_metadata_must_be_sorted_unique_json_scalars(
+    monkeypatch: pytest.MonkeyPatch, case: str
+) -> None:
+    report = _captured_2024_report()
+    if case == "not_tuple":
+        metadata: Any = []
+    elif case == "bad_pair":
+        metadata = (("bad-pair", 1, 2),)
+    elif case == "empty_key":
+        metadata = (("", "empty-key"),)
+    elif case == "unsorted_keys":
+        metadata = (("z-last", 1), ("a-first", 2))
+    elif case == "nonfinite":
+        metadata = (("nonfinite", float("nan")),)
+    else:
+        metadata = (("a-null", None), ("z-unsupported", object()))
+    invalid = replace(report, report_metadata=metadata)
+
+    _assert_parser_seam_error(monkeypatch, (invalid,))
+
+
+@pytest.mark.parametrize("case", ["empty_identity", "nonstring_raw_value", "wrong_value_state"])
+def test_parser_output_item_values_and_identity_are_rechecked(
+    monkeypatch: pytest.MonkeyPatch, case: str
+) -> None:
+    report = _captured_2024_report()
+    item = next(
+        entry
+        for entry in report.entries
+        if isinstance(entry, SinaFzbItem) and entry.source_item_id == "CURFDS"
+    )
+    if case == "empty_identity":
+        invalid_item = replace(item, source_item_id="")
+    elif case == "nonstring_raw_value":
+        invalid_item = replace(item, raw_value=123)
+    else:
+        invalid_item = replace(item, value_state="empty")
+    invalid = replace(report, entries=(invalid_item,))
+
+    _assert_parser_seam_error(monkeypatch, (invalid,))
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "not_tuple",
+        "too_many_entries",
+        "unknown_entry",
+        "empty_ordinals",
+        "boolean_ordinal",
+        "gapped_ordinals",
+        "too_many_occurrences",
+        "overlapping_entries",
+        "negative_ordinal",
+        "repeated_ordinal",
+        "empty_entry_sequence",
+    ],
+)
+def test_parser_output_entry_order_and_occurrence_bounds_are_rechecked(
+    monkeypatch: pytest.MonkeyPatch, case: str
+) -> None:
+    report = _captured_2024_report()
+    item = next(
+        entry
+        for entry in report.entries
+        if isinstance(entry, SinaFzbItem) and entry.source_item_id == "CURFDS"
+    )
+    if case == "not_tuple":
+        entries: Any = []
+        expected_code = "invalid_response"
+    elif case == "too_many_entries":
+        entries = (item,) * (MAX_SINA_FZB_ROWS_PER_REPORT + 1)
+        expected_code = "limit_exceeded"
+    elif case == "unknown_entry":
+        entries = (object(),)
+        expected_code = "invalid_response"
+    elif case == "empty_ordinals":
+        entries = (replace(item, source_ordinals=()),)
+        expected_code = "invalid_response"
+    elif case == "boolean_ordinal":
+        entries = (replace(item, source_ordinals=(True,)),)
+        expected_code = "invalid_response"
+    elif case == "gapped_ordinals":
+        entries = (replace(item, source_ordinals=(1,)),)
+        expected_code = "invalid_response"
+    elif case == "too_many_occurrences":
+        entries = (replace(item, source_ordinals=tuple(range(MAX_SINA_FZB_ROWS_PER_REPORT + 1))),)
+        expected_code = "limit_exceeded"
+    elif case == "overlapping_entries":
+        entries = (item, replace(item, source_item_id="ANOTHER_ITEM", source_ordinals=(0,)))
+        expected_code = "invalid_response"
+    elif case == "negative_ordinal":
+        entries = (replace(item, source_ordinals=(-1,)),)
+        expected_code = "invalid_response"
+    elif case == "repeated_ordinal":
+        entries = (replace(item, source_ordinals=(0, 0)),)
+        expected_code = "invalid_response"
+    else:
+        entries = ()
+        expected_code = "invalid_response"
+    invalid = replace(report, entries=entries)
+
+    if case == "empty_entry_sequence":
+        _patch_parser_reports(monkeypatch, (invalid,))
+        batch = serialize_sina_fzb_response(
+            b"parser-seam-input",
+            query=_QUERY,
+            retrieved_at_utc=_RETRIEVED_AT,
+            capture_id=_CAPTURE_ID,
+        )
+        assert len(batch.records) == 1
+        assert batch.records[0].payload["entries"] == []
+    else:
+        _assert_parser_seam_error(monkeypatch, (invalid,), code=expected_code)
+
+
+def test_parser_output_group_marker_cannot_become_a_financial_item(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report = _captured_2024_report()
+    marker = next(entry for entry in report.entries if isinstance(entry, SinaFzbGroupMarker))
+    invalid_marker = replace(marker, raw_item_field="synthetic-value")
+    invalid = replace(report, entries=(invalid_marker,))
+
+    _assert_parser_seam_error(monkeypatch, (invalid,))
+
+
+def test_runservice_node_cap_is_checked_across_the_complete_parser_batch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    padding = tuple((f"node_{index:04d}", index) for index in range(9_000))
+    reports = tuple(
+        replace(
+            report,
+            report_metadata=tuple(sorted((*report.report_metadata, *padding))),
+        )
+        for report in _parsed_reports()
+    )
+
+    _assert_parser_seam_error(monkeypatch, reports, code="limit_exceeded")
+
+
+def test_runservice_text_bound_applies_after_the_larger_store_bound(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report = _captured_2024_report()
+    invalid = replace(report, report_metadata=(("long_but_storable", "x" * 4_097),))
+
+    _assert_parser_seam_error(monkeypatch, (invalid,), code="limit_exceeded")
+
+
+def test_store_rejects_secret_metadata_after_parser_boundary(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report = _captured_2024_report()
+    invalid = replace(report, report_metadata=(("api_key", "synthetic-secret"),))
+
+    _assert_parser_seam_error(
+        monkeypatch,
+        (invalid,),
+        code="invalid_response",
+        secret="synthetic-secret",
+    )
+
+
+def test_store_rejects_an_unencodable_source_scalar_at_the_public_boundary(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report = _captured_2024_report()
+    invalid = replace(report, report_metadata=(("surrogate", "\ud800"),))
+
+    _assert_parser_seam_error(monkeypatch, (invalid,), secret="\ud800")
+
+
+def test_runservice_encoded_result_cap_rejects_a_whole_oversized_batch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    padding = tuple((f"bounded_text_{index:02d}", "x" * 4_000) for index in range(31))
+    reports = tuple(
+        replace(
+            report,
+            report_metadata=tuple(sorted((*report.report_metadata, *padding))),
+        )
+        for report in _parsed_reports()
+    )
+
+    _assert_parser_seam_error(monkeypatch, reports, code="limit_exceeded")
+
+
+def test_malformed_body_is_sanitized_and_keeps_wire_cause() -> None:
     malformed = _assert_publication_error(
         "invalid_response",
         body=b"malformed-private-capture-content",
@@ -571,6 +967,50 @@ def test_downstream_shape_or_credential_bounds_reject_without_a_prefix() -> None
         body=_encode_document(sensitive_document),
         secret="synthetic-private-token",
     )
+
+
+@pytest.mark.parametrize(
+    ("metadata_key", "metadata_value", "code"),
+    [
+        ("", "empty-key", "invalid_response"),
+        ("control\x00key", "value", "limit_exceeded"),
+        ("k" * 257, "long-key", "limit_exceeded"),
+        ("control-value", "value\x00with-control", "invalid_response"),
+        ("remarks", "Bearer synthetic-test-token", "invalid_response"),
+    ],
+)
+def test_source_metadata_key_and_value_policies_are_enforced(
+    metadata_key: str, metadata_value: str, code: str
+) -> None:
+    document = _recorded_document()
+    last_report = document["result"]["data"]["report_list"]["19981231"]
+    last_report[metadata_key] = metadata_value
+
+    _assert_publication_error(
+        code,
+        body=_encode_document(document),
+        secret=metadata_value if "Bearer" in metadata_value else metadata_key or None,
+    )
+
+
+def test_nested_store_object_item_limit_rejects_the_complete_capture() -> None:
+    document = _recorded_document()
+    last_report = document["result"]["data"]["report_list"]["19981231"]
+    last_report.update({f"source_extension_{index:05d}": index for index in range(10_001)})
+    body = _encode_document(document)
+    assert len(body) < MAX_RAW_RESPONSE_BYTES
+
+    _assert_publication_error("limit_exceeded", body=body)
+
+
+def test_store_text_limit_rejects_a_body_still_within_the_wire_cap() -> None:
+    document = _recorded_document()
+    last_report = document["result"]["data"]["report_list"]["19981231"]
+    last_report["oversized_store_text"] = "x" * (256 * 1024 + 1)
+    body = _encode_document(document)
+    assert len(body) < MAX_RAW_RESPONSE_BYTES
+
+    _assert_publication_error("limit_exceeded", body=body)
 
 
 def test_single_record_encoded_size_limit_rejects_the_capture() -> None:
