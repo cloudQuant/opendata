@@ -116,6 +116,37 @@ class CountingRawResponseCache(RawResponseCache):
 
 
 @pytest.mark.parametrize(
+    ("url", "host", "expected_url"),
+    [
+        (
+            "https://user:syntheticpassword@[2001:db8::1]:443/archive"
+            "?token=synthetic-query-secret#synthetic-fragment",
+            "2001:db8::1",
+            "https://[2001:db8::1]:443/archive",
+        ),
+        (
+            "https://user:syntheticpassword@api.example.test:not-a-port/archive"
+            "?token=synthetic-query-secret#synthetic-fragment",
+            "api.example.test",
+            "https://api.example.test/archive",
+        ),
+    ],
+)
+def test_http_fetch_error_uses_safe_endpoint_golden_vectors(
+    url: str,
+    host: str,
+    expected_url: str,
+) -> None:
+    error = HttpFetchError(FailureCategory.NETWORK, url=url, host=host, attempts=1)
+
+    assert error.url == expected_url
+    assert str(error) == (f"[network] host={host} status=- attempts=1 url={expected_url}")
+    for secret in ("syntheticpassword", "synthetic-query-secret", "synthetic-fragment"):
+        assert secret not in str(error)
+        assert secret not in repr(error)
+
+
+@pytest.mark.parametrize(
     "url",
     [
         "http://api.example.test/archive",
