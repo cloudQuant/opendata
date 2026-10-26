@@ -119,12 +119,20 @@ def _snapshot(**changes: Any) -> dict[str, Any]:
     return data
 
 
-def _row(key: str, business_date: str, close: float = 1.0) -> dict[str, Any]:
+def _row(
+    key: str,
+    business_date: str,
+    close: float = 1.0,
+    *,
+    publication_id: str = "c" * 32,
+    publication_sequence: int = 17,
+) -> dict[str, Any]:
     return {
         "dataset_id": "stock_daily",
         "business_key": json.dumps([key], ensure_ascii=False, separators=(",", ":")),
         "revision": 1,
-        "publication_id": "c" * 32,
+        "publication_id": publication_id,
+        "publication_sequence": publication_sequence,
         "business_date": business_date,
         "event_at": None,
         "observed_at": "2024-01-02T15:00:00+08:00",
@@ -588,10 +596,15 @@ class TestSnapshotReads:
         missing_field = copy.deepcopy(row)
         missing_field.pop("record_hash")
         invalid_rows.append((missing_field, SnapshotProtocolError))
+        missing_origin_sequence = copy.deepcopy(row)
+        missing_origin_sequence.pop("publication_sequence")
+        invalid_rows.append((missing_origin_sequence, SnapshotProtocolError))
         invalid_rows.append(({**row, "business_key": ""}, SnapshotProtocolError))
         invalid_rows.append(({**row, "dataset_id": "other"}, SnapshotScopeError))
         invalid_rows.append(({**row, "publication_id": "d" * 32}, SnapshotScopeError))
         invalid_rows.append(({**row, "revision": True}, SnapshotProtocolError))
+        invalid_rows.append(({**row, "publication_sequence": True}, SnapshotProtocolError))
+        invalid_rows.append(({**row, "publication_sequence": 0}, SnapshotProtocolError))
         invalid_rows.append(({**row, "business_date": "2024-02-01"}, SnapshotScopeError))
         invalid_rows.append(({**row, "observed_at": "not-a-timestamp"}, SnapshotProtocolError))
         invalid_rows.append(({**row, "payload": "not-an-object"}, SnapshotProtocolError))
@@ -600,6 +613,19 @@ class TestSnapshotReads:
         invalid_rows.append(({**row, "business_key": '[ "a" ]'}, SnapshotProtocolError))
         invalid_rows.append(({**row, "business_key": '["b"]'}, SnapshotProtocolError))
         invalid_rows.append(({**row, "record_hash": "bad"}, SnapshotProtocolError))
+        invalid_rows.append(
+            (
+                {**row, "publication_id": "not-a-hex-origin", "publication_sequence": 16},
+                SnapshotProtocolError,
+            )
+        )
+        invalid_rows.append(({**row, "publication_sequence": 18}, SnapshotScopeError))
+        invalid_rows.append(
+            (
+                {**row, "publication_id": "d" * 32, "publication_sequence": 17},
+                SnapshotScopeError,
+            )
+        )
         invalid_rows.append(({"not": "a row"}, SnapshotProtocolError))
 
         for invalid_row, error_type in invalid_rows:
@@ -618,6 +644,28 @@ class TestSnapshotReads:
                     _descriptor(record_count=1),
                     expected_identity_semantics=IDENTITY_SEMANTICS,
                 )
+
+    def test_row_from_earlier_publication_is_valid_inside_pinned_snapshot(self) -> None:
+        def handler(_: httpx.Request) -> httpx.Response:
+            row = _row(
+                "a",
+                "2024-01-02",
+                publication_id="a" * 32,
+                publication_sequence=16,
+            )
+            return httpx.Response(
+                200,
+                json=_records_page([row], snapshot=_snapshot(record_count=1)),
+            )
+
+        with _client(handler) as client:
+            rows = client.list_records(
+                _descriptor(record_count=1),
+                expected_identity_semantics=IDENTITY_SEMANTICS,
+            )
+
+        assert rows.rows[0]["publication_id"] == "a" * 32
+        assert rows.rows[0]["publication_sequence"] == 16
 
     def test_page_duplicate_keys_and_unstable_order_are_rejected(self) -> None:
         duplicate_rows = [_row("a", "2024-01-02"), _row("a", "2024-01-02")]
@@ -903,8 +951,8 @@ class TestSnapshotHTTPGuards:
                 )
 
 
-def test_real_fastapi_sqlite_snapshot_round_trip_reads_two_pages(tmp_path: Any) -> None:
-    """Exercise the SDK against the published-data router and SQLite store."""
+def test_real_fastapi_sqlite_delta_snapshots_preserve_origin_publications(tmp_path: Any) -> None:
+    """Read both sides of a delta through the real router and SQLite store."""
     from datetime import date, datetime, timezone
 
     from fastapi import FastAPI
@@ -963,8 +1011,10 @@ def test_real_fastapi_sqlite_snapshot_round_trip_reads_two_pages(tmp_path: Any) 
     )
     contract_hash = canonical_sha256(contract)
 
-    def record(trade_date: date, close: float) -> PublishedRecordInput:
-        key = json.dumps(("AAA", trade_date.isoformat()), ensure_ascii=False, separators=(",", ":"))
+    def record(instrument_id: str, trade_date: date, close: float) -> PublishedRecordInput:
+        key = json.dumps(
+            (instrument_id, trade_date.isoformat()), ensure_ascii=False, separators=(",", ":")
+        )
         return PublishedRecordInput(
             business_key=key,
             business_date=trade_date,
@@ -973,7 +1023,7 @@ def test_real_fastapi_sqlite_snapshot_round_trip_reads_two_pages(tmp_path: Any) 
             source_published_at=datetime(2026, 10, 24, 2, tzinfo=utc),
             available_at=datetime(2026, 10, 24, 3, tzinfo=utc),
             payload={
-                "instrument_id": "AAA",
+                "instrument_id": instrument_id,
                 "trade_date": trade_date.isoformat(),
                 "close": close,
             },
@@ -988,8 +1038,8 @@ def test_real_fastapi_sqlite_snapshot_round_trip_reads_two_pages(tmp_path: Any) 
         adjustment_basis="raw",
         quality={"status": "passed", "report_id": "DQ-SDK-1", "issue_count": 0},
         provenance={"contract_sha256": contract_hash},
-        idempotency_key="sdk-snapshot-publication",
-        records=(record(start, 100.0), record(date(2026, 10, 22), 200.0)),
+        idempotency_key="sdk-snapshot-publication-initial",
+        records=(record("AAA", start, 100.0), record("BBB", start, 200.0)),
     )
     grants = DatasetGrantRegistry(
         (
@@ -1071,25 +1121,62 @@ def test_real_fastapi_sqlite_snapshot_round_trip_reads_two_pages(tmp_path: Any) 
             api_key="sdk-integration-test",
             http_client=http_client,
         ) as client:
-            snapshot = client.create_snapshot(
+            old_snapshot = client.create_snapshot(
                 dataset_id,
                 start_date=start.isoformat(),
                 end_date=end.isoformat(),
                 page_size=1,
                 expected_identity_semantics=expected_semantics,
             )
-            rows = list(
+            old_publication_id = old_snapshot.publication_id
+            store.publish(
+                dataset_id=dataset_id,
+                source_id=source_id,
+                schema_version=contract.schema_version,
+                semantic_version=contract.semantic_version,
+                unit="native",
+                adjustment_basis="raw",
+                quality={"status": "passed", "report_id": "DQ-SDK-DELTA", "issue_count": 0},
+                provenance={"contract_sha256": contract_hash},
+                idempotency_key="sdk-snapshot-publication-delta",
+                records=(record("BBB", start, 201.0),),
+            )
+            latest_snapshot = client.create_snapshot(
+                dataset_id,
+                start_date=start.isoformat(),
+                end_date=end.isoformat(),
+                page_size=1,
+                expected_identity_semantics=expected_semantics,
+            )
+            latest_rows = list(
                 client.iter_records(
-                    snapshot,
+                    latest_snapshot,
+                    expected_identity_semantics=expected_semantics,
+                )
+            )
+            old_rows = list(
+                client.iter_records(
+                    old_snapshot,
                     expected_identity_semantics=expected_semantics,
                 )
             )
 
-    assert snapshot.record_count == 2
-    assert [item["payload"]["close"] for item in rows] == [100.0, 200.0]
-    assert [item["business_date"] for item in rows] == ["2026-10-21", "2026-10-22"]
+    assert old_snapshot.record_count == latest_snapshot.record_count == 2
+    assert [item["payload"]["close"] for item in latest_rows] == [100.0, 201.0]
+    assert [item["payload"]["instrument_id"] for item in latest_rows] == ["AAA", "BBB"]
+    assert [item["publication_sequence"] for item in latest_rows] == [1, 2]
+    assert [item["publication_id"] for item in latest_rows] == [
+        old_publication_id,
+        latest_snapshot.publication_id,
+    ]
+    assert [item["payload"]["close"] for item in old_rows] == [100.0, 200.0]
+    assert [item["publication_sequence"] for item in old_rows] == [1, 1]
+    assert [item["publication_id"] for item in old_rows] == [old_publication_id] * 2
     assert requests == [
         ("POST", "/api/v2/snapshots"),
+        ("POST", "/api/v2/snapshots"),
+        ("GET", "/api/v2/datasets/equity.daily/records"),
+        ("GET", "/api/v2/datasets/equity.daily/records"),
         ("GET", "/api/v2/datasets/equity.daily/records"),
         ("GET", "/api/v2/datasets/equity.daily/records"),
     ]

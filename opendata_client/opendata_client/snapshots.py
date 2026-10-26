@@ -764,6 +764,7 @@ def _validate_row(
         "business_key",
         "revision",
         "publication_id",
+        "publication_sequence",
         "business_date",
         "event_at",
         "observed_at",
@@ -778,8 +779,23 @@ def _validate_row(
     revision = row["revision"]
     if not isinstance(key, str) or not key or len(key) > 2_048:
         raise SnapshotProtocolError("record has invalid business_key")
-    if row["dataset_id"] != snapshot.dataset_id or row["publication_id"] != snapshot.publication_id:
+    if row["dataset_id"] != snapshot.dataset_id:
         raise SnapshotScopeError("record changed dataset or pinned publication")
+    publication_id = row["publication_id"]
+    publication_sequence = row["publication_sequence"]
+    if (
+        not isinstance(publication_id, str)
+        or type(publication_sequence) is not int
+        or publication_sequence < 1
+    ):
+        raise SnapshotProtocolError("record has invalid origin publication identity")
+    if publication_sequence > snapshot.sequence:
+        raise SnapshotScopeError("record origin publication is newer than the pinned snapshot")
+    if publication_sequence == snapshot.sequence:
+        if publication_id != snapshot.publication_id:
+            raise SnapshotScopeError("record changed dataset or pinned publication")
+    elif re.fullmatch(r"[0-9a-f]{32}", publication_id) is None:
+        raise SnapshotProtocolError("record has invalid origin publication identity")
     if type(revision) is not int or revision < 1:
         raise SnapshotProtocolError("record has invalid revision")
 
