@@ -172,9 +172,17 @@ describe('reviewed runs page polling', () => {
     await settlePromises()
     expect(apiMocks.getRun).toHaveBeenCalledOnce()
     const requestSignal = apiMocks.getRun.mock.calls[0][1] as AbortSignal
+    const loginNavigation = new Promise<void>((resolve) => {
+      const removeAfterEach = router.afterEach((to) => {
+        if (to.path === '/login') {
+          removeAfterEach()
+          resolve()
+        }
+      })
+    })
 
     auth.logout()
-    await settlePromises()
+    await loginNavigation
 
     expect(requestSignal.aborted).toBe(true)
     expect(router.currentRoute.value.path).toBe('/login')
