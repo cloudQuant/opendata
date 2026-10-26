@@ -13,7 +13,7 @@ import pytest_asyncio
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from opendata.pipeline.reviewed_runtime import ReviewedRuntime, build_reviewed_runtime
-from sqlalchemy import create_engine, func, select
+from sqlalchemy import Table, create_engine, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from opendata.api.dependencies import get_db
@@ -25,8 +25,11 @@ from opendata.pipeline.run_dispatch import ReviewedTaskCatalog
 from opendata.pipeline.run_identity import RunRequest, ScheduleMetadata, TaskDefinition
 from opendata.pipeline.run_ledger import RUN_LEDGER_METADATA, RUN_LEDGER_TABLE
 from opendata.pipeline.run_service import (
+    FetchHandler,
     NormalizedBatch,
+    NormalizeHandler,
     PublicationReceipt,
+    PublishHandler,
     ReviewedJob,
     RunExecutionContext,
 )
@@ -60,27 +63,37 @@ class APIHarness:
     user_token: str
 
 
-def _fetch(_request: RunRequest, _context: RunExecutionContext) -> object:
-    """Provide a handler that is registered but never executed by API tests."""
-    return {"synthetic": True}
+class _FetchHandler(FetchHandler):
+    """Provide a source adapter registered but never executed by API tests."""
+
+    def __call__(self, _request: RunRequest, _context: RunExecutionContext) -> object:
+        """Return a synthetic payload if a test unexpectedly invokes the handler."""
+        return {"synthetic": True}
 
 
-def _normalize(
-    _raw: object, _request: RunRequest, _context: RunExecutionContext
-) -> NormalizedBatch:
-    """Provide a registered normalizer that is not invoked by API tests."""
-    raise AssertionError("API submission must not execute a job normalizer")
+class _NormalizeHandler(NormalizeHandler):
+    """Provide a normalizer that is registered but never executed by API tests."""
+
+    def __call__(
+        self, _raw: object, _request: RunRequest, _context: RunExecutionContext
+    ) -> NormalizedBatch:
+        """Fail if manual API submission unexpectedly runs a normalizer."""
+        raise AssertionError("API submission must not execute a job normalizer")
 
 
-def _publish(
-    _connection: Connection,
-    task: TaskDefinition,
-    _request: RunRequest,
-    batch: NormalizedBatch,
-    _idempotency_key: str,
-) -> PublicationReceipt:
-    """Provide a registered publisher that is not invoked by API tests."""
-    return PublicationReceipt("fixture-publication", task.dataset_id, len(batch.records))
+class _PublishHandler(PublishHandler):
+    """Provide a publisher that is registered but never executed by API tests."""
+
+    def __call__(
+        self,
+        _connection: Connection,
+        task: TaskDefinition,
+        _request: RunRequest,
+        batch: NormalizedBatch,
+        _idempotency_key: str,
+    ) -> PublicationReceipt:
+        """Return a bounded synthetic receipt if a test invokes the publisher."""
+        return PublicationReceipt("fixture-publication", task.dataset_id, len(batch.records))
 
 
 def _catalog() -> ReviewedTaskCatalog:
@@ -110,9 +123,9 @@ def _catalog() -> ReviewedTaskCatalog:
         [
             ReviewedJob(
                 task=task,
-                fetch=_fetch,
-                normalize=_normalize,
-                publish=_publish,
+                fetch=_FetchHandler(),
+                normalize=_NormalizeHandler(),
+                publish=_PublishHandler(),
                 reviewed=True,
             )
             for task in tasks
@@ -141,8 +154,11 @@ async def api_harness(
     """Create a private auth database and a separate SQLite run ledger."""
     monkeypatch.setattr(settings, "secret_key", ADMIN_SECRET)
     auth_engine = create_async_engine(f"sqlite+aiosqlite:///{tmp_path / 'auth.sqlite'}")
+    user_table = User.__table__
+    if not isinstance(user_table, Table):
+        raise AssertionError("User.__table__ must be a SQLAlchemy Table")
     async with auth_engine.begin() as connection:
-        await connection.run_sync(User.__table__.create)
+        await connection.run_sync(user_table.create)
     auth_sessions = async_sessionmaker(auth_engine, class_=AsyncSession, expire_on_commit=False)
 
     async with auth_sessions() as session:
@@ -330,9 +346,32 @@ def test_openapi_documents_strict_manual_body_and_safe_responses(api_harness: AP
         "shard",
     }
     assert "$ref" not in request_schema
-    assert {"202", "401", "403", "404", "409", "413", "415", "422", "503"}.issubset(
-        operation["responses"]
-    )
+    assert {
+        "202",
+        "400",
+        "401",
+        "403",
+        "404",
+        "409",
+        "413",
+        "415",
+        "422",
+        "503",
+    }.issubset(operation["responses"])
+    run_operation = api_harness.app.openapi()["paths"]["/api/v1/reviewed/runs/{run_key}"]["get"]
+    cancel_operation = api_harness.app.openapi()["paths"]["/api/v1/reviewed/runs/{run_key}/cancel"][
+        "post"
+    ]
+    expected_pattern = r"^[0-9a-f]{64}$"
+    for operation_with_run_key in (run_operation, cancel_operation):
+        run_key_parameter = next(
+            parameter
+            for parameter in operation_with_run_key["parameters"]
+            if parameter["name"] == "run_key"
+        )
+        assert run_key_parameter["schema"]["pattern"] == expected_pattern
+        assert "Lowercase 64-character hexadecimal SHA-256" in run_key_parameter["description"]
+        assert "404" in operation_with_run_key["responses"]
 
 
 async def test_manual_submit_replays_same_identity_and_conflicts_on_payload_drift(
@@ -434,15 +473,36 @@ async def test_execution_and_connection_payloads_are_rejected(api_harness: APIHa
         headers=headers,
         json=_request_body(query={"access_key": "must-not-be-stored"}),
     )
+    passphrase_direct = await api_harness.client.post(
+        url,
+        headers=headers,
+        json=_request_body(query={"passphrase": "must-not-be-stored"}),
+    )
+    passphrase_key = await api_harness.client.post(
+        url,
+        headers=headers,
+        json=_request_body(query={"nested": {"passphrase": "must-not-be-stored"}}),
+    )
+    passphrase_url = await api_harness.client.post(
+        url,
+        headers=headers,
+        json=_request_body(partition={"source": "https://example.test/?passphrase=secret-value"}),
+    )
 
-    assert [script.status_code, selector_url.status_code, credential_key.status_code] == [
-        422,
-        422,
-        422,
-    ]
+    assert [
+        script.status_code,
+        selector_url.status_code,
+        credential_key.status_code,
+        passphrase_direct.status_code,
+        passphrase_key.status_code,
+        passphrase_url.status_code,
+    ] == [422, 422, 422, 422, 422, 422]
     assert "collect.py" not in script.text
     assert "example.test" not in selector_url.text
     assert "must-not-be-stored" not in credential_key.text
+    assert "must-not-be-stored" not in passphrase_direct.text
+    assert "must-not-be-stored" not in passphrase_key.text
+    assert "secret-value" not in passphrase_url.text
     assert _ledger_count(api_harness.metadata_engine) == 0
 
 

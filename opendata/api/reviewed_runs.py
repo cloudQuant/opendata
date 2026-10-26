@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Annotated, Literal, NoReturn, Protocol
 from urllib.parse import parse_qsl, urlsplit
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, ValidationError
 from starlette.concurrency import run_in_threadpool
 
@@ -87,6 +87,7 @@ _QUERY_SENSITIVE_KEY_PARTS = (
     "authorization",
     "cookie",
     "credential",
+    "passphrase",
     "password",
     "passwd",
     "privatekey",
@@ -329,6 +330,7 @@ def list_reviewed_jobs(
         403: {"model": APIError, "description": "CurrentAdmin required"},
         404: {"model": APIError, "description": "job_not_found"},
         409: {"model": APIError, "description": "job_not_runnable or idempotency_conflict"},
+        400: {"model": APIError, "description": "invalid_request"},
         413: {"model": APIError, "description": "request_too_large"},
         415: {"model": APIError, "description": "json_required"},
         422: {"model": APIError, "description": "invalid_request"},
@@ -411,7 +413,16 @@ async def submit_reviewed_run(
     },
 )
 def get_reviewed_run(
-    run_key: str,
+    run_key: Annotated[
+        str,
+        Path(
+            description=(
+                "Lowercase 64-character hexadecimal SHA-256 run key; unknown or malformed keys "
+                "return 404."
+            ),
+            json_schema_extra={"pattern": _RUN_KEY.pattern},
+        ),
+    ],
     _current_admin: CurrentAdmin,
     runtime: Annotated[ReviewedRuntimeAccess, Depends(get_reviewed_runtime)],
 ) -> RunStatusResponse:
@@ -440,7 +451,16 @@ def get_reviewed_run(
     },
 )
 def cancel_reviewed_run(
-    run_key: str,
+    run_key: Annotated[
+        str,
+        Path(
+            description=(
+                "Lowercase 64-character hexadecimal SHA-256 run key; unknown or malformed keys "
+                "return 404."
+            ),
+            json_schema_extra={"pattern": _RUN_KEY.pattern},
+        ),
+    ],
     _current_admin: CurrentAdmin,
     runtime: Annotated[ReviewedRuntimeAccess, Depends(get_reviewed_runtime)],
 ) -> CancelRunResponse:
@@ -556,7 +576,11 @@ def _reject_unsafe_parameters(value: Mapping[str, JsonValue]) -> None:
                 normalized = "".join(
                     character for character in key.casefold() if character.isalnum()
                 )
-                if normalized in _EXECUTION_FIELDS or _is_connection_selector(normalized):
+                if (
+                    normalized in _EXECUTION_FIELDS
+                    or _is_connection_selector(normalized)
+                    or _is_sensitive_parameter_name(normalized)
+                ):
                     raise ValueError("unsupported execution or connection selector")
                 pending.append(child)
         elif isinstance(current, list):
@@ -572,6 +596,11 @@ def _is_connection_selector(normalized_key: str) -> bool:
         for root in _CONNECTION_SELECTOR_ROOTS
         for suffix in _CONNECTION_SELECTOR_SUFFIXES
     )
+
+
+def _is_sensitive_parameter_name(normalized_key: str) -> bool:
+    """Recognize credential-like parameter names independently of their values."""
+    return any(part in normalized_key for part in _QUERY_SENSITIVE_KEY_PARTS)
 
 
 def _contains_unsupported_connection_value(value: str) -> bool:
@@ -608,7 +637,7 @@ def _uri_query_has_sensitive_selector(query: str) -> bool:
         normalized = "".join(character for character in name.casefold() if character.isalnum())
         if normalized in _EXECUTION_FIELDS or _is_connection_selector(normalized):
             return True
-        if any(part in normalized for part in _QUERY_SENSITIVE_KEY_PARTS):
+        if _is_sensitive_parameter_name(normalized):
             return True
     return False
 
