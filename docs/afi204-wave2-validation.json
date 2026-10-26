@@ -1,0 +1,208 @@
+{
+  "afi_branch": "codex/od204-afi-integration",
+  "afi_code_commit": "2931dd8f7",
+  "environment": {
+    "bandit": "1.9.4",
+    "mypy": "2.3.1",
+    "mysql": "8.0.46",
+    "python": "3.13.5",
+    "python310": "grammar checked, runtime matrix NOT_RUN",
+    "ruff": "0.15.20"
+  },
+  "inventory": {
+    "active_scripts": 1051,
+    "active_tasks": 1098,
+    "helper_files": 10,
+    "inactive_scripts": 15,
+    "inactive_tasks": 5,
+    "metadata_tables": 168,
+    "registered_scripts": 1066,
+    "runtime_mapping_rows": 1113,
+    "scheduled_tasks": 1103,
+    "script_states": {
+      "MISSING_REGISTERED_FETCHER": 877,
+      "REQUIRES_MANUAL": 189
+    },
+    "source_verified": false,
+    "source_warehouse_tables": 1042,
+    "static_entrypoints": 1056,
+    "table_rows_note": "information_schema estimates are not coverage evidence"
+  },
+  "iteration": 204,
+  "not_run": [
+    "Real-source stock/provider verification",
+    "Full-history migration/reconciliation",
+    "Actual scheduler/worker/systemd deployment",
+    "Source/license approval and deployment credentials",
+    "Natural source-defined cycles",
+    "Backup/restore and RPO/RTO measurement",
+    "Production single-writer cutover",
+    "PR merge to dev"
+  ],
+  "opendata_base": "61800c18",
+  "opendata_code_commit": "eea69cca42c88b150aa842b14117a0ed15c8cffe",
+  "opendata_integration_branch": "codex/od204-subagent-integration",
+  "private_receipt_sha256": {
+    "client-install-wave2-final/evidence.txt": "a31fbe2027405ffc5d00d5f1c101b562fdacd06c47a834c320310ee4034f1f7f",
+    "owned-mysql-published-chain.txt": "5fce0d5882d1a1424e387346805b1056d203efcfe3a91154cbe4d8b94d4c2d41",
+    "owned-mysql-server.json": "ea0949a3edd60058d41f60acaa38061ba79bff404fea0ee7fd580a1121b3e5c7",
+    "runtime-inventory-static-crosswalk.json": "4525acf94f5f3e74380c070a5315a5acd4425d88f059e30dbe8479d5354bd30e",
+    "runtime-inventory.json": "c3c5348bddb754e08bae7f3f00f4bafc7a52df51bbbabed0ff39de431c9c09ff",
+    "wave2-combined-coverage.json": "1300123ccc5d3668a3d14ac7118c3bb5c8490c3713e4fe319ddbc1007425c21f",
+    "wave2-combined-pytest.txt": "1993b285ac910054cd779a0ce606fc732c7eea01f6e2676ab76d723c234d4aed",
+    "wave2-static-checks.json": "0971a6b4ee7d3a6f54d12a8ebee4f605e3e606fbea213b2d500b1c1a4cd49808",
+    "wave2-zero-dep-review.json": "c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f"
+  },
+  "production_changes": "NONE: original AFI dirty iteration203 source and running tasks preserved; original OpenData dev untouched. Only read-only production metadata/schema inventory; all new DDL/fact writes limited to owned test databases.",
+  "public_artifact_sha256": {
+    "docs/afi204-migration-catalog.json": "05825d9f8d956489ec5807d557d7bd4ef14c7963b4054527b9456eb7a78ed5c1",
+    "docs/afi204-runtime-inventory.json": "d7cd2eb0af9f17cc9b3f7e46fb34c806541955766eb175be5a58713086050d51",
+    "docs/afi204-v2-openapi.json": "ff35866742273bf4e442fbb3c2cdc64740021712fd150092b44631185430365f"
+  },
+  "recorded_at": "2026-10-26T12:25:08.958076+00:00",
+  "schema_version": 1,
+  "source_sha256": {
+    "alembic_data/versions/20261026-0010_run_ledger.py": "840837f5c6a1ecb9e38955d754acc805aa6f91431f63817f88e663d049b3742d",
+    "alembic_data/versions/20261026-0011_publication_snapshots.py": "69a9203b0a34a1da0b71438d3d310f96c70683c594fecf328a85d1c54d4b08f0",
+    "opendata/api/__init__.py": "cf360233a410eb6baf331e6d5ef7e1f04b8033ec56fb820ad4f036fcb38cfaa5",
+    "opendata/api/published_access.py": "0176fe21ab38b0bdd6e8dd7fe39c30eb0caffe7402653c7d72b4b8a85c62deb0",
+    "opendata/api/published_data.py": "accecc37d3cbd8700dbdae010a471cf004fdc64f38fafc2f1ec5ba94500b7620",
+    "opendata/data/dataset_contract_registry.py": "522e2f798bb04bbe10035698278945867d0aafec6942f5723841cb61d032eb81",
+    "opendata/data/models/base.py": "22ffac413395ebf1951cf938119ec2476b12d2ffb063c5eeafafd06b49a16ee8",
+    "opendata/data/platform_contracts.py": "c890798e8c217efc6ee86fee236be97688036d30e9ad97cd9c96d3f7d7dd5726",
+    "opendata/data/providers/akshare/models/stock_daily.py": "a076aa747cce25eaff8219df52c182509d39ca6bc52ec4f87357d0e9e93f18a0",
+    "opendata/main.py": "ba87561e3a0422979e1ee4a9330ad05119445bf7ca8c64ce2c23b878f6bb6a1e",
+    "opendata/migration_catalog.py": "42e435e271d125990ac5592025fc410f51035ea072df00517a09c52cbc10d3ec",
+    "opendata/migration_inventory.py": "094b101808c97621dd569468ac9ba7e398c1dc058288f308ef0d3ac442c83292",
+    "opendata/pipeline/contract_publication.py": "74dca4fa81a437e28ccf9d02d926e07d323ce5be69fe1b4dc79cbe89ce2c7148",
+    "opendata/pipeline/history_coverage.py": "32da5309b8ce51ac0a67d595a3222e292e9206821021d1d4b369a4bd66950bcd",
+    "opendata/pipeline/publication_store.py": "1322f256897f1612dc73868f7f59424f438bbbbeb9daa7cdc47d6fd24b108049",
+    "opendata/pipeline/run_identity.py": "53b0b207eb0f0202867fcb7c0a97f2eeefc33fb4ab6f4d2b9a77ecabff4e6e50",
+    "opendata/pipeline/run_ledger.py": "e59ce21b0cc1d7ee47520042be2f9b85f7955900fd9c77c6927d13bd33430891",
+    "opendata/pipeline/run_service.py": "6bfc5a3f1add383ab89ae75cf929cfbf00fec0da571c43c0c68a165ba7772f27",
+    "opendata/runtime_inventory.py": "4cf91723250ee4d5f27fcae6ed107d0027f8df68ef815605a64c0832491620a5",
+    "opendata_client/opendata_client/__init__.py": "550e287816aec0ac8e702f96919feaee210a30e1d15595f2bdb8cc6d405d9daa",
+    "opendata_client/opendata_client/client.py": "ec817286e0535ca3eaa12af2be9763c2a91a5f562515303242e6d1111c9b6735",
+    "opendata_client/opendata_client/snapshots.py": "bb62147fd604e4587a72652ed11e71c3f564914269823545d229ff9b8566b28d",
+    "scripts/codemod/verify_no_akshare.py": "c92f70109415f7b0b736460c28e9c0a0bd46345fd150dab447915d3dd89b2cc7",
+    "scripts/ops/build_migration_catalog.py": "a54a8d69828d38069768a9870945b8dc70b497d20e4016b1a7479bb183616c79",
+    "scripts/ops/inventory_legacy_runtime.py": "71b50d0c7871ec71607131a9f7bae1008d9811450f6b2a53b7c12400282127ef",
+    "scripts/ops/inventory_legacy_scripts.py": "a7c01a851329f1002c6bef71df6c37ca7c75963af0a5e7d6bb92a47dbba38ce1",
+    "scripts/quality/check_brand.py": "7cbf155f06b7e75d49a151c60c80b9bbb1db0d10d112de3182924af8df67a8dd",
+    "tests/test_afi204_owned_mysql.py": "80d22760e4daa936654203870da55fd95f94c71e54cb5f6e308ca2c51a1ab74d",
+    "tests/test_check_brand.py": "64c7b0a4d0278b14c9ca0429d8ebb388d5d4f901e06338d59d6f6731b82b6dcb",
+    "tests/test_contract_publication.py": "bb9b1d055c846ad21e33057842c5d80483c14176d73302bcaece046f1dd68bb6",
+    "tests/test_dataset_contract_registry.py": "af302e68506b9a3c337026806af0d32be87f3aed69e4768e97e7fd86b0f47529",
+    "tests/test_financial_pit_sdk.py": "dcc3ab3f4fd1bacfbdb6fd28d080cf6bd5b44925ef282fa767b34e1172b2152c",
+    "tests/test_history_coverage.py": "a1df1b1dafb177686a23712e25af1652e72b1fb1e320b1e01cdee281a7ae6c07",
+    "tests/test_migration_catalog.py": "eb46328bdb777ff8df8e6e93e23f482f7b85f57084651b5db458a1e684004174",
+    "tests/test_migration_inventory.py": "2fc1ddd5769ee4ae3e2f9e7abce7cf3dab4432ab235117bdb2dd843d060e2ca6",
+    "tests/test_opendata_client.py": "f4e9fca81c5f52cfe52c861b564b6063fa1d8c0ce3bd38ace13a689f70c0a526",
+    "tests/test_p0_providers.py": "a7b2edbefba1a29786fbfb58bdcbea568d61a987535a3b688e8f8600bf39814e",
+    "tests/test_platform_contracts.py": "cb9264f5a070a1131c15a97134a8274f2172016dccae305b4f03436835d9fd73",
+    "tests/test_publication_store.py": "ccd0e02299aa2fb5813e2d84249829633240059322a06b0902254bf26170cf14",
+    "tests/test_published_access.py": "5ca9b7e5d134bd59e2bc594c94d9f3191dc12f252cd1f2dc31db8f151d69cdeb",
+    "tests/test_published_data_api.py": "0d7a46b2de18850f7cba126b768e6fdef9b407dc4d3146d64b048574235ff6be",
+    "tests/test_run_identity.py": "11e485226e68941fe236164136155ac09e726cc5ecfa841d632c613510fdddab",
+    "tests/test_run_identity_ledger_integration.py": "bd89f972ab3d943bc9013ab0e0f403875721d4bb8b6bcc698d979836cdc78a43",
+    "tests/test_run_ledger.py": "e0a074483ef776aadc52e5bdfbb6403d011568fa79007ea6294a61de08308504",
+    "tests/test_run_ledger_atomic.py": "1bd2dd8e8058d333e065b60fa028c07105975b77cb58b4f612f1c8c08a506331",
+    "tests/test_run_ledger_database_clock.py": "102831a38eec70c8080a05c63c81a71aa87d0af35e4ce90c46e0d5325544dade",
+    "tests/test_run_service.py": "c10fb4d3dfbe6030fd279c508dcac72ad058f4c0fa29c315c9df5eff82495c72",
+    "tests/test_runtime_inventory.py": "08993b187bebe5211c80f8b5d6ed848562da9ae04be66d971b7c1d837c7d4dd9",
+    "tests/test_snapshot_client.py": "19ebf1687e8c26892f4815a10609fad5aab927c2b9d41a698c88a923d379e422",
+    "tests/test_stock_daily_migration.py": "3db75b9e71e4141e14764c5d502d1496d9fc4898838541380755b642db9ab017",
+    "tests/test_upstream_reference_policy.py": "ba5d5cba335ac268ec33219ed42c09588fc223a435612e02220d5d9bf3b7b6b8"
+  },
+  "status": "CODE_AND_ISOLATED_INTEGRATION_VALIDATED; NOT_PRODUCTION_ACCEPTED",
+  "validation": {
+    "afi_consumers": {
+      "data_input": "MOCK_HTTP; no production switch",
+      "passed": 157,
+      "scope": "consumer_boundary, opendata_provider, source_policy, query_api and provider_contracts",
+      "seconds": 61.2
+    },
+    "coverage": {
+      "files_percent": {
+        "opendata/api/published_access.py": 87.20538720538721,
+        "opendata/api/published_data.py": 88.8,
+        "opendata/data/dataset_contract_registry.py": 96.61016949152543,
+        "opendata/data/models/base.py": 93.05555555555556,
+        "opendata/data/platform_contracts.py": 93.26530612244898,
+        "opendata/migration_catalog.py": 93.67209971236817,
+        "opendata/migration_inventory.py": 85.43543543543544,
+        "opendata/pipeline/contract_publication.py": 100.0,
+        "opendata/pipeline/history_coverage.py": 100.0,
+        "opendata/pipeline/publication_store.py": 93.76623376623377,
+        "opendata/pipeline/run_identity.py": 96.37462235649546,
+        "opendata/pipeline/run_ledger.py": 85.83333333333333,
+        "opendata/pipeline/run_service.py": 92.3076923076923,
+        "opendata/runtime_inventory.py": 80.95238095238095,
+        "opendata_client/opendata_client/client.py": 89.14167528438469,
+        "opendata_client/opendata_client/snapshots.py": 89.76930792377131
+      },
+      "module_groups_percent": {
+        "opendata/data/": 93.7347,
+        "opendata/pipeline/": 93.764
+      },
+      "runtime_inventory_note": "Unit-only combined report is 81%; separate source-identical tests plus actual read-only inventory execution measured 91% in its isolated worktree. No production completeness inferred.",
+      "statement_branch_percent": 90.87077207772181,
+      "whole_repository_coverage": "NOT_MEASURED"
+    },
+    "opendata_combined": {
+      "argv_note": "Exact file-selection argv was not retained; output and tested-source hashes are retained. Replayable targeted commands are in the operations guide.",
+      "command_family": "APP_ENV=testing REDIS_URL='' PYTHONPATH=$PWD:$PWD/opendata_client python -m pytest -o addopts='' <selected test files> -m 'not e2e' --cov --cov-branch --cov-config=/tmp/od204-receipts/wave2-combined-coverage.ini --cov-report=term-missing --cov-report=json:/tmp/od204-receipts/wave2-combined-coverage.json",
+      "deselected": 25,
+      "evidence": "wave2-combined-pytest.txt",
+      "passed": 1120,
+      "scope": "Selected contracts/ledger/run/publication/API/SDK/inventory/P0 and existing data API tests; e2e excluded. Not a whole-repository test claim.",
+      "seconds": 74.2,
+      "warnings": 2
+    },
+    "owned_mysql": {
+      "auth_principal": "TEST_OVERRIDE; real grant checks",
+      "data_input": "SYNTHETIC",
+      "evidence": "owned-mysql-published-chain.txt",
+      "instance": "Private temporary datadir + Unix socket + skip-networking; each owned random test database dropped; instance shut down and identity verified.",
+      "passed": 7,
+      "scope": "literal 0010/0011 upgrade/downgrade; claim/lease/DB clock/fencing rollback; exact identifiers and large JSON; immutable revisions/snapshots; RunService->ValidatedPublicationWriter->MySQL->actual mounted REST->SDK; revoked grants denied",
+      "seconds": 4.18,
+      "test_file": "tests/test_afi204_owned_mysql.py"
+    },
+    "reference_policy": {
+      "passed": 73,
+      "scope": "Exact SHA/AST metadata exceptions; real imports, dynamic loads, census and stale pins fail closed",
+      "test_file": "tests/test_upstream_reference_policy.py"
+    },
+    "repaired_during_validation": [
+      "Retry-After HTTP-date second precision: a past/rounded date means zero delay; deterministic clock tests added.",
+      "RunService preserves database-clock policy by passing only an explicitly injected commit clock.",
+      "Actual main mounts v2 router while v1 aliases remain valid."
+    ],
+    "sdk_install": {
+      "evidence": "client-install-wave2-final/evidence.txt",
+      "passed": 5,
+      "scope": "Minimal and all-extras wheels install outside source checkout/system site; pip check and smoke tests; no external OpenBB/AkShare runtime.",
+      "seconds": 16.05,
+      "test_file": "tests/test_opendata_client_install.py",
+      "wheel_sha256": "7f532360ab7e1e55fb7ea87640fb41de60ee487e266b3f121c3dfc2c30bf1f98"
+    },
+    "static": {
+      "bandit": "PASS: target production files; tests follow repository assertion exemption",
+      "brand_check": "PASS",
+      "public_api_quality": "PASS: 2449 public callables, docstrings and annotations 100%",
+      "ruff_and_format": "PASS: 49 changed Python files before reference-scanner patch; scanner/test patch separately PASS",
+      "strict_mypy_follow_imports_silent": "PASS: changed production targets; existing transitive mapping/retry/dwd diagnostics remain outside target claim",
+      "zero_dep_check": "PASS: scanner 5; 956 runtime files, roots 628/325/3, frozen references 0"
+    },
+    "warnings": [
+      "Two ResourceWarning reports for unclosed SQLite connections in selected tests; no test failure."
+    ]
+  },
+  "wave": 2,
+  "whole_repository_gate": {
+    "immutable_evidence_missing_paths": 5130,
+    "note": "Both original and managed checkouts lack manifest-referenced historical files. No approvals fabricated or scope exclusions widened. Recovery audit ongoing. Existing transitive static findings and unavailable full-history secret scanner also require independent gate results.",
+    "status": "BLOCKED"
+  }
+}
