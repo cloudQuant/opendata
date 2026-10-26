@@ -36,7 +36,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
@@ -95,6 +95,30 @@ _CONNECTION_SELECTOR_SUFFIXES = (
     "connectstring",
     "connstr",
     "string",
+)
+_URI_CANDIDATE = re.compile(r"(?i)(?<![A-Z0-9+.-])(?=([A-Z][A-Z0-9+.-]*://[^\s\"'<>;,)}\]]+))")
+_DSN_VALUE = r"(?:\{[^}]*\}|\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*'|[^;,&\s]+)"
+_PASSWORD_ASSIGNMENT = re.compile(
+    rf"(?i)(?<![A-Z0-9])(?:pwd|password|passwd|passphrase)\s*=\s*{_DSN_VALUE}"
+)
+_DSN_CONTEXT_ASSIGNMENT = re.compile(
+    rf"(?i)(?:^|[;,\s])(?:driver|dsn|file\s*dsn|server|server\s*name|provider)\s*=\s*{_DSN_VALUE}"
+)
+_DSN_USER_ASSIGNMENT = re.compile(
+    rf"(?i)(?:^|[;,\s])(?:uid|user(?:\s*(?:id|name))?)\s*=\s*{_DSN_VALUE}"
+)
+_QUERY_SENSITIVE_KEY_PARTS = (
+    "accesskey",
+    "apikey",
+    "authorization",
+    "cookie",
+    "credential",
+    "password",
+    "passwd",
+    "privatekey",
+    "secret",
+    "token",
+    "pwd",
 )
 _REQUEST_FIELDS: Mapping[str, frozenset[str]] = {
     "scheduled": frozenset(
@@ -378,8 +402,8 @@ def _reject_execution_fields(value: object) -> None:
                 stack.append(child)
         elif isinstance(current, list):
             stack.extend(current)
-        elif isinstance(current, str) and _uri_has_userinfo(current):
-            raise ValueError("request includes a credential-bearing URI")
+        elif isinstance(current, str) and _contains_recognized_connection_credentials(current):
+            raise ValueError("request includes a credential-bearing connection value")
 
 
 def _is_connection_selector(normalized_key: str) -> bool:
@@ -391,16 +415,43 @@ def _is_connection_selector(normalized_key: str) -> bool:
     )
 
 
-def _uri_has_userinfo(value: str) -> bool:
-    """Detect URL userinfo, including usernames with an omitted password."""
-    try:
-        parsed = urlsplit(value)
-    except ValueError:
-        # A malformed authority that still contains userinfo is rejected too;
-        # do not echo the offending text in a validation error or CLI receipt.
-        authority = value.split("://", 1)[-1].split("/", 1)[0]
-        return "@" in authority
-    return bool(parsed.netloc and (parsed.username is not None or parsed.password is not None))
+def _contains_recognized_connection_credentials(value: str) -> bool:
+    """Detect URI userinfo and common DSN password/user assignments in text."""
+    if _PASSWORD_ASSIGNMENT.search(value):
+        return True
+    if _DSN_CONTEXT_ASSIGNMENT.search(value) and _DSN_USER_ASSIGNMENT.search(value):
+        return True
+
+    for match in _URI_CANDIDATE.finditer(value):
+        candidate = match.group(1)
+        try:
+            parsed = urlsplit(candidate)
+        except ValueError:
+            # Reject malformed authorities only when they still expose an
+            # at-sign in the authority segment; do not echo the input value.
+            authority = candidate.split("://", 1)[1].split("/", 1)[0]
+            malformed_query = (
+                candidate.split("?", 1)[1].split("#", 1)[0] if "?" in candidate else ""
+            )
+            if "@" in authority or _uri_query_has_sensitive_selector(malformed_query):
+                return True
+            continue
+        if parsed.netloc and (parsed.username is not None or parsed.password is not None):
+            return True
+        if _uri_query_has_sensitive_selector(parsed.query):
+            return True
+    return False
+
+
+def _uri_query_has_sensitive_selector(query: str) -> bool:
+    """Reject recognized credential/connection selector names in URI queries."""
+    for name, _ in parse_qsl(query, keep_blank_values=True, max_num_fields=MAX_REQUEST_NODES):
+        normalized = "".join(character for character in name.casefold() if character.isalnum())
+        if normalized in _EXECUTION_FIELDS or _is_connection_selector(normalized):
+            return True
+        if any(part in normalized for part in _QUERY_SENSITIVE_KEY_PARTS):
+            return True
+    return False
 
 
 def _execute_request(request: _CLIRequest, application: ReviewedCLIApplication) -> _CLIResult:

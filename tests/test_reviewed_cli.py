@@ -315,6 +315,18 @@ def test_cli_and_apscheduler_use_the_same_slot_key_and_dry_run_writes_nothing(
     assert "2026-10-26T09:30:00Z" not in dry_text
 
 
+def malformed_manual_query(query: dict[str, object]) -> bytes:
+    """Encode one manual request with a deliberately unsafe query payload."""
+    request = {
+        "schema_version": 1,
+        "operation": "manual",
+        "job_id": "daily",
+        "version": "v1",
+        "payload": {"idempotency_key": "x", "query": query},
+    }
+    return json.dumps(request).encode()
+
+
 @pytest.mark.parametrize(
     "request_doc",
     [
@@ -371,12 +383,56 @@ def test_manual_and_backfill_queue_only_safe_receipts(
         b'{"schema_version":2,"operation":"manual","job_id":"daily","version":"v1","payload":{}}',
         b'{"schema_version":1,"operation":"unknown","job_id":"daily","version":"v1"}',
         b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"nested":{"dsn":"mysql://private"}}}}',
-        b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"database_url":"mysql://readonly:credential-canary@db.invalid/warehouse"}}}',
-        b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"nested":{"connection_string":"mysql://readonly:credential-canary@db.invalid/warehouse"}}}}',
+        malformed_manual_query(
+            {"database_url": "mysql://readonly:credential-canary@db.invalid/warehouse"}
+        ),
+        malformed_manual_query(
+            {
+                "nested": {
+                    "connection_string": "mysql://readonly:credential-canary@db.invalid/warehouse"
+                }
+            }
+        ),
         b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"nested":{"DATABASE-URI":"mysql://readonly@db.invalid/warehouse"}}}}',
         b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"url":"postgresql://readonly:credential-canary@db.invalid/warehouse"}}}',
         b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"urls":["postgresql://readonly:credential-canary@db.invalid/warehouse"]}}}',
         b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"url":"mysql://[invalid:credential-canary@db.invalid/warehouse"}}}',
+        malformed_manual_query(
+            {"endpoint": "jdbc:postgresql://readonly:credential-canary@db.invalid/warehouse"}
+        ),
+        malformed_manual_query(
+            {"endpoint": "upstream target jdbc:mysql://readonly:credential-canary@db.invalid/main"}
+        ),
+        malformed_manual_query(
+            {
+                "endpoint": (
+                    "Driver={ODBC Driver 18 for SQL Server};Server=tcp:db.invalid;"
+                    "UID=readonly;PWD=credential-canary;"
+                )
+            }
+        ),
+        malformed_manual_query(
+            {
+                "endpoint": (
+                    "Driver={ODBC Driver 18 for SQL Server};Server=tcp:db.invalid;UID=readonly;"
+                )
+            }
+        ),
+        malformed_manual_query({"endpoint": "PWD=credential-canary;"}),
+        malformed_manual_query({"endpoint": "password=credential-canary;"}),
+        malformed_manual_query({"endpoint": "passwd=credential-canary;"}),
+        malformed_manual_query(
+            {"endpoint": "https://public.invalid/data?api_key=credential-canary"}
+        ),
+        malformed_manual_query(
+            {"endpoint": "https://public.invalid/data?password=credential-canary"}
+        ),
+        malformed_manual_query(
+            {"endpoint": "https://public.invalid/data?X-API-Key=credential-canary"}
+        ),
+        malformed_manual_query(
+            {"endpoint": "https://public.invalid/data?access_token=credential-canary"}
+        ),
         b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"commands":[{"func-tion":"bad"}]}}}',
         b'["not","an","object"]',
         b"\xff",
@@ -385,7 +441,7 @@ def test_manual_and_backfill_queue_only_safe_receipts(
 def test_malformed_or_executable_requests_are_rejected_without_persistence(
     cli_setup: tuple[Engine, RunDispatcher, RunService], raw: bytes
 ) -> None:
-    """Reject duplicate, extra, non-finite, wrongly typed, and executable fields."""
+    """Reject malformed, executable, or credential-bearing request values."""
     engine, dispatcher, worker = cli_setup
     code, receipt, text = invoke(raw, cli_app(dispatcher, worker))
     assert code == 2
@@ -393,6 +449,34 @@ def test_malformed_or_executable_requests_are_rejected_without_persistence(
     assert "evil" not in text and "bad" not in text
     assert "credential-canary" not in text
     assert row_count(engine) == 0
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        "https://public.invalid/market/daily?symbol=AAA",
+        "Text describing a market endpoint without any credentials.",
+    ],
+)
+def test_public_urls_and_non_sensitive_business_text_remain_allowed(
+    cli_setup: tuple[Engine, RunDispatcher, RunService], endpoint: str
+) -> None:
+    """Do not treat public URLs or ordinary business prose as credentials."""
+    engine, dispatcher, _ = cli_setup
+    manual = {
+        "schema_version": 1,
+        "operation": "manual",
+        "job_id": "dispatch-daily",
+        "version": "v1",
+        "payload": {
+            "idempotency_key": f"public-endpoint-{row_count(engine)}",
+            "query": {"endpoint": endpoint},
+        },
+    }
+    code, receipt, text = invoke(json.dumps(manual).encode(), cli_app(dispatcher))
+    assert code == 0 and receipt["status"] == "queued"
+    assert endpoint not in text
+    assert row_count(engine) == 1
 
 
 def test_request_depth_and_byte_caps_fail_before_dispatch(
