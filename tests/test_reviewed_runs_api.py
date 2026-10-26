@@ -752,6 +752,44 @@ async def test_cancel_successful_run_reports_terminal_outcome(api_harness: APIHa
     assert after == succeeded
 
 
+async def test_cancel_failed_run_reports_terminal_outcome_without_error_text(
+    api_harness: APIHarness,
+) -> None:
+    """A previously failed run remains terminal and its stored error stays private."""
+    submitted = await api_harness.client.post(
+        "/api/v1/reviewed/runs",
+        headers=_admin_headers(api_harness),
+        json=_request_body(idempotency_key="cancel-after-failure"),
+    )
+    run_key = submitted.json()["run_key"]
+    now = datetime.now(UTC)
+    claim = api_harness.runtime.ledger.claim("fixture-worker", now, timedelta(seconds=30))
+    assert claim is not None
+    failed = api_harness.runtime.ledger.fail(
+        run_key,
+        "fixture-worker",
+        claim.fencing_token,
+        now + timedelta(seconds=1),
+        "private provider credential and error detail",
+    )
+    assert failed is not None
+    assert failed.status == "failed"
+
+    response = await api_harness.client.post(
+        f"/api/v1/reviewed/runs/{run_key}/cancel",
+        headers=_admin_headers(api_harness),
+    )
+    after = api_harness.runtime.ledger.get(run_key)
+
+    assert response.status_code == 200
+    assert response.json()["outcome"] == "terminal"
+    assert response.json()["run"]["status"] == "failed"
+    assert response.json()["run"]["failure_code"] == "run_failed"
+    assert "provider credential" not in response.text
+    assert "error detail" not in response.text
+    assert after == failed
+
+
 async def test_cancel_backend_failure_leaves_record_unchanged(
     api_harness: APIHarness,
     monkeypatch: pytest.MonkeyPatch,
