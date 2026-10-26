@@ -7,8 +7,6 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
-from sqlalchemy import create_engine, select
-
 from opendata.data.dataset_contract_registry import (
     DatasetContractNotFoundError,
     DatasetContractRegistry,
@@ -19,6 +17,14 @@ from opendata.data.platform_contracts import (
     SourceIdentity,
     canonical_sha256,
 )
+from opendata.pipeline.publication_store import (
+    PUBLICATION_HEADS,
+    PUBLICATION_METADATA,
+    PUBLICATIONS,
+    PUBLISHED_FACT_VERSIONS,
+)
+from sqlalchemy import create_engine, select
+
 from opendata.pipeline.contract_publication import (
     ContractPublicationError,
     ValidatedPublicationWriter,
@@ -33,11 +39,6 @@ from opendata.pipeline.contract_publication import (
     _unknown_label,
     _validate_field_value,
     _validate_record,
-)
-from opendata.pipeline.publication_store import (
-    PUBLICATION_METADATA,
-    PUBLICATIONS,
-    PUBLISHED_FACT_VERSIONS,
 )
 from opendata.pipeline.run_identity import RunRequest, ScheduleMetadata, TaskDefinition
 from opendata.pipeline.run_ledger import RUN_LEDGER_METADATA, RUN_LEDGER_TABLE, RunLedger
@@ -369,6 +370,48 @@ def test_quality_status_needs_evidence_and_writers_do_not_infer_passed() -> None
         assert outcome.record.status == "failed"
         with engine.connect() as connection:
             assert connection.execute(select(PUBLICATIONS)).all() == []
+    finally:
+        engine.dispose()
+
+
+def test_rejected_quality_fails_run_without_publication_or_watermark_promotion() -> None:
+    rejected_quality = {"status": "rejected", "report_id": "qa-rejected", "issue_count": 1}
+    assert _quality_summary(rejected_quality) == rejected_quality
+    batch = replace(
+        make_batch(quality=rejected_quality),
+        watermark={"observed_through": "2026-10-26"},
+    )
+    engine, ledger, service = make_service(equity_contract(), batch=batch)
+    try:
+        submitted = service.submit(
+            "stock-daily",
+            "v1",
+            RunRequest(run_type="manual", idempotency_key="rejected-quality"),
+        )
+        outcome = service.run_once("worker-a", TTL)
+
+        assert outcome is not None and outcome.record is not None
+        assert outcome.record.run_key == submitted.run_key
+        assert outcome.record.status == "failed"
+        assert outcome.publication is None
+        stored_run = ledger.get(submitted.run_key)
+        assert stored_run is not None and stored_run.status == "failed"
+        with engine.connect() as connection:
+            publications = connection.execute(select(PUBLICATIONS)).all()
+            facts = connection.execute(select(PUBLISHED_FACT_VERSIONS)).all()
+            heads = connection.execute(select(PUBLICATION_HEADS)).all()
+            run = (
+                connection.execute(
+                    select(RUN_LEDGER_TABLE).where(RUN_LEDGER_TABLE.c.run_key == submitted.run_key)
+                )
+                .mappings()
+                .one()
+            )
+
+        assert publications == []
+        assert facts == []
+        assert heads == []
+        assert run["status"] == "failed"
     finally:
         engine.dispose()
 

@@ -76,6 +76,8 @@ class ValidatedPublicationWriter:
         self._validate_task_source(task, contract)
         self._validate_batch_semantics(batch, contract)
         quality = _quality_summary(batch.quality)
+        if quality["status"] == "rejected":
+            raise ContractPublicationError("rejected quality result cannot be published")
         provenance = _provenance_summary(batch.provenance, contract, contract_hash)
         records = self._validate_records(batch, contract)
 
