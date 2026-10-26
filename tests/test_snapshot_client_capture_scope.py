@@ -284,7 +284,7 @@ class TestInstrumentCaptureSnapshotClient:
 
     def test_selected_empty_snapshot_is_accepted(self) -> None:
         with _client(
-            lambda _: httpx.Response(201, json=_capture_snapshot(record_count=0))
+            lambda _: httpx.Response(201, json=_capture_snapshot(record_count=0, page_size=100))
         ) as client:
             snapshot = client.create_snapshot(
                 DATASET_ID,
@@ -391,7 +391,8 @@ class TestInstrumentCaptureSnapshotClient:
 
     def test_selected_request_rejects_response_with_another_pair(self) -> None:
         response = _capture_snapshot(
-            selection={"instrument_id": INSTRUMENT_ID, "capture_id": OTHER_CAPTURE_ID}
+            page_size=100,
+            selection={"instrument_id": INSTRUMENT_ID, "capture_id": OTHER_CAPTURE_ID},
         )
 
         with (
