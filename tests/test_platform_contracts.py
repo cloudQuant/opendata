@@ -583,6 +583,83 @@ def test_coverage_rejects_unsupported_completeness_claims(
         DataCoverage.model_validate({**base, **changes})
 
 
+def test_complete_coverage_rejects_missing_ranges_even_with_evidence() -> None:
+    """Complete and known-missing coverage cannot describe the same request."""
+    with pytest.raises(ValidationError, match="complete coverage cannot include missing_ranges"):
+        DataCoverage(
+            status="complete",
+            scope="business_history",
+            requested=TimeRange(start=date(2026, 1, 1), end=date(2026, 2, 1)),
+            missing_ranges=(TimeRange(start=date(2026, 1, 8), end=date(2026, 1, 9)),),
+            evidence_refs=("coverage-audit:2026-02-01",),
+        )
+
+
+@pytest.mark.parametrize(
+    ("missing_ranges", "message"),
+    [
+        (
+            (
+                TimeRange(start=date(2026, 1, 10), end=date(2026, 1, 12)),
+                TimeRange(start=date(2026, 1, 2), end=date(2026, 1, 4)),
+            ),
+            "missing_ranges must be sorted by start",
+        ),
+        (
+            (
+                TimeRange(start=date(2026, 1, 2), end=date(2026, 1, 5)),
+                TimeRange(start=date(2026, 1, 4), end=date(2026, 1, 6)),
+            ),
+            "missing_ranges must not overlap",
+        ),
+    ],
+)
+def test_partial_coverage_rejects_unsorted_or_overlapping_gaps(
+    missing_ranges: tuple[TimeRange, ...], message: str
+) -> None:
+    """Missing windows inside a requested scope are ordered and disjoint."""
+    with pytest.raises(ValidationError, match=message):
+        DataCoverage(
+            status="partial",
+            scope="business_history",
+            requested=TimeRange(start=date(2026, 1, 1), end=date(2026, 2, 1)),
+            missing_ranges=missing_ranges,
+        )
+
+
+def test_unknown_request_scope_does_not_invent_bounds_for_missing_ranges() -> None:
+    """Without a requested window, ordered gaps are retained without guessed limits."""
+    gaps = (
+        TimeRange(start=date(1999, 1, 1), end=date(1999, 1, 2)),
+        TimeRange(start=date(2026, 1, 1), end=date(2026, 1, 2)),
+    )
+    coverage = DataCoverage(status="partial", scope="unknown", missing_ranges=gaps)
+    assert coverage.requested is None
+    assert coverage.missing_ranges == gaps
+
+    adjacent_gaps = (
+        TimeRange(start=date(2026, 1, 1), end=date(2026, 1, 2)),
+        TimeRange(start=date(2026, 1, 2), end=date(2026, 1, 3)),
+    )
+    adjacent_coverage = DataCoverage(
+        status="partial",
+        scope="business_history",
+        requested=TimeRange(start=date(2026, 1, 1), end=date(2026, 1, 4)),
+        missing_ranges=adjacent_gaps,
+    )
+    assert adjacent_coverage.missing_ranges == adjacent_gaps
+
+    mixed_types = (
+        TimeRange(start=date(2026, 1, 1), end=date(2026, 1, 2)),
+        TimeRange(
+            start=datetime(2026, 1, 2, tzinfo=UTC),
+            end=datetime(2026, 1, 3, tzinfo=UTC),
+        ),
+    )
+    with pytest.raises(ValidationError, match="same time type when request is unknown"):
+        DataCoverage(status="partial", scope="unknown", missing_ranges=mixed_types)
+
+
 @pytest.mark.parametrize(
     ("request_fields", "message"),
     [

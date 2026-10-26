@@ -316,7 +316,9 @@ class DataCoverage(_ContractModel):
 
     @model_validator(mode="after")
     def validate_coverage_claim(self) -> DataCoverage:
-        """Require evidence and gaps to match the declared coverage state."""
+        """Require evidence, ranges, and gaps to match the declared coverage state."""
+        if self.status == "complete" and self.missing_ranges:
+            raise ValueError("complete coverage cannot include missing_ranges")
         if self.status == "complete" and not self.evidence_refs:
             raise ValueError("complete coverage requires evidence_refs")
         if self.status == "partial" and not self.missing_ranges:
@@ -339,6 +341,17 @@ class DataCoverage(_ContractModel):
                     or missing_range.end > self.requested.end
                 ):
                     raise ValueError("missing ranges must be contained in requested range")
+        elif self.missing_ranges:
+            reference = self.observed or self.missing_ranges[0]
+            if any(type(item.start) is not type(reference.start) for item in self.missing_ranges):
+                raise ValueError(
+                    "missing ranges must use the same time type when request is unknown"
+                )
+        for previous, current in zip(self.missing_ranges, self.missing_ranges[1:], strict=False):
+            if current.start < previous.start:
+                raise ValueError("missing_ranges must be sorted by start")
+            if current.start < previous.end:
+                raise ValueError("missing_ranges must not overlap")
         return self
 
 
