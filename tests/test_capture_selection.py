@@ -138,6 +138,40 @@ def test_nested_mutation_that_invalidates_contract_fails_closed() -> None:
     assert str(raised.value) == "dataset contract is invalid"
 
 
+@pytest.mark.parametrize("field_name", ["filter_fields", "fields", "business_key", "ordering"])
+def test_model_copy_list_bypasses_are_rejected_before_profile_classification(
+    field_name: str,
+) -> None:
+    contract = _contract()
+    malformed = contract.model_copy(
+        update={field_name: list(getattr(contract, field_name))},
+    )
+
+    with pytest.raises(InstrumentCaptureSelectionError) as raised:
+        selection_profile(malformed)
+
+    assert str(raised.value) == "dataset contract is invalid"
+
+
+def test_model_copy_with_invalid_nested_field_model_fails_closed() -> None:
+    contract = _contract()
+    invalid_capture_field = contract.fields[1].model_copy(update={"nullable": "invalid"})
+    malformed = contract.model_copy(
+        update={
+            "fields": (
+                contract.fields[0],
+                invalid_capture_field,
+                *contract.fields[2:],
+            )
+        }
+    )
+
+    with pytest.raises(InstrumentCaptureSelectionError) as raised:
+        selection_profile(malformed)
+
+    assert str(raised.value) == "dataset contract is invalid"
+
+
 def test_noncontract_and_contract_subclass_are_rejected() -> None:
     class DerivedContract(DatasetContract):
         pass

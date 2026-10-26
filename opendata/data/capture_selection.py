@@ -69,31 +69,36 @@ def selection_profile(
         raise InstrumentCaptureSelectionError("dataset contract is invalid")
     try:
         # Contracts are attribute-frozen but contain mutable nested mappings.
-        # The public canonicalizer performs bounded graph and strict-model
-        # revalidation without mutating the caller's object.
+        # The canonicalizer bounds the original graph. Strictly validating a
+        # Python-mode dump then rejects model_copy list/field bypasses and gives
+        # shape checks a detached normalized object, without mutating the input.
         canonical_sha256(contract)
+        validated_contract = DatasetContract.model_validate(
+            contract.model_dump(mode="python"),
+            strict=True,
+        )
     except (TypeError, ValueError, RecursionError, OverflowError):
         raise InstrumentCaptureSelectionError("dataset contract is invalid") from None
 
-    if contract.filter_fields != INSTRUMENT_CAPTURE_FILTER_FIELDS:
+    if validated_contract.filter_fields != INSTRUMENT_CAPTURE_FILTER_FIELDS:
         return _PROFILE_DATASET
 
     if (
-        contract.record_kind != "table"
-        or contract.temporal_semantics != "none"
-        or contract.time_field is not None
-        or contract.pit_policy != "unsupported"
+        validated_contract.record_kind != "table"
+        or validated_contract.temporal_semantics != "none"
+        or validated_contract.time_field is not None
+        or validated_contract.pit_policy != "unsupported"
     ):
         raise InstrumentCaptureSelectionError("reserved selection contract is invalid")
 
-    fields = {field.name: field for field in contract.fields}
+    fields = {field.name: field for field in validated_contract.fields}
     for name in INSTRUMENT_CAPTURE_FILTER_FIELDS:
         field = fields.get(name)
         if (
             field is None
             or field.data_type != "string"
             or field.nullable
-            or name not in contract.business_key
+            or name not in validated_contract.business_key
         ):
             raise InstrumentCaptureSelectionError("reserved selection contract is invalid")
     return _PROFILE_INSTRUMENT_CAPTURE
