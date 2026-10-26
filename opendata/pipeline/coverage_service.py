@@ -273,7 +273,12 @@ class PublicationObservations:
 
 @dataclass(frozen=True, slots=True)
 class CoverageQuery:
-    """A half-open public coverage request for one dataset/source/instrument."""
+    """A half-open coverage request using a canonical ID or reviewed alias.
+
+    ``identifier_as_of`` pins resolution of a time-scoped/reused alias. Once
+    resolved, coverage applies to that canonical instrument across the complete
+    requested range, even when the alias itself was valid for only one date.
+    """
 
     dataset_id: str
     source_id: str
@@ -328,6 +333,9 @@ class InstrumentHistoryCoverageReport:
     delist_evidence_ref: str | None
     alias_version: str | None
     alias_evidence_ref: str | None
+    alias_valid_from: date | None
+    alias_valid_through: date | None
+    alias_resolved_as_of: date | None
     calendar_id: str
     calendar_version: str
     calendar_evidence_ref: str
@@ -373,6 +381,19 @@ class InstrumentHistoryCoverageReport:
                 "delist_evidence_ref": self.delist_evidence_ref,
                 "alias_version": self.alias_version,
                 "alias_evidence_ref": self.alias_evidence_ref,
+                "alias_valid_from": (
+                    self.alias_valid_from.isoformat() if self.alias_valid_from is not None else None
+                ),
+                "alias_valid_through": (
+                    self.alias_valid_through.isoformat()
+                    if self.alias_valid_through is not None
+                    else None
+                ),
+                "alias_resolved_as_of": (
+                    self.alias_resolved_as_of.isoformat()
+                    if self.alias_resolved_as_of is not None
+                    else None
+                ),
             },
             "requested_scope": {
                 "start_inclusive": self.requested_start.isoformat(),
@@ -637,6 +658,9 @@ class InstrumentCoverageService:
             delist_evidence_ref=lifecycle.delist_evidence_ref,
             alias_version=resolved.alias_version,
             alias_evidence_ref=resolved.alias_evidence_ref,
+            alias_valid_from=resolved.alias_valid_from,
+            alias_valid_through=resolved.alias_valid_through,
+            alias_resolved_as_of=resolved.alias_resolved_as_of,
             calendar_id=calendar.calendar_id,
             calendar_version=calendar.calendar_version,
             calendar_evidence_ref=calendar.evidence_ref,

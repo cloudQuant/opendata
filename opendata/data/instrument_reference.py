@@ -8,11 +8,12 @@ published rows or reaches a database, provider, or environment variable.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
-from dataclasses import dataclass
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
 from itertools import islice
+from types import MappingProxyType
 
 _IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/+\-]{0,127}$")
 _MAX_EVIDENCE_CHARS = 512
@@ -197,6 +198,9 @@ class ResolvedInstrument:
     registry_evidence_ref: str
     alias_version: str | None
     alias_evidence_ref: str | None
+    alias_valid_from: date | None
+    alias_valid_through: date | None
+    alias_resolved_as_of: date | None
     lifecycle: InstrumentLifecycle
 
 
@@ -213,6 +217,12 @@ class InstrumentReferenceRegistry:
     lifecycles: tuple[InstrumentLifecycle, ...]
     aliases: tuple[InstrumentAlias, ...] = ()
     schema_version: int = 1
+    _lifecycles_by_key: Mapping[tuple[str, str, str], InstrumentLifecycle] = field(
+        init=False, repr=False, compare=False
+    )
+    _aliases_by_key: Mapping[tuple[str, str, str], tuple[InstrumentAlias, ...]] = field(
+        init=False, repr=False, compare=False
+    )
 
     def __post_init__(self) -> None:
         """Freeze bounded registry rows and reject ambiguous or dangling aliases."""
@@ -240,21 +250,34 @@ class InstrumentReferenceRegistry:
         ]
         if len(lifecycle_keys) != len(set(lifecycle_keys)):
             raise ValueError("registry contains duplicate lifecycle identities")
-        known = set(lifecycle_keys)
-        for row in alias_rows:
-            if (row.dataset_id, row.source_id, row.instrument_id) not in known:
+        lifecycle_by_key = {
+            (row.dataset_id, row.source_id, row.instrument_id): row for row in lifecycle_rows
+        }
+        canonical_ids_by_scope: dict[tuple[str, str], set[str]] = {}
+        for row in lifecycle_rows:
+            scope = (row.dataset_id, row.source_id)
+            canonical_ids_by_scope.setdefault(scope, set()).add(row.instrument_id)
+
+        aliases_by_key: dict[tuple[str, str, str], list[InstrumentAlias]] = {}
+        for alias_row in alias_rows:
+            lifecycle_key = (alias_row.dataset_id, alias_row.source_id, alias_row.instrument_id)
+            if lifecycle_key not in lifecycle_by_key:
                 raise ValueError("alias points to a lifecycle absent from this registry")
-            if any(
-                row.dataset_id == lifecycle.dataset_id
-                and row.source_id == lifecycle.source_id
-                and row.alias == lifecycle.instrument_id
-                and row.instrument_id != lifecycle.instrument_id
-                for lifecycle in lifecycle_rows
-            ):
+            scope = (alias_row.dataset_id, alias_row.source_id)
+            canonical_ids = canonical_ids_by_scope[scope]
+            if alias_row.alias in canonical_ids and alias_row.alias != alias_row.instrument_id:
                 raise ValueError("alias cannot shadow another canonical instrument identifier")
+            alias_key = (alias_row.dataset_id, alias_row.source_id, alias_row.alias)
+            aliases_by_key.setdefault(alias_key, []).append(alias_row)
         self._validate_alias_intervals(alias_rows)
         object.__setattr__(self, "lifecycles", tuple(lifecycle_rows))
         object.__setattr__(self, "aliases", tuple(alias_rows))
+        object.__setattr__(self, "_lifecycles_by_key", MappingProxyType(lifecycle_by_key))
+        object.__setattr__(
+            self,
+            "_aliases_by_key",
+            MappingProxyType({key: tuple(rows) for key, rows in aliases_by_key.items()}),
+        )
 
     @staticmethod
     def _validate_alias_intervals(aliases: tuple[InstrumentAlias, ...]) -> None:
@@ -287,7 +310,9 @@ class InstrumentReferenceRegistry:
             dataset_id: Dataset whose provider-specific identity is requested.
             source_id: Source whose identifiers the input uses.
             identifier: Canonical instrument ID or reviewed alias.
-            as_of: Optional date used to disambiguate a reused alias.
+            as_of: Required for time-scoped or reused aliases. It selects the
+                canonical identity at this point in time; it does not restrict
+                the canonical instrument's historical query interval.
 
         Returns:
             The canonical instrument and exact registry evidence references.
@@ -299,16 +324,7 @@ class InstrumentReferenceRegistry:
         source = _identifier(source_id, "source_id")
         supplied = _identifier(identifier, "identifier")
         effective = _strict_date(as_of, "as_of")
-        lifecycle = next(
-            (
-                row
-                for row in self.lifecycles
-                if row.dataset_id == dataset
-                and row.source_id == source
-                and row.instrument_id == supplied
-            ),
-            None,
-        )
+        lifecycle = self._lifecycles_by_key.get((dataset, source, supplied))
         if lifecycle is not None:
             return ResolvedInstrument(
                 supplied,
@@ -319,32 +335,36 @@ class InstrumentReferenceRegistry:
                 self.evidence_ref,
                 None,
                 None,
+                None,
+                None,
+                None,
                 lifecycle,
             )
 
-        candidates = [
-            row
-            for row in self.aliases
-            if row.dataset_id == dataset
-            and row.source_id == source
-            and row.alias == supplied
-            and (
-                effective is None
-                or (row.valid_from is None or effective >= row.valid_from)
-                and (row.valid_through is None or effective <= row.valid_through)
-            )
-        ]
-        if not candidates:
+        alias_rows = self._aliases_by_key.get((dataset, source, supplied), ())
+        if not alias_rows:
             raise InstrumentReferenceError("instrument identifier has no reviewed registry match")
-        if len(candidates) != 1:
-            raise InstrumentReferenceError("reused alias requires an explicit as_of date")
-        alias = candidates[0]
-        lifecycle = next(
-            row
-            for row in self.lifecycles
-            if (row.dataset_id, row.source_id, row.instrument_id)
-            == (dataset, source, alias.instrument_id)
-        )
+        if effective is None:
+            if len(alias_rows) > 1:
+                raise InstrumentReferenceError("reused alias requires an explicit as_of date")
+            alias = alias_rows[0]
+            if alias.valid_from is not None or alias.valid_through is not None:
+                raise InstrumentReferenceError("time-scoped alias requires an explicit as_of date")
+        else:
+            candidates = [
+                row
+                for row in alias_rows
+                if (row.valid_from is None or effective >= row.valid_from)
+                and (row.valid_through is None or effective <= row.valid_through)
+            ]
+            if not candidates:
+                raise InstrumentReferenceError(
+                    "instrument identifier has no reviewed registry match at the requested as_of"
+                )
+            if len(candidates) != 1:
+                raise InstrumentReferenceError("reused alias requires an explicit as_of date")
+            alias = candidates[0]
+        lifecycle = self._lifecycles_by_key[(dataset, source, alias.instrument_id)]
         return ResolvedInstrument(
             supplied,
             dataset,
@@ -354,6 +374,9 @@ class InstrumentReferenceRegistry:
             self.evidence_ref,
             alias.alias_version,
             alias.evidence_ref,
+            alias.valid_from,
+            alias.valid_through,
+            effective,
             lifecycle,
         )
 

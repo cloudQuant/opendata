@@ -7,6 +7,7 @@ import pytest
 from opendata.data.instrument_reference import (
     InstrumentAlias,
     InstrumentLifecycle,
+    InstrumentReferenceError,
     InstrumentReferenceRegistry,
 )
 from opendata.pipeline.coverage_service import (
@@ -407,14 +408,71 @@ def test_alias_query_resolves_and_echoes_identity_evidence() -> None:
         instrument_id="XNYS:ABC",
         alias_version="ticker-v2",
         evidence_ref="review:ticker-v2",
-        valid_from=d("2020-01-01"),
+        valid_from=d("2024-01-02"),
+        valid_through=d("2024-01-02"),
     )
-    report = assess(query(identifier="ABC"), aliases=(mapping,))
+    request = query("2024-01-02", "2024-01-06", identifier="ABC", as_of="2024-01-02")
+    history = (d("2024-01-02"), d("2024-01-03"), d("2024-01-04"), d("2024-01-05"))
+    report = assess(
+        request,
+        lifecycle_row=lifecycle(start=d("2024-01-02")),
+        calendar_row=calendar(
+            covered_from=d("2024-01-02"),
+            covered_through=d("2024-01-05"),
+            open_dates=history,
+        ),
+        publication_row=publication(
+            history,
+            scope_start=d("2024-01-02"),
+            scope_end=d("2024-01-06"),
+        ),
+        aliases=(mapping,),
+    )
 
     assert report.status is CoverageStatus.COMPLETE
     assert report.instrument_id == "XNYS:ABC"
     assert report.alias_version == "ticker-v2"
     assert report.alias_evidence_ref == "review:ticker-v2"
+    assert report.alias_valid_from == d("2024-01-02")
+    assert report.alias_valid_through == d("2024-01-02")
+    assert report.alias_resolved_as_of == d("2024-01-02")
+    assert report.to_dict()["instrument"]["alias_resolved_as_of"] == "2024-01-02"  # type: ignore[index]
+
+
+def test_single_time_scoped_alias_cannot_be_upgraded_without_as_of() -> None:
+    mapping = InstrumentAlias(
+        dataset_id="equity_daily",
+        source_id="exchange_archive",
+        alias="ABC",
+        instrument_id="XNYS:ABC",
+        alias_version="ticker-v1",
+        evidence_ref="review:ticker-v1",
+        valid_from=d("2024-01-02"),
+        valid_through=d("2024-01-02"),
+    )
+
+    with pytest.raises(InstrumentReferenceError, match="time-scoped alias"):
+        assess(query("2024-01-02", "2024-01-06", identifier="ABC"), aliases=(mapping,))
+
+
+def test_alias_history_rejects_observations_bound_to_a_different_canonical_id() -> None:
+    mapping = InstrumentAlias(
+        dataset_id="equity_daily",
+        source_id="exchange_archive",
+        alias="OLD",
+        instrument_id="XNYS:ABC",
+        alias_version="ticker-2020",
+        evidence_ref="review:ticker-2020",
+        valid_from=d("2020-01-01"),
+        valid_through=d("2020-12-31"),
+    )
+
+    with pytest.raises(ValueError, match="publication evidence is bound"):
+        assess(
+            query(identifier="OLD", as_of="2020-03-01"),
+            publication_row=publication(instrument_id="XNYS:XYZ"),
+            aliases=(mapping,),
+        )
 
 
 @pytest.mark.parametrize("which", ["calendar", "publication"])

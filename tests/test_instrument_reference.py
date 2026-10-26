@@ -91,11 +91,28 @@ def test_alias_resolution_returns_its_exact_evidence_and_canonical_identity() ->
 
 
 def test_single_alias_version_can_resolve_without_as_of() -> None:
-    result = registry(
-        life(), aliases=(alias("ABC", "XNYS:ABC", "2020-01-01", "2024-01-01", "v1"),)
-    ).resolve("equity_daily", "exchange_archive", "ABC")
+    result = registry(life(), aliases=(alias("ABC", "XNYS:ABC", None, None, "v1"),)).resolve(
+        "equity_daily", "exchange_archive", "ABC"
+    )
 
     assert result.instrument_id == "XNYS:ABC"
+
+
+def test_single_time_scoped_alias_requires_explicit_as_of() -> None:
+    snapshot = registry(
+        life(), aliases=(alias("ABC", "XNYS:ABC", "2024-01-02", "2024-01-02", "v1"),)
+    )
+
+    with pytest.raises(InstrumentReferenceError, match="time-scoped alias"):
+        snapshot.resolve("equity_daily", "exchange_archive", "ABC")
+
+    resolved = snapshot.resolve("equity_daily", "exchange_archive", "ABC", as_of=d("2024-01-02"))
+    assert resolved.instrument_id == "XNYS:ABC"
+    assert resolved.alias_valid_from == d("2024-01-02")
+    assert resolved.alias_valid_through == d("2024-01-02")
+    assert resolved.alias_resolved_as_of == d("2024-01-02")
+    with pytest.raises(InstrumentReferenceError, match="requested as_of"):
+        snapshot.resolve("equity_daily", "exchange_archive", "ABC", as_of=d("2024-01-03"))
 
 
 def test_reused_alias_requires_and_obeys_as_of_boundaries() -> None:
@@ -159,6 +176,46 @@ def test_registry_rejects_canonical_identifier_shadowing() -> None:
             life("XNYS:ABC"),
             life("XNYS:XYZ"),
             aliases=(alias("XNYS:ABC", "XNYS:XYZ", None, None, "v1"),),
+        )
+
+
+def test_registry_alias_validation_uses_bounded_comparison_work() -> None:
+    """Guard alias validation against scanning every lifecycle for every alias."""
+
+    class CountingIdentifier(str):
+        """Count alias comparisons while retaining ordinary string semantics."""
+
+        comparisons = 0
+
+        def __eq__(self, other: object) -> bool:
+            type(self).comparisons += 1
+            return str.__eq__(self, other)
+
+        __hash__ = str.__hash__
+
+    size = 1_000
+    lifecycles = tuple(life(f"XNYS:{index}") for index in range(size))
+    aliases = tuple(
+        alias(CountingIdentifier(f"ticker_{index}"), f"XNYS:{index}", None, None, f"v{index}")
+        for index in range(size)
+    )
+    CountingIdentifier.comparisons = 0
+
+    snapshot = registry(*lifecycles, aliases=aliases)
+
+    assert len(snapshot.aliases) == size
+    assert CountingIdentifier.comparisons <= size * 10
+
+
+def test_registry_rejects_iterables_over_the_materialization_limit() -> None:
+    """Stop registry construction at the fixed row bound before retaining inputs."""
+    from itertools import repeat
+
+    with pytest.raises(ValueError, match="exceeds the 100,000-row limit"):
+        InstrumentReferenceRegistry(
+            "v1",
+            "evidence",
+            repeat(life(), 100_001),  # type: ignore[arg-type]
         )
 
 
