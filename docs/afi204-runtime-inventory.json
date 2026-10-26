@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0",
+  "generated_at_utc": "2026-10-26T11:38:36+00:00",
+  "source_repository_code_sha256": {
+    "runtime_inventory_module": "4cf91723250ee4d5f27fcae6ed107d0027f8df68ef815605a64c0832491620a5",
+    "cli_entrypoint": "71b50d0c7871ec71607131a9f7bae1008d9811450f6b2a53b7c12400282127ef"
+  },
+  "env_file_sha256": "a0c8a435c91a2609207b3293b4cb6cdcf81eb430685213f0cd687ffb67516d70",
+  "private_receipts": {
+    "runtime_inventory_path": "/tmp/od204-receipts/runtime-inventory.json",
+    "runtime_inventory_sha256": "c3c5348bddb754e08bae7f3f00f4bafc7a52df51bbbabed0ff39de431c9c09ff",
+    "static_crosswalk_path": "/tmp/od204-receipts/runtime-inventory-static-crosswalk.json",
+    "static_crosswalk_sha256": "4525acf94f5f3e74380c070a5315a5acd4425d88f059e30dbe8479d5354bd30e"
+  },
+  "command_results": {
+    "runtime_inventory_exit_code": 0,
+    "ast_crosswalk_exit_code": 0,
+    "ast_crosswalk_mapping_issues": 0,
+    "pytest_runtime_inventory": "14 passed",
+    "ruff": "passed",
+    "mypy_python_3_10_strict_follow_imports_silent": "passed",
+    "bandit": "0 findings",
+    "combined_branch_statement_coverage": "91%"
+  },
+  "readonly_transaction": {
+    "metadata_database": "ai_for_investor",
+    "warehouse_database": "akshare_data",
+    "statement": "SET SESSION TRANSACTION READ ONLY; START TRANSACTION WITH CONSISTENT SNAPSHOT",
+    "metadata_confirmed": true,
+    "warehouse_confirmed": true,
+    "metadata_isolation": "repeatable-read",
+    "warehouse_isolation": "repeatable-read",
+    "metadata_snapshot_captured_at_utc": "2026-10-26T11:38:35+00:00",
+    "warehouse_snapshot_captured_at_utc": "2026-10-26T11:38:35+00:00",
+    "metadata_endpoint_fingerprint": "4c0980eca5c61f9cabc2f92ba5bb275ae2a03d4fb28b3ded90b07d0eddcc7806",
+    "warehouse_endpoint_fingerprint": "8552f49e7500e2c37f6ddb998d557faee42eb1c20303894991231b7f7b205743",
+    "snapshot_scope": "Each database has its own consistent read snapshot; this is not a distributed cross-database transaction."
+  },
+  "exact_runtime_counts": {
+    "scheduled_tasks": 1103,
+    "scheduled_tasks_active": 1098,
+    "scheduled_tasks_inactive": 5,
+    "data_scripts": 1066,
+    "data_scripts_active": 1051,
+    "data_scripts_inactive": 15,
+    "warehouse_tables": 1042,
+    "warehouse_row_counts": "Not read; information_schema.TABLE_ROWS values are estimates and are not coverage evidence."
+  },
+  "selected_legacy_columns": {
+    "scheduled_tasks": {
+      "id": "id",
+      "script_id": "script_id",
+      "schedule_type": "schedule_type",
+      "expression": "schedule_expression",
+      "is_active": "is_active",
+      "last_execution": "last_execution_at",
+      "next_execution": "next_execution_at",
+      "timeout": "timeout",
+      "retries": "max_retries",
+      "retry_on_failure": "retry_on_failure",
+      "parameters": "parameters",
+      "task_kind": null
+    },
+    "data_scripts": {
+      "script_id": "script_id",
+      "module_path": "module_path",
+      "function_name": "function_name",
+      "target_table": "target_table",
+      "is_active": "is_active",
+      "source": "source",
+      "parameters": "dependencies"
+    }
+  },
+  "parameter_privacy": {
+    "values_in_report": false,
+    "representation": [
+      "canonical_payload_sha256",
+      "key_names",
+      "credential_flag"
+    ],
+    "credential_flagged_task_rows": 0,
+    "credential_flagged_script_rows": 0,
+    "note": "Credential detection is heuristic; zero flags do not prove parameters contain no credentials."
+  },
+  "bidirectional_task_script_crosswalk": {
+    "task_map_rows": 1113,
+    "script_registry_rows_without_scheduled_task": 10,
+    "data_script_paths_existing_in_legacy_tree": 1066,
+    "unresolved_data_script_paths": 0,
+    "dangling_task_script_ids": 0,
+    "ast_discovered_python_files": 1066,
+    "ast_entrypoints": 1056,
+    "ast_entrypoints_mapped_to_runtime_task_or_script": 1056,
+    "ast_entrypoints_without_runtime_mapping": 0,
+    "parse_errors": 0,
+    "filesystem_errors": 0,
+    "mapping_issues": 0
+  },
+  "limitations": [
+    "The metadata and warehouse reads are separate consistent snapshots, not one distributed transaction.",
+    "Systemd and cron configuration is inventoried separately from these database task records.",
+    "A successful path crosswalk confirms task-to-file mapping only; source correctness and historical coverage remain unverified."
+  ]
+}
