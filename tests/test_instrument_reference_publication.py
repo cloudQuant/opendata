@@ -7,8 +7,12 @@ from dataclasses import replace
 from datetime import date
 from hashlib import sha256
 from pathlib import Path
+from typing import TYPE_CHECKING, cast
 
 import pytest
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator
 
 from opendata.data.dataset_contract_registry import canonical_sha256
 from opendata.data.instrument_reference import (
@@ -133,6 +137,14 @@ def _presentations() -> tuple[InstrumentPresentation, ...]:
     )
 
 
+class _TypeErrorPresentationIterable:
+    """An iterable whose iterator fails to model a broken caller-supplied source."""
+
+    def __iter__(self) -> Iterator[InstrumentPresentation]:
+        """Raise a deterministic iteration error after passing the iterable check."""
+        raise TypeError("synthetic iterator failure")
+
+
 def _fixture() -> dict[str, object]:
     """Load the shared, hash-pinned synthetic protocol fixture."""
     return json.loads(_FIXTURE_PATH.read_text(encoding="utf-8"))
@@ -140,7 +152,7 @@ def _fixture() -> dict[str, object]:
 
 def _records(
     registry: InstrumentReferenceRegistry | None = None,
-    presentations: tuple[InstrumentPresentation, ...] | None = None,
+    presentations: Iterable[InstrumentPresentation] | None = None,
 ):
     """Build the test publication from explicit fixture models."""
     return build_instrument_reference_records(
@@ -303,6 +315,104 @@ def test_builder_rejects_lifecycle_rows_outside_the_requested_scope() -> None:
         _records(wrong_scope, (_presentations()[0],))
 
 
+def test_builder_rejects_nonregistry_and_invalid_dataset_identifiers() -> None:
+    """Runtime validation rejects untyped registry values and malformed scope IDs."""
+    with pytest.raises(ValueError, match="registry must be an InstrumentReferenceRegistry"):
+        build_instrument_reference_records(
+            registry=cast("InstrumentReferenceRegistry", object()),
+            presentations=(),
+            dataset_id=_DATASET_ID,
+            source_id=_SOURCE_ID,
+        )
+
+    with pytest.raises(ValueError, match="dataset_id must be a stable ASCII identifier"):
+        build_instrument_reference_records(
+            registry=_registry(),
+            presentations=_presentations(),
+            dataset_id="invalid dataset ID",
+            source_id=_SOURCE_ID,
+        )
+
+
+def test_builder_rejects_foreign_scope_and_dangling_injected_aliases() -> None:
+    """The producer rechecks alias scope and target before projection."""
+    # Registry construction rejects these rows, so corrupt the frozen object to
+    # exercise the producer's own boundary checks on a malformed injected value.
+    foreign_scope = _registry(aliases=())
+    object.__setattr__(
+        foreign_scope,
+        "aliases",
+        (
+            InstrumentAlias(
+                dataset_id="fixture.other-dataset",
+                source_id=_SOURCE_ID,
+                alias="FOREIGN",
+                instrument_id="TEST_XSHE_B",
+                alias_version="fixture-alias-foreign",
+                evidence_ref="TEST-204-FOREIGN",
+            ),
+        ),
+    )
+    with pytest.raises(ValueError, match="every alias must match"):
+        _records(foreign_scope)
+
+    dangling_target = _registry(aliases=())
+    object.__setattr__(
+        dangling_target,
+        "aliases",
+        (
+            InstrumentAlias(
+                dataset_id=_DATASET_ID,
+                source_id=_SOURCE_ID,
+                alias="DANGLING",
+                instrument_id="TEST_ABSENT",
+                alias_version="fixture-alias-dangling",
+                evidence_ref="TEST-204-DANGLING",
+            ),
+        ),
+    )
+    with pytest.raises(ValueError, match="alias must target a lifecycle"):
+        _records(dangling_target)
+
+
+def test_builder_rejects_untyped_or_duplicate_presentation_rows() -> None:
+    """Only typed presentation rows with unique canonical identities are accepted."""
+    registry = _registry()
+    with pytest.raises(ValueError, match="only InstrumentPresentation values"):
+        _records(registry, (cast("InstrumentPresentation", object()),))
+
+    beta = _presentations()[0]
+    duplicate_id = replace(beta, symbol="000003")
+    with pytest.raises(ValueError, match="instrument_id values must be unique"):
+        _records(registry, (beta, duplicate_id))
+
+
+def test_builder_rejects_lifecycle_status_that_was_mutated_after_validation() -> None:
+    """The publisher fails closed if a frozen lifecycle is corrupted at runtime."""
+    lifecycle = _beta_lifecycle()
+    # Exercise the publisher guard independently of InstrumentLifecycle validation.
+    object.__setattr__(lifecycle, "status", "unknown")
+    registry = _registry(lifecycles=(lifecycle,), aliases=())
+
+    with pytest.raises(ValueError, match="lifecycle status must be normalized"):
+        _records(registry, (_presentations()[0],))
+
+
+def test_bounded_presentations_rejects_noniterable_broken_and_oversized_inputs() -> None:
+    """Presentation materialization bounds arbitrary iterables and reports failures."""
+    invalid_noniterable = cast("Iterable[InstrumentPresentation]", 42)
+    with pytest.raises(ValueError, match="presentations must be a bounded iterable"):
+        _records(presentations=invalid_noniterable)
+
+    with pytest.raises(ValueError, match="presentations must be iterable"):
+        _records(presentations=_TypeErrorPresentationIterable())
+
+    presentation = _presentations()[0]
+    oversized = (presentation for _ in range(20_001))
+    with pytest.raises(ValueError, match="presentations exceed the 20,000-row profile limit"):
+        _records(presentations=oversized)
+
+
 def test_builder_requires_exactly_one_presentation_for_each_lifecycle() -> None:
     """Missing and extra AFI presentation rows fail closed."""
     beta = _presentations()[0]
@@ -326,7 +436,7 @@ def test_presentation_requires_six_digit_symbol_cn_market_and_explicit_exchange(
         InstrumentPresentation("TEST_XSHG_A", "60001", "Alpha", "CN", "XSHG")
     with pytest.raises(ValueError, match="market"):
         InstrumentPresentation("TEST_XSHG_A", "600001", "Alpha", "SH", "XSHG")
-    with pytest.raises(ValueError, match="exchange"):
+    with pytest.raises(ValueError, match="XSHG, XSHE, or XBSE"):
         InstrumentPresentation("TEST_XSHG_A", "600001", "Alpha", "CN", "")
 
 

@@ -94,7 +94,7 @@ class InstrumentPresentation:
         if self.market != "CN":
             raise ValueError("market must be the explicit CN market code")
         if self.exchange not in _CN_EXCHANGES:
-            raise ValueError("exchange must be explicitly XSHG or XSHE")
+            raise ValueError("exchange must be explicitly XSHG, XSHE, or XBSE")
 
 
 def build_instrument_reference_contract(
