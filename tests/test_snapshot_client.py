@@ -815,15 +815,27 @@ class TestSnapshotHTTPGuards:
         assert page.count == 0
         assert attempts == 2
 
-    def test_get_parses_http_date_retry_after(self, monkeypatch: Any) -> None:
+    @pytest.mark.parametrize(("seconds", "expected_sleep"), [(0, []), (-1, []), (1, [0.75])])
+    def test_get_parses_http_date_retry_after(
+        self, monkeypatch: Any, seconds: int, expected_sleep: list[float]
+    ) -> None:
         from datetime import datetime, timedelta, timezone
         from email.utils import format_datetime
 
         import opendata_client.snapshots as snapshot_module
 
-        monkeypatch.setattr(snapshot_module.time, "sleep", lambda _: None)
+        fixed_now = datetime(2026, 10, 26, 9, 0, 0, 250_000, tzinfo=timezone.utc)
+
+        class FrozenDatetime(datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return fixed_now if tz is None else fixed_now.astimezone(tz)
+
+        delays: list[float] = []
+        monkeypatch.setattr(snapshot_module, "datetime", FrozenDatetime)
+        monkeypatch.setattr(snapshot_module.time, "sleep", delays.append)
         attempts = 0
-        retry_at = format_datetime(datetime.now(timezone.utc) + timedelta(seconds=0.5), usegmt=True)
+        retry_at = format_datetime(fixed_now + timedelta(seconds=seconds), usegmt=True)
 
         def handler(_: httpx.Request) -> httpx.Response:
             nonlocal attempts
@@ -839,6 +851,7 @@ class TestSnapshotHTTPGuards:
             )
         assert page.count == 0
         assert attempts == 2
+        assert delays == expected_sleep
 
     def test_unbounded_retry_after_and_retry_beyond_deadline_do_not_retry(self) -> None:
         attempts = 0
@@ -957,6 +970,9 @@ def test_real_fastapi_sqlite_delta_snapshots_preserve_origin_publications(tmp_pa
 
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
+    from sqlalchemy import create_engine
+
+    from opendata.api.dependencies import Principal, get_current_principal
     from opendata.api.published_access import DatasetGrant, DatasetGrantRegistry
     from opendata.api.published_data import (
         get_dataset_contracts,
@@ -966,15 +982,12 @@ def test_real_fastapi_sqlite_delta_snapshots_preserve_origin_publications(tmp_pa
     )
     from opendata.data.dataset_contract_registry import DatasetContractRegistry, canonical_sha256
     from opendata.data.platform_contracts import DatasetContract, FieldContract, SourceIdentity
+    from opendata.models.user import User, UserRole
     from opendata.pipeline.publication_store import (
         PUBLICATION_METADATA,
         PublicationStore,
         PublishedRecordInput,
     )
-    from sqlalchemy import create_engine
-
-    from opendata.api.dependencies import Principal, get_current_principal
-    from opendata.models.user import User, UserRole
 
     dataset_id = "equity.daily"
     source_id = "provider.alpha"

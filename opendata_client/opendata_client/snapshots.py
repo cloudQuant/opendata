@@ -741,7 +741,10 @@ def _retry_delay(value: str | None, attempt: int, maximum: float) -> float | Non
             parsed = parsedate_to_datetime(stripped)
             if parsed.tzinfo is None:
                 parsed = parsed.replace(tzinfo=timezone.utc)
-            delay = (parsed - datetime.now(timezone.utc)).total_seconds()
+            # HTTP dates have whole-second precision. A date at or before the
+            # current instant means retry immediately, including normal clock
+            # skew and rounding; negative numeric delay values remain invalid.
+            delay = max(0.0, (parsed - datetime.now(timezone.utc)).total_seconds())
         except (TypeError, ValueError, OverflowError):
             return None
     if not math.isfinite(delay) or delay < 0 or delay > maximum:

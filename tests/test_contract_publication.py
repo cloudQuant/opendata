@@ -7,6 +7,8 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
+from sqlalchemy import create_engine, select
+
 from opendata.data.dataset_contract_registry import (
     DatasetContractNotFoundError,
     DatasetContractRegistry,
@@ -17,14 +19,6 @@ from opendata.data.platform_contracts import (
     SourceIdentity,
     canonical_sha256,
 )
-from opendata.pipeline.publication_store import (
-    PUBLICATION_HEADS,
-    PUBLICATION_METADATA,
-    PUBLICATIONS,
-    PUBLISHED_FACT_VERSIONS,
-)
-from sqlalchemy import create_engine, select
-
 from opendata.pipeline.contract_publication import (
     ContractPublicationError,
     ValidatedPublicationWriter,
@@ -39,6 +33,12 @@ from opendata.pipeline.contract_publication import (
     _unknown_label,
     _validate_field_value,
     _validate_record,
+)
+from opendata.pipeline.publication_store import (
+    PUBLICATION_HEADS,
+    PUBLICATION_METADATA,
+    PUBLICATIONS,
+    PUBLISHED_FACT_VERSIONS,
 )
 from opendata.pipeline.run_identity import RunRequest, ScheduleMetadata, TaskDefinition
 from opendata.pipeline.run_ledger import RUN_LEDGER_METADATA, RUN_LEDGER_TABLE, RunLedger
