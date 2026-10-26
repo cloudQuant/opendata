@@ -9,10 +9,10 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
+import pytest
 import pytest_asyncio
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
-from opendata.pipeline.reviewed_runtime import ReviewedRuntime, build_reviewed_runtime
 from sqlalchemy import Table, create_engine, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -21,6 +21,7 @@ from opendata.api.reviewed_runs import router
 from opendata.core.config import settings
 from opendata.core.security import create_access_token
 from opendata.models.user import User, UserRole
+from opendata.pipeline.reviewed_runtime import ReviewedRuntime, build_reviewed_runtime
 from opendata.pipeline.run_dispatch import (
     DispatchIdentity,
     DispatchReceipt,
@@ -49,7 +50,6 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Mapping
     from pathlib import Path
 
-    import pytest
     from sqlalchemy.engine import Connection, Engine
 
 UTC = timezone.utc
@@ -527,6 +527,27 @@ async def test_unknown_and_disabled_jobs_are_rejected_before_ledger_writes(
     assert unknown.json() == {"detail": "job_not_found"}
     assert disabled.status_code == 409
     assert disabled.json() == {"detail": "job_not_runnable"}
+    assert _ledger_count(api_harness.metadata_engine) == 0
+
+
+@pytest.mark.parametrize("content_type", [None, "text/plain", "application/octet-stream"])
+async def test_manual_submit_requires_json_before_reading_or_persisting_payload(
+    api_harness: APIHarness, content_type: str | None
+) -> None:
+    """Reject unsupported media types with the documented, redacted 415 response."""
+    headers = _admin_headers(api_harness)
+    if content_type is not None:
+        headers["Content-Type"] = content_type
+
+    response = await api_harness.client.post(
+        "/api/v1/reviewed/runs",
+        headers=headers,
+        content=b"credential-canary: not JSON",
+    )
+
+    assert response.status_code == 415
+    assert response.json() == {"detail": "json_required"}
+    assert "credential-canary" not in response.text
     assert _ledger_count(api_harness.metadata_engine) == 0
 
 
