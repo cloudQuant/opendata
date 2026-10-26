@@ -48,6 +48,7 @@ _CREDENTIAL_KEY_PATTERN = re.compile(
 _MAX_REQUEST_SUMMARY_BYTES = 32 * 1024
 _MAX_REQUEST_ALLOWLIST_FIELDS = 128
 _MAX_REQUEST_PARAMETER_ITEMS = 256
+_MAX_REQUEST_INTEGER_BITS = 256
 _MAX_MANIFEST_BYTES = 16 * 1024
 _DEFAULT_MAX_RESPONSE_BYTES = 16 * 1024 * 1024
 _MAX_CONFIGURED_RESPONSE_BYTES = 1024 * 1024 * 1024
@@ -168,9 +169,13 @@ def request_summary_sha256(
             raise RawEvidenceError("datetime request values are not supported; use a business date")
         if isinstance(value, date):
             normalized[key] = value.isoformat()
-        elif value is None or isinstance(value, (str, int, bool)):
+        elif value is None or isinstance(value, (str, bool)):
             if isinstance(value, str) and len(value.encode("utf-8")) > 1024:
                 raise RawEvidenceError("request parameter value exceeds the bounded summary limit")
+            normalized[key] = value
+        elif isinstance(value, int):
+            if int.bit_length(value) > _MAX_REQUEST_INTEGER_BITS:
+                raise RawEvidenceError("integer request parameter exceeds its bit-length limit")
             normalized[key] = value
         elif isinstance(value, float):
             if not math.isfinite(value):

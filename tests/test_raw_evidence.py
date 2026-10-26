@@ -111,6 +111,12 @@ def test_request_summary_hash_is_canonical_allowlisted_and_never_persisted() -> 
     with pytest.raises(RawEvidenceError, match="bounded summary"):
         request_summary_sha256({"symbol": "x" * 1025}, allowed_fields={"symbol"})
     assert len(request_summary_sha256({"ratio": 1.25}, allowed_fields={"ratio"})) == 64
+    assert len(request_summary_sha256({"enabled": True}, allowed_fields={"enabled"})) == 64
+    assert len(request_summary_sha256({"limit": 1 << 255}, allowed_fields={"limit"})) == 64
+    huge_integer = 1 << 1_000_000
+    with pytest.raises(RawEvidenceError) as error:
+        request_summary_sha256({"limit": huge_integer}, allowed_fields={"limit"})
+    assert str(error.value) == "integer request parameter exceeds its bit-length limit"
     oversized_parameters = {f"p{index}": "x" * 1024 for index in range(40)}
     with pytest.raises(RawEvidenceError, match="size limit"):
         request_summary_sha256(oversized_parameters, allowed_fields=oversized_parameters)
