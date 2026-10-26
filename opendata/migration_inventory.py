@@ -5,6 +5,9 @@ It never imports or executes a discovered file, reads ``.env`` files, or opens a
 database connection. Every discovered Python file remains in the output even if
 its bytes cannot be decoded or its syntax cannot be parsed.
 
+By default it scans only ``src/backend/app/data_fetch/scripts`` beneath the
+provided source root. A custom script directory must be requested explicitly.
+
 An optional task map is JSON with either a top-level ``tasks`` list or a list
 itself. Each task has a non-empty ``task_id`` and either ``script_path`` or
 ``script_paths``. Paths are exact POSIX-style paths relative to ``source_root``.
@@ -181,10 +184,13 @@ class InventoryReport:
 
     def summary(self) -> dict[str, int]:
         """Return counts derived from this report's actual records."""
+        parse_error_count = sum(error.record_type == "parse_error" for error in self.errors)
+        filesystem_error_count = sum(error.record_type == "scan_error" for error in self.errors)
         return {
             "script_count": len(self.scripts),
-            "parse_error_count": sum(bool(item.parse_error) for item in self.scripts),
-            "filesystem_error_count": len(self.errors),
+            "parse_error_count": parse_error_count,
+            "filesystem_error_count": filesystem_error_count,
+            "total_error_count": len(self.errors),
             "mapping_issue_count": len(self.mapping_issues),
         }
 
@@ -854,6 +860,83 @@ def render_json(report: InventoryReport) -> str:
     return json.dumps(report.to_dict(), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
+def _absolute_path(path: Path) -> Path:
+    """Return a lexical absolute path without following symbolic links."""
+    return Path(os.path.abspath(path.expanduser()))
+
+
+def _is_within(path: Path, directory: Path) -> bool:
+    """Return whether a path is the directory itself or one of its descendants."""
+    return path == directory or directory in path.parents
+
+
+def _is_environment_name(path: Path) -> bool:
+    """Identify conventional .env file names, including suffixed variants."""
+    name = path.name.casefold()
+    return name.startswith(".env")
+
+
+def _validate_output_path(
+    output_path: Path,
+    *,
+    source_root: Path,
+    scripts_relative_path: Path,
+    task_map_path: Path | None,
+    overwrite: bool,
+) -> tuple[Path | None, str | None]:
+    """Reject report destinations that could replace scanner inputs.
+
+    Both lexical and resolved paths are checked so symlink aliases cannot evade
+    input protection. The returned path is resolved and is the path the CLI
+    should write, avoiding a second traversal through an output symlink.
+    """
+    try:
+        output_lexical = _absolute_path(output_path)
+        output_resolved = output_path.expanduser().resolve()
+        root_lexical = _absolute_path(source_root)
+        root_resolved = source_root.expanduser().resolve()
+        scripts_lexical = _absolute_path(root_lexical / scripts_relative_path)
+        scripts_resolved = (root_resolved / scripts_relative_path).resolve()
+        task_map_paths = (
+            (_absolute_path(task_map_path), task_map_path.expanduser().resolve())
+            if task_map_path is not None
+            else None
+        )
+    except (OSError, RuntimeError) as exc:
+        return None, f"cannot safely resolve output or input paths: {exc}"
+
+    if any(
+        _is_within(path, scripts_root)
+        for path in (output_lexical, output_resolved)
+        for scripts_root in (scripts_lexical, scripts_resolved)
+    ):
+        return None, "output path is inside the scanned script tree"
+
+    if task_map_paths is not None and any(
+        output_candidate == task_map_candidate
+        for output_candidate in (output_lexical, output_resolved)
+        for task_map_candidate in task_map_paths
+    ):
+        return None, "output path is the task-map input"
+
+    if any(
+        _is_environment_name(Path(part))
+        for output_candidate in (output_lexical, output_resolved)
+        for part in output_candidate.parts
+    ):
+        return None, "output path has a .env name"
+
+    output_exists = any(
+        candidate.exists() or candidate.is_symlink()
+        for candidate in (output_lexical, output_resolved)
+    )
+    if output_exists and not overwrite:
+        return None, "output file already exists; pass --overwrite to replace a report"
+    if output_exists and not output_resolved.is_file():
+        return None, "output path exists and is not a regular file"
+    return output_resolved, None
+
+
 def main(argv: list[str] | None = None) -> int:
     """Run the inventory CLI and return non-zero for incomplete evidence."""
     import argparse
@@ -870,12 +953,36 @@ def main(argv: list[str] | None = None) -> int:
         "--scripts-relative-path",
         type=Path,
         default=DEFAULT_SCRIPTS_RELATIVE_PATH,
-        help="script directory relative to --source-root",
+        help=(
+            "script directory relative to --source-root (default: "
+            "src/backend/app/data_fetch/scripts only)"
+        ),
     )
     parser.add_argument("--task-map", type=Path, help="optional JSON task-to-script map")
     parser.add_argument("--format", choices=("json", "csv"), default="json")
     parser.add_argument("--output", type=Path, help="output file; defaults to stdout")
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="replace an existing report file (scanner inputs are always protected)",
+    )
     args = parser.parse_args(argv)
+
+    if args.overwrite and args.output is None:
+        parser.error("--overwrite requires --output")
+
+    output_path: Path | None = None
+    if args.output is not None:
+        output_path, output_error = _validate_output_path(
+            args.output,
+            source_root=args.source_root,
+            scripts_relative_path=args.scripts_relative_path,
+            task_map_path=args.task_map,
+            overwrite=args.overwrite,
+        )
+        if output_error is not None:
+            print(f"unsafe output path: {output_error}", file=sys.stderr)
+            return 2
 
     report = build_inventory(
         args.source_root,
@@ -884,15 +991,15 @@ def main(argv: list[str] | None = None) -> int:
     )
     if args.format == "json":
         rendered = render_json(report)
-        if args.output:
-            args.output.parent.mkdir(parents=True, exist_ok=True)
-            args.output.write_text(rendered, encoding="utf-8")
+        if output_path is not None:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(rendered, encoding="utf-8")
         else:
             sys.stdout.write(rendered)
     else:
-        if args.output:
-            args.output.parent.mkdir(parents=True, exist_ok=True)
-            with args.output.open("w", encoding="utf-8", newline="") as output:
+        if output_path is not None:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            with output_path.open("w", encoding="utf-8", newline="") as output:
                 write_csv(report, output)
         else:
             write_csv(report, sys.stdout)

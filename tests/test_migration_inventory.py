@@ -132,6 +132,8 @@ def test_parse_error_is_a_hashed_script_record_and_cli_returns_nonzero(tmp_path:
     assert exit_code == 1
     assert payload["summary"]["script_count"] == 1
     assert payload["summary"]["parse_error_count"] == 1
+    assert payload["summary"]["filesystem_error_count"] == 0
+    assert payload["summary"]["total_error_count"] == 1
     assert len(payload["scripts"]) == 1
     assert payload["scripts"][0]["source_sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
     assert "syntax error at line 1" in payload["scripts"][0]["parse_error"]
@@ -188,6 +190,144 @@ def test_task_map_rejects_parent_traversal(tmp_path: Path) -> None:
     assert any(item.issue == "task_script_path_invalid" for item in report.mapping_issues)
     assert report.scripts[0].mapped_task_ids == []
     assert report.scripts[0].mapping_status == "UNMAPPED_ENTRYPOINT"
+
+
+def test_cli_output_cannot_overwrite_scanned_source_or_symlink_alias(tmp_path: Path) -> None:
+    """Source bytes are protected even when output is an alias to a scanned file."""
+    source_file = _write_script(tmp_path, "stocks/daily/entry.py", "def run():\n    return []\n")
+    original_source = source_file.read_bytes()
+
+    direct_exit = main(
+        [
+            "--source-root",
+            str(tmp_path),
+            "--output",
+            str(source_file),
+            "--overwrite",
+        ]
+    )
+    assert direct_exit == 2
+    assert source_file.read_bytes() == original_source
+
+    symlink_output = tmp_path / "reports" / "alias.json"
+    symlink_output.parent.mkdir()
+    symlink_output.symlink_to(source_file)
+    alias_exit = main(
+        [
+            "--source-root",
+            str(tmp_path),
+            "--output",
+            str(symlink_output),
+            "--overwrite",
+        ]
+    )
+    assert alias_exit == 2
+    assert source_file.read_bytes() == original_source
+
+
+def test_cli_output_cannot_overwrite_task_map_or_env_named_path(tmp_path: Path) -> None:
+    """Task-map and environment inputs remain byte-identical after rejected writes."""
+    _write_script(tmp_path, "stocks/daily/entry.py", "def run():\n    return []\n")
+    task_map = tmp_path / "task-map.json"
+    task_map.write_text('{"tasks": []}\n', encoding="utf-8")
+    original_task_map = task_map.read_bytes()
+
+    task_map_exit = main(
+        [
+            "--source-root",
+            str(tmp_path),
+            "--task-map",
+            str(task_map),
+            "--output",
+            str(task_map),
+            "--overwrite",
+        ]
+    )
+    assert task_map_exit == 2
+    assert task_map.read_bytes() == original_task_map
+
+    task_map_alias = tmp_path / "reports" / "task-map-alias.json"
+    task_map_alias.parent.mkdir()
+    task_map_alias.symlink_to(task_map)
+    task_map_alias_exit = main(
+        [
+            "--source-root",
+            str(tmp_path),
+            "--task-map",
+            str(task_map),
+            "--output",
+            str(task_map_alias),
+            "--overwrite",
+        ]
+    )
+    assert task_map_alias_exit == 2
+    assert task_map.read_bytes() == original_task_map
+
+    env_file = tmp_path / ".env.local"
+    env_file.write_text("SECRET=preserve-me\n", encoding="utf-8")
+    original_env_file = env_file.read_bytes()
+    env_exit = main(
+        [
+            "--source-root",
+            str(tmp_path),
+            "--output",
+            str(env_file),
+            "--overwrite",
+        ]
+    )
+    assert env_exit == 2
+    assert env_file.read_bytes() == original_env_file
+
+    env_alias = tmp_path / "reports" / "env-alias.json"
+    env_alias.symlink_to(env_file)
+    env_alias_exit = main(
+        [
+            "--source-root",
+            str(tmp_path),
+            "--output",
+            str(env_alias),
+            "--overwrite",
+        ]
+    )
+    assert env_alias_exit == 2
+    assert env_file.read_bytes() == original_env_file
+
+
+def test_cli_requires_overwrite_for_existing_report(tmp_path: Path) -> None:
+    """Existing report files are preserved unless explicit overwrite is requested."""
+    _write_script(tmp_path, "stocks/daily/entry.py", "def run():\n    return []\n")
+    output_path = tmp_path / "reports" / "inventory.json"
+    output_path.parent.mkdir()
+    output_path.write_bytes(b"existing report\n")
+
+    rejected_exit = main(["--source-root", str(tmp_path), "--output", str(output_path)])
+    assert rejected_exit == 2
+    assert output_path.read_bytes() == b"existing report\n"
+
+    accepted_exit = main(
+        [
+            "--source-root",
+            str(tmp_path),
+            "--output",
+            str(output_path),
+            "--overwrite",
+        ]
+    )
+    assert accepted_exit == 0
+    assert json.loads(output_path.read_text(encoding="utf-8"))["summary"]["script_count"] == 1
+
+
+def test_cli_summary_counts_scan_errors_separately_from_parse_errors(tmp_path: Path) -> None:
+    """A missing directory contributes only to filesystem error counts."""
+    output_path = tmp_path / "inventory.json"
+
+    exit_code = main(["--source-root", str(tmp_path), "--output", str(output_path)])
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert exit_code == 1
+    assert payload["summary"]["parse_error_count"] == 0
+    assert payload["summary"]["filesystem_error_count"] == 1
+    assert payload["summary"]["total_error_count"] == 1
 
 
 def test_environment_files_are_refused_as_task_map_input(tmp_path: Path) -> None:
