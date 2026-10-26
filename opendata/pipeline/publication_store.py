@@ -54,10 +54,16 @@ MAX_IDEMPOTENCY_KEY_LENGTH = 256
 MAX_BUSINESS_KEY_LENGTH = 512
 MAX_PAGE_SIZE = 1_000
 MAX_PUBLICATION_RECORDS = 100_000
+MAX_SNAPSHOT_RECORDS = 100_000
 MAX_RECORD_BYTES = 256 * 1024
 MAX_BATCH_BYTES = 64 * 1024 * 1024
 MAX_METADATA_BYTES = 256 * 1024
+MAX_PAGE_BYTES = 8 * 1024 * 1024
 MAX_CURSOR_BYTES = 8_192
+_PAGE_ENVELOPE_BYTES = 16 * 1024
+_PAGE_ROW_OVERHEAD_BYTES = 1_024
+_READ_YIELD_PER = 16
+_HASH_YIELD_PER = 256
 MIN_SNAPSHOT_TTL = timedelta(seconds=1)
 MAX_SNAPSHOT_TTL = timedelta(days=7)
 _UTC = timezone.utc
@@ -321,6 +327,14 @@ class SnapshotError(ValueError):
 
 class SnapshotExpiredError(SnapshotError):
     """Raised when a snapshot or cursor has passed its persisted expiry time."""
+
+
+class PageSizeLimitError(ValueError):
+    """Raised instead of returning a partial page that exceeds the response budget."""
+
+
+class SnapshotSizeLimitError(ValueError):
+    """Raised when a fixed snapshot would require hashing too many visible rows."""
 
 
 def publish_in_connection(
@@ -778,11 +792,27 @@ class PublicationStore:
             ranked.c.business_date,
             ranked.c.business_key,
         ).limit(snapshot.page_size + 1)
+        records_list: list[PublishedRecord] = []
+        response_bytes = _PAGE_ENVELOPE_BYTES
+        has_more = False
         with self._engine.connect() as connection:
-            rows = connection.execute(statement).mappings().all()
-        has_more = len(rows) > snapshot.page_size
-        visible_rows = rows[: snapshot.page_size]
-        records = tuple(_published_record_from_row(row) for row in visible_rows)
+            result = connection.execute(
+                statement.execution_options(stream_results=True, yield_per=_READ_YIELD_PER)
+            ).mappings()
+            try:
+                for row in result:
+                    if len(records_list) >= snapshot.page_size:
+                        has_more = True
+                        break
+                    response_bytes += _published_record_response_size(row)
+                    if response_bytes > MAX_PAGE_BYTES:
+                        raise PageSizeLimitError(
+                            f"page exceeds the {MAX_PAGE_BYTES:,}-byte response limit"
+                        )
+                    records_list.append(_published_record_from_row(row))
+            finally:
+                result.close()
+        records = tuple(records_list)
         next_cursor = None
         if has_more and records:
             last = records[-1]
@@ -981,17 +1011,70 @@ def _snapshot_content_hash(
     digest.update(_canonical_json(header).encode("utf-8"))
     digest.update(b"\n")
     count = 0
-    for row in connection.execute(statement).mappings():
-        item = {
-            "business_key": row["business_key"],
-            "revision": row["revision"],
-            "business_date": row["business_date"].isoformat() if row["business_date"] else None,
-            "record_hash": row["record_hash"],
-        }
-        digest.update(_canonical_json(item).encode("utf-8"))
-        digest.update(b"\n")
-        count += 1
+    result = connection.execute(
+        statement.execution_options(stream_results=True, yield_per=_HASH_YIELD_PER)
+    ).mappings()
+    try:
+        for row in result:
+            if count >= MAX_SNAPSHOT_RECORDS:
+                raise SnapshotSizeLimitError(
+                    f"snapshot exceeds the {MAX_SNAPSHOT_RECORDS:,}-record limit"
+                )
+            item = {
+                "business_key": row["business_key"],
+                "revision": row["revision"],
+                "business_date": (
+                    row["business_date"].isoformat() if row["business_date"] else None
+                ),
+                "record_hash": row["record_hash"],
+            }
+            digest.update(_canonical_json(item).encode("utf-8"))
+            digest.update(b"\n")
+            count += 1
+    finally:
+        result.close()
     return digest.hexdigest(), count
+
+
+def _published_record_response_size(row: RowMapping) -> int:
+    """Conservatively estimate one serialized API row without decoding its payload."""
+    record_json = row["record_json"]
+    if not isinstance(record_json, str):
+        raise ValueError("stored record_json must be text")
+    payload_bytes = _json_text_ascii_size_upper_bound(record_json)
+    metadata = {
+        "dataset_id": row["dataset_id"],
+        "business_key": row["business_key"],
+        "revision": row["revision"],
+        "publication_id": row["publication_id"],
+        "publication_sequence": row["publication_sequence"],
+        "business_date": row["business_date"].isoformat() if row["business_date"] else None,
+        "event_at": _timestamp_output(row["event_at"]),
+        "observed_at": _timestamp_output(row["observed_at"]),
+        "source_published_at": _timestamp_output(row["source_published_at"]),
+        "available_at": _timestamp_output(row["available_at"]),
+        "payload": None,
+        "record_hash": row["record_hash"],
+    }
+    metadata_json = _canonical_json(metadata)
+    placeholder = '"payload":null'
+    if placeholder not in metadata_json:
+        raise ValueError("could not estimate serialized record metadata")
+    metadata_bytes = (
+        _json_text_ascii_size_upper_bound(metadata_json) - len(placeholder) + len('"payload":')
+    )
+    return payload_bytes + metadata_bytes + _PAGE_ROW_OVERHEAD_BYTES
+
+
+def _json_text_ascii_size_upper_bound(value: str) -> int:
+    """Bound compact JSON bytes even if an API encoder escapes non-ASCII text."""
+    return sum(1 if ord(char) < 128 else 6 if ord(char) <= 0xFFFF else 12 for char in value)
+
+
+def _timestamp_output(value: str | None) -> str | None:
+    """Match the public datetime ISO representation used by JSON encoders."""
+    parsed = _parse_timestamp(value)
+    return parsed.isoformat() if parsed is not None else None
 
 
 def _snapshot_selection_hash(

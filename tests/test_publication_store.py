@@ -13,22 +13,27 @@ from threading import Barrier
 from typing import TYPE_CHECKING
 
 import pytest
-from sqlalchemy import create_engine, func, select
+from sqlalchemy import create_engine, event, func, select
 from sqlalchemy.dialects.mysql import dialect as mysql_dialect
+from sqlalchemy.engine.result import MappingResult
 from sqlalchemy.schema import CreateTable
 
+from opendata.pipeline import publication_store
 from opendata.pipeline.publication_store import (
+    MAX_PAGE_BYTES,
     MAX_SNAPSHOT_TTL,
     PUBLICATION_HEADS,
     PUBLICATION_METADATA,
     PUBLICATIONS,
     PUBLISHED_FACT_VERSIONS,
     SNAPSHOTS,
+    PageSizeLimitError,
     PublicationConflictError,
     PublicationStore,
     PublishedRecordInput,
     SnapshotError,
     SnapshotExpiredError,
+    SnapshotSizeLimitError,
     publish_in_connection,
 )
 
@@ -420,6 +425,79 @@ def test_empty_batches_and_read_only_discovery_contracts(engine: Engine) -> None
     assert store.list_publications("equity.daily", before_sequence=1) == ()
     assert store.get_publication("0" * 32) is None
     assert store.get_snapshot("0" * 32) is None
+
+
+def test_read_page_streams_and_rejects_over_budget_without_a_partial_page(
+    engine: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Large pages stop at the response budget and release their streaming connection."""
+    store = make_store(engine)
+    payload = {"blob": "x" * (70 * 1024)}
+    rows = [
+        PublishedRecordInput(
+            business_key=f"large:{index:04d}",
+            business_date=date(2026, 10, 1),
+            payload=payload,
+        )
+        for index in range(140)
+    ]
+    publication = publish(store, "large-page", rows)
+    snapshot = store.create_snapshot(
+        "equity.daily", publication_id=publication.publication_id, page_size=1_000
+    )
+    assert snapshot.record_count == len(rows)
+    assert MAX_PAGE_BYTES == 8 * 1024 * 1024
+
+    consumed = 0
+    original_iter = MappingResult.__iter__
+
+    def tracked_iter(result: MappingResult):
+        nonlocal consumed
+        for row in original_iter(result):
+            consumed += 1
+            yield row
+
+    def reject_all(_result: MappingResult):
+        raise AssertionError("read_page must stream rows rather than materialize result.all()")
+
+    monkeypatch.setattr(MappingResult, "__iter__", tracked_iter)
+    monkeypatch.setattr(MappingResult, "all", reject_all)
+    pool_events = {"checkout": 0, "checkin": 0}
+
+    def on_checkout(*_args: object) -> None:
+        pool_events["checkout"] += 1
+
+    def on_checkin(*_args: object) -> None:
+        pool_events["checkin"] += 1
+
+    event.listen(engine, "checkout", on_checkout)
+    event.listen(engine, "checkin", on_checkin)
+    try:
+        with pytest.raises(PageSizeLimitError, match="8,388,608-byte response limit"):
+            store.read_page(snapshot.snapshot_id)
+        assert 0 < consumed < len(rows)
+        assert pool_events["checkout"] == pool_events["checkin"]
+    finally:
+        event.remove(engine, "checkout", on_checkout)
+        event.remove(engine, "checkin", on_checkin)
+
+
+def test_snapshot_hash_has_a_visible_row_limit_and_rolls_back_snapshot(
+    engine: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Snapshot hashing refuses a scope beyond its explicit work bound."""
+    store = make_store(engine)
+    publish(
+        store,
+        "snapshot-too-large",
+        [record(f"60000{index}.SH", date(2026, 10, 23), 10.0 + index) for index in range(3)],
+    )
+    monkeypatch.setattr(publication_store, "MAX_SNAPSHOT_RECORDS", 2)
+
+    with pytest.raises(SnapshotSizeLimitError, match="2-record limit"):
+        store.create_snapshot("equity.daily")
+    with engine.connect() as connection:
+        assert connection.execute(select(func.count()).select_from(SNAPSHOTS)).scalar_one() == 0
 
 
 def test_null_business_dates_page_with_nulls_last_cursor(engine: Engine) -> None:
