@@ -240,7 +240,7 @@ def _parse_entries(raw_rows: list[object]) -> tuple[SinaFzbEntry, ...]:
             _raise_wire("invalid_value")
         fingerprint = _canonical_row_fingerprint(row)
         if item_field == "":
-            marker = _group_marker(
+            _group_marker(
                 row,
                 ordinal=ordinal,
                 item_title=item_title,
@@ -250,9 +250,7 @@ def _parse_entries(raw_rows: list[object]) -> tuple[SinaFzbEntry, ...]:
                 positions=marker_positions,
                 fingerprints=marker_fingerprints,
             )
-            if marker is not None:
-                continue
-            _raise_wire("invalid_value")
+            continue
         if not item_field.strip():
             _raise_wire("invalid_value")
 
@@ -296,7 +294,7 @@ def _group_marker(
     entries: list[SinaFzbEntry],
     positions: dict[SinaFzbGroupNo, int],
     fingerprints: dict[SinaFzbGroupNo, bytes],
-) -> SinaFzbGroupMarker | None:
+) -> None:
     """Parse only exact recorded source group-heading rows."""
     if item_value != "":
         _raise_wire("invalid_value")
@@ -333,7 +331,7 @@ def _group_marker(
             previous,
             source_ordinals=(*previous.source_ordinals, ordinal),
         )
-        return None
+        return
 
     positions[group_number] = len(entries)
     fingerprints[group_number] = fingerprint
@@ -346,7 +344,6 @@ def _group_marker(
         source_metadata=source_metadata,
     )
     entries.append(marker)
-    return marker
 
 
 def _value_state(value: str | None) -> SinaFzbValueState:
