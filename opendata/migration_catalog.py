@@ -19,7 +19,7 @@ import tokenize
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-CATALOG_SCHEMA_VERSION = "1.0"
+CATALOG_SCHEMA_VERSION = "1.1"
 DEFAULT_LEGACY_ROOT = Path("/home/yun/Documents/ai-for-investor")
 DEFAULT_OPENDATA_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BASELINE_RELATIVE = Path(
@@ -390,6 +390,20 @@ class MigrationCatalog:
             },
             "errors": self.errors,
             "limitations": self.limitations,
+            "status_definitions": {
+                "READY_FOR_ADAPTER": (
+                    "Static endpoint and parameter-name compatibility candidate only; "
+                    "runtime and dataset migration remain unverified."
+                ),
+                "MISSING_PROVIDER": (
+                    "The source function is declared in the local vendored export catalog, "
+                    "but no registered OpenData Fetcher was statically matched."
+                ),
+                "REQUIRES_MANUAL": (
+                    "Static source, runtime-parameter, sink, parse, or metadata evidence is "
+                    "incomplete or needs semantic review."
+                ),
+            },
             "verification_notice": (
                 "READY_FOR_ADAPTER means only that static endpoint and parameter names appear "
                 "compatible for that endpoint. It does not mean a script, task, dataset, source, "
@@ -409,16 +423,6 @@ def _hash_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _source_text(path: Path) -> tuple[str | None, str]:
-    """Decode Python source bytes without importing or executing the module."""
-    try:
-        raw = path.read_bytes()
-        encoding, _ = tokenize.detect_encoding(io.BytesIO(raw).readline)
-        return raw.decode(encoding), ""
-    except (OSError, SyntaxError, UnicodeDecodeError, LookupError) as exc:
-        return None, f"{exc.__class__.__name__}: {exc}"
-
-
 def _safe_relative(path: Path, root: Path) -> str:
     """Render one path relative to its declared repository root."""
     return path.relative_to(root).as_posix()
@@ -427,14 +431,6 @@ def _safe_relative(path: Path, root: Path) -> str:
 def _constant(node: ast.AST | None) -> str:
     """Return a string literal from an AST node, or an empty string."""
     return node.value if isinstance(node, ast.Constant) and isinstance(node.value, str) else ""
-
-
-def _literal_names(node: ast.AST | None) -> set[str]:
-    """Collect non-secret argument names that are statically visible in a call."""
-    names: set[str] = set()
-    if isinstance(node, ast.Call):
-        names.update(keyword.arg for keyword in node.keywords if keyword.arg)
-    return names
 
 
 def _load_baseline(path: Path | None) -> tuple[dict[str, str], str, int | None]:
@@ -962,8 +958,12 @@ def _provider_crosswalk(
         if not call.target_models and call.classification != "PROVIDER_INTERNAL_OR_TRANSPORT_HELPER"
     ]
     if unmatched_endpoints:
-        record.manual_reasons.append("no_registered_opendata_fetcher_for_endpoint")
-        record.status = "MISSING_PROVIDER"
+        if all(call.vendor_exported for call in unmatched_endpoints):
+            record.manual_reasons.append("no_registered_opendata_fetcher_for_endpoint")
+            record.status = "MISSING_PROVIDER"
+        else:
+            record.manual_reasons.append("source_endpoint_not_confirmed_in_vendor_export_catalog")
+            record.status = "REQUIRES_MANUAL"
         return
     has_internal_helpers = any(
         call.classification == "PROVIDER_INTERNAL_OR_TRANSPORT_HELPER" for call in record.calls
