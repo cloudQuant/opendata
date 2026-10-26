@@ -88,6 +88,7 @@ def record(
     close: float,
     *,
     observed_at: datetime = NOW,
+    event_at: datetime | None = None,
 ) -> PublishedRecordInput:
     """Build one record with deliberately separate business and observed time."""
     return PublishedRecordInput(
@@ -96,6 +97,7 @@ def record(
         observed_at=observed_at,
         source_published_at=observed_at - timedelta(minutes=1),
         available_at=observed_at + timedelta(milliseconds=500),
+        event_at=event_at,
         payload={"symbol": symbol, "close": close, "unit": "CNY/share"},
     )
 
@@ -220,7 +222,8 @@ def test_cursor_rejects_tampering_other_snapshot_and_other_scope(engine: Engine)
     page = store.read_page(snapshot.snapshot_id)
     assert page.next_cursor is not None
     with pytest.raises(SnapshotError, match="signature"):
-        store.read_page(snapshot.snapshot_id, cursor=page.next_cursor[:-1] + "A")
+        replacement = "A" if page.next_cursor[-1] != "A" else "B"
+        store.read_page(snapshot.snapshot_id, cursor=page.next_cursor[:-1] + replacement)
     another = store.create_snapshot("equity.daily", page_size=1)
     with pytest.raises(SnapshotError, match="different snapshot"):
         store.read_page(another.snapshot_id, cursor=page.next_cursor)
@@ -320,8 +323,19 @@ def test_list_apis_and_time_dimensions_are_explicit(engine: Engine) -> None:
     """Catalog reads expose platform publish time distinct from source observation."""
     store = make_store(engine)
     observed = datetime(2026, 10, 23, 15, 0, tzinfo=timezone(timedelta(hours=8)))
+    event_at = datetime(2026, 10, 23, 14, 58, tzinfo=timezone(timedelta(hours=8)))
     publication = publish(
-        store, "catalog", [record("600000.SH", date(2026, 10, 23), 12.4, observed_at=observed)]
+        store,
+        "catalog",
+        [
+            record(
+                "600000.SH",
+                date(2026, 10, 23),
+                12.4,
+                observed_at=observed,
+                event_at=event_at,
+            )
+        ],
     )
     datasets = store.list_datasets()
     publications = store.list_publications("equity.daily")
@@ -333,6 +347,7 @@ def test_list_apis_and_time_dimensions_are_explicit(engine: Engine) -> None:
     assert store.get_publication(publication.publication_id) == publication
     assert store.get_snapshot(snapshot.snapshot_id) == snapshot
     assert row.business_date == date(2026, 10, 23)
+    assert row.event_at == event_at.astimezone(timezone.utc)
     assert row.observed_at == observed.astimezone(timezone.utc)
     assert snapshot.as_of == publication.published_at
     assert snapshot.as_of != row.observed_at

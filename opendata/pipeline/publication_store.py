@@ -148,6 +148,7 @@ PUBLISHED_FACT_VERSIONS = Table(
     ),
     Column("publication_sequence", BigInteger, nullable=False),
     Column("business_date", Date, nullable=True),
+    Column("event_at", String(40), nullable=True),
     Column("observed_at", String(40), nullable=True),
     Column("source_published_at", String(40), nullable=True),
     Column("available_at", String(40), nullable=True),
@@ -177,11 +178,12 @@ SNAPSHOTS = Table(
     Column(
         "publication_id", String(32), ForeignKey("od_publications.publication_id"), nullable=False
     ),
+    Column("schema_version", String(64), nullable=False),
     Column("publication_sequence", BigInteger, nullable=False),
     Column("start_date", Date, nullable=True),
     Column("end_date", Date, nullable=True),
     Column("page_size", Integer, nullable=False),
-    Column("access_scope", String(MAX_ID_LENGTH), nullable=False),
+    Column("access_scope", _key_type(MAX_ID_LENGTH), nullable=False),
     Column("selection_sha256", String(64), nullable=False),
     Column("content_hash", String(64), nullable=False),
     Column("record_count", BigInteger, nullable=False),
@@ -199,8 +201,8 @@ class PublishedRecordInput:
     """One complete replacement value for a dataset business key.
 
     ``business_date`` is a date bucket and cannot be a datetime. The three
-    timestamps preserve independent source-observation and platform-availability
-    semantics; none is inferred from another.
+    timestamps preserve independent event, source-publication, observation, and
+    platform-availability semantics; none is inferred from another.
     """
 
     business_key: str
@@ -209,6 +211,7 @@ class PublishedRecordInput:
     observed_at: datetime | None = None
     source_published_at: datetime | None = None
     available_at: datetime | None = None
+    event_at: datetime | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -257,6 +260,7 @@ class SnapshotRecord:
     snapshot_id: str
     dataset_id: str
     publication_id: str
+    schema_version: str
     publication_sequence: int
     start_date: date | None
     end_date: date | None
@@ -290,6 +294,7 @@ class PublishedRecord:
     publication_id: str
     publication_sequence: int
     business_date: date | None
+    event_at: datetime | None
     observed_at: datetime | None
     source_published_at: datetime | None
     available_at: datetime | None
@@ -462,10 +467,12 @@ def publish_in_connection(
     except IntegrityError:
         raced = (
             connection.execute(
-                select(PUBLICATIONS).where(
+                select(PUBLICATIONS)
+                .where(
                     PUBLICATIONS.c.dataset_id == dataset,
                     PUBLICATIONS.c.idempotency_key == request_key,
                 )
+                .with_for_update()
             )
             .mappings()
             .first()
@@ -690,6 +697,7 @@ class PublicationStore:
                     snapshot_id=snapshot_id,
                     dataset_id=dataset,
                     publication_id=publication.publication_id,
+                    schema_version=publication.schema_version,
                     publication_sequence=publication.sequence,
                     start_date=start,
                     end_date=end,
@@ -790,6 +798,7 @@ class PublicationStore:
             "snapshot_id": snapshot.snapshot_id,
             "dataset_id": snapshot.dataset_id,
             "publication_id": snapshot.publication_id,
+            "schema_version": snapshot.schema_version,
             "publication_sequence": snapshot.publication_sequence,
             "start_date": snapshot.start_date.isoformat() if snapshot.start_date else None,
             "end_date": snapshot.end_date.isoformat() if snapshot.end_date else None,
@@ -836,6 +845,7 @@ class PublicationStore:
             "snapshot_id": snapshot.snapshot_id,
             "dataset_id": snapshot.dataset_id,
             "publication_id": snapshot.publication_id,
+            "schema_version": snapshot.schema_version,
             "publication_sequence": snapshot.publication_sequence,
             "start_date": snapshot.start_date.isoformat() if snapshot.start_date else None,
             "end_date": snapshot.end_date.isoformat() if snapshot.end_date else None,
@@ -871,6 +881,7 @@ def _ranked_visible_facts(snapshot: SnapshotRecord) -> Subquery:
             PUBLISHED_FACT_VERSIONS.c.publication_id,
             PUBLISHED_FACT_VERSIONS.c.publication_sequence,
             PUBLISHED_FACT_VERSIONS.c.business_date,
+            PUBLISHED_FACT_VERSIONS.c.event_at,
             PUBLISHED_FACT_VERSIONS.c.observed_at,
             PUBLISHED_FACT_VERSIONS.c.source_published_at,
             PUBLISHED_FACT_VERSIONS.c.available_at,
@@ -912,6 +923,7 @@ def _snapshot_content_hash(
         snapshot_id="0" * 32,
         dataset_id=dataset_id,
         publication_id=publication.publication_id,
+        schema_version=publication.schema_version,
         publication_sequence=publication.sequence,
         start_date=start,
         end_date=end,
@@ -1067,6 +1079,7 @@ def _append_changed_revision(
             publication_id=publication_id,
             publication_sequence=sequence,
             business_date=record["business_date"],
+            event_at=record["event_at"],
             observed_at=record["observed_at"],
             source_published_at=record["source_published_at"],
             available_at=record["available_at"],
@@ -1109,9 +1122,11 @@ def _normalize_records(records: Iterable[PublishedRecordInput]) -> list[dict[str
             item.source_published_at, f"records[{index}].source_published_at"
         )
         available_at = _timestamp(item.available_at, f"records[{index}].available_at")
+        event_at = _timestamp(item.event_at, f"records[{index}].event_at")
         canonical = {
             "business_key": business_key,
             "business_date": item.business_date.isoformat() if item.business_date else None,
+            "event_at": event_at,
             "observed_at": observed_at,
             "source_published_at": source_published_at,
             "available_at": available_at,
@@ -1128,6 +1143,7 @@ def _normalize_records(records: Iterable[PublishedRecordInput]) -> list[dict[str
             {
                 "business_key": business_key,
                 "business_date": item.business_date,
+                "event_at": event_at,
                 "observed_at": observed_at,
                 "source_published_at": source_published_at,
                 "available_at": available_at,
@@ -1249,6 +1265,7 @@ def _snapshot_from_row(row: RowMapping) -> SnapshotRecord:
         snapshot_id=row["snapshot_id"],
         dataset_id=row["dataset_id"],
         publication_id=row["publication_id"],
+        schema_version=row["schema_version"],
         publication_sequence=row["publication_sequence"],
         start_date=row["start_date"],
         end_date=row["end_date"],
@@ -1272,6 +1289,7 @@ def _published_record_from_row(row: RowMapping) -> PublishedRecord:
         publication_id=row["publication_id"],
         publication_sequence=row["publication_sequence"],
         business_date=row["business_date"],
+        event_at=_parse_timestamp(row["event_at"]),
         observed_at=_parse_timestamp(row["observed_at"]),
         source_published_at=_parse_timestamp(row["source_published_at"]),
         available_at=_parse_timestamp(row["available_at"]),
