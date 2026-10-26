@@ -10,6 +10,7 @@ from __future__ import annotations
 import io
 import json
 from datetime import date, datetime, timedelta, timezone
+from threading import Event, Thread
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
@@ -18,8 +19,16 @@ import pytest
 from sqlalchemy import Column, Integer, MetaData, String, Table, create_engine, event, select
 
 from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
-from opendata.pipeline.reviewed_runtime import ReviewedRuntime, build_reviewed_runtime
-from opendata.pipeline.reviewed_worker import ProcessFetchHandler, create_worker_engine
+from opendata.pipeline.reviewed_runtime import (
+    ReviewedRuntime,
+    _WorkerBinding,
+    build_reviewed_runtime,
+)
+from opendata.pipeline.reviewed_worker import (
+    PersistentRunWorker,
+    ProcessFetchHandler,
+    create_worker_engine,
+)
 from opendata.pipeline.run_dispatch import (
     APSchedulerDispatchError,
     ReviewedTaskCatalog,
@@ -34,7 +43,12 @@ from opendata.pipeline.run_service import (
     ReviewedJob,
     RunExecutionContext,
 )
-from opendata.pipeline.runtime_roles import RuntimeRole, RuntimeRolePlan, build_runtime_role_plan
+from opendata.pipeline.runtime_roles import (
+    RuntimeRole,
+    RuntimeRolePlan,
+    WorkerOnceSPI,
+    build_runtime_role_plan,
+)
 from opendata.reviewed_cli import ReviewedCLIApplication, run_reviewed_cli
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -43,6 +57,8 @@ if TYPE_CHECKING:  # pragma: no cover
 
     from pydantic import JsonValue
     from sqlalchemy.engine import Connection, Engine
+
+    from opendata.pipeline.run_service import RunOutcome
 
 DATASET_ID = "fixture-reviewed-runtime"
 JOB_ID = "fixture-reviewed-runtime-daily"
@@ -200,12 +216,12 @@ def _publish(
     )
 
 
-def _catalog() -> ReviewedTaskCatalog:
+def _catalog(dataset_id: str = DATASET_ID) -> ReviewedTaskCatalog:
     """Create one explicitly reviewed synthetic process-backed job."""
     task = TaskDefinition(
         job_id=JOB_ID,
         version="v1",
-        dataset_id=DATASET_ID,
+        dataset_id=dataset_id,
         provider="fixture-provider",
         model="fixture-model-v1",
         schedule=ScheduleMetadata(kind="cron", expression="0 16 * * mon-fri"),
@@ -281,6 +297,71 @@ def _worker_application(
     )
 
 
+def _bind_test_worker(
+    runtime: ReviewedRuntime,
+    worker: PersistentRunWorker,
+) -> WorkerOnceSPI:
+    """Bind a test worker SPI to a runtime without opening its Engine."""
+    binding = _WorkerBinding(
+        engine=runtime._lifecycle.metadata_engine,
+        worker_id=WORKER_ID,
+        lease_ttl=LEASE_TTL,
+        heartbeat_interval_seconds=HEARTBEAT_INTERVAL_SECONDS,
+        database_io_timeout_seconds=DATABASE_IO_TIMEOUT_SECONDS,
+        worker=worker,
+    )
+    runtime._lifecycle.worker = binding
+    return runtime._worker_once(binding)
+
+
+class _CallbackClosingWorker(PersistentRunWorker):
+    """Stub the upstream worker boundary and close from its run callback."""
+
+    def __init__(
+        self,
+        runtime: ReviewedRuntime,
+        worker_once: list[WorkerOnceSPI],
+        callback_finished: Event,
+        reentry_rejected: Event,
+    ) -> None:
+        """Bind only callback state; the test never creates worker internals."""
+        self.runtime = runtime
+        self.worker_once = worker_once
+        self.callback_finished = callback_finished
+        self.reentry_rejected = reentry_rejected
+
+    def run_once(self) -> RunOutcome | None:
+        """Reject nested work, then close without holding a worker lock."""
+        try:
+            self.worker_once[0](WORKER_ID, LEASE_TTL)
+        except RuntimeError as error:
+            if str(error) == "reviewed runtime worker is already running":
+                self.reentry_rejected.set()
+        self.runtime.close()
+        self.callback_finished.set()
+        return None
+
+
+class _BlockingWorker(PersistentRunWorker):
+    """Stub the upstream worker boundary while a run is in flight."""
+
+    def __init__(self, entered: Event, release: Event, finished: Event) -> None:
+        """Bind bounded synchronization events without opening an Engine."""
+        self.entered = entered
+        self.release = release
+        self.finished = finished
+
+    def run_once(self) -> RunOutcome | None:
+        """Expose one bounded in-flight interval to the lifecycle test."""
+        self.entered.set()
+        try:
+            if not self.release.wait(timeout=5.0):
+                raise TimeoutError("test worker release was not signalled")
+        finally:
+            self.finished.set()
+        return None
+
+
 def test_reviewed_plan_is_rejected_before_engine_access(
     tmp_path: Path,
     resources: _TestResources,
@@ -311,6 +392,27 @@ def test_factory_does_not_create_schema_or_connect(
     event.listen(engine, "connect", lambda _connection, _record: connection_attempts.append(True))
     runtime = resources.runtime(engine, ReviewedTaskCatalog([]), _plan("api"))
     assert isinstance(runtime.ledger, RunLedger)
+    assert connection_attempts == []
+    assert not database_path.exists()
+
+
+def test_writer_catalog_must_match_declared_sinks_before_engine_access(
+    tmp_path: Path,
+    resources: _TestResources,
+) -> None:
+    """Reject an out-of-scope writer catalog before ledger or worker access."""
+    database_path = tmp_path / "sink-mismatch.sqlite"
+    engine = resources.sqlite_engine(database_path)
+    connection_attempts: list[bool] = []
+    event.listen(engine, "connect", lambda _connection, _record: connection_attempts.append(True))
+
+    with pytest.raises(ValueError, match="sink ids not declared"):
+        build_reviewed_runtime(
+            metadata_engine=engine,
+            catalog=_catalog("unapproved-runtime-dataset"),
+            runtime_plan=_plan("worker"),
+        )
+
     assert connection_attempts == []
     assert not database_path.exists()
 
@@ -583,6 +685,130 @@ def test_worker_engine_must_be_the_exact_ledger_engine(
             database_io_timeout_seconds=DATABASE_IO_TIMEOUT_SECONDS,
         )
     assert connection_attempts == []
+
+
+def test_worker_callback_can_close_runtime_and_reject_reentry(
+    tmp_path: Path,
+    resources: _TestResources,
+) -> None:
+    """Reject callback reentry and close without holding the lifecycle lock."""
+    engine = resources.sqlite_engine(tmp_path / "callback-close.sqlite")
+    runtime = build_reviewed_runtime(
+        metadata_engine=engine,
+        catalog=ReviewedTaskCatalog([]),
+        runtime_plan=_plan("worker"),
+    )
+    callback_finished = Event()
+    reentry_rejected = Event()
+    worker_once: list[WorkerOnceSPI] = []
+    worker = _CallbackClosingWorker(runtime, worker_once, callback_finished, reentry_rejected)
+    adapter = _bind_test_worker(runtime, worker)
+    worker_once.append(adapter)
+    invocation_finished = Event()
+    invocation_errors: list[Exception] = []
+
+    def invoke_worker() -> None:
+        try:
+            adapter(WORKER_ID, LEASE_TTL)
+        except Exception as error:
+            invocation_errors.append(error)
+        finally:
+            invocation_finished.set()
+
+    invocation = Thread(target=invoke_worker, daemon=True)
+    invocation.start()
+    assert callback_finished.wait(timeout=2.0)
+    invocation.join(timeout=2.0)
+    assert invocation_finished.is_set()
+    assert not invocation.is_alive()
+    assert invocation_errors == []
+    assert reentry_rejected.is_set()
+    assert runtime.closed is True
+
+
+def test_worker_once_rejects_overlap_and_close_does_not_wait_for_run(
+    tmp_path: Path,
+    resources: _TestResources,
+) -> None:
+    """Reject concurrent worker calls and close promptly while one is active."""
+    engine = resources.sqlite_engine(tmp_path / "worker-overlap.sqlite")
+    runtime = build_reviewed_runtime(
+        metadata_engine=engine,
+        catalog=ReviewedTaskCatalog([]),
+        runtime_plan=_plan("worker"),
+    )
+    entered = Event()
+    release = Event()
+    worker_finished = Event()
+    worker = _BlockingWorker(entered, release, worker_finished)
+    adapter = _bind_test_worker(runtime, worker)
+    invocation_finished = Event()
+    invocation_errors: list[Exception] = []
+
+    def invoke_worker() -> None:
+        try:
+            adapter(WORKER_ID, LEASE_TTL)
+        except Exception as error:
+            invocation_errors.append(error)
+        finally:
+            invocation_finished.set()
+
+    invocation = Thread(target=invoke_worker, daemon=True)
+    invocation.start()
+    close_returned = Event()
+    closer: Thread | None = None
+    overlap_finished = Event()
+    overlap_errors: list[Exception] = []
+    overlap_thread: Thread | None = None
+    entered_in_time = False
+    overlap_rejected_promptly = False
+    returned_during_run = False
+
+    def close_runtime() -> None:
+        runtime.close()
+        close_returned.set()
+
+    def invoke_overlapping_worker() -> None:
+        try:
+            adapter(WORKER_ID, LEASE_TTL)
+        except Exception as error:
+            overlap_errors.append(error)
+        finally:
+            overlap_finished.set()
+
+    try:
+        entered_in_time = entered.wait(timeout=2.0)
+        if entered_in_time:
+            overlap_thread = Thread(target=invoke_overlapping_worker, daemon=True)
+            overlap_thread.start()
+            overlap_rejected_promptly = overlap_finished.wait(timeout=1.0)
+            closer = Thread(target=close_runtime, daemon=True)
+            closer.start()
+            returned_during_run = close_returned.wait(timeout=1.0)
+    finally:
+        release.set()
+        invocation.join(timeout=2.0)
+        if overlap_thread is not None:
+            overlap_thread.join(timeout=2.0)
+        if closer is not None:
+            closer.join(timeout=2.0)
+
+    assert entered_in_time
+    assert overlap_rejected_promptly
+    assert len(overlap_errors) == 1
+    assert isinstance(overlap_errors[0], RuntimeError)
+    assert str(overlap_errors[0]) == "reviewed runtime worker is already running"
+    assert returned_during_run
+    assert close_returned.is_set()
+    assert invocation_finished.is_set()
+    assert worker_finished.is_set()
+    assert invocation_errors == []
+    assert not invocation.is_alive()
+    assert overlap_thread is not None and not overlap_thread.is_alive()
+    assert closer is not None and not closer.is_alive()
+    assert runtime.closed is True
+    with pytest.raises(ValueError, match="runtime is closed"):
+        adapter(WORKER_ID, LEASE_TTL)
 
 
 def test_cli_queues_and_executes_one_reviewed_run_with_borrowed_engines(

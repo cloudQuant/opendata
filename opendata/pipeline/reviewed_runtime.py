@@ -1,8 +1,11 @@
-"""Compose explicit reviewed run dependencies without loading application settings.
+"""Compose reviewed run dependencies from explicit caller-owned resources.
 
 The runtime factory accepts a caller-owned SQLAlchemy Engine, static reviewed
-task catalog, and validated process-role plan. It does not read URLs, settings,
-environment variables, create schema, import job paths, or start a scheduler.
+task catalog, and validated process-role plan. Its factory body does not read
+URLs or settings, create schema, import job paths, or start a scheduler. The
+existing ``opendata.pipeline`` package initializer may import legacy app
+modules that load settings and construct default Engine objects; this module
+does not use those objects or open a DBAPI connection during composition.
 """
 
 from __future__ import annotations
@@ -59,6 +62,7 @@ class _RuntimeLifecycle:
     runtime_plan: RuntimeRolePlan
     lock: LockType = field(default_factory=Lock)
     worker: _WorkerBinding | None = None
+    worker_running: bool = False
     closed: bool = False
 
 
@@ -78,7 +82,14 @@ class _WorkerOnceAdapter:
                 raise ValueError("reviewed runtime is closed")
             if worker != self.binding.worker_id or ttl != self.binding.lease_ttl:
                 raise ValueError("worker request differs from fixed runtime settings")
+            if self.lifecycle.worker_running:
+                raise RuntimeError("reviewed runtime worker is already running")
+            self.lifecycle.worker_running = True
+        try:
             return self.binding.worker.run_once()
+        finally:
+            with self.lifecycle.lock:
+                self.lifecycle.worker_running = False
 
 
 class _RuntimeRunDispatcher(RunDispatcher):
@@ -193,12 +204,19 @@ class ReviewedRuntime:
             raise ValueError("runtime lifecycle plan must match the reviewed runtime")
         if not isinstance(self.catalog, ReviewedTaskCatalog):
             raise TypeError("catalog must be a ReviewedTaskCatalog")
+        _validate_catalog_sinks(self.runtime_plan, self.catalog)
         if not isinstance(self.dispatcher, _RuntimeRunDispatcher):
             raise TypeError("dispatcher must be a RunDispatcher")
         if self.dispatcher._runtime_lifecycle is not self._lifecycle:
             raise ValueError("dispatcher lifecycle must match the reviewed runtime")
         if not isinstance(self.ledger, RunLedger):
             raise TypeError("ledger must be a RunLedger")
+        if self._lifecycle.metadata_engine is not self.ledger._engine:
+            raise ValueError("runtime lifecycle Engine must match the reviewed ledger")
+        if self.dispatcher._catalog is not self.catalog:
+            raise ValueError("dispatcher catalog must match the reviewed runtime catalog")
+        if self.dispatcher._service._ledger is not self.ledger:
+            raise ValueError("dispatcher ledger must match the reviewed runtime ledger")
 
     def to_cli_application(
         self,
@@ -318,8 +336,9 @@ class ReviewedRuntime:
 
         Worker connection guards remain attached to their Engine for the
         Engine's lifetime because ``PersistentRunWorker`` exposes no public
-        listener-removal operation. Engine creation and disposal remain the
-        caller's responsibility.
+        listener-removal operation. An in-flight ``run_once`` is not cancelled
+        or fenced by close and may finish normally; the caller owns the Engine
+        lifecycle and any durable cancellation through the run ledger.
         """
         with self._lifecycle.lock:
             self._lifecycle.closed = True
@@ -375,12 +394,14 @@ def build_reviewed_runtime(
     catalog: ReviewedTaskCatalog,
     runtime_plan: RuntimeRolePlan,
 ) -> ReviewedRuntime:
-    """Build a reviewed runtime from explicit dependencies and no app settings.
+    """Build a reviewed runtime from explicit dependencies.
 
     The process-role plan is validated before the injected Engine or catalog is
     inspected. The returned ledger and dispatcher borrow ``metadata_engine``;
     the caller remains responsible for its lifetime and for creating the
-    ledger schema through an explicit migration/bootstrap operation.
+    ledger schema through an explicit migration/bootstrap operation. Importing
+    through the existing eager package initializer may still load legacy app
+    settings and construct default Engines; this factory does not use them.
 
     Args:
         metadata_engine: Existing synchronous Engine for the reviewed run
@@ -390,7 +411,9 @@ def build_reviewed_runtime(
         catalog: Static immutable catalog containing reviewed job handlers.
         runtime_plan: Explicit reviewed role plan. Worker-only and
             scheduler-only plans are valid; API hosts must separately require
-            the API role before serving their routes.
+            the API role before serving their routes. Scheduler and worker
+            plans require every catalog task's dataset id to be included in
+            ``reviewed_sink_ids``.
 
     Returns:
         A frozen runtime containing its role plan, catalog, ledger, and
@@ -409,6 +432,7 @@ def build_reviewed_runtime(
         raise TypeError("metadata_engine must be a synchronous SQLAlchemy Engine")
     if not isinstance(catalog, ReviewedTaskCatalog):
         raise TypeError("catalog must be a ReviewedTaskCatalog")
+    _validate_catalog_sinks(runtime_plan, catalog)
 
     ledger = RunLedger(metadata_engine, clock_policy="database")
     lifecycle = _RuntimeLifecycle(
@@ -423,6 +447,18 @@ def build_reviewed_runtime(
         ledger=ledger,
         _lifecycle=lifecycle,
     )
+
+
+def _validate_catalog_sinks(
+    runtime_plan: RuntimeRolePlan,
+    catalog: ReviewedTaskCatalog,
+) -> None:
+    """Keep scheduler and worker catalogs inside declared sink ownership."""
+    if not (runtime_plan.enables("scheduler") or runtime_plan.enables("worker")):
+        return
+    catalog_sink_ids = {task.dataset_id for task in catalog.tasks()}
+    if not catalog_sink_ids.issubset(runtime_plan.reviewed_sink_ids):
+        raise ValueError("reviewed catalog targets sink ids not declared by the runtime plan")
 
 
 def _bounded_seconds(
