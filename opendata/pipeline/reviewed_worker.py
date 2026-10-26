@@ -10,14 +10,17 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
 from stat import S_ISREG
+from threading import Lock
 from typing import TYPE_CHECKING, TypeAlias
+from weakref import WeakKeyDictionary
 
 from pydantic import JsonValue
-from sqlalchemy import event
-from sqlalchemy.engine import Connection, Engine
+from sqlalchemy import create_engine, event
+from sqlalchemy.engine import URL, Connection, Engine
 from sqlalchemy.pool import QueuePool
 
 from opendata.pipeline.process_executor import ReviewedProcessExecutor
@@ -43,32 +46,54 @@ _MAX_DATABASE_IO_TIMEOUT_SECONDS = 30.0
 _MIN_LEASE_MARGIN_SECONDS = 0.05
 
 
+@dataclass(frozen=True, slots=True)
+class _SQLiteFileIdentity:
+    """Canonical path and inode captured for one worker warehouse."""
+
+    path: Path
+    device: int
+    inode: int
+
+
+@dataclass(frozen=True, slots=True)
+class _WorkerEngineBinding:
+    """Factory-only Engine identity and bounded connection configuration."""
+
+    database: _SQLiteFileIdentity
+    database_io_timeout_seconds: float
+    pool_creator: object
+
+
+_WORKER_ENGINE_BINDINGS: WeakKeyDictionary[Engine, _WorkerEngineBinding] = WeakKeyDictionary()
+_WORKER_ENGINE_BINDINGS_LOCK = Lock()
+
+
 class _SQLiteConnectionGuard:
     """Verify every engine checkout still targets the pinned SQLite file."""
 
     def __init__(
         self,
-        database_path: Path,
-        device: int,
-        inode: int,
+        database: _SQLiteFileIdentity,
+        pool_creator: object,
         maximum_wait_seconds: float,
     ) -> None:
         """Capture the physical database identity and connection wait limit."""
-        self._database_path = database_path
-        self._device = device
-        self._inode = inode
+        self._database = database
+        self._pool_creator = pool_creator
         self._maximum_wait_seconds = maximum_wait_seconds
 
     def validate(self, connection: Connection) -> None:
         """Reject a checkout whose file identity or SQLite lock wait drifted."""
         had_transaction = connection.in_transaction()
         try:
-            _verify_pool_wait_bound(connection.engine, self._maximum_wait_seconds)
+            _verify_pool_wait_bound(
+                connection.engine,
+                self._maximum_wait_seconds,
+                self._pool_creator,
+            )
             _verify_actual_sqlite_connection(
                 connection,
-                expected_path=self._database_path,
-                expected_device=self._device,
-                expected_inode=self._inode,
+                expected_database=self._database,
                 maximum_wait_seconds=self._maximum_wait_seconds,
             )
         finally:
@@ -79,11 +104,76 @@ class _SQLiteConnectionGuard:
         """Reject a commit if the database pathname changed during its transaction."""
         _verify_actual_sqlite_connection(
             connection,
-            expected_path=self._database_path,
-            expected_device=self._device,
-            expected_inode=self._inode,
+            expected_database=self._database,
             maximum_wait_seconds=self._maximum_wait_seconds,
         )
+
+
+def create_worker_engine(
+    database_path: str | Path,
+    *,
+    database_io_timeout_seconds: float,
+) -> Engine:
+    """Create an owned worker Engine pinned to an existing SQLite file.
+
+    The factory accepts only a canonical absolute regular file with no symlink
+    path components. It creates a one-connection standard :class:`QueuePool`
+    using SQLAlchemy's built-in SQLite creator, and records the file inode,
+    creator identity, and timeout in a weak registry. A persistent worker
+    accepts only an Engine registered here and rechecks that binding before
+    each run. Direct Engines remain available to other pipeline services.
+
+    Args:
+        database_path: Existing absolute warehouse file path.
+        database_io_timeout_seconds: SQLite lock and pool checkout bound.
+
+    Returns:
+        A SQLAlchemy Engine owned by the reviewed persistent worker path.
+
+    Raises:
+        TypeError: If the database path is not a string or :class:`Path`.
+        ValueError: If the path or timeout is unsupported or not canonical.
+    """
+    if not isinstance(database_path, (str, Path)):
+        raise TypeError("database_path must be a string or Path")
+    maximum_wait = _bounded_number(
+        database_io_timeout_seconds,
+        "database_io_timeout_seconds",
+        _MIN_NUMBER,
+        _MAX_DATABASE_IO_TIMEOUT_SECONDS,
+    )
+    database = _canonical_file_identity(Path(database_path))
+    engine = create_engine(
+        URL.create("sqlite", database=str(database.path)),
+        connect_args={"timeout": maximum_wait},
+        poolclass=QueuePool,
+        pool_size=1,
+        max_overflow=0,
+        pool_timeout=maximum_wait,
+    )
+    creator = getattr(engine.pool, "_creator", None)
+    if type(engine.pool) is not QueuePool or not callable(creator):
+        engine.dispose()
+        raise ValueError("worker Engine factory could not create its controlled SQLite QueuePool")
+    try:
+        # SQLAlchemy Engines are lazy. Warm and inspect the factory-created
+        # connection before exposing/registering the Engine so a later path
+        # replacement can never be mistaken for the originally pinned file.
+        with engine.connect() as connection:
+            _verify_actual_sqlite_connection(
+                connection,
+                expected_database=database,
+                maximum_wait_seconds=maximum_wait,
+            )
+        if _canonical_file_identity(database.path) != database:
+            raise ValueError("SQLite database file identity changed during worker Engine creation")
+    except Exception:
+        engine.dispose()
+        raise
+    binding = _WorkerEngineBinding(database, maximum_wait, creator)
+    with _WORKER_ENGINE_BINDINGS_LOCK:
+        _WORKER_ENGINE_BINDINGS[engine] = binding
+    return engine
 
 
 class ProcessFetchHandler:
@@ -170,11 +260,10 @@ class PersistentRunWorker:
 
     The supplied engine must point to the same durable warehouse that stores
     facts and must already contain the run-ledger table. This version accepts
-    only file-backed SQLite engines that use the standard SQLAlchemy
-    :class:`QueuePool`. It pins the canonical path and physical file identity,
-    then validates the SQLite filename and lock-wait bound on every engine
-    checkout. MySQL and PostgreSQL require an independently verified driver
-    and statement timeout contract before this facade can accept them.
+    only Engines created by :func:`create_worker_engine`. The factory pins an
+    existing canonical SQLite file, standard SQLAlchemy creator, and bounded
+    :class:`QueuePool`. MySQL and PostgreSQL require an independently verified
+    driver and statement timeout contract before this facade can accept them.
     """
 
     def __init__(
@@ -197,7 +286,7 @@ class PersistentRunWorker:
         Those checks do not bound operating-system disk stalls or SQL execution.
 
         Args:
-            engine: Synchronous engine for the durable warehouse.
+            engine: Owned engine from :func:`create_worker_engine`.
             registry: Immutable catalog of explicitly reviewed jobs.
             worker_id: Stable identifier unique to this live worker instance.
             lease_ttl: Maximum time a claim remains owned without renewal.
@@ -234,11 +323,11 @@ class PersistentRunWorker:
         if engine.dialect.name != "sqlite":
             raise ValueError("persistent worker currently requires verified file-backed SQLite")
         _verify_registry_heartbeat_intervals(registry, heartbeat_interval)
-        database_path, device, inode = _verify_sqlite_wait_bounds(engine, database_io_timeout)
+        binding = _require_worker_engine_binding(engine, database_io_timeout)
+        _verify_sqlite_wait_bounds(engine, binding)
         guard = _SQLiteConnectionGuard(
-            database_path,
-            device,
-            inode,
+            binding.database,
+            binding.pool_creator,
             database_io_timeout,
         )
         event.listen(engine, "engine_connect", guard.validate)
@@ -248,6 +337,7 @@ class PersistentRunWorker:
         self._lease_ttl = lease_ttl
         self._database_io_timeout_seconds = database_io_timeout
         self._engine = engine
+        self._engine_binding = binding
         self._ledger = RunLedger(engine, clock_policy="database")
         self._service = RunService(self._ledger, registry)
         self._connection_guard = guard
@@ -259,12 +349,20 @@ class PersistentRunWorker:
 
     def submit(self, job_id: str, version: str, request: RunRequest) -> RunRecord:
         """Persist one validated request using the reviewed run service."""
-        _verify_pool_wait_bound(self._engine, self._database_io_timeout_seconds)
+        _verify_pool_wait_bound(
+            self._engine,
+            self._database_io_timeout_seconds,
+            self._engine_binding.pool_creator,
+        )
         return self._service.submit(job_id, version, request)
 
     def run_once(self) -> RunOutcome | None:
         """Claim at most one durable run and execute it to a fenced outcome."""
-        _verify_pool_wait_bound(self._engine, self._database_io_timeout_seconds)
+        _verify_pool_wait_bound(
+            self._engine,
+            self._database_io_timeout_seconds,
+            self._engine_binding.pool_creator,
+        )
         return self._service.run_once(self._worker_id, self._lease_ttl)
 
 
@@ -290,57 +388,67 @@ def _validate_ttl(value: timedelta) -> float:
     return seconds
 
 
-def _verify_sqlite_wait_bounds(
-    engine: Engine, maximum_wait_seconds: float
-) -> tuple[Path, int, int]:
-    """Pin an absolute SQLite file and verify its first actual checkout."""
-    database_path, expected_device, expected_inode = _canonical_database_identity(engine)
-    _verify_pool_wait_bound(engine, maximum_wait_seconds)
+def _canonical_file_identity(database_path: Path) -> _SQLiteFileIdentity:
+    """Require an existing canonical absolute regular file and capture its inode."""
+    if not database_path.is_absolute():
+        raise ValueError("worker database path must be absolute")
     try:
-        with engine.connect() as connection:
-            _verify_actual_sqlite_connection(
-                connection,
-                expected_path=database_path,
-                expected_device=expected_device,
-                expected_inode=expected_inode,
-                maximum_wait_seconds=maximum_wait_seconds,
-            )
-    except ValueError:
-        raise
-    except Exception:
-        raise ValueError("SQLite database connection could not be verified") from None
-    return database_path, expected_device, expected_inode
-
-
-def _canonical_database_identity(engine: Engine) -> tuple[Path, int, int]:
-    """Require a canonical absolute URL path and capture its regular-file inode."""
-    database = engine.url.database
-    uri_option = engine.url.query.get("uri", "false")
-    uri_values = uri_option if isinstance(uri_option, tuple) else (uri_option,)
-    uri_enabled = any(str(value).lower() in {"true", "1", "yes"} for value in uri_values)
-    if (
-        not database
-        or database == ":memory:"
-        or database.startswith("file:")
-        or uri_enabled
-        or not Path(database).is_absolute()
-    ):
-        raise ValueError("persistent worker requires a canonical absolute file-backed SQLite path")
-    try:
-        path = Path(database)
-        resolved_path = path.resolve(strict=True)
-        path_stat = path.stat(follow_symlinks=False)
+        resolved_path = database_path.resolve(strict=True)
+        path_stat = database_path.stat(follow_symlinks=False)
     except OSError:
         raise ValueError("SQLite database path must identify an existing regular file") from None
-    if resolved_path != path or not S_ISREG(path_stat.st_mode):
+    if resolved_path != database_path or not S_ISREG(path_stat.st_mode):
         raise ValueError("SQLite database path must be canonical and identify a regular file")
-    return path, path_stat.st_dev, path_stat.st_ino
+    return _SQLiteFileIdentity(database_path, path_stat.st_dev, path_stat.st_ino)
 
 
-def _verify_pool_wait_bound(engine: Engine, maximum_wait_seconds: float) -> None:
+def _require_worker_engine_binding(
+    engine: Engine, maximum_wait_seconds: float
+) -> _WorkerEngineBinding:
+    """Require a live factory binding whose file and timeout still match."""
+    with _WORKER_ENGINE_BINDINGS_LOCK:
+        binding = _WORKER_ENGINE_BINDINGS.get(engine)
+    if binding is None:
+        raise ValueError("persistent worker Engine must come from create_worker_engine")
+    if not math.isclose(
+        binding.database_io_timeout_seconds,
+        maximum_wait_seconds,
+        rel_tol=0.0,
+        abs_tol=0.000_001,
+    ):
+        raise ValueError("worker database I/O timeout must match its factory Engine")
+    if engine.url.database != str(binding.database.path) or engine.url.query:
+        raise ValueError("worker Engine URL changed after factory registration")
+    _verify_pool_wait_bound(engine, maximum_wait_seconds, binding.pool_creator)
+    current_database = _canonical_file_identity(binding.database.path)
+    if current_database != binding.database:
+        raise ValueError("SQLite database file identity changed after worker Engine creation")
+    return binding
+
+
+def _verify_sqlite_wait_bounds(engine: Engine, binding: _WorkerEngineBinding) -> None:
+    """Verify the factory-owned Engine's first actual connection and lock wait."""
+    with engine.connect() as connection:
+        _verify_actual_sqlite_connection(
+            connection,
+            expected_database=binding.database,
+            maximum_wait_seconds=binding.database_io_timeout_seconds,
+        )
+
+
+def _verify_pool_wait_bound(
+    engine: Engine,
+    maximum_wait_seconds: float,
+    expected_creator: object | None = None,
+) -> None:
     """Require the documented QueuePool implementation and a finite checkout wait."""
     if type(engine.pool) is not QueuePool:
         raise ValueError("persistent worker requires the standard bounded SQLite QueuePool")
+    if (
+        expected_creator is not None
+        and getattr(engine.pool, "_creator", None) is not expected_creator
+    ):
+        raise ValueError("worker Engine SQLite creator changed after factory registration")
     try:
         pool_timeout = float(engine.pool.timeout())
     except (AttributeError, NotImplementedError, TypeError, ValueError):
@@ -352,9 +460,7 @@ def _verify_pool_wait_bound(engine: Engine, maximum_wait_seconds: float) -> None
 def _verify_actual_sqlite_connection(
     connection: Connection,
     *,
-    expected_path: Path,
-    expected_device: int,
-    expected_inode: int,
+    expected_database: _SQLiteFileIdentity,
     maximum_wait_seconds: float,
 ) -> None:
     """Verify the checked-out connection's SQLite file and per-connection wait."""
@@ -362,17 +468,17 @@ def _verify_actual_sqlite_connection(
         databases = connection.exec_driver_sql("PRAGMA database_list").all()
         main_files = [str(row[2]) for row in databases if row[1] == "main"]
         busy_timeout_ms = connection.exec_driver_sql("PRAGMA busy_timeout").scalar_one()
-        current_stat = expected_path.stat(follow_symlinks=False)
-        current_resolved_path = expected_path.resolve(strict=True)
+        current_stat = expected_database.path.stat(follow_symlinks=False)
+        current_resolved_path = expected_database.path.resolve(strict=True)
     except Exception:
         raise ValueError("SQLite database connection could not be verified") from None
-    if len(main_files) != 1 or main_files[0] != str(expected_path):
+    if len(main_files) != 1 or main_files[0] != str(expected_database.path):
         raise ValueError("SQLite connection does not target the configured regular database file")
     if (
-        current_resolved_path != expected_path
+        current_resolved_path != expected_database.path
         or not S_ISREG(current_stat.st_mode)
-        or current_stat.st_dev != expected_device
-        or current_stat.st_ino != expected_inode
+        or current_stat.st_dev != expected_database.device
+        or current_stat.st_ino != expected_database.inode
     ):
         raise ValueError("SQLite database file identity changed after worker verification")
     if type(busy_timeout_ms) is not int or busy_timeout_ms < 0:
@@ -401,4 +507,4 @@ def _verify_registry_heartbeat_intervals(
             raise ValueError("heartbeat_interval_seconds must match every process executor")
 
 
-__all__ = ["PersistentRunWorker", "ProcessFetchHandler"]
+__all__ = ["PersistentRunWorker", "ProcessFetchHandler", "create_worker_engine"]

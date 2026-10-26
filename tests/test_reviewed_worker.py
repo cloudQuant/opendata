@@ -25,7 +25,11 @@ from sqlalchemy import (
 from sqlalchemy.pool import QueuePool, StaticPool
 
 from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
-from opendata.pipeline.reviewed_worker import PersistentRunWorker, ProcessFetchHandler
+from opendata.pipeline.reviewed_worker import (
+    PersistentRunWorker,
+    ProcessFetchHandler,
+    create_worker_engine,
+)
 from opendata.pipeline.run_identity import RunRequest, ScheduleMetadata, TaskDefinition
 from opendata.pipeline.run_ledger import RUN_LEDGER_METADATA, RunLedger
 from opendata.pipeline.run_service import (
@@ -96,10 +100,9 @@ def _make_worker(
     database_io_timeout_seconds: float = 0.05,
 ) -> PersistentRunWorker:
     """Construct an isolated worker with a reviewed process-backed fetcher."""
-    engine = _make_engine(
+    engine = create_worker_engine(
         database_path,
-        timeout_seconds=database_io_timeout_seconds,
-        pool_timeout_seconds=database_io_timeout_seconds,
+        database_io_timeout_seconds=database_io_timeout_seconds,
     )
     fetch = _make_process_fetch_handler(
         timeout_seconds=timeout_seconds,
@@ -396,22 +399,25 @@ def test_worker_rejects_engines_without_verified_sqlite_timeouts(tmp_path: Path)
         "database_io_timeout_seconds": 0.05,
     }
     memory_engine = create_engine("sqlite:///:memory:")
-    with pytest.raises(ValueError, match="file-backed SQLite"):
+    with pytest.raises(ValueError, match="must come from create_worker_engine"):
         PersistentRunWorker(memory_engine, registry, **worker_options)
 
     oversized_wait_path = tmp_path / "oversized-wait.sqlite"
     oversized_wait_path.touch()
-    oversized_wait_engine = _make_engine(oversized_wait_path, timeout_seconds=0.1)
+    oversized_wait_engine = create_worker_engine(
+        oversized_wait_path, database_io_timeout_seconds=0.05
+    )
+    oversized_wait_engine.pool._timeout = 0.1
     with pytest.raises(ValueError, match="exceeds the configured database I/O bound"):
         PersistentRunWorker(oversized_wait_engine, registry, **worker_options)
 
     oversized_lock_path = tmp_path / "oversized-lock.sqlite"
     oversized_lock_path.touch()
-    oversized_lock_wait_engine = _make_engine(
-        oversized_lock_path,
-        timeout_seconds=0.1,
-        pool_timeout_seconds=0.05,
+    oversized_lock_wait_engine = create_worker_engine(
+        oversized_lock_path, database_io_timeout_seconds=0.05
     )
+    with oversized_lock_wait_engine.connect() as connection:
+        connection.exec_driver_sql("PRAGMA busy_timeout=100")
     with pytest.raises(ValueError, match="busy_timeout exceeds"):
         PersistentRunWorker(oversized_lock_wait_engine, registry, **worker_options)
 
@@ -426,8 +432,26 @@ def test_worker_rejects_engines_without_verified_sqlite_timeouts(tmp_path: Path)
         connect_args={"timeout": 0.05},
         poolclass=StaticPool,
     )
-    with pytest.raises(ValueError, match="standard bounded SQLite QueuePool"):
+    with pytest.raises(ValueError, match="must come from create_worker_engine"):
         PersistentRunWorker(static_pool_engine, registry, **worker_options)
+
+
+def test_create_worker_engine_requires_an_existing_canonical_file(tmp_path: Path) -> None:
+    """The worker factory does not accept aliases, directories, or missing paths."""
+    with pytest.raises(ValueError, match="absolute"):
+        create_worker_engine(Path("relative.sqlite"), database_io_timeout_seconds=0.05)
+    with pytest.raises(ValueError, match="existing regular file"):
+        create_worker_engine(tmp_path / "missing.sqlite", database_io_timeout_seconds=0.05)
+    directory = tmp_path / "directory.sqlite"
+    directory.mkdir()
+    with pytest.raises(ValueError, match="canonical and identify a regular file"):
+        create_worker_engine(directory, database_io_timeout_seconds=0.05)
+    real_file = tmp_path / "real.sqlite"
+    real_file.touch()
+    symlink = tmp_path / "alias.sqlite"
+    symlink.symlink_to(real_file)
+    with pytest.raises(ValueError, match="canonical and identify a regular file"):
+        create_worker_engine(symlink, database_io_timeout_seconds=0.05)
 
 
 def test_worker_checks_actual_database_file_identity_and_rejects_memory_aliases(
@@ -451,7 +475,7 @@ def test_worker_checks_actual_database_file_identity_and_rejects_memory_aliases(
         max_overflow=0,
         pool_timeout=0.05,
     )
-    with pytest.raises(ValueError, match="canonical absolute file-backed SQLite path"):
+    with pytest.raises(ValueError, match="must come from create_worker_engine"):
         PersistentRunWorker(uri_memory_engine, registry, **worker_options)
 
     creator_memory_engine = create_engine(
@@ -462,7 +486,7 @@ def test_worker_checks_actual_database_file_identity_and_rejects_memory_aliases(
         max_overflow=0,
         pool_timeout=0.05,
     )
-    with pytest.raises(ValueError, match="does not target the configured regular database file"):
+    with pytest.raises(ValueError, match="must come from create_worker_engine"):
         PersistentRunWorker(creator_memory_engine, registry, **worker_options)
 
     other_path = tmp_path / "other.sqlite"
@@ -475,7 +499,7 @@ def test_worker_checks_actual_database_file_identity_and_rejects_memory_aliases(
         max_overflow=0,
         pool_timeout=0.05,
     )
-    with pytest.raises(ValueError, match="does not target the configured regular database file"):
+    with pytest.raises(ValueError, match="must come from create_worker_engine"):
         PersistentRunWorker(mismatched_creator_engine, registry, **worker_options)
 
     symlink_path = tmp_path / "claimed-alias.sqlite"
@@ -485,15 +509,61 @@ def test_worker_checks_actual_database_file_identity_and_rejects_memory_aliases(
         connect_args={"timeout": 0.05},
         pool_timeout=0.05,
     )
-    with pytest.raises(ValueError, match="canonical and identify a regular file"):
+    with pytest.raises(ValueError, match="must come from create_worker_engine"):
         PersistentRunWorker(symlink_engine, registry, **worker_options)
+
+
+def test_factory_warmed_pool_rejects_path_replacement_before_worker_creation(
+    tmp_path: Path,
+) -> None:
+    """A warmed factory Engine remains pinned to its original physical file."""
+    database_path = tmp_path / "factory-warmed.sqlite"
+    _setup_database(database_path)
+    engine = create_worker_engine(database_path, database_io_timeout_seconds=0.05)
+    replacement_path = tmp_path / "factory-replacement.sqlite"
+    _setup_database(replacement_path)
+    os.replace(replacement_path, database_path)
+
+    with pytest.raises(ValueError, match="identity changed after worker Engine creation"):
+        PersistentRunWorker(
+            engine,
+            ReviewedJobRegistry(),
+            worker_id="replaced-before-worker",
+            lease_ttl=timedelta(seconds=2),
+            heartbeat_interval_seconds=0.05,
+            database_io_timeout_seconds=0.05,
+        )
+
+
+def test_external_warmed_engine_is_rejected_even_after_path_replacement(
+    tmp_path: Path,
+) -> None:
+    """A caller-owned pool cannot be adopted after its pathname is replaced."""
+    database_path = tmp_path / "external-warmed.sqlite"
+    _setup_database(database_path)
+    external_engine = _make_engine(database_path)
+    with external_engine.connect() as connection:
+        assert connection.exec_driver_sql("PRAGMA database_list").first() is not None
+    replacement_path = tmp_path / "external-replacement.sqlite"
+    _setup_database(replacement_path)
+    os.replace(replacement_path, database_path)
+
+    with pytest.raises(ValueError, match="must come from create_worker_engine"):
+        PersistentRunWorker(
+            external_engine,
+            ReviewedJobRegistry(),
+            worker_id="external-engine",
+            lease_ttl=timedelta(seconds=2),
+            heartbeat_interval_seconds=0.05,
+            database_io_timeout_seconds=0.05,
+        )
 
 
 def test_worker_rechecks_busy_timeout_on_each_engine_checkout(tmp_path: Path) -> None:
     """A later DBAPI checkout cannot silently widen the verified lock wait."""
     database_path = tmp_path / "changing-timeout.sqlite"
     _setup_database(database_path)
-    engine = _make_engine(database_path)
+    engine = create_worker_engine(database_path, database_io_timeout_seconds=0.05)
     checkout_count = 0
 
     def change_busy_timeout(
@@ -557,7 +627,9 @@ def test_worker_rejects_invalid_catalog_and_mismatched_checkpoint_interval(
     tmp_path: Path,
 ) -> None:
     """Worker identity, catalog type, and real executor cadence are checked."""
-    engine = _make_engine(tmp_path / "catalog.sqlite")
+    catalog_path = tmp_path / "catalog.sqlite"
+    catalog_path.touch()
+    engine = create_worker_engine(catalog_path, database_io_timeout_seconds=0.05)
     with pytest.raises(TypeError, match="ReviewedJobRegistry"):
         PersistentRunWorker(
             engine,
@@ -592,7 +664,9 @@ def test_worker_rejects_invalid_catalog_and_mismatched_checkpoint_interval(
 
 def test_persistent_worker_rejects_unbounded_fetch_handler(tmp_path: Path) -> None:
     """Ordinary in-process fetch handlers cannot run outside the lease boundary."""
-    engine = _make_engine(tmp_path / "unbounded-fetch.sqlite")
+    database_path = tmp_path / "unbounded-fetch.sqlite"
+    database_path.touch()
+    engine = create_worker_engine(database_path, database_io_timeout_seconds=0.05)
     fetch_calls = 0
 
     def ordinary_fetch(_request: object, _context: object) -> object:
