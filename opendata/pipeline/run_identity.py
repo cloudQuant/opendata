@@ -29,6 +29,7 @@ from pydantic import (
 CONTRACT_VERSION: Final[Literal[1]] = 1
 MAX_JSON_DEPTH = 8
 MAX_JSON_ITEMS = 100
+MAX_JSON_NODES = 4_096
 MAX_JSON_STRING_LENGTH = 2_048
 MAX_JSON_DOCUMENT_BYTES = 16_384
 MAX_CANONICAL_BYTES = 65_536
@@ -145,11 +146,17 @@ class RunRequest(_StrictModel):
         """Validate bounded JSON-native objects and reject credential material."""
         if type(value) is not dict:
             raise ValueError("query and partition must be JSON objects")
-        _validate_json_value(value, path="$", depth=0)
-        encoded = _canonical_json(value).encode("utf-8")
+        validated_value = _validate_json_value(
+            value,
+            path="$",
+            depth=0,
+            node_count=[0],
+            active_containers=set(),
+        )
+        encoded = _canonical_json(validated_value).encode("utf-8")
         if len(encoded) > MAX_JSON_DOCUMENT_BYTES:
             raise ValueError(f"query and partition must be at most {MAX_JSON_DOCUMENT_BYTES} bytes")
-        return value
+        return validated_value
 
     @field_validator("occurrence")
     @classmethod
@@ -191,7 +198,7 @@ class RunRequest(_StrictModel):
 
 
 class RunIdentity(_StrictModel):
-    """Stable slot digest and canonical request snapshot for one declared run."""
+    """Stable slot digest and complete canonical request snapshot for one run."""
 
     contract_version: Literal[1]
     run_type: Literal["scheduled", "manual", "backfill"]
@@ -206,8 +213,9 @@ def build_run_identity(task: TaskDefinition, request: RunRequest) -> RunIdentity
     Scheduled runs are keyed by their normalized UTC occurrence. Manual and
     backfill runs require an explicit request key, whose digest is included so
     separate requests on the same date do not occupy the scheduled slot. The
-    canonical snapshot includes all execution parameters; changing parameters
-    under an existing slot changes ``payload_hash`` while preserving the key.
+    canonical snapshot retains the full validated declarative request so
+    a future durable service can replay it. Changing parameters under an
+    existing slot changes ``payload_hash`` while preserving the key.
 
     Args:
         task: The versioned job declaration.
@@ -219,6 +227,8 @@ def build_run_identity(task: TaskDefinition, request: RunRequest) -> RunIdentity
     Raises:
         ValueError: If contract versions differ or a request is malformed.
     """
+    task = _revalidate_task_definition(task)
+    request = _revalidate_run_request(request)
     if task.contract_version != request.contract_version:
         raise ValueError("task and run request contract versions must match")
 
@@ -263,6 +273,7 @@ def build_run_identity(task: TaskDefinition, request: RunRequest) -> RunIdentity
     canonical_json = _canonical_json(payload)
     if len(canonical_json.encode("utf-8")) > MAX_CANONICAL_BYTES:
         raise ValueError(f"canonical request snapshot must be at most {MAX_CANONICAL_BYTES} bytes")
+    payload_hash = _sha256(canonical_json.encode("utf-8"))
 
     slot_payload = {
         "contract_version": task.contract_version,
@@ -283,7 +294,6 @@ def build_run_identity(task: TaskDefinition, request: RunRequest) -> RunIdentity
             raise ValueError(f"{request.run_type} runs require an idempotency key")
         slot_payload["request_key_sha256"] = request_key_digest
     slot_json = _canonical_json(slot_payload)
-    payload_hash = _sha256(canonical_json.encode("utf-8"))
 
     return RunIdentity(
         contract_version=task.contract_version,
@@ -291,6 +301,56 @@ def build_run_identity(task: TaskDefinition, request: RunRequest) -> RunIdentity
         idempotency_key=_sha256(slot_json.encode("utf-8")),
         payload_hash=payload_hash,
         canonical_json=canonical_json,
+    )
+
+
+def _revalidate_task_definition(task: TaskDefinition) -> TaskDefinition:
+    """Revalidate explicitly selected fields without recursively dumping a model."""
+    if not isinstance(task, TaskDefinition):
+        raise ValueError("task must be a validated TaskDefinition")
+    schedule: ScheduleMetadata | None = None
+    if task.schedule is not None:
+        if not isinstance(task.schedule, ScheduleMetadata):
+            raise ValueError("task schedule must be ScheduleMetadata")
+        schedule = ScheduleMetadata.model_validate(
+            {
+                "kind": task.schedule.kind,
+                "expression": task.schedule.expression,
+                "description": task.schedule.description,
+            }
+        )
+    return TaskDefinition.model_validate(
+        {
+            "contract_version": task.contract_version,
+            "job_id": task.job_id,
+            "version": task.version,
+            "dataset_id": task.dataset_id,
+            "provider": task.provider,
+            "model": task.model,
+            "timezone": task.timezone,
+            "calendar": task.calendar,
+            "schedule": schedule,
+            "enabled": task.enabled,
+        }
+    )
+
+
+def _revalidate_run_request(request: RunRequest) -> RunRequest:
+    """Revalidate fields after possible nested mutation or ``model_copy`` updates."""
+    if not isinstance(request, RunRequest):
+        raise ValueError("request must be a validated RunRequest")
+    return RunRequest.model_validate(
+        {
+            "contract_version": request.contract_version,
+            "run_type": request.run_type,
+            "query": request.query,
+            "partition": request.partition,
+            "shard": request.shard,
+            "occurrence": request.occurrence,
+            "idempotency_key": request.idempotency_key,
+            "backfill_start": request.backfill_start,
+            "backfill_end": request.backfill_end,
+        }
     )
 
 
@@ -318,39 +378,81 @@ def _sha256(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
-def _validate_json_value(value: object, *, path: str, depth: int) -> None:
-    """Reject non-JSON values, unbounded structures, and likely secrets."""
+def _validate_json_value(
+    value: object,
+    *,
+    path: str,
+    depth: int,
+    node_count: list[int],
+    active_containers: set[int],
+) -> JsonValue:
+    """Validate and copy bounded JSON data, rejecting cycles and likely secrets."""
+    node_count[0] += 1
+    if node_count[0] > MAX_JSON_NODES:
+        raise ValueError(f"JSON value exceeds maximum node count {MAX_JSON_NODES}")
     if depth > MAX_JSON_DEPTH:
         raise ValueError(f"JSON value at {path} exceeds maximum depth {MAX_JSON_DEPTH}")
-    if value is None or type(value) is bool:
-        return
+    if value is None:
+        return None
+    if type(value) is bool:
+        return bool(value)
     if type(value) is int:
-        return
+        return int(value)
     if type(value) is float:
         if not math.isfinite(value):
             raise ValueError(f"JSON number at {path} must be finite")
-        return
+        return float(value)
     if type(value) is str:
         _validate_json_string(value, path)
-        return
+        return str(value)
     if type(value) is list:
         if len(value) > MAX_JSON_ITEMS:
             raise ValueError(f"JSON array at {path} exceeds {MAX_JSON_ITEMS} items")
-        for index, item in enumerate(value):
-            _validate_json_value(item, path=f"{path}[{index}]", depth=depth + 1)
-        return
+        container_id = id(value)
+        if container_id in active_containers:
+            raise ValueError(f"cyclic JSON value at {path} is not allowed")
+        active_containers.add(container_id)
+        validated_list: list[JsonValue] = []
+        try:
+            for index, item in enumerate(value):
+                validated_list.append(
+                    _validate_json_value(
+                        item,
+                        path=f"{path}[{index}]",
+                        depth=depth + 1,
+                        node_count=node_count,
+                        active_containers=active_containers,
+                    )
+                )
+        finally:
+            active_containers.remove(container_id)
+        return validated_list
     if type(value) is dict:
         if len(value) > MAX_JSON_ITEMS:
             raise ValueError(f"JSON object at {path} exceeds {MAX_JSON_ITEMS} items")
-        for key, item in value.items():
-            if type(key) is not str:
-                raise ValueError(f"JSON object keys at {path} must be strings")
-            _validate_json_string(key, f"{path}.<key>")
-            normalized_key = re.sub(r"[^a-z0-9]", "", key.lower())
-            if any(part in normalized_key for part in _SENSITIVE_KEY_PARTS):
-                raise ValueError(f"sensitive parameter name is not allowed at {path}.{key}")
-            _validate_json_value(item, path=f"{path}.{key}", depth=depth + 1)
-        return
+        container_id = id(value)
+        if container_id in active_containers:
+            raise ValueError(f"cyclic JSON value at {path} is not allowed")
+        active_containers.add(container_id)
+        validated_dict: dict[str, JsonValue] = {}
+        try:
+            for key, item in value.items():
+                if type(key) is not str:
+                    raise ValueError(f"JSON object keys at {path} must be strings")
+                _validate_json_string(key, f"{path}.<key>")
+                normalized_key = re.sub(r"[^a-z0-9]", "", key.lower())
+                if any(part in normalized_key for part in _SENSITIVE_KEY_PARTS):
+                    raise ValueError(f"sensitive parameter name is not allowed at {path}.{key}")
+                validated_dict[str(key)] = _validate_json_value(
+                    item,
+                    path=f"{path}.{key}",
+                    depth=depth + 1,
+                    node_count=node_count,
+                    active_containers=active_containers,
+                )
+        finally:
+            active_containers.remove(container_id)
+        return validated_dict
     raise ValueError(f"value at {path} is not JSON-native")
 
 

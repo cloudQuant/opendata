@@ -132,6 +132,72 @@ def test_scheduled_payload_drift_keeps_slot_key_and_changes_payload_hash() -> No
     assert original.canonical_json != changed_query.canonical_json
 
 
+def test_valid_nested_mutation_is_copied_into_the_new_payload_snapshot() -> None:
+    """Revalidate current nested request data when a caller mutates it later."""
+    task = make_task()
+    request = make_scheduled(
+        datetime(2025, 3, 10, 9, 0, tzinfo=timezone.utc),
+        query={"symbols": ["AAPL"]},
+    )
+    original = build_run_identity(task, request)
+
+    request.query["symbols"].append("MSFT")
+    changed = build_run_identity(task, request)
+
+    assert original.idempotency_key == changed.idempotency_key
+    assert original.payload_hash != changed.payload_hash
+    assert '"symbols":["AAPL","MSFT"]' in changed.canonical_json
+
+
+def test_mutated_credentials_non_finite_values_and_cycles_are_rejected() -> None:
+    """Recheck the mutable query tree before hashing or snapshot serialization."""
+    task = make_task()
+    occurrence = datetime(2025, 3, 10, 9, 0, tzinfo=timezone.utc)
+
+    credential_request = make_scheduled(occurrence, query={"filters": {"symbols": []}})
+    credential_request.query["filters"]["api_key"] = "mutated-secret"
+    with pytest.raises(ValidationError, match="sensitive parameter name"):
+        build_run_identity(task, credential_request)
+
+    non_finite_request = make_scheduled(occurrence, query={"values": []})
+    non_finite_request.query["values"].append(float("nan"))
+    with pytest.raises(ValidationError, match="must be finite"):
+        build_run_identity(task, non_finite_request)
+
+    cyclic_values: list[object] = []
+    cyclic_values.append(cyclic_values)
+    cyclic_request = make_scheduled(occurrence, query={"values": []})
+    cyclic_request.query["values"] = cyclic_values
+    with pytest.raises(ValidationError, match="cyclic JSON value"):
+        build_run_identity(task, cyclic_request)
+
+
+def test_mutated_json_node_count_is_bounded_before_serialization() -> None:
+    """Stop large shared nested containers before canonical JSON is built."""
+    repeated_row = list(range(100))
+    request = make_scheduled(
+        datetime(2025, 3, 10, 9, 0, tzinfo=timezone.utc),
+        query={"matrix": []},
+    )
+    request.query["matrix"] = [repeated_row] * 100
+
+    with pytest.raises(ValidationError, match="maximum node count"):
+        build_run_identity(make_task(), request)
+
+
+def test_model_copy_update_cannot_bypass_job_validation() -> None:
+    """Revalidate copied job models before their fields enter a run identity."""
+    task = make_task().model_copy(update={"version": object()})
+    request = make_scheduled(datetime(2025, 3, 10, 9, 0, tzinfo=timezone.utc))
+
+    with pytest.raises(ValidationError):
+        build_run_identity(task, request)
+
+    copied_request = request.model_copy(update={"query": {"api_key": "copied-secret"}})
+    with pytest.raises(ValidationError, match="sensitive parameter name"):
+        build_run_identity(make_task(), copied_request)
+
+
 def test_manual_requests_are_distinct_from_scheduled_slot_and_each_other() -> None:
     """Require request keys so same-day manual work cannot claim a natural slot."""
     task = make_task()
