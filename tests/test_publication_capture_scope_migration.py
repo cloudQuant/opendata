@@ -25,6 +25,7 @@ FROZEN_MIGRATION_0011_PATH = (
     REPOSITORY_ROOT / "alembic_data" / "versions" / "20261026-0011_publication_snapshots.py"
 )
 FROZEN_MIGRATION_0011_NAME = "publication_snapshots_migration_0011"
+FROZEN_MIGRATION_0011_SHA256 = "69a9203b0a34a1da0b71438d3d310f96c70683c594fecf328a85d1c54d4b08f0"
 MIGRATION_PATH = (
     REPOSITORY_ROOT / "alembic_data" / "versions" / "20261027-0012_instrument_capture_scope.py"
 )
@@ -33,6 +34,44 @@ MIGRATION_SHA256 = "24c55bce92d97aa65ae2afb7b7b516ade21704d1956aa85c50827177aca2
 FACT_TABLE = "od_published_fact_versions"
 SNAPSHOT_TABLE = "od_publication_snapshots"
 NEIGHBOR_TABLE = "od_migration_neighbor"
+_INSERT_FACT_0011_SQL = (
+    "INSERT INTO od_published_fact_versions (dataset_id, business_key, revision, "
+    "publication_id, publication_sequence, business_date, event_at, "
+    "observed_at, source_published_at, available_at, record_json, "
+    "record_hash, is_deleted) VALUES (:dataset_id, :business_key, :revision, "
+    ":publication_id, :publication_sequence, :business_date, :event_at, "
+    ":observed_at, :source_published_at, :available_at, :record_json, "
+    ":record_hash, :is_deleted)"
+)
+_INSERT_FACT_0012_SQL = (
+    "INSERT INTO od_published_fact_versions (dataset_id, business_key, revision, "
+    "publication_id, publication_sequence, business_date, event_at, "
+    "observed_at, source_published_at, available_at, record_json, "
+    "record_hash, is_deleted, instrument_id, capture_id) VALUES "
+    "(:dataset_id, :business_key, :revision, :publication_id, "
+    ":publication_sequence, :business_date, :event_at, :observed_at, "
+    ":source_published_at, :available_at, :record_json, :record_hash, "
+    ":is_deleted, :instrument_id, :capture_id)"
+)
+_INSERT_SNAPSHOT_0011_SQL = (
+    "INSERT INTO od_publication_snapshots (snapshot_id, dataset_id, schema_version, "
+    "publication_id, publication_sequence, start_date, end_date, page_size, "
+    "access_scope, selection_sha256, content_hash, record_count, as_of_us, "
+    "created_at_us, expires_at_us) VALUES (:snapshot_id, :dataset_id, :schema_version, "
+    ":publication_id, :publication_sequence, :start_date, :end_date, :page_size, "
+    ":access_scope, :selection_sha256, :content_hash, :record_count, :as_of_us, "
+    ":created_at_us, :expires_at_us)"
+)
+_INSERT_SNAPSHOT_0012_SQL = (
+    "INSERT INTO od_publication_snapshots (snapshot_id, dataset_id, schema_version, "
+    "publication_id, publication_sequence, start_date, end_date, page_size, "
+    "access_scope, selection_sha256, content_hash, record_count, as_of_us, "
+    "created_at_us, expires_at_us, instrument_id, capture_id) VALUES "
+    "(:snapshot_id, :dataset_id, :schema_version, :publication_id, "
+    ":publication_sequence, :start_date, :end_date, :page_size, "
+    ":access_scope, :selection_sha256, :content_hash, :record_count, "
+    ":as_of_us, :created_at_us, :expires_at_us, :instrument_id, :capture_id)"
+)
 
 
 def _load_module(path: Path, module_name: str) -> ModuleType:
@@ -53,6 +92,8 @@ def _load_migration() -> ModuleType:
 
 def _apply_frozen_0011(connection: Connection) -> None:
     """Run frozen 0011 on this owned connection without loading Alembic env."""
+    actual_sha256 = hashlib.sha256(FROZEN_MIGRATION_0011_PATH.read_bytes()).hexdigest()
+    assert actual_sha256 == FROZEN_MIGRATION_0011_SHA256
     migration = _load_module(FROZEN_MIGRATION_0011_PATH, FROZEN_MIGRATION_0011_NAME)
     operations_context = MigrationContext.configure(connection)
     with Operations.context(operations_context):
@@ -128,37 +169,30 @@ def _insert_fact(
     business_key: str = "legacy-key",
     instrument_id: str | None = None,
     capture_id: str | None = None,
+    include_scope_columns: bool = False,
 ) -> None:
-    """Insert a fact row with optional capture selectors."""
-    connection.execute(
-        sa.text(
-            "INSERT INTO od_published_fact_versions (dataset_id, business_key, revision, "
-            "publication_id, publication_sequence, business_date, event_at, "
-            "observed_at, source_published_at, available_at, record_json, "
-            "record_hash, is_deleted, instrument_id, capture_id) VALUES "
-            "(:dataset_id, :business_key, :revision, :publication_id, "
-            ":publication_sequence, :business_date, :event_at, :observed_at, "
-            ":source_published_at, :available_at, :record_json, :record_hash, "
-            ":is_deleted, :instrument_id, :capture_id)"
-        ),
-        {
-            "dataset_id": "sina_fzb_report_observations",
-            "business_key": business_key,
-            "revision": 1,
-            "publication_id": "publication-0001",
-            "publication_sequence": 1,
-            "business_date": None,
-            "event_at": None,
-            "observed_at": None,
-            "source_published_at": None,
-            "available_at": None,
-            "record_json": '{"value":"source-value"}',
-            "record_hash": "b" * 64,
-            "is_deleted": False,
-            "instrument_id": instrument_id,
-            "capture_id": capture_id,
-        },
-    )
+    """Insert a fact using explicit 0011 or 0012 columns, never runtime metadata."""
+    if not include_scope_columns and (instrument_id is not None or capture_id is not None):
+        raise ValueError("Capture selectors require the 0012 schema columns.")
+    values: dict[str, object] = {
+        "dataset_id": "sina_fzb_report_observations",
+        "business_key": business_key,
+        "revision": 1,
+        "publication_id": "publication-0001",
+        "publication_sequence": 1,
+        "business_date": None,
+        "event_at": None,
+        "observed_at": None,
+        "source_published_at": None,
+        "available_at": None,
+        "record_json": '{"value":"source-value"}',
+        "record_hash": "b" * 64,
+        "is_deleted": False,
+    }
+    if include_scope_columns:
+        values.update(instrument_id=instrument_id, capture_id=capture_id)
+    statement = _INSERT_FACT_0012_SQL if include_scope_columns else _INSERT_FACT_0011_SQL
+    connection.execute(sa.text(statement), values)
 
 
 def _insert_snapshot(
@@ -167,39 +201,32 @@ def _insert_snapshot(
     snapshot_id: str = "legacy-snapshot",
     instrument_id: str | None = None,
     capture_id: str | None = None,
+    include_scope_columns: bool = False,
 ) -> None:
-    """Insert a fixed snapshot with optional capture selectors."""
-    connection.execute(
-        sa.text(
-            "INSERT INTO od_publication_snapshots (snapshot_id, dataset_id, schema_version, "
-            "publication_id, publication_sequence, start_date, end_date, page_size, "
-            "access_scope, selection_sha256, content_hash, record_count, as_of_us, "
-            "created_at_us, expires_at_us, instrument_id, capture_id) VALUES "
-            "(:snapshot_id, :dataset_id, :schema_version, :publication_id, "
-            ":publication_sequence, :start_date, :end_date, :page_size, "
-            ":access_scope, :selection_sha256, :content_hash, :record_count, "
-            ":as_of_us, :created_at_us, :expires_at_us, :instrument_id, :capture_id)"
-        ),
-        {
-            "snapshot_id": snapshot_id,
-            "dataset_id": "sina_fzb_report_observations",
-            "schema_version": "source-native-report-v1",
-            "publication_id": "publication-0001",
-            "publication_sequence": 1,
-            "start_date": None,
-            "end_date": None,
-            "page_size": 100,
-            "access_scope": "test-scope",
-            "selection_sha256": "c" * 64,
-            "content_hash": "d" * 64,
-            "record_count": 1,
-            "as_of_us": 1,
-            "created_at_us": 1,
-            "expires_at_us": 2,
-            "instrument_id": instrument_id,
-            "capture_id": capture_id,
-        },
-    )
+    """Insert a snapshot using explicit 0011 or 0012 columns."""
+    if not include_scope_columns and (instrument_id is not None or capture_id is not None):
+        raise ValueError("Capture selectors require the 0012 schema columns.")
+    values: dict[str, object] = {
+        "snapshot_id": snapshot_id,
+        "dataset_id": "sina_fzb_report_observations",
+        "schema_version": "source-native-report-v1",
+        "publication_id": "publication-0001",
+        "publication_sequence": 1,
+        "start_date": None,
+        "end_date": None,
+        "page_size": 100,
+        "access_scope": "test-scope",
+        "selection_sha256": "c" * 64,
+        "content_hash": "d" * 64,
+        "record_count": 1,
+        "as_of_us": 1,
+        "created_at_us": 1,
+        "expires_at_us": 2,
+    }
+    if include_scope_columns:
+        values.update(instrument_id=instrument_id, capture_id=capture_id)
+    statement = _INSERT_SNAPSHOT_0012_SQL if include_scope_columns else _INSERT_SNAPSHOT_0011_SQL
+    connection.execute(sa.text(statement), values)
 
 
 def _prepare_legacy_database(engine: Engine) -> None:
@@ -282,12 +309,14 @@ def test_upgrade_preserves_legacy_rows_and_enforces_paired_scope(tmp_path: Path)
                 business_key="scoped-key",
                 instrument_id="AAPL.US",
                 capture_id="e" * 64,
+                include_scope_columns=True,
             )
             _insert_snapshot(
                 connection,
                 snapshot_id="scoped-snapshot",
                 instrument_id="AAPL.US",
                 capture_id="e" * 64,
+                include_scope_columns=True,
             )
 
             for instrument_id, capture_id in (("AAPL.US", None), (None, "f" * 64)):
@@ -297,6 +326,7 @@ def test_upgrade_preserves_legacy_rows_and_enforces_paired_scope(tmp_path: Path)
                         business_key=f"invalid-fact-{instrument_id}-{capture_id}",
                         instrument_id=instrument_id,
                         capture_id=capture_id,
+                        include_scope_columns=True,
                     )
                 with pytest.raises(IntegrityError), connection.begin_nested():
                     _insert_snapshot(
@@ -304,6 +334,7 @@ def test_upgrade_preserves_legacy_rows_and_enforces_paired_scope(tmp_path: Path)
                         snapshot_id=f"invalid-snapshot-{instrument_id}-{capture_id}",
                         instrument_id=instrument_id,
                         capture_id=capture_id,
+                        include_scope_columns=True,
                     )
 
             checks = {
@@ -365,6 +396,7 @@ def test_downgrade_rejects_scope_before_any_ddl(
                     business_key="scoped-key",
                     instrument_id="AAPL.US",
                     capture_id="e" * 64,
+                    include_scope_columns=True,
                 )
             else:
                 _insert_snapshot(
@@ -372,6 +404,7 @@ def test_downgrade_rejects_scope_before_any_ddl(
                     snapshot_id="scoped-snapshot",
                     instrument_id="AAPL.US",
                     capture_id="e" * 64,
+                    include_scope_columns=True,
                 )
         with engine.connect() as connection:
             schema_before = _schema_signature(connection)
@@ -455,15 +488,39 @@ def test_legacy_only_downgrade_preserves_data_and_can_upgrade_again(tmp_path: Pa
                 == "preserve-me"
             )
 
+        with engine.begin() as connection:
+            _insert_fact(connection, business_key="legacy-after-downgrade")
+            _insert_snapshot(connection, snapshot_id="legacy-after-downgrade")
+
         _apply_revision(engine, "upgrade")
         _assert_scoped_columns(engine)
         with engine.connect() as connection:
-            assert connection.execute(
-                sa.text("SELECT instrument_id, capture_id FROM od_published_fact_versions")
-            ).one() == (None, None)
-            assert connection.execute(
-                sa.text("SELECT instrument_id, capture_id FROM od_publication_snapshots")
-            ).one() == (None, None)
+            fact_scope_rows = {
+                tuple(row)
+                for row in connection.execute(
+                    sa.text(
+                        "SELECT business_key, instrument_id, capture_id "
+                        "FROM od_published_fact_versions"
+                    )
+                )
+            }
+            snapshot_scope_rows = {
+                tuple(row)
+                for row in connection.execute(
+                    sa.text(
+                        "SELECT snapshot_id, instrument_id, capture_id "
+                        "FROM od_publication_snapshots"
+                    )
+                )
+            }
+            assert fact_scope_rows == {
+                ("legacy-key", None, None),
+                ("legacy-after-downgrade", None, None),
+            }
+            assert snapshot_scope_rows == {
+                ("legacy-snapshot", None, None),
+                ("legacy-after-downgrade", None, None),
+            }
     finally:
         engine.dispose()
 
