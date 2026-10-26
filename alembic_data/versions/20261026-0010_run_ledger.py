@@ -10,6 +10,7 @@ changes later.
 """
 
 from sqlalchemy import BigInteger, CheckConstraint, Column, String, Text
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
 from alembic import op
 
@@ -23,11 +24,32 @@ def upgrade() -> None:
     """Create the warehouse-local run ledger and its claim-order index."""
     op.create_table(
         "od_run_ledger",
-        Column("run_key", String(255), primary_key=True, nullable=False),
-        Column("job_snapshot_json", Text(), nullable=False),
-        Column("status", String(16), nullable=False),
-        Column("worker", String(255), nullable=True),
-        Column("lease_id", String(32), nullable=True),
+        Column(
+            "run_key",
+            String(255).with_variant(String(255, collation="utf8mb4_bin"), "mysql"),
+            primary_key=True,
+            nullable=False,
+        ),
+        Column(
+            "job_snapshot_json",
+            Text().with_variant(MEDIUMTEXT(), "mysql"),
+            nullable=False,
+        ),
+        Column(
+            "status",
+            String(16).with_variant(String(16, collation="utf8mb4_bin"), "mysql"),
+            nullable=False,
+        ),
+        Column(
+            "worker",
+            String(255).with_variant(String(255, collation="utf8mb4_bin"), "mysql"),
+            nullable=True,
+        ),
+        Column(
+            "lease_id",
+            String(32).with_variant(String(32, collation="utf8mb4_bin"), "mysql"),
+            nullable=True,
+        ),
         Column("fencing_token", BigInteger(), nullable=False),
         Column("lease_expires_at_us", BigInteger(), nullable=True),
         Column("created_at_us", BigInteger(), nullable=False),
@@ -35,7 +57,7 @@ def upgrade() -> None:
         Column("started_at_us", BigInteger(), nullable=True),
         Column("heartbeat_at_us", BigInteger(), nullable=True),
         Column("finished_at_us", BigInteger(), nullable=True),
-        Column("error_text", Text(), nullable=True),
+        Column("error_text", Text().with_variant(MEDIUMTEXT(), "mysql"), nullable=True),
         CheckConstraint(
             "status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')",
             name="ck_od_run_ledger_status",

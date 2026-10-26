@@ -9,6 +9,7 @@ scheduler. Callers must construct it with the warehouse engine.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Literal, TypeVar
@@ -25,11 +26,13 @@ from sqlalchemy import (
     Text,
     and_,
     case,
+    event,
     insert,
     or_,
     select,
     update,
 )
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from sqlalchemy.engine import Connection, Engine, RowMapping
 from sqlalchemy.exc import IntegrityError
 
@@ -50,16 +53,41 @@ MAX_TTL = timedelta(days=1)
 MAX_RUN_KEY_LENGTH = 255
 MAX_WORKER_LENGTH = 255
 MAX_SNAPSHOT_BYTES = 1_048_576
+MAX_ERROR_TEXT_BYTES = 1_048_576
 
 RUN_LEDGER_METADATA = MetaData()
 RUN_LEDGER_TABLE = Table(
     "od_run_ledger",
     RUN_LEDGER_METADATA,
-    Column("run_key", String(MAX_RUN_KEY_LENGTH), primary_key=True),
-    Column("job_snapshot_json", Text, nullable=False),
-    Column("status", String(16), nullable=False),
-    Column("worker", String(MAX_WORKER_LENGTH), nullable=True),
-    Column("lease_id", String(32), nullable=True),
+    Column(
+        "run_key",
+        String(MAX_RUN_KEY_LENGTH).with_variant(
+            String(MAX_RUN_KEY_LENGTH, collation="utf8mb4_bin"), "mysql"
+        ),
+        primary_key=True,
+    ),
+    Column(
+        "job_snapshot_json",
+        Text().with_variant(MEDIUMTEXT(), "mysql"),
+        nullable=False,
+    ),
+    Column(
+        "status",
+        String(16).with_variant(String(16, collation="utf8mb4_bin"), "mysql"),
+        nullable=False,
+    ),
+    Column(
+        "worker",
+        String(MAX_WORKER_LENGTH).with_variant(
+            String(MAX_WORKER_LENGTH, collation="utf8mb4_bin"), "mysql"
+        ),
+        nullable=True,
+    ),
+    Column(
+        "lease_id",
+        String(32).with_variant(String(32, collation="utf8mb4_bin"), "mysql"),
+        nullable=True,
+    ),
     Column("fencing_token", BigInteger, nullable=False, default=0),
     Column("lease_expires_at_us", BigInteger, nullable=True),
     Column("created_at_us", BigInteger, nullable=False),
@@ -67,7 +95,7 @@ RUN_LEDGER_TABLE = Table(
     Column("started_at_us", BigInteger, nullable=True),
     Column("heartbeat_at_us", BigInteger, nullable=True),
     Column("finished_at_us", BigInteger, nullable=True),
-    Column("error_text", Text, nullable=True),
+    Column("error_text", Text().with_variant(MEDIUMTEXT(), "mysql"), nullable=True),
     CheckConstraint(
         "status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')",
         name="ck_od_run_ledger_status",
@@ -111,6 +139,10 @@ class RunLedgerConflictError(ValueError):
 
 class RunLeaseExpiredError(RuntimeError):
     """Raised when a lease expires while its fenced warehouse write is running."""
+
+
+class RunTransactionBoundaryError(RuntimeError):
+    """Raised when a fenced write callback tries to end or replace its transaction."""
 
 
 class RunLedger:
@@ -290,10 +322,12 @@ class RunLedger:
 
         ``operation`` receives the connection holding the run-ledger lock. It
         must perform only bounded SQL writes through that connection: it must
-        not fetch from a provider, open another engine, commit, or otherwise
-        end the transaction. Its return value is paired with the succeeded
-        record. A stale, cancelled, or already expired lease returns ``None``
-        without invoking ``operation``. If the lease expires while the
+        not fetch from a provider, open another engine, commit, roll back, or
+        otherwise end the outer transaction. SQLAlchemy ``begin_nested()``
+        scopes are allowed; direct transaction-control SQL and raw DBAPI
+        transaction methods are not. Its return value is paired with the
+        succeeded record. A stale, cancelled, or already expired lease returns
+        ``None`` without invoking ``operation``. If the lease expires while the
         operation runs, :class:`RunLeaseExpiredError` is raised and both the
         operation's writes and the success transition roll back.
 
@@ -358,8 +392,20 @@ class RunLedger:
                 if not _record_has_live_lease(before_operation, worker, fencing_token, now_us):
                     return None
 
-                operation_result = operation(connection)
+                transaction_guard = _CallbackTransactionGuard(connection)
+                transaction_guard.install()
+                try:
+                    operation_result = operation(connection)
+                finally:
+                    transaction_guard.remove()
+                transaction_guard.raise_if_violated()
                 commit_us = _datetime_to_epoch_us(commit_clock())
+                minimum_commit_us = max(
+                    now_us,
+                    _datetime_to_epoch_us(before_operation.updated_at),
+                )
+                if commit_us < minimum_commit_us:
+                    raise ValueError("commit clock must not be earlier than now or run updated_at")
                 if commit_us >= _record_lease_expiry_us(before_operation):
                     raise RunLeaseExpiredError("run lease expired before warehouse result commit")
 
@@ -416,8 +462,7 @@ class RunLedger:
         _validate_run_key(run_key)
         _validate_worker(worker)
         _validate_fencing_token(fencing_token)
-        if not isinstance(error_text, str) or not error_text.strip():
-            raise ValueError("error_text must be a non-empty string")
+        _validate_error_text(error_text)
         now_us = _datetime_to_epoch_us(now)
         return self._leased_transition(
             run_key,
@@ -550,6 +595,152 @@ class _LostRunLeaseError(RuntimeError):
     """Force rollback when ownership changes during a fenced callback."""
 
 
+_ALLOWED_CALLBACK_SQL = frozenset(
+    {"DELETE", "INSERT", "MERGE", "REPLACE", "SELECT", "UPDATE", "WITH"}
+)
+_SQL_KEYWORD = re.compile(r"\A\s*([A-Za-z_]+)")
+_SQL_LEADING_COMMENTS = re.compile(
+    r"\A(?:\s|--[^\r\n]*(?:\r?\n|\Z)|\#[^\r\n]*(?:\r?\n|\Z)|/\*.*?\*/)*",
+    re.DOTALL,
+)
+_SAVEPOINT_NAME = re.compile(r"\A(?:_?sa_savepoint_\d+)\Z", re.IGNORECASE)
+_SAVEPOINT_SQL = re.compile(r"\ASAVEPOINT\s+([A-Za-z_][A-Za-z0-9_]*)\Z", re.IGNORECASE)
+_ROLLBACK_SAVEPOINT_SQL = re.compile(
+    r"\AROLLBACK\s+TO(?:\s+SAVEPOINT)?\s+([A-Za-z_][A-Za-z0-9_]*)\Z",
+    re.IGNORECASE,
+)
+_RELEASE_SAVEPOINT_SQL = re.compile(
+    r"\ARELEASE(?:\s+SAVEPOINT)?\s+([A-Za-z_][A-Za-z0-9_]*)\Z",
+    re.IGNORECASE,
+)
+
+
+class _CallbackTransactionGuard:
+    """Reject transaction boundaries and implicit-commit SQL on one connection."""
+
+    def __init__(self, connection: Connection) -> None:
+        """Bind event guards to the exact transaction connection."""
+        self._connection = connection
+        self._violation: str | None = None
+        self._pending_savepoint_sql: tuple[str, str | None] | None = None
+        self._listeners: list[tuple[str, Callable[..., None]]] = [
+            ("commit", self._reject_root_commit),
+            ("rollback", self._reject_root_rollback),
+            ("savepoint", self._allow_savepoint),
+            ("rollback_savepoint", self._allow_rollback_savepoint),
+            ("release_savepoint", self._allow_release_savepoint),
+            ("before_cursor_execute", self._reject_transaction_sql),
+        ]
+
+    def install(self) -> None:
+        """Install the boundary listeners before calling user-owned storage code."""
+        for event_name, listener in self._listeners:
+            event.listen(self._connection, event_name, listener)
+
+    def remove(self) -> None:
+        """Remove listeners before the repository completes or rolls back."""
+        for event_name, listener in reversed(self._listeners):
+            event.remove(self._connection, event_name, listener)
+
+    def raise_if_violated(self) -> None:
+        """Fail the outer transaction if a callback caught a guard exception."""
+        if self._violation is not None:
+            raise RunTransactionBoundaryError(self._violation)
+
+    def _reject_root_commit(self, _connection: Connection) -> None:
+        """Roll back the DBAPI transaction before vetoing Connection.commit()."""
+        self._reject_root_boundary("Connection.commit()")
+
+    def _reject_root_rollback(self, _connection: Connection) -> None:
+        """Roll back the DBAPI transaction before vetoing Connection.rollback()."""
+        self._reject_root_boundary("Connection.rollback()")
+
+    def _reject_root_boundary(self, method_name: str) -> None:
+        """Undo SQLAlchemy's root transaction before it marks it inactive."""
+        self._violation = f"{method_name} is forbidden in a fenced write"
+        try:
+            # ConnectionEvents fire before SQLAlchemy deactivates its
+            # RootTransaction. A listener exception alone would leave some
+            # drivers' DBAPI transaction open when the logical transaction is
+            # deactivated, so roll the DBAPI transaction back before vetoing.
+            self._connection.connection.rollback()
+        except BaseException as exc:
+            raise RunTransactionBoundaryError(self._violation) from exc
+        raise RunTransactionBoundaryError(self._violation)
+
+    def _allow_savepoint(self, _connection: Connection, _name: str | None = None) -> None:
+        """Permit a SQLAlchemy-owned nested savepoint, but no raw savepoint SQL."""
+        self._set_pending_savepoint_sql("SAVEPOINT", None)
+
+    def _allow_rollback_savepoint(
+        self, _connection: Connection, name: str, _context: object
+    ) -> None:
+        """Permit SQLAlchemy to roll back only the named nested savepoint."""
+        self._set_pending_savepoint_sql("ROLLBACK TO SAVEPOINT", name)
+
+    def _allow_release_savepoint(
+        self, _connection: Connection, name: str, _context: object
+    ) -> None:
+        """Permit SQLAlchemy to release only the named nested savepoint."""
+        self._set_pending_savepoint_sql("RELEASE SAVEPOINT", name)
+
+    def _set_pending_savepoint_sql(self, command: str, name: str | None) -> None:
+        """Authorize the single dialect statement emitted by a savepoint event."""
+        if self._violation is not None:
+            raise RunTransactionBoundaryError(self._violation)
+        if self._pending_savepoint_sql is not None:
+            self._violation = "unexpected nested transaction command in a fenced write"
+            raise RunTransactionBoundaryError(self._violation)
+        self._pending_savepoint_sql = (command, name)
+
+    def _consume_savepoint_sql(self, statement: str) -> bool:
+        """Match a pending SQLAlchemy savepoint event to its exact SQL statement."""
+        pending = self._pending_savepoint_sql
+        if pending is None:
+            return False
+        self._pending_savepoint_sql = None
+        command, expected_name = pending
+        if command == "SAVEPOINT":
+            match = _SAVEPOINT_SQL.fullmatch(statement)
+            valid = match is not None and _SAVEPOINT_NAME.fullmatch(match.group(1)) is not None
+        elif command == "ROLLBACK TO SAVEPOINT":
+            match = _ROLLBACK_SAVEPOINT_SQL.fullmatch(statement)
+            valid = match is not None and match.group(1) == expected_name
+        else:
+            match = _RELEASE_SAVEPOINT_SQL.fullmatch(statement)
+            valid = match is not None and match.group(1) == expected_name
+        if not valid:
+            self._violation = "unexpected savepoint SQL in a fenced write"
+            raise RunTransactionBoundaryError(self._violation)
+        return True
+
+    def _reject_transaction_sql(
+        self,
+        _connection: Connection,
+        _cursor: object,
+        statement: str,
+        _parameters: object,
+        _context: object,
+        _executemany: bool,
+    ) -> None:
+        """Allow one DML/SELECT statement and reject transaction or DDL SQL."""
+        if self._violation is not None:
+            raise RunTransactionBoundaryError(self._violation)
+        if ";" in statement:
+            self._violation = "multi-statement SQL is forbidden in a fenced write"
+            raise RunTransactionBoundaryError(self._violation)
+        if self._consume_savepoint_sql(statement):
+            return
+        uncommented = _SQL_LEADING_COMMENTS.sub("", statement, count=1)
+        match = _SQL_KEYWORD.match(uncommented)
+        keyword = match.group(1).upper() if match is not None else ""
+        if keyword not in _ALLOWED_CALLBACK_SQL:
+            self._violation = (
+                "only single-statement warehouse DML or SELECT is allowed in a fenced write"
+            )
+            raise RunTransactionBoundaryError(self._violation)
+
+
 def _record_from_row(row: RowMapping) -> RunRecord:
     """Convert a validated SQL row mapping to a public immutable record."""
     return RunRecord(
@@ -645,6 +836,18 @@ def _validate_snapshot(jobsnapshot_json: str) -> None:
         raise ValueError("jobsnapshot_json must be valid UTF-8") from exc
     if canonical_json != jobsnapshot_json:
         raise ValueError("jobsnapshot_json must use canonical JSON encoding")
+
+
+def _validate_error_text(error_text: str) -> None:
+    """Bound stored run errors to the warehouse's 1 MiB diagnostic budget."""
+    if not isinstance(error_text, str) or not error_text.strip():
+        raise ValueError("error_text must be a non-empty string")
+    try:
+        encoded_error = error_text.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise ValueError("error_text must be valid UTF-8") from exc
+    if len(encoded_error) > MAX_ERROR_TEXT_BYTES:
+        raise ValueError(f"error_text exceeds {MAX_ERROR_TEXT_BYTES} UTF-8 bytes")
 
 
 def _reject_secret_fields(value: object) -> None:
@@ -747,4 +950,5 @@ __all__ = [
     "RunLeaseExpiredError",
     "RunRecord",
     "RunStatus",
+    "RunTransactionBoundaryError",
 ]

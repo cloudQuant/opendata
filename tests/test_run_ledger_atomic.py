@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
@@ -23,11 +24,14 @@ from sqlalchemy import (
     inspect,
     select,
 )
+from sqlalchemy.dialects.mysql import dialect as mysql_dialect
+from sqlalchemy.schema import CreateTable
 
 from opendata.pipeline.run_ledger import (
     RUN_LEDGER_METADATA,
     RunLeaseExpiredError,
     RunLedger,
+    RunTransactionBoundaryError,
 )
 
 NOW = datetime(2026, 10, 26, 9, 30, 0, 123456, tzinfo=timezone.utc)
@@ -193,6 +197,222 @@ def test_expiry_after_operation_rolls_back_fact_and_success(atomic_setup) -> Non
     assert ledger.get(claim.run_key) == claim
     with engine.connect() as connection:
         assert connection.execute(select(FACT_TABLE.c.value)).scalars().all() == []
+
+
+@pytest.mark.parametrize(
+    "boundary_action",
+    [
+        "commit_method",
+        "rollback_method",
+        "commit_sql",
+        "rollback_sql",
+        "raw_savepoint_sql",
+        "implicit_commit_ddl",
+        "multi_statement_sql",
+    ],
+)
+def test_callback_cannot_end_or_replace_the_guarded_transaction(
+    atomic_setup, boundary_action: str
+) -> None:
+    engine, ledger = atomic_setup
+    claim = _claimed(ledger)
+
+    def break_boundary(connection):
+        connection.execute(insert(FACT_TABLE).values(value=51))
+        if boundary_action == "commit_method":
+            connection.commit()
+        elif boundary_action == "rollback_method":
+            connection.rollback()
+        elif boundary_action == "commit_sql":
+            connection.exec_driver_sql("COMMIT")
+        elif boundary_action == "rollback_sql":
+            connection.exec_driver_sql("ROLLBACK")
+        elif boundary_action == "raw_savepoint_sql":
+            connection.exec_driver_sql("SAVEPOINT user_savepoint")
+        elif boundary_action == "implicit_commit_ddl":
+            connection.exec_driver_sql("CREATE TABLE illicit_side_effect (id INTEGER)")
+        else:
+            connection.exec_driver_sql("INSERT INTO atomic_test_facts (value) VALUES (99); COMMIT")
+
+    with pytest.raises(RunTransactionBoundaryError):
+        ledger.commit_result(
+            claim.run_key,
+            worker="worker-a",
+            fencing_token=claim.fencing_token,
+            now=NOW + timedelta(seconds=1),
+            operation=break_boundary,
+            clock=lambda: NOW + timedelta(seconds=2),
+        )
+
+    assert ledger.get(claim.run_key) == claim
+    with engine.connect() as connection:
+        assert connection.execute(select(FACT_TABLE.c.value)).scalars().all() == []
+        assert not inspect(connection).has_table("illicit_side_effect")
+
+
+@pytest.mark.parametrize("statement", ["COMMIT", "ROLLBACK"])
+def test_caught_transaction_sql_violation_still_forces_outer_rollback(
+    atomic_setup, statement: str
+) -> None:
+    engine, ledger = atomic_setup
+    claim = _claimed(ledger)
+
+    def catch_violation(connection):
+        connection.execute(insert(FACT_TABLE).values(value=61))
+        with pytest.raises(RunTransactionBoundaryError):
+            connection.exec_driver_sql(statement)
+        return "callback-caught-the-guard"
+
+    with pytest.raises(RunTransactionBoundaryError):
+        ledger.commit_result(
+            claim.run_key,
+            worker="worker-a",
+            fencing_token=claim.fencing_token,
+            now=NOW + timedelta(seconds=1),
+            operation=catch_violation,
+            clock=lambda: NOW + timedelta(seconds=2),
+        )
+
+    assert ledger.get(claim.run_key) == claim
+    with engine.connect() as connection:
+        assert connection.execute(select(FACT_TABLE.c.value)).scalars().all() == []
+
+
+def test_commit_clock_cannot_precede_transaction_now_or_ledger_update(atomic_setup) -> None:
+    engine, ledger = atomic_setup
+    claim = _claimed(ledger)
+
+    def write_fact(connection):
+        connection.execute(insert(FACT_TABLE).values(value=71))
+
+    with pytest.raises(ValueError, match="must not be earlier"):
+        ledger.commit_result(
+            claim.run_key,
+            worker="worker-a",
+            fencing_token=claim.fencing_token,
+            now=NOW + timedelta(seconds=2),
+            operation=write_fact,
+            clock=lambda: NOW + timedelta(seconds=1),
+        )
+
+    assert ledger.get(claim.run_key) == claim
+    with engine.connect() as connection:
+        assert connection.execute(select(FACT_TABLE.c.value)).scalars().all() == []
+
+
+def test_commit_clock_cannot_precede_a_later_ledger_update(atomic_setup) -> None:
+    engine, ledger = atomic_setup
+    ledger.enqueue("later-ledger-update", SNAPSHOT)
+    claim = ledger.claim("worker-a", NOW + timedelta(seconds=5), timedelta(seconds=10))
+    assert claim is not None
+
+    def write_fact(connection):
+        connection.execute(insert(FACT_TABLE).values(value=72))
+
+    with pytest.raises(ValueError, match="must not be earlier"):
+        ledger.commit_result(
+            claim.run_key,
+            worker="worker-a",
+            fencing_token=claim.fencing_token,
+            now=NOW + timedelta(seconds=1),
+            operation=write_fact,
+            clock=lambda: NOW + timedelta(seconds=4),
+        )
+
+    assert ledger.get(claim.run_key) == claim
+    with engine.connect() as connection:
+        assert connection.execute(select(FACT_TABLE.c.value)).scalars().all() == []
+
+
+def test_commit_result_allows_releasing_a_nested_savepoint(atomic_setup) -> None:
+    engine, ledger = atomic_setup
+    claim = _claimed(ledger, "nested-release")
+
+    def write_with_savepoint(connection):
+        connection.execute(insert(FACT_TABLE).values(value=81))
+        with connection.begin_nested():
+            connection.execute(insert(FACT_TABLE).values(value=82))
+        return "released"
+
+    result = ledger.commit_result(
+        claim.run_key,
+        worker="worker-a",
+        fencing_token=claim.fencing_token,
+        now=NOW + timedelta(seconds=1),
+        operation=write_with_savepoint,
+        clock=lambda: NOW + timedelta(seconds=2),
+    )
+
+    assert result is not None
+    assert result[0].status == "succeeded"
+    assert result[1] == "released"
+    with engine.connect() as connection:
+        assert connection.execute(select(FACT_TABLE.c.value)).scalars().all() == [81, 82]
+
+
+def test_commit_result_allows_rolling_back_only_a_nested_savepoint(atomic_setup) -> None:
+    engine, ledger = atomic_setup
+    claim = _claimed(ledger, "nested-rollback")
+
+    def write_with_rollback(connection):
+        connection.execute(insert(FACT_TABLE).values(value=83))
+        nested = connection.begin_nested()
+        connection.execute(insert(FACT_TABLE).values(value=84))
+        nested.rollback()
+        connection.execute(insert(FACT_TABLE).values(value=85))
+        return "rolled-back-inner-write"
+
+    result = ledger.commit_result(
+        claim.run_key,
+        worker="worker-a",
+        fencing_token=claim.fencing_token,
+        now=NOW + timedelta(seconds=1),
+        operation=write_with_rollback,
+        clock=lambda: NOW + timedelta(seconds=2),
+    )
+
+    assert result is not None
+    assert result[0].status == "succeeded"
+    assert result[1] == "rolled-back-inner-write"
+    with engine.connect() as connection:
+        assert connection.execute(select(FACT_TABLE.c.value)).scalars().all() == [83, 85]
+
+
+def test_mysql_ledger_schema_uses_binary_identity_and_medium_text_columns() -> None:
+    """Keep MySQL collation exact and payload capacity above the JSON budget."""
+    ledger_table = RUN_LEDGER_METADATA.tables["od_run_ledger"]
+    ddl = str(CreateTable(ledger_table).compile(dialect=mysql_dialect()))
+
+    for column in ("run_key", "status", "worker", "lease_id"):
+        match = re.search(rf"^\s*{column} VARCHAR\(\d+\).*$", ddl, re.MULTILINE)
+        assert match is not None
+        assert "COLLATE utf8mb4_bin" in match.group(0)
+    assert "job_snapshot_json MEDIUMTEXT NOT NULL" in ddl
+    assert "error_text MEDIUMTEXT" in ddl
+
+
+def test_ledger_accepts_snapshots_larger_than_mysql_text_capacity(atomic_setup) -> None:
+    _, ledger = atomic_setup
+    snapshot = '{"payload":"' + ("x" * (70 * 1024)) + '"}'
+
+    stored = ledger.enqueue("large-snapshot", snapshot)
+
+    assert len(stored.job_snapshot_json.encode("utf-8")) > 65_535
+    assert stored.job_snapshot_json == snapshot
+
+
+def test_run_error_text_is_bounded_before_storage(atomic_setup) -> None:
+    _, ledger = atomic_setup
+    claim = _claimed(ledger, "bounded-error")
+
+    with pytest.raises(ValueError, match="error_text exceeds"):
+        ledger.fail(
+            claim.run_key,
+            "worker-a",
+            claim.fencing_token,
+            NOW + timedelta(seconds=1),
+            "x" * (1_048_577),
+        )
 
 
 def test_sqlite_write_lock_prevents_concurrent_expired_lease_takeover(
