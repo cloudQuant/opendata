@@ -56,6 +56,19 @@
         "additionalProperties": false,
         "description": "Strict request body for creating one fixed read snapshot.",
         "properties": {
+          "capture_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capture Id"
+          },
           "dataset_id": {
             "maxLength": 128,
             "minLength": 1,
@@ -73,6 +86,19 @@
               }
             ],
             "title": "End Date"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
           },
           "page_size": {
             "default": 100,
@@ -422,6 +448,16 @@
           "schema_version": {
             "title": "Schema Version",
             "type": "string"
+          },
+          "selection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InstrumentCaptureSelectionResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "selection_sha256": {
             "title": "Selection Sha256",
@@ -948,6 +984,26 @@
         "title": "IdentitySemanticsResponse",
         "type": "object"
       },
+      "InstrumentCaptureSelectionResponse": {
+        "additionalProperties": false,
+        "description": "Exact instrument/capture pair pinned by a selected snapshot.",
+        "properties": {
+          "capture_id": {
+            "title": "Capture Id",
+            "type": "string"
+          },
+          "instrument_id": {
+            "title": "Instrument Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instrument_id",
+          "capture_id"
+        ],
+        "title": "InstrumentCaptureSelectionResponse",
+        "type": "object"
+      },
       "PageMetaResponse": {
         "additionalProperties": false,
         "description": "Namespaced snapshot reference echoed alongside the top-level fields.",
@@ -1362,6 +1418,16 @@
           "schema_version": {
             "title": "Schema Version",
             "type": "string"
+          },
+          "selection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InstrumentCaptureSelectionResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "selection_sha256": {
             "title": "Selection Sha256",
@@ -2160,6 +2226,42 @@
                 }
               ],
               "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "instrument_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Instrument Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "capture_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "minLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Capture Id"
             }
           },
           {

@@ -7,7 +7,9 @@ The OpenAPI compatibility check runs from the actual `opendata.main.app.openapi(
 - [`afi204-v1-openapi.json`](../afi204-v1-openapi.json) freezes the 140 legacy HTTP paths mounted under both `/api/v1` and the compatibility `/api` prefix (166 operations). It contains the referenced schemas and security scheme only.
 - [`afi204-v2-openapi.json`](../afi204-v2-openapi.json) freezes the six published-data v2 paths and their referenced schemas.
 
-The v1 document was captured from the live app on 2026-10-26. The v1 artifact SHA-256 is `2b738ff5ab2d2aa8a2603c908a05256a1b8b7522f72aa5a699ba963d4271bf74`; the v2 artifact SHA-256 is `ff35866742273bf4e442fbb3c2cdc64740021712fd150092b44631185430365f`. The checker pins both hashes in `scripts/quality/check_published_openapi.py`. There is no `--update` or self-comparison path.
+The v1 document was captured from the live app on 2026-10-26. The v1 artifact SHA-256 remains `2b738ff5ab2d2aa8a2603c908a05256a1b8b7522f72aa5a699ba963d4271bf74`. The v2 surface was recaptured and independently reviewed on 2026-10-27 for W11; its artifact SHA-256 is `b5ef23a6d2c0910a900d886832ee2650d1cbbd3baf98816551eb07a655e612aa`. The checker pins both hashes in `scripts/quality/check_published_openapi.py`. There is no `--update` or self-comparison path.
+
+The W11 v2 update adds optional `instrument_id` and `capture_id` query/body fields and the optional `selection` response field with its strict pair schema. It preserves existing routes, authentication and required fields. Runtime validation requires the pair for a new instrument/capture-profile selection and checks repeated selectors against an existing snapshot; legacy datasets reject these selectors. The artifact retains its existing v2 pre-release `info` annotation; paths, components and all other top-level fields come from the actual app capture. This update does not establish source permission, data completeness or production activation.
 
 ## Compatibility rules
 
