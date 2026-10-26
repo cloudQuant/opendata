@@ -494,17 +494,16 @@ def test_sqlite_write_lock_prevents_concurrent_expired_lease_takeover(
             allow_operation_return.set()
             committed = commit_future.result(timeout=10)
             takeover = takeover_future.result(timeout=10)
+        assert committed is not None
+        assert committed[0].status == "succeeded"
+        assert takeover is None
+        with setup_engine.connect() as connection:
+            assert connection.execute(select(FACT_TABLE.c.value)).scalars().all() == [41]
     finally:
         allow_operation_return.set()
         first_engine.dispose()
         second_engine.dispose()
         setup_engine.dispose()
-
-    assert committed is not None
-    assert committed[0].status == "succeeded"
-    assert takeover is None
-    with setup_engine.connect() as connection:
-        assert connection.execute(select(FACT_TABLE.c.value)).scalars().all() == [41]
 
 
 def test_warehouse_run_ledger_migration_upgrades_and_downgrades_sqlite() -> None:
