@@ -94,6 +94,7 @@ class SyntheticRaw(HTTPResponse):
                 yield source_chunk[offset : offset + chunk_size]
         if self._clock is not None:
             self._clock.now += self._advance_on_eof
+        self.close()
 
     def close(self) -> None:
         self._synthetic_closed = True

@@ -627,7 +627,7 @@ class GovernedHttpClient:
             json_body=json_body,
             use_cache=use_cache,
         )
-        if not isinstance(result, requests.Response):
+        if isinstance(result, BoundedHttpResponse):
             raise RuntimeError("ordinary HTTP request returned a bounded response")
         return result
 
