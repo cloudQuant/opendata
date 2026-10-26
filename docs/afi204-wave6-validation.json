@@ -1,0 +1,1101 @@
+{
+  "archive_note": "Same-host ignored evidence archive, not external backup or recovery drill.",
+  "archive_path": "var/reports/afi204/2026-10-27-wave6",
+  "environment": {
+    "python": "3.13.5",
+    "python310_grammar": "PASS",
+    "python310_runtime": "NOT_RUN"
+  },
+  "inventory": {
+    "blocked": 1103,
+    "ready_disabled": 0,
+    "real_task_imports_this_wave": 0,
+    "registered_scripts": 1066,
+    "scheduled_tasks": 1103,
+    "source": "Earlier frozen inventory and plan; no new live census or denominator reduction."
+  },
+  "iteration": 204,
+  "opendata_code_commit": "bf4359d8b0f5c255fa76c59140217a86db4a9a1f",
+  "private_receipt_sha256": [
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/finalize_wave6.py",
+      "sha256": "c5c86dbf23694fece7fe14281740f8d29bd10fb959396b65fdd1a3464c3fe68f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/run_wave6_combined.py",
+      "sha256": "268f4fc047f394a6883481c643e84b95c282e10117bca37f3f8c31cc4ca5f815"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/run_wave6_http_boundaries_tests.py",
+      "sha256": "bcc9b2ddf3ff9c8c51b172fbf10c9214b38037362b53e2d1e62697442c7895ae"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/run_wave6_http_expanded_tests.py",
+      "sha256": "ac01d3b7ef66dd616d61675a0415cdb9273c92045464e39c6ca2465c1c87290d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/run_wave6_http_final_tests.py",
+      "sha256": "8401094d27d2e9ce8d1f16d38bdeef3746bba148c190ae256afbb41918f42039"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/run_wave6_http_fixed_tests.py",
+      "sha256": "ab2d4a9cf11d644614746f39528a1e90683f63d2cce9ff21c20ee05d11b4dda5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/run_wave6_http_tests.py",
+      "sha256": "de1d8741ef56ce32978ea4252873ea9306204be0440f5d14aa8329272631d17a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/run_wave6_secret_check.py",
+      "sha256": "ad285fa00cb240c1cce28cb776711b330a838742c03045045d487a813df624bb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/run_wave6_static.py",
+      "sha256": "ce0a30089232806a38c1cabd87b142b4693271437cbaaaab72fbaabccd716bd6"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/run_wave6_stock_fixed_tests.py",
+      "sha256": "a9bce1ede7df93dc8a34622e61f89c99477e0c5bd4cbdbc7e02723adc143eee1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/run_wave6_stock_tests.py",
+      "sha256": "269bebace6149e8e86d8df2400bdcaa645a2b8fe7e6983b4611a274198591109"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/run_wave6_worker_cleanup.py",
+      "sha256": "39bd6dc84091298c108f36b37cf292e176ff171801f7d3af65ee3fe78562cde5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-afi-protected-source-before-closeout.json",
+      "sha256": "f64c95604984c21d37566613053f840c738f841f33a210fe05da82bd357227ba"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-boundary-tests-root-review.json",
+      "sha256": "2d216c6d0290ccccca8de4f519d95276cce844e0fd5221b56f3fb3b2f4f01bc2"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-combined-root-command.json",
+      "sha256": "fd9e30649f3135d99df4a49f1192a92ca32575850a93ef8e13ecedf67e5e65c7"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-combined-root.txt",
+      "sha256": "f35738c1102278b26849842a3b338a600ee79170b2e67245a33bf51c9ef71f4c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-bandit-command.json",
+      "sha256": "39bdb82f2fa089771a9338338dd5a57b2628f6356a90c2cfeddb5e08e548d125"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-bandit.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-format-command.json",
+      "sha256": "c24014a4e41f977d9134d0bbd9b8e04e665edc307f7bb34c07f47b56d736ae96"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-format.txt",
+      "sha256": "08a6f81023ff0ea3c8b53845f1b8c00d66f580c7277f7ca6121dad2281a9c914"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-mypy-client-command.json",
+      "sha256": "7a8bea78db8fe0379df39d5a9523d2cb1a2f334adcc98ff34da1dfaae0996eac"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-mypy-client.txt",
+      "sha256": "2f8ff64eefa9722f4e130c2da051e4aedc145f83efdfb11a63fa4a6fa4be12ed"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-mypy-core-command.json",
+      "sha256": "1ba2d4a4b1db562110636e485748f8d8769fbea987229aa8cb24deeeb349f73a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-mypy-core.txt",
+      "sha256": "8797c60315242ee16057cb107ea1ec62e2678d358c86bc2be797e23d87e87578"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-named-gates-command.json",
+      "sha256": "162e1d1127c2782e3a863a233a010e6f92f57087a53de6215d5fd5edee4a56fb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-named-gates.txt",
+      "sha256": "94bfda2abae75751f5cef688b01f32b24a501638e9802aaf28f568ad635408fd"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-reference-reconcile.json",
+      "sha256": "99ca3d1cceb2207c95e424d2e72be652597b6e82e4beb1a2d85e44049a55b733"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-ruff-command.json",
+      "sha256": "01aa125a9e4c7a0a87aa15e3fb7eccd6d1617bba71ad8cd4b885fa76aed8588a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-source-snapshot.json",
+      "sha256": "c83922e03f659b011c7646d27ca0c21bc2c1c14af7c5998a1a0cd42ba64aa240"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-whole-a2-command.json",
+      "sha256": "7d0750e42bc4baa8686fe0cc9ffc5b7b7ffc17fb4961e7408414044af672e20f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-whole-a2-summary.json",
+      "sha256": "9624ad85e50e55d05734e1a58c66c6521a996015bc22b5406f6ada5b07a238df"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-final-whole-a2.txt",
+      "sha256": "0b80984f56c26f57ba369a302b53e4d5b8627bd138882f01ded67b1d7f191b8f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-boundaries-root-command.json",
+      "sha256": "fcaf25d4cb8002065ae55284e7b65a1d4f62c936a7291d39734bc11c274423d5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-boundaries-root-coverage.ini",
+      "sha256": "2ad8aa0b094ba5a80890adcad0db39ad5312f67e6c76630ce2345c850a502e54"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-boundaries-root-coverage.json",
+      "sha256": "b7ec9feb842c7089f6505e734a290906f4a8e523e3a1d628fc10d33b8460a17e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-boundaries-root-coverage.xml",
+      "sha256": "0cdb7cb9f9db9284807678d9dc54e712625f7f7955e076be1b4c309f08c4527b"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-boundaries-root.coverage",
+      "sha256": "31a2765e3334bb7799c426baecd2ca8656f104c48d8243222d3136eabfc89282"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-boundaries-root.txt",
+      "sha256": "84ea45d8a950e0a2086b8ea6b685d38b2e2f3d556cf8d7eb5ad23b6928c32dee"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-bounds-final-review.txt",
+      "sha256": "cf35a5aa0324b065696986188aeec2773b3d23994df596d4a9be5f551258fea1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-bounds-redirect-fix-review.txt",
+      "sha256": "7f26e40c4a45d2d47f3dc8baf3943fb3f2285f040fc5a17b89bde5cdb597cec1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-bounds-redirect-fix-static.json",
+      "sha256": "b13669985b3141c4bb2f097d6236513fa522b9c5bdd6cce214594a822c1e3a5c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-bounds-redirect-reopened.txt",
+      "sha256": "ef1b1f1afe88160cfbbe73b1528f8645b1658752102e66b4470503a77cc51a73"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-bounds-review.txt",
+      "sha256": "9248e53c92e48317d9a7c2ad667a183e6b04ac0f6842f0c7499a1f3630467699"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-bounds-static.json",
+      "sha256": "d994be2da2b38ad966f964eee11ba1dad504895e6c8840aa132af25c6764945d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-expanded-isolation-review.json",
+      "sha256": "ff61f2c0e50f755eae007c5f464c55fd6f2ed86cac0df1849fe7d875785478ad"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-expanded-root-command.json",
+      "sha256": "c76a85a6bdc4c2b02e544bc2cee04b7bd4e11ac554d7d17cabcfc90c372ad4fd"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-expanded-root-coverage.ini",
+      "sha256": "2ad8aa0b094ba5a80890adcad0db39ad5312f67e6c76630ce2345c850a502e54"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-expanded-root-coverage.json",
+      "sha256": "7c46e60d3976bed7d9fdef89c2225555a2b16db2d0e0e116d4142df2edfddea4"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-expanded-root-coverage.xml",
+      "sha256": "522d50c91e61c5b5af4d34cf6041b2a00cac7bfceb2b471a68346e778c842c6c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-expanded-root.coverage",
+      "sha256": "38d75fc16ef094ba62977ce7fedd7a0bddf23646a529fe9652c534efd31ada56"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-expanded-root.txt",
+      "sha256": "55f2fcb030b4f40444cc0d4b82f1fa16be8cea81114e613cbcf1895a7dd121ed"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-final-root-command.json",
+      "sha256": "add4e2f0318582ad8dbb4f511563f6759f4e351a4fee73d6fd09a613c220db5b"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-final-root-coverage.ini",
+      "sha256": "2ad8aa0b094ba5a80890adcad0db39ad5312f67e6c76630ce2345c850a502e54"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-final-root-coverage.json",
+      "sha256": "ded4c36a9c7f10f5b4f2c33c13f076d5264a193cc802de5d48c2aebec555c63c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-final-root-coverage.xml",
+      "sha256": "25487e92f65c3b2c939d1895177d7788915bac99015a66f1bbb4901bae34c97b"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-final-root-htmlcov.zip",
+      "sha256": "26592db47ea898c45046651f132baecdb9246941646e92dc432d778ec58bb5a0"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-final-root.coverage",
+      "sha256": "413d80fd53187e7868780c7bc2af22633d876a6603005ac656992f97cf2fa483"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-final-root.txt",
+      "sha256": "8f4c3cc6e36f41c941b5f43a39827e7d4756c54a6cccbf24df6f2d121b5e7d21"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-fixed-root-command.json",
+      "sha256": "e57179399ccf8dde223a19be4ba47bdee3ddd8614a6533efd82749ffdc55b54a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-fixed-root-coverage.ini",
+      "sha256": "2ad8aa0b094ba5a80890adcad0db39ad5312f67e6c76630ce2345c850a502e54"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-fixed-root-coverage.json",
+      "sha256": "5a2183c74c1c220f5b9cf422f0711aa654cbef5f853ad8d912fd567b0ad5bd92"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-fixed-root-coverage.xml",
+      "sha256": "21d51b0489d46bedee2f761030315d4a5551481c922e0d517b61d22f7bc77404"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-fixed-root.coverage",
+      "sha256": "47dbf47fe4a55f693c686fe484bb63d5de01af21f21f2e085e1908f4e35c3023"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-fixed-root.txt",
+      "sha256": "61393840f18c4e2f855c542a0d7f4ef1b0d73ec83c692cd596d976699f2c863d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-initial-failure/manifest.json",
+      "sha256": "9d21c2932e55d8afdedbc770874281302b207d80ea9794c2d28ba139883a6800"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-initial-failure/run_wave6_http_tests.py",
+      "sha256": "de1d8741ef56ce32978ea4252873ea9306204be0440f5d14aa8329272631d17a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-initial-failure/wave6-http-root-command.json",
+      "sha256": "9dd2359f56f570e7256ab080043638df5e124082efc2741ad37fcc776ee0b779"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-initial-failure/wave6-http-root-coverage.ini",
+      "sha256": "2ad8aa0b094ba5a80890adcad0db39ad5312f67e6c76630ce2345c850a502e54"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-initial-failure/wave6-http-root-coverage.json",
+      "sha256": "6a3f522d08671a6eb14f93d70743c6095296ab8ce2333ab0ee2dfaea7c49fd29"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-initial-failure/wave6-http-root-coverage.xml",
+      "sha256": "38a3066aa9e46baebf4ca3368820cd6b70188f9f1faf66a620c94db248df7c3f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-initial-failure/wave6-http-root-htmlcov.zip",
+      "sha256": "2e60226e7ef73f7eed0364042c824bd31e17b55e6b4d49a7d0cfc03fbf70f43f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-initial-failure/wave6-http-root.coverage",
+      "sha256": "9349c68ca4e3c556a05128467d77eaeed4432911939fb06a85eeac4c72e74d31"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-initial-failure/wave6-http-root.txt",
+      "sha256": "576cf3165856cd735ccf89adb77f16bff051e8d833cd3856023a0e4d0e42b810"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-reference-repin-preflight.json",
+      "sha256": "bab62aaa70250def274e7b2026ec59a9ca5e4c05aa43b2f003d1ce34c9da5a8f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-root-command.json",
+      "sha256": "9dd2359f56f570e7256ab080043638df5e124082efc2741ad37fcc776ee0b779"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-root-coverage.ini",
+      "sha256": "2ad8aa0b094ba5a80890adcad0db39ad5312f67e6c76630ce2345c850a502e54"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-root-coverage.json",
+      "sha256": "6a3f522d08671a6eb14f93d70743c6095296ab8ce2333ab0ee2dfaea7c49fd29"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-root-coverage.xml",
+      "sha256": "38a3066aa9e46baebf4ca3368820cd6b70188f9f1faf66a620c94db248df7c3f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-root-failures-static-review.txt",
+      "sha256": "ad6599ba2cf688b50c55ffb1382121ea5f301c5fdf2a4e146404c47f1caaafaf"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-root-htmlcov.zip",
+      "sha256": "2e60226e7ef73f7eed0364042c824bd31e17b55e6b4d49a7d0cfc03fbf70f43f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-root.coverage",
+      "sha256": "9349c68ca4e3c556a05128467d77eaeed4432911939fb06a85eeac4c72e74d31"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-root.txt",
+      "sha256": "576cf3165856cd735ccf89adb77f16bff051e8d833cd3856023a0e4d0e42b810"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-test-isolation-review.txt",
+      "sha256": "5a2282742ed0c69dfa04bda607fb04f674e52129c2deec8baec1091cf8daa578"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-http-test-isolation-root-supplement.txt",
+      "sha256": "be368ead38018fda84ffb3dd2b6316525125d6f55dc29135390b9474b70694b4"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/manifest.json",
+      "sha256": "dd0f005e00e0b67b648ffaa505dd0f5e195d9697033b597501c11cd9ae891f77"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-bandit-command.json",
+      "sha256": "5464470ba90d3d0991062983e2056cdea4187b83c393282d14dfb66c2f82b6b6"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-bandit.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-format-command.json",
+      "sha256": "0294829b74fcdc25f145f07427a0a837b9354747fb13f806623e3cf1bb2d232f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-format.txt",
+      "sha256": "08a6f81023ff0ea3c8b53845f1b8c00d66f580c7277f7ca6121dad2281a9c914"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-mypy-client-command.json",
+      "sha256": "c9431d128e7120020667872683d3e19ca7c8df6cf5325fa1be8c34122237fb10"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-mypy-client.txt",
+      "sha256": "2f8ff64eefa9722f4e130c2da051e4aedc145f83efdfb11a63fa4a6fa4be12ed"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-mypy-core-command.json",
+      "sha256": "8c615b7a72a78eb6fcb2d521b71574d374056545b67aed20d6da8a995b0e64f6"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-mypy-core.txt",
+      "sha256": "8797c60315242ee16057cb107ea1ec62e2678d358c86bc2be797e23d87e87578"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-named-gates-command.json",
+      "sha256": "c760599eba5dd968f5016b4233375931beeb39e7b62823cd7bff7740ad24a4b3"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-named-gates.txt",
+      "sha256": "c6bd85cbea9e5f9672a8c9d0573decdb25370b9da011150bb52009478f33a447"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-reference-reconcile.json",
+      "sha256": "7812edd44b21e8e38179e0d5d3294954cf5b4146cff6dea1c07b8c895230f496"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-ruff-command.json",
+      "sha256": "e22f9cd097099f0a8a34b9dad0d5a3959d1a4205eae5bc1a7bb214836c102134"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-manifest-initial-failure/wave6-final-source-snapshot.json",
+      "sha256": "3dd19a2b86d617360e15471081f09019fc7621acdd9e04db0ad97be31e22a43a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-reference-reconcile.py",
+      "sha256": "d1cdcf6fd4450a672412cd37b3bfcb2000db44115f88595ef620c0e6c205d7cd"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-reference-repin-preflight.json",
+      "sha256": "cd3e9b8ce3e5639ee4d0bb6cb20ee4697cdebe155d6d3995c8a6f5c46020601d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-secret-check-command.json",
+      "sha256": "61302be589717e3d6ca83129cd0290a01d0943fc892a808059e4ce50be74a07c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-secret-check.txt",
+      "sha256": "fc959c0c820da08be57c390a9ef12f0bcd4efedba94c4eaa69efcf030a254388"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-sqlite-warning-audit.txt",
+      "sha256": "02bffaeca8a9ed28d65b7b70416d01d74f1ea2e64f180e1fb54c03ddbe5ba7c8"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-fixed-root-command.json",
+      "sha256": "78b5764532484f5505d27ebbd1842babbf0e899dc4e19fbf66a7b6b60b94f809"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-fixed-root-coverage.ini",
+      "sha256": "62bb7268f878adb5251ea03728907cc75d0a78ffa02a61aeb4d0edd4f2343d6d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-fixed-root-coverage.json",
+      "sha256": "52e65e7a18aa370077616429c2e88abd7ca570bf856c37f3440c08aa0d7b9fd9"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-fixed-root-coverage.xml",
+      "sha256": "29c31919a88bb71c94c97ac1f61d65b28db5617b540193ea260e1094eb2f8c4b"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-fixed-root-htmlcov.zip",
+      "sha256": "6757fef6dbd8c4da327c2b11117cdd6cf080a057a98855882cb0855e5e56eeaa"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-fixed-root.coverage",
+      "sha256": "03a29638bb5c06e9f285899c71e3df568f526dc4d504cbc2545399e3bd9ebfe0"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-fixed-root.txt",
+      "sha256": "e10fab3d58410b7f0c22c6722c1e2a24cfef45975ef7533079ce7f3e1dcf120d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-initial-failure/manifest.json",
+      "sha256": "3a29c2c779f3a0cf722f5c1819063a24356ad75c6b18b85ede080194d093ca91"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-initial-failure/run_wave6_stock_tests.py",
+      "sha256": "269bebace6149e8e86d8df2400bdcaa645a2b8fe7e6983b4611a274198591109"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-initial-failure/wave6-stock-root-command.json",
+      "sha256": "a78a5ce0bfe628911c80c1f9f3cf7b7aa422840d6fe2781aaae92260986748d7"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-initial-failure/wave6-stock-root-coverage.ini",
+      "sha256": "62bb7268f878adb5251ea03728907cc75d0a78ffa02a61aeb4d0edd4f2343d6d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-initial-failure/wave6-stock-root-coverage.json",
+      "sha256": "b932b7f73769c6384c3643e6e6f2174e84759f1886941bcb156fa931efe66b31"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-initial-failure/wave6-stock-root-coverage.xml",
+      "sha256": "e1fd2449be6cd463a7772af978d58562615a8080f786260fa8d6432abc292c82"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-initial-failure/wave6-stock-root-htmlcov.zip",
+      "sha256": "4614bd654b8f3408ea534a4e9dd4693fd27f841b222a9d1cdf0de153d1928980"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-initial-failure/wave6-stock-root.coverage",
+      "sha256": "523c2103f022b1bdc9847bf0e37e5892bb484bac72b2cf128ab4527c45475965"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-initial-failure/wave6-stock-root.txt",
+      "sha256": "c6129797e059025d4a38d4124b16baf45d5b9f3591439a956b82306b4ea376ec"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-process-fixture-review-fixed.txt",
+      "sha256": "302a54e49bcfa963d0287b3c6e071b432b6c7dba6f78a6d644e1b024eb8c5e6c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-process-review-fixed.txt",
+      "sha256": "d5f21fb50667cbaf5a6c1d7583a55b58451762b0b44c480e8800e0a4555a5911"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-process-review.txt",
+      "sha256": "e05940c9cd0f5538bdb449e02d79292007f314025920dadd753f5e09b960b7b6"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-reference-before.json",
+      "sha256": "089b15a7e05fcc35c2ded7b0c05bcdaaa7104f2af551b5dc788865bcaaa71c68"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-root-command.json",
+      "sha256": "a78a5ce0bfe628911c80c1f9f3cf7b7aa422840d6fe2781aaae92260986748d7"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-root-coverage.ini",
+      "sha256": "62bb7268f878adb5251ea03728907cc75d0a78ffa02a61aeb4d0edd4f2343d6d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-root-coverage.json",
+      "sha256": "b932b7f73769c6384c3643e6e6f2174e84759f1886941bcb156fa931efe66b31"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-root-coverage.xml",
+      "sha256": "e1fd2449be6cd463a7772af978d58562615a8080f786260fa8d6432abc292c82"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-root-htmlcov.zip",
+      "sha256": "4614bd654b8f3408ea534a4e9dd4693fd27f841b222a9d1cdf0de153d1928980"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-root.coverage",
+      "sha256": "523c2103f022b1bdc9847bf0e37e5892bb484bac72b2cf128ab4527c45475965"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-root.txt",
+      "sha256": "c6129797e059025d4a38d4124b16baf45d5b9f3591439a956b82306b4ea376ec"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-stock-transport-design.txt",
+      "sha256": "501dd21d0db9dec426a4824f7e0236afff4e1a6c4ddfd79438d925d2fac34c9f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-worker-cleanup-root-command.json",
+      "sha256": "47a9b73a2d9dded774a721301ca8f2d49040414f9b9924c7c188b91f3a891996"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave6/wave6-worker-cleanup-root.txt",
+      "sha256": "b44a8b33d5ff67e2fc8a43f62038c117fcfa066d0a5704ccdb620e732bb0f4b3"
+    }
+  ],
+  "production_accepted": false,
+  "quality_manifest_adjustment": {
+    "changed_leaf": "entries[22].sha256",
+    "delta_from_code_commit": "Exactly one existing sha256 pin changed; 93 entries and 12 AST exceptions remain unchanged.",
+    "path": "docs/quality/akshare-reference-allowlist.json",
+    "python_source_changes_since_code_commit": 0
+  },
+  "quality_manifest_commit": "2464dd13839acc00f4102d551601af2de8d72a60",
+  "real_source": {
+    "full_history": "OPEN: per-instrument inception and head/interior/tail evidence required.",
+    "rights_retention": "UNKNOWN",
+    "snapshot_limit": "Snapshot-only sources cannot reconstruct observations that were never archived.",
+    "verified": false
+  },
+  "recorded_at": "2026-10-26T17:15:18.015734+00:00",
+  "remaining_limits": [
+    "No production stock-worker activation, scheduler changes, database migrations, or live upstream/source acceptance.",
+    "Production worker shutdown API remains open; the worker cleanup result covers test fixture cleanup only.",
+    "All 1103 legacy job mappings/imports, actual source rights/retention/calendars, and per-instrument full-history gaps remain open.",
+    "Main role/CLI/scheduler/admin API/UI integration, global source budgets, raw GC/retention/orphan recovery, external backup/restore, natural cycles, and single-writer cutover remain open.",
+    "Historical Ruff debt and evidence gaps remain open; no whole make gate, remote CI, Python 3.10 runtime, or remote MySQL TLS run.",
+    "No deployment, push, dev merge, production switch, or claim that code evidence clears unknown prior incident side effects."
+  ],
+  "schema_version": 1,
+  "source_sha256": {
+    "alembic/versions/2026_10_26-0007_job_definitions.py": "6378f37fb6b919614d49af8dbbeb001b99dcdfbfbafb2b9f134d95d3ff6dfb5d",
+    "alembic_data/versions/20261026-0010_run_ledger.py": "840837f5c6a1ecb9e38955d754acc805aa6f91431f63817f88e663d049b3742d",
+    "alembic_data/versions/20261026-0011_publication_snapshots.py": "69a9203b0a34a1da0b71438d3d310f96c70683c594fecf328a85d1c54d4b08f0",
+    "examples/consumer_handoff.py": "5cb9fb1f047811c5cb222adb4a1f040edb8cec9c8468c934cf6b0ec6e602cf6a",
+    "opendata/api/__init__.py": "cf360233a410eb6baf331e6d5ef7e1f04b8033ec56fb820ad4f036fcb38cfaa5",
+    "opendata/api/published_access.py": "0176fe21ab38b0bdd6e8dd7fe39c30eb0caffe7402653c7d72b4b8a85c62deb0",
+    "opendata/api/published_data.py": "accecc37d3cbd8700dbdae010a471cf004fdc64f38fafc2f1ec5ba94500b7620",
+    "opendata/data/dataset_contract_registry.py": "522e2f798bb04bbe10035698278945867d0aafec6942f5723841cb61d032eb81",
+    "opendata/data/http_client.py": "7485d33001a3853c66ae44343e0506608231f58fce0c9bd7145157a628de8a4f",
+    "opendata/data/instrument_reference.py": "55cc1e9a1825c1cf811d9c095712aefe9bf92d6465d11a1416f1dea89e22e7ff",
+    "opendata/data/mapping.py": "22ad18f4832892225132eeb0267e1dcfb7b3aa963c2277db6c39c0b4f5a7b0d5",
+    "opendata/data/models/base.py": "22ffac413395ebf1951cf938119ec2476b12d2ffb063c5eeafafd06b49a16ee8",
+    "opendata/data/platform_contracts.py": "c890798e8c217efc6ee86fee236be97688036d30e9ad97cd9c96d3f7d7dd5726",
+    "opendata/data/providers/akshare/models/stock_daily.py": "fc83a9bbf83d13b1f5829bc81202c069356ec60488504631c263a1aeab6b739f",
+    "opendata/data/providers/akshare/stock_daily_wire.py": "f190b1899d8d43acd9d7288996877bdf98cd1afeba6a106493fffef8f2f5fbb9",
+    "opendata/data/providers/yfinance/models/_sdk.py": "25b640a47101028d1c98982f81aa9b40d26d95fa59bb09436c6ea9e573fbe728",
+    "opendata/data/providers/yfinance/models/iter2.py": "28102f1a36ac3d4ee1964bae6eab4fc3fa28e67416a3a8da65115bcf7a69f338",
+    "opendata/data/providers/yfinance/models/market_iter2.py": "22261ecb551fc96af035107a5dee42ff45253b3c61b7792b375d3972bfc8f8c7",
+    "opendata/data/providers/yfinance/models/stock_daily.py": "589d092c0f8691d16eb7802d8cc9048ceb023ff2d964f3b659f50431f64622a0",
+    "opendata/data/request_budget.py": "f0d758efb43c4579ce33b76f50fb289211d37a694313f662ee02bd5a68dde58e",
+    "opendata/host_inventory.py": "039e02b8391bfe2f2b291c9950f08ad454db8c02ea83ee86eaafd5806c407a87",
+    "opendata/job_definition_store.py": "37ff470ecbbdbab7301ab527bf49b1ac0dd96af489f9c1b19c0a28cea98276f5",
+    "opendata/main.py": "ba87561e3a0422979e1ee4a9330ad05119445bf7ca8c64ce2c23b878f6bb6a1e",
+    "opendata/migration_apply.py": "dfa9f4053b53e51b0fde7dd56b929264b254eb9b27b6883585112ae61d36e42d",
+    "opendata/migration_catalog.py": "42e435e271d125990ac5592025fc410f51035ea072df00517a09c52cbc10d3ec",
+    "opendata/migration_inventory.py": "094b101808c97621dd569468ac9ba7e398c1dc058288f308ef0d3ac442c83292",
+    "opendata/migration_plan.py": "2549d4d2160c138d05a8a5d88809d99ae917d4aa0fe94fed4a20c3f2c7505a9d",
+    "opendata/pipeline/contract_publication.py": "74dca4fa81a437e28ccf9d02d926e07d323ce5be69fe1b4dc79cbe89ce2c7148",
+    "opendata/pipeline/coverage_service.py": "c0ce9e651ce259586f49c14ee62fb33d81e34a66de8d8e10f00f606765241add",
+    "opendata/pipeline/dump_import.py": "af7ad0442c3b883b4c3bb71f657f69a670ab56d0b5345d5a938a125b4e952063",
+    "opendata/pipeline/dwd_merge.py": "0df781128f1ac5918dc8098fa7b61844a03f74e7002e32eb7d84279ec6118e60",
+    "opendata/pipeline/history_coverage.py": "32da5309b8ce51ac0a67d595a3222e292e9206821021d1d4b369a4bd66950bcd",
+    "opendata/pipeline/process_executor.py": "c2e162975723228cdc83b862f547518b0735de0ba6517774a76112dc91adb131",
+    "opendata/pipeline/process_executor_worker.py": "8d64dc48bc744e79f3d087cbebadc4879122749b71c8bac03ce30391f4f5eb7b",
+    "opendata/pipeline/publication_store.py": "1322f256897f1612dc73868f7f59424f438bbbbeb9daa7cdc47d6fd24b108049",
+    "opendata/pipeline/raw_evidence.py": "3a1f9e74beba5ccb5ff06db4b3e532e51cd7da3284c943dfecd8db7484c37665",
+    "opendata/pipeline/retry.py": "9eda78e0ea9732f5b3ef0a0c299ea520c063a156f9d77a84a77ad35fc4476e38",
+    "opendata/pipeline/reviewed_worker.py": "417745872bf88d4ef718b93f9c1812af0a36cdfe6c2e80ebb11f2b88aa866a5b",
+    "opendata/pipeline/run_dispatch.py": "7b9ebc55e98e1cf4784f553467d3c9a61fd113539d9e3897941ed1b4f71f236b",
+    "opendata/pipeline/run_identity.py": "0f884fb1b3bf51f60de271b62dc969a42fe63d4cc6eac935d6779a0c193c4083",
+    "opendata/pipeline/run_ledger.py": "e59ce21b0cc1d7ee47520042be2f9b85f7955900fd9c77c6927d13bd33430891",
+    "opendata/pipeline/run_service.py": "6bfc5a3f1add383ab89ae75cf929cfbf00fec0da571c43c0c68a165ba7772f27",
+    "opendata/pipeline/runtime_roles.py": "b82a30a60bcadf3019cb3026e235c3634fa41455f5b6582782fc6e9d37a031d0",
+    "opendata/pipeline/stock_daily_job.py": "e68a36f5928b3bb00298b9c34464980f918e13994ac8b05d0856be8185dad582",
+    "opendata/reviewed_cli.py": "795367b2976647b6615471ba0d98e12fcccc29e3afff7edbf7f1a7f2193de349",
+    "opendata/runtime_inventory.py": "4cf91723250ee4d5f27fcae6ed107d0027f8df68ef815605a64c0832491620a5",
+    "opendata_client/opendata_client/__init__.py": "550e287816aec0ac8e702f96919feaee210a30e1d15595f2bdb8cc6d405d9daa",
+    "opendata_client/opendata_client/client.py": "ec817286e0535ca3eaa12af2be9763c2a91a5f562515303242e6d1111c9b6735",
+    "opendata_client/opendata_client/snapshots.py": "bb62147fd604e4587a72652ed11e71c3f564914269823545d229ff9b8566b28d",
+    "scripts/codemod/qfq_chain_checks.py": "2481f5330fc37b53f98ed6d97d660ce30fac4023ed2b19de16bc0f926f1b55a5",
+    "scripts/codemod/verify_no_akshare.py": "c92f70109415f7b0b736460c28e9c0a0bd46345fd150dab447915d3dd89b2cc7",
+    "scripts/ops/build_migration_catalog.py": "a54a8d69828d38069768a9870945b8dc70b497d20e4016b1a7479bb183616c79",
+    "scripts/ops/inventory_host_runtime.py": "0546e5c32c822d23ef3f6421875da4ec4d9b2a1efa744aa462997c99f354e6cf",
+    "scripts/ops/inventory_legacy_runtime.py": "71b50d0c7871ec71607131a9f7bae1008d9811450f6b2a53b7c12400282127ef",
+    "scripts/ops/inventory_legacy_scripts.py": "a7c01a851329f1002c6bef71df6c37ca7c75963af0a5e7d6bb92a47dbba38ce1",
+    "scripts/ops/plan_legacy_migration.py": "4137eae5c9930905316a16647815f5d5f381945864192b3baff09b7d41c29ec2",
+    "scripts/ops/ths_futures_option_cross_check.py": "31448f050fcf9f55eca8bd774972d966d3c20ffcdd889bc41ee6e466a58529f4",
+    "scripts/ops/ths_index_cross_check.py": "637bf270979b0bfe5e4ddf5fcfd98b80b1e31ba4793c195c6e0d95f43e86388e",
+    "scripts/ops/yfinance_overseas_cross_check.py": "f69fdd54489198de4af78ec269022f96d452b3d6d774ef19ad0a2032165179cf",
+    "scripts/quality/check_brand.py": "7cbf155f06b7e75d49a151c60c80b9bbb1db0d10d112de3182924af8df67a8dd",
+    "scripts/quality/check_published_openapi.py": "ec4a3667c6152b6049ec54be74eff29bc4d77a38b4f2e8ba3f2854b8d69643c1",
+    "tests/conftest.py": "49d9dd27abb1cdb79b16eb1bd3dcbdcf45cea276139e4cd7b487ee03311e4dcc",
+    "tests/pipeline/test_reviewed_vertical_flow.py": "d8227e7450e0e7132c504228200e41fa544ca235411cad906da10ff99cabd481",
+    "tests/test_afi204_owned_mysql.py": "80d22760e4daa936654203870da55fd95f94c71e54cb5f6e308ca2c51a1ab74d",
+    "tests/test_api_keys.py": "6db755f4e211ce3d564262e7e51d32c5261bb38a42cebcd61e85fc559d1ad7c3",
+    "tests/test_check_brand.py": "64c7b0a4d0278b14c9ca0429d8ebb388d5d4f901e06338d59d6f6731b82b6dcb",
+    "tests/test_contract_publication.py": "bb9b1d055c846ad21e33057842c5d80483c14176d73302bcaece046f1dd68bb6",
+    "tests/test_coverage_service.py": "4972cf11ec4171c55cdf3317174821df544930687be20eabf57787e910f011d1",
+    "tests/test_dataset_contract_registry.py": "af302e68506b9a3c337026806af0d32be87f3aed69e4768e97e7fd86b0f47529",
+    "tests/test_default_target_guard.py": "9283dad18e51cae1fbe4c729f9d1ca2d255aa23033bb1d06be05eb8328e0e3f5",
+    "tests/test_dwd_merge.py": "fa1188beb53b6f9680baa1308b31b0264ef74e9adb5074ef179ce34db5f47d7e",
+    "tests/test_fetcher_request_budget.py": "0f585c90b95b7ea1557cb53a983603674723bee019755ffb5b0c5f0955d9076e",
+    "tests/test_financial_pit_sdk.py": "dcc3ab3f4fd1bacfbdb6fd28d080cf6bd5b44925ef282fa767b34e1172b2152c",
+    "tests/test_history_coverage.py": "a1df1b1dafb177686a23712e25af1652e72b1fb1e320b1e01cdee281a7ae6c07",
+    "tests/test_host_inventory.py": "72fa11fce338bb193f864cfc7095e9fba0885c05004b515daa34b0628cb17295",
+    "tests/test_http_client_boundaries.py": "26aa1fdd23ef3325e02245ea41ee7e34ea3c7aa11894bbf51c4f6a6c37515ad2",
+    "tests/test_http_client_streaming.py": "c2cd6c9a46c17695d54c3d942025d15e321723ac9e263773b9fde3a629d1ae5c",
+    "tests/test_instrument_reference.py": "ed5c56f816f10c0ff7ec5ff602808453583dea12e423b513c1a9895b8ca60d65",
+    "tests/test_job_definition_migration.py": "1e8f988284d806dced2033ae314ca335a11276adc9c16d8496b03deb0643d0e2",
+    "tests/test_migration_apply.py": "530a27c09f3c836fc32acd15043b59aacf9bb38c19421308f3f3455233710f89",
+    "tests/test_migration_catalog.py": "403a885bfffbbe2815ad9f65616f5278398bfabfccffc5b41f230ff9b30256a3",
+    "tests/test_migration_inventory.py": "2fc1ddd5769ee4ae3e2f9e7abce7cf3dab4432ab235117bdb2dd843d060e2ca6",
+    "tests/test_migration_plan.py": "cd8b2b0a8334edc9a05ad26ed6e1967e3477663a5abb914459700aea62213f26",
+    "tests/test_opendata_client.py": "f4e9fca81c5f52cfe52c861b564b6063fa1d8c0ce3bd38ace13a689f70c0a526",
+    "tests/test_p0_providers.py": "e1da8251b2291da90f72bb0387723658f69be8b3464cdfed3fa572cbb8596110",
+    "tests/test_platform_contracts.py": "cb9264f5a070a1131c15a97134a8274f2172016dccae305b4f03436835d9fd73",
+    "tests/test_process_executor.py": "c7c5da3a7c2c5c97dd9e1e8147560e7dc32f97c6a67d79b9cdfcc56e817effe7",
+    "tests/test_publication_store.py": "ccd0e02299aa2fb5813e2d84249829633240059322a06b0902254bf26170cf14",
+    "tests/test_published_access.py": "5ca9b7e5d134bd59e2bc594c94d9f3191dc12f252cd1f2dc31db8f151d69cdeb",
+    "tests/test_published_data_api.py": "85f37b398328785b320dd565c5c411a8c889e586d3040e44c9517a9864437248",
+    "tests/test_published_openapi_gate.py": "1c5e69e7df27795f82001f7853ac414b49c7ea611d69090aedaf5b23af0c94eb",
+    "tests/test_raw_evidence.py": "e5c104359f382a3ddb5208affdb6785b26a48433dac0d7834791c5cb0b775bf7",
+    "tests/test_request_budget_boundaries.py": "6dac11c8e8cc44bcdbec3968c1daaa251515d460cb61186014b3dab09ce43b5a",
+    "tests/test_reviewed_cli.py": "e3e1d5d0e256e1b1c18d2071619a33050b3f6e9d45180015954dfaa23112541f",
+    "tests/test_reviewed_run_chain.py": "3c16f80e81c9420e6f071388ced2839cfcc253aa5715a4dd15aba593d0fbcb72",
+    "tests/test_reviewed_worker.py": "8298b4c6be09efb3837ca58c373597603fd57eebadad1d0fb7dfe4f75e178364",
+    "tests/test_reviewed_worker_mysql.py": "ef42ebb1015547a31dd66833e76c5fa3fc768e0d3bd9ec01bae7cce67d80529a",
+    "tests/test_run_dispatch.py": "d2acebf5f89392cfd75d887953fccff55026e0c6632901a327a9c144ea1e7ca7",
+    "tests/test_run_identity.py": "6dcde702c95476fb7e9cff751995e45a28278278f1cea5550bdc933dddac942f",
+    "tests/test_run_identity_credentials_ledger.py": "aa8f734c31e0e676c973c753aa8a9bae6127a6498785f013a678e9d940cc0521",
+    "tests/test_run_identity_ledger_integration.py": "bd89f972ab3d943bc9013ab0e0f403875721d4bb8b6bcc698d979836cdc78a43",
+    "tests/test_run_ledger.py": "e0a074483ef776aadc52e5bdfbb6403d011568fa79007ea6294a61de08308504",
+    "tests/test_run_ledger_atomic.py": "1bd2dd8e8058d333e065b60fa028c07105975b77cb58b4f612f1c8c08a506331",
+    "tests/test_run_ledger_database_clock.py": "102831a38eec70c8080a05c63c81a71aa87d0af35e4ce90c46e0d5325544dade",
+    "tests/test_run_service.py": "c10fb4d3dfbe6030fd279c508dcac72ad058f4c0fa29c315c9df5eff82495c72",
+    "tests/test_runtime_inventory.py": "08993b187bebe5211c80f8b5d6ed848562da9ae04be66d971b7c1d837c7d4dd9",
+    "tests/test_snapshot_client.py": "19ebf1687e8c26892f4815a10609fad5aab927c2b9d41a698c88a923d379e422",
+    "tests/test_stock_daily_job.py": "059450311d13f383976c76345cf9e20faca8703eccc6b4e4fc8f8fb9ad70b6e0",
+    "tests/test_stock_daily_migration.py": "2714d4d92f099a3c3a0f9e2540388549d215d1b2ba5aac16515101b470df70e0",
+    "tests/test_upstream_reference_policy.py": "ba5d5cba335ac268ec33219ed42c09588fc223a435612e02220d5d9bf3b7b6b8",
+    "tests/test_yfinance_provider.py": "6436341d98c0a681ded0e2ae826945945d14428b07dca1c977376c53034fb2fb",
+    "tests/test_yfinance_sdk_boundaries.py": "33f90d83a5f3cdf2813ccdde2e4093f4cb8f6b8ffb20955f95d74f19d8e88311"
+  },
+  "status": "SCOPED_CODE_AND_ISOLATED_TRANSPORT_VALIDATED; NOT_PRODUCTION_ACCEPTED",
+  "test_scope_incidents": {
+    "archive": "var/reports/afi204/2026-10-26-wave5-test-scope",
+    "audit_status": "READ_ONLY_AUDIT_FROZEN",
+    "effects": "Two prior unauthorized directory runs have unknown side effects; these records are not new passing evidence and no rollback of unknown resources was attempted.",
+    "file_count": 6,
+    "total_bytes": 530049
+  },
+  "validation": {
+    "combined": {
+      "command_receipt": "var/reports/afi204/2026-10-27-wave6/wave6-combined-root-command.json",
+      "coverage": "NOT_MEASURED in this regression; separate exact-target reports below",
+      "deselected": 26,
+      "explicit_deselected_nodes": [
+        "tests/test_raw_response_cache.py::test_ac13_05_actual_dwd_adjustment_route_never_caches_synthetic_series"
+      ],
+      "failed": 0,
+      "passed": 2529,
+      "seconds": 112.02,
+      "status": "PASS",
+      "test_file_count": 69,
+      "warnings": 0
+    },
+    "http": {
+      "command_receipt": "var/reports/afi204/2026-10-27-wave6/wave6-http-final-root-command.json",
+      "coverage_data": "var/reports/afi204/2026-10-27-wave6/wave6-http-final-root.coverage",
+      "coverage_json": "var/reports/afi204/2026-10-27-wave6/wave6-http-final-root-coverage.json",
+      "coverage_xml": "var/reports/afi204/2026-10-27-wave6/wave6-http-final-root-coverage.xml",
+      "deselected": 1,
+      "execution_commit": "0efe35f8b155461c401b06379f304b040340b322",
+      "failed": 0,
+      "passed": 288,
+      "scope": "Explicit HTTP and request-budget behavior; one integration-marked node deselected; no live upstream acceptance.",
+      "seconds": 3.98,
+      "source_anchor": {
+        "current_relevant_hashes_match": true,
+        "hash_count": 14
+      },
+      "statement_branch_percent": 92.96977660972405,
+      "status": "PASS",
+      "targets": {
+        "opendata/data/http_client.py": {
+          "covered_branches": 245,
+          "covered_lines": 666,
+          "excluded_lines": 2,
+          "missing_branches": 47,
+          "missing_lines": 52,
+          "num_branches": 292,
+          "num_partial_branches": 43,
+          "num_statements": 718,
+          "percent_covered": 90.1980198019802,
+          "percent_covered_display": "90"
+        },
+        "opendata/data/request_budget.py": {
+          "covered_branches": 127,
+          "covered_lines": 377,
+          "excluded_lines": 5,
+          "missing_branches": 3,
+          "missing_lines": 5,
+          "num_branches": 130,
+          "num_partial_branches": 3,
+          "num_statements": 382,
+          "percent_covered": 98.4375,
+          "percent_covered_display": "98"
+        }
+      },
+      "test_file_count": 11,
+      "test_files": [
+        "tests/test_http_client_streaming.py",
+        "tests/test_http_client.py",
+        "tests/test_fetcher_request_budget.py",
+        "tests/test_request_budget.py",
+        "tests/test_request_budget_profiles.py",
+        "tests/test_provider_request_budget_errors.py",
+        "tests/test_raw_response_cache.py",
+        "tests/test_governed_http_post_json.py",
+        "tests/test_macro_http_governance.py",
+        "tests/test_http_client_boundaries.py",
+        "tests/test_request_budget_boundaries.py"
+      ],
+      "warnings": 0
+    },
+    "http_reference_policy_prep": {
+      "ast_exceptions": 12,
+      "entries": 93,
+      "initial_failure_archive": "/tmp/od204-receipts/wave6-manifest-initial-failure",
+      "only_one_exact_sha_pin_changed": true,
+      "path": "opendata/data/http_client.py",
+      "reviewed_source": "bb1dfbf53354b1f8e2e2070b73d7babe3e85f719",
+      "sha256_after": "7485d33001a3853c66ae44343e0506608231f58fce0c9bd7145157a628de8a4f",
+      "sha256_before": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+      "source_rules_scope_waivers_changed": false
+    },
+    "initial_failures": {
+      "first_failure_folders": [
+        {
+          "directory": "wave6-http-initial-failure",
+          "file_count": 9,
+          "purpose": "Preserve17failed86passed first HTTP behavior/coverage run; not passing evidence"
+        },
+        {
+          "directory": "wave6-stock-initial-failure",
+          "file_count": 9,
+          "purpose": "Preserve1failed161passed initialstockfixturefailure; productionhandlerguardcorrectlyrejectsfakeinstance.run override; no passingwhole-commandclaim"
+        },
+        {
+          "directory": "wave6-manifest-initial-failure",
+          "file_count": 15,
+          "purpose": "PreserveinitialstaticPASSbutnamedzerodepgateFAILatbf4359d8: staleexactsha256foralreadyreviewedHTTPclient. No newSDKfindingornewwaiver; fixedmetadatarepinrequiredbeforeA2."
+        }
+      ],
+      "http_attempts": [
+        {
+          "acceptance_evidence": false,
+          "phase": "initial",
+          "pytest": {
+            "deselected": 0,
+            "failed": 17,
+            "passed": 86,
+            "seconds": 3.35,
+            "warnings": 0
+          },
+          "receipt_status": "FAIL",
+          "total_statement_branch_percent": 78.12089356110381
+        },
+        {
+          "acceptance_evidence": false,
+          "phase": "after_first_fix",
+          "pytest": {
+            "deselected": 0,
+            "failed": 0,
+            "passed": 103,
+            "seconds": 2.19,
+            "warnings": 0
+          },
+          "receipt_status": "FAIL",
+          "total_statement_branch_percent": 78.97503285151117
+        },
+        {
+          "acceptance_evidence": false,
+          "phase": "expanded",
+          "pytest": {
+            "deselected": 1,
+            "failed": 0,
+            "passed": 217,
+            "seconds": 3.99,
+            "warnings": 0
+          },
+          "receipt_status": "FAIL",
+          "total_statement_branch_percent": 85.742444152431
+        }
+      ],
+      "note": "Initial failures and below-threshold intermediate HTTP runs are preserved as development history, not passing acceptance evidence."
+    },
+    "named_gates": {
+      "command_receipt": "var/reports/afi204/2026-10-27-wave6/wave6-final-named-gates-command.json",
+      "docstrings_and_annotations_percent": {
+        "annotations": 100.0,
+        "docstrings": 100.0
+      },
+      "openapi_live_paths": {
+        "v1": 140,
+        "v2": 6
+      },
+      "public_callables": 2491,
+      "reference_reconciliation": {
+        "ac1_03": {
+          "ast_exception_count": 12,
+          "ast_exception_expected": 12,
+          "bare_token_paths": 1238,
+          "bare_token_unreadable_paths": [],
+          "bare_token_vendored_paths": 327,
+          "buckets": [
+            "opendata/data/providers/akshare/_vendor/",
+            "THIRD_PARTY_NOTICES.md",
+            "LICENSE-AKSHARE",
+            "README.md",
+            "CODE_QUALITY.md",
+            "scripts/codemod/",
+            "tests/",
+            "docs/",
+            "docs/quality/akshare-reference-allowlist.json"
+          ],
+          "hits_covered_by_ac1_buckets": 1146,
+          "invalid_metadata_or_schema": 0,
+          "reference_policy_entries": 93,
+          "reference_policy_problems": [],
+          "remaining_paths_reconciled_by_register": 92,
+          "stale_paths": 0,
+          "stale_sha": 0,
+          "stock_daily_job": {
+            "ast_exceptions": [],
+            "category": "source-adapter",
+            "path": "opendata/pipeline/stock_daily_job.py",
+            "sha256_actual": "e68a36f5928b3bb00298b9c34464980f918e13994ac8b05d0856be8185dad582",
+            "sha256_pinned": "e68a36f5928b3bb00298b9c34464980f918e13994ac8b05d0856be8185dad582",
+            "sha_matches": true
+          },
+          "unregistered_paths": 0
+        },
+        "head": "2464dd13839acc00f4102d551601af2de8d72a60",
+        "issues": [],
+        "tracked_files": 10704,
+        "zero_dep_baseline": {
+          "files": {
+            "opendata": 643,
+            "opendata/data/providers/akshare/_vendor": 325,
+            "opendata_client": 3
+          },
+          "finding_records": 0,
+          "findings": 0,
+          "scanner_version": 5,
+          "scope": [
+            "opendata",
+            "opendata/data/providers/akshare/_vendor",
+            "opendata_client"
+          ],
+          "total_files": 971
+        }
+      },
+      "runtime_files": 971,
+      "status": "PASS",
+      "targets": [
+        "brand-check",
+        "zero-dep-check",
+        "public-api-quality",
+        "published-openapi-check"
+      ],
+      "upstream_sdk_runtime_findings": 0
+    },
+    "reference_pin_reconciliation": {
+      "ast_exceptions": 12,
+      "changed_paths": [
+        "opendata/data/providers/akshare/stock_daily_wire.py",
+        "opendata/pipeline/stock_daily_job.py",
+        "opendata/data/http_client.py"
+      ],
+      "http_pin_reconciliation_receipt": "wave6-http-reference-repin-preflight.json",
+      "initial_http_pin_failure": "wave6-manifest-initial-failure/wave6-final-reference-reconcile.json",
+      "reference_policy_entries": 93,
+      "sha_pin_changes": 3,
+      "source_rules_scope_waivers_changed": false
+    },
+    "reference_policy_prep": {
+      "ast_exceptions": 12,
+      "entries": 93,
+      "no_new_waiver_or_scope_change": true,
+      "only_two_exact_sha_pins_changed": true,
+      "records": [
+        {
+          "path": "opendata/data/providers/akshare/stock_daily_wire.py",
+          "sha256_after": "f190b1899d8d43acd9d7288996877bdf98cd1afeba6a106493fffef8f2f5fbb9",
+          "sha256_before": "7497656eeb141b927ccaabeb62a9425cfa004865c1c333ca7f4dd862a41c083b"
+        },
+        {
+          "path": "opendata/pipeline/stock_daily_job.py",
+          "sha256_after": "e68a36f5928b3bb00298b9c34464980f918e13994ac8b05d0856be8185dad582",
+          "sha256_before": "08848262cb53273aee3f2041c6bab7c3c6e24f74d886498f69d608166abd509c"
+        }
+      ],
+      "reviewed_source": "451458da2076bb27623f1621ecdcdd3b9d5880f9"
+    },
+    "secret_scan": {
+      "command_receipt": "var/reports/afi204/2026-10-27-wave6/wave6-secret-check-command.json",
+      "commits_scanned": 821,
+      "config_sha256": "811f2e0d99c4ec1ac68f0f3167478f250bc4ae372b8923f68252585a6f3bee9c",
+      "environment_policy": "Whitelist only; Redis and Sentry URLs empty.",
+      "fresh_full_history": true,
+      "limitation": "This full-history scan ends at the quality-manifest commit and predates the two public validation documents written by this finalizer; those documents require a separate directory scan.",
+      "log_receipt": "var/reports/afi204/2026-10-27-wave6/wave6-secret-check.txt",
+      "manifest_sha256": "66b1a92f86f66b0b245683299a3e06d08a764c49b834cf0bac25d65347078260",
+      "no_leaks_reported": true,
+      "scope": "Pinned full-history secret-check only; no pytest/make gate; newly generated later evidence docs require separate scan",
+      "source_commit": "2464dd13839acc00f4102d551601af2de8d72a60",
+      "status": "PASS",
+      "tool_sha256": "88f91962aa2f93ac6ab281d553b9e125f5197bbbce38f9f2437f7299c32e5509",
+      "tool_version": "8.30.1"
+    },
+    "static": {
+      "bandit": "PASS",
+      "changed_python_files": 112,
+      "command_receipts": [
+        "var/reports/afi204/2026-10-27-wave6/wave6-final-ruff-command.json",
+        "var/reports/afi204/2026-10-27-wave6/wave6-final-format-command.json",
+        "var/reports/afi204/2026-10-27-wave6/wave6-final-mypy-core-command.json",
+        "var/reports/afi204/2026-10-27-wave6/wave6-final-mypy-client-command.json",
+        "var/reports/afi204/2026-10-27-wave6/wave6-final-bandit-command.json"
+      ],
+      "format": "PASS",
+      "mypy_client": "PASS",
+      "mypy_client_files": 3,
+      "mypy_core": "PASS",
+      "mypy_core_files": 58,
+      "production_files": 61,
+      "python310_grammar": "PASS",
+      "ruff": "PASS",
+      "status": "PASS"
+    },
+    "stock_daily": {
+      "command_receipt": "var/reports/afi204/2026-10-27-wave6/wave6-stock-fixed-root-command.json",
+      "coverage_data": "var/reports/afi204/2026-10-27-wave6/wave6-stock-fixed-root.coverage",
+      "coverage_json": "var/reports/afi204/2026-10-27-wave6/wave6-stock-fixed-root-coverage.json",
+      "coverage_xml": "var/reports/afi204/2026-10-27-wave6/wave6-stock-fixed-root-coverage.xml",
+      "deselected": 0,
+      "execution_commit": "bf4359d8b0f5c255fa76c59140217a86db4a9a1f",
+      "failed": 0,
+      "fixture_scope": "Successful stock fixture verifies wire decode followed by parent-side normalization; it does not call job.fetch, invoke Popen, or contact a live upstream.",
+      "independent_reviews": [
+        {
+          "receipt": "wave6-stock-process-review-fixed.txt",
+          "result": "STATIC GREEN",
+          "reviewed_source_baseline": "451458da2076bb27623f1621ecdcdd3b9d5880f9"
+        },
+        {
+          "receipt": "wave6-stock-process-fixture-review-fixed.txt",
+          "result": "STATIC GREEN; test-only delta",
+          "reviewed_fixture_commit": "5b8de0f2df7fda9ecc19b92f223d387908e92d35",
+          "reviewed_source_baseline": "451458da2076bb27623f1621ecdcdd3b9d5880f9"
+        }
+      ],
+      "initial_failure_disposition": "The first failure correctly showed the production guard rejecting a fake executor.run override. The follow-up changed the test fixture only; it did not weaken that guard.",
+      "isolation_notes": "stock tests synthetic/noDB/noPopen; oldmigration uses fakeclients; previously reviewed generic verticalflow uses explicit ownedSQLite and fixedsyntheticPopen. No realstock/upstream/TLS/source/history acceptance.",
+      "passed": 168,
+      "seconds": 7.55,
+      "source_anchor": {
+        "current_relevant_hashes_match": true,
+        "hash_count": 6
+      },
+      "statement_branch_percent": 92.21789883268482,
+      "status": "PASS",
+      "targets": {
+        "opendata/data/providers/akshare/stock_daily_wire.py": {
+          "covered_branches": 42,
+          "covered_lines": 128,
+          "excluded_lines": 0,
+          "missing_branches": 6,
+          "missing_lines": 10,
+          "num_branches": 48,
+          "num_partial_branches": 6,
+          "num_statements": 138,
+          "percent_covered": 91.39784946236558,
+          "percent_covered_display": "91"
+        },
+        "opendata/pipeline/stock_daily_job.py": {
+          "covered_branches": 166,
+          "covered_lines": 375,
+          "excluded_lines": 7,
+          "missing_branches": 20,
+          "missing_lines": 24,
+          "num_branches": 186,
+          "num_partial_branches": 20,
+          "num_statements": 399,
+          "percent_covered": 92.47863247863248,
+          "percent_covered_display": "92"
+        }
+      },
+      "test_file_count": 3,
+      "vertical_flow_scope": "The older reviewed vertical-flow test uses generic synthetic Popen and explicitly owned SQLite; it is not stock-worker upstream success evidence.",
+      "warnings": 0
+    },
+    "whole_a2": {
+      "command_receipt": "var/reports/afi204/2026-10-27-wave6/wave6-final-whole-a2-command.json",
+      "historical_archive_policy": "Existing policy continues to exclude 333 docs/evidence Python files from static execution; no waiver, rule, or scope change this wave.",
+      "historical_evidence": "5130 support records and 16 active evidence gaps remain open.",
+      "historical_ruff": "149323 historical findings remain NOT GREEN.",
+      "mypy_nonzero_roots": [],
+      "mypy_reported_roots": 783,
+      "selected_short_log_lines": [
+        "A2 files (complete resolver): 1192",
+        "A2 archive scope (owner ruling 2026-10-22): docs/evidence/** -> 333 tracked .py file(s), 333 present, excluded from static tools.",
+        "Static-tool execution partition: 1192 file(s), 0 verified immutable snapshot(s) excluded.",
+        "Historical Ruff findings: 149323 (NOT GREEN; historical evidence only).",
+        "OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit)."
+      ],
+      "source_commit": "2464dd13839acc00f4102d551601af2de8d72a60",
+      "status": "PASS",
+      "summary_receipt": "var/reports/afi204/2026-10-27-wave6/wave6-final-whole-a2-summary.json"
+    },
+    "worker_fixture_cleanup": {
+      "command_receipt": "var/reports/afi204/2026-10-27-wave6/wave6-worker-cleanup-root-command.json",
+      "deselected": 0,
+      "execution_commit": "e4f46231cc3c72772acae2ff36fb926831ad23da",
+      "failed": 0,
+      "passed": 21,
+      "scope": "Test-fixture cleanup only; production worker shutdown API remains open.",
+      "seconds": 16.74,
+      "source_anchor": {
+        "current_relevant_hashes_match": true,
+        "hash_count": 3
+      },
+      "status": "PASS",
+      "warnings": 0
+    }
+  },
+  "wave": 6,
+  "whole_make_gate": {
+    "python310_runtime": "NOT_RUN",
+    "reason": "The aggregate reaches directory-wide test-cov; explicit safe checks do not authorize that broader selection.",
+    "remote_ci": "NOT_RUN",
+    "remote_mysql_tls": "NOT_RUN",
+    "status": "NOT_RUN"
+  }
+}
