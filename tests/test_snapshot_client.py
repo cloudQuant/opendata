@@ -13,11 +13,14 @@ from opendata_client.snapshots import (
     Snapshot,
     SnapshotAuthenticationError,
     SnapshotClient,
+    SnapshotClientError,
     SnapshotDeadlineError,
     SnapshotExpiredError,
+    SnapshotHTTPError,
     SnapshotInvalidRequestError,
     SnapshotLimitError,
     SnapshotNotFoundError,
+    SnapshotPermissionError,
     SnapshotProtocolError,
     SnapshotRateLimitError,
     SnapshotScopeError,
@@ -198,6 +201,70 @@ class TestSnapshotCreation:
         with pytest.raises(ValueError, match="base_url"):
             SnapshotClient(candidate_url, api_key="od-test-key")
 
+    @pytest.mark.parametrize(
+        "configuration",
+        [
+            {"timeout": True},
+            {"timeout": float("nan")},
+            {"timeout": 601},
+            {"deadline": 3_601},
+            {"max_pages": 0},
+            {"max_rows": 1.5},
+            {"max_bytes": -1},
+            {"api_key": "bad\nkey"},
+        ],
+    )
+    def test_client_rejects_nonfinite_or_unbounded_configuration(
+        self, configuration: dict[str, Any]
+    ) -> None:
+        kwargs: dict[str, Any] = {"api_key": "od-test-key", **configuration}
+        with pytest.raises(ValueError):
+            SnapshotClient("https://data.example", **kwargs)
+
+    def test_client_rejects_two_transport_owners(self) -> None:
+        http_client = httpx.Client()
+        try:
+            with pytest.raises(ValueError, match="either transport or http_client"):
+                SnapshotClient(
+                    "https://data.example",
+                    api_key="od-test-key",
+                    transport=httpx.MockTransport(lambda _: httpx.Response(200)),
+                    http_client=http_client,
+                )
+        finally:
+            http_client.close()
+
+    @pytest.mark.parametrize(
+        ("dataset_id", "start_date", "end_date", "page_size"),
+        [
+            ("../private", "2024-01-01", "2024-02-01", 1),
+            ("stock_daily", "2024-1-01", "2024-02-01", 1),
+            ("stock_daily", "2024-01-01", "2024-02-30", 1),
+            ("stock_daily", "2024-02-01", "2024-01-01", 1),
+            ("stock_daily", "2024-01-01", "2024-02-01", 0),
+            ("stock_daily", "2024-01-01", "2024-02-01", True),
+        ],
+    )
+    def test_create_rejects_invalid_scope_before_network_io(
+        self, dataset_id: str, start_date: str, end_date: str, page_size: int
+    ) -> None:
+        calls = 0
+
+        def handler(_: httpx.Request) -> httpx.Response:
+            nonlocal calls
+            calls += 1
+            return httpx.Response(201, json=_snapshot())
+
+        with _client(handler) as client, pytest.raises(ValueError):
+            client.create_snapshot(
+                dataset_id,
+                start_date=start_date,
+                end_date=end_date,
+                page_size=page_size,
+                expected_identity_semantics=IDENTITY_SEMANTICS,
+            )
+        assert calls == 0
+
     def test_post_pins_exact_scope_without_retry_semantics(self) -> None:
         seen: dict[str, Any] = {}
 
@@ -291,6 +358,78 @@ class TestSnapshotCreation:
                 expected_identity_semantics={},
             )
         assert calls == 0
+
+    @pytest.mark.parametrize(
+        "semantic_change",
+        [
+            {"version": 2},
+            {"identity_key_encoding": "provider-defined"},
+            {"business_key_fields": ["symbol", "symbol"]},
+            {"ordering_fields": []},
+            {"temporal_fields": {}},
+            {"storage_order": []},
+        ],
+    )
+    def test_unsupported_expected_semantics_fail_before_network_io(
+        self, semantic_change: dict[str, Any]
+    ) -> None:
+        expected = copy.deepcopy(IDENTITY_SEMANTICS)
+        expected.update(semantic_change)
+        calls = 0
+
+        def handler(_: httpx.Request) -> httpx.Response:
+            nonlocal calls
+            calls += 1
+            return httpx.Response(201, json=_snapshot())
+
+        with _client(handler) as client, pytest.raises(ValueError, match="identity"):
+            client.create_snapshot(
+                "stock_daily",
+                start_date="2024-01-01",
+                end_date="2024-02-01",
+                expected_identity_semantics=expected,
+            )
+        assert calls == 0
+
+    def test_incomplete_or_malformed_snapshot_metadata_fails_closed(self) -> None:
+        invalid_payloads = [
+            {},
+            _snapshot(snapshot_id=""),
+            _snapshot(dataset_id="../private"),
+            _snapshot(publication_id="bad\nidentity"),
+            _snapshot(sequence=True),
+            _snapshot(schema_version=""),
+            _snapshot(semantic_version=""),
+            _snapshot(source={"source_id": "test-source"}),
+            _snapshot(schema="not-a-list"),
+            _snapshot(schema=[{"name": "symbol", "data_type": "unknown", "nullable": False}]),
+            _snapshot(quality={"status": "passed", "report_id": None, "issue_count": True}),
+            _snapshot(adjustment_basis=""),
+            _snapshot(identity_key_encoding="not-canonical"),
+            _snapshot(field_units={"unregistered": "unit"}),
+            _snapshot(time_field="unregistered"),
+            _snapshot(window={"start": "2024-02-01", "end": "2024-01-01", "end_exclusive": True}),
+            _snapshot(window={"start": "2024-01-01", "end": "2024-02-01", "end_exclusive": False}),
+            _snapshot(page_size=0),
+            _snapshot(record_count=True),
+            _snapshot(as_of="2024-02-02T00:00:00"),
+            _snapshot(identity_semantics=None),
+            _snapshot(contract_sha256="A" * 64),
+        ]
+        for payload in invalid_payloads:
+
+            def handler(
+                _: httpx.Request, response_payload: dict[str, Any] = payload
+            ) -> httpx.Response:
+                return httpx.Response(201, json=response_payload)
+
+            with _client(handler) as client, pytest.raises(SnapshotProtocolError):
+                client.create_snapshot(
+                    "stock_daily",
+                    start_date="2024-01-01",
+                    end_date="2024-02-01",
+                    expected_identity_semantics=IDENTITY_SEMANTICS,
+                )
 
 
 class TestSnapshotReads:
@@ -442,6 +581,69 @@ class TestSnapshotReads:
                 expected_identity_semantics=IDENTITY_SEMANTICS,
             )
 
+    def test_row_identity_and_temporal_corruption_is_rejected(self) -> None:
+        invalid_rows: list[tuple[Any, type[SnapshotProtocolError]]] = []
+        row = _row("a", "2024-01-02")
+        invalid_rows.append(([], SnapshotProtocolError))
+        missing_field = copy.deepcopy(row)
+        missing_field.pop("record_hash")
+        invalid_rows.append((missing_field, SnapshotProtocolError))
+        invalid_rows.append(({**row, "business_key": ""}, SnapshotProtocolError))
+        invalid_rows.append(({**row, "dataset_id": "other"}, SnapshotScopeError))
+        invalid_rows.append(({**row, "publication_id": "d" * 32}, SnapshotScopeError))
+        invalid_rows.append(({**row, "revision": True}, SnapshotProtocolError))
+        invalid_rows.append(({**row, "business_date": "2024-02-01"}, SnapshotScopeError))
+        invalid_rows.append(({**row, "observed_at": "not-a-timestamp"}, SnapshotProtocolError))
+        invalid_rows.append(({**row, "payload": "not-an-object"}, SnapshotProtocolError))
+        invalid_rows.append(({**row, "business_key": "not-json"}, SnapshotProtocolError))
+        invalid_rows.append(({**row, "business_key": '["a", "b"]'}, SnapshotProtocolError))
+        invalid_rows.append(({**row, "business_key": '[ "a" ]'}, SnapshotProtocolError))
+        invalid_rows.append(({**row, "business_key": '["b"]'}, SnapshotProtocolError))
+        invalid_rows.append(({**row, "record_hash": "bad"}, SnapshotProtocolError))
+        invalid_rows.append(({"not": "a row"}, SnapshotProtocolError))
+
+        for invalid_row, error_type in invalid_rows:
+
+            def handler(_: httpx.Request, row_value: Any = invalid_row) -> httpx.Response:
+                return httpx.Response(
+                    200,
+                    json=_records_page(
+                        [row_value],
+                        snapshot=_snapshot(record_count=1),
+                    ),
+                )
+
+            with _client(handler) as client, pytest.raises(error_type):
+                client.list_records(
+                    _descriptor(record_count=1),
+                    expected_identity_semantics=IDENTITY_SEMANTICS,
+                )
+
+    def test_page_duplicate_keys_and_unstable_order_are_rejected(self) -> None:
+        duplicate_rows = [_row("a", "2024-01-02"), _row("a", "2024-01-02")]
+        reverse_order_rows = [_row("b", "2024-01-02"), _row("a", "2024-01-02")]
+        for rows, message in (
+            (duplicate_rows, "repeats a business_key"),
+            (reverse_order_rows, "stable ordering"),
+        ):
+
+            def handler(
+                _: httpx.Request, response_rows: list[dict[str, Any]] = rows
+            ) -> httpx.Response:
+                return httpx.Response(
+                    200,
+                    json=_records_page(
+                        response_rows,
+                        snapshot=_snapshot(record_count=2),
+                    ),
+                )
+
+            with _client(handler) as client, pytest.raises(SnapshotProtocolError, match=message):
+                client.list_records(
+                    _descriptor(record_count=2),
+                    expected_identity_semantics=IDENTITY_SEMANTICS,
+                )
+
     def test_repeated_cursor_and_duplicate_business_key_are_rejected(self) -> None:
         def handler(request: httpx.Request) -> httpx.Response:
             if request.url.params.get("cursor") is None:
@@ -518,11 +720,13 @@ class TestSnapshotHTTPGuards:
     @pytest.mark.parametrize(
         ("status_code", "error_type"),
         [
+            (403, SnapshotPermissionError),
             (404, SnapshotNotFoundError),
             (410, SnapshotExpiredError),
             (422, SnapshotInvalidRequestError),
             (413, SnapshotTooLargeError),
             (429, SnapshotRateLimitError),
+            (500, SnapshotHTTPError),
         ],
     )
     def test_http_statuses_translate_to_stable_error_types(
@@ -562,6 +766,88 @@ class TestSnapshotHTTPGuards:
             )
         assert page.count == 0
         assert attempts == 2
+
+    def test_get_parses_http_date_retry_after(self, monkeypatch: Any) -> None:
+        from datetime import datetime, timedelta, timezone
+        from email.utils import format_datetime
+
+        import opendata_client.snapshots as snapshot_module
+
+        monkeypatch.setattr(snapshot_module.time, "sleep", lambda _: None)
+        attempts = 0
+        retry_at = format_datetime(datetime.now(timezone.utc) + timedelta(seconds=0.5), usegmt=True)
+
+        def handler(_: httpx.Request) -> httpx.Response:
+            nonlocal attempts
+            attempts += 1
+            if attempts == 1:
+                return httpx.Response(503, headers={"retry-after": retry_at})
+            return httpx.Response(200, json=_records_page([], snapshot=_snapshot(record_count=0)))
+
+        with _client(handler) as client:
+            page = client.list_records(
+                _descriptor(record_count=0),
+                expected_identity_semantics=IDENTITY_SEMANTICS,
+            )
+        assert page.count == 0
+        assert attempts == 2
+
+    def test_unbounded_retry_after_and_retry_beyond_deadline_do_not_retry(self) -> None:
+        attempts = 0
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal attempts
+            attempts += 1
+            return httpx.Response(
+                503, headers={"retry-after": request.url.params.get("wait", "bad")}
+            )
+
+        with _client(handler) as client, pytest.raises(SnapshotUnavailableError):
+            client.list_records(
+                _descriptor(record_count=0),
+                expected_identity_semantics=IDENTITY_SEMANTICS,
+            )
+        assert attempts == 1
+
+        attempts = 0
+
+        def slow_retry(_: httpx.Request) -> httpx.Response:
+            nonlocal attempts
+            attempts += 1
+            return httpx.Response(503, headers={"retry-after": "0.1"})
+
+        with (
+            _client(slow_retry, deadline=0.01) as client,
+            pytest.raises(SnapshotDeadlineError, match="retry"),
+        ):
+            client.list_records(
+                _descriptor(record_count=0),
+                expected_identity_semantics=IDENTITY_SEMANTICS,
+            )
+        assert attempts == 1
+
+    def test_invalid_content_type_and_network_failure_are_sanitized(self) -> None:
+        with (
+            _client(lambda _: httpx.Response(200, text="not-json")) as client,
+            pytest.raises(SnapshotProtocolError, match="non-JSON"),
+        ):
+            client.list_records(
+                _descriptor(record_count=0),
+                expected_identity_semantics=IDENTITY_SEMANTICS,
+            )
+
+        def fail_connection(request: httpx.Request) -> httpx.Response:
+            raise httpx.ConnectError("private host and token", request=request)
+
+        with (
+            _client(fail_connection) as client,
+            pytest.raises(SnapshotClientError, match="request failed") as caught,
+        ):
+            client.list_records(
+                _descriptor(record_count=0),
+                expected_identity_semantics=IDENTITY_SEMANTICS,
+            )
+        assert "private host" not in str(caught.value)
 
     def test_http_error_does_not_read_or_expose_the_error_body(self) -> None:
         body = _TrackingStream([b"secret server detail"])
