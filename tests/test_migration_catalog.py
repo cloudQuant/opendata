@@ -40,14 +40,16 @@ def _write_fixture(root: Path, relative: str, content: str) -> Path:
 
 
 def test_real_opendata_stock_fetcher_is_visible_in_static_registry_crosswalk() -> None:
-    """The production stock fetcher is found without importing provider code."""
+    """A native-wire fetcher stays registered without inventing a legacy vendor link."""
     models = _provider_models(Path(__file__).resolve().parents[1])
     stock_daily = next(item for item in models if item.domain == "stock_daily")
 
     assert stock_daily.source == "akshare"
     assert stock_daily.model_class == "AkshareStockDailyFetcher"
     assert stock_daily.registered_by_descriptor is True
-    assert "stock_zh_a_hist" in stock_daily.vendor_functions
+    # This adapter now validates raw HTTP JSON instead of calling the relabeling wrapper.
+    # The static inventory must not claim a direct vendor-function edge.
+    assert stock_daily.vendor_functions == []
     assert {"symbol", "start_date", "end_date", "adjust"}.issubset(stock_daily.query_fields)
 
 
