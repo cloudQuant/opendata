@@ -10,6 +10,7 @@ from sqlalchemy import create_engine, event
 
 from opendata.api import data_query as api_data_query
 from opendata.api import minute_data as api_minute_data
+from opendata.api import published_data as api_published_data
 from opendata.core import config, database
 from opendata.core.token_blacklist import _InMemoryBlacklist, _RedisBlacklist, token_blacklist
 from opendata.data import minute_archive
@@ -226,6 +227,60 @@ def test_api_routes_keep_the_original_guarded_factory_identities() -> None:
         assert callable(factory.cache_parameters)
 
 
+def test_published_data_constructor_guards_before_dbapi_connect(monkeypatch) -> None:
+    """The configured publication Engine constructor guards its returned Engine."""
+    fixture_engine = api_published_data.create_engine("sqlite://", pool_pre_ping=True)
+    dbapi_connect_calls: list[object] = []
+
+    def record_dbapi_connect(*args: object, **kwargs: object) -> None:
+        dbapi_connect_calls.append((args, kwargs))
+        raise AssertionError("DBAPI connect must be unreachable behind the guard")
+
+    monkeypatch.setattr(fixture_engine.dialect.dbapi, "connect", record_dbapi_connect)
+    try:
+        registered_guards = conftest._GUARDED_DEFAULT_ENGINE_GUARDS[id(fixture_engine)][1]
+        for event_name, listener in registered_guards:
+            assert event.contains(fixture_engine, event_name, listener)
+        ping_registration = conftest._GUARDED_DEFAULT_ENGINE_PING_GUARDS[id(fixture_engine)]
+        assert ping_registration[0] is fixture_engine
+        assert fixture_engine.dialect.do_ping is ping_registration[1]
+
+        with pytest.raises(RuntimeError, match="before driver connect"):
+            fixture_engine.raw_connection()
+        assert dbapi_connect_calls == []
+    finally:
+        fixture_engine.dispose()
+
+
+def test_default_pre_ping_guard_rejects_before_dbapi_ping() -> None:
+    """A default Engine's pre-ping hook rejects before its fake DBAPI cursor runs."""
+    fixture_engine = api_published_data.create_engine("sqlite://", pool_pre_ping=True)
+    ping_calls: list[str] = []
+
+    class RecordingCursor:
+        """Record calls made by SQLAlchemy's dialect ping implementation."""
+
+        def execute(self, statement: str) -> None:
+            ping_calls.append(statement)
+
+        def close(self) -> None:
+            ping_calls.append("close")
+
+    class RecordingConnection:
+        """Provide a fake DBAPI connection for the dialect-only pre-ping path."""
+
+        def cursor(self) -> RecordingCursor:
+            ping_calls.append("cursor")
+            return RecordingCursor()
+
+    try:
+        with pytest.raises(RuntimeError, match="before DBAPI ping"):
+            fixture_engine.dialect._do_ping_w_event(RecordingConnection())
+        assert ping_calls == []
+    finally:
+        fixture_engine.dispose()
+
+
 class _ProtocolItem:
     """Small item stub for directly exercising the protocol authorization hook."""
 
@@ -277,6 +332,46 @@ def test_live_protocol_exception_still_revokes_authorization(monkeypatch) -> Non
     assert conftest._LIVE_DEFAULT_DB_ACCESS_NODE_ID is None
     with pytest.raises(RuntimeError, match="before driver connect"):
         conftest._CONTROL_DB_CONNECT_GUARD()
+
+
+def test_default_pre_ping_delegates_during_exact_live_e2e_protocol(monkeypatch) -> None:
+    """The exact live release delegates the default dialect ping to its DBAPI handle."""
+    fixture_engine = api_published_data.create_engine("sqlite://", pool_pre_ping=True)
+    ping_calls: list[str] = []
+
+    class RecordingCursor:
+        """Record the statement sent by the dialect's original ping method."""
+
+        def execute(self, statement: str) -> None:
+            ping_calls.append(statement)
+
+        def close(self) -> None:
+            ping_calls.append("close")
+
+    class RecordingConnection:
+        """Provide a fake DBAPI connection without opening a real database handle."""
+
+        def cursor(self) -> RecordingCursor:
+            ping_calls.append("cursor")
+            return RecordingCursor()
+
+    monkeypatch.setenv(conftest.LIVE_E2E_OPT_IN_ENV, conftest.LIVE_E2E_OPT_IN_TOKEN)
+    item = _ProtocolItem("tests/test_probe.py::test_authorized_ping", e2e=True)
+    protocol = conftest.pytest_runtest_protocol(item, None)
+
+    assert next(protocol) is None
+    try:
+        assert fixture_engine.dialect._do_ping_w_event(RecordingConnection()) is True
+        assert ping_calls == [
+            "cursor",
+            fixture_engine.dialect._dialect_specific_select_one,
+            "close",
+        ]
+    finally:
+        with pytest.raises(StopIteration):
+            next(protocol)
+        fixture_engine.dispose()
+    assert conftest._LIVE_DEFAULT_DB_ACCESS_NODE_ID is None
 
 
 def test_exact_token_without_e2e_marker_does_not_authorize_access(monkeypatch) -> None:

@@ -96,9 +96,26 @@ def _make_default_engine_cursor_guard(engine_name: str) -> Callable[..., None]:
     return guard_before_cursor_execute
 
 
+def _make_default_engine_ping_guard(
+    engine_name: str, original_do_ping: Callable[..., object]
+) -> Callable[..., object]:
+    """Reject pool pre-ping before it touches a default Engine's DBAPI handle."""
+
+    def guard_do_ping(dbapi_connection: object) -> object:
+        if not _live_default_db_access_allowed():
+            raise RuntimeError(
+                f"test blocked pool pre-ping through the app's default {engine_name} engine "
+                "before DBAPI ping"
+            )
+        return original_do_ping(dbapi_connection)
+
+    return guard_do_ping
+
+
 _GUARDED_DEFAULT_ENGINE_GUARDS: dict[
     int, tuple[object, tuple[tuple[str, Callable[..., None]], ...]]
 ] = {}
+_GUARDED_DEFAULT_ENGINE_PING_GUARDS: dict[int, tuple[object, Callable[..., object]]] = {}
 
 
 def _install_default_engine_guards(
@@ -118,6 +135,15 @@ def _install_default_engine_guards(
     for event_name, listener in guards:
         event.listen(sync_target, event_name, listener)
     _GUARDED_DEFAULT_ENGINE_GUARDS[id(sync_target)] = (sync_target, guards)
+    pool = getattr(sync_target, "pool", None)
+    if getattr(pool, "_pre_ping", False):
+        # Pool pre-ping precedes its checkout event. This is an instance-local
+        # guard, so it cannot affect explicit fixture Engines or other dialects.
+        dialect = sync_target.dialect
+        original_do_ping = dialect.do_ping
+        ping_guard = _make_default_engine_ping_guard(engine_name, original_do_ping)
+        dialect.do_ping = ping_guard
+        _GUARDED_DEFAULT_ENGINE_PING_GUARDS[id(sync_target)] = (sync_target, ping_guard)
     return tuple(listener for _, listener in guards)
 
 
@@ -145,13 +171,20 @@ def _guard_default_engine_factory(
 
 
 def _guard_default_engine_constructor(
-    module: object, factory: Callable[..., object], engine_name: str
+    module: object,
+    factory: Callable[..., object],
+    engine_name: str,
+    *,
+    cached_engine: object | None = None,
 ) -> None:
     """Guard one module-local Engine constructor without changing its factory identity."""
-    cache_info = getattr(factory, "cache_info", None)
-    if callable(cache_info) and cache_info().currsize:
-        # Guard any Engine cached before conftest was loaded without connecting it.
-        _install_default_engine_guards(factory(), engine_name)
+    if cached_engine is not None:
+        _install_default_engine_guards(cached_engine, engine_name)
+    else:
+        cache_info = getattr(factory, "cache_info", None)
+        if callable(cache_info) and cache_info().currsize:
+            # Guard any Engine cached before conftest was loaded without connecting it.
+            _install_default_engine_guards(factory(), engine_name)
 
     constructor_attribute = "create_engine"
     constructor = getattr(module, constructor_attribute)
@@ -171,7 +204,7 @@ _CONTROL_DB_CONNECT_GUARD, _CONTROL_DB_CHECKOUT_GUARD, _CONTROL_DB_CURSOR_GUARD 
 _DATA_DB_CONNECT_GUARD, _DATA_DB_CHECKOUT_GUARD, _DATA_DB_CURSOR_GUARD = _DATA_DB_GUARDS
 
 # Install before importing ``opendata.main`` and before pytest imports any test
-# modules. These six known default targets are guarded at DBAPI connect,
+# modules. These seven known default targets are guarded at DBAPI connect,
 # checkout, and SQLAlchemy cursor execution. Direct DBAPI use is outside scope.
 from opendata.pipeline import jobs as pipeline_jobs  # noqa: E402  # protect before app/test imports
 
@@ -185,7 +218,12 @@ pipeline_jobs.control_engine = _guard_default_engine_factory(
 # The API router has already captured this getter in ``Depends`` objects. Guard
 # its module-local constructor so those references keep their identity and
 # still receive guarded Engines, including after the factory cache is cleared.
-from opendata.api import data_query as api_data_query  # noqa: E402  # guard before route use
+from opendata.api import (  # noqa: E402  # guard before route use
+    data_query as api_data_query,
+)
+from opendata.api import (  # noqa: E402  # protect configured store
+    published_data as api_published_data,
+)
 from opendata.data import minute_archive  # noqa: E402  # guard before app/test imports
 
 _guard_default_engine_constructor(
@@ -193,6 +231,12 @@ _guard_default_engine_constructor(
 )
 _guard_default_engine_constructor(
     minute_archive, minute_archive.get_minute_archive_engine, "minute archive index"
+)
+_guard_default_engine_constructor(
+    api_published_data,
+    api_published_data._configured_publication_store,
+    "published data store",
+    cached_engine=api_published_data._CONFIGURED_ENGINE,
 )
 
 from opendata.main import app  # noqa: E402  # default-engine guards must be installed first
