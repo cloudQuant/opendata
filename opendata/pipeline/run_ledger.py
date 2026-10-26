@@ -4,6 +4,10 @@ The table is stored in the warehouse database so a successful run transition
 can commit atomically with the facts it produced. This module does not create
 the table, connect to application settings, or wire itself into the production
 scheduler. Callers must construct it with the warehouse engine.
+
+Result callbacks are trusted, reviewed application code. Transaction-event
+guards catch ordinary SQLAlchemy boundary mistakes; they are not a Python
+sandbox and cannot intercept access through raw DBAPI handles or other engines.
 """
 
 from __future__ import annotations
@@ -330,6 +334,11 @@ class RunLedger:
         ``None`` without invoking ``operation``. If the lease expires while the
         operation runs, :class:`RunLeaseExpiredError` is raised and both the
         operation's writes and the success transition roll back.
+
+        This contract applies to trusted callbacks obeying the supplied
+        connection protocol. Raw driver access and opening another connection
+        bypass SQLAlchemy's transaction events and are unsupported. Never pass
+        arbitrary user code or dynamically imported scripts as ``operation``.
 
         SQLite acquires its reserved write lock through a conditional update
         before reading the lease; MySQL and PostgreSQL lock the row with
