@@ -18,6 +18,7 @@ import re
 import selectors
 import shlex
 import signal
+import stat
 
 # This module executes only fixed read-only query commands through the argv allowlist.
 import subprocess  # nosec B404
@@ -81,6 +82,8 @@ _SYSTEMD_SHOW_PROPERTIES = (
     "--property=Id,FragmentPath,ActiveState,SubState,UnitFileState,WorkingDirectory,Unit,ExecStart"
 )
 PRIVATE_RECEIPT_ROOT = Path(os.sep, "tmp", "od204-receipts")
+SYSTEMCTL_EXECUTABLE = "/usr/bin/systemctl"
+CRONTAB_EXECUTABLE = "/usr/bin/crontab"
 
 
 class HostInventoryError(RuntimeError):
@@ -128,7 +131,6 @@ def _run_bounded_command(
     timeout_seconds: float = COMMAND_TIMEOUT_SECONDS,
     output_limit: int = MAX_COMMAND_OUTPUT_BYTES,
     environment_keys: Sequence[str] = (
-        "PATH",
         "LANG",
         "LC_ALL",
         "HOME",
@@ -241,9 +243,9 @@ def _allowed_query_argv(argv: Sequence[str]) -> bool:
     """Allow only read-only systemd list/show and current-user crontab queries."""
     if not argv or any(not isinstance(item, str) or "\x00" in item for item in argv):
         return False
-    if list(argv) == ["crontab", "-l"]:
+    if list(argv) == [CRONTAB_EXECUTABLE, "-l"]:
         return True
-    if len(argv) < 3 or argv[0] != "systemctl" or argv[1] != "--user":
+    if len(argv) < 3 or argv[0] != SYSTEMCTL_EXECUTABLE or argv[1] != "--user":
         return False
     operation = argv[2]
     if operation in {"list-units", "list-unit-files", "list-timers"}:
@@ -410,7 +412,7 @@ def _systemd_inventory(roots: Mapping[str, Path], runner: CommandRunner) -> dict
     """Inventory related user units, including installed but inactive timers."""
     commands = {
         "loaded": [
-            "systemctl",
+            SYSTEMCTL_EXECUTABLE,
             "--user",
             "list-units",
             "--all",
@@ -419,14 +421,21 @@ def _systemd_inventory(roots: Mapping[str, Path], runner: CommandRunner) -> dict
             "--no-pager",
         ],
         "installed": [
-            "systemctl",
+            SYSTEMCTL_EXECUTABLE,
             "--user",
             "list-unit-files",
             "--type=service,timer",
             "--no-legend",
             "--no-pager",
         ],
-        "timers": ["systemctl", "--user", "list-timers", "--all", "--no-legend", "--no-pager"],
+        "timers": [
+            SYSTEMCTL_EXECUTABLE,
+            "--user",
+            "list-timers",
+            "--all",
+            "--no-legend",
+            "--no-pager",
+        ],
     }
     outputs: dict[str, str] = {}
     errors: dict[str, str] = {}
@@ -436,7 +445,7 @@ def _systemd_inventory(roots: Mapping[str, Path], runner: CommandRunner) -> dict
                 argv,
                 COMMAND_TIMEOUT_SECONDS,
                 MAX_COMMAND_OUTPUT_BYTES,
-                ("PATH", "LANG", "LC_ALL", "HOME", "XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS"),
+                ("LANG", "LC_ALL", "HOME", "XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS"),
             ),
             name,
         )
@@ -477,7 +486,7 @@ def _systemd_inventory(roots: Mapping[str, Path], runner: CommandRunner) -> dict
     raw_records: list[dict[str, object]] = []
     for unit_name in unit_names:
         argv = [
-            "systemctl",
+            SYSTEMCTL_EXECUTABLE,
             "--user",
             "show",
             unit_name,
@@ -489,7 +498,7 @@ def _systemd_inventory(roots: Mapping[str, Path], runner: CommandRunner) -> dict
                 argv,
                 COMMAND_TIMEOUT_SECONDS,
                 131_072,
-                ("PATH", "LANG", "LC_ALL", "HOME", "XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS"),
+                ("LANG", "LC_ALL", "HOME", "XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS"),
             ),
             f"show_{unit_name}",
         )
@@ -562,10 +571,10 @@ def _systemd_inventory(roots: Mapping[str, Path], runner: CommandRunner) -> dict
 def _cron_inventory(roots: Mapping[str, Path], runner: CommandRunner) -> dict[str, object]:
     """Read the current user's crontab without persisting command text."""
     result = runner(
-        ["crontab", "-l"],
+        [CRONTAB_EXECUTABLE, "-l"],
         COMMAND_TIMEOUT_SECONDS,
         MAX_COMMAND_OUTPUT_BYTES,
-        ("PATH", "LANG", "LC_ALL", "HOME", "LOGNAME"),
+        ("LANG", "LC_ALL", "HOME", "LOGNAME"),
     )
     output, error = _decode_output(result, "crontab")
     if error:
@@ -913,70 +922,167 @@ def _config_allowed(label: str, root: Path, path: Path) -> bool:
 def _walk_configuration_files(
     roots: Mapping[str, Path],
 ) -> tuple[list[tuple[str, Path, Path]], dict[str, int]]:
-    """Walk only known configuration directories and root-level config files."""
+    """Walk allowlisted configuration paths under one shared per-project entry budget."""
     files: list[tuple[str, Path, Path]] = []
     errors: dict[str, int] = {}
     directory_map = {
         "afi": ("config", "docker", "src/backend/config"),
         "opendata": ("docker", "opendata/data", "opendata/pipeline"),
     }
-    for label, root in roots.items():
-        if not root.is_dir():
-            errors["project_root_unavailable"] = errors.get("project_root_unavailable", 0) + 1
-            continue
+
+    def count_error(key: str) -> None:
+        errors[key] = errors.get(key, 0) + 1
+
+    def bounded_entries(directory: Path, remaining: int) -> tuple[list[os.DirEntry[str]], bool]:
+        """Read at most remaining entries plus one sentinel for truncation detection."""
+        with os.scandir(directory) as iterator:
+            entries = list(itertools.islice(iterator, max(remaining, 0) + 1))
+        capped = len(entries) > remaining
+        return entries[:remaining], capped
+
+    def add_candidate(label: str, root: Path, entry: os.DirEntry[str]) -> bool:
+        """Add only a regular config file; return false when candidate cap stops scanning."""
+        path = Path(entry.path)
+        if not _config_allowed(label, root, path):
+            return True
         try:
-            files.extend(
-                (label, root, path)
-                for path in root.iterdir()
-                if not os.path.islink(path)
-                and path.is_file()
-                and _config_allowed(label, root, path)
-            )
+            entry_stat = entry.stat(follow_symlinks=False)
+        except FileNotFoundError:
+            count_error("config_file_raced")
+            return True
         except PermissionError:
-            errors["permission_denied"] = errors.get("permission_denied", 0) + 1
+            count_error("permission_denied")
+            return True
+        except OSError:
+            count_error("config_file_stat_failed")
+            return True
+        if stat.S_ISLNK(entry_stat.st_mode):
+            count_error("symlink_config_skipped")
+            return True
+        if not stat.S_ISREG(entry_stat.st_mode):
+            count_error("non_regular_config")
+            return True
+        if len(files) >= MAX_CONFIG_FILES:
+            errors["config_file_limit"] = 1
+            return False
+        files.append((label, root, path))
+        return True
+
+    for label, root in roots.items():
+        try:
+            root_stat = root.lstat()
+        except PermissionError:
+            count_error("permission_denied")
             continue
         except OSError:
-            errors["root_config_scan_failed"] = errors.get("root_config_scan_failed", 0) + 1
+            count_error("project_root_unavailable")
             continue
+        if not stat.S_ISDIR(root_stat.st_mode):
+            errors["project_root_unavailable"] = errors.get("project_root_unavailable", 0) + 1
+            continue
+
         visited = 0
+        stop_scan = False
+        try:
+            entries, capped = bounded_entries(root, MAX_WALK_ENTRIES)
+        except PermissionError:
+            count_error("permission_denied")
+            continue
+        except OSError:
+            count_error("root_config_scan_failed")
+            continue
+        visited += len(entries)
+        for entry in entries:
+            try:
+                if entry.is_symlink():
+                    if _config_allowed(label, root, Path(entry.path)):
+                        count_error("symlink_config_skipped")
+                    continue
+                if not entry.is_dir(follow_symlinks=False):
+                    stop_scan = not add_candidate(label, root, entry)
+            except OSError:
+                count_error("directory_entry_read_failed")
+            if stop_scan:
+                break
+        if capped:
+            errors[f"{label}_config_scan_limit"] = 1
+            continue
+        if stop_scan:
+            continue
+
         for relative_directory in directory_map[label]:
             start = root / relative_directory
-            if not start.is_dir() or os.path.islink(start):
+            current = root
+            safe_start = True
+            try:
+                for part in Path(relative_directory).parts:
+                    current = current / part
+                    part_stat = current.lstat()
+                    if stat.S_ISLNK(part_stat.st_mode):
+                        count_error("symlink_config_directory_skipped")
+                        safe_start = False
+                        break
+                    if current != start and not stat.S_ISDIR(part_stat.st_mode):
+                        count_error("non_directory_config_path")
+                        safe_start = False
+                        break
+                if not safe_start:
+                    continue
+                final_stat = current.lstat()
+                if not stat.S_ISDIR(final_stat.st_mode):
+                    count_error("non_directory_config_path")
+                    continue
+            except FileNotFoundError:
+                continue
+            except PermissionError:
+                count_error("permission_denied")
+                continue
+            except OSError:
+                count_error("directory_read_failed")
                 continue
 
-            def record_walk_error(error: OSError) -> None:
-                """Count inaccessible configuration paths without their OS text."""
-                del error
-                errors["directory_read_failed"] = errors.get("directory_read_failed", 0) + 1
-
-            for current, directory_names, file_names in os.walk(
-                start, followlinks=False, onerror=record_walk_error
-            ):
-                base = Path(current)
-                directory_names[:] = sorted(
-                    name
-                    for name in directory_names
-                    if name not in _PRUNED_DIR_NAMES and not os.path.islink(base / name)
-                )
-                visited += len(directory_names)
-                if visited > MAX_WALK_ENTRIES:
+            pending = [start]
+            while pending and not stop_scan:
+                base = pending.pop()
+                remaining = MAX_WALK_ENTRIES - visited
+                try:
+                    entries, capped = bounded_entries(base, remaining)
+                except PermissionError:
+                    count_error("permission_denied")
+                    continue
+                except OSError:
+                    count_error("directory_read_failed")
+                    continue
+                visited += len(entries)
+                child_directories: list[Path] = []
+                for entry in entries:
+                    try:
+                        if entry.is_symlink():
+                            count_error("symlink_config_skipped")
+                            continue
+                        if entry.is_dir(follow_symlinks=False):
+                            if entry.name not in _PRUNED_DIR_NAMES:
+                                child_directories.append(Path(entry.path))
+                            continue
+                        if not add_candidate(label, root, entry):
+                            stop_scan = True
+                            break
+                    except OSError:
+                        count_error("directory_entry_read_failed")
+                pending.extend(sorted(child_directories, reverse=True))
+                if capped:
                     errors[f"{label}_config_scan_limit"] = 1
-                    break
-                for file_name in sorted(file_names):
-                    visited += 1
-                    if visited > MAX_WALK_ENTRIES:
-                        errors[f"{label}_config_scan_limit"] = 1
-                        break
-                    path = base / file_name
-                    if not os.path.islink(path) and _config_allowed(label, root, path):
-                        files.append((label, root, path))
-                if visited > MAX_WALK_ENTRIES:
-                    break
+                    stop_scan = True
+                if visited >= MAX_WALK_ENTRIES and pending:
+                    errors[f"{label}_config_scan_limit"] = 1
+                    stop_scan = True
+            if stop_scan:
+                break
     return files, errors
 
 
 def _config_inventory(roots: Mapping[str, Path]) -> dict[str, object]:
-    """Hash selected non-secret configuration files without returning their contents."""
+    """Hash bounded regular config files through a no-follow, nonblocking descriptor."""
     files, errors = _walk_configuration_files(roots)
     records: list[dict[str, object]] = []
     total_bytes = 0
@@ -986,18 +1092,66 @@ def _config_inventory(roots: Mapping[str, Path]) -> dict[str, object]:
         if len(records) >= MAX_CONFIG_FILES:
             errors["config_file_limit"] = 1
             break
+        descriptor = -1
         try:
-            size = path.stat(follow_symlinks=False).st_size
-            if size > MAX_CONFIG_FILE_BYTES or total_bytes + size > MAX_TOTAL_CONFIG_BYTES:
+            before = path.lstat()
+            if stat.S_ISLNK(before.st_mode):
+                errors["symlink_config_skipped"] = errors.get("symlink_config_skipped", 0) + 1
+                continue
+            if not stat.S_ISREG(before.st_mode):
+                errors["non_regular_config"] = errors.get("non_regular_config", 0) + 1
+                continue
+            remaining_bytes = MAX_TOTAL_CONFIG_BYTES - total_bytes
+            read_limit = min(MAX_CONFIG_FILE_BYTES, remaining_bytes)
+            if before.st_size > read_limit:
                 errors["config_size_limit"] = errors.get("config_size_limit", 0) + 1
                 continue
-            content = path.read_bytes()
+            flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NONBLOCK", 0)
+            flags |= getattr(os, "O_NOFOLLOW", 0)
+            descriptor = os.open(path, flags)
+            opened = os.fstat(descriptor)
+            if not stat.S_ISREG(opened.st_mode) or (opened.st_dev, opened.st_ino) != (
+                before.st_dev,
+                before.st_ino,
+            ):
+                errors["config_file_changed"] = errors.get("config_file_changed", 0) + 1
+                continue
+            with os.fdopen(descriptor, "rb") as stream:
+                descriptor = -1
+                content = stream.read(read_limit + 1)
+                after = os.fstat(stream.fileno())
+            if len(content) > read_limit:
+                errors["config_size_limit"] = errors.get("config_size_limit", 0) + 1
+                continue
+            before_signature = (
+                before.st_dev,
+                before.st_ino,
+                before.st_size,
+                before.st_mtime_ns,
+                before.st_ctime_ns,
+            )
+            after_signature = (
+                after.st_dev,
+                after.st_ino,
+                after.st_size,
+                after.st_mtime_ns,
+                after.st_ctime_ns,
+            )
+            if before_signature != after_signature or len(content) != after.st_size:
+                errors["config_file_changed"] = errors.get("config_file_changed", 0) + 1
+                continue
         except PermissionError:
             errors["permission_denied"] = errors.get("permission_denied", 0) + 1
+            continue
+        except FileNotFoundError:
+            errors["config_file_raced"] = errors.get("config_file_raced", 0) + 1
             continue
         except OSError:
             errors["config_read_failed"] = errors.get("config_read_failed", 0) + 1
             continue
+        finally:
+            if descriptor >= 0:
+                os.close(descriptor)
         total_bytes += len(content)
         records.append(
             {
@@ -1111,6 +1265,7 @@ def public_summary(report: Mapping[str, Any]) -> dict[str, Any]:
 
 def write_report(path: Path, report: Mapping[str, Any], *, private: bool = False) -> None:
     """Write a JSON report atomically to a caller-selected evidence path."""
+    path = _absolute_path_without_symlinks(path)
     payload = (
         json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False) + "\n"
     )
@@ -1156,25 +1311,89 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _absolute_path_without_symlinks(path: Path) -> Path:
+    """Normalize a path lexically and reject symlink components before writes."""
+    try:
+        absolute = Path(os.path.abspath(os.path.expanduser(os.fspath(path))))
+    except (OSError, RuntimeError, ValueError, TypeError) as exc:
+        raise HostInventoryError("output_path_invalid") from exc
+    current = Path(absolute.anchor)
+    for component in absolute.parts[1:]:
+        current /= component
+        try:
+            entry_stat = current.lstat()
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            raise HostInventoryError("output_path_check_failed") from exc
+        if stat.S_ISLNK(entry_stat.st_mode):
+            raise HostInventoryError("output_path_symlink_not_allowed")
+    return absolute
+
+
+def _output_matches_protected_path(output: Path, protected: Path) -> bool:
+    """Check lexical and existing-file identity conflicts without following output links."""
+    if output == protected:
+        return True
+    try:
+        return output.exists() and protected.exists() and os.path.samefile(output, protected)
+    except OSError:
+        return False
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the read-only inventory and write private/public sanitized reports."""
     args = _parse_args(argv)
-    expected_private_root = PRIVATE_RECEIPT_ROOT.resolve()
     try:
-        private_path = args.output.resolve(strict=False)
+        expected_private_root = _absolute_path_without_symlinks(PRIVATE_RECEIPT_ROOT)
+        private_path = _absolute_path_without_symlinks(args.output)
         private_path.relative_to(expected_private_root)
     except ValueError:
         print("host_inventory: output_path_not_allowed", file=sys.stderr)
+        return 2
+    except HostInventoryError as exc:
+        print(f"host_inventory: {exc}", file=sys.stderr)
         return 2
     if not private_path.name.startswith("host-") or private_path.suffix != ".json":
         print("host_inventory: output_filename_not_allowed", file=sys.stderr)
         return 2
     try:
-        public_path = args.public_output.resolve(strict=False)
+        public_path = _absolute_path_without_symlinks(args.public_output)
         repo_root = Path(__file__).resolve().parents[1]
         expected_public = repo_root / "docs" / "afi204-host-inventory.json"
-        if public_path != expected_public.resolve(strict=False):
+        if public_path != expected_public:
             print("host_inventory: public_output_path_not_allowed", file=sys.stderr)
+            return 2
+        roots = {
+            "afi": _resolve_project_root("afi", args.afi_root),
+            "opendata": _resolve_project_root("opendata", args.opendata_root),
+        }
+        if private_path == public_path or any(
+            private_path.is_relative_to(root) for root in roots.values()
+        ):
+            print("host_inventory: output_path_conflicts_with_input", file=sys.stderr)
+            return 2
+        if public_path.is_relative_to(roots["opendata"]):
+            print("host_inventory: output_path_conflicts_with_input", file=sys.stderr)
+            return 2
+        if any(
+            component.lower().startswith(".env")
+            for output in (private_path, public_path)
+            for component in output.parts
+        ):
+            print("host_inventory: output_path_conflicts_with_secret_file", file=sys.stderr)
+            return 2
+        protected_paths = {
+            Path(__file__).resolve(),
+            repo_root / "scripts" / "ops" / "inventory_host_runtime.py",
+            *(root / ".env" for root in roots.values()),
+        }
+        if any(
+            _output_matches_protected_path(output, protected)
+            for output in (private_path, public_path)
+            for protected in protected_paths
+        ):
+            print("host_inventory: output_path_conflicts_with_input", file=sys.stderr)
             return 2
         report = build_host_inventory(afi_root=args.afi_root, opendata_root=args.opendata_root)
         write_report(private_path, report, private=True)

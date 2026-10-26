@@ -42,7 +42,7 @@ class FakeSystemRunner:
         del timeout, output_limit, environment_keys
         command = list(argv)
         self.calls.append(command)
-        if command[0] == "crontab":
+        if command[0] == inventory.CRONTAB_EXECUTABLE:
             return self.cron
         if command[2] == "list-units":
             return _ok("opendata-ingest.service loaded inactive dead test service\n")
@@ -299,20 +299,58 @@ def test_project_walk_and_inventory_limits_are_explicit(
 
 def test_command_allowlist_rejects_mutating_or_shell_commands() -> None:
     """Only exact systemd inspection and crontab-list operations are executable."""
-    assert inventory._allowed_query_argv(["crontab", "-l"])
+    assert inventory._allowed_query_argv([inventory.CRONTAB_EXECUTABLE, "-l"])
     assert inventory._allowed_query_argv(
-        ["systemctl", "--user", "list-timers", "--all", "--no-legend", "--no-pager"]
+        [
+            inventory.SYSTEMCTL_EXECUTABLE,
+            "--user",
+            "list-timers",
+            "--all",
+            "--no-legend",
+            "--no-pager",
+        ]
     )
-    assert not inventory._allowed_query_argv(["systemctl", "--user", "stop", "x.service"])
+    assert not inventory._allowed_query_argv(
+        [inventory.SYSTEMCTL_EXECUTABLE, "--user", "stop", "x.service"]
+    )
     assert not inventory._allowed_query_argv(["sh", "-c", "systemctl --user list-units"])
     assert (
-        inventory._run_bounded_command(["systemctl", "--user", "daemon-reload"]).error_code
+        inventory._run_bounded_command(
+            [inventory.SYSTEMCTL_EXECUTABLE, "--user", "daemon-reload"]
+        ).error_code
         == "invalid_command"
     )
+    assert not inventory._allowed_query_argv(["crontab", "-l"])
+    assert not inventory._allowed_query_argv(["systemctl", "--user", "list-units"])
     assert (
-        inventory._run_bounded_command(["systemctl", "--user", "list-units"], 0).error_code
+        inventory._run_bounded_command(
+            [inventory.SYSTEMCTL_EXECUTABLE, "--user", "list-units"], 0
+        ).error_code
         == "invalid_bounds"
     )
+
+
+def test_query_execution_ignores_a_spoofed_path_executable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The allowlist uses fixed absolute executables even when PATH has a fake crontab."""
+    fake_crontab = tmp_path / "crontab"
+    fake_crontab.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    fake_crontab.chmod(0o755)
+    monkeypatch.setenv("PATH", str(tmp_path))
+    captured: dict[str, Any] = {}
+
+    def capture_popen(argv: list[str], **kwargs: Any) -> Any:
+        captured["argv"] = argv
+        captured["environment"] = kwargs["env"]
+        raise FileNotFoundError
+
+    monkeypatch.setattr(inventory.subprocess, "Popen", capture_popen)
+    result = inventory._run_bounded_command([inventory.CRONTAB_EXECUTABLE, "-l"])
+
+    assert result.error_code == "command_unavailable"
+    assert captured["argv"] == [inventory.CRONTAB_EXECUTABLE, "-l"]
+    assert "PATH" not in captured["environment"]
 
 
 def test_bounded_runner_reports_timeout_output_and_missing_command(
@@ -386,7 +424,7 @@ def test_build_inventory_rejects_invalid_scope_and_reports_unknown_sources(tmp_p
         argv: Sequence[str], timeout: float, limit: int, env_keys: Sequence[str]
     ) -> inventory.CommandResult:
         del timeout, limit, env_keys
-        if argv[0] == "crontab":
+        if argv[0] == inventory.CRONTAB_EXECUTABLE:
             return inventory.CommandResult("UNKNOWN", 1, error_code="permission_denied")
         return inventory.CommandResult("UNKNOWN", 1, error_code="user_manager_unavailable")
 
@@ -427,6 +465,100 @@ def test_cli_rejects_receipt_outside_the_designated_directory(
     assert not (tmp_path / "unsafe.json").exists()
 
 
+def test_cli_rejects_public_symlink_without_touching_its_target(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A symlink at the authorized report path is rejected before collection or writes."""
+    project_a = _make_project(tmp_path, "afi")
+    project_b = _make_project(tmp_path, "opendata")
+    checkout = tmp_path / "checkout"
+    (checkout / "opendata").mkdir(parents=True)
+    (checkout / "docs").mkdir()
+    (checkout / "scripts" / "ops").mkdir(parents=True)
+    module_path = checkout / "opendata" / "host_inventory.py"
+    module_path.write_text("", encoding="utf-8")
+    monkeypatch.setattr(inventory, "__file__", str(module_path))
+    receipt_root = tmp_path / "receipts"
+    monkeypatch.setattr(inventory, "PRIVATE_RECEIPT_ROOT", receipt_root)
+    target = tmp_path / "source.json"
+    target.write_text("keep source", encoding="utf-8")
+    report_path = checkout / "docs" / "afi204-host-inventory.json"
+    report_path.symlink_to(target)
+    monkeypatch.setattr(
+        inventory,
+        "build_host_inventory",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("collection must not run")),
+    )
+
+    status = inventory.main(
+        [
+            "--afi-root",
+            str(project_a),
+            "--opendata-root",
+            str(project_b),
+            "--output",
+            str(receipt_root / "host-symlink.json"),
+            "--public-output",
+            str(report_path),
+        ]
+    )
+
+    assert status == 2
+    assert "output_path_symlink_not_allowed" in capsys.readouterr().err
+    assert target.read_text(encoding="utf-8") == "keep source"
+    assert report_path.is_symlink()
+    assert not (receipt_root / "host-symlink.json").exists()
+
+
+def test_cli_rejects_receipt_that_is_a_hardlink_to_an_env_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """An output alias to a secret input is rejected without reading or replacing it."""
+    project_a = _make_project(tmp_path, "afi")
+    project_b = _make_project(tmp_path, "opendata")
+    checkout = tmp_path / "checkout"
+    (checkout / "opendata").mkdir(parents=True)
+    (checkout / "docs").mkdir()
+    module_path = checkout / "opendata" / "host_inventory.py"
+    module_path.write_text("inventory source", encoding="utf-8")
+    monkeypatch.setattr(inventory, "__file__", str(module_path))
+    receipt_root = tmp_path / "receipts"
+    receipt_root.mkdir()
+    monkeypatch.setattr(inventory, "PRIVATE_RECEIPT_ROOT", receipt_root)
+    env_path = project_a / ".env"
+    env_path.write_text("synthetic-test-secret", encoding="utf-8")
+    env_stat = env_path.stat(follow_symlinks=False)
+    receipt = receipt_root / "host-secret.json"
+    os.link(env_path, receipt)
+
+    status = inventory.main(
+        [
+            "--afi-root",
+            str(project_a),
+            "--opendata-root",
+            str(project_b),
+            "--output",
+            str(receipt),
+            "--public-output",
+            str(checkout / "docs" / "afi204-host-inventory.json"),
+        ]
+    )
+
+    assert status == 2
+    assert "output_path_conflicts_with_input" in capsys.readouterr().err
+    after_stat = env_path.stat(follow_symlinks=False)
+    assert (after_stat.st_dev, after_stat.st_ino, after_stat.st_size) == (
+        env_stat.st_dev,
+        env_stat.st_ino,
+        env_stat.st_size,
+    )
+    assert os.path.samefile(receipt, env_path)
+
+
 def test_main_writes_sanitized_outputs_only_to_authorized_locations(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -455,7 +587,7 @@ def test_main_writes_sanitized_outputs_only_to_authorized_locations(
         argv: Sequence[str], timeout: float, limit: int, env_keys: Sequence[str]
     ) -> inventory.CommandResult:
         del timeout, limit, env_keys
-        if argv[0] == "crontab":
+        if argv[0] == inventory.CRONTAB_EXECUTABLE:
             return inventory.CommandResult("UNKNOWN", 1, error_code="no_crontab")
         return _ok("")
 
@@ -503,14 +635,20 @@ def test_runner_classifies_read_only_query_stderr_and_start_errors(
         raise PermissionError
 
     monkeypatch.setattr(inventory.subprocess, "Popen", permission_popen)
-    assert inventory._run_bounded_command(["crontab", "-l"]).error_code == "permission_denied"
+    assert (
+        inventory._run_bounded_command([inventory.CRONTAB_EXECUTABLE, "-l"]).error_code
+        == "permission_denied"
+    )
 
     def broken_popen(argv: list[str], **kwargs: Any) -> Any:
         del argv, kwargs
         raise OSError
 
     monkeypatch.setattr(inventory.subprocess, "Popen", broken_popen)
-    assert inventory._run_bounded_command(["crontab", "-l"]).error_code == "process_start_failed"
+    assert (
+        inventory._run_bounded_command([inventory.CRONTAB_EXECUTABLE, "-l"]).error_code
+        == "process_start_failed"
+    )
 
 
 def test_runner_handles_missing_pipes_read_errors_and_wait_timeout(
@@ -546,14 +684,14 @@ def test_runner_handles_missing_pipes_read_errors_and_wait_timeout(
 
     fake = FakeProcess(missing_pipe=True)
     monkeypatch.setattr(inventory.subprocess, "Popen", lambda *args, **kwargs: fake)
-    result = inventory._run_bounded_command(["crontab", "-l"])
+    result = inventory._run_bounded_command([inventory.CRONTAB_EXECUTABLE, "-l"])
     assert result.error_code == "query_pipe_unavailable"
     assert fake.killed is True
 
     fake = FakeProcess(timeout_first=True)
     monkeypatch.setattr(inventory.subprocess, "Popen", lambda *args, **kwargs: fake)
     monkeypatch.setattr(inventory.os, "read", lambda *args: (_ for _ in ()).throw(OSError()))
-    result = inventory._run_bounded_command(["crontab", "-l"])
+    result = inventory._run_bounded_command([inventory.CRONTAB_EXECUTABLE, "-l"])
     assert result.error_code == "pipe_read_failed"
     assert fake.killed is True
 
@@ -561,14 +699,14 @@ def test_runner_handles_missing_pipes_read_errors_and_wait_timeout(
 def test_query_allowlist_rejects_malformed_unit_names_and_options() -> None:
     """Allowlist validates exact systemctl show properties and unit syntax."""
     assert not inventory._allowed_query_argv([])
-    assert not inventory._allowed_query_argv(["crontab", "-e"])
-    assert not inventory._allowed_query_argv(["systemctl", "--user", "show"])
+    assert not inventory._allowed_query_argv([inventory.CRONTAB_EXECUTABLE, "-e"])
+    assert not inventory._allowed_query_argv([inventory.SYSTEMCTL_EXECUTABLE, "--user", "show"])
     assert not inventory._allowed_query_argv(
-        ["systemctl", "--user", "list-units", "--all", "--exec-start"]
+        [inventory.SYSTEMCTL_EXECUTABLE, "--user", "list-units", "--all", "--exec-start"]
     )
     assert not inventory._allowed_query_argv(
         [
-            "systemctl",
+            inventory.SYSTEMCTL_EXECUTABLE,
             "--user",
             "show",
             "../../unsafe.service",
@@ -578,7 +716,7 @@ def test_query_allowlist_rejects_malformed_unit_names_and_options() -> None:
     )
     assert inventory._allowed_query_argv(
         [
-            "systemctl",
+            inventory.SYSTEMCTL_EXECUTABLE,
             "--user",
             "show",
             "safe.service",
@@ -689,19 +827,19 @@ def test_configuration_inventory_keeps_read_errors_and_caps_partial(
     afi = _make_project(tmp_path, "afi")
     opendata = _make_project(tmp_path, "opendata")
     config_path = afi / "config" / "runtime.yaml"
-    original_read_bytes = Path.read_bytes
+    original_open = os.open
 
-    def failing_read_bytes(path: Path) -> bytes:
+    def failing_open(path: str | bytes | os.PathLike[str] | os.PathLike[bytes], *args: Any) -> int:
         if path == config_path:
             raise PermissionError
-        return original_read_bytes(path)
+        return original_open(path, *args)
 
-    monkeypatch.setattr(Path, "read_bytes", failing_read_bytes)
+    monkeypatch.setattr(inventory.os, "open", failing_open)
     permission_report = inventory._config_inventory({"afi": afi, "opendata": opendata})
     assert permission_report["status"] == "PARTIAL"
     assert permission_report["error_counts"]["permission_denied"] == 1
 
-    monkeypatch.setattr(Path, "read_bytes", original_read_bytes)
+    monkeypatch.setattr(inventory.os, "open", original_open)
     monkeypatch.setattr(inventory, "MAX_CONFIG_FILE_BYTES", 1)
     size_report = inventory._config_inventory({"afi": afi, "opendata": opendata})
     assert size_report["status"] == "PARTIAL"
@@ -888,6 +1026,151 @@ def test_config_file_count_and_total_size_bounds_are_reported(
     capped_bytes = inventory._config_inventory({"afi": afi, "opendata": opendata})
     assert capped_bytes["status"] == "PARTIAL"
     assert capped_bytes["error_counts"]["config_size_limit"] > 0
+
+
+@pytest.mark.timeout(2)
+def test_config_inventory_skips_fifo_without_blocking(tmp_path: Path) -> None:
+    """A FIFO with a config suffix is reported as non-regular and is never opened."""
+    project = _make_project(tmp_path, "afi")
+    config_path = project / "config" / "runtime.yaml"
+    config_path.unlink()
+    os.mkfifo(config_path)
+
+    report = inventory._config_inventory({"afi": project})
+
+    assert report["status"] == "PARTIAL"
+    assert report["error_counts"]["non_regular_config"] == 1
+    assert report["file_count"] == 0
+
+
+def test_config_inventory_detects_replaced_and_growing_files(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Opened inodes and byte limits are rechecked after path enumeration."""
+    project = _make_project(tmp_path, "afi")
+    config_path = project / "config" / "runtime.yaml"
+    replacement = tmp_path / "replacement.yaml"
+    replacement.write_text("replacement", encoding="ascii")
+    original_open = os.open
+
+    def open_replacement(
+        path: str | bytes | os.PathLike[str] | os.PathLike[bytes], *args: Any
+    ) -> int:
+        actual_path = replacement if Path(path) == config_path else path
+        return original_open(actual_path, *args)
+
+    monkeypatch.setattr(inventory.os, "open", open_replacement)
+    replaced = inventory._config_inventory({"afi": project})
+    assert replaced["status"] == "PARTIAL"
+    assert replaced["error_counts"]["config_file_changed"] == 1
+
+    monkeypatch.setattr(inventory.os, "open", original_open)
+    monkeypatch.setattr(inventory, "MAX_CONFIG_FILE_BYTES", 5)
+    monkeypatch.setattr(inventory, "MAX_TOTAL_CONFIG_BYTES", 100)
+    config_path.write_text("12345", encoding="ascii")
+
+    def grow_before_open(
+        path: str | bytes | os.PathLike[str] | os.PathLike[bytes], *args: Any
+    ) -> int:
+        if Path(path) == config_path:
+            with config_path.open("a", encoding="ascii") as stream:
+                stream.write("more than five bytes")
+        return original_open(path, *args)
+
+    monkeypatch.setattr(inventory.os, "open", grow_before_open)
+    growing = inventory._config_inventory({"afi": project})
+    assert growing["status"] == "PARTIAL"
+    assert growing["error_counts"]["config_size_limit"] == 1
+
+
+def test_root_configuration_enumeration_uses_shared_entry_budget(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Root-level config candidates are truncated by the same directory budget."""
+    project = tmp_path / "afi"
+    project.mkdir()
+    for index in range(20):
+        (project / f"runtime-{index}.toml").write_text("[job]\n", encoding="utf-8")
+    monkeypatch.setattr(inventory, "MAX_WALK_ENTRIES", 2)
+
+    files, errors = inventory._walk_configuration_files({"afi": project})
+
+    assert len(files) == 2
+    assert errors["afi_config_scan_limit"] == 1
+
+
+def test_configuration_walk_reports_root_scan_failure_and_non_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Root access failures and a non-directory root remain explicit evidence."""
+    project = tmp_path / "afi"
+    project.mkdir()
+    original_scandir = os.scandir
+
+    def denied_scandir(path: str | bytes | os.PathLike[str] | os.PathLike[bytes]) -> Any:
+        if Path(path) == project:
+            raise PermissionError
+        return original_scandir(path)
+
+    monkeypatch.setattr(inventory.os, "scandir", denied_scandir)
+    _, denied_errors = inventory._walk_configuration_files({"afi": project})
+    assert denied_errors["permission_denied"] == 1
+
+    monkeypatch.setattr(inventory.os, "scandir", original_scandir)
+    non_directory = tmp_path / "not-a-directory"
+    non_directory.write_text("x", encoding="ascii")
+    _, invalid_errors = inventory._walk_configuration_files({"afi": non_directory})
+    assert invalid_errors["project_root_unavailable"] == 1
+
+
+def test_configuration_walk_skips_symlinked_files_and_search_directories(
+    tmp_path: Path,
+) -> None:
+    """Config symlinks are not followed and their omission makes the scan partial."""
+    project = _make_project(tmp_path, "afi")
+    external = tmp_path / "external"
+    external.mkdir()
+    (external / "runtime.yaml").write_text("marker: do-not-follow", encoding="utf-8")
+    (project / "config" / "linked.yaml").symlink_to(external / "runtime.yaml")
+    (project / "docker").symlink_to(external, target_is_directory=True)
+
+    report = inventory._config_inventory({"afi": project})
+
+    assert report["status"] == "PARTIAL"
+    assert report["error_counts"]["symlink_config_skipped"] == 1
+    assert report["error_counts"]["symlink_config_directory_skipped"] == 1
+    assert all(row["path"] != "config/linked.yaml" for row in report["records"])
+
+
+def test_configuration_walk_visits_only_allowlisted_nested_directories(tmp_path: Path) -> None:
+    """Nested AFI/OpenData config roots are visited while pruned caches stay out."""
+    afi = _make_project(tmp_path, "afi")
+    opendata = _make_project(tmp_path, "opendata")
+    expected_paths = {
+        ("afi", "config/jobs/nightly/job.toml"),
+        ("afi", "src/backend/config/settings.yaml"),
+        ("afi", "docker/compose.yaml"),
+        ("opendata", "opendata/data/feeds/daily.yaml"),
+        ("opendata", "opendata/pipeline/weekly/job.toml"),
+    }
+    fixtures = [
+        (afi / "config" / "jobs" / "nightly" / "job.toml", "[job]\n"),
+        (afi / "src" / "backend" / "config" / "settings.yaml", "enabled: true\n"),
+        (afi / "docker" / "compose.yaml", "services: {}\n"),
+        (afi / "config" / "node_modules" / "ignored.yaml", "ignored: true\n"),
+        (opendata / "opendata" / "data" / "feeds" / "daily.yaml", "feed: daily\n"),
+        (opendata / "opendata" / "pipeline" / "weekly" / "job.toml", "[job]\n"),
+    ]
+    for path, content in fixtures:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+    report = inventory._config_inventory({"afi": afi, "opendata": opendata})
+    found_paths = {(row["project"], row["path"]) for row in report["records"]}
+
+    assert report["status"] == "OK"
+    assert expected_paths <= found_paths
+    assert ("afi", "config/node_modules/ignored.yaml") not in found_paths
 
 
 def test_public_summary_handles_missing_optional_sections_and_public_write_mode(
