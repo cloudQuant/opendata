@@ -61,11 +61,13 @@ from opendata.pipeline.run_service import (
 )
 
 if TYPE_CHECKING:  # pragma: no cover
+    from collections.abc import Callable
     from pathlib import Path
 
     from pydantic import JsonValue
 
     from opendata.pipeline.process_executor import ReviewedProcessExecutor
+    from opendata.pipeline.reviewed_worker import ProcessFetchHandler
 
 MAX_MANIFEST_BYTES = 16 * 1024
 _QUALITY_REPORT_ID = "stock-daily-offline-normalization-v1"
@@ -120,18 +122,6 @@ class StockDailyResponseSource(Protocol):
         ...  # pragma: no cover
 
 
-class StockDailyProcessResponseSource(Protocol):
-    """Parent-side process adapter for one validated stock run request."""
-
-    def __call__(
-        self,
-        request: RunRequest,
-        context: RunExecutionContext,
-    ) -> StockDailyJsonResponse:
-        """Return one bounded raw response for a validated run and lease context."""
-        ...  # pragma: no cover
-
-
 @dataclass(frozen=True, slots=True)
 class CapturedStockDailyResponse:
     """Raw evidence reference paired with the source observation timestamp."""
@@ -142,7 +132,7 @@ class CapturedStockDailyResponse:
 
 def build_stock_daily_process_source(
     executor: ReviewedProcessExecutor,
-) -> StockDailyProcessResponseSource:
+) -> ProcessFetchHandler:
     """Build the fixed parent adapter for the registered stock-daily worker.
 
     The executor must already register ``fetch_stock_daily_process`` under its
@@ -173,7 +163,7 @@ def build_stock_daily_process_source(
 
     if not isinstance(executor, ReviewedProcessExecutor):
         raise TypeError("executor must be a ReviewedProcessExecutor")
-    registry = getattr(executor, "_registry", None)
+    registry = executor._registry
     if not isinstance(registry, ReviewedProcessRegistry):
         raise ValueError("executor must use the reviewed stock daily process registry")
     registered_handler = registry.resolve(STOCK_DAILY_PROCESS_OPERATION_ID)
@@ -183,25 +173,24 @@ def build_stock_daily_process_source(
         or registered_handler.qualified_name != fetch_stock_daily_process.__qualname__
     ):
         raise ValueError("executor must register the fixed stock daily child handler")
-    max_parameter_bytes = getattr(executor, "_max_parameter_bytes", None)
+    max_parameter_bytes = executor._max_parameter_bytes
     if (
         type(max_parameter_bytes) is not int
         or max_parameter_bytes < MAX_STOCK_DAILY_PROCESS_PARAMETER_BYTES
     ):
         raise ValueError("process parameter cap cannot carry the stock daily request")
-    max_result_bytes = getattr(executor, "_max_result_bytes", None)
+    max_result_bytes = executor._max_result_bytes
     if (
         type(max_result_bytes) is not int
         or max_result_bytes < MAX_PROCESS_RESULT_JSON_BYTES
         or MAX_JSON_TEXT_BYTES < MAX_PROCESS_RESULT_JSON_BYTES
     ):
         raise ValueError("process result cap cannot carry the maximum stock daily response")
-    shutdown_grace = getattr(executor, "_shutdown_grace", None)
-    if (
-        type(shutdown_grace) not in {int, float}
-        or not math.isfinite(shutdown_grace)
-        or shutdown_grace < 0
-    ):
+    shutdown_grace_value: object = executor._shutdown_grace
+    if isinstance(shutdown_grace_value, bool) or not isinstance(shutdown_grace_value, (int, float)):
+        raise ValueError("process executor shutdown grace is invalid")
+    shutdown_grace = float(shutdown_grace_value)
+    if not math.isfinite(shutdown_grace) or shutdown_grace < 0:
         raise ValueError("process executor shutdown grace is invalid")
     maximum_http_block = max(
         STOCK_DAILY_HTTP_CONNECT_TIMEOUT_SECONDS,
@@ -232,7 +221,7 @@ def build_stock_daily_job(
     contract_registry: DatasetContractRegistry,
     artifact_writer: RawResponseArtifactWriter,
     response_source: StockDailyResponseSource | None = None,
-    process_source: StockDailyProcessResponseSource | None = None,
+    process_source: ProcessFetchHandler | None = None,
 ) -> ReviewedJob:
     """Build a disabled, unreviewed A-share daily-bar fixture job.
 
@@ -297,6 +286,7 @@ def build_stock_daily_job(
         operation_id=_OPERATION_ID,
     )
 
+    fetch_handler: Callable[[RunRequest, RunExecutionContext], object]
     if process_source is not None:
         # Keep ProcessFetchHandler as the exact job fetch handler so the
         # PersistentRunWorker can verify and use its child heartbeat interval.
@@ -307,7 +297,7 @@ def build_stock_daily_job(
             raise ValueError("stock daily legacy response source is missing")
         legacy_response_source = response_source
 
-        def fetch_handler(
+        def legacy_fetch(
             request: RunRequest,
             context: RunExecutionContext,
         ) -> CapturedStockDailyResponse:
@@ -322,6 +312,8 @@ def build_stock_daily_job(
                 artifact_writer=artifact_writer,
                 source_identity=source_identity,
             )
+
+        fetch_handler = legacy_fetch
 
     def normalize(
         raw: object,
@@ -420,15 +412,15 @@ def _validate_stock_daily_process_handler(process_source: object) -> None:
     from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
     from opendata.pipeline.reviewed_worker import ProcessFetchHandler
 
-    if type(process_source) is not ProcessFetchHandler:
+    if not isinstance(process_source, ProcessFetchHandler):
         raise TypeError("process_source must be the fixed ProcessFetchHandler")
-    executor = getattr(process_source, "_executor", None)
-    operation_id = getattr(process_source, "_operation_id", None)
+    executor = process_source._executor
+    operation_id = process_source._operation_id
     if not isinstance(executor, ReviewedProcessExecutor):
         raise ValueError("process_source must use a ReviewedProcessExecutor")
     if operation_id != STOCK_DAILY_PROCESS_OPERATION_ID:
         raise ValueError("process_source operation ID is not the fixed stock worker")
-    registry = getattr(executor, "_registry", None)
+    registry = executor._registry
     if not isinstance(registry, ReviewedProcessRegistry):
         raise ValueError("process_source executor must use a reviewed operation registry")
     registered_handler = registry.resolve(STOCK_DAILY_PROCESS_OPERATION_ID)
