@@ -184,8 +184,19 @@ def test_ticker_without_session_uses_the_plain_constructor(
     sdk_harness: dict[str, Any],
 ) -> None:
     sdk_harness["session"] = None
-    sdk_harness["ticker"] = object()
-    _sdk.require_history_frame("AAPL", start=None, end=None, timeout=None)
+    history_calls: list[dict[str, object]] = []
+
+    class Ticker:
+        def history(self, **kwargs: object) -> None:
+            history_calls.append(kwargs)
+            return None
+
+    sdk_harness["ticker"] = Ticker()
+    result = _sdk.require_history_frame("AAPL", start=None, end=None, timeout=None)
+    assert result is None
+    assert history_calls == [
+        {"interval": "1d", "prepost": False, "actions": True, "auto_adjust": False}
+    ]
     assert sdk_harness["events"][:2] == [("session_enter",), ("ticker", "AAPL", {})]
     assert not any(event[0] == "ensure_session" for event in sdk_harness["events"])
 
@@ -363,7 +374,12 @@ def test_series_and_news_helpers_validate_documented_shapes(
                 return good_value
 
     sdk_harness["ticker"] = Ticker()
-    assert call() == good_value
+    result = call()
+    if attribute == "dividends":
+        assert isinstance(result, pd.Series)
+        pd.testing.assert_series_equal(result, good_value)
+    else:
+        assert result == good_value
 
     if attribute == "dividends":
 
