@@ -318,7 +318,7 @@ def _revalidated_model_json(
     )
     _validate_json_model_fields(model)
     try:
-        document = model.model_dump(mode="json")
+        document = model.model_dump(mode="json", warnings="error")
         encoded = json.dumps(
             document,
             ensure_ascii=False,
