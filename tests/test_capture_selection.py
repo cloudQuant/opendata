@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Literal
 
 import pytest
@@ -21,6 +22,8 @@ from opendata.data.platform_contracts import (
     SourceIdentity,
     canonical_sha256,
 )
+from opendata.pipeline.contract_publication import ContractPublicationError, _validate_record
+from opendata.pipeline.run_service import NormalizedRecord
 
 CAPTURE_ID = "a" * 64
 INSTRUMENT_ID = "SSE:600000"
@@ -284,3 +287,63 @@ def test_parse_requires_pair_only_for_reserved_profile_and_rejects_dataset_pair(
 def test_contract_constructor_rejects_nullable_selector_business_key() -> None:
     with pytest.raises(ValidationError):
         _contract(capture_nullable=True)
+
+
+def _normalized_record(payload: dict[str, str]) -> NormalizedRecord:
+    """Create a record with the contract's canonical four-part key."""
+    key = json.dumps(
+        [
+            payload["instrument_id"],
+            payload["capture_id"],
+            payload["statement_code"],
+            payload["report_period"],
+        ],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    return NormalizedRecord(business_key=key, payload=payload)
+
+
+def _payload(*, capture_id: str = CAPTURE_ID) -> dict[str, str]:
+    """Return a complete non-temporal source-native report payload."""
+    return {
+        "instrument_id": INSTRUMENT_ID,
+        "capture_id": capture_id,
+        "statement_code": "fzb",
+        "report_period": "2026-06-30",
+    }
+
+
+def test_reserved_writer_populates_explicit_selection_metadata() -> None:
+    record = _validate_record(_normalized_record(_payload()), _contract())
+
+    assert record.instrument_id == INSTRUMENT_ID
+    assert record.capture_id == CAPTURE_ID
+
+
+def test_legacy_writer_keeps_selector_metadata_null_for_similar_payload_fields() -> None:
+    contract = _contract(filter_fields=("instrument_id",))
+
+    record = _validate_record(_normalized_record(_payload()), contract)
+
+    assert record.instrument_id is None
+    assert record.capture_id is None
+
+
+def test_reserved_writer_rejects_noncanonical_capture_id_without_echo() -> None:
+    invalid_capture_id = "A" * 64
+
+    with pytest.raises(ContractPublicationError) as raised:
+        _validate_record(_normalized_record(_payload(capture_id=invalid_capture_id)), _contract())
+
+    assert str(raised.value) == "record selector values are invalid"
+    assert invalid_capture_id not in str(raised.value)
+
+
+def test_writer_fails_closed_on_malformed_reserved_contract() -> None:
+    malformed = _contract().model_copy(update={"filter_fields": ["instrument_id", "capture_id"]})
+
+    with pytest.raises(ContractPublicationError) as raised:
+        _validate_record(_normalized_record(_payload()), malformed)
+
+    assert str(raised.value) == "dataset selection profile is invalid"

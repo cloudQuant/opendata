@@ -12,8 +12,13 @@ import json
 import math
 from collections.abc import Mapping
 from datetime import date, datetime, timezone
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Literal, Protocol
 
+from opendata.data.capture_selection import (
+    InstrumentCaptureSelectionError,
+    selection_profile,
+    validate_selector_pair,
+)
 from opendata.data.dataset_contract_registry import (
     DatasetContractRegistry,
     DatasetContractRegistryError,
@@ -45,6 +50,9 @@ class _DatasetContractResolver(Protocol):  # pragma: no cover
 
 class ContractPublicationError(ValueError):
     """Raised when run output conflicts with its registered data contract."""
+
+
+_SelectionProfile = Literal["dataset", "instrument_capture_v1"]
 
 
 class ValidatedPublicationWriter:
@@ -167,11 +175,35 @@ class ValidatedPublicationWriter:
     def _validate_records(
         self, batch: NormalizedBatch, contract: DatasetContract
     ) -> tuple[PublishedRecordInput, ...]:
-        return tuple(_validate_record(record, contract) for record in batch.records)
+        profile = _publication_selection_profile(contract)
+        return tuple(
+            _validate_record_for_profile(record, contract, profile) for record in batch.records
+        )
 
 
 def _validate_record(record: NormalizedRecord, contract: DatasetContract) -> PublishedRecordInput:
     """Module-level adapter retained for the writer's bounded callback path."""
+    return _validate_record_for_profile(
+        record,
+        contract,
+        _publication_selection_profile(contract),
+    )
+
+
+def _publication_selection_profile(contract: DatasetContract) -> _SelectionProfile:
+    """Resolve the shared profile and translate failures to a safe writer error."""
+    try:
+        return selection_profile(contract)
+    except InstrumentCaptureSelectionError:
+        raise ContractPublicationError("dataset selection profile is invalid") from None
+
+
+def _validate_record_for_profile(
+    record: NormalizedRecord,
+    contract: DatasetContract,
+    profile: _SelectionProfile,
+) -> PublishedRecordInput:
+    """Validate one normalized row under an already checked contract profile."""
     if not isinstance(record, NormalizedRecord):
         raise ContractPublicationError("normalized record has an invalid type")
     field_by_name = {field.name: field for field in contract.fields}
@@ -193,6 +225,17 @@ def _validate_record(record: NormalizedRecord, contract: DatasetContract) -> Pub
         contract,
     )
     source_published_at = _source_available_at(canonical_payload, record, contract)
+    selection = None
+    if profile == "instrument_capture_v1":
+        try:
+            selection = validate_selector_pair(
+                instrument_id=canonical_payload.get("instrument_id"),
+                capture_id=canonical_payload.get("capture_id"),
+            )
+        except InstrumentCaptureSelectionError:
+            raise ContractPublicationError("record selector values are invalid") from None
+        if selection is None:
+            raise ContractPublicationError("record selector values are required")
     return PublishedRecordInput(
         business_key=expected_key,
         payload=canonical_payload,
@@ -201,6 +244,8 @@ def _validate_record(record: NormalizedRecord, contract: DatasetContract) -> Pub
         observed_at=observed_at,
         source_published_at=source_published_at,
         available_at=record.available_at,
+        instrument_id=selection.instrument_id if selection is not None else None,
+        capture_id=selection.capture_id if selection is not None else None,
     )
 
 
