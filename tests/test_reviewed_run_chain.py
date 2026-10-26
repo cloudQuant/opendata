@@ -17,12 +17,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
 from sqlalchemy import create_engine, func, select
 
 from opendata.data.dataset_contract_registry import DatasetContractRegistry
 from opendata.data.platform_contracts import DatasetContract, FieldContract, SourceIdentity
 from opendata.pipeline.contract_publication import ValidatedPublicationWriter
+from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
 from opendata.pipeline.publication_store import (
     PUBLICATION_HEADS,
     PUBLICATION_METADATA,
