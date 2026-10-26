@@ -1,0 +1,625 @@
+{
+  "afi_code_commit": "2931dd8f7",
+  "afi_source_changes_this_wave": false,
+  "archive_note": "Same-host ignored persistent directory, 0700 dirs/0600 files; not external backup or recovery drill. Wave2/wave3 archives untouched.",
+  "archive_path": "var/reports/afi204/2026-10-26-wave4",
+  "environment": {
+    "bandit": "1.9.4",
+    "gitleaks": "8.30.1",
+    "mypy": "2.3.1",
+    "python": "3.13.5",
+    "python310": "AST grammar PASS; actual runtime matrix NOT_RUN",
+    "ruff": "0.15.20"
+  },
+  "inventory": {
+    "blocked": 1103,
+    "inventory_requeried_this_wave": false,
+    "mapping_imports_this_wave": 0,
+    "non_scheduled_helpers": 10,
+    "ready_disabled": 0,
+    "registered_scripts": 1066,
+    "scheduled_tasks": 1103,
+    "source": "Frozen wave3 inventory/plan; no denominator reduction"
+  },
+  "iteration": 204,
+  "opendata_code_commit": "9979f7b7daa990c3f68f734e643a2646d1b582a6",
+  "opendata_integration_branch": "codex/od204-subagent-integration",
+  "private_receipt_sha256": [
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/afi-wave4-before-doc-sync.json",
+      "sha256": "3dc25a8e5c887f669466efd614458dfe4ed7d89bba30cc4fc95936ddd22765ee"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/afi-wave4-doc-sync.json",
+      "sha256": "8958b604a973a0e17517b7fd4968eb7c1caa599e1933c0f52b8fefe85b0b9b43"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/afi-wave4-doc-validation.json",
+      "sha256": "d28f75f8494390cfd453569aa2a4d94ac3d320765b9ddd1429e8f5daed674d0f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/finalize_wave4.py",
+      "sha256": "1ecfab3057ba50064d788869c4b9ec1f2b800941e8a60274fa53959c0b491d1c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/run_wave4_checks.py",
+      "sha256": "ba14d8bd04853462b852e157b6fa704ec87cf796a4367e96b9e7e30606012a69"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-bandit-command.json",
+      "sha256": "8f241f8dbdb8cec3b27a9c924514e5cedede6710ef4d9af1825d0e57bdd8039f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-bandit.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-combined-coverage.ini",
+      "sha256": "0eea877a3264192ce5afd6e231522258093916caa0ef40ebccc72382ffc9a39e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-combined-coverage.json",
+      "sha256": "1c71e13144a71bdb61fa649723243c7df9eca8aa4a571825e4391c0a375b67fe"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-combined-coverage.xml",
+      "sha256": "b3edf565f9400dd9acf17cb926df7500877d9763ca2b6e90688e6051fa182bf0"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-combined-htmlcov.zip",
+      "sha256": "a9cceff488e25fba13f210796785d93a966369012d00495bc3ab5666e4aa228a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-combined-pytest-command.json",
+      "sha256": "41ef5cb39d6a549e958a9f56c5b26159dd2eb3fa02c9eaed2cc3decd12c8f6c8"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-combined-pytest.txt",
+      "sha256": "4e16c104b5c3455d8e3499166ce2cbe72240404449d88675bcd9cb357774693d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-combined.coverage",
+      "sha256": "5987370cc66f9a5cd907c15e09671b2ae50473455b1a4e0ef464e6ad65dd0e30"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-combined.coverage.yun.839494.XVaGehhx",
+      "sha256": "18865ccff056ea0673d1de0a3b2597bad36e8df450924ca4241e684010f72ee9"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-entrypoints-review-final.txt",
+      "sha256": "bbc271a5663cda84ad2447d162c6fa4608fd87475161e6d8b0f7c257935750f5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-entrypoints-review-fixed.txt",
+      "sha256": "6782b81ec0fe2b7c90b42c9f103fe6af3c8f8824d87ed1a941e4f0a3bec54979"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-entrypoints-review.txt",
+      "sha256": "0d8af32991796682385cdfa931d4a544cd84613b0e35991a89bd9755664e0c69"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-format-command.json",
+      "sha256": "1ae1b499c63ed4d3a0f856ff5e443459d03eafb53542131290bf84067d476d3f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-format.txt",
+      "sha256": "4ff47a71933cda9dac7b68bef86276a56fbcd69c7a3ec166850d7042addad6ea"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-gate-mypy-details.json",
+      "sha256": "d5f7ce7fb1f19ac1cad138a57d647752177a06f617176df8ed7fef2b632c7458"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-gitleaks-normalized-secret-check-command.json",
+      "sha256": "7f4144769b40764b7d093a7d49cec138c26fe7e54cc80faa0178835346368318"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-gitleaks-normalized-secret-check.txt",
+      "sha256": "089396fa869d2404b3fc0a87444c2ae23366264a8f11779835faf036c21134f8"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-gitleaks-receipt.json",
+      "sha256": "f3bb132984cc28f45ca9f0fad2573d7f2a605cfc0e22a8bff67bdcf34bf3f03e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-gitleaks-report-run.txt",
+      "sha256": "a6429f24cfbf7e3389ff8181c84bfbb866f98a29de9a7d18a9a2a8f236a415f1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-gitleaks-report.json",
+      "sha256": "5246617f98074fe0169a9074c0a22e9ab408ef255deef32894bb32f2ce699aec"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-gitleaks-secret-check.txt",
+      "sha256": "8ad573e5920a14c5e7083794d6c529682723bd0102aeacf26925b10b510a3721"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-initial-failure/context.json",
+      "sha256": "fe7042da6f373904f0c47a153607ab829377db26bd87de23371273a2891d000d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-initial-failure/htmlcov.zip",
+      "sha256": "297a84f34e9c06ad74c75a887e4f69d4908b0661e9ed8d1ce45cb36ad3b640ac"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-initial-failure/wave4-combined-coverage.ini",
+      "sha256": "0eea877a3264192ce5afd6e231522258093916caa0ef40ebccc72382ffc9a39e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-initial-failure/wave4-combined-coverage.json",
+      "sha256": "cc8298e6046848ac9c4806d7189bf59addb0427cb394eb94802af8ef7b3f6c57"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-initial-failure/wave4-combined-coverage.xml",
+      "sha256": "2f38a2a3c62ffa9410946e736a82696747f61317e52b2fc27bc49ef9dbf90606"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-initial-failure/wave4-combined-pytest-command.json",
+      "sha256": "eebc628e3cf032730f23978ad36ceb9b957dc1d38415f423c4931222cfd21785"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-initial-failure/wave4-combined-pytest.txt",
+      "sha256": "95e96b6dd9276eef3c8ed2356089332b17eaa73b76306e858da6fe9275956591"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-initial-failure/wave4-combined.coverage",
+      "sha256": "499e56c9559412a60e36582063763f0b740d36cfd51be80f4c4b08c3f28ce8cd"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-integrated-reference-reconcile.json",
+      "sha256": "5fd9b8af91ea4a1cdedf14f59ff257e610e35e24d0d71a56183db22dee6ce115"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-integrated-reference-reconcile.py",
+      "sha256": "aa9fb07b7076808836a3b58de670da97ffff7f1ca57123ea20d2dd2430f984f8"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-job-definition-migration-review.txt",
+      "sha256": "92606efebbc0f43457872ecc15bc5678fd9711dc7457d364518727afa51c1022"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-job-import-review.txt",
+      "sha256": "33ba560a5b34dea65182e292a841b65b685709246aa8be07176124f061c73a4b"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-job-import.coverage",
+      "sha256": "bcd474e54d0784c1f018d3296093f53868865bba96b6107af2ca994245fe2b22"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-mypy-client-command.json",
+      "sha256": "d14f1f3db757baa4525079014d7ce1519824567c99e63489c8f7926214885e3e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-mypy-client.txt",
+      "sha256": "2f8ff64eefa9722f4e130c2da051e4aedc145f83efdfb11a63fa4a6fa4be12ed"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-mypy-core-command.json",
+      "sha256": "b42e44eedf0bf9cbe36dcf5203f62675dc02fe27f0cd6ff0a39392b7eac88c4d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-mypy-core.txt",
+      "sha256": "f10a19c1893abc159f8dadded1da61f8860829db17b9222d9b4ac4ea75eb9ef3"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-named-gates-command.json",
+      "sha256": "6a95ecb6e34a7135415e2860ccd41afbef307c228437c9a8e6dd1ea29127d95f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-named-gates.txt",
+      "sha256": "6bc0a51a04d0639af4ea4b3e84ad224b7363b3dbcde68b23f78d4242930bfaea"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-receipt-path-normalization.json",
+      "sha256": "e9fba126a47efe3d566eb69ea0462c7786535e6582b6ccac5958abb997e230a0"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-reference-review-fixed.txt",
+      "sha256": "c286002c73a4d0cf98dd3ad853b325e5201a4eb9cb973633fab1d767ffc38d27"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-reference-review.txt",
+      "sha256": "9a76a1ea8977568b49fe7e055310495174db4c56f5bf8fb160670d73a25f1143"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-reference-stock-integration-command.json",
+      "sha256": "2ac401a0eaef1760e7cca2c260a795b5766921eb2a46571f48ae41ccbc05638f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-reference-stock-integration.txt",
+      "sha256": "fac8731813a9f2d780cf65cd47eb229758b6206176ee9f09f54657265f75c248"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-ruff-command.json",
+      "sha256": "b5d204bd9eed48681083c92cefa614f42b2be794379d8fdb6de21ce8dbd2d4b8"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-run-credentials-review-fixed.txt",
+      "sha256": "942593aa2ae35abfd34bb77b49d8b0f090e6592af6af900cca8ee97a932bbfc2"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-run-credentials-review.txt",
+      "sha256": "906a0f0cb0026fea823e480cab130c81747a252fdfb4c3a02254305cb8cabd89"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-source-snapshot.json",
+      "sha256": "62977f879b64b5c8d44389a0e781f43c7ffe118d90c80990b17d4b69babe9388"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-stock-review-fixed.txt",
+      "sha256": "4f440d8067f1d7498d8cc66952849975e5140c9f809c45755884c1a6c537b934"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-stock-review.txt",
+      "sha256": "1aef2adb2a423850b9515ca9afd59d49bcf0da5f84263bf89a8ba7824f739b8e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-upstream-pin-audit.json",
+      "sha256": "dc06e52759a089a92955d7c0cc7537a08e227208096c68007587702a412b4465"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-upstream-pin-retest.json",
+      "sha256": "85a26581522dabc2125ff8b327ba61287997e46cccbd8e3612dc7ebbc7d9f39c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-whole-gate-command.json",
+      "sha256": "f8a990842241f7656e78f28bc4b59ce15d75e137fd5ccc1be689749002cc140c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-whole-gate.txt",
+      "sha256": "4b7eb15682e9e33be1571b82193571591ba3700353877df8ce7d253fbe98fbce"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-worker-review-fixed.txt",
+      "sha256": "5835d67adea5801a62b7e880f9162aa315f8a6de7cabac7cdf290d5abbb2dd33"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-worker-review.txt",
+      "sha256": "96a18b532be98a833d804c5eee223a1e0886b6ee3aa9c390d4f798f156168c26"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-zero-dep-ac1-03.json",
+      "sha256": "5279507ff2924b44a8ffa8cae4dc74de57a75a9e9c214ddabd9d9e048e7a2030"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-zero-dep-reconcile.py",
+      "sha256": "00cf666245e5e269ff2da937ec4f9c4adf00d76bd6ec79ad37df4cf0b1278020"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-zero-dep-reconciliation.json",
+      "sha256": "3333608c4bd261460813f19a34c20abfa0441d30a7d25b7f58917a72bd5ff9e9"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-26-wave4/wave4-zero-dep-reference.json",
+      "sha256": "f174f0ac230c2b4d738e0fb1a2d4577a995c43a67468b34d315e1d1ee7f20063"
+    }
+  ],
+  "production_changes": "NONE. Original source, running recovery jobs, databases, schedulers, systemd, credentials and API switches unchanged; DDL/facts limited to owned test databases.",
+  "real_source": {
+    "new_source_requests_this_wave": 0,
+    "rights_retention": "UNKNOWN",
+    "source": "Wave3 two requests disconnected before HTTP status/body; fixtures do not replace source verification",
+    "verified": false
+  },
+  "recorded_at": "2026-10-26T14:52:10.685816+00:00",
+  "remaining_limits": [
+    "No real provider process fetch, source/license/calendar/lifecycle persistence or full-history certification; all 1103 tasks remain blocked.",
+    "Worker factory currently supports SQLite only; no production MySQL/PostgreSQL worker or global concurrent/source budget. MySQL wave5 branch is not merged or validated by this receipt.",
+    "CLI/role plan are explicit injection libraries; main lifespan, legacy acquisition routes, scheduler/admin API/systemd deployment are not rewired.",
+    "Target fingerprint prototype requires externally quiescent rollback-journal SQLite and serialized writes; nolock does not enforce quiescence. MySQL warehouse target is rejected.",
+    "Importer accepts dedicated isolated metadata only; metadata0007 does not authorize use on the existing shared control database. No execution/checkpoint/fact migration or production backup-restore proof.",
+    "Child inherits environment and OS privileges; trusted-function isolation is not an arbitrary Python sandbox. Parent normalize/publish and disk/SQL are not hard resource-deadline limited.",
+    "Raw SIGKILL/orphan recovery and retention enforcement, streaming source ingress cap, external backup/restore, natural-cycle and production single-writer cutover remain open.",
+    "Existing v2 coverage without independently wired evidence returns UNKNOWN; library service is not automatically exposed by the endpoint.",
+    "AFI market-store reread, broader direct-source consumers and full SDK/DSN removal remain open. New wave5 chart branch is not validated here.",
+    "Full make gate is not green. Historical immutable evidence, Python3.10 runtime matrix, remote CI and PR merge remain open."
+  ],
+  "schema_version": 1,
+  "source_sha256": {
+    "alembic/versions/2026_10_26-0007_job_definitions.py": "6378f37fb6b919614d49af8dbbeb001b99dcdfbfbafb2b9f134d95d3ff6dfb5d",
+    "alembic_data/versions/20261026-0010_run_ledger.py": "840837f5c6a1ecb9e38955d754acc805aa6f91431f63817f88e663d049b3742d",
+    "alembic_data/versions/20261026-0011_publication_snapshots.py": "69a9203b0a34a1da0b71438d3d310f96c70683c594fecf328a85d1c54d4b08f0",
+    "opendata/api/__init__.py": "cf360233a410eb6baf331e6d5ef7e1f04b8033ec56fb820ad4f036fcb38cfaa5",
+    "opendata/api/published_access.py": "0176fe21ab38b0bdd6e8dd7fe39c30eb0caffe7402653c7d72b4b8a85c62deb0",
+    "opendata/api/published_data.py": "accecc37d3cbd8700dbdae010a471cf004fdc64f38fafc2f1ec5ba94500b7620",
+    "opendata/data/dataset_contract_registry.py": "522e2f798bb04bbe10035698278945867d0aafec6942f5723841cb61d032eb81",
+    "opendata/data/instrument_reference.py": "55cc1e9a1825c1cf811d9c095712aefe9bf92d6465d11a1416f1dea89e22e7ff",
+    "opendata/data/models/base.py": "22ffac413395ebf1951cf938119ec2476b12d2ffb063c5eeafafd06b49a16ee8",
+    "opendata/data/platform_contracts.py": "c890798e8c217efc6ee86fee236be97688036d30e9ad97cd9c96d3f7d7dd5726",
+    "opendata/data/providers/akshare/models/stock_daily.py": "fc83a9bbf83d13b1f5829bc81202c069356ec60488504631c263a1aeab6b739f",
+    "opendata/data/providers/akshare/stock_daily_wire.py": "7497656eeb141b927ccaabeb62a9425cfa004865c1c333ca7f4dd862a41c083b",
+    "opendata/host_inventory.py": "039e02b8391bfe2f2b291c9950f08ad454db8c02ea83ee86eaafd5806c407a87",
+    "opendata/job_definition_store.py": "37ff470ecbbdbab7301ab527bf49b1ac0dd96af489f9c1b19c0a28cea98276f5",
+    "opendata/main.py": "ba87561e3a0422979e1ee4a9330ad05119445bf7ca8c64ce2c23b878f6bb6a1e",
+    "opendata/migration_apply.py": "dfa9f4053b53e51b0fde7dd56b929264b254eb9b27b6883585112ae61d36e42d",
+    "opendata/migration_catalog.py": "42e435e271d125990ac5592025fc410f51035ea072df00517a09c52cbc10d3ec",
+    "opendata/migration_inventory.py": "094b101808c97621dd569468ac9ba7e398c1dc058288f308ef0d3ac442c83292",
+    "opendata/migration_plan.py": "2549d4d2160c138d05a8a5d88809d99ae917d4aa0fe94fed4a20c3f2c7505a9d",
+    "opendata/pipeline/contract_publication.py": "74dca4fa81a437e28ccf9d02d926e07d323ce5be69fe1b4dc79cbe89ce2c7148",
+    "opendata/pipeline/coverage_service.py": "c0ce9e651ce259586f49c14ee62fb33d81e34a66de8d8e10f00f606765241add",
+    "opendata/pipeline/history_coverage.py": "32da5309b8ce51ac0a67d595a3222e292e9206821021d1d4b369a4bd66950bcd",
+    "opendata/pipeline/process_executor.py": "c2e162975723228cdc83b862f547518b0735de0ba6517774a76112dc91adb131",
+    "opendata/pipeline/process_executor_worker.py": "8d64dc48bc744e79f3d087cbebadc4879122749b71c8bac03ce30391f4f5eb7b",
+    "opendata/pipeline/publication_store.py": "1322f256897f1612dc73868f7f59424f438bbbbeb9daa7cdc47d6fd24b108049",
+    "opendata/pipeline/raw_evidence.py": "3a1f9e74beba5ccb5ff06db4b3e532e51cd7da3284c943dfecd8db7484c37665",
+    "opendata/pipeline/reviewed_worker.py": "267fcb4baeb7fbc5958d9f505e98e84ca515c6a85b6911265ba7febe1e371e6e",
+    "opendata/pipeline/run_dispatch.py": "7b9ebc55e98e1cf4784f553467d3c9a61fd113539d9e3897941ed1b4f71f236b",
+    "opendata/pipeline/run_identity.py": "0f884fb1b3bf51f60de271b62dc969a42fe63d4cc6eac935d6779a0c193c4083",
+    "opendata/pipeline/run_ledger.py": "e59ce21b0cc1d7ee47520042be2f9b85f7955900fd9c77c6927d13bd33430891",
+    "opendata/pipeline/run_service.py": "6bfc5a3f1add383ab89ae75cf929cfbf00fec0da571c43c0c68a165ba7772f27",
+    "opendata/pipeline/runtime_roles.py": "b82a30a60bcadf3019cb3026e235c3634fa41455f5b6582782fc6e9d37a031d0",
+    "opendata/pipeline/stock_daily_job.py": "08848262cb53273aee3f2041c6bab7c3c6e24f74d886498f69d608166abd509c",
+    "opendata/reviewed_cli.py": "795367b2976647b6615471ba0d98e12fcccc29e3afff7edbf7f1a7f2193de349",
+    "opendata/runtime_inventory.py": "4cf91723250ee4d5f27fcae6ed107d0027f8df68ef815605a64c0832491620a5",
+    "opendata_client/opendata_client/__init__.py": "550e287816aec0ac8e702f96919feaee210a30e1d15595f2bdb8cc6d405d9daa",
+    "opendata_client/opendata_client/client.py": "ec817286e0535ca3eaa12af2be9763c2a91a5f562515303242e6d1111c9b6735",
+    "opendata_client/opendata_client/snapshots.py": "bb62147fd604e4587a72652ed11e71c3f564914269823545d229ff9b8566b28d",
+    "scripts/codemod/verify_no_akshare.py": "c92f70109415f7b0b736460c28e9c0a0bd46345fd150dab447915d3dd89b2cc7",
+    "scripts/ops/build_migration_catalog.py": "a54a8d69828d38069768a9870945b8dc70b497d20e4016b1a7479bb183616c79",
+    "scripts/ops/inventory_host_runtime.py": "0546e5c32c822d23ef3f6421875da4ec4d9b2a1efa744aa462997c99f354e6cf",
+    "scripts/ops/inventory_legacy_runtime.py": "71b50d0c7871ec71607131a9f7bae1008d9811450f6b2a53b7c12400282127ef",
+    "scripts/ops/inventory_legacy_scripts.py": "a7c01a851329f1002c6bef71df6c37ca7c75963af0a5e7d6bb92a47dbba38ce1",
+    "scripts/ops/plan_legacy_migration.py": "4137eae5c9930905316a16647815f5d5f381945864192b3baff09b7d41c29ec2",
+    "scripts/quality/check_brand.py": "7cbf155f06b7e75d49a151c60c80b9bbb1db0d10d112de3182924af8df67a8dd",
+    "scripts/quality/check_published_openapi.py": "ec4a3667c6152b6049ec54be74eff29bc4d77a38b4f2e8ba3f2854b8d69643c1",
+    "tests/pipeline/test_reviewed_vertical_flow.py": "d8227e7450e0e7132c504228200e41fa544ca235411cad906da10ff99cabd481",
+    "tests/test_afi204_owned_mysql.py": "80d22760e4daa936654203870da55fd95f94c71e54cb5f6e308ca2c51a1ab74d",
+    "tests/test_check_brand.py": "64c7b0a4d0278b14c9ca0429d8ebb388d5d4f901e06338d59d6f6731b82b6dcb",
+    "tests/test_contract_publication.py": "bb9b1d055c846ad21e33057842c5d80483c14176d73302bcaece046f1dd68bb6",
+    "tests/test_coverage_service.py": "4972cf11ec4171c55cdf3317174821df544930687be20eabf57787e910f011d1",
+    "tests/test_dataset_contract_registry.py": "af302e68506b9a3c337026806af0d32be87f3aed69e4768e97e7fd86b0f47529",
+    "tests/test_financial_pit_sdk.py": "dcc3ab3f4fd1bacfbdb6fd28d080cf6bd5b44925ef282fa767b34e1172b2152c",
+    "tests/test_history_coverage.py": "a1df1b1dafb177686a23712e25af1652e72b1fb1e320b1e01cdee281a7ae6c07",
+    "tests/test_host_inventory.py": "72fa11fce338bb193f864cfc7095e9fba0885c05004b515daa34b0628cb17295",
+    "tests/test_instrument_reference.py": "ed5c56f816f10c0ff7ec5ff602808453583dea12e423b513c1a9895b8ca60d65",
+    "tests/test_job_definition_migration.py": "1e8f988284d806dced2033ae314ca335a11276adc9c16d8496b03deb0643d0e2",
+    "tests/test_migration_apply.py": "530a27c09f3c836fc32acd15043b59aacf9bb38c19421308f3f3455233710f89",
+    "tests/test_migration_catalog.py": "403a885bfffbbe2815ad9f65616f5278398bfabfccffc5b41f230ff9b30256a3",
+    "tests/test_migration_inventory.py": "2fc1ddd5769ee4ae3e2f9e7abce7cf3dab4432ab235117bdb2dd843d060e2ca6",
+    "tests/test_migration_plan.py": "cd8b2b0a8334edc9a05ad26ed6e1967e3477663a5abb914459700aea62213f26",
+    "tests/test_opendata_client.py": "f4e9fca81c5f52cfe52c861b564b6063fa1d8c0ce3bd38ace13a689f70c0a526",
+    "tests/test_p0_providers.py": "e1da8251b2291da90f72bb0387723658f69be8b3464cdfed3fa572cbb8596110",
+    "tests/test_platform_contracts.py": "cb9264f5a070a1131c15a97134a8274f2172016dccae305b4f03436835d9fd73",
+    "tests/test_process_executor.py": "c7c5da3a7c2c5c97dd9e1e8147560e7dc32f97c6a67d79b9cdfcc56e817effe7",
+    "tests/test_publication_store.py": "ccd0e02299aa2fb5813e2d84249829633240059322a06b0902254bf26170cf14",
+    "tests/test_published_access.py": "5ca9b7e5d134bd59e2bc594c94d9f3191dc12f252cd1f2dc31db8f151d69cdeb",
+    "tests/test_published_data_api.py": "0d7a46b2de18850f7cba126b768e6fdef9b407dc4d3146d64b048574235ff6be",
+    "tests/test_published_openapi_gate.py": "1c5e69e7df27795f82001f7853ac414b49c7ea611d69090aedaf5b23af0c94eb",
+    "tests/test_raw_evidence.py": "e5c104359f382a3ddb5208affdb6785b26a48433dac0d7834791c5cb0b775bf7",
+    "tests/test_reviewed_cli.py": "e3e1d5d0e256e1b1c18d2071619a33050b3f6e9d45180015954dfaa23112541f",
+    "tests/test_reviewed_run_chain.py": "3c16f80e81c9420e6f071388ced2839cfcc253aa5715a4dd15aba593d0fbcb72",
+    "tests/test_reviewed_worker.py": "d07b776d7b3ed88e9f5eb70f3b870e13338b3b03717893647ffaabbb52108026",
+    "tests/test_run_dispatch.py": "d2acebf5f89392cfd75d887953fccff55026e0c6632901a327a9c144ea1e7ca7",
+    "tests/test_run_identity.py": "6dcde702c95476fb7e9cff751995e45a28278278f1cea5550bdc933dddac942f",
+    "tests/test_run_identity_credentials_ledger.py": "aa8f734c31e0e676c973c753aa8a9bae6127a6498785f013a678e9d940cc0521",
+    "tests/test_run_identity_ledger_integration.py": "bd89f972ab3d943bc9013ab0e0f403875721d4bb8b6bcc698d979836cdc78a43",
+    "tests/test_run_ledger.py": "e0a074483ef776aadc52e5bdfbb6403d011568fa79007ea6294a61de08308504",
+    "tests/test_run_ledger_atomic.py": "1bd2dd8e8058d333e065b60fa028c07105975b77cb58b4f612f1c8c08a506331",
+    "tests/test_run_ledger_database_clock.py": "102831a38eec70c8080a05c63c81a71aa87d0af35e4ce90c46e0d5325544dade",
+    "tests/test_run_service.py": "c10fb4d3dfbe6030fd279c508dcac72ad058f4c0fa29c315c9df5eff82495c72",
+    "tests/test_runtime_inventory.py": "08993b187bebe5211c80f8b5d6ed848562da9ae04be66d971b7c1d837c7d4dd9",
+    "tests/test_snapshot_client.py": "19ebf1687e8c26892f4815a10609fad5aab927c2b9d41a698c88a923d379e422",
+    "tests/test_stock_daily_job.py": "c86ef80e024418b9afdabef171a2c0305f023b7d8f3f6cbe6a0e5bca577abcd8",
+    "tests/test_stock_daily_migration.py": "2714d4d92f099a3c3a0f9e2540388549d215d1b2ba5aac16515101b470df70e0",
+    "tests/test_upstream_reference_policy.py": "ba5d5cba335ac268ec33219ed42c09588fc223a435612e02220d5d9bf3b7b6b8"
+  },
+  "status": "CODE_AND_ISOLATED_INTEGRATION_VALIDATED; NOT_PRODUCTION_ACCEPTED",
+  "validation": {
+    "bandit": {
+      "production_file_count": 46,
+      "status": "PASS"
+    },
+    "combined": {
+      "command_receipt": "var/reports/afi204/2026-10-26-wave4/wave4-combined-pytest-command.json",
+      "coverage_target_count": 34,
+      "deselected": 24,
+      "exit_code": 0,
+      "input": "Explicit synthetic JSON/MockTransport/owned temporary SQLite; actual Popen/raw/publication/REST behavior; no upstream or production writes",
+      "passed": 1813,
+      "scope": "Selected test files and coverage targets, not whole repository; e2e excluded",
+      "seconds": 168.19,
+      "status": "PASS",
+      "test_file_count": 50,
+      "warnings": 23
+    },
+    "coverage": {
+      "files_percent": {
+        "alembic/versions/2026_10_26-0007_job_definitions.py": 100.0,
+        "opendata/api/published_access.py": 87.20538720538721,
+        "opendata/api/published_data.py": 88.8,
+        "opendata/data/dataset_contract_registry.py": 96.61016949152543,
+        "opendata/data/instrument_reference.py": 96.59863945578232,
+        "opendata/data/models/base.py": 93.05555555555556,
+        "opendata/data/platform_contracts.py": 93.26530612244898,
+        "opendata/data/providers/akshare/models/stock_daily.py": 84.38661710037175,
+        "opendata/data/providers/akshare/stock_daily_wire.py": 90.29126213592232,
+        "opendata/host_inventory.py": 86.29441624365482,
+        "opendata/job_definition_store.py": 92.3913043478261,
+        "opendata/migration_apply.py": 85.84070796460178,
+        "opendata/migration_catalog.py": 93.67209971236817,
+        "opendata/migration_inventory.py": 85.43543543543544,
+        "opendata/migration_plan.py": 94.3298969072165,
+        "opendata/pipeline/contract_publication.py": 100.0,
+        "opendata/pipeline/coverage_service.py": 92.87469287469287,
+        "opendata/pipeline/history_coverage.py": 100.0,
+        "opendata/pipeline/process_executor.py": 93.16546762589928,
+        "opendata/pipeline/process_executor_worker.py": 100.0,
+        "opendata/pipeline/publication_store.py": 93.76623376623377,
+        "opendata/pipeline/raw_evidence.py": 95.38461538461539,
+        "opendata/pipeline/reviewed_worker.py": 90.15873015873017,
+        "opendata/pipeline/run_dispatch.py": 96.90721649484536,
+        "opendata/pipeline/run_identity.py": 96.17486338797814,
+        "opendata/pipeline/run_ledger.py": 85.83333333333333,
+        "opendata/pipeline/run_service.py": 92.61538461538461,
+        "opendata/pipeline/runtime_roles.py": 100.0,
+        "opendata/pipeline/stock_daily_job.py": 98.94736842105263,
+        "opendata/reviewed_cli.py": 93.71196754563894,
+        "opendata/runtime_inventory.py": 80.95238095238095,
+        "opendata_client/opendata_client/client.py": 89.14167528438469,
+        "opendata_client/opendata_client/snapshots.py": 89.76930792377131,
+        "scripts/quality/check_published_openapi.py": 95.46925566343042
+      },
+      "html_and_xml_archived": true,
+      "module_groups": {
+        "opendata/data/": {
+          "covered_statements_and_branches": 1756,
+          "denominator": 1895,
+          "percent": 92.66490765171504
+        },
+        "opendata/pipeline/": {
+          "covered_statements_and_branches": 5700,
+          "denominator": 6049,
+          "percent": 94.23045131426682
+        }
+      },
+      "runtime_inventory_note": "Unit-only module remains below the A2 minimum; source-identical earlier read-only integration measured 91%. This combined report does not close that current module gap.",
+      "statement_branch_percent": 91.4632748940071,
+      "whole_repository": "NOT_MEASURED"
+    },
+    "initial_failed_run": {
+      "concurrent_work": "The full make gate ran concurrently; Gitleaks used about 11 cores in an 18-CPU affinity set during process-executor tests. Tracebacks include missing startup markers and unexpected timeouts. Resource-contention causality is a hypothesis pending rerun, not a code-fix claim.",
+      "deselected": 24,
+      "failed": 14,
+      "next": "Repeat the same 50-file command and coverage scope after Gitleaks completion; do not relax deadlines or modify assertions. Full gate A2 is still running its serial mypy targets.",
+      "original_path_note": "Frozen command uses original output names; files in this directory retain those bytes before the final rerun overwrites the working names.",
+      "passed": 1799,
+      "seconds": 304.18,
+      "source_commit": "9979f7b7daa990c3f68f734e643a2646d1b582a6",
+      "status": "FAIL"
+    },
+    "initial_failure_followup": "Same code, assertions and deadlines rerun after CPU-intensive Gitleaks finished. First failure retained; successful rerun supports environment contention as the explanation but does not prove behavior under every host load.",
+    "metadata_migration": {
+      "head": "0007",
+      "independent_review_including_graph_passed": 9,
+      "mysql": "Offline DDL compile equality only; live migration NOT_RUN",
+      "parent": "0006",
+      "production_applied": false,
+      "sqlite": "Owned fixture upgrade/downgrade/upgrade, neighbor preservation, store interoperability, identity/hash constraints PASS",
+      "target_tests_passed": 4
+    },
+    "mypy": {
+      "scope": "43 core and 3 SDK production files together, --follow-imports=silent; not a whole-tree or per-root aggregate-gate pass",
+      "status": "PASS"
+    },
+    "named_gates": {
+      "annotations_percent": 100,
+      "docstrings_percent": 100,
+      "public_callables": 2487,
+      "status": "PASS",
+      "targets": [
+        "brand-check",
+        "zero-dep-check",
+        "public-api-quality",
+        "published-openapi-check"
+      ]
+    },
+    "openapi": {
+      "actual_main_compatibility": "PASS",
+      "baseline_changed": false,
+      "remote_ci": "NOT_RUN",
+      "v1_paths": 140,
+      "v2_paths": 6
+    },
+    "reference_policy": {
+      "ac1_03": {
+        "ast_exception_count": 12,
+        "ast_exception_expected": 12,
+        "bare_token_paths": 1236,
+        "bare_token_unreadable_paths": [],
+        "bare_token_vendored_paths": 327,
+        "buckets": [
+          "opendata/data/providers/akshare/_vendor/",
+          "THIRD_PARTY_NOTICES.md",
+          "LICENSE-AKSHARE",
+          "README.md",
+          "CODE_QUALITY.md",
+          "scripts/codemod/",
+          "tests/",
+          "docs/",
+          "docs/quality/akshare-reference-allowlist.json"
+        ],
+        "hits_covered_by_ac1_buckets": 1144,
+        "invalid_metadata_or_schema": 0,
+        "reference_policy_entries": 93,
+        "reference_policy_problems": [],
+        "remaining_paths_reconciled_by_register": 92,
+        "stale_paths": 0,
+        "stale_sha": 0,
+        "stock_daily_job": {
+          "ast_exceptions": [],
+          "category": "source-adapter",
+          "path": "opendata/pipeline/stock_daily_job.py",
+          "sha256_actual": "08848262cb53273aee3f2041c6bab7c3c6e24f74d886498f69d608166abd509c",
+          "sha256_pinned": "08848262cb53273aee3f2041c6bab7c3c6e24f74d886498f69d608166abd509c",
+          "sha_matches": true
+        },
+        "unregistered_paths": 0
+      },
+      "head": "9979f7b7daa990c3f68f734e643a2646d1b582a6",
+      "issues": [],
+      "tracked_files": 10693,
+      "zero_dep_baseline": {
+        "files": {
+          "opendata": 643,
+          "opendata/data/providers/akshare/_vendor": 325,
+          "opendata_client": 3
+        },
+        "finding_records": 0,
+        "findings": 0,
+        "scanner_version": 5,
+        "scope": [
+          "opendata",
+          "opendata/data/providers/akshare/_vendor",
+          "opendata_client"
+        ],
+        "total_files": 971
+      }
+    },
+    "reused_historical_receipts": {
+      "afi_consumers": "157 passed wave2; not rerun this wave",
+      "sdk_install": "5 passed wave2; source unchanged, not rerun",
+      "wave2_owned_mysql": "7 passed on 8.0.46; not rerun and does not validate new worker/migration"
+    },
+    "ruff_format_grammar": {
+      "changed_python_files": 86,
+      "scope": "All Python files changed from repository input 61800c18 to this source commit",
+      "status": "PASS"
+    },
+    "vertical_flow": {
+      "coverage_rest_wired": false,
+      "input": "SYNTHETIC",
+      "passed": 1,
+      "scope": "CLI submit -> explicit worker adapter -> SQLite persistent worker -> actual Popen JSON echo -> parent stock capture/normalize -> fenced publication -> actual v2 REST -> coverage service; malformed response leaves facts/head/watermark unchanged",
+      "test": "tests/pipeline/test_reviewed_vertical_flow.py"
+    }
+  },
+  "wave": 4,
+  "whole_repository_gate": {
+    "command_receipt": "var/reports/afi204/2026-10-26-wave4/wave4-whole-gate-command.json",
+    "exit_code": 2,
+    "later_targets": "NOT_RUN after the failing aggregate member",
+    "output_receipt": "var/reports/afi204/2026-10-26-wave4/wave4-whole-gate.txt",
+    "reason": "A2 mypy failed in 13 roots with 25 diagnostics; all failing roots are unchanged from input 61800c18 and none overlap the 46 changed production targets. See exact audit receipt. Existing archive-scoping decisions are unchanged; missing historical evidence remains separately open.",
+    "secret_scan": {
+      "commits": 761,
+      "leaks": 0,
+      "version": "8.30.1"
+    },
+    "started_targets": [
+      "brand-check",
+      "zero-dep-check",
+      "secret-check",
+      "ledger-check",
+      "evidence-traceability",
+      "js-points-check",
+      "loguru-check",
+      "a2-check"
+    ],
+    "status": "FAIL",
+    "stopped_at": "a2-check"
+  }
+}

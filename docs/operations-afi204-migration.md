@@ -1,6 +1,6 @@
 # AFI 204 迁移工具、发布与运行基础
 
-2026-10-26。当前交付是隔离集成分支上的代码与独立数据库验证，尚未迁移生产数据或切换旧调度器。首批6个基础子任务之后，第二批11条开发任务新增持久发布、受控执行、数据集授权和v2快照链路；第三批7条执行任务增加可终止子进程、raw证据、统一入队、主机清单、迁移预演、OpenAPI门禁和股票wire身份校验；完整范围仍按 ai-for-investor 的迭代204工作包管理，不能按模块数量推导迁移完成。
+2026-10-26。当前交付是隔离集成分支上的代码与独立数据库验证，尚未迁移生产数据或切换旧调度器。首批6个基础子任务之后，第二批11条开发任务新增持久发布、受控执行、数据集授权和v2快照链路；第三批7条执行任务增加可终止子进程、raw证据、统一入队、主机清单、迁移预演、OpenAPI门禁和股票wire身份校验；第四批补充股票reviewed job、主数据与coverage服务、SQLite持久worker、CLI/角色规划、单任务禁用定义导入和metadata 0007；完整范围仍按 ai-for-investor 的迭代204工作包管理，不能按模块数量推导迁移完成。
 
 ## 代码入口
 
@@ -14,11 +14,16 @@
 | `opendata.pipeline.publication_store` | warehouse 0011、追加修订、head/watermark、固定快照、签名cursor | 同dataset增量不能漂移数据合同；窗口仅业务日期，超限显式失败 |
 | `opendata.data.platform_contracts` / `dataset_contract_registry` | 字段/单位/时间语义、三元版本身份、有界校验与稳定hash | 服务端显式审核注册；不能从行数推断质量或完整性 |
 | `opendata.api.published_access` / `published_data` | 操作scope、数据域、审核grant、v2目录/records/coverage/snapshot | 非日级时间序列、严格PIT和未知参数明确拒绝；不抓上游 |
-| `opendata.runtime_inventory` / `migration_catalog` | 真实库只读清单、源码与Provider静态crosswalk | 参数值不公开；主机清单单独采集且保留UNKNOWN；迁移apply仍待完成 |
+| `opendata.runtime_inventory` / `migration_catalog` | 真实库只读清单、源码与Provider静态crosswalk | 参数值不公开；主机清单单独采集且保留UNKNOWN；仅有受限SQLite单任务导入原型 |
 | `opendata.pipeline.process_executor` | 固定解释器/helper、审核函数注册、JSON IPC、deadline/cancel/checkpoint、进程组回收 | 仅POSIX；不是Python沙箱，不传Engine/RunContext/publisher；全局并发和OS资源配额另配 |
 | `opendata.pipeline.raw_evidence` | 流式body SHA、独立capture manifest、私有权限、原子no-clobber、拒绝symlink/FIFO | 崩溃遗留暂存/孤立对象的受控回收与保留策略执行尚未实现 |
-| `opendata.pipeline.run_dispatch` | scheduled/manual/backfill统一入队、dry-run、APScheduler真实计划槽回执 | 未接生产scheduler启动、管理员API、CLI/systemd和持久worker |
+| `opendata.pipeline.run_dispatch` | scheduled/manual/backfill统一入队、dry-run、APScheduler真实计划槽回执 | CLI和SQLite worker已有显式SPI联调；生产scheduler启动、管理员API及systemd尚未接线 |
 | `opendata.migration_plan` / `host_inventory` | 离线输入hash/目标指纹/审核mapping预演；固定只读命令及有界主机采集 | dry-run不apply；proc关联不等于writer身份，缺权限/截断保留UNKNOWN/PARTIAL |
+| `opendata.data.instrument_reference` / `pipeline.coverage_service` | 版本化生命周期、别名、日历证据与publication绑定的coverage | 限期或复用别名须as_of；证据为显式注入，尚无真实主数据持久化或coverage REST接线 |
+| `opendata.pipeline.stock_daily_job` | 默认disabled、明确合成响应、原始证据和请求范围校验、标准化 | 不是实际HTTP源worker；source verified仍False |
+| `opendata.pipeline.reviewed_worker` | 自有SQLite Engine、真实受控子进程fetch、lease/heartbeat与fenced发布 | 拒绝外部Engine、换库和fork复用；MySQL worker、全局并发和OS硬资源上限尚未实现 |
+| `opendata.reviewed_cli` / `pipeline.runtime_roles` | 有界JSON、统一提交、显式worker SPI及角色互斥规划 | 未配置入口exit78；不加载默认DB或改变main legacy启动，实际服务部署另验 |
+| `opendata.job_definition_store` / `migration_apply` | 禁用定义幂等保存、冻结计划/hash/mapping及目标指纹检查；metadata 0007 | 原型仅支持调用者保证静止的rollback-journal SQLite和isolated metadata；不迁执行/checkpoint/事实或真实任务 |
 | `scripts/quality/check_published_openapi.py` | actual main v1/v2冻结及保守破坏检查，接入make gate | 远端CI尚未执行；不支持的引用/语义明确失败，不能自动更新baseline |
 | `opendata_client` | 保留v1，新增独立v2 SnapshotClient、整体deadline/有限重试/分页预算 | v1仍latest-view；v2按快照与行来源序号校验，不含异步导出 |
 
@@ -59,7 +64,7 @@ python scripts/ops/inventory_legacy_scripts.py \
 
 RunLedger构造器不进行数据库I/O，也不创建表。0010/0011均归 **warehouse Alembic**，账本、发布事实和watermark使用同一个Engine，control metadata独立保留。禁止通过生产启动时的 `create_all` 绕开迁移。
 
-除SQLite外，已在独立MySQL 8.0.46实例验证迁移、并发领取、回滚、修订快照及运行到REST/SDK的组合。生产worker应显式使用 `RunLedger(engine, clock_policy="database")`，租约以同连接数据库UTC判断，拒绝worker覆盖commit clock；默认caller模式仅用于兼容同主机协议和确定性测试。PostgreSQL真实行为仍未验证，APScheduler真实slot到ledger的桥接已在离线测试验证；实际启动、CLI/systemd和持久worker接线仍待完成。
+除SQLite外，已在独立MySQL 8.0.46实例验证迁移、并发领取、回滚、修订快照及运行到REST/SDK的组合。生产worker应显式使用 `RunLedger(engine, clock_policy="database")`，租约以同连接数据库UTC判断，拒绝worker覆盖commit clock；默认caller模式仅用于兼容同主机协议和确定性测试。PostgreSQL真实行为仍未验证，APScheduler真实slot到ledger的桥接已在离线测试验证；CLI到SQLite持久worker已通过显式注入组合，实际main启动、生产数据库及systemd接线仍待完成。
 
 ## 子进程与统一提交
 
@@ -90,6 +95,20 @@ python scripts/ops/plan_legacy_migration.py \
 输出必须是新文件，不能覆盖输入、代码、配置或其别名。没有逐任务审核mapping、目标白名单与warehouse指纹时，预演保留全部1,103个任务为BLOCKED、0个ready；10条无调度辅助记录单列。静态报告中的877个MISSING_PROVIDER只表示未匹配已注册Fetcher，不能推导877个均需新写适配器；原生wire调用也可能失去旧vendor函数关联。计划不执行SQL、旧脚本、抓源或apply。后续影子补数必须使用隔离目标；每个生产dataset/sink始终只有一个writer。
 
 股票日线已先核对原始JSON的code/market再构建行，避免vendor回填请求symbol造成伪身份校验。当前GovernedHttpClient仍先完整buffer再执行2MiB检查，尚无入口流式硬上限；新的固定参数集也未获成功真实响应。两次公开短窗口请求在HTTP状态前断开，Provider保持verified=False，许可与历史保留边界未知。
+
+## 第四批运行切片
+
+`tests/pipeline/test_reviewed_vertical_flow.py` 将CLI提交和worker-once SPI显式绑定到同一SQLite ledger，经真实Popen传递合成JSON。父进程调用股票任务工厂捕获raw证据、normalize并fenced发布，再通过实际v2路由读取固定publication，最后以独立fixture日历/生命周期计算coverage。坏响应失败后facts、publication head和watermark保持原值。该测试不是源站验证，也没有将coverage服务接到线上coverage路由。
+
+worker只接受 `create_worker_engine` 创建并预热、绑定物理文件和创建PID的Engine；普通外部Engine、内存库、文件替换及fork继承均拒绝。fetch必须是 `ProcessFetchHandler`，可信父端builder/decoder/normalize/publish仍需有界；SQLite busy/pool timeout不等于磁盘或任意SQL的硬截止时间。
+
+`python -m opendata.reviewed_cli` 缺显式应用绑定时返回78，且不读取stdin或默认配置。`ReviewedCLIApplication` 是注入式入口库，`runtime_roles`只验证角色规划；它们尚未替换main lifespan和legacy scheduler。CLI的worker SPI与持久worker的无参数run_once通过明确adapter连接，部署方不得只写角色配置便假定旧采集器已经停止。
+
+公共RunRequest在身份序列化/ledger之前拒绝连接配置字段、嵌套凭据、JDBC/ODBC、URI userinfo和敏感query；已识别URI解析失败统一拒绝。验证错误隐藏输入并使用固定键路径，model_construct输入也须重验证。普通HTTPS和业务文本可用；这不替代secret引用注入或最小权限。
+
+metadata `0007` 正确继承0006，提供与store相同的冻结DDL。隔离SQLite验证upgrade/downgrade/upgrade、相邻表保留及store互通；MySQL仅离线DDL编译，不宣称新迁移已在真实MySQL运行。当前importer仍只接受专用isolated metadata，不能直接用于包含legacy控制表的现有metadata库。
+
+目标fingerprint检查只支持稳定、无sidecar的rollback-journal SQLite，使用新建只读连接避免借用旧pool；调用者必须保证整个检查期间数据库静止并串行化写入。`nolock=1`本身不提供锁或并发一致性，参见 [SQLite URI约束](https://www.sqlite.org/uri.html)。生产MySQL目标、备份恢复凭证、执行/checkpoint迁移和真实task apply仍未完成，完整1,103项计划保持BLOCKED。
 
 ## v2 运行配置与边界
 
@@ -137,7 +156,7 @@ python -m pytest -o addopts='' -q \
 ## 下一波接线顺序
 
 1. 为实际股票任务接入Provider、原始证据、日历和coverage，验证来源与字段语义。
-2. 将统一Run service接到受限worker、CLI/APScheduler与systemd外壳。
+2. 将已有SQLite worker、CLI/APScheduler SPI与角色规划接到真实受审配置，补生产数据库及systemd启动边界。
 3. 按crosswalk分模型族适配剩余脚本，补旧task到job/dataset/sink映射和存量导入dry-run。
 4. 扩展其他资产、时间语义、筛选和导出，再迁移剩余业务消费者和管理界面。
 5. 完成逐域对账、自然周期和回滚演练后，再实施生产单写者切换。
@@ -148,4 +167,6 @@ python -m pytest -o addopts='' -q \
 
 本轮22份测试日志、覆盖数据、安装wheel和脱敏库存已按hash复制到原OpenData仓库的 `var/reports/afi204/2026-10-26-wave2`（Git忽略，目录0700/文件0600）；归档索引见 [afi204-wave2-archive.json](afi204-wave2-archive.json)。这是同主机的持久目录，不是异机备份或恢复演练。历史门禁缺失5130个支撑引用的只读审计中，有4024个候选副本可匹配本地Git blob的精确SHA；仍有1031个候选、73份收据及分类/审批原件无匹配，未恢复或改pin。
 
-第三批收据索引见 [afi204-wave3-archive.json](afi204-wave3-archive.json)。完整make gate在secret-check停止：固定Gitleaks8.30.1缺失，实际扫描提交数为0、发现数N/A；后续gate子项未因短路而获得通过状态。OpenAPI兼容门禁已接入现有CI调用的make gate，但本地未push或运行远端CI。
+第三批收据索引见 [afi204-wave3-archive.json](afi204-wave3-archive.json)。第三批当时的完整make gate在secret-check停止：固定Gitleaks8.30.1缺失，实际扫描提交数为0、发现数N/A；后续gate子项未因短路而获得通过状态。OpenAPI兼容门禁已接入现有CI调用的make gate，但本地未push或运行远端CI。
+
+第四批最终组合、当前source commit、受检模块和整仓gate状态见 [afi204-wave4-validation.json](afi204-wave4-validation.json)，收据索引见 [afi204-wave4-archive.json](afi204-wave4-archive.json)。固定Gitleaks工具在本批已恢复；第三批工具缺失的历史结果不作改写。
