@@ -198,6 +198,34 @@ def test_model_copy_update_cannot_bypass_job_validation() -> None:
         build_run_identity(make_task(), copied_request)
 
 
+def test_model_copy_updates_cannot_bypass_contract_or_mode_validation() -> None:
+    """Revalidate copied contract versions and run modes before identity creation."""
+    scheduled = make_scheduled(datetime(2025, 3, 10, 9, 0, tzinfo=timezone.utc))
+    bad_task = make_task().model_copy(update={"contract_version": 2})
+    bad_request = scheduled.model_copy(update={"contract_version": 2})
+    bad_mode = scheduled.model_copy(update={"run_type": "manual"})
+
+    with pytest.raises(ValidationError):
+        build_run_identity(bad_task, scheduled)
+    with pytest.raises(ValidationError):
+        build_run_identity(make_task(), bad_request)
+    with pytest.raises(ValidationError, match="manual runs require"):
+        build_run_identity(make_task(), bad_mode)
+
+
+def test_invalid_task_and_request_instances_fail_at_identity_boundary() -> None:
+    """Reject wrong runtime types and copied task metadata before serialization."""
+    request = make_scheduled(datetime(2025, 3, 10, 9, 0, tzinfo=timezone.utc))
+    malformed_task = make_task().model_copy(update={"schedule": {"kind": "cron"}})
+
+    with pytest.raises(ValueError, match="task must be a validated TaskDefinition"):
+        build_run_identity(object(), request)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="schedule must be ScheduleMetadata"):
+        build_run_identity(malformed_task, request)
+    with pytest.raises(ValueError, match="request must be a validated RunRequest"):
+        build_run_identity(make_task(), object())  # type: ignore[arg-type]
+
+
 def test_manual_requests_are_distinct_from_scheduled_slot_and_each_other() -> None:
     """Require request keys so same-day manual work cannot claim a natural slot."""
     task = make_task()
@@ -291,6 +319,29 @@ def test_task_schedule_metadata_is_retained_and_disabled_by_default() -> None:
     assert task.schedule.expression == "30 17 * * 1-5"
 
 
+def test_unscheduled_task_can_still_declare_manual_work() -> None:
+    """Allow manual runs for a valid job that has no schedule metadata."""
+    task = TaskDefinition(
+        job_id="adhoc-fundamentals",
+        version="v1",
+        dataset_id="fundamentals.company",
+        provider="openbb",
+        model="company_profile",
+    )
+    request = RunRequest(run_type="manual", idempotency_key="manual-company-profile")
+
+    identity = build_run_identity(task, request)
+
+    assert identity.run_type == "manual"
+    assert '"dataset_id":"fundamentals.company"' in identity.canonical_json
+
+
+def test_schedule_metadata_rejects_control_characters() -> None:
+    """Keep schedule descriptions safe for logs and durable snapshots."""
+    with pytest.raises(ValidationError, match="control characters"):
+        ScheduleMetadata(kind="cron", expression="0 0 * * *", description="daily\nrefresh")
+
+
 @pytest.mark.parametrize(
     "payload",
     [
@@ -307,6 +358,70 @@ def test_task_schedule_metadata_is_retained_and_disabled_by_default() -> None:
 def test_manual_and_backfill_request_shapes_fail_closed(payload: dict[str, object]) -> None:
     """Reject missing idempotency keys, incomplete ranges, and inverted ranges."""
     with pytest.raises(ValidationError):
+        RunRequest.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    ("payload", "message"),
+    [
+        ({"run_type": "scheduled"}, "require an aware occurrence"),
+        (
+            {
+                "run_type": "scheduled",
+                "occurrence": datetime(2025, 3, 10, 9, 0, tzinfo=timezone.utc),
+                "idempotency_key": "manual-key",
+            },
+            "use their occurrence",
+        ),
+        (
+            {
+                "run_type": "scheduled",
+                "occurrence": datetime(2025, 3, 10, 9, 0, tzinfo=timezone.utc),
+                "backfill_start": date(2025, 3, 1),
+                "backfill_end": date(2025, 3, 2),
+            },
+            "must not include a backfill range",
+        ),
+        (
+            {
+                "run_type": "manual",
+                "idempotency_key": "manual-key",
+                "occurrence": datetime(2025, 3, 10, 9, 0, tzinfo=timezone.utc),
+            },
+            "must not include a scheduled occurrence",
+        ),
+        (
+            {
+                "run_type": "manual",
+                "idempotency_key": "manual-key",
+                "backfill_start": date(2025, 3, 1),
+                "backfill_end": date(2025, 3, 2),
+            },
+            "must not include a backfill range",
+        ),
+        (
+            {
+                "run_type": "backfill",
+                "backfill_start": date(2025, 3, 1),
+                "backfill_end": date(2025, 3, 2),
+            },
+            "require an explicit idempotency_key",
+        ),
+        (
+            {
+                "run_type": "backfill",
+                "idempotency_key": "backfill-key",
+                "occurrence": datetime(2025, 3, 10, 9, 0, tzinfo=timezone.utc),
+            },
+            "must not include a scheduled occurrence",
+        ),
+    ],
+)
+def test_each_run_mode_rejects_fields_owned_by_other_modes(
+    payload: dict[str, object], message: str
+) -> None:
+    """Keep scheduled, manual, and recovery requests disjoint and explicit."""
+    with pytest.raises(ValidationError, match=message):
         RunRequest.model_validate(payload)
 
 
@@ -346,6 +461,83 @@ def test_query_size_and_depth_are_bounded() -> None:
         RunRequest(run_type="manual", idempotency_key="manual-1", query={"value": oversized_text})
     with pytest.raises(ValidationError, match="maximum depth"):
         RunRequest(run_type="manual", idempotency_key="manual-1", query={"value": deeply_nested})
+
+
+def test_query_document_bytes_are_bounded_below_per_value_limits() -> None:
+    """Reject a large aggregate query even when each string is individually valid."""
+    query = {"values": ["x" * 2_000 for _ in range(9)]}
+
+    with pytest.raises(ValidationError, match="at most 16384 bytes"):
+        RunRequest(run_type="manual", idempotency_key="manual-large", query=query)
+
+
+def test_json_native_scalar_values_are_retained_for_replay() -> None:
+    """Preserve null, boolean, integer, finite float, Unicode, and array values."""
+    request = RunRequest(
+        run_type="manual",
+        idempotency_key="manual-json-values",
+        query={
+            "nullable": None,
+            "enabled": True,
+            "limit": 20,
+            "ratio": 0.75,
+            "exchange": "上海",
+            "flags": [False, True],
+        },
+    )
+
+    identity = build_run_identity(make_task(), request)
+
+    assert '"exchange":"上海"' in identity.canonical_json
+    assert '"enabled":true' in identity.canonical_json
+    assert '"flags":[false,true]' in identity.canonical_json
+    assert '"limit":20' in identity.canonical_json
+    assert '"nullable":null' in identity.canonical_json
+    assert '"ratio":0.75' in identity.canonical_json
+
+
+def test_mutating_original_input_does_not_change_validated_request_snapshot() -> None:
+    """Detach validated request content from containers supplied by the caller."""
+    query = {"symbols": ["AAPL"]}
+    request = RunRequest(run_type="manual", idempotency_key="manual-copy", query=query)
+    query["symbols"].append("MSFT")
+
+    identity = build_run_identity(make_task(), request)
+
+    assert '"symbols":["AAPL"]' in identity.canonical_json
+    assert "MSFT" not in identity.canonical_json
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("query", [], "must be JSON objects"),
+        ("partition", None, "must be JSON objects"),
+        ("query", {"values": list(range(101))}, "exceeds 100 items"),
+        ("query", {str(index): index for index in range(101)}, "exceeds 100 items"),
+        ("query", {1: "bad-key"}, r"keys at \$ must be strings"),
+        ("query", {"exchange": "NYSE\n"}, "control characters"),
+    ],
+)
+def test_json_object_shape_and_container_limits_are_enforced(
+    field: str, value: object, message: str
+) -> None:
+    """Reject unsupported top-level shapes and oversized or unsafe containers."""
+    with pytest.raises(ValidationError, match=message):
+        RunRequest.model_validate(
+            {"run_type": "manual", "idempotency_key": "manual-invalid-json", field: value}
+        )
+
+
+def test_cyclic_dictionary_is_rejected() -> None:
+    """Reject cyclic mappings before canonical JSON serialization."""
+    value: dict[str, object] = {}
+    value["self"] = value
+
+    with pytest.raises(ValidationError, match="cyclic JSON value"):
+        RunRequest.model_validate(
+            {"run_type": "manual", "idempotency_key": "manual-cycle", "query": value}
+        )
 
 
 def test_unsupported_fields_and_arbitrary_commands_are_rejected() -> None:
