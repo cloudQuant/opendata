@@ -552,6 +552,7 @@ async def test_reserved_profile_rejects_invalid_selector_shapes_and_extra_body_f
 ) -> None:
     """First-page query and JSON body selectors are paired, exact, and sanitized."""
     invalid_queries = (
+        {},
         {"instrument_id": INSTRUMENT},
         {"capture_id": CAPTURE_A},
         {"instrument_id": INSTRUMENT, "capture_id": "A" * 64},
@@ -747,5 +748,16 @@ async def test_authorization_precedes_publication_store_reads_for_selected_reque
         f"/api/v2/datasets/{SELECTED_DATASET_ID}/records",
         params={"instrument_id": INSTRUMENT, "capture_id": CAPTURE_A},
     )
-    assert response.status_code == 403
+    post_response = await _request(
+        denied_app,
+        "POST",
+        "/api/v2/snapshots",
+        json={
+            "dataset_id": SELECTED_DATASET_ID,
+            "instrument_id": INSTRUMENT,
+            "capture_id": CAPTURE_A,
+        },
+    )
+    assert response.status_code == post_response.status_code == 403
     assert response.json()["error"]["code"] == "dataset_unavailable"
+    assert post_response.json()["error"]["code"] == "dataset_unavailable"
