@@ -15,6 +15,18 @@ import {
 const RUN_KEY_PATTERN = /^[0-9a-f]{64}$/
 const ACTIVE_STATUSES = new Set<ReviewedRunStatus>(['queued', 'running'])
 const TERMINAL_STATUSES = new Set<ReviewedRunStatus>(['succeeded', 'failed', 'cancelled'])
+const SAFE_API_ERROR_CODES = new Set([
+  'reviewed_runtime_unavailable',
+  'reviewed_service_unavailable',
+  'reviewed_run_service_unavailable',
+  'job_not_found',
+  'job_not_runnable',
+  'idempotency_conflict',
+  'invalid_request',
+  'request_too_large',
+  'json_required',
+  'run_not_found',
+])
 
 type JsonObject = Record<string, unknown>
 
@@ -184,7 +196,7 @@ function errorCode(error: unknown): string | null {
   if (!isRecord(error) || !isRecord(error.response) || !isRecord(error.response.data)) return null
   const detail = error.response.data.detail
   const code = typeof detail === 'string' ? detail : isRecord(detail) ? detail.code : null
-  return typeof code === 'string' && /^[a-z0-9_]{1,80}$/.test(code) ? code : null
+  return typeof code === 'string' && SAFE_API_ERROR_CODES.has(code) ? code : null
 }
 
 function isAbort(error: unknown): boolean {
@@ -200,11 +212,18 @@ function safeErrorMessage(
   options: { ambiguousSubmission?: boolean } = {}
 ): string {
   const code = errorCode(error)
-  if (code === 'reviewed_runtime_unavailable')
+  if (
+    code === 'reviewed_runtime_unavailable' ||
+    code === 'reviewed_service_unavailable' ||
+    code === 'reviewed_run_service_unavailable'
+  )
     return '审核运行服务尚未配置，当前无法读取或提交运行。'
-  if (code === 'unreviewed_job') return '该任务尚未审核，不能启动。'
-  if (code === 'job_disabled') return '该任务已停用，不能启动。'
-  if (code === 'run_not_cancellable') return '该运行已进入终态，不能取消。'
+  if (code === 'job_not_found') return '任务已不在审核目录中，请刷新任务目录。'
+  if (code === 'job_not_runnable') return '该任务尚未审核或已停用，不能启动。'
+  if (code === 'run_not_found') return '没有找到该运行，请确认运行键后重试。'
+  if (code === 'invalid_request') return '请求内容无效，请检查所选任务与 JSON 参数。'
+  if (code === 'request_too_large') return '请求内容超出服务允许的大小。'
+  if (code === 'json_required') return '服务要求使用 JSON 格式提交请求。'
   if (code) return `请求失败（${code}）。`
   if (
     options.ambiguousSubmission &&

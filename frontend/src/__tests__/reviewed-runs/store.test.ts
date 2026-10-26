@@ -91,6 +91,7 @@ describe('reviewed runs store', () => {
     apiMocks.createRun
       .mockRejectedValueOnce(new Error('connection lost'))
       .mockRejectedValueOnce({ response: { data: { detail: 'idempotency_conflict' } } })
+      .mockRejectedValueOnce({ response: { data: { detail: 'credential_secret' } } })
       .mockResolvedValueOnce(acceptedRun())
     const store = useReviewedRunsStore()
     await store.loadJobs()
@@ -110,8 +111,13 @@ describe('reviewed runs store', () => {
     expect(store.runError).toBe('请求失败（idempotency_conflict）。')
     expect(store.pendingIntentKey).toBe(firstKey)
 
+    await expect(store.startRun(input)).resolves.toBeNull()
+    expect(store.runError).toBe('提交未确认；可用相同幂等键手动重试。')
+    expect(store.runError).not.toContain('credential_secret')
+    expect(store.pendingIntentKey).toBe(firstKey)
+
     await expect(store.startRun(input)).resolves.toMatchObject({ run_key: RUN_KEY })
-    expect(apiMocks.createRun).toHaveBeenCalledTimes(3)
+    expect(apiMocks.createRun).toHaveBeenCalledTimes(4)
     expect(apiMocks.createRun.mock.calls[0][0]).toEqual({
       job_id: 'daily-equity',
       version: 'v3',
@@ -122,6 +128,7 @@ describe('reviewed runs store', () => {
     })
     expect(apiMocks.createRun.mock.calls[1][0].idempotency_key).toBe(firstKey)
     expect(apiMocks.createRun.mock.calls[2][0].idempotency_key).toBe(firstKey)
+    expect(apiMocks.createRun.mock.calls[3][0].idempotency_key).toBe(firstKey)
     expect(store.pendingIntentKey).toBeNull()
     expect(store.activeRunKey).toBe(RUN_KEY)
   })
@@ -138,12 +145,12 @@ describe('reviewed runs store', () => {
     expect(store.jobs).toEqual([])
     expect(store.jobsError).toContain('尚未配置')
 
-    apiMocks.listJobs.mockRejectedValue({
-      response: { data: { detail: 'Traceback: upstream api key must stay private' } },
-    })
-    await expect(store.loadJobs()).resolves.toBe(false)
-    expect(store.jobsError).toBe('审核任务列表加载失败。')
-    expect(store.jobsError).not.toContain('api key')
+    for (const detail of ['credential_secret', 'deadbeef']) {
+      apiMocks.listJobs.mockRejectedValueOnce({ response: { data: { detail } } })
+      await expect(store.loadJobs()).resolves.toBe(false)
+      expect(store.jobsError).toBe('审核任务列表加载失败。')
+      expect(store.jobsError).not.toContain(detail)
+    }
   })
 
   it('ignores a late status response after the run context is reset', async () => {
