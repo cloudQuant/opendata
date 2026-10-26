@@ -56,6 +56,7 @@ from opendata.data.platform_contracts import (
 from opendata.pipeline.publication_store import (
     MAX_PAGE_SIZE,
     PageSizeLimitError,
+    PublicationContractConflictError,
     PublicationRecord,
     PublicationStore,
     PublishedRecord,
@@ -253,6 +254,7 @@ class PublishedRowResponse(BaseModel):
     business_key: str
     revision: StrictInt
     publication_id: str
+    publication_sequence: StrictInt
     business_date: date | None
     event_at: datetime | None
     observed_at: datetime | None
@@ -330,6 +332,7 @@ _ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
         (401, "Authentication required"),
         (403, "Dataset unavailable"),
         (404, "Published resource unavailable"),
+        (409, "Published dataset contract changed"),
         (410, "Snapshot expired"),
         (413, "Response exceeds the size limit"),
         (422, "Request validation failed"),
@@ -398,6 +401,12 @@ class _ErrorEnvelopeRoute(APIRoute):
         async def handler(request: Request) -> Response:
             try:
                 return await route_handler(request)
+            except PublicationContractConflictError:
+                return _error_response(
+                    409,
+                    "publication_contract_conflict",
+                    "Published dataset contract changed",
+                )
             except RequestValidationError:
                 return _error_response(422, "invalid_request", "Request validation failed")
             except PublishedAccessError:
@@ -1201,6 +1210,7 @@ def _page_payload(
             "business_key": record.business_key,
             "revision": record.revision,
             "publication_id": record.publication_id,
+            "publication_sequence": record.publication_sequence,
             "business_date": record.business_date.isoformat()
             if record.business_date is not None
             else None,
