@@ -139,7 +139,7 @@ def _sina_window(frame: pd.DataFrame, start: date, end: date) -> pd.DataFrame:
     out = frame.copy()
     out["trade_date"] = pd.to_datetime(out["date"]).dt.date
     windowed = out[(out["trade_date"] >= start) & (out["trade_date"] <= end)]
-    return cast("pd.DataFrame", windowed.reset_index(drop=True))
+    return windowed.reset_index(drop=True)
 
 
 def _compare(

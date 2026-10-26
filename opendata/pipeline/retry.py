@@ -106,7 +106,7 @@ async def mark_failed_for_retry(
         )
     result = await db.execute(statement.values(status=ShardStatus.PENDING, error=None))
     await db.commit()
-    return int(result.rowcount)  # type: ignore[attr-defined]  # CursorResult at runtime
+    return int(result.rowcount)
 
 
 def _to_failed(row: PipelineProgress) -> FailedShard:

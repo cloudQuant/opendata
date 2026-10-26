@@ -30,7 +30,7 @@ Tolerances are measured, not guessed — see ``STEP_FLOOR`` / ``ADJUST_TOLERANCE
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from datetime import date
@@ -92,7 +92,7 @@ def normalize(frame: pd.DataFrame) -> pd.DataFrame:
         Frame carrying exactly ``trade_date/open/high/low/close/volume/amount``.
     """
     columns = ["trade_date", "open", "high", "low", "close", "volume", "amount"]
-    return cast("pd.DataFrame", frame.rename(columns=COLUMN_ALIASES)[columns])
+    return frame.rename(columns=COLUMN_ALIASES)[columns]
 
 
 def dates_of(frame: pd.DataFrame) -> list[date]:

@@ -38,7 +38,7 @@ import json
 from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 import yaml
@@ -512,7 +512,7 @@ def normalize_frame(frame: pd.DataFrame, mapping: DomainMapping) -> pd.DataFrame
         if field_mapping.normalize == "plain":
             series = series.map(_plain_value)
         values[contract_field] = series
-    return cast("pd.DataFrame", pd.DataFrame(values, columns=list(mapping.fields)))
+    return pd.DataFrame(values, columns=list(mapping.fields))
 
 
 def denormalize_frame(frame: pd.DataFrame, mapping: DomainMapping) -> pd.DataFrame:
@@ -555,7 +555,7 @@ def denormalize_frame(frame: pd.DataFrame, mapping: DomainMapping) -> pd.DataFra
             projected[field_mapping.ms_column] = _shanghai_millis(
                 projected[field_mapping.source_column]
             )
-    return cast("pd.DataFrame", projected)
+    return projected
 
 
 def _shanghai_millis(dates: pd.Series) -> pd.Series:
@@ -577,11 +577,8 @@ def _shanghai_millis(dates: pd.Series) -> pd.Series:
     milliseconds = utc_nanoseconds // 10**6
     if localized.isna().any():
         nullable_milliseconds = milliseconds.where(localized.notna(), pd.NA)
-        return cast(
-            "pd.Series[Any]",
-            pd.Series(nullable_milliseconds, index=dates.index, dtype="Int64"),
-        )
-    return cast("pd.Series[Any]", pd.Series(milliseconds, index=dates.index, dtype="int64"))
+        return pd.Series(nullable_milliseconds, index=dates.index, dtype="Int64")
+    return pd.Series(milliseconds, index=dates.index, dtype="int64")
 
 
 def _plain_value(value: object) -> object:
