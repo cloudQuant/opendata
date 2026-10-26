@@ -681,6 +681,44 @@ def test_readonly_fingerprint_connection_cannot_write(
         connection.close()
 
 
+def test_wal_target_is_rejected_without_creating_sidecars(
+    tmp_path: Path, request: pytest.FixtureRequest
+) -> None:
+    target_path = tmp_path / "wal-warehouse.sqlite"
+    engine = create_engine(f"sqlite:///{target_path}", poolclass=NullPool)
+    request.addfinalizer(engine.dispose)
+    with engine.begin() as connection:
+        connection.execute(text("CREATE TABLE warehouse_rows (id INTEGER PRIMARY KEY)"))
+        assert connection.exec_driver_sql("PRAGMA journal_mode=WAL").scalar_one() == "wal"
+    assert not target_path.with_name(f"{target_path.name}-wal").exists()
+    assert not target_path.with_name(f"{target_path.name}-shm").exists()
+
+    before = {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()}
+    with pytest.raises(MigrationApplyError, match="sqlite_wal_mode_unsupported"):
+        inspect_warehouse_fingerprint(engine)
+    after = {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()}
+    assert after == before
+    assert not target_path.with_name(f"{target_path.name}-wal").exists()
+    assert not target_path.with_name(f"{target_path.name}-shm").exists()
+
+
+@pytest.mark.parametrize("suffix", ("-wal", "-shm", "-journal"))
+def test_preexisting_sqlite_sidecar_is_rejected_before_open(
+    tmp_path: Path, request: pytest.FixtureRequest, suffix: str
+) -> None:
+    target_path = tmp_path / "sidecar-warehouse.sqlite"
+    engine = create_engine(f"sqlite:///{target_path}", poolclass=NullPool)
+    request.addfinalizer(engine.dispose)
+    with engine.begin() as connection:
+        connection.execute(text("CREATE TABLE warehouse_rows (id INTEGER PRIMARY KEY)"))
+    sidecar_path = target_path.with_name(f"{target_path.name}{suffix}")
+    sidecar_path.write_bytes(b"fixture")
+
+    with pytest.raises(MigrationApplyError, match="sqlite_sidecar_present"):
+        inspect_warehouse_fingerprint(engine)
+    assert sidecar_path.read_bytes() == b"fixture"
+
+
 def test_isolated_metadata_engine_factory_uses_null_pool_without_io(
     tmp_path: Path,
 ) -> None:
@@ -1067,7 +1105,9 @@ def test_target_with_no_user_tables_is_blocked(
     tmp_path: Path, request: pytest.FixtureRequest
 ) -> None:
     target_path = tmp_path / "empty.sqlite"
-    target_path.write_bytes(b"")
+    with sqlite3.connect(target_path) as connection:
+        connection.execute("CREATE TABLE temporary_fixture (id INTEGER PRIMARY KEY)")
+        connection.execute("DROP TABLE temporary_fixture")
     target = create_engine(f"sqlite:///{target_path}")
     request.addfinalizer(target.dispose)
     with pytest.raises(MigrationApplyError, match="has_no_user_tables"):

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import sqlite3
 import stat as stat_module
@@ -131,6 +132,10 @@ def inspect_warehouse_fingerprint(engine: Engine) -> WarehouseFingerprintObserva
     used. The 64 MiB limit bounds the accepted encoded payload after catalog
     rows have been materialized, not peak transient memory. MySQL warehouse
     apply remains blocked until catalog visibility and grants can be proven.
+    Only stable rollback-journal SQLite files are supported. WAL-mode files
+    and pre-existing ``-wal``, ``-shm``, or ``-journal`` sidecars are rejected
+    before opening SQLite, because a read-only SQLite WAL connection can still
+    create shared-memory and WAL sidecar files.
 
     Args:
         engine: Engine whose plain absolute SQLite URL names the target file.
@@ -150,6 +155,9 @@ def inspect_warehouse_fingerprint(engine: Engine) -> WarehouseFingerprintObserva
     if engine.url.query or engine.url.host or engine.url.username or engine.url.password:
         raise MigrationApplyError("target_sqlite_url_options_unsupported")
     target_path, expected_file_identity = _sqlite_engine_file_identity(engine)
+    if _sqlite_file_header_identity(target_path) != expected_file_identity:
+        raise MigrationApplyError("target_warehouse_file_identity_changed")
+    _reject_sqlite_sidecars(target_path)
     try:
         with closing(_open_readonly_sqlite(target_path)) as connection:
             identity = _sqlite_connection_identity(connection, target_path)
@@ -160,6 +168,8 @@ def inspect_warehouse_fingerprint(engine: Engine) -> WarehouseFingerprintObserva
             if _physical_identity(latest_identity) != _physical_identity(identity):
                 raise MigrationApplyError("target_warehouse_file_identity_changed")
             if _sqlite_engine_file_identity(engine)[1] != _physical_identity(identity):
+                raise MigrationApplyError("target_warehouse_file_identity_changed")
+            if _sqlite_file_header_identity(target_path) != _physical_identity(identity):
                 raise MigrationApplyError("target_warehouse_file_identity_changed")
     except MigrationApplyError:
         raise
@@ -207,7 +217,11 @@ def apply_reviewed_job_definition(
     caller-supplied custom creator or pool would connect to that same file.
     The metadata engine must come from the safe factory, which uses the
     default SQLAlchemy creator and ``NullPool``. MySQL target apply remains
-    blocked until complete catalog visibility is proven.
+    blocked until complete catalog visibility is proven. Only stable
+    rollback-journal SQLite files are supported; WAL mode and existing WAL,
+    shared-memory, or journal sidecars are rejected before opening the target.
+    A formal consistent snapshot must be prepared as a separate isolated file
+    and have its target fingerprint reviewed again.
 
     Every JSON input is copied and bounded, all hashes and the complete plan
     are recomputed, and the target schema is checked again inside the metadata
@@ -558,6 +572,7 @@ def _build_provenance(
         "warehouse_observation_scope": {
             "subject": "plain_absolute_sqlite_file_named_by_engine_url",
             "connector": "module_owned_fresh_readonly_sqlite3_connection",
+            "sqlite_journal_scope": "rollback_only;_wal_and_existing_sidecars_rejected",
             "caller_engine_pool_equivalence_verified": False,
             "caller_custom_creator_equivalence_verified": False,
             "encoded_catalog_byte_limit": "64MiB_after_materialization_not_peak_memory",
@@ -776,6 +791,40 @@ def _sqlite_path_identity(path: Path) -> tuple[int, int]:
     if identity is None:
         raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
     return identity
+
+
+def _sqlite_file_header_identity(path: Path) -> tuple[int, int]:
+    """Read a SQLite header without creating files and reject WAL-mode databases."""
+    try:
+        with path.open("rb") as source:
+            header = source.read(100)
+            file_stat = os.fstat(source.fileno())
+        current_identity = _sqlite_path_identity(path)
+    except OSError as exc:
+        raise MigrationApplyError("target_sqlite_header_unreadable") from exc
+    opened_identity = file_stat.st_dev, file_stat.st_ino
+    if opened_identity != current_identity:
+        raise MigrationApplyError("target_warehouse_file_identity_changed")
+    if len(header) < 20 or header[:16] != b"SQLite format 3\x00":
+        raise MigrationApplyError("target_sqlite_header_invalid")
+    write_version, read_version = header[18], header[19]
+    if write_version == 2 or read_version == 2:
+        raise MigrationApplyError("target_sqlite_wal_mode_unsupported")
+    if write_version != 1 or read_version != 1:
+        raise MigrationApplyError("target_sqlite_header_invalid")
+    return opened_identity
+
+
+def _reject_sqlite_sidecars(path: Path) -> None:
+    """Reject sidecars before SQLite has a chance to mutate or recover them."""
+    for suffix in ("-wal", "-shm", "-journal"):
+        try:
+            path.with_name(f"{path.name}{suffix}").lstat()
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            raise MigrationApplyError("target_sqlite_sidecar_unreadable") from exc
+        raise MigrationApplyError("target_sqlite_sidecar_present")
 
 
 def _open_readonly_sqlite(path: Path) -> sqlite3.Connection:
