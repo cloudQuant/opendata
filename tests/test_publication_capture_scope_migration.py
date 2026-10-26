@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -18,149 +19,42 @@ if TYPE_CHECKING:
     from sqlalchemy.engine import Connection, Engine
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+FROZEN_MIGRATION_0011_PATH = (
+    REPOSITORY_ROOT / "alembic_data" / "versions" / "20261026-0011_publication_snapshots.py"
+)
+FROZEN_MIGRATION_0011_NAME = "publication_snapshots_migration_0011"
 MIGRATION_PATH = (
     REPOSITORY_ROOT / "alembic_data" / "versions" / "20261027-0012_instrument_capture_scope.py"
 )
 MIGRATION_NAME = "instrument_capture_scope_migration_0012"
+MIGRATION_SHA256 = "24c55bce92d97aa65ae2afb7b7b516ade21704d1956aa85c50827177aca2b9f2"
 FACT_TABLE = "od_published_fact_versions"
 SNAPSHOT_TABLE = "od_publication_snapshots"
 NEIGHBOR_TABLE = "od_migration_neighbor"
 
 
-def _load_migration() -> ModuleType:
-    """Load only the selected revision module, without Alembic's project env."""
-    spec = importlib.util.spec_from_file_location(MIGRATION_NAME, MIGRATION_PATH)
+def _load_module(path: Path, module_name: str) -> ModuleType:
+    """Load one revision source file without Alembic's project env."""
+    spec = importlib.util.spec_from_file_location(module_name, path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-def _frozen_key_type(length: int) -> sa.String:
-    """Return revision 0011's literal cross-dialect key type."""
-    from sqlalchemy.dialects import mysql
-
-    return sa.String(length).with_variant(
-        mysql.VARCHAR(length, collation="utf8mb4_0900_bin"),
-        "mysql",
-    )
-
-
-def _frozen_json_type() -> sa.Text:
-    """Return revision 0011's literal cross-dialect JSON-text type."""
-    from sqlalchemy.dialects import mysql
-
-    return sa.Text().with_variant(mysql.MEDIUMTEXT(), "mysql")
+def _load_migration() -> ModuleType:
+    """Load only the selected revision module, without evaluating Alembic env."""
+    actual_sha256 = hashlib.sha256(MIGRATION_PATH.read_bytes()).hexdigest()
+    assert actual_sha256 == MIGRATION_SHA256
+    return _load_module(MIGRATION_PATH, MIGRATION_NAME)
 
 
 def _apply_frozen_0011(connection: Connection) -> None:
-    """Create the frozen 0011 publication schema using explicit Operations."""
+    """Run frozen 0011 on this owned connection without loading Alembic env."""
+    migration = _load_module(FROZEN_MIGRATION_0011_PATH, FROZEN_MIGRATION_0011_NAME)
     operations_context = MigrationContext.configure(connection)
-    with Operations.context(operations_context) as operations:
-        operations.create_table(
-            "od_publication_heads",
-            sa.Column("dataset_id", _frozen_key_type(128), primary_key=True),
-            sa.Column("latest_sequence", sa.BigInteger(), nullable=False),
-            sa.Column("latest_publication_id", sa.String(32), nullable=True),
-            sa.Column("watermark_json", _frozen_json_type(), nullable=True),
-            sa.Column("updated_at_us", sa.BigInteger(), nullable=False),
-            sa.CheckConstraint("latest_sequence >= 0", name="ck_od_publication_head_sequence"),
-        )
-        operations.create_table(
-            "od_publications",
-            sa.Column("publication_id", sa.String(32), primary_key=True),
-            sa.Column("dataset_id", _frozen_key_type(128), nullable=False),
-            sa.Column("source_id", _frozen_key_type(128), nullable=False),
-            sa.Column("sequence", sa.BigInteger(), nullable=False),
-            sa.Column("schema_version", sa.String(64), nullable=False),
-            sa.Column("semantic_version", sa.String(64), nullable=False),
-            sa.Column("unit", sa.String(128), nullable=False),
-            sa.Column("adjustment_basis", sa.String(128), nullable=False),
-            sa.Column("quality_json", _frozen_json_type(), nullable=False),
-            sa.Column("provenance_json", _frozen_json_type(), nullable=False),
-            sa.Column("watermark_json", _frozen_json_type(), nullable=True),
-            sa.Column("idempotency_key", _frozen_key_type(256), nullable=False),
-            sa.Column("payload_hash", sa.String(64), nullable=False),
-            sa.Column("record_count", sa.Integer(), nullable=False),
-            sa.Column("published_at_us", sa.BigInteger(), nullable=False),
-            sa.CheckConstraint("sequence > 0", name="ck_od_publication_sequence"),
-            sa.CheckConstraint("record_count >= 0", name="ck_od_publication_record_count"),
-        )
-        operations.create_index(
-            "uq_od_publication_dataset_sequence",
-            "od_publications",
-            ["dataset_id", "sequence"],
-            unique=True,
-        )
-        operations.create_index(
-            "uq_od_publication_dataset_idempotency",
-            "od_publications",
-            ["dataset_id", "idempotency_key"],
-            unique=True,
-        )
-        operations.create_index(
-            "ix_od_publication_dataset_published",
-            "od_publications",
-            ["dataset_id", "published_at_us"],
-        )
-        operations.create_table(
-            FACT_TABLE,
-            sa.Column("dataset_id", _frozen_key_type(128), primary_key=True),
-            sa.Column("business_key", _frozen_key_type(512), primary_key=True),
-            sa.Column("revision", sa.Integer(), primary_key=True),
-            sa.Column(
-                "publication_id",
-                sa.String(32),
-                sa.ForeignKey("od_publications.publication_id"),
-                nullable=False,
-            ),
-            sa.Column("publication_sequence", sa.BigInteger(), nullable=False),
-            sa.Column("business_date", sa.Date(), nullable=True),
-            sa.Column("event_at", sa.String(40), nullable=True),
-            sa.Column("observed_at", sa.String(40), nullable=True),
-            sa.Column("source_published_at", sa.String(40), nullable=True),
-            sa.Column("available_at", sa.String(40), nullable=True),
-            sa.Column("record_json", _frozen_json_type(), nullable=False),
-            sa.Column("record_hash", sa.String(64), nullable=False),
-            sa.Column("is_deleted", sa.Boolean(), nullable=False),
-            sa.CheckConstraint("revision > 0", name="ck_od_published_fact_revision"),
-        )
-        operations.create_index(
-            "ix_od_published_fact_asof",
-            FACT_TABLE,
-            ["dataset_id", "business_key", "publication_sequence", "revision"],
-        )
-        operations.create_index(
-            "ix_od_published_fact_date",
-            FACT_TABLE,
-            ["dataset_id", "business_date", "business_key"],
-        )
-        operations.create_table(
-            SNAPSHOT_TABLE,
-            sa.Column("snapshot_id", sa.String(32), primary_key=True),
-            sa.Column("dataset_id", _frozen_key_type(128), nullable=False),
-            sa.Column("schema_version", sa.String(64), nullable=False),
-            sa.Column(
-                "publication_id",
-                sa.String(32),
-                sa.ForeignKey("od_publications.publication_id"),
-                nullable=False,
-            ),
-            sa.Column("publication_sequence", sa.BigInteger(), nullable=False),
-            sa.Column("start_date", sa.Date(), nullable=True),
-            sa.Column("end_date", sa.Date(), nullable=True),
-            sa.Column("page_size", sa.Integer(), nullable=False),
-            sa.Column("access_scope", _frozen_key_type(128), nullable=False),
-            sa.Column("selection_sha256", sa.String(64), nullable=False),
-            sa.Column("content_hash", sa.String(64), nullable=False),
-            sa.Column("record_count", sa.BigInteger(), nullable=False),
-            sa.Column("as_of_us", sa.BigInteger(), nullable=False),
-            sa.Column("created_at_us", sa.BigInteger(), nullable=False),
-            sa.Column("expires_at_us", sa.BigInteger(), nullable=False),
-            sa.CheckConstraint("page_size > 0", name="ck_od_snapshot_page_size"),
-            sa.CheckConstraint("record_count >= 0", name="ck_od_snapshot_record_count"),
-        )
-        operations.create_index("ix_od_snapshot_expiry", SNAPSHOT_TABLE, ["expires_at_us"])
+    with Operations.context(operations_context):
+        migration.upgrade()
 
 
 def _new_database(tmp_path: Path) -> Engine:
@@ -555,3 +449,174 @@ def test_revision_identity_follows_frozen_0011() -> None:
 
     assert migration.revision == "0012_instrument_capture_scope"
     assert migration.down_revision == "0011_publication_snapshots"
+
+
+class _FakeDialect:
+    """Expose only the dialect identity and version used by the migration guard."""
+
+    def __init__(
+        self,
+        *,
+        name: str,
+        server_version_info: tuple[int, ...] | None,
+        is_mariadb: bool = False,
+    ) -> None:
+        self.name = name
+        self.server_version_info = server_version_info
+        self.is_mariadb = is_mariadb
+
+
+class _FakeResult:
+    """Return an empty result for safe offline downgrade preflight simulation."""
+
+    def first(self) -> None:
+        """Report no selected rows without connecting to a database."""
+        return None
+
+
+class _FakeBind:
+    """Record any query attempt while exposing a fake SQLAlchemy dialect."""
+
+    def __init__(self, dialect: _FakeDialect) -> None:
+        self.dialect = dialect
+        self.statements: list[object] = []
+
+    def execute(self, statement: object) -> _FakeResult:
+        """Record a would-be query without performing I/O."""
+        self.statements.append(statement)
+        return _FakeResult()
+
+
+class _FakeBatch:
+    """Record would-be DDL operations for a single named table."""
+
+    def __init__(self, operations: _FakeOperations, table_name: str) -> None:
+        self._operations = operations
+        self._table_name = table_name
+
+    def __enter__(self) -> _FakeBatch:
+        """Return this recorder as the batch-operation facade."""
+        return self
+
+    def __exit__(self, *args: object) -> bool:
+        """Propagate exceptions without suppressing them."""
+        return False
+
+    def add_column(self, column: object) -> None:
+        """Record a would-be column addition."""
+        self._operations.ddl_calls.append(("add_column", self._table_name, column))
+
+    def create_check_constraint(self, name: str, condition: str) -> None:
+        """Record a would-be check-constraint addition."""
+        self._operations.ddl_calls.append(("create_check", self._table_name, name, condition))
+
+    def create_index(self, name: str, columns: list[str], *, unique: bool = False) -> None:
+        """Record a would-be index addition."""
+        self._operations.ddl_calls.append(
+            ("create_index", self._table_name, name, tuple(columns), unique)
+        )
+
+    def drop_constraint(self, name: str, *, type_: str) -> None:
+        """Record a would-be constraint removal."""
+        self._operations.ddl_calls.append(("drop_constraint", self._table_name, name, type_))
+
+    def drop_column(self, name: str) -> None:
+        """Record a would-be column removal."""
+        self._operations.ddl_calls.append(("drop_column", self._table_name, name))
+
+    def drop_index(self, name: str) -> None:
+        """Record a would-be index removal."""
+        self._operations.ddl_calls.append(("drop_index", self._table_name, name))
+
+
+class _FakeOperations:
+    """Implement only the Alembic operations touched by the new revision."""
+
+    def __init__(self, bind: _FakeBind) -> None:
+        self._bind = bind
+        self.batch_calls: list[str] = []
+        self.ddl_calls: list[tuple[object, ...]] = []
+
+    def get_bind(self) -> _FakeBind:
+        """Return the fake bind without opening a connection."""
+        return self._bind
+
+    def batch_alter_table(self, table_name: str) -> _FakeBatch:
+        """Record a would-be batch DDL entry point."""
+        self.batch_calls.append(table_name)
+        return _FakeBatch(self, table_name)
+
+
+@pytest.mark.parametrize(
+    ("dialect_name", "version", "is_mariadb"),
+    [
+        pytest.param("mysql", None, False, id="unknown-version"),
+        pytest.param("mysql", (8, 0), False, id="short-version-tuple"),
+        pytest.param("mysql", (5, 7, 44), False, id="mysql-57"),
+        pytest.param("mysql", (8, 0, 15), False, id="before-check-enforcement"),
+        pytest.param("mysql", (9, 0, 0), False, id="unsupported-major"),
+        pytest.param("mysql", (10, 11, 7), True, id="mariadb-mysql-dialect"),
+        pytest.param("mariadb", (10, 11, 7), False, id="mariadb-dialect-name"),
+    ],
+)
+def test_unsupported_mysql_guard_blocks_upgrade_and_downgrade_before_io(
+    monkeypatch: pytest.MonkeyPatch,
+    dialect_name: str,
+    version: tuple[int, ...] | None,
+    is_mariadb: bool,
+) -> None:
+    """Reject unsupported MySQL identities before queries or DDL are attempted."""
+    migration = _load_migration()
+    bind = _FakeBind(
+        _FakeDialect(
+            name=dialect_name,
+            server_version_info=version,
+            is_mariadb=is_mariadb,
+        )
+    )
+    operations = _FakeOperations(bind)
+    monkeypatch.setattr(migration, "op", operations)
+
+    for operation in (migration.upgrade, migration.downgrade):
+        with pytest.raises(RuntimeError, match=r"MySQL 8\.0\.16"):
+            operation()
+        assert operations.batch_calls == []
+        assert operations.ddl_calls == []
+        assert bind.statements == []
+
+
+@pytest.mark.parametrize(
+    "version",
+    [(8, 0, 16), (8, 0, 17), (8, 4, 0)],
+)
+def test_mysql_guard_accepts_supported_version_boundary(
+    monkeypatch: pytest.MonkeyPatch,
+    version: tuple[int, ...],
+) -> None:
+    """Accept MySQL 8 at the minimum enforced-check version and later 8.x."""
+    migration = _load_migration()
+    bind = _FakeBind(_FakeDialect(name="mysql", server_version_info=version))
+    operations = _FakeOperations(bind)
+    monkeypatch.setattr(migration, "op", operations)
+
+    migration._require_supported_database()
+
+    assert operations.batch_calls == []
+    assert operations.ddl_calls == []
+    assert bind.statements == []
+
+
+def test_mysql_guard_leaves_non_mysql_dialects_unchanged(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Keep SQLite and other non-MySQL dialects outside the MySQL-only guard."""
+    migration = _load_migration()
+    bind = _FakeBind(_FakeDialect(name="sqlite", server_version_info=None))
+    operations = _FakeOperations(bind)
+    monkeypatch.setattr(migration, "op", operations)
+
+    migration._require_supported_database()
+
+    assert operations.batch_calls == []
+    assert operations.ddl_calls == []
+    assert bind.statements == []
