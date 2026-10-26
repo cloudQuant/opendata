@@ -39,7 +39,7 @@ _OPAQUE_EVIDENCE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 _PROFILE_VERSION = "od.instrument-reference.v1"
 _MAX_PUBLICATION_ROWS = 20_000
 _MAX_ALIASES_PER_INSTRUMENT = 16
-_CN_EXCHANGES = frozenset({"XSHG", "XSHE"})
+_CN_EXCHANGES = frozenset({"XSHG", "XSHE", "XBSE"})
 
 _REFERENCE_FIELDS: tuple[FieldContract, ...] = (
     FieldContract(name="profile_version", data_type="string"),
@@ -87,7 +87,7 @@ class InstrumentPresentation:
             not isinstance(self.name, str)
             or not self.name
             or self.name != self.name.strip()
-            or len(self.name) > 256
+            or len(self.name) > 128
             or any(not character.isprintable() for character in self.name)
         ):
             raise ValueError("name must be a bounded printable nonempty string")

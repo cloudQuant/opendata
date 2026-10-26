@@ -330,6 +330,28 @@ def test_presentation_requires_six_digit_symbol_cn_market_and_explicit_exchange(
         InstrumentPresentation("TEST_XSHG_A", "600001", "Alpha", "CN", "")
 
 
+def test_presentation_accepts_xbse_as_an_explicit_exchange() -> None:
+    """The frozen CN profile permits XBSE without inferring it from a symbol."""
+    presentation = InstrumentPresentation("TEST_XBSE_A", "600001", "SYNTHETIC XBSE", "CN", "XBSE")
+
+    assert presentation.exchange == "XBSE"
+
+
+def test_presentation_name_accepts_128_characters_and_rejects_129() -> None:
+    """The frozen presentation contract caps printable names at 128 characters."""
+    accepted = InstrumentPresentation(
+        "TEST_NAME_BOUNDARY",
+        "600001",
+        "N" * 128,
+        "CN",
+        "XSHG",
+    )
+
+    assert len(accepted.name) == 128
+    with pytest.raises(ValueError, match="name must be"):
+        InstrumentPresentation("TEST_NAME_BOUNDARY", "600001", "N" * 129, "CN", "XSHG")
+
+
 def test_builder_rejects_duplicate_or_cross_target_presentation_symbols() -> None:
     """Symbols remain unique and cannot shadow another canonical identity."""
     beta, alpha = _presentations()
