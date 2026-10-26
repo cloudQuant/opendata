@@ -1,0 +1,102 @@
+{
+  "archive_note": "Same-host private ignored receipts; not an external backup.",
+  "archive_path": "var/reports/afi204/2026-10-27-wave10",
+  "created_at": "2026-10-26T21:32:08.285073+00:00",
+  "focused_environment": {
+    "plan_sha256": "9bf569fbcc1f5bb5012632084bf5c6c5fc2455e0115ea8b071bb325ef9d35307",
+    "requirements_sha256": "d82bf00d875a50f818782d416c040071140c27b9994d32bd78bf129ecd45a53b",
+    "setup_sha256": "2cdf682d007abe75dfa3f78860c559eea93fb7ae2199bb0003fe5d1f8c58ca78",
+    "source_wave": 9,
+    "status": "PASS",
+    "system_site_packages": false,
+    "upstream_sdks_absent": true
+  },
+  "focused_tests": {
+    "coverage_percent_unrounded": {
+      "opendata/data/providers/sina/financial_statement_candidate_contract.py": 97.53086419753086,
+      "opendata/data/providers/sina/financial_statement_candidate_projection.py": 95.36082474226804
+    },
+    "passed": 65,
+    "runtime_seconds": 44.23,
+    "selection": [
+      "tests/test_sina_financial_statement_candidate_projection.py"
+    ],
+    "status": "PASS"
+  },
+  "full_history_secret_scan": {
+    "commits_scanned": 905,
+    "no_leaks_reported": true,
+    "scope": "Existing pinned full-history Gitleaks component; later uncommitted public JSON requires its own scan.",
+    "status": "PASS",
+    "tool_version": "8.30.1"
+  },
+  "iteration": 204,
+  "prior_archives_unchanged": {
+    "2026-10-27-wave7": 106,
+    "2026-10-27-wave8": 162,
+    "2026-10-27-wave9": 80
+  },
+  "production_status": "NOT_PRODUCTION_APPROVED",
+  "python310_runtime": "NOT_RUN",
+  "resolver_a2_component": {
+    "historical_note": "W9 A2 is historical reference only and is not W10 acceptance.",
+    "status": "NOT_RUN_FOR_W10"
+  },
+  "scope_limits": [
+    "Offline candidate projection for one pinned Shanghai Sina fzb fixture only.",
+    "No production registration, route, SDK, live request, database, persistence, or activation is approved.",
+    "The candidate projection is always partial and establishes no other issuers, retention, complete history, units, or normalized financial facts.",
+    "No unit/scale inference or numeric normalization is claimed.",
+    "Generated public JSON requires its own secret scan."
+  ],
+  "snapshot_head": "1bd226690acd7e4bbd620a480f7e6271c38297fd",
+  "source_runs": [
+    {
+      "name": "focused_tests",
+      "sha256": "a903883b935247c0589167e5db5ef8fc9ea4051f7e12d6b91f16a27c04f89825",
+      "source_commit": "1bd226690acd7e4bbd620a480f7e6271c38297fd"
+    },
+    {
+      "name": "scoped_static",
+      "sha256": "844c1fcd1e154930c55110acff1154a7736c5bfedad096d8f348384ddcdcd3fd",
+      "source_commit": "1bd226690acd7e4bbd620a480f7e6271c38297fd"
+    },
+    {
+      "name": "full_history_secret_scan",
+      "sha256": "9c62b49ae0ac874988dda56322690bcc932ee846a791d834d7577c5c44b32bac",
+      "source_commit": "1bd226690acd7e4bbd620a480f7e6271c38297fd"
+    }
+  ],
+  "static": {
+    "checks": [
+      "bandit",
+      "brand",
+      "format",
+      "mypy",
+      "public-api",
+      "ruff",
+      "zero-dep",
+      "zero-dep-selftest"
+    ],
+    "public_api": {
+      "annotation_percent": 100.0,
+      "callables": 2501,
+      "docstring_percent": 100.0
+    },
+    "status": "PASS",
+    "zero_dependency": {
+      "client_files": 3,
+      "files_walked": 981,
+      "first_party_files": 653,
+      "policy_exclusions_added": 0,
+      "prior_first_party_files": 651,
+      "reviewed_census_delta": 2,
+      "scanner_version": 5,
+      "status": "PASS",
+      "vendor_files": 325
+    }
+  },
+  "status": "SCOPED_OFFLINE_SINA_CANDIDATE_VALIDATION",
+  "wave": 10,
+  "whole_make_gate": "NOT_RUN"
+}
