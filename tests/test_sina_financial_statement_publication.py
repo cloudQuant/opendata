@@ -13,17 +13,17 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from opendata.data.providers.sina.financial_statement_publication import (
-    SinaFzbPublicationError,
-    build_sina_fzb_observation_contract,
-    serialize_sina_fzb_response,
-)
 
 from opendata.data.providers.sina.financial_statement_contract import (
     MAX_RAW_RESPONSE_BYTES,
     MAX_SINA_FZB_ROWS_PER_REPORT,
     SinaFzbQuery,
     SinaFzbWireError,
+)
+from opendata.data.providers.sina.financial_statement_publication import (
+    SinaFzbPublicationError,
+    build_sina_fzb_observation_contract,
+    serialize_sina_fzb_response,
 )
 
 _CAPTURE_PATH = (
