@@ -289,6 +289,66 @@ def test_enqueue_rejects_snapshot_over_limit_and_run_key_is_bound(ledger_setup) 
     assert ledger.get("other-slot") is None
 
 
+@pytest.mark.parametrize("run_key", [" leading", "trailing ", " both "])
+def test_enqueue_rejects_run_keys_with_outer_whitespace(ledger_setup, run_key: str) -> None:
+    _, _, ledger = ledger_setup
+
+    with pytest.raises(ValueError, match="leading or trailing whitespace"):
+        ledger.enqueue(run_key, SNAPSHOT)
+
+
+@pytest.mark.parametrize("worker", [" leading", "trailing ", " both "])
+def test_claim_rejects_workers_with_outer_whitespace(ledger_setup, worker: str) -> None:
+    _, _, ledger = ledger_setup
+    ledger.enqueue("outer-whitespace-worker", SNAPSHOT)
+
+    with pytest.raises(ValueError, match="leading or trailing whitespace"):
+        ledger.claim(worker, NOW, timedelta(seconds=10))
+
+
+def test_run_key_and_worker_preserve_exact_unicode_identity(ledger_setup) -> None:
+    _, _, ledger = ledger_setup
+    run_key_nfc = "instrument:\u00e9"
+    run_key_nfd = "instrument:e\u0301"
+    worker_nfc = "worker:\u00e9"
+    worker_nfd = "worker:e\u0301"
+
+    first = ledger.enqueue(run_key_nfc, SNAPSHOT)
+    claim = ledger.claim(worker_nfc, NOW, timedelta(seconds=10))
+    assert claim is not None
+    assert claim.run_key == run_key_nfc
+    assert claim.worker == worker_nfc
+    assert first.run_key != run_key_nfd
+
+    assert (
+        ledger.heartbeat(
+            run_key_nfc,
+            worker_nfd,
+            claim.fencing_token,
+            NOW + timedelta(seconds=1),
+            timedelta(seconds=10),
+        )
+        is None
+    )
+    assert (
+        ledger.heartbeat(
+            run_key_nfc,
+            worker_nfc,
+            claim.fencing_token,
+            NOW + timedelta(seconds=1),
+            timedelta(seconds=10),
+        )
+        is not None
+    )
+
+    second = ledger.enqueue(run_key_nfd, SNAPSHOT)
+    assert second.run_key == run_key_nfd
+    current_nfc = ledger.get(run_key_nfc)
+    assert current_nfc is not None
+    assert current_nfc.run_key == first.run_key
+    assert ledger.get(run_key_nfd) == second
+
+
 def test_rejects_naive_non_utc_invalid_ttl_and_bad_transition_inputs(ledger_setup) -> None:
     _, _, ledger = ledger_setup
     ledger.enqueue("validation", SNAPSHOT)

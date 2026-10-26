@@ -62,7 +62,7 @@ RUN_LEDGER_TABLE = Table(
     Column(
         "run_key",
         String(MAX_RUN_KEY_LENGTH).with_variant(
-            String(MAX_RUN_KEY_LENGTH, collation="utf8mb4_bin"), "mysql"
+            String(MAX_RUN_KEY_LENGTH, collation="utf8mb4_0900_bin"), "mysql"
         ),
         primary_key=True,
     ),
@@ -73,19 +73,19 @@ RUN_LEDGER_TABLE = Table(
     ),
     Column(
         "status",
-        String(16).with_variant(String(16, collation="utf8mb4_bin"), "mysql"),
+        String(16).with_variant(String(16, collation="utf8mb4_0900_bin"), "mysql"),
         nullable=False,
     ),
     Column(
         "worker",
         String(MAX_WORKER_LENGTH).with_variant(
-            String(MAX_WORKER_LENGTH, collation="utf8mb4_bin"), "mysql"
+            String(MAX_WORKER_LENGTH, collation="utf8mb4_0900_bin"), "mysql"
         ),
         nullable=True,
     ),
     Column(
         "lease_id",
-        String(32).with_variant(String(32, collation="utf8mb4_bin"), "mysql"),
+        String(32).with_variant(String(32, collation="utf8mb4_0900_bin"), "mysql"),
         nullable=True,
     ),
     Column("fencing_token", BigInteger, nullable=False, default=0),
@@ -776,6 +776,8 @@ def _validate_run_key(run_key: str) -> None:
     """Reject empty or oversized run identities before database access."""
     if not isinstance(run_key, str) or not run_key.strip():
         raise ValueError("run_key must be a non-empty string")
+    if run_key != run_key.strip():
+        raise ValueError("run_key must not have leading or trailing whitespace")
     if len(run_key) > MAX_RUN_KEY_LENGTH:
         raise ValueError(f"run_key must be at most {MAX_RUN_KEY_LENGTH} characters")
 
@@ -784,6 +786,8 @@ def _validate_worker(worker: str) -> None:
     """Reject invalid lease owner identifiers before database access."""
     if not isinstance(worker, str) or not worker.strip():
         raise ValueError("worker must be a non-empty string")
+    if worker != worker.strip():
+        raise ValueError("worker must not have leading or trailing whitespace")
     if len(worker) > MAX_WORKER_LENGTH:
         raise ValueError(f"worker must be at most {MAX_WORKER_LENGTH} characters")
 

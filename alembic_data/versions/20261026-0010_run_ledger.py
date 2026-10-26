@@ -26,7 +26,7 @@ def upgrade() -> None:
         "od_run_ledger",
         Column(
             "run_key",
-            String(255).with_variant(String(255, collation="utf8mb4_bin"), "mysql"),
+            String(255).with_variant(String(255, collation="utf8mb4_0900_bin"), "mysql"),
             primary_key=True,
             nullable=False,
         ),
@@ -37,17 +37,17 @@ def upgrade() -> None:
         ),
         Column(
             "status",
-            String(16).with_variant(String(16, collation="utf8mb4_bin"), "mysql"),
+            String(16).with_variant(String(16, collation="utf8mb4_0900_bin"), "mysql"),
             nullable=False,
         ),
         Column(
             "worker",
-            String(255).with_variant(String(255, collation="utf8mb4_bin"), "mysql"),
+            String(255).with_variant(String(255, collation="utf8mb4_0900_bin"), "mysql"),
             nullable=True,
         ),
         Column(
             "lease_id",
-            String(32).with_variant(String(32, collation="utf8mb4_bin"), "mysql"),
+            String(32).with_variant(String(32, collation="utf8mb4_0900_bin"), "mysql"),
             nullable=True,
         ),
         Column("fencing_token", BigInteger(), nullable=False),

@@ -20,6 +20,7 @@ from sqlalchemy import (
     MetaData,
     Table,
     create_engine,
+    create_mock_engine,
     insert,
     inspect,
     select,
@@ -386,9 +387,37 @@ def test_mysql_ledger_schema_uses_binary_identity_and_medium_text_columns() -> N
     for column in ("run_key", "status", "worker", "lease_id"):
         match = re.search(rf"^\s*{column} VARCHAR\(\d+\).*$", ddl, re.MULTILINE)
         assert match is not None
-        assert "COLLATE utf8mb4_bin" in match.group(0)
+        assert "COLLATE utf8mb4_0900_bin" in match.group(0)
     assert "job_snapshot_json MEDIUMTEXT NOT NULL" in ddl
     assert "error_text MEDIUMTEXT" in ddl
+
+    migration_path = (
+        Path(__file__).resolve().parents[1]
+        / "alembic_data"
+        / "versions"
+        / "20261026-0010_run_ledger.py"
+    )
+    spec = importlib.util.spec_from_file_location("migration_0010_mysql_compile", migration_path)
+    assert spec is not None
+    assert spec.loader is not None
+    migration = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = migration
+    spec.loader.exec_module(migration)
+    migration_statements: list[str] = []
+    mock_engine = create_mock_engine(
+        "mysql://",
+        lambda statement, *_args, **_kwargs: migration_statements.append(
+            str(statement.compile(dialect=mock_engine.dialect))
+        ),
+    )
+    mock_connection = mock_engine.connect()
+    with Operations.context(MigrationContext.configure(mock_connection)):
+        migration.upgrade()
+    migration_ddl = migration_statements[0]
+    assert migration_ddl.count("COLLATE utf8mb4_0900_bin") == 4
+    assert "utf8mb4_bin" not in migration_ddl
+    assert "job_snapshot_json MEDIUMTEXT NOT NULL" in migration_ddl
+    assert "error_text MEDIUMTEXT" in migration_ddl
 
 
 def test_ledger_accepts_snapshots_larger_than_mysql_text_capacity(atomic_setup) -> None:
