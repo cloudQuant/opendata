@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -11,6 +12,7 @@ import pytest
 import sqlalchemy as sa
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
+from sqlalchemy import event
 from sqlalchemy.exc import IntegrityError
 
 if TYPE_CHECKING:
@@ -374,8 +376,31 @@ def test_downgrade_rejects_scope_before_any_ddl(
         with engine.connect() as connection:
             schema_before = _schema_signature(connection)
 
-        with pytest.raises(RuntimeError, match="Scoped publication data"):
-            _apply_revision(engine, "downgrade")
+        statements: list[str] = []
+
+        def record_statement(
+            _connection: object,
+            _cursor: object,
+            statement: str,
+            _parameters: object,
+            _context: object,
+            _executemany: bool,
+        ) -> None:
+            """Observe SQL sent to SQLite during the expected failed downgrade."""
+            statements.append(statement)
+
+        event.listen(engine, "before_cursor_execute", record_statement)
+        try:
+            with pytest.raises(RuntimeError, match="Scoped publication data"):
+                _apply_revision(engine, "downgrade")
+        finally:
+            event.remove(engine, "before_cursor_execute", record_statement)
+
+        assert any(statement.lstrip().upper().startswith("SELECT") for statement in statements)
+        assert not any(
+            re.match(r"^\s*(?:CREATE|ALTER|DROP)\b", statement, re.IGNORECASE)
+            for statement in statements
+        )
 
         with engine.connect() as connection:
             assert _schema_signature(connection) == schema_before
