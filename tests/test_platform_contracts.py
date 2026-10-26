@@ -18,6 +18,7 @@ from opendata.data.platform_contracts import (
     FieldContract,
     Publication,
     SourceIdentity,
+    StorageOrderTerm,
     TimeRange,
     canonical_sha256,
     content_sha256,
@@ -171,6 +172,21 @@ def equity_page(request: DataQuery | None = None) -> DataPage:
             },
             currency="CNY",
             adjustment_basis="raw",
+            ordering_fields=("trade_date", "instrument_id"),
+            storage_order=(
+                StorageOrderTerm(
+                    field="business_date",
+                    direction="asc",
+                    nulls="last",
+                    comparison="native",
+                ),
+                StorageOrderTerm(
+                    field="business_key",
+                    direction="asc",
+                    comparison="binary_lexicographic",
+                ),
+            ),
+            identity_key_encoding="canonical-json-array-v1",
             timezone="Asia/Shanghai",
             pit_policy="supported",
             as_of=None,
@@ -224,6 +240,21 @@ def fx_snapshot_page(
             field_adjustments={"rate": "not_applicable"},
             currency=None,
             adjustment_basis="not_applicable",
+            ordering_fields=("observation_time", "pair"),
+            storage_order=(
+                StorageOrderTerm(
+                    field="observation_time",
+                    direction="asc",
+                    nulls="last",
+                    comparison="native",
+                ),
+                StorageOrderTerm(
+                    field="business_key",
+                    direction="asc",
+                    comparison="binary_lexicographic",
+                ),
+            ),
+            identity_key_encoding="canonical-json-array-v1",
             timezone="UTC",
             pit_policy="required",
             as_of=cutoff,
@@ -353,6 +384,13 @@ def test_contract_requires_stable_order_and_declared_filter_fields() -> None:
             {
                 **contract.model_dump(),
                 "ordering": ("trade_date",),
+            }
+        )
+    with pytest.raises(ValidationError, match="business_date ordering must follow"):
+        DatasetContract.model_validate(
+            {
+                **contract.model_dump(),
+                "ordering": ("instrument_id", "trade_date"),
             }
         )
     with pytest.raises(ValueError, match="not allowed"):
@@ -691,6 +729,30 @@ def test_rows_must_match_required_schema_and_native_json_types(
         page.validate_for(equity_contract())
 
 
+def test_encoded_storage_order_rejects_numeric_business_key_sorting() -> None:
+    """Binary JSON key ordering is not presented as natural numeric ordering."""
+    contract_payload = equity_contract().model_dump()
+    contract_payload["fields"] = tuple(
+        FieldContract(
+            name=field.name,
+            data_type="integer" if field.name == "instrument_id" else field.data_type,
+            nullable=field.nullable,
+        )
+        for field in equity_contract().fields
+    )
+    numeric_key_contract = DatasetContract.model_validate(contract_payload)
+    numeric_key_page = equity_page()
+    numeric_key_page = numeric_key_page.model_copy(
+        update={
+            "meta": numeric_key_page.meta.model_copy(
+                update={"contract_sha256": canonical_sha256(numeric_key_contract)}
+            )
+        }
+    )
+    with pytest.raises(ValueError, match="numeric business keys cannot use binary"):
+        numeric_key_page.validate_for(numeric_key_contract)
+
+
 def test_timestamp_row_requires_an_aware_rfc3339_value() -> None:
     """A snapshot observation timestamp is distinct from a naive local wall time."""
     page = fx_snapshot_page()
@@ -751,6 +813,15 @@ def test_nontemporal_table_supports_explicit_boolean_object_and_array_fields() -
             field_adjustments={},
             currency=None,
             adjustment_basis="not_applicable",
+            ordering_fields=("event_id",),
+            storage_order=(
+                StorageOrderTerm(
+                    field="business_key",
+                    direction="asc",
+                    comparison="binary_lexicographic",
+                ),
+            ),
+            identity_key_encoding="canonical-json-array-v1",
             timezone="UTC",
             pit_policy="unsupported",
             as_of=None,
@@ -775,6 +846,10 @@ def test_nontemporal_table_supports_explicit_boolean_object_and_array_fields() -
             "page source does not match",
         ),
         ({"temporal_semantics": "event_time"}, "page temporal semantics do not match"),
+        (
+            {"ordering_fields": ("instrument_id", "trade_date")},
+            "page ordering_fields do not match",
+        ),
         ({"field_units": {"close": "USD/share"}}, "page field units/currencies do not match"),
         (
             {"field_adjustments": {"close": "split_adjusted"}},

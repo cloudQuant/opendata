@@ -76,6 +76,8 @@ AdjustmentBasis = Literal[
     "unknown",
 ]
 PitPolicy = Literal["supported", "required", "unsupported"]
+IdentityKeyEncoding = Literal["canonical-json-array-v1"]
+StorageComparison = Literal["native", "binary_lexicographic"]
 CoverageStatus = Literal["complete", "partial", "source_limited", "unknown", "not_applicable"]
 CoverageScope = Literal[
     "business_history",
@@ -143,6 +145,22 @@ class FieldContract(_ContractModel):
     nullable: bool = False
 
 
+class StorageOrderTerm(_ContractModel):
+    """Describe one physical storage sort term and how values compare."""
+
+    field: Identifier
+    direction: Literal["asc", "desc"]
+    nulls: Literal["first", "last"] | None = None
+    comparison: StorageComparison
+
+    @model_validator(mode="after")
+    def validate_comparison_nulls(self) -> StorageOrderTerm:
+        """Binary lexical keys do not have SQL NULL placement semantics."""
+        if self.comparison == "binary_lexicographic" and self.nulls is not None:
+            raise ValueError("binary lexicographic storage terms cannot declare null placement")
+        return self
+
+
 class DatasetContract(_ContractModel):
     """Versioned dataset schema and financial/time semantics."""
 
@@ -188,6 +206,14 @@ class DatasetContract(_ContractModel):
             raise ValueError(
                 "ordering must include every business_key field as a stable tie-breaker"
             )
+        if (
+            self.temporal_semantics == "business_date"
+            and self.time_field is not None
+            and self.time_field in known_fields
+        ):
+            expected_ordering = tuple(dict.fromkeys((self.time_field, *self.business_key)))
+            if self.ordering != expected_ordering:
+                raise ValueError("business_date ordering must follow time_field then business_key")
         field_by_name = {field.name: field for field in self.fields}
         if any(field_by_name[name].nullable for name in self.business_key):
             raise ValueError("business_key fields must be non-nullable")
@@ -527,7 +553,12 @@ class DataQuery(_ContractModel):
 
 
 class DataPageMetadata(_ContractModel):
-    """Semantic and publication metadata attached to every result page."""
+    """Semantic, logical order, physical order, and publication metadata.
+
+    ``ordering_fields`` references contract payload fields. ``storage_order``
+    states the actual persisted comparison sequence; an encoded composite key
+    is lexicographic and does not claim natural numeric ordering.
+    """
 
     dataset_id: Identifier
     schema_version: Identifier
@@ -542,6 +573,9 @@ class DataPageMetadata(_ContractModel):
     field_adjustments: dict[Identifier, AdjustmentBasis]
     currency: Identifier | None
     adjustment_basis: AdjustmentBasis
+    ordering_fields: tuple[Identifier, ...]
+    storage_order: tuple[StorageOrderTerm, ...]
+    identity_key_encoding: IdentityKeyEncoding
     timezone: Identifier
     pit_policy: PitPolicy
     as_of: datetime | None
@@ -565,6 +599,17 @@ class DataPageMetadata(_ContractModel):
     @model_validator(mode="after")
     def validate_pagination_metadata(self) -> DataPageMetadata:
         """Keep continuation metadata internally consistent."""
+        if not self.ordering_fields or len(set(self.ordering_fields)) != len(self.ordering_fields):
+            raise ValueError("ordering_fields must be non-empty and unique")
+        if not self.storage_order or len({term.field for term in self.storage_order}) != len(
+            self.storage_order
+        ):
+            raise ValueError("storage_order must contain unique fields")
+        if not any(
+            term.field == "business_key" and term.comparison == "binary_lexicographic"
+            for term in self.storage_order
+        ):
+            raise ValueError("storage_order must declare the encoded business_key comparison")
         if self.has_more != (self.next_cursor is not None):
             raise ValueError("has_more must exactly match whether next_cursor is present")
         if self.returned_count > self.page_size:
@@ -662,13 +707,38 @@ class DataPage(_ContractModel):
             raise ValueError("page adjustment basis does not match dataset contract")
         if self.meta.timezone != contract.timezone or self.meta.pit_policy != contract.pit_policy:
             raise ValueError("page time zone/PIT policy do not match dataset contract")
+        if self.meta.ordering_fields != contract.ordering:
+            raise ValueError("page ordering_fields do not match dataset contract")
+        if contract.temporal_semantics == "business_date":
+            expected_storage_order = (
+                StorageOrderTerm(
+                    field="business_date",
+                    direction="asc",
+                    nulls="last",
+                    comparison="native",
+                ),
+                StorageOrderTerm(
+                    field="business_key",
+                    direction="asc",
+                    comparison="binary_lexicographic",
+                ),
+            )
+            if self.meta.storage_order != expected_storage_order:
+                raise ValueError("business-date storage_order does not match persisted sort")
+        field_by_name = {field.name: field for field in contract.fields}
+        if any(
+            field_by_name[name].data_type in {"integer", "number"} for name in contract.business_key
+        ) and any(
+            term.field == "business_key" and term.comparison == "binary_lexicographic"
+            for term in self.meta.storage_order
+        ):
+            raise ValueError("numeric business keys cannot use binary lexicographic storage order")
         if contract.record_kind == "snapshot" and self.meta.coverage.scope not in {
             "archived_snapshot_observations",
             "current_snapshot",
             "unknown",
         }:
             raise ValueError("snapshot datasets cannot claim business-history coverage")
-        field_by_name = {field.name: field for field in contract.fields}
         for row_number, row in enumerate(self.rows):
             unknown = set(row) - set(field_by_name)
             missing = {
@@ -783,10 +853,13 @@ __all__ = [
     "DatasetContract",
     "FieldContract",
     "Frequency",
+    "IdentityKeyEncoding",
     "PitPolicy",
     "Publication",
     "RecordKind",
     "SourceIdentity",
+    "StorageComparison",
+    "StorageOrderTerm",
     "TemporalSemantics",
     "TimeBound",
     "TimeRange",
