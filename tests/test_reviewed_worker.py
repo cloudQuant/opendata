@@ -42,8 +42,10 @@ from opendata.pipeline.run_service import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator
+
     from pydantic import JsonValue
-    from sqlalchemy.engine import Connection
+    from sqlalchemy.engine import Connection, Engine
 
 UTC = timezone.utc
 DATASET = "fixture_worker_daily"
@@ -54,6 +56,34 @@ WORKER_FACTS = Table(
     Column("business_key", String(255), primary_key=True),
     Column("close_value", BigInteger, nullable=False),
 )
+
+
+@pytest.fixture(autouse=True)
+def _dispose_test_engines(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    """Dispose every Engine created by this test module after each test."""
+    engines: list[Engine] = []
+    sqlalchemy_factory: Callable[..., Engine] = create_engine
+    worker_factory: Callable[..., Engine] = create_worker_engine
+
+    def tracked_sqlalchemy_factory(*args: object, **kwargs: object) -> Engine:
+        engine = sqlalchemy_factory(*args, **kwargs)
+        engines.append(engine)
+        return engine
+
+    def tracked_worker_factory(*args: object, **kwargs: object) -> Engine:
+        engine = worker_factory(*args, **kwargs)
+        engines.append(engine)
+        return engine
+
+    # Track only the constructor names used in this test module. Engines from
+    # worker subprocesses are disposed in _run_worker_process itself.
+    monkeypatch.setitem(globals(), "create_engine", tracked_sqlalchemy_factory)
+    monkeypatch.setitem(globals(), "create_worker_engine", tracked_worker_factory)
+    try:
+        yield
+    finally:
+        for engine in reversed(engines):
+            engine.dispose()
 
 
 def fixture_worker_fetch(parameters: dict[str, JsonValue]) -> JsonValue:
@@ -222,9 +252,12 @@ def _run_worker_process(
         timeout_seconds=timeout_seconds,
         database_io_timeout_seconds=0.5,
     )
-    start_event.wait(10)
-    outcome = worker.run_once()
-    result_queue.put(None if outcome is None else outcome.record.status)
+    try:
+        start_event.wait(10)
+        outcome = worker.run_once()
+        result_queue.put(None if outcome is None else outcome.record.status)
+    finally:
+        worker.ledger._engine.dispose()
 
 
 def _expect_inherited_engine_rejected(engine: object) -> None:
