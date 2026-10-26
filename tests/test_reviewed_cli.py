@@ -416,6 +416,11 @@ def test_manual_and_backfill_queue_only_safe_receipts(
         ),
         malformed_manual_query({"endpoint": "jdbc:oracle:thin:@db.invalid:1521/prod"}),
         malformed_manual_query({"endpoint": "jdbc:sqlite:warehouse.db"}),
+        malformed_manual_query({"nested": {"Pass-Phrase": "credential-canary"}}),
+        malformed_manual_query({"endpoint": "passphrase=credential-canary"}),
+        malformed_manual_query(
+            {"endpoint": "https://data.example.test/prices?passphrase=credential-canary"}
+        ),
         malformed_manual_query(
             {
                 "endpoint": (

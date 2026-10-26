@@ -57,6 +57,7 @@ _SENSITIVE_KEY_PARTS = (
     "odbcconnectionstring",
     "password",
     "passwd",
+    "passphrase",
     "pwd",
     "privatekey",
     "secret",
@@ -68,7 +69,9 @@ _COMMON_SECRET_VALUE = re.compile(
 )
 _URL_CANDIDATE = re.compile(r"(?i)[a-z][a-z0-9+.-]*://[^\s\"'<>]+")
 _JDBC_CONNECTION_PREFIX = re.compile(r"(?i)\bjdbc\s*:\s*[a-z0-9_.-]+\s*:")
-_CREDENTIAL_ASSIGNMENT = re.compile(r"(?i)(?:^|[;,\s])(?:pwd|password|passwd)\s*=\s*[^;,\s]*")
+_CREDENTIAL_ASSIGNMENT = re.compile(
+    r"(?i)(?:^|[;,\s])(?:pwd|password|passwd|passphrase)\s*=\s*[^;,\s]*"
+)
 _ODBC_SELECTOR_ASSIGNMENT = re.compile(r"(?i)(?:^|;)\s*(?:driver|dsn)\s*=")
 _ODBC_USER_ASSIGNMENT = re.compile(r"(?i)(?:^|;)\s*(?:uid|user\s+id)\s*=")
 

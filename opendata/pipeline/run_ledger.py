@@ -947,13 +947,16 @@ def _reject_secret_fields(value: object) -> None:
         for key, nested in value.items():
             if not isinstance(key, str):
                 raise ValueError("snapshot object keys must be strings")
-            normalized_key = key.casefold().replace("_", "").replace("-", "")
+            normalized_key = "".join(
+                character for character in key.casefold() if character.isalnum()
+            )
             if any(
                 marker in normalized_key
                 for marker in (
                     "apikey",
                     "secret",
                     "password",
+                    "passphrase",
                     "credential",
                     "authorization",
                     "cookie",

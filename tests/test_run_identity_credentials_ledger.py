@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 from pydantic import ValidationError
 from sqlalchemy import create_engine, func, select
@@ -60,6 +62,10 @@ def run_service(tmp_path):
         {"endpoint": "PWD=credential-canary"},
         {"endpoint": "password=credential-canary"},
         {"endpoint": "passwd=credential-canary"},
+        {"passphrase": "credential-canary"},
+        {"nested": [{"Pass-Phrase": "credential-canary"}]},
+        {"endpoint": "passphrase=credential-canary"},
+        {"endpoint": "https://data.example.test/prices?passphrase=credential-canary"},
         {"endpoint": "https://data.example.test/prices?password=credential-canary"},
         {"endpoint": "https://data.example.test/prices?token=credential-canary"},
         {"endpoint": "https://data.example.test/prices?api_key=credential-canary"},
@@ -100,6 +106,22 @@ def test_service_does_not_echo_sensitive_query_keys(run_service):
 
     with pytest.raises(ValidationError) as caught:
         service.submit("credential-boundary", "v1", request)
+
+    assert canary not in str(caught.value)
+    with engine.connect() as connection:
+        row_count = connection.scalar(select(func.count()).select_from(RUN_LEDGER_TABLE))
+    assert row_count == 0
+
+
+@pytest.mark.parametrize("selector", ["passphrase", "Pass-Phrase", "pass.phrase", "pass_phrase"])
+def test_ledger_rejects_passphrase_selectors_without_persisting_or_echoing(run_service, selector):
+    """Reject recognized passphrase aliases even at the direct ledger boundary."""
+    _service, ledger, engine = run_service
+    canary = "credential-canary"
+    snapshot = json.dumps({"query": {"nested": [{selector: canary}]}})
+
+    with pytest.raises(ValueError, match="credential-like fields") as caught:
+        ledger.enqueue("passphrase-direct-ledger", snapshot)
 
     assert canary not in str(caught.value)
     with engine.connect() as connection:

@@ -460,6 +460,7 @@ def test_query_rejects_non_json_non_finite_and_credential_values(
         "DSN",
         "jdbc_url",
         "db_uri",
+        "Pass-Phrase",
     ],
 )
 def test_nested_connection_selectors_are_rejected_without_echoing_values(selector: str) -> None:
@@ -487,6 +488,8 @@ def test_nested_connection_selectors_are_rejected_without_echoing_values(selecto
         "PWD=credential-canary",
         "password=credential-canary",
         "passwd=credential-canary",
+        "passphrase=credential-canary",
+        "https://data.example.test/prices?passphrase=credential-canary",
         "https://data.example.test/prices?password=credential-canary",
         "https://data.example.test/prices?token=credential-canary",
         "https://data.example.test/prices?symbol=600519&api_key=credential-canary",
