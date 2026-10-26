@@ -294,6 +294,8 @@ def _record(
         business_key=json.dumps(key_values, ensure_ascii=False, separators=(",", ":")),
         observed_at=datetime(2026, 10, 27, 1, tzinfo=UTC),
         payload=payload,
+        instrument_id=instrument_id if contract.dataset_id == SELECTED_DATASET_ID else None,
+        capture_id=capture_id if contract.dataset_id == SELECTED_DATASET_ID else None,
     )
 
 
