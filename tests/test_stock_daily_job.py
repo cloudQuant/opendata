@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import stat
@@ -9,14 +10,32 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
+from urllib.parse import urlsplit
 
 import pytest
+import requests
 from sqlalchemy import create_engine, select
 
+import opendata.data.providers.akshare.stock_daily_wire as stock_daily_wire
 import opendata.pipeline.stock_daily_job as stock_daily_job
 from opendata.data.dataset_contract_registry import DatasetContractRegistry
+from opendata.data.http_client import BoundedHttpResponse, GovernedHttpClient, HttpClientConfig
 from opendata.data.platform_contracts import DatasetContract, FieldContract, SourceIdentity
 from opendata.data.providers.akshare._source import SOURCE
+from opendata.data.request_budget import (
+    GrantDecision,
+    RequestAttemptLimitError,
+    RequestAuthorizationError,
+    RequestBudget,
+    RequestBudgetProfile,
+    RequestBudgetScopeError,
+    RequestGrant,
+    RequestOperation,
+    authorize_request,
+    current_request_scopes,
+    request_execution_scope,
+    reserve_scoped_attempt,
+)
 from opendata.pipeline.publication_store import (
     PUBLICATION_METADATA,
     PUBLICATIONS,
@@ -38,6 +57,7 @@ from opendata.pipeline.stock_daily_job import (
     CapturedStockDailyResponse,
     StockDailyJsonResponse,
     build_stock_daily_job,
+    build_stock_daily_process_source,
 )
 
 UTC = timezone.utc
@@ -942,3 +962,521 @@ def test_capture_reader_stops_after_growth_crosses_limit(tmp_path: Path, monkeyp
     monkeypatch.setattr(stock_daily_job.os, "read", append_before_read)
     with pytest.raises(ValueError, match="changed or exceeded"):
         stock_daily_job._read_private_managed_file(root, ("content.bin",), maximum=2)
+
+
+def _stock_daily_process_parameters() -> dict[str, str]:
+    """Return the exact fixed child IPC query used by focused transport tests."""
+    return {"symbol": "600519", "start_date": "20261026", "end_date": "20261027"}
+
+
+def _synthetic_stock_daily_budget() -> RequestBudget:
+    """Create explicit test-only authority for the synthetic governed client."""
+    profile = RequestBudgetProfile.BOUNDED_REQUEST
+    grant = RequestGrant(
+        source=SOURCE,
+        canonical_model="stock_daily",
+        operation=RequestOperation.QUERY,
+        decision=GrantDecision.ALLOWED,
+        rights_evidence="synthetic test-only grant; no real source rights asserted",
+        task_attempts=1,
+        source_attempts=1,
+        allowed_hosts={stock_daily_wire.EASTMONEY_KLINE_HOST},
+        expires_at=datetime.now(UTC) + timedelta(minutes=5),
+        profile=profile,
+    )
+    return RequestBudget(
+        task_attempts=1,
+        source_attempts=1,
+        grants=(grant,),
+        profile=profile,
+    )
+
+
+class _SyntheticGovernedStockClient:
+    """Record a governed request and count only authority-approved fake sends."""
+
+    def __init__(self, response: BoundedHttpResponse) -> None:
+        self.response = response
+        self.calls: list[tuple[str, dict[str, object]]] = []
+        self.scopes = []
+        self.transport_calls = 0
+
+    def get_bounded(self, url: str, **kwargs: object) -> BoundedHttpResponse:
+        self.calls.append((url, dict(kwargs)))
+        scopes = current_request_scopes()
+        self.scopes.append(scopes)
+        host = urlsplit(url).hostname
+        assert host is not None
+        source = kwargs.get("source")
+        assert isinstance(source, str)
+        authorize_request(scopes, source, host)
+        reserve_scoped_attempt(scopes, source, host)
+        self.transport_calls += 1
+        return self.response
+
+
+def test_stock_daily_process_worker_fails_closed_before_transport_for_unknown_rights(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The real bounded client rejects UNKNOWN authority before Session.request."""
+    send_calls: list[tuple[object, ...]] = []
+
+    def spy_request(
+        session: requests.Session,
+        *args: object,
+        **kwargs: object,
+    ) -> requests.Response:
+        send_calls.append((session, *args, kwargs))
+        raise AssertionError("UNKNOWN authority must stop before Session.request")
+
+    session = requests.Session()
+    client = GovernedHttpClient(
+        HttpClientConfig(rate_limit_per_host=None, max_attempts=1),
+        session=session,
+        raw_response_cache=None,
+    )
+    monkeypatch.setattr(requests.Session, "request", spy_request)
+    monkeypatch.setattr(stock_daily_wire, "get_shared_http_client", lambda: client)
+
+    with pytest.raises(RequestAuthorizationError, match="not explicitly ALLOWED"):
+        stock_daily_wire.fetch_stock_daily_process(_stock_daily_process_parameters())
+
+    assert send_calls == []
+
+
+def test_stock_daily_process_worker_does_not_inherit_parent_authority(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An ambient ALLOWED scope cannot replace the worker's fresh child scope."""
+    client = _SyntheticGovernedStockClient(BoundedHttpResponse(b"unused", 200, OBSERVED_AT))
+    monkeypatch.setattr(stock_daily_wire, "get_shared_http_client", lambda: client)
+    parent_budget = _synthetic_stock_daily_budget()
+
+    with (
+        request_execution_scope(
+            source=SOURCE,
+            canonical_model="stock_daily",
+            operation=RequestOperation.QUERY,
+            budget=parent_budget,
+        ),
+        pytest.raises(RequestBudgetScopeError, match="inheritance is inconsistent"),
+    ):
+        stock_daily_wire.fetch_stock_daily_process(_stock_daily_process_parameters())
+
+    assert client.calls == []
+    assert client.transport_calls == 0
+
+
+def test_synthetic_stock_daily_grant_allows_only_one_attempt() -> None:
+    """The child-local quota blocks a second transport attempt in one scope."""
+    budget = _synthetic_stock_daily_budget()
+    with request_execution_scope(
+        source=SOURCE,
+        canonical_model="stock_daily",
+        operation=RequestOperation.QUERY,
+        budget=budget,
+    ):
+        scopes = current_request_scopes()
+        reserve_scoped_attempt(scopes, SOURCE, stock_daily_wire.EASTMONEY_KLINE_HOST)
+        with pytest.raises(RequestAttemptLimitError, match="allowance exhausted"):
+            reserve_scoped_attempt(scopes, SOURCE, stock_daily_wire.EASTMONEY_KLINE_HOST)
+
+
+def test_stock_daily_process_worker_uses_fixed_query_and_bounded_http_options(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Trusted test code can inject a synthetic grant to inspect fixed HTTP identity."""
+    body = _wire_body()
+    retrieved_at = datetime(2026, 10, 27, 16, 15, tzinfo=timezone(timedelta(hours=8)))
+    client = _SyntheticGovernedStockClient(BoundedHttpResponse(body, 200, retrieved_at))
+    monkeypatch.setattr(
+        stock_daily_wire, "_new_child_request_budget", _synthetic_stock_daily_budget
+    )
+    monkeypatch.setattr(stock_daily_wire, "get_shared_http_client", lambda: client)
+
+    envelope = stock_daily_wire.fetch_stock_daily_process(_stock_daily_process_parameters())
+
+    assert envelope == {
+        "body_b64": base64.b64encode(body).decode("ascii"),
+        "status_code": 200,
+        "retrieved_at": "2026-10-27T08:15:00.000000Z",
+    }
+    assert len(client.calls) == 1
+    url, options = client.calls[0]
+    assert url == stock_daily_wire.EASTMONEY_KLINE_URL
+    assert options == {
+        "params": {
+            "fields1": "f1,f2,f3,f4,f5,f6",
+            "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
+            "klt": "101",
+            "fqt": "0",
+            "secid": "1.600519",
+            "beg": "20261026",
+            "end": "20261027",
+        },
+        "max_body_bytes": 2 * 1024 * 1024,
+        "overall_timeout": 20.0,
+        "timeout": (3.0, 5.0),
+        "source": SOURCE,
+    }
+    assert client.transport_calls == 1
+
+
+def test_stock_daily_process_parameter_builder_revalidates_canonical_identity() -> None:
+    """Only the canonical symbol and inclusive compact dates cross the process boundary."""
+    assert stock_daily_job._stock_daily_process_parameters(_request()) == {
+        "symbol": "600519",
+        "start_date": "20261026",
+        "end_date": "20261027",
+    }
+
+
+def test_stock_daily_process_validator_accepts_exact_maximum_inclusive_window() -> None:
+    """The fixed child accepts exactly 3,660 dates and rejects one additional day."""
+    start = date(2000, 1, 1)
+    end = start + timedelta(days=stock_daily_wire.MAX_STOCK_DAILY_WINDOW_DAYS - 1)
+    parameters = {
+        "symbol": "600519",
+        "start_date": start.strftime("%Y%m%d"),
+        "end_date": end.strftime("%Y%m%d"),
+    }
+
+    assert stock_daily_wire._validate_process_parameters(parameters) == (
+        "600519",
+        parameters["start_date"],
+        parameters["end_date"],
+    )
+    too_long = {
+        **parameters,
+        "end_date": (end + timedelta(days=1)).strftime("%Y%m%d"),
+    }
+    with pytest.raises(ValueError, match="query_invalid"):
+        stock_daily_wire._validate_process_parameters(too_long)
+
+
+@pytest.mark.parametrize(
+    "parameters",
+    [
+        {
+            "symbol": "600519",
+            "start_date": "20261026",
+            "end_date": "20261027",
+            "url": "https://example.test",
+        },
+        {"symbol": "600519.SH", "start_date": "20261026", "end_date": "20261027"},
+        {"symbol": "600519", "start_date": "2026-10-26", "end_date": "20261027"},
+        {"symbol": "600519", "start_date": "20261027", "end_date": "20261026"},
+        {"symbol": "600519", "start_date": "20100101", "end_date": "20201231"},
+    ],
+)
+def test_stock_daily_process_worker_rejects_untrusted_or_invalid_query(
+    parameters: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Only canonical symbols and strict inclusive windows enter the fixed worker."""
+    client = _SyntheticGovernedStockClient(BoundedHttpResponse(b"unused", 200, OBSERVED_AT))
+    monkeypatch.setattr(stock_daily_wire, "get_shared_http_client", lambda: client)
+
+    with pytest.raises(ValueError):
+        stock_daily_wire.fetch_stock_daily_process(parameters)
+
+    assert client.calls == []
+    assert client.transport_calls == 0
+
+
+def test_stock_daily_process_worker_never_forges_non_200_success(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A non-200 successful transport envelope is rejected without a body result."""
+    client = _SyntheticGovernedStockClient(BoundedHttpResponse(b"raw", 201, OBSERVED_AT))
+    monkeypatch.setattr(
+        stock_daily_wire, "_new_child_request_budget", _synthetic_stock_daily_budget
+    )
+    monkeypatch.setattr(stock_daily_wire, "get_shared_http_client", lambda: client)
+
+    with pytest.raises(ValueError, match="http_status_invalid"):
+        stock_daily_wire.fetch_stock_daily_process(_stock_daily_process_parameters())
+
+    assert client.transport_calls == 1
+
+
+@pytest.mark.parametrize(
+    "update",
+    [
+        {"status_code": True},
+        {"status_code": 201},
+        {"body_b64": "%%%"},
+        {"body_b64": "YQ==="},
+        {"retrieved_at": "2026-10-27T08:15:00"},
+        {"retrieved_at": "2026-10-27T16:15:00+08:00"},
+        {"retrieved_at": "not-a-timestamp"},
+    ],
+)
+def test_stock_daily_process_decoder_rejects_malformed_ipc(
+    update: dict[str, object],
+) -> None:
+    """The parent rejects malformed shape, status, Base64, and time fields."""
+    envelope: dict[str, object] = {
+        "body_b64": base64.b64encode(_wire_body()).decode("ascii"),
+        "status_code": 200,
+        "retrieved_at": OBSERVED_AT.isoformat().replace("+00:00", "Z"),
+    }
+    envelope.update(update)
+
+    with pytest.raises(ValueError):
+        stock_daily_job._decode_stock_daily_process_result(envelope)
+
+
+def test_stock_daily_process_decoder_requires_exact_result_keys() -> None:
+    """The parent rejects missing and additional child result keys."""
+    valid: dict[str, object] = {
+        "body_b64": base64.b64encode(_wire_body()).decode("ascii"),
+        "status_code": 200,
+        "retrieved_at": OBSERVED_AT.isoformat().replace("+00:00", "Z"),
+    }
+    with pytest.raises(ValueError, match="shape"):
+        stock_daily_job._decode_stock_daily_process_result({"status_code": 200})
+    with pytest.raises(ValueError, match="shape"):
+        stock_daily_job._decode_stock_daily_process_result({**valid, "body": "not allowed"})
+
+
+def test_stock_daily_process_base64_boundary_and_executor_result_budget() -> None:
+    """A 2 MiB body fits the exact expanded envelope, while one extra byte fails."""
+    maximum_body = b"x" * stock_daily_wire.MAX_RAW_RESPONSE_BYTES
+    encoded_body = base64.b64encode(maximum_body).decode("ascii")
+    maximum_envelope: dict[str, object] = {
+        "body_b64": encoded_body,
+        "status_code": 200,
+        "retrieved_at": "9999-12-31T23:59:59.999999Z",
+    }
+    serialized = json.dumps(
+        maximum_envelope,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    assert len(encoded_body) == stock_daily_wire.MAX_BASE64_RESPONSE_BYTES
+    assert len(serialized) == stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES
+    decoded = stock_daily_job._decode_stock_daily_process_result(maximum_envelope)
+    assert decoded.body == maximum_body
+
+    too_large = {
+        **maximum_envelope,
+        "body_b64": base64.b64encode(maximum_body + b"x").decode("ascii"),
+    }
+    with pytest.raises(ValueError):
+        stock_daily_job._decode_stock_daily_process_result(too_large)
+
+
+def test_stock_daily_process_source_requires_capacity_for_expanded_envelope() -> None:
+    """The source factory rejects executors whose result cap truncates Base64 IPC."""
+    from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
+
+    executor = ReviewedProcessExecutor(
+        ReviewedProcessRegistry(
+            {
+                stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID: (
+                    stock_daily_wire.fetch_stock_daily_process
+                )
+            }
+        ),
+        max_result_bytes=stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES - 1,
+    )
+    with pytest.raises(ValueError, match="result cap"):
+        build_stock_daily_process_source(executor)
+
+
+def test_stock_daily_process_source_requires_capacity_for_fixed_request() -> None:
+    """The executor parameter cap must carry the exact canonical query object."""
+    from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
+
+    executor = ReviewedProcessExecutor(
+        ReviewedProcessRegistry(
+            {
+                stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID: (
+                    stock_daily_wire.fetch_stock_daily_process
+                )
+            }
+        ),
+        max_parameter_bytes=1,
+        max_result_bytes=stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES,
+    )
+    with pytest.raises(ValueError, match="parameter cap"):
+        build_stock_daily_process_source(executor)
+
+
+def test_stock_daily_process_source_requires_http_and_cleanup_timeout_margin(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The fixed parent deadline must exceed HTTP blocking plus startup/cleanup margin."""
+    from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
+
+    executor = ReviewedProcessExecutor(
+        ReviewedProcessRegistry(
+            {
+                stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID: (
+                    stock_daily_wire.fetch_stock_daily_process
+                )
+            }
+        ),
+        max_result_bytes=stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES,
+    )
+    monkeypatch.setattr(stock_daily_job, "STOCK_DAILY_PROCESS_TIMEOUT_SECONDS", 25.0)
+
+    with pytest.raises(ValueError, match="deadline.*margin"):
+        build_stock_daily_process_source(executor)
+
+
+def test_stock_daily_process_handler_remains_job_fetch_for_heartbeat_checks(
+    tmp_path: Path,
+) -> None:
+    """The process handler stays intact on the disabled job for heartbeat validation."""
+    from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
+    from opendata.pipeline.reviewed_worker import ProcessFetchHandler
+
+    executor = ReviewedProcessExecutor(
+        ReviewedProcessRegistry(
+            {
+                stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID: (
+                    stock_daily_wire.fetch_stock_daily_process
+                )
+            }
+        ),
+        max_result_bytes=stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES,
+    )
+    process_source = build_stock_daily_process_source(executor)
+    job = build_stock_daily_job(
+        _task(),
+        schema_version=SCHEMA_VERSION,
+        semantic_version=SEMANTIC_VERSION,
+        contract_registry=DatasetContractRegistry([_contract()]),
+        artifact_writer=RawResponseArtifactWriter(tmp_path / "private-process-raw"),
+        process_source=process_source,
+    )
+
+    assert isinstance(process_source, ProcessFetchHandler)
+    assert job.fetch is process_source
+    assert process_source.heartbeat_interval_seconds == executor._checkpoint_interval
+    assert job.task.enabled is False
+    assert job.reviewed is False
+
+
+def test_stock_daily_job_rejects_callable_that_is_not_a_process_handler(
+    tmp_path: Path,
+) -> None:
+    """The process source path accepts only the validated bounded handler type."""
+
+    def arbitrary_source(
+        request: RunRequest,
+        context: RunExecutionContext,
+    ) -> StockDailyJsonResponse:
+        raise AssertionError("unregistered process source must not be called")
+
+    with pytest.raises(TypeError, match="fixed ProcessFetchHandler"):
+        build_stock_daily_job(
+            _task(),
+            schema_version=SCHEMA_VERSION,
+            semantic_version=SEMANTIC_VERSION,
+            contract_registry=DatasetContractRegistry([_contract()]),
+            artifact_writer=RawResponseArtifactWriter(tmp_path / "private-process-raw"),
+            process_source=arbitrary_source,
+        )
+
+
+def test_stock_daily_process_path_captures_actual_status_and_separates_business_date(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A synthetic ProcessFetchHandler result is decoded then captured before parsing."""
+    from opendata.pipeline.process_executor import (
+        ProcessExecutionResult,
+        ReviewedProcessExecutor,
+        ReviewedProcessRegistry,
+    )
+
+    body = _wire_body()
+    encoded_body = base64.b64encode(body).decode("ascii")
+    envelope = {
+        "body_b64": encoded_body,
+        "status_code": 200,
+        "retrieved_at": "2026-10-27T08:15:00Z",
+    }
+    process_result = ProcessExecutionResult(
+        value=envelope,
+        stdout_discarded_bytes=0,
+        stderr_discarded_bytes=0,
+        stdout_truncated=False,
+        stderr_truncated=False,
+    )
+    execution_calls: list[tuple[str, dict[str, object], float]] = []
+
+    def fake_run(
+        operation_id: str,
+        parameters: dict[str, object],
+        *,
+        timeout_seconds: float,
+        checkpoint,
+    ) -> ProcessExecutionResult:
+        execution_calls.append((operation_id, dict(parameters), timeout_seconds))
+        checkpoint()
+        return process_result
+
+    executor = ReviewedProcessExecutor(
+        ReviewedProcessRegistry(
+            {
+                stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID: (
+                    stock_daily_wire.fetch_stock_daily_process
+                )
+            }
+        ),
+        max_result_bytes=stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES,
+    )
+    monkeypatch.setattr(executor, "run", fake_run)
+    process_source = build_stock_daily_process_source(executor)
+    artifact_writer = RawResponseArtifactWriter(tmp_path / "private-process-raw")
+    captures = []
+    original_capture = artifact_writer.capture
+
+    def record_capture(*args: object, **kwargs: object):
+        capture = original_capture(*args, **kwargs)
+        captures.append(capture)
+        return capture
+
+    monkeypatch.setattr(artifact_writer, "capture", record_capture)
+
+    job = build_stock_daily_job(
+        _task(),
+        schema_version=SCHEMA_VERSION,
+        semantic_version=SEMANTIC_VERSION,
+        contract_registry=DatasetContractRegistry([_contract()]),
+        artifact_writer=artifact_writer,
+        process_source=process_source,
+    )
+    request = _request()
+    context = _context()
+    parent_response = job.fetch(request, context)
+    assert captures == []
+    normalized = job.normalize(parent_response, request, context)
+
+    assert type(parent_response) is StockDailyJsonResponse
+    assert parent_response.body == body
+    assert parent_response.status_code == 200
+    assert parent_response.observed_at == datetime(2026, 10, 27, 8, 15, tzinfo=UTC)
+    assert execution_calls == [
+        (
+            stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID,
+            _stock_daily_process_parameters(),
+            stock_daily_wire.STOCK_DAILY_PROCESS_TIMEOUT_SECONDS,
+        )
+    ]
+    assert len(captures) == 1
+    assert captures[0].manifest.http_status == 200
+    assert normalized.records[0].business_date == date(2026, 10, 26)
+    assert normalized.records[0].observed_at == datetime(2026, 10, 27, 8, 15, tzinfo=UTC)
+    assert normalized.records[0].business_date != normalized.records[0].observed_at.date()
+    assert normalized.provenance["source_verification"] == "not_performed"
+    assert normalized.provenance["source_history_limit"] == "unknown"
+    assert normalized.provenance["acquisition_mode"] == "process_bounded_json"
+    manifest_json = json.dumps(captures[0].manifest.model_dump(mode="json"))
+    assert encoded_body not in manifest_json
+    assert body.decode("utf-8") not in manifest_json

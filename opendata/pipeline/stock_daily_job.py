@@ -1,20 +1,23 @@
 """Offline-reviewed adapter from bounded stock JSON evidence to publication batches.
 
-This module contains no HTTP client, database connection, dynamic import, SQL,
-or sink selection. An application supplies an explicit response source, a
-private raw-artifact writer, and a versioned contract registry. The returned
-job is disabled and unreviewed; enabling it requires a separate explicit
-reviewed fixture registration.
+This module contains no direct HTTP client, database connection, untrusted
+import path, SQL, or sink selection. An application supplies an explicit
+response source, a private raw-artifact writer, and a versioned contract
+registry. The optional process adapter is bound to one fixed reviewed worker.
+The returned job is disabled and unreviewed; enabling it requires a separate
+explicit reviewed fixture registration.
 """
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
+import math
 import os
 import stat
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Protocol
 
 from opendata.data.dataset_contract_registry import (
@@ -28,7 +31,17 @@ from opendata.data.providers.akshare.models.stock_daily import (
     StockDailyQuery,
 )
 from opendata.data.providers.akshare.stock_daily_wire import (
+    MAX_BASE64_RESPONSE_BYTES,
+    MAX_PROCESS_RESULT_JSON_BYTES,
     MAX_RAW_RESPONSE_BYTES,
+    MAX_STOCK_DAILY_PROCESS_PARAMETER_BYTES,
+    MAX_STOCK_DAILY_WINDOW_DAYS,
+    STOCK_DAILY_HTTP_CONNECT_TIMEOUT_SECONDS,
+    STOCK_DAILY_HTTP_OVERALL_TIMEOUT_SECONDS,
+    STOCK_DAILY_HTTP_READ_TIMEOUT_SECONDS,
+    STOCK_DAILY_PROCESS_OPERATION_ID,
+    STOCK_DAILY_PROCESS_STARTUP_MARGIN_SECONDS,
+    STOCK_DAILY_PROCESS_TIMEOUT_SECONDS,
     parse_stock_daily_wire,
 )
 from opendata.pipeline.contract_publication import ValidatedPublicationWriter
@@ -52,10 +65,11 @@ if TYPE_CHECKING:  # pragma: no cover
 
     from pydantic import JsonValue
 
-MAX_STOCK_DAILY_WINDOW_DAYS = 3_660
+    from opendata.pipeline.process_executor import ReviewedProcessExecutor
+
 MAX_MANIFEST_BYTES = 16 * 1024
-_OPERATION_ID = "stock-daily-wire"
 _QUALITY_REPORT_ID = "stock-daily-offline-normalization-v1"
+_OPERATION_ID = STOCK_DAILY_PROCESS_OPERATION_ID
 _QUERY_FIELDS = frozenset({"source", "market", "symbol", "start_date", "end_date", "adjust"})
 _EXPECTED_FIELD_TYPES = {
     "market": "string",
@@ -106,12 +120,108 @@ class StockDailyResponseSource(Protocol):
         ...  # pragma: no cover
 
 
+class StockDailyProcessResponseSource(Protocol):
+    """Parent-side process adapter for one validated stock run request."""
+
+    def __call__(
+        self,
+        request: RunRequest,
+        context: RunExecutionContext,
+    ) -> StockDailyJsonResponse:
+        """Return one bounded raw response for a validated run and lease context."""
+        ...  # pragma: no cover
+
+
 @dataclass(frozen=True, slots=True)
 class CapturedStockDailyResponse:
     """Raw evidence reference paired with the source observation timestamp."""
 
     capture: CapturedRawResponse
     observed_at: datetime
+
+
+def build_stock_daily_process_source(
+    executor: ReviewedProcessExecutor,
+) -> StockDailyProcessResponseSource:
+    """Build the fixed parent adapter for the registered stock-daily worker.
+
+    The executor must already register ``fetch_stock_daily_process`` under its
+    fixed operation ID. Its result cap must carry the largest Base64-expanded
+    2 MiB body plus the exact JSON envelope, and its parameter cap must carry
+    the fixed request object. The parent deadline remains fixed at 30 seconds;
+    construction verifies margin beyond the child's cooperative 20-second HTTP
+    budget and longest socket timeout for startup and executor cleanup.
+
+    Args:
+        executor: Executor with the fixed stock-daily child operation registered.
+
+    Returns:
+        A source callable taking only a validated ``RunRequest`` and its parent
+        ``RunExecutionContext``.
+
+    Raises:
+        TypeError: If the dependency is not a reviewed process executor.
+        ValueError: If its IPC caps, handler registration, or timeout margin are invalid.
+    """
+    from opendata.data.providers.akshare.stock_daily_wire import fetch_stock_daily_process
+    from opendata.pipeline.process_executor import (
+        MAX_JSON_TEXT_BYTES,
+        ReviewedProcessExecutor,
+        ReviewedProcessRegistry,
+    )
+    from opendata.pipeline.reviewed_worker import ProcessFetchHandler
+
+    if not isinstance(executor, ReviewedProcessExecutor):
+        raise TypeError("executor must be a ReviewedProcessExecutor")
+    registry = getattr(executor, "_registry", None)
+    if not isinstance(registry, ReviewedProcessRegistry):
+        raise ValueError("executor must use the reviewed stock daily process registry")
+    registered_handler = registry.resolve(STOCK_DAILY_PROCESS_OPERATION_ID)
+    if (
+        registered_handler is None
+        or registered_handler.module != fetch_stock_daily_process.__module__
+        or registered_handler.qualified_name != fetch_stock_daily_process.__qualname__
+    ):
+        raise ValueError("executor must register the fixed stock daily child handler")
+    max_parameter_bytes = getattr(executor, "_max_parameter_bytes", None)
+    if (
+        type(max_parameter_bytes) is not int
+        or max_parameter_bytes < MAX_STOCK_DAILY_PROCESS_PARAMETER_BYTES
+    ):
+        raise ValueError("process parameter cap cannot carry the stock daily request")
+    max_result_bytes = getattr(executor, "_max_result_bytes", None)
+    if (
+        type(max_result_bytes) is not int
+        or max_result_bytes < MAX_PROCESS_RESULT_JSON_BYTES
+        or MAX_JSON_TEXT_BYTES < MAX_PROCESS_RESULT_JSON_BYTES
+    ):
+        raise ValueError("process result cap cannot carry the maximum stock daily response")
+    shutdown_grace = getattr(executor, "_shutdown_grace", None)
+    if (
+        type(shutdown_grace) not in {int, float}
+        or not math.isfinite(shutdown_grace)
+        or shutdown_grace < 0
+    ):
+        raise ValueError("process executor shutdown grace is invalid")
+    maximum_http_block = max(
+        STOCK_DAILY_HTTP_CONNECT_TIMEOUT_SECONDS,
+        STOCK_DAILY_HTTP_READ_TIMEOUT_SECONDS,
+    )
+    required_timeout = (
+        STOCK_DAILY_HTTP_OVERALL_TIMEOUT_SECONDS
+        + maximum_http_block
+        + STOCK_DAILY_PROCESS_STARTUP_MARGIN_SECONDS
+        + 2 * shutdown_grace
+    )
+    if required_timeout >= STOCK_DAILY_PROCESS_TIMEOUT_SECONDS:
+        raise ValueError("process deadline does not leave HTTP startup and cleanup margin")
+    return ProcessFetchHandler(
+        executor,
+        STOCK_DAILY_PROCESS_OPERATION_ID,
+        _stock_daily_process_parameters,
+        _decode_stock_daily_process_result,
+        timeout_seconds=STOCK_DAILY_PROCESS_TIMEOUT_SECONDS,
+    )
 
 
 def build_stock_daily_job(
@@ -121,7 +231,8 @@ def build_stock_daily_job(
     semantic_version: str,
     contract_registry: DatasetContractRegistry,
     artifact_writer: RawResponseArtifactWriter,
-    response_source: StockDailyResponseSource,
+    response_source: StockDailyResponseSource | None = None,
+    process_source: StockDailyProcessResponseSource | None = None,
 ) -> ReviewedJob:
     """Build a disabled, unreviewed A-share daily-bar fixture job.
 
@@ -135,7 +246,10 @@ def build_stock_daily_job(
         semantic_version: Exact semantic version registered by the caller.
         contract_registry: Caller-owned immutable contract registry.
         artifact_writer: Caller-owned writer rooted in a private evidence path.
-        response_source: Explicit code callable returning bounded raw JSON.
+        response_source: Legacy explicit query-only callable returning bounded raw JSON.
+        process_source: Explicit parent-side process callable receiving the validated
+            ``RunRequest`` and ``RunExecutionContext``. It is mutually exclusive with
+            ``response_source``.
 
     Returns:
         A ``ReviewedJob`` whose task remains disabled and whose review flag is
@@ -159,8 +273,16 @@ def build_stock_daily_job(
         raise TypeError("contract_registry must be a DatasetContractRegistry")
     if not isinstance(artifact_writer, RawResponseArtifactWriter):
         raise TypeError("artifact_writer must be a RawResponseArtifactWriter")
-    if not callable(response_source):
+    if response_source is None and process_source is None:
+        raise TypeError("response_source or process_source is required")
+    if response_source is not None and process_source is not None:
+        raise ValueError("response_source and process_source are mutually exclusive")
+    if response_source is not None and not callable(response_source):
         raise TypeError("response_source must be an explicit callable")
+    if process_source is not None and not callable(process_source):
+        raise TypeError("process_source must be an explicit callable")
+    if process_source is not None:
+        _validate_stock_daily_process_handler(process_source)
 
     try:
         contract = contract_registry.resolve(task.dataset_id, schema_version, semantic_version)
@@ -175,25 +297,31 @@ def build_stock_daily_job(
         operation_id=_OPERATION_ID,
     )
 
-    def fetch(request: RunRequest, context: RunExecutionContext) -> CapturedStockDailyResponse:
-        query = _validated_query(fetcher, request)
-        context.checkpoint()
-        response = response_source(query.model_copy(deep=True))
-        context.checkpoint()
-        _validate_source_response(response)
-        summary_hash = _request_summary_hash(query)
-        capture = artifact_writer.capture(
-            (response.body,),
-            source=source_identity,
-            request_summary_sha256=summary_hash,
-            http_status=response.status_code,
-            retention_class="ephemeral",
-            source_history_limit="unknown",
-        )
-        return CapturedStockDailyResponse(
-            capture=capture,
-            observed_at=response.observed_at.astimezone(_UTC),
-        )
+    if process_source is not None:
+        # Keep ProcessFetchHandler as the exact job fetch handler so the
+        # PersistentRunWorker can verify and use its child heartbeat interval.
+        fetch_handler = process_source
+    else:
+        # The legacy fixture path keeps its query-only source and capture timing.
+        if response_source is None:
+            raise ValueError("stock daily legacy response source is missing")
+        legacy_response_source = response_source
+
+        def fetch_handler(
+            request: RunRequest,
+            context: RunExecutionContext,
+        ) -> CapturedStockDailyResponse:
+            """Fetch through the legacy query-only fixture source and capture raw bytes."""
+            query = _validated_query(fetcher, request)
+            context.checkpoint()
+            response = legacy_response_source(query.model_copy(deep=True))
+            context.checkpoint()
+            return _capture_stock_daily_response(
+                response,
+                query=query,
+                artifact_writer=artifact_writer,
+                source_identity=source_identity,
+            )
 
     def normalize(
         raw: object,
@@ -202,6 +330,17 @@ def build_stock_daily_job(
     ) -> NormalizedBatch:
         context.checkpoint()
         query = _validated_query(fetcher, request)
+        if not isinstance(raw, CapturedStockDailyResponse):
+            if process_source is None or type(raw) is not StockDailyJsonResponse:
+                raise ValueError("stock daily job requires its captured raw response")
+            # ProcessFetchHandler decodes JSON in the parent fetch phase;
+            # capture it here before any parsing or publication can occur.
+            raw = _capture_stock_daily_response(
+                raw,
+                query=query,
+                artifact_writer=artifact_writer,
+                source_identity=source_identity,
+            )
         if not isinstance(raw, CapturedStockDailyResponse):
             raise ValueError("stock daily job requires its captured raw response")
         observed_at = _validated_observation_time(raw.observed_at)
@@ -224,7 +363,9 @@ def build_stock_daily_job(
             for bar in bars
         )
         provenance: dict[str, JsonValue] = {
-            "acquisition_mode": "injected_offline_json",
+            "acquisition_mode": (
+                "process_bounded_json" if process_source is not None else "injected_offline_json"
+            ),
             "normalizer": "AkshareStockDailyFetcher.transform_data",
             "provider": task.provider,
             "dataset_id": task.dataset_id,
@@ -256,7 +397,7 @@ def build_stock_daily_job(
 
     return ReviewedJob(
         task=task,
-        fetch=fetch,
+        fetch=fetch_handler,
         normalize=normalize,
         publish=ValidatedPublicationWriter(contract_registry),
         reviewed=False,
@@ -271,6 +412,99 @@ def _revalidate_task(task: TaskDefinition) -> TaskDefinition:
         return TaskDefinition.model_validate(task.model_dump(mode="python"), strict=True)
     except Exception as exc:
         raise ValueError("task metadata failed boundary validation") from exc
+
+
+def _validate_stock_daily_process_handler(process_source: object) -> None:
+    """Require the exact registered stock worker behind the process adapter."""
+    from opendata.data.providers.akshare.stock_daily_wire import fetch_stock_daily_process
+    from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
+    from opendata.pipeline.reviewed_worker import ProcessFetchHandler
+
+    if type(process_source) is not ProcessFetchHandler:
+        raise TypeError("process_source must be the fixed ProcessFetchHandler")
+    executor = getattr(process_source, "_executor", None)
+    operation_id = getattr(process_source, "_operation_id", None)
+    if not isinstance(executor, ReviewedProcessExecutor):
+        raise ValueError("process_source must use a ReviewedProcessExecutor")
+    if operation_id != STOCK_DAILY_PROCESS_OPERATION_ID:
+        raise ValueError("process_source operation ID is not the fixed stock worker")
+    registry = getattr(executor, "_registry", None)
+    if not isinstance(registry, ReviewedProcessRegistry):
+        raise ValueError("process_source executor must use a reviewed operation registry")
+    registered_handler = registry.resolve(STOCK_DAILY_PROCESS_OPERATION_ID)
+    if (
+        registered_handler is None
+        or registered_handler.module != fetch_stock_daily_process.__module__
+        or registered_handler.qualified_name != fetch_stock_daily_process.__qualname__
+    ):
+        raise ValueError("process_source registry does not bind the fixed stock worker")
+
+
+def _stock_daily_process_parameters(request: RunRequest) -> dict[str, JsonValue]:
+    """Build the exact child request from a revalidated parent run request."""
+    query = _validated_query(AkshareStockDailyFetcher(), request)
+    if query.start_date is None or query.end_date is None:
+        raise ValueError("stock daily process requires explicit inclusive dates")
+    return {
+        "symbol": query.symbol,
+        "start_date": query.start_date.strftime("%Y%m%d"),
+        "end_date": query.end_date.strftime("%Y%m%d"),
+    }
+
+
+def _decode_stock_daily_process_result(value: object) -> StockDailyJsonResponse:
+    """Strictly decode one bounded child response envelope in the parent."""
+    if type(value) is not dict or set(value) != {"body_b64", "status_code", "retrieved_at"}:
+        raise ValueError("stock daily process result shape is invalid")
+    body_b64 = value["body_b64"]
+    status_code = value["status_code"]
+    retrieved_at_text = value["retrieved_at"]
+    if (
+        type(body_b64) is not str
+        or len(body_b64) > MAX_BASE64_RESPONSE_BYTES
+        or type(status_code) is not int
+        or status_code != 200
+        or type(retrieved_at_text) is not str
+    ):
+        raise ValueError("stock daily process result fields are invalid")
+    try:
+        encoded_result_size = len(
+            json.dumps(
+                value,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            ).encode("utf-8")
+        )
+    except (TypeError, ValueError, UnicodeEncodeError, RecursionError):
+        raise ValueError("stock daily process result encoding is invalid") from None
+    if encoded_result_size > MAX_PROCESS_RESULT_JSON_BYTES:
+        raise ValueError("stock daily process result exceeds its JSON envelope limit")
+    try:
+        body = base64.b64decode(body_b64.encode("ascii"), validate=True)
+    except (ValueError, UnicodeEncodeError):
+        raise ValueError("stock daily process body is not canonical Base64") from None
+    if base64.b64encode(body).decode("ascii") != body_b64:
+        raise ValueError("stock daily process body is not canonical Base64")
+    if len(body) > MAX_RAW_RESPONSE_BYTES:
+        raise ValueError("stock daily process body exceeds the raw response limit")
+    try:
+        timestamp_text = (
+            retrieved_at_text[:-1] + "+00:00"
+            if retrieved_at_text.endswith("Z")
+            else retrieved_at_text
+        )
+        retrieved_at = datetime.fromisoformat(timestamp_text)
+    except ValueError:
+        raise ValueError("stock daily process retrieval time is invalid") from None
+    if retrieved_at.utcoffset() != timedelta(0):
+        raise ValueError("stock daily process retrieval time must be UTC")
+    try:
+        observed_at = _validated_observation_time(retrieved_at)
+    except (OverflowError, TypeError, ValueError):
+        raise ValueError("stock daily process retrieval time is invalid") from None
+    return StockDailyJsonResponse(body=body, status_code=status_code, observed_at=observed_at)
 
 
 def _validate_stock_contract(task: TaskDefinition, contract: DatasetContract) -> None:
@@ -373,6 +607,29 @@ def _validate_source_response(response: StockDailyJsonResponse) -> None:
     if type(response.status_code) is not int or response.status_code != 200:
         raise ValueError("stock daily source response must have HTTP status 200")
     _validated_observation_time(response.observed_at)
+
+
+def _capture_stock_daily_response(
+    response: StockDailyJsonResponse,
+    *,
+    query: StockDailyQuery,
+    artifact_writer: RawResponseArtifactWriter,
+    source_identity: RawResponseSource,
+) -> CapturedStockDailyResponse:
+    """Validate and persist one parent-side raw response with safe request identity."""
+    _validate_source_response(response)
+    capture = artifact_writer.capture(
+        (response.body,),
+        source=source_identity,
+        request_summary_sha256=_request_summary_hash(query),
+        http_status=response.status_code,
+        retention_class="ephemeral",
+        source_history_limit="unknown",
+    )
+    return CapturedStockDailyResponse(
+        capture=capture,
+        observed_at=_validated_observation_time(response.observed_at),
+    )
 
 
 def _validated_observation_time(value: datetime) -> datetime:

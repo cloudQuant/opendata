@@ -2,20 +2,65 @@
 
 from __future__ import annotations
 
+import base64
 import json
+import re
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, NoReturn
 
 import pandas as pd
 
-from opendata.data.http_client import get_shared_http_client
+from opendata.data.http_client import BoundedHttpResponse, get_shared_http_client
 from opendata.data.providers.akshare._source import SOURCE
+from opendata.data.request_budget import (
+    GrantDecision,
+    RequestBudget,
+    RequestBudgetProfile,
+    RequestGrant,
+    RequestOperation,
+    request_execution_scope,
+)
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Mapping, Sequence
 
 EASTMONEY_KLINE_URL = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
+EASTMONEY_KLINE_HOST = "push2his.eastmoney.com"
 MAX_RAW_RESPONSE_BYTES = 2 * 1024 * 1024
 MAX_KLINE_ROWS = 10_000
+MAX_STOCK_DAILY_WINDOW_DAYS = 3_660
+STOCK_DAILY_PROCESS_OPERATION_ID = "stock-daily-wire"
+STOCK_DAILY_HTTP_OVERALL_TIMEOUT_SECONDS = 20.0
+STOCK_DAILY_HTTP_CONNECT_TIMEOUT_SECONDS = 3.0
+STOCK_DAILY_HTTP_READ_TIMEOUT_SECONDS = 5.0
+STOCK_DAILY_PROCESS_TIMEOUT_SECONDS = 30.0
+STOCK_DAILY_PROCESS_STARTUP_MARGIN_SECONDS = 2.0
+MAX_BASE64_RESPONSE_BYTES = 4 * ((MAX_RAW_RESPONSE_BYTES + 2) // 3)
+_PROCESS_RESULT_ENVELOPE_BYTES = len(
+    json.dumps(
+        {
+            "body_b64": "",
+            "retrieved_at": "9999-12-31T23:59:59.999999Z",
+            "status_code": 200,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("ascii")
+)
+MAX_PROCESS_RESULT_JSON_BYTES = _PROCESS_RESULT_ENVELOPE_BYTES + MAX_BASE64_RESPONSE_BYTES
+MAX_STOCK_DAILY_PROCESS_PARAMETER_BYTES = len(
+    json.dumps(
+        {
+            "symbol": "999999",
+            "start_date": "99991231",
+            "end_date": "99991231",
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("ascii")
+)
+_PROCESS_SYMBOL = re.compile(r"^[0-9]{6}$")
+_PROCESS_DATE = re.compile(r"^[0-9]{8}$")
 
 _KLINE_FIELDS = "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61"
 _KLINE_COLUMNS = (
@@ -79,6 +124,152 @@ def fetch_stock_daily_wire(
     if response.status_code != 200:
         raise ValueError(f"Eastmoney stock history returned HTTP {response.status_code}")
     return parse_stock_daily_wire(response.content, symbol=symbol, expected_market=market)
+
+
+def fetch_stock_daily_process(parameters: Mapping[str, object]) -> dict[str, str | int]:
+    """Fetch one fixed Eastmoney response for the registered child operation.
+
+    This handler accepts only a canonical symbol and an inclusive date window.
+    It installs a new child-local request budget and scope; the current rights
+    declaration is deliberately UNKNOWN, so the governed client must reject the
+    request before transport. The body is returned only through the executor's
+    bounded JSON result channel and is never printed or logged.
+
+    Args:
+        parameters: Exact JSON object with ``symbol``, ``start_date`` and ``end_date``.
+
+    Returns:
+        The exact bounded process envelope for a successful HTTP 200 response.
+
+    Raises:
+        ValueError: If the request, authority, HTTP response, or response time is invalid.
+    """
+    symbol, start_date, end_date = _validate_process_parameters(parameters)
+    market = _market_for_symbol(symbol)
+    request_params = {
+        "fields1": "f1,f2,f3,f4,f5,f6",
+        "fields2": _KLINE_FIELDS,
+        "klt": "101",
+        "fqt": "0",
+        "secid": f"{market}.{symbol}",
+        "beg": start_date,
+        "end": end_date,
+    }
+    budget = _new_child_request_budget()
+    with request_execution_scope(
+        source=SOURCE,
+        canonical_model="stock_daily",
+        operation=RequestOperation.QUERY,
+        budget=budget,
+        # Process workers must establish their own authority, never reuse an
+        # ambient ContextVar stack when this handler is exercised in-process.
+        inherited_scopes=(),
+    ):
+        response = get_shared_http_client().get_bounded(
+            EASTMONEY_KLINE_URL,
+            params=request_params,
+            max_body_bytes=MAX_RAW_RESPONSE_BYTES,
+            overall_timeout=STOCK_DAILY_HTTP_OVERALL_TIMEOUT_SECONDS,
+            timeout=(
+                STOCK_DAILY_HTTP_CONNECT_TIMEOUT_SECONDS,
+                STOCK_DAILY_HTTP_READ_TIMEOUT_SECONDS,
+            ),
+            source=SOURCE,
+        )
+    if type(response) is not BoundedHttpResponse:
+        raise ValueError("stock_daily_process_response_invalid")
+    if type(response.status_code) is not int or response.status_code != 200:
+        raise ValueError("stock_daily_process_http_status_invalid")
+    if type(response.body) is not bytes or len(response.body) > MAX_RAW_RESPONSE_BYTES:
+        raise ValueError("stock_daily_process_body_limit_exceeded")
+    retrieved_at = _aware_utc_timestamp(response.retrieved_at)
+    return {
+        "body_b64": base64.b64encode(response.body).decode("ascii"),
+        "status_code": response.status_code,
+        "retrieved_at": retrieved_at.isoformat(timespec="microseconds").replace("+00:00", "Z"),
+    }
+
+
+def _validate_process_parameters(parameters: Mapping[str, object]) -> tuple[str, str, str]:
+    """Validate the exact child IPC query without accepting transport controls."""
+    if type(parameters) is not dict or set(parameters) != {"symbol", "start_date", "end_date"}:
+        raise ValueError("stock_daily_process_parameters_invalid")
+    symbol = parameters["symbol"]
+    start_date = parameters["start_date"]
+    end_date = parameters["end_date"]
+    if (
+        type(symbol) is not str
+        or _PROCESS_SYMBOL.fullmatch(symbol) is None
+        or type(start_date) is not str
+        or _PROCESS_DATE.fullmatch(start_date) is None
+        or type(end_date) is not str
+        or _PROCESS_DATE.fullmatch(end_date) is None
+    ):
+        raise ValueError("stock_daily_process_query_invalid")
+    try:
+        parsed_start = datetime.strptime(start_date, "%Y%m%d").date()
+        parsed_end = datetime.strptime(end_date, "%Y%m%d").date()
+    except ValueError:
+        raise ValueError("stock_daily_process_query_invalid") from None
+    if (
+        parsed_start.strftime("%Y%m%d") != start_date
+        or parsed_end.strftime("%Y%m%d") != end_date
+        or parsed_start > parsed_end
+        or (parsed_end - parsed_start).days + 1 > MAX_STOCK_DAILY_WINDOW_DAYS
+    ):
+        raise ValueError("stock_daily_process_query_invalid")
+    try:
+        from opendata.data.providers.akshare.models.stock_daily import StockDailyQuery
+
+        query = StockDailyQuery.model_validate(
+            {
+                "source": SOURCE,
+                "market": "cn",
+                "symbol": symbol,
+                "start_date": start_date,
+                "end_date": end_date,
+                "adjust": "",
+            }
+        )
+    except (TypeError, ValueError):
+        raise ValueError("stock_daily_process_query_invalid") from None
+    if query.symbol != symbol:
+        raise ValueError("stock_daily_process_query_invalid")
+    return symbol, start_date, end_date
+
+
+def _new_child_request_budget() -> RequestBudget:
+    """Create a fresh one-attempt child budget with unresolved source rights."""
+    profile = RequestBudgetProfile.BOUNDED_REQUEST
+    unknown_grant = RequestGrant(
+        source=SOURCE,
+        canonical_model="stock_daily",
+        operation=RequestOperation.QUERY,
+        decision=GrantDecision.UNKNOWN,
+        rights_evidence="Eastmoney rights, retention, and history evidence unresolved",
+        task_attempts=1,
+        source_attempts=1,
+        allowed_hosts={EASTMONEY_KLINE_HOST},
+        expires_at=datetime.max.replace(tzinfo=timezone.utc),
+        conditions=("rights review required before transport",),
+        profile=profile,
+    )
+    return RequestBudget(
+        task_attempts=1,
+        source_attempts=1,
+        grants=(unknown_grant,),
+        profile=profile,
+    )
+
+
+def _aware_utc_timestamp(value: object) -> datetime:
+    """Validate and normalize one aware retrieval timestamp to UTC."""
+    if not isinstance(value, datetime) or value.tzinfo is None or value.utcoffset() is None:
+        raise ValueError("stock_daily_process_retrieved_at_invalid")
+    try:
+        return value.astimezone(timezone.utc)
+    except (OverflowError, TypeError, ValueError):
+        raise ValueError("stock_daily_process_retrieved_at_invalid") from None
 
 
 def parse_stock_daily_wire(
