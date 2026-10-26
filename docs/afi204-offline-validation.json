@@ -1,0 +1,62 @@
+{
+  "afi_base": "c720a261c",
+  "afi_code_commit": "c9076d46274e1e9ff4c9b1f8c582770402b84bf2",
+  "afi_tests": {
+    "passed": 75,
+    "scope": "test_opendata_provider.py and test_provider_contracts.py"
+  },
+  "checks": {
+    "bandit": "PASS",
+    "format": "PASS",
+    "mypy_with_existing_import_diagnostics": "FAIL: existing opendata/data/models/base.py:67-68 redundant casts",
+    "python310_grammar": "PASS, not a Python3.10 runtime matrix",
+    "ruff": "PASS",
+    "target_mypy_follow_imports_silent": "PASS",
+    "whole_repository_gate": "NOT_RUN"
+  },
+  "client_wheel_install_test": {
+    "passed": 1,
+    "scope": "isolated minimal and all extras target installs, no checkout/system site"
+  },
+  "date": "2026-10-26",
+  "file_sha256": {
+    "opendata/migration_inventory.py": "094b101808c97621dd569468ac9ba7e398c1dc058288f308ef0d3ac442c83292",
+    "opendata/pipeline/history_coverage.py": "32da5309b8ce51ac0a67d595a3222e292e9206821021d1d4b369a4bd66950bcd",
+    "opendata/pipeline/run_identity.py": "53b0b207eb0f0202867fcb7c0a97f2eeefc33fb4ab6f4d2b9a77ecabff4e6e50",
+    "opendata/pipeline/run_ledger.py": "c9acd494f07a9a5ef9419b09dcd55216223b5b3da0507ad06f99da17427fcc5e",
+    "opendata_client/opendata_client/client.py": "ec817286e0535ca3eaa12af2be9763c2a91a5f562515303242e6d1111c9b6735",
+    "tests/test_run_identity_ledger_integration.py": "bd89f972ab3d943bc9013ab0e0f403875721d4bb8b6bcc698d979836cdc78a43"
+  },
+  "module_coverage": {
+    "opendata/migration_inventory.py": 85.43543543543544,
+    "opendata/pipeline/history_coverage.py": 100.0,
+    "opendata/pipeline/run_identity.py": 96.37462235649546,
+    "opendata/pipeline/run_ledger.py": 91.30434782608695,
+    "opendata_client/opendata_client/client.py": 92.65770423991727
+  },
+  "opendata_base": "61800c18",
+  "opendata_code_commit": "f29b8e72b345db0685a3dc73474ca4419bfb81ac",
+  "opendata_tests": {
+    "deselected": 6,
+    "passed": 442,
+    "scope": "11 named files, live e2e excluded",
+    "skipped": 1
+  },
+  "production_operations": "NOT_RUN: no collection, database/DDL, scheduler/timer changes, credentials, cutover or deployment",
+  "schema_version": 1,
+  "scoped_statement_branch_coverage": 92.17622483858716,
+  "source_inventory": {
+    "files": 1066,
+    "filesystem_errors": 0,
+    "original_manifest_paths_and_hashes_equal": true,
+    "parse_errors": 0,
+    "report_sha256": "49a9520c9705edae369cdfd7552b43be32aa54d3bc3b86d67de007c2524b498e",
+    "source_verification": "NOT_VERIFIED"
+  },
+  "timezone": "Asia/Shanghai",
+  "tools": {
+    "bandit": "1.9.4",
+    "mypy": "2.3.1",
+    "ruff": "0.15.20"
+  }
+}
