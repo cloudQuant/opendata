@@ -15,13 +15,21 @@ import os
 import re
 import secrets
 import stat
-from collections.abc import Iterable, Mapping  # noqa: TC003 -- stable public annotations
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Literal, TypeAlias
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StrictInt,
+    StrictStr,
+    ValidationError,
+    field_validator,
+)
 
 RetentionClass: TypeAlias = Literal["unknown", "ephemeral", "restricted", "durable_candidate"]
 HistoryLimit: TypeAlias = Literal[
@@ -38,6 +46,8 @@ _CREDENTIAL_KEY_PATTERN = re.compile(
     re.IGNORECASE,
 )
 _MAX_REQUEST_SUMMARY_BYTES = 32 * 1024
+_MAX_REQUEST_ALLOWLIST_FIELDS = 128
+_MAX_REQUEST_PARAMETER_ITEMS = 256
 _MAX_MANIFEST_BYTES = 16 * 1024
 _DEFAULT_MAX_RESPONSE_BYTES = 16 * 1024 * 1024
 _MAX_CONFIGURED_RESPONSE_BYTES = 1024 * 1024 * 1024
@@ -115,21 +125,45 @@ def request_summary_sha256(
     rejected even if included in it. Values are encoded only into the digest input;
     the raw mapping is never copied into the response manifest or written to disk.
     """
-    allowed = frozenset(allowed_fields)
-    for key in allowed:
+    if not isinstance(parameters, Mapping):
+        raise RawEvidenceError("request parameters must be a mapping")
+    try:
+        parameter_count = len(parameters)
+    except (TypeError, OverflowError) as exc:
+        raise RawEvidenceError("request parameter count is unavailable") from exc
+    if parameter_count > _MAX_REQUEST_PARAMETER_ITEMS:
+        raise RawEvidenceError("request parameter item count exceeds its limit")
+    if isinstance(allowed_fields, (str, bytes)):
+        raise RawEvidenceError("request allowlist must be an iterable of field names")
+    try:
+        allowed_iterator = iter(allowed_fields)
+    except TypeError as exc:
+        raise RawEvidenceError("request allowlist must be iterable") from exc
+
+    allowed: set[str] = set()
+    for index, key in enumerate(allowed_iterator):
+        if index >= _MAX_REQUEST_ALLOWLIST_FIELDS:
+            raise RawEvidenceError("request allowlist exceeds its field-count limit")
         if not isinstance(key, str) or _REQUEST_KEY_PATTERN.fullmatch(key) is None:
             raise RawEvidenceError("request allowlist contains an invalid field name")
         if _CREDENTIAL_KEY_PATTERN.search(key):
             raise RawEvidenceError("credential-like request field is forbidden")
+        if key in allowed:
+            raise RawEvidenceError("request allowlist contains a duplicate field")
+        allowed.add(key)
 
     normalized: dict[str, str | int | float | bool | None] = {}
-    for key, value in parameters.items():
+    for index, (key, value) in enumerate(parameters.items()):
+        if index >= _MAX_REQUEST_PARAMETER_ITEMS:
+            raise RawEvidenceError("request parameter item count exceeds its limit")
         if not isinstance(key, str) or _REQUEST_KEY_PATTERN.fullmatch(key) is None:
             raise RawEvidenceError("request parameter name is invalid")
         if _CREDENTIAL_KEY_PATTERN.search(key):
             raise RawEvidenceError("credential-like request field is forbidden")
         if key not in allowed:
             raise RawEvidenceError("request parameter is outside the explicit allowlist")
+        if key in normalized:
+            raise RawEvidenceError("request parameters contain a duplicate field")
         if isinstance(value, datetime):
             raise RawEvidenceError("datetime request values are not supported; use a business date")
         if isinstance(value, date):
@@ -197,8 +231,7 @@ class RawResponseArtifactWriter:
         reused only after checking its exact size and SHA-256; metadata is addressed
         independently by its own hash, so captures never overwrite one another.
         """
-        if not isinstance(source, RawResponseSource):
-            raise RawEvidenceError("source must be a validated RawResponseSource")
+        source = _revalidate_source(source)
         if (
             not isinstance(request_summary_sha256, str)
             or re.fullmatch(_SHA256_PATTERN, request_summary_sha256) is None
@@ -226,6 +259,7 @@ class RawResponseArtifactWriter:
             object_directory_fd = _open_private_child(root_fd, "objects")
             try:
                 object_prefix_fd = _open_private_child(object_directory_fd, "pending")
+                response_name: str | None = None
                 try:
                     response_hash, response_size, response_name = _store_chunks(
                         object_prefix_fd, chunks, self._max_response_bytes
@@ -245,9 +279,12 @@ class RawResponseArtifactWriter:
                             expected_size=response_size,
                             maximum_size=self._max_response_bytes,
                         )
+                        response_name = None
                     finally:
                         os.close(response_prefix_fd)
                 finally:
+                    if response_name is not None:
+                        _unlink_if_present(object_prefix_fd, response_name)
                     os.close(object_prefix_fd)
             finally:
                 os.close(object_directory_fd)
@@ -296,20 +333,43 @@ class RawResponseArtifactWriter:
 
     def manifest_path(self, manifest: RawResponseManifest) -> Path:
         """Reconstruct the content-addressed local path for a manifest."""
-        if not isinstance(manifest, RawResponseManifest):
-            raise RawEvidenceError("manifest must be a validated RawResponseManifest")
         manifest_hash = hashlib.sha256(_canonical_manifest_bytes(manifest)).hexdigest()
         return self._artifact_root / "manifests" / manifest_hash[:2] / f"{manifest_hash}.json"
 
 
 def _canonical_manifest_bytes(manifest: RawResponseManifest) -> bytes:
     """Return deterministic JSON bytes for a validated manifest."""
+    validated = _revalidate_manifest(manifest)
     return json.dumps(
-        manifest.model_dump(mode="json"),
+        validated.model_dump(mode="json"),
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
     ).encode("utf-8")
+
+
+def _revalidate_source(source: object) -> RawResponseSource:
+    """Deep-dump and validate a source model at the persistence boundary."""
+    if not isinstance(source, RawResponseSource):
+        raise RawEvidenceError("source must be a validated RawResponseSource")
+    try:
+        source_dump = source.model_dump(mode="python")
+        return RawResponseSource.model_validate(source_dump, strict=True)
+    except ValidationError as exc:
+        raise RawEvidenceError("source identity failed boundary validation") from exc
+
+
+def _revalidate_manifest(manifest: object) -> RawResponseManifest:
+    """Deep-dump and validate a manifest and its nested source at the boundary."""
+    if not isinstance(manifest, RawResponseManifest):
+        raise RawEvidenceError("manifest must be a validated RawResponseManifest")
+    try:
+        payload = manifest.model_dump(mode="python")
+        source_dump = payload.get("source")
+        payload["source"] = RawResponseSource.model_validate(source_dump, strict=True)
+        return RawResponseManifest.model_validate(payload, strict=True)
+    except ValidationError as exc:
+        raise RawEvidenceError("manifest failed boundary validation") from exc
 
 
 def _open_root_directory(path: Path) -> int:
@@ -512,7 +572,11 @@ def _verify_file(
 ) -> None:
     """Verify a pre-existing content-addressed object without following links."""
     try:
-        descriptor = os.open(name, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=directory_descriptor)
+        descriptor = os.open(
+            name,
+            os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
+            dir_fd=directory_descriptor,
+        )
     except OSError as exc:
         raise ArtifactIntegrityError("existing artifact cannot be opened safely") from exc
     digest = hashlib.sha256()

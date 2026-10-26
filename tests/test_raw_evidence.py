@@ -27,7 +27,7 @@ from opendata.pipeline.raw_evidence import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Iterator
 
 
 def _source(**overrides: str) -> RawResponseSource:
@@ -111,9 +111,36 @@ def test_request_summary_hash_is_canonical_allowlisted_and_never_persisted() -> 
     with pytest.raises(RawEvidenceError, match="bounded summary"):
         request_summary_sha256({"symbol": "x" * 1025}, allowed_fields={"symbol"})
     assert len(request_summary_sha256({"ratio": 1.25}, allowed_fields={"ratio"})) == 64
-    oversized_parameters = {f"p{index}": "x" for index in range(4000)}
+    oversized_parameters = {f"p{index}": "x" * 1024 for index in range(40)}
     with pytest.raises(RawEvidenceError, match="size limit"):
         request_summary_sha256(oversized_parameters, allowed_fields=oversized_parameters)
+    with pytest.raises(RawEvidenceError, match="iterable of field names"):
+        request_summary_sha256({}, allowed_fields="symbol")
+    with pytest.raises(RawEvidenceError, match="must be iterable"):
+        request_summary_sha256({}, allowed_fields=42)  # type: ignore[arg-type]
+    with pytest.raises(RawEvidenceError, match="must be a mapping"):
+        request_summary_sha256([], allowed_fields=set())  # type: ignore[arg-type]
+
+    observed_allowlist: list[int] = []
+
+    def excessive_allowlist() -> Iterator[str]:
+        for index in range(1000):
+            observed_allowlist.append(index)
+            yield f"p{index}"
+
+    with pytest.raises(RawEvidenceError, match="field-count limit"):
+        request_summary_sha256({}, allowed_fields=excessive_allowlist())
+    assert len(observed_allowlist) == 129
+
+    class RepeatedItems(dict[str, str]):
+        def __len__(self) -> int:
+            return 257
+
+        def items(self) -> Iterable[tuple[str, str]]:
+            return (("symbol", "ABC") for _ in range(257))
+
+    with pytest.raises(RawEvidenceError, match="item count"):
+        request_summary_sha256(RepeatedItems(), allowed_fields={"symbol"})
 
 
 def test_capture_streams_to_private_content_and_manifest_paths(tmp_path: Path) -> None:
@@ -337,6 +364,55 @@ def test_invalid_manifest_timestamps_and_capture_metadata_fail_closed(tmp_path: 
     assert not (tmp_path / "bad-metadata").exists()
 
 
+def test_capture_revalidates_constructed_and_mutated_source_models(tmp_path: Path) -> None:
+    writer = RawResponseArtifactWriter(tmp_path / "invalid-source")
+    bypassed = RawResponseSource.model_construct(
+        provider_id="https://host.invalid/?token=secret",
+        dataset_id="equity_daily",
+        operation_id="historical_bars",
+    )
+    mutated = _source()
+    mutated.__dict__["provider_id"] = "https://host.invalid/?token=secret"
+
+    for source in (bypassed, mutated):
+        with pytest.raises(RawEvidenceError, match="source identity failed"):
+            writer.capture(
+                iter((b"body",)),
+                source=source,
+                request_summary_sha256=_request_hash(),
+                http_status=200,
+                retention_class="unknown",
+                source_history_limit="unknown",
+            )
+    assert not (tmp_path / "invalid-source").exists()
+
+
+def test_manifest_path_revalidates_constructed_and_nested_mutated_models(
+    tmp_path: Path,
+) -> None:
+    writer = RawResponseArtifactWriter(tmp_path / "manifest-validation")
+    captured = _capture(writer)
+
+    mutated = captured.manifest.model_copy(deep=True)
+    mutated.source.__dict__["dataset_id"] = "bad/dataset"
+    with pytest.raises(RawEvidenceError, match="manifest failed boundary validation"):
+        writer.manifest_path(mutated)
+
+    constructed = RawResponseManifest.model_construct(
+        capture_id="bad capture id",
+        source=captured.manifest.source,
+        request_summary_sha256=captured.manifest.request_summary_sha256,
+        captured_at_utc=captured.manifest.captured_at_utc,
+        http_status=200,
+        response_sha256=captured.manifest.response_sha256,
+        response_size_bytes=captured.manifest.response_size_bytes,
+        retention_class="unknown",
+        source_history_limit="unknown",
+    )
+    with pytest.raises(RawEvidenceError, match="manifest failed boundary validation"):
+        writer.manifest_path(constructed)
+
+
 def test_writer_rejects_relative_and_parent_traversal_roots(tmp_path: Path) -> None:
     with pytest.raises(UnsafeArtifactRootError):
         RawResponseArtifactWriter(Path("relative-artifacts"))
@@ -460,6 +536,56 @@ def test_existing_symlink_and_oversized_content_objects_are_rejected(tmp_path: P
             retention_class="unknown",
             source_history_limit="unknown",
         )
+
+
+def test_fifo_collision_is_rejected_without_blocking(tmp_path: Path) -> None:
+    writer = RawResponseArtifactWriter(tmp_path / "fifo-collision")
+    captured = writer.capture(
+        iter((b"12345678",)),
+        source=_source(),
+        request_summary_sha256=_request_hash(),
+        http_status=200,
+        retention_class="unknown",
+        source_history_limit="unknown",
+    )
+    captured.artifact_path.unlink()
+    os.mkfifo(captured.artifact_path, mode=0o600)
+
+    with pytest.raises(ArtifactIntegrityError, match="private regular file"):
+        writer.capture(
+            iter((b"12345678",)),
+            source=_source(),
+            request_summary_sha256=_request_hash(),
+            http_status=200,
+            retention_class="unknown",
+            source_history_limit="unknown",
+        )
+
+
+@pytest.mark.parametrize("collision", ["symlink", "permissive-directory"])
+def test_failed_digest_directory_open_cleans_completed_temp(tmp_path: Path, collision: str) -> None:
+    root = tmp_path / collision
+    objects = root / "objects"
+    pending = objects / "pending"
+    objects.mkdir(parents=True, mode=0o700)
+    pending.mkdir(mode=0o700)
+    body = b'{"bars":[1,2,3]}'
+    digest_directory = objects / hashlib.sha256(body).hexdigest()[:2]
+    if collision == "symlink":
+        external = tmp_path / "external-digest-dir"
+        external.mkdir(mode=0o700)
+        digest_directory.symlink_to(external, target_is_directory=True)
+    else:
+        digest_directory.mkdir(mode=0o755)
+
+    writer = RawResponseArtifactWriter(root)
+    with pytest.raises(UnsafeArtifactRootError):
+        _capture(writer)
+
+    assert list(pending.iterdir()) == []
+    assert not list(root.rglob("*.json"))
+    if collision == "symlink":
+        assert list(external.iterdir()) == []
 
 
 def test_manifest_no_clobber_and_write_failure_cleanup(
