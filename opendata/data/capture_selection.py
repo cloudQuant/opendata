@@ -11,6 +11,8 @@ import re
 from dataclasses import dataclass
 from typing import Final, Literal
 
+from pydantic_core import PydanticSerializationError
+
 from opendata.data.platform_contracts import DatasetContract, canonical_sha256
 
 __all__ = [
@@ -72,12 +74,14 @@ def selection_profile(
         # The canonicalizer bounds the original graph. Strictly validating a
         # Python-mode dump then rejects model_copy list/field bypasses and gives
         # shape checks a detached normalized object, without mutating the input.
+        # Promote serializer warnings to errors before Pydantic can emit their
+        # messages, which may include values from a malformed model_copy graph.
         canonical_sha256(contract)
         validated_contract = DatasetContract.model_validate(
-            contract.model_dump(mode="python"),
+            contract.model_dump(mode="python", warnings="error"),
             strict=True,
         )
-    except (TypeError, ValueError, RecursionError, OverflowError):
+    except (PydanticSerializationError, TypeError, ValueError, RecursionError, OverflowError):
         raise InstrumentCaptureSelectionError("dataset contract is invalid") from None
 
     if validated_contract.filter_fields != INSTRUMENT_CAPTURE_FILTER_FIELDS:

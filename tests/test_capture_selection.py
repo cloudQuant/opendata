@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import warnings
 from typing import Literal
 
 import pytest
@@ -158,7 +159,8 @@ def test_model_copy_list_bypasses_are_rejected_before_profile_classification(
 
 def test_model_copy_with_invalid_nested_field_model_fails_closed() -> None:
     contract = _contract()
-    invalid_capture_field = contract.fields[1].model_copy(update={"nullable": "invalid"})
+    sentinel = "untrusted-nullable-sentinel"
+    invalid_capture_field = contract.fields[1].model_copy(update={"nullable": sentinel})
     malformed = contract.model_copy(
         update={
             "fields": (
@@ -169,10 +171,14 @@ def test_model_copy_with_invalid_nested_field_model_fails_closed() -> None:
         }
     )
 
-    with pytest.raises(InstrumentCaptureSelectionError) as raised:
-        selection_profile(malformed)
+    with warnings.catch_warnings(record=True) as emitted:
+        warnings.simplefilter("always")
+        with pytest.raises(InstrumentCaptureSelectionError) as raised:
+            selection_profile(malformed)
 
     assert str(raised.value) == "dataset contract is invalid"
+    assert emitted == []
+    assert sentinel not in str(raised.value)
 
 
 def test_noncontract_and_contract_subclass_are_rejected() -> None:
