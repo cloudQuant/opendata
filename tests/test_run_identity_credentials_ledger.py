@@ -63,6 +63,7 @@ def run_service(tmp_path):
         {"endpoint": "https://data.example.test/prices?password=credential-canary"},
         {"endpoint": "https://data.example.test/prices?token=credential-canary"},
         {"endpoint": "https://data.example.test/prices?api_key=credential-canary"},
+        {"endpoint": "https://readonly:credential-canary@[::1"},
         {"sources": [{"endpoint": "jdbc:postgresql://readonly:credential-canary@db.invalid/data"}]},
     ],
 )
@@ -80,6 +81,26 @@ def test_service_rejects_credentials_before_persisting_or_echoing_them(run_servi
         service.submit("credential-boundary", "v1", request)
 
     assert "credential-canary" not in str(caught.value)
+    with engine.connect() as connection:
+        row_count = connection.scalar(select(func.count()).select_from(RUN_LEDGER_TABLE))
+    assert row_count == 0
+
+
+def test_service_does_not_echo_sensitive_query_keys(run_service):
+    """Reject crafted sensitive keys without leaking them or writing a row."""
+    service, _ledger, engine = run_service
+    canary = "leaky-canary-918273"
+    request = RunRequest.model_construct(
+        run_type="manual",
+        idempotency_key="manual-sensitive-key",
+        query={f"api_key={canary}": "safe business value"},
+        partition={},
+    )
+
+    with pytest.raises(ValidationError) as caught:
+        service.submit("credential-boundary", "v1", request)
+
+    assert canary not in str(caught.value)
     with engine.connect() as connection:
         row_count = connection.scalar(select(func.count()).select_from(RUN_LEDGER_TABLE))
     assert row_count == 0

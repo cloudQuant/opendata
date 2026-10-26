@@ -460,10 +460,10 @@ def _validate_json_value(
                     raise ValueError(f"JSON object keys at {path} must be strings")
                 _validate_json_string(key, f"{path}.<key>")
                 if _is_sensitive_parameter_name(key):
-                    raise ValueError(f"sensitive parameter name is not allowed at {path}.{key}")
+                    raise ValueError(f"sensitive parameter name is not allowed at {path}.<key>")
                 validated_dict[str(key)] = _validate_json_value(
                     item,
-                    path=f"{path}.{key}",
+                    path=f"{path}.<value>",
                     depth=depth + 1,
                     node_count=node_count,
                     active_containers=active_containers,
@@ -507,6 +507,10 @@ def _contains_connection_credentials(value: str) -> bool:
         try:
             parsed = urlsplit(candidate)
         except ValueError:
+            authority = candidate.partition("://")[2]
+            authority = authority.split("/", 1)[0].split("?", 1)[0].split("#", 1)[0]
+            if "@" in authority:
+                return True
             continue
         if not parsed.scheme or not parsed.netloc:
             continue

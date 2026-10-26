@@ -506,6 +506,32 @@ def test_credential_bearing_urls_are_rejected_without_echoing_values(value: str)
     assert "credential-canary" not in str(caught.value)
 
 
+def test_malformed_uri_userinfo_is_rejected_without_echoing_values() -> None:
+    """Fail closed for malformed URI authorities that visibly contain userinfo."""
+    canary = "credential-canary-direct-service-918273"
+    with pytest.raises(ValidationError) as caught:
+        RunRequest(
+            run_type="manual",
+            idempotency_key="manual-malformed-uri",
+            query={"endpoint": f"https://readonly:{canary}@[::1"},
+        )
+
+    assert canary not in str(caught.value)
+
+
+def test_sensitive_query_key_is_not_echoed_in_validation_error() -> None:
+    """Do not copy caller-controlled JSON keys into validation paths or messages."""
+    canary = "leaky-canary-918273"
+    with pytest.raises(ValidationError) as caught:
+        RunRequest(
+            run_type="manual",
+            idempotency_key="manual-sensitive-key",
+            query={f"api_key={canary}": "safe business value"},
+        )
+
+    assert canary not in str(caught.value)
+
+
 def test_jdbc_connection_configuration_is_rejected_without_credentials() -> None:
     """Do not accept raw JDBC connection strings as replayable business inputs."""
     with pytest.raises(ValidationError):
