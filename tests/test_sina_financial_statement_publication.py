@@ -7,7 +7,7 @@ import copy
 import gzip
 import hashlib
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, tzinfo
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -35,6 +35,57 @@ _CAPTURE_ID = "a" * 64
 _OTHER_CAPTURE_ID = "b" * 64
 _RETRIEVED_AT = datetime(2026, 10, 27, 2, 0, tzinfo=timezone.utc)
 _PARSED_SNAPSHOT_SHA256 = "11ff6326d0098fcfe83bfb5c0b40d824958dbc0b6c9fd5fcf820856a12e586ea"
+
+
+class _CallbackErrorTimezone(tzinfo):
+    """Adversarial timezone that raises from a selected conversion callback."""
+
+    def __init__(self, callback: str, error_type: type[Exception]) -> None:
+        self.callback = callback
+        self.error_type = error_type
+        self.canary = f"timezone-callback-canary-{callback}"
+
+    def utcoffset(self, dt: datetime | None) -> timedelta | None:
+        if self.callback == "utcoffset":
+            self._raise_callback()
+        if self.callback == "dst":
+            self.dst(dt)
+        if self.callback == "fromutc" and dt is not None:
+            self.fromutc(dt)
+        return timedelta(0)
+
+    def dst(self, dt: datetime | None) -> timedelta | None:
+        if self.callback == "dst":
+            self._raise_callback()
+        return timedelta(0)
+
+    def fromutc(self, dt: datetime) -> datetime:
+        if self.callback == "fromutc":
+            self._raise_callback()
+        return dt
+
+    def _raise_callback(self) -> None:
+        raise self.error_type(self.canary)
+
+
+class _SingleReadTimezone(tzinfo):
+    """Return UTC once, then fail if normalization re-reads source tzinfo."""
+
+    def __init__(self) -> None:
+        self.utcoffset_calls = 0
+        self.canary = "timezone-repeated-read-canary"
+
+    def utcoffset(self, dt: datetime | None) -> timedelta:
+        self.utcoffset_calls += 1
+        if self.utcoffset_calls > 1:
+            raise RuntimeError(self.canary)
+        return timedelta(0)
+
+    def dst(self, dt: datetime | None) -> timedelta:
+        return timedelta(0)
+
+    def fromutc(self, dt: datetime) -> datetime:
+        raise RuntimeError(self.canary)
 
 
 @lru_cache(maxsize=1)
@@ -411,6 +462,56 @@ def test_invalid_query_time_or_capture_identity_is_rejected(
         capture_id=capture_id,
     )
     assert error.__cause__ is None
+
+
+@pytest.mark.parametrize(
+    ("callback", "error_type"),
+    [
+        ("utcoffset", TypeError),
+        ("utcoffset", RuntimeError),
+        ("dst", TypeError),
+        ("dst", RuntimeError),
+        ("fromutc", TypeError),
+        ("fromutc", RuntimeError),
+    ],
+)
+def test_timezone_callback_failures_are_sanitized_as_invalid_input(
+    callback: str, error_type: type[Exception]
+) -> None:
+    source_timezone = _CallbackErrorTimezone(callback, error_type)
+    retrieval_time = datetime(2026, 10, 27, 2, 0, tzinfo=source_timezone)
+
+    error = _assert_publication_error(
+        "invalid_input",
+        body=_recorded_body(),
+        retrieved_at_utc=retrieval_time,
+        secret=source_timezone.canary,
+    )
+    assert error.__cause__ is None
+
+
+def test_stateful_timezone_normalizes_once_or_fails_with_a_safe_error() -> None:
+    source_timezone = _SingleReadTimezone()
+    retrieval_time = datetime(2026, 10, 27, 2, 0, tzinfo=source_timezone)
+
+    try:
+        batch = serialize_sina_fzb_response(
+            _recorded_body(),
+            query=_QUERY,
+            retrieved_at_utc=retrieval_time,
+            capture_id=_CAPTURE_ID,
+        )
+    except SinaFzbPublicationError as error:
+        assert error.code == "invalid_input"
+        assert source_timezone.canary not in str(error)
+        assert source_timezone.canary not in repr(error)
+        assert source_timezone.utcoffset_calls == 2
+        return
+
+    assert source_timezone.utcoffset_calls == 1
+    assert batch.records[0].observed_at == _RETRIEVED_AT
+    assert batch.records[0].observed_at.tzinfo is timezone.utc
+    assert batch.records[0].payload["retrieved_at_utc"] == "2026-10-27T02:00:00.000000Z"
 
 
 def test_wrong_query_and_malformed_body_are_sanitized_and_keep_wire_cause() -> None:
