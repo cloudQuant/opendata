@@ -10,7 +10,7 @@ from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, NoReturn, cast
 
 import pytest
 import requests
@@ -785,10 +785,23 @@ def test_bounded_scoped_redirect_is_an_http_error_with_actual_status() -> None:
     assert budget.attempts_used == 1
 
 
-def test_scoped_requests_reject_adapter_retries_before_transport() -> None:
+def test_scoped_requests_reject_adapter_retries_before_transport(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     budget = make_budget(task_attempts=1, source_attempts=1)
     session = requests.Session()
-    session.mount("https://", requests.adapters.HTTPAdapter(max_retries=1))
+    adapter = requests.adapters.HTTPAdapter(max_retries=1)
+    sends: list[requests.PreparedRequest] = []
+
+    def forbidden_send(
+        request: requests.PreparedRequest,
+        **_kwargs: object,
+    ) -> NoReturn:
+        sends.append(request)
+        raise AssertionError("retry adapter transport must not be reached")
+
+    monkeypatch.setattr(adapter, "send", forbidden_send)
+    session.mount("https://", adapter)
     client = make_client(session)
     try:
         with (
@@ -803,6 +816,7 @@ def test_scoped_requests_reject_adapter_retries_before_transport() -> None:
             client.get(URL, source="budget_test")
     finally:
         session.close()
+    assert sends == []
     assert budget.attempts_used == 0
 
 
