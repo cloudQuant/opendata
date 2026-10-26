@@ -652,6 +652,15 @@
       "ast_exceptions": []
     },
     {
+      "path": "opendata/pipeline/stock_daily_job.py",
+      "purpose": "离线股票日线来源适配器以 akshare 来源身份封装固定原始响应解析；不加载外部 SDK，由调用方注入受审查的响应来源与发布边界。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary wave4 review: exact-path bare-token reference for the offline stock daily job; reviewed import is the in-repo akshare provider and no external SDK is loaded.",
+      "sha256": "08848262cb53273aee3f2041c6bab7c3c6e24f74d886498f69d608166abd509c",
+      "ast_exceptions": []
+    },
+    {
       "path": "opendata/pipeline/templates.py",
       "purpose": "ths+akshare双源流水线模板与首方注册表分派。",
       "category": "runtime-integration",
