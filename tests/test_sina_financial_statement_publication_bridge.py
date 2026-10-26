@@ -142,7 +142,13 @@ def test_w9_fzb_capture_publication_and_snapshot_scope(tmp_path: Path) -> None:
         token: build_run_identity(task, request).idempotency_key
         for token, request in requests.items()
     }
-    retrieval_times = {"capture-a": RETRIEVED_A, "capture-b": RETRIEVED_B}
+    retrieval_times_by_run_key = {
+        run_keys["capture-a"]: RETRIEVED_A,
+        run_keys["capture-b"]: RETRIEVED_B,
+    }
+    expected_queries_by_run_key = {
+        run_keys[token]: dict(request.query) for token, request in requests.items()
+    }
     batches: dict[str, NormalizedBatch] = {}
     body = _recorded_body()
 
@@ -155,21 +161,22 @@ def test_w9_fzb_capture_publication_and_snapshot_scope(tmp_path: Path) -> None:
         writer = ValidatedPublicationWriter(contract_registry)
 
         def fetch(request: RunRequest, context: RunExecutionContext) -> bytes:
-            assert request.idempotency_key in run_keys
-            assert context.run_key == run_keys[request.idempotency_key]
+            expected_query = expected_queries_by_run_key[context.run_key]
+            assert request.query == expected_query
             return body
 
         def normalize(
             raw: object, request: RunRequest, context: RunExecutionContext
         ) -> NormalizedBatch:
             assert isinstance(raw, bytes)
-            symbol = request.query["symbol"]
+            expected_query = expected_queries_by_run_key[context.run_key]
+            assert request.query == expected_query
+            symbol = expected_query["symbol"]
             assert isinstance(symbol, str)
-            assert context.run_key == run_keys[request.idempotency_key]
             batch = serialize_sina_fzb_response(
                 raw,
                 query=SinaFzbQuery(symbol=symbol),
-                retrieved_at_utc=retrieval_times[request.idempotency_key],
+                retrieved_at_utc=retrieval_times_by_run_key[context.run_key],
                 capture_id=context.run_key,
             )
             batches[context.run_key] = batch
