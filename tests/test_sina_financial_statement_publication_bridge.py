@@ -147,93 +147,98 @@ def test_w9_fzb_capture_publication_and_snapshot_scope(tmp_path: Path) -> None:
     body = _recorded_body()
 
     engine = create_engine(f"sqlite:///{tmp_path / 'sina-bridge.sqlite'}")
-    RUN_LEDGER_METADATA.create_all(engine)
-    PUBLICATION_METADATA.create_all(engine)
-    ledger = RunLedger(engine)
-    store = PublicationStore(engine, cursor_signing_key=SIGNING_KEY)
-    writer = ValidatedPublicationWriter(contract_registry)
-
-    def fetch(request: RunRequest, context: RunExecutionContext) -> bytes:
-        assert request.idempotency_key in run_keys
-        assert context.run_key == run_keys[request.idempotency_key]
-        return body
-
-    def normalize(
-        raw: object, request: RunRequest, context: RunExecutionContext
-    ) -> NormalizedBatch:
-        assert isinstance(raw, bytes)
-        symbol = request.query["symbol"]
-        assert isinstance(symbol, str)
-        assert context.run_key == run_keys[request.idempotency_key]
-        batch = serialize_sina_fzb_response(
-            raw,
-            query=SinaFzbQuery(symbol=symbol),
-            retrieved_at_utc=retrieval_times[request.idempotency_key],
-            capture_id=context.run_key,
-        )
-        batches[context.run_key] = batch
-        return batch
-
-    job = ReviewedJob(
-        task=task,
-        reviewed=True,
-        fetch=fetch,
-        normalize=normalize,
-        publish=writer,
-    )
-    service = RunService(
-        ledger,
-        ReviewedJobRegistry([job]),
-    )
-
-    def execute(token: str) -> tuple[str, NormalizedBatch]:
-        request = requests[token]
-        expected_run_key = run_keys[token]
-        assert service.submit(task.job_id, task.version, request).run_key == expected_run_key
-        outcome = service.run_once("w11-offline-worker", timedelta(minutes=1))
-        assert (
-            outcome is not None and outcome.record is not None and outcome.publication is not None
-        )
-        assert (outcome.record.run_key, outcome.record.status) == (expected_run_key, "succeeded")
-        assert (outcome.publication.dataset_id, outcome.publication.record_count) == (
-            DATASET_ID,
-            103,
-        )
-        assert ledger.get(expected_run_key).status == "succeeded"
-        return expected_run_key, batches[expected_run_key]
-
-    app = FastAPI()
-    app.include_router(router)
-    grants = DatasetGrantRegistry(
-        [
-            DatasetGrant(
-                dataset_id=DATASET_ID,
-                domain="equity",
-                source_id="sina-fzb",
-                permitted_operations=("data.read", "snapshot.create", "snapshot.read"),
-                purposes=("research",),
-                valid_from=datetime(2020, 1, 1, tzinfo=UTC),
-                valid_until=datetime(2100, 1, 1, tzinfo=UTC),
-                review_evidence="OD204-W11-TEST",
-            )
-        ]
-    )
-    principal = Principal(
-        user=User(
-            id=17,
-            username="w11-sina-test",
-            email="w11-sina-test@example.test",
-            hashed_password="not-a-real-password-hash",
-            role=UserRole.USER,
-            is_active=True,
-        )
-    )
-    app.dependency_overrides[get_current_principal] = lambda: principal
-    app.dependency_overrides[get_dataset_grants] = lambda: grants
-    app.dependency_overrides[get_dataset_contracts] = lambda: contract_registry
-    app.dependency_overrides[get_publication_store] = lambda: store
-
     try:
+        RUN_LEDGER_METADATA.create_all(engine)
+        PUBLICATION_METADATA.create_all(engine)
+        ledger = RunLedger(engine)
+        store = PublicationStore(engine, cursor_signing_key=SIGNING_KEY)
+        writer = ValidatedPublicationWriter(contract_registry)
+
+        def fetch(request: RunRequest, context: RunExecutionContext) -> bytes:
+            assert request.idempotency_key in run_keys
+            assert context.run_key == run_keys[request.idempotency_key]
+            return body
+
+        def normalize(
+            raw: object, request: RunRequest, context: RunExecutionContext
+        ) -> NormalizedBatch:
+            assert isinstance(raw, bytes)
+            symbol = request.query["symbol"]
+            assert isinstance(symbol, str)
+            assert context.run_key == run_keys[request.idempotency_key]
+            batch = serialize_sina_fzb_response(
+                raw,
+                query=SinaFzbQuery(symbol=symbol),
+                retrieved_at_utc=retrieval_times[request.idempotency_key],
+                capture_id=context.run_key,
+            )
+            batches[context.run_key] = batch
+            return batch
+
+        job = ReviewedJob(
+            task=task,
+            reviewed=True,
+            fetch=fetch,
+            normalize=normalize,
+            publish=writer,
+        )
+        service = RunService(
+            ledger,
+            ReviewedJobRegistry([job]),
+        )
+
+        def execute(token: str) -> tuple[str, NormalizedBatch]:
+            request = requests[token]
+            expected_run_key = run_keys[token]
+            assert service.submit(task.job_id, task.version, request).run_key == expected_run_key
+            outcome = service.run_once("w11-offline-worker", timedelta(minutes=1))
+            assert (
+                outcome is not None
+                and outcome.record is not None
+                and outcome.publication is not None
+            )
+            assert (outcome.record.run_key, outcome.record.status) == (
+                expected_run_key,
+                "succeeded",
+            )
+            assert (outcome.publication.dataset_id, outcome.publication.record_count) == (
+                DATASET_ID,
+                103,
+            )
+            assert ledger.get(expected_run_key).status == "succeeded"
+            return expected_run_key, batches[expected_run_key]
+
+        app = FastAPI()
+        app.include_router(router)
+        grants = DatasetGrantRegistry(
+            [
+                DatasetGrant(
+                    dataset_id=DATASET_ID,
+                    domain="equity",
+                    source_id="sina-fzb",
+                    permitted_operations=("data.read", "snapshot.create", "snapshot.read"),
+                    purposes=("research",),
+                    valid_from=datetime(2020, 1, 1, tzinfo=UTC),
+                    valid_until=datetime(2100, 1, 1, tzinfo=UTC),
+                    review_evidence="OD204-W11-TEST",
+                )
+            ]
+        )
+        principal = Principal(
+            user=User(
+                id=17,
+                username="w11-sina-test",
+                email="w11-sina-test@example.test",
+                hashed_password="not-a-real-password-hash",
+                role=UserRole.USER,
+                is_active=True,
+            )
+        )
+        app.dependency_overrides[get_current_principal] = lambda: principal
+        app.dependency_overrides[get_dataset_grants] = lambda: grants
+        app.dependency_overrides[get_dataset_contracts] = lambda: contract_registry
+        app.dependency_overrides[get_publication_store] = lambda: store
+
         capture_a, batch_a = execute("capture-a")
         _assert_batch(batch_a, capture_a, RETRIEVED_A)
         with (
