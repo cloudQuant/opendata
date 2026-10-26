@@ -64,6 +64,16 @@ _TEMPORAL_FIELDS_V1: Mapping[str, JsonValue] = {
     "available_at": "platform availability time",
     "event_at": "source event time",
 }
+_ATEMPORAL_TEMPORAL_FIELDS_V1: Mapping[str, JsonValue] = {
+    "business_date": "null for atemporal table records; not a historical business date",
+    "observed_at": "source observation time",
+    "source_published_at": "source publication time",
+    "available_at": "platform availability time",
+    "event_at": "source event time",
+}
+_INSTRUMENT_CAPTURE_FILTER_FIELDS = ("instrument_id", "capture_id")
+_INSTRUMENT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:/+\-]{0,127}")
+_CAPTURE_ID_PATTERN = re.compile(r"[0-9a-f]{64}")
 
 
 class SnapshotClientError(RuntimeError):
@@ -129,10 +139,28 @@ class SnapshotUnavailableError(SnapshotHTTPError):
 
 @dataclass(frozen=True)
 class SnapshotWindow:
-    """Inclusive start and exclusive end of one snapshot's date scope."""
+    """Inclusive start and exclusive end of one snapshot's optional date scope."""
 
-    start: date
-    end: date
+    start: date | None
+    end: date | None
+
+
+@dataclass(frozen=True, slots=True)
+class InstrumentCaptureSelection:
+    """The exact instrument and source-capture pair pinned by a selected snapshot."""
+
+    instrument_id: str
+    capture_id: str
+
+    def __post_init__(self) -> None:
+        """Reject malformed selectors without echoing their values."""
+        if (
+            type(self.instrument_id) is not str
+            or _INSTRUMENT_ID_PATTERN.fullmatch(self.instrument_id) is None
+            or type(self.capture_id) is not str
+            or _CAPTURE_ID_PATTERN.fullmatch(self.capture_id) is None
+        ):
+            raise ValueError("instrument/capture selection is invalid")
 
 
 @dataclass(frozen=True)
@@ -177,6 +205,7 @@ class Snapshot:
     selection_sha256: str
     content_sha256: str
     identity_semantics: Mapping[str, JsonValue]
+    selection: InstrumentCaptureSelection | None = None
 
 
 @dataclass(frozen=True)
@@ -377,6 +406,12 @@ def _semantics_json(value: Mapping[str, JsonValue], name: str) -> str:
     storage_order = decoded["storage_order"]
     temporal_fields = decoded["temporal_fields"]
     time_field = decoded["time_field"]
+    temporal_semantics = decoded["temporal_semantics"]
+    expected_temporal_fields = (
+        _ATEMPORAL_TEMPORAL_FIELDS_V1
+        if temporal_semantics == "none" and time_field is None
+        else _TEMPORAL_FIELDS_V1
+    )
     if (
         type(decoded["version"]) is not int
         or decoded["version"] != 1
@@ -399,7 +434,7 @@ def _semantics_json(value: Mapping[str, JsonValue], name: str) -> str:
         != _canonical_json({"value": _STORAGE_ORDER_V1}, "storage order contract")
         or not isinstance(temporal_fields, dict)
         or _canonical_json({"value": temporal_fields}, "identity temporal fields")
-        != _canonical_json({"value": _TEMPORAL_FIELDS_V1}, "temporal field contract")
+        != _canonical_json({"value": expected_temporal_fields}, "temporal field contract")
     ):
         raise ValueError(f"{name} does not match the supported v1 identity contract")
     return encoded
@@ -461,6 +496,23 @@ def _parse_storage_order(value: object, name: str) -> tuple[Mapping[str, JsonVal
     if encoded != expected:
         raise SnapshotProtocolError(f"snapshot response has unsupported {name}")
     return tuple(_freeze_mapping(dict(term)) for term in value)
+
+
+def _parse_instrument_capture_selection(value: object) -> InstrumentCaptureSelection:
+    """Parse the exact public selection object without exposing invalid values."""
+    if not isinstance(value, Mapping) or set(value) != {"instrument_id", "capture_id"}:
+        raise SnapshotProtocolError("snapshot response has invalid selection metadata")
+    instrument_id = value["instrument_id"]
+    capture_id = value["capture_id"]
+    if type(instrument_id) is not str or type(capture_id) is not str:
+        raise SnapshotProtocolError("snapshot response has invalid selection metadata")
+    try:
+        return InstrumentCaptureSelection(
+            instrument_id=instrument_id,
+            capture_id=capture_id,
+        )
+    except ValueError:
+        raise SnapshotProtocolError("snapshot response has invalid selection metadata") from None
 
 
 def _parse_snapshot(payload: object) -> Snapshot:
@@ -551,6 +603,7 @@ def _parse_snapshot(payload: object) -> Snapshot:
     if not isinstance(raw_schema, list):
         raise SnapshotProtocolError("snapshot response has invalid schema")
     schema_fields: list[Mapping[str, JsonValue]] = []
+    schema_fields_by_name: dict[str, Mapping[str, JsonValue]] = {}
     schema_names: set[str] = set()
     for field in raw_schema:
         if (
@@ -566,7 +619,9 @@ def _parse_snapshot(payload: object) -> Snapshot:
         ):
             raise SnapshotProtocolError("snapshot response has invalid schema field")
         schema_names.add(field["name"])
-        schema_fields.append(_freeze_mapping(dict(field)))
+        frozen_field = _freeze_mapping(dict(field))
+        schema_fields.append(frozen_field)
+        schema_fields_by_name[field["name"]] = frozen_field
 
     raw_quality = payload["quality"]
     if not isinstance(raw_quality, Mapping) or set(raw_quality) != {
@@ -625,13 +680,47 @@ def _parse_snapshot(payload: object) -> Snapshot:
     if time_field is not None and time_field not in schema_names:
         raise SnapshotProtocolError("snapshot time_field is absent from its schema")
 
+    capture_profile = filter_fields == _INSTRUMENT_CAPTURE_FILTER_FIELDS
+    if capture_profile:
+        if (
+            record_kind != "table"
+            or temporal_semantics != "none"
+            or time_field is not None
+            or pit_policy != "unsupported"
+            or not set(_INSTRUMENT_CAPTURE_FILTER_FIELDS).issubset(business_key_fields)
+            or not set(_INSTRUMENT_CAPTURE_FILTER_FIELDS).issubset(ordering_fields)
+            or any(
+                schema_fields_by_name[field].get("data_type") != "string"
+                or schema_fields_by_name[field].get("nullable") is not False
+                for field in _INSTRUMENT_CAPTURE_FILTER_FIELDS
+            )
+        ):
+            raise SnapshotProtocolError("snapshot has an invalid instrument/capture profile")
+        if "selection" not in payload:
+            raise SnapshotProtocolError("selected snapshot omitted selection metadata")
+        selection = _parse_instrument_capture_selection(payload["selection"])
+    else:
+        if "selection" in payload:
+            raise SnapshotProtocolError("unselected snapshot returned selection metadata")
+        selection = None
+
     raw_window = payload["window"]
     if not isinstance(raw_window, Mapping) or raw_window.get("end_exclusive") is not True:
         raise SnapshotProtocolError("snapshot window must declare a half-open end")
-    start = _parse_date(raw_window.get("start"), "window.start")
-    end = _parse_date(raw_window.get("end"), "window.end")
-    if start >= end:
-        raise SnapshotProtocolError("snapshot window must have start before end")
+    if capture_profile:
+        if (
+            set(raw_window) != {"start", "end", "end_exclusive"}
+            or raw_window["start"] is not None
+            or raw_window["end"] is not None
+        ):
+            raise SnapshotProtocolError("selected snapshot window must be unbounded")
+        start = None
+        end = None
+    else:
+        start = _parse_date(raw_window.get("start"), "window.start")
+        end = _parse_date(raw_window.get("end"), "window.end")
+        if start >= end:
+            raise SnapshotProtocolError("snapshot window must have start before end")
 
     page_size = payload["page_size"]
     if type(page_size) is not int or not 1 <= page_size <= MAX_PAGE_SIZE:
@@ -703,6 +792,7 @@ def _parse_snapshot(payload: object) -> Snapshot:
         selection_sha256=_sha256(payload["selection_sha256"], "selection_sha256"),
         content_sha256=_sha256(payload["content_sha256"], "content_sha256"),
         identity_semantics=_freeze_mapping(semantics_copy),
+        selection=selection,
     )
 
 
@@ -803,10 +893,17 @@ def _validate_row(
         raise SnapshotProtocolError("record has invalid revision")
 
     business_date_value = row["business_date"]
-    parsed_date = _parse_date(business_date_value, "record.business_date")
-    if not snapshot.window.start <= parsed_date < snapshot.window.end:
-        raise SnapshotScopeError("record business_date is outside the pinned window")
-    business_date = parsed_date.isoformat()
+    if snapshot.selection is not None:
+        if business_date_value is not None:
+            raise SnapshotProtocolError("selected record business_date must be null")
+        business_date = None
+    else:
+        parsed_date = _parse_date(business_date_value, "record.business_date")
+        if snapshot.window.start is None or snapshot.window.end is None:
+            raise SnapshotProtocolError("dated record has an unbounded snapshot window")
+        if not snapshot.window.start <= parsed_date < snapshot.window.end:
+            raise SnapshotScopeError("record business_date is outside the pinned window")
+        business_date = parsed_date.isoformat()
     for field in ("event_at", "observed_at", "source_published_at", "available_at"):
         _parse_timestamp(row[field], f"record.{field}", nullable=True)
 
@@ -817,6 +914,11 @@ def _validate_row(
         or not _json_numbers_are_finite(row)
     ):
         raise SnapshotProtocolError("record payload is not a bounded JSON object")
+    if snapshot.selection is not None and (
+        payload.get("instrument_id") != snapshot.selection.instrument_id
+        or payload.get("capture_id") != snapshot.selection.capture_id
+    ):
+        raise SnapshotScopeError("record changed the pinned instrument/capture selection")
     try:
         key_values = json.loads(
             key,
@@ -1054,13 +1156,15 @@ class SnapshotClient:
         self,
         dataset_id: str,
         *,
-        start_date: str,
-        end_date: str,
+        start_date: str | None = None,
+        end_date: str | None = None,
         expected_identity_semantics: Mapping[str, JsonValue],
         page_size: int = 100,
         publication_id: str | None = None,
+        instrument_id: str | None = None,
+        capture_id: str | None = None,
     ) -> Snapshot:
-        """Create an immutable snapshot for one publication and half-open window.
+        """Create an immutable dated snapshot or a selected atemporal capture.
 
         The POST is never retried automatically because snapshot creation has
         no idempotency-key contract. An unknown network outcome therefore
@@ -1068,11 +1172,13 @@ class SnapshotClient:
 
         Args:
             dataset_id: Exact registered dataset identity.
-            start_date: Inclusive ISO date at the start of the requested window.
-            end_date: Exclusive ISO date at the end of the requested window.
+            start_date: Inclusive ISO date; omitted only for an instrument/capture selection.
+            end_date: Exclusive ISO date; omitted only for an instrument/capture selection.
             expected_identity_semantics: Exact v1 record identity contract expected.
             page_size: Page size pinned into the snapshot.
             publication_id: Optional exact immutable publication to select.
+            instrument_id: Optional first-page selector for an instrument capture profile.
+            capture_id: Optional paired source-capture selector.
 
         Returns:
             A frozen snapshot descriptor suitable for ``list_records``.
@@ -1082,24 +1188,63 @@ class SnapshotClient:
             SnapshotClientError: If creation fails or metadata is incomplete.
         """
         dataset_id = _validate_dataset_id(dataset_id)
-        start = _parse_requested_date(start_date, "start_date")
-        end = _parse_requested_date(end_date, "end_date")
-        if start >= end:
-            raise ValueError("start_date must be earlier than the exclusive end_date")
+        if (instrument_id is None) != (capture_id is None):
+            raise ValueError("instrument_id and capture_id must be supplied together")
+        selection = (
+            InstrumentCaptureSelection(instrument_id, capture_id)
+            if instrument_id is not None and capture_id is not None
+            else None
+        )
+        if (start_date is None) != (end_date is None):
+            raise ValueError("start_date and end_date must be supplied together")
+        if selection is None and start_date is None:
+            raise ValueError("dated snapshots require start_date and end_date")
+        if selection is not None and start_date is not None:
+            raise ValueError("instrument/capture snapshots do not accept date windows")
+        start: date | None = None
+        end: date | None = None
+        if selection is None:
+            start = _parse_requested_date(start_date, "start_date")
+            end = _parse_requested_date(end_date, "end_date")
+            if start >= end:
+                raise ValueError("start_date must be earlier than the exclusive end_date")
         expected = self._validate_expected_semantics(expected_identity_semantics)
+        if selection is not None:
+            expected_semantics = json.loads(expected)
+            expected_business_key_fields = expected_semantics["business_key_fields"]
+            if (
+                expected_semantics["temporal_semantics"] != "none"
+                or expected_semantics["time_field"] is not None
+                or not all(
+                    field in expected_business_key_fields
+                    for field in _INSTRUMENT_CAPTURE_FILTER_FIELDS
+                )
+            ):
+                raise ValueError(
+                    "instrument/capture selection requires atemporal identity semantics"
+                )
         if type(page_size) is not int or not 1 <= page_size <= MAX_PAGE_SIZE:
             raise ValueError(f"page_size must be an integer between 1 and {MAX_PAGE_SIZE}")
         if publication_id is not None:
             publication_id = _validate_opaque_id(publication_id, "publication_id")
 
-        request_body: dict[str, JsonValue] = {
-            "dataset_id": dataset_id,
-            "start_date": start.isoformat(),
-            "end_date": end.isoformat(),
-            "page_size": page_size,
-        }
+        request_body: dict[str, JsonValue]
+        if selection is None:
+            if start is None or end is None:
+                raise ValueError("dated snapshots require start_date and end_date")
+            request_body = {
+                "dataset_id": dataset_id,
+                "start_date": start.isoformat(),
+                "end_date": end.isoformat(),
+                "page_size": page_size,
+            }
+        else:
+            request_body = {"dataset_id": dataset_id, "page_size": page_size}
         if publication_id is not None:
             request_body["publication_id"] = publication_id
+        if selection is not None:
+            request_body["instrument_id"] = selection.instrument_id
+            request_body["capture_id"] = selection.capture_id
         payload, _ = self._request_json(
             "POST",
             "/snapshots",
@@ -1112,6 +1257,7 @@ class SnapshotClient:
             snapshot.dataset_id != dataset_id
             or snapshot.window.start != start
             or snapshot.window.end != end
+            or snapshot.selection != selection
             or snapshot.page_size != page_size
             or (publication_id is not None and snapshot.publication_id != publication_id)
             or _canonical_json(snapshot.identity_semantics, "identity semantics") != expected
