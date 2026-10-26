@@ -995,13 +995,13 @@ def _synthetic_stock_daily_budget() -> RequestBudget:
 class _SyntheticGovernedStockClient:
     """Record a governed request and count only authority-approved fake sends."""
 
-    def __init__(self, response: BoundedHttpResponse) -> None:
+    def __init__(self, response: object) -> None:
         self.response = response
         self.calls: list[tuple[str, dict[str, object]]] = []
         self.scopes = []
         self.transport_calls = 0
 
-    def get_bounded(self, url: str, **kwargs: object) -> BoundedHttpResponse:
+    def get_bounded(self, url: str, **kwargs: object) -> object:
         self.calls.append((url, dict(kwargs)))
         scopes = current_request_scopes()
         self.scopes.append(scopes)
@@ -1165,6 +1165,7 @@ def test_stock_daily_process_validator_accepts_exact_maximum_inclusive_window() 
         },
         {"symbol": "600519.SH", "start_date": "20261026", "end_date": "20261027"},
         {"symbol": "600519", "start_date": "2026-10-26", "end_date": "20261027"},
+        {"symbol": "600519", "start_date": "20260230", "end_date": "20260301"},
         {"symbol": "600519", "start_date": "20261027", "end_date": "20261026"},
         {"symbol": "600519", "start_date": "20100101", "end_date": "20201231"},
     ],
@@ -1197,6 +1198,43 @@ def test_stock_daily_process_worker_never_forges_non_200_success(
     with pytest.raises(ValueError, match="http_status_invalid"):
         stock_daily_wire.fetch_stock_daily_process(_stock_daily_process_parameters())
 
+    assert client.transport_calls == 1
+
+
+@pytest.mark.parametrize(
+    ("response", "error_code"),
+    [
+        (object(), "response_invalid"),
+        (BoundedHttpResponse("not-bytes", 200, OBSERVED_AT), "body_limit_exceeded"),
+        (
+            BoundedHttpResponse(
+                b"x" * (stock_daily_wire.MAX_RAW_RESPONSE_BYTES + 1), 200, OBSERVED_AT
+            ),
+            "body_limit_exceeded",
+        ),
+        (
+            BoundedHttpResponse(b"raw", 200, datetime(2026, 10, 27, 8, 15)),
+            "retrieved_at_invalid",
+        ),
+    ],
+)
+def test_stock_daily_process_worker_rejects_malformed_bounded_http_response(
+    response: object,
+    error_code: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Malformed fake HTTP values yield no child envelope for parent capture."""
+    client = _SyntheticGovernedStockClient(response)
+    monkeypatch.setattr(
+        stock_daily_wire, "_new_child_request_budget", _synthetic_stock_daily_budget
+    )
+    monkeypatch.setattr(stock_daily_wire, "get_shared_http_client", lambda: client)
+    child_result: dict[str, str | int] | None = None
+
+    with pytest.raises(ValueError, match=error_code):
+        child_result = stock_daily_wire.fetch_stock_daily_process(_stock_daily_process_parameters())
+
+    assert child_result is None
     assert client.transport_calls == 1
 
 
@@ -1533,6 +1571,31 @@ def test_stock_daily_process_source_rejects_executor_subclass_with_overridden_ru
         )
 
 
+def test_stock_daily_process_source_rejects_instance_run_override(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An instance-level run replacement is rejected before any process starts."""
+    from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
+
+    executor = ReviewedProcessExecutor(
+        ReviewedProcessRegistry(
+            {
+                stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID: (
+                    stock_daily_wire.fetch_stock_daily_process
+                )
+            }
+        ),
+        max_result_bytes=stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES,
+    )
+
+    def fake_run(*_args: object, **_kwargs: object) -> object:
+        raise AssertionError("overridden executor must not run")
+
+    monkeypatch.setattr(executor, "run", fake_run)
+    with pytest.raises(ValueError, match="run method is not the reviewed implementation"):
+        build_stock_daily_process_source(executor)
+
+
 @pytest.mark.parametrize(
     ("changed_config", "message"),
     [
@@ -1581,16 +1644,12 @@ def test_stock_daily_job_revalidates_process_executor_configuration(
         )
 
 
-def test_stock_daily_process_path_captures_actual_status_and_separates_business_date(
+def test_stock_daily_process_decoder_to_parent_normalize_preserves_response_evidence(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A synthetic ProcessFetchHandler result is decoded then captured before parsing."""
-    from opendata.pipeline.process_executor import (
-        ProcessExecutionResult,
-        ReviewedProcessExecutor,
-        ReviewedProcessRegistry,
-    )
+    """Synthetic envelope reaches parent normalize without Popen or an upstream fetch."""
+    from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
 
     body = _wire_body()
     encoded_body = base64.b64encode(body).decode("ascii")
@@ -1599,26 +1658,6 @@ def test_stock_daily_process_path_captures_actual_status_and_separates_business_
         "status_code": 200,
         "retrieved_at": "2026-10-27T08:15:00Z",
     }
-    process_result = ProcessExecutionResult(
-        value=envelope,
-        stdout_discarded_bytes=0,
-        stderr_discarded_bytes=0,
-        stdout_truncated=False,
-        stderr_truncated=False,
-    )
-    execution_calls: list[tuple[str, dict[str, object], float]] = []
-
-    def fake_run(
-        operation_id: str,
-        parameters: dict[str, object],
-        *,
-        timeout_seconds: float,
-        checkpoint,
-    ) -> ProcessExecutionResult:
-        execution_calls.append((operation_id, dict(parameters), timeout_seconds))
-        checkpoint()
-        return process_result
-
     executor = ReviewedProcessExecutor(
         ReviewedProcessRegistry(
             {
@@ -1629,7 +1668,6 @@ def test_stock_daily_process_path_captures_actual_status_and_separates_business_
         ),
         max_result_bytes=stock_daily_wire.MAX_PROCESS_RESULT_JSON_BYTES,
     )
-    monkeypatch.setattr(executor, "run", fake_run)
     process_source = build_stock_daily_process_source(executor)
     artifact_writer = RawResponseArtifactWriter(tmp_path / "private-process-raw")
     captures = []
@@ -1652,7 +1690,7 @@ def test_stock_daily_process_path_captures_actual_status_and_separates_business_
     )
     request = _request()
     context = _context()
-    parent_response = job.fetch(request, context)
+    parent_response = stock_daily_job._decode_stock_daily_process_result(envelope)
     assert captures == []
     normalized = job.normalize(parent_response, request, context)
 
@@ -1660,13 +1698,6 @@ def test_stock_daily_process_path_captures_actual_status_and_separates_business_
     assert parent_response.body == body
     assert parent_response.status_code == 200
     assert parent_response.observed_at == datetime(2026, 10, 27, 8, 15, tzinfo=UTC)
-    assert execution_calls == [
-        (
-            stock_daily_wire.STOCK_DAILY_PROCESS_OPERATION_ID,
-            _stock_daily_process_parameters(),
-            stock_daily_wire.STOCK_DAILY_PROCESS_TIMEOUT_SECONDS,
-        )
-    ]
     assert len(captures) == 1
     assert captures[0].manifest.http_status == 200
     assert normalized.records[0].business_date == date(2026, 10, 26)
