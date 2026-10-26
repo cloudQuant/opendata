@@ -416,7 +416,6 @@ def test_manual_and_backfill_queue_only_safe_receipts(
         ),
         malformed_manual_query({"endpoint": "jdbc:oracle:thin:@db.invalid:1521/prod"}),
         malformed_manual_query({"endpoint": "jdbc:sqlite:warehouse.db"}),
-        malformed_manual_query({"nested": {"Pass-Phrase": "credential-canary"}}),
         malformed_manual_query({"endpoint": "passphrase=credential-canary"}),
         malformed_manual_query(
             {"endpoint": "https://data.example.test/prices?passphrase=credential-canary"}
@@ -465,6 +464,22 @@ def test_malformed_or_executable_requests_are_rejected_without_persistence(
     assert code == 2
     assert receipt == {"code": "invalid_request", "status": "rejected"}
     assert "evil" not in text and "bad" not in text
+    assert "credential-canary" not in text
+    assert row_count(engine) == 0
+
+
+@pytest.mark.parametrize("selector", ["passphrase", "Pass-Phrase", "pass.phrase"])
+def test_passphrase_fields_are_rejected_at_the_run_boundary(
+    cli_setup: tuple[Engine, RunDispatcher, RunService], selector: str
+) -> None:
+    """Reject valid CLI envelopes with forbidden run fields without ledger writes."""
+    engine, dispatcher, worker = cli_setup
+    raw = malformed_manual_query({"nested": {selector: "credential-canary"}})
+
+    code, receipt, text = invoke(raw, cli_app(dispatcher, worker))
+
+    assert code == 2
+    assert receipt == {"code": "request_rejected", "status": "rejected"}
     assert "credential-canary" not in text
     assert row_count(engine) == 0
 
