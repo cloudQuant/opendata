@@ -39,7 +39,7 @@ const selectedJob = computed(
   () => store.runnableJobs.find((job) => jobOptionValue(job) === selectedJobKey.value) ?? null
 )
 const isActiveRun = computed(
-  () => store.currentRun !== null && store.currentRun.status in activeRunStatus
+  () => store.currentRun !== null && activeRunStatus[store.currentRun.status] === true
 )
 
 const activeRunStatus: Record<ReviewedRunStatus, boolean> = {
@@ -430,9 +430,10 @@ onBeforeUnmount(() => {
         </div>
       </dl>
       <el-button
-        v-if="isActiveRun"
+        v-if="store.currentRun"
         type="danger"
         :loading="store.cancelling"
+        :disabled="!isActiveRun"
         @click="cancelCurrentRun"
       >
         请求取消

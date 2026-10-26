@@ -145,6 +145,10 @@ describe('reviewed runs page polling', () => {
     await settlePromises()
     expect(apiMocks.getRun).toHaveBeenCalledTimes(2)
     expect(wrapper.text()).toContain('成功')
+    const cancelButton = wrapper
+      .findAll('button')
+      .find((button) => button.text().includes('请求取消'))
+    expect(cancelButton?.attributes('disabled')).toBeDefined()
 
     vi.advanceTimersByTime(10_000)
     await settlePromises()

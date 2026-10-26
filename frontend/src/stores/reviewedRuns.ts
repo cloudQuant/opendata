@@ -183,8 +183,8 @@ function createIdempotencyKey(): string {
 function errorCode(error: unknown): string | null {
   if (!isRecord(error) || !isRecord(error.response) || !isRecord(error.response.data)) return null
   const detail = error.response.data.detail
-  if (!isRecord(detail) || typeof detail.code !== 'string') return null
-  return /^[a-z0-9_]{1,80}$/.test(detail.code) ? detail.code : null
+  const code = typeof detail === 'string' ? detail : isRecord(detail) ? detail.code : null
+  return typeof code === 'string' && /^[a-z0-9_]{1,80}$/.test(code) ? code : null
 }
 
 function isAbort(error: unknown): boolean {

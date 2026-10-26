@@ -90,6 +90,7 @@ describe('reviewed runs store', () => {
   it('reuses one secure idempotency key after an ambiguous response', async () => {
     apiMocks.createRun
       .mockRejectedValueOnce(new Error('connection lost'))
+      .mockRejectedValueOnce({ response: { data: { detail: 'idempotency_conflict' } } })
       .mockResolvedValueOnce(acceptedRun())
     const store = useReviewedRunsStore()
     await store.loadJobs()
@@ -105,8 +106,12 @@ describe('reviewed runs store', () => {
     expect(firstKey).toMatch(/^[0-9a-f]{64}$/)
     expect(store.runError).toContain('同一请求')
 
+    await expect(store.startRun(input)).resolves.toBeNull()
+    expect(store.runError).toBe('请求失败（idempotency_conflict）。')
+    expect(store.pendingIntentKey).toBe(firstKey)
+
     await expect(store.startRun(input)).resolves.toMatchObject({ run_key: RUN_KEY })
-    expect(apiMocks.createRun).toHaveBeenCalledTimes(2)
+    expect(apiMocks.createRun).toHaveBeenCalledTimes(3)
     expect(apiMocks.createRun.mock.calls[0][0]).toEqual({
       job_id: 'daily-equity',
       version: 'v3',
@@ -116,6 +121,7 @@ describe('reviewed runs store', () => {
       shard: null,
     })
     expect(apiMocks.createRun.mock.calls[1][0].idempotency_key).toBe(firstKey)
+    expect(apiMocks.createRun.mock.calls[2][0].idempotency_key).toBe(firstKey)
     expect(store.pendingIntentKey).toBeNull()
     expect(store.activeRunKey).toBe(RUN_KEY)
   })
@@ -126,11 +132,18 @@ describe('reviewed runs store', () => {
     expect(apiMocks.getRun).not.toHaveBeenCalled()
 
     apiMocks.listJobs.mockRejectedValue({
-      response: { data: { detail: { code: 'reviewed_runtime_unavailable' } } },
+      response: { data: { detail: 'reviewed_runtime_unavailable' } },
     })
     await expect(store.loadJobs()).resolves.toBe(false)
     expect(store.jobs).toEqual([])
     expect(store.jobsError).toContain('尚未配置')
+
+    apiMocks.listJobs.mockRejectedValue({
+      response: { data: { detail: 'Traceback: upstream api key must stay private' } },
+    })
+    await expect(store.loadJobs()).resolves.toBe(false)
+    expect(store.jobsError).toBe('审核任务列表加载失败。')
+    expect(store.jobsError).not.toContain('api key')
   })
 
   it('ignores a late status response after the run context is reset', async () => {
