@@ -5,7 +5,7 @@ from __future__ import annotations
 import io
 import json
 from datetime import date, timedelta
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 import pytest
 from fastapi.routing import APIRoute
@@ -25,14 +25,11 @@ if TYPE_CHECKING:
     from pydantic import JsonValue
     from sqlalchemy.engine import Connection, Engine
 
-    from opendata.pipeline.reviewed_worker import ResultDecoder
     from opendata.pipeline.run_dispatch import ReviewedTaskCatalog
     from opendata.pipeline.run_identity import RunRequest, TaskDefinition
     from opendata.pipeline.run_service import (
         NormalizedBatch,
-        NormalizeHandler,
         PublicationReceipt,
-        PublishHandler,
         RunExecutionContext,
     )
     from opendata.pipeline.runtime_roles import RuntimeRole
@@ -92,7 +89,6 @@ def _make_runtime(
 def _make_synthetic_catalog() -> ReviewedTaskCatalog:
     """Create one statically injected synthetic task and process-backed job."""
     from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
-    from opendata.pipeline.provider_model_codec import _copy_record
     from opendata.pipeline.reviewed_worker import ProcessFetchHandler
     from opendata.pipeline.run_dispatch import ReviewedTaskCatalog
     from opendata.pipeline.run_identity import ScheduleMetadata, TaskDefinition
@@ -108,7 +104,7 @@ def _make_synthetic_catalog() -> ReviewedTaskCatalog:
         enabled=True,
     )
     executor = ReviewedProcessExecutor(
-        ReviewedProcessRegistry({_FIXTURE_OPERATION: _synthetic_fetch}),
+        ReviewedProcessRegistry({_FIXTURE_OPERATION: _echo_synthetic_fixture}),
         poll_interval_seconds=0.01,
         checkpoint_interval_seconds=0.05,
     )
@@ -116,44 +112,51 @@ def _make_synthetic_catalog() -> ReviewedTaskCatalog:
         executor,
         _FIXTURE_OPERATION,
         _build_synthetic_parameters,
-        cast("ResultDecoder", _copy_record),
+        _decode_synthetic_result,
         timeout_seconds=5.0,
     )
     job = ReviewedJob(
         task=task,
         fetch=fetch,
-        normalize=cast("NormalizeHandler", _normalize_synthetic),
-        publish=cast("PublishHandler", _publish_synthetic),
+        normalize=_normalize_synthetic,
+        publish=_publish_synthetic,
         reviewed=True,
     )
     return ReviewedTaskCatalog([job])
 
 
-def _synthetic_fetch(parameters: Mapping[str, JsonValue]) -> dict[str, JsonValue]:
-    """Return deterministic fixture data from a JSON-only child request."""
-    query = parameters.get("query")
-    if not isinstance(query, dict):
-        raise ValueError("fixture_query_required")
-    instrument = query.get("instrument")
-    business_date = query.get("business_date")
+def _echo_synthetic_fixture(parameters: Mapping[str, JsonValue]) -> JsonValue:
+    """Copy one executor-validated JSON fixture without source access."""
+    return dict(parameters)
+
+
+def _build_synthetic_parameters(request: RunRequest) -> dict[str, JsonValue]:
+    """Build one deterministic JSON fixture from a validated request."""
+    instrument = request.query.get("instrument")
+    business_date = request.query.get("business_date")
     if not isinstance(instrument, str) or not isinstance(business_date, str):
         raise ValueError("fixture_query_invalid")
     return {"instrument": instrument, "business_date": business_date, "close": 12}
 
 
-def _build_synthetic_parameters(request: RunRequest) -> dict[str, JsonValue]:
-    """Copy the validated query into a JSON-only process request."""
-    return {"query": dict(request.query)}
+def _decode_synthetic_result(value: JsonValue) -> object:
+    """Validate and copy a JSON object returned by the synthetic process."""
+    from opendata.pipeline.provider_model_codec import _copy_record
+
+    if not isinstance(value, dict):
+        raise ValueError("fixture_response_invalid")
+    return _copy_record(value)
 
 
 def _normalize_synthetic(
     raw: object,
-    _request: RunRequest,
-    _context: RunExecutionContext,
+    request: RunRequest,
+    context: RunExecutionContext,
 ) -> NormalizedBatch:
     """Convert synthetic process output into one typed normalized fact."""
     from opendata.pipeline.run_service import NormalizedBatch, NormalizedRecord
 
+    del request, context
     if not isinstance(raw, dict):
         raise ValueError("fixture_response_invalid")
     instrument = raw.get("instrument")
@@ -186,13 +189,14 @@ def _normalize_synthetic(
 def _publish_synthetic(
     connection: Connection,
     task: TaskDefinition,
-    _request: RunRequest,
+    request: RunRequest,
     batch: NormalizedBatch,
-    _idempotency_key: str,
+    idempotency_key: str,
 ) -> PublicationReceipt:
     """Write the synthetic result through the fenced ledger connection."""
     from opendata.pipeline.run_service import PublicationReceipt
 
+    del request, idempotency_key
     for row in batch.records:
         close_value = row.payload.get("close")
         if isinstance(close_value, bool) or not isinstance(close_value, int):
@@ -240,6 +244,12 @@ def test_invalid_runtime_is_rejected_before_fastapi_construction(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """An invalid runtime cannot trigger app or route construction."""
+    from opendata.pipeline.reviewed_runtime import ReviewedRuntime
+
+    class DerivedReviewedRuntime(ReviewedRuntime):
+        """Subtype used to verify the exact runtime boundary."""
+
+    invalid_runtime = object.__new__(DerivedReviewedRuntime)
 
     def unexpected_app_construction(**_kwargs: object) -> FastAPI:
         raise AssertionError("FastAPI must not be constructed for an invalid runtime")
@@ -247,11 +257,8 @@ def test_invalid_runtime_is_rejected_before_fastapi_construction(
     monkeypatch.setattr(reviewed_app_module, "FastAPI", unexpected_app_construction)
     with pytest.raises(TypeError, match="exact ReviewedRuntime"):
         create_reviewed_app(
-            cast("ReviewedRuntime", object()),
-            auth_session_factory=cast(
-                "async_sessionmaker[AsyncSession]",
-                object(),
-            ),
+            invalid_runtime,
+            auth_session_factory=async_sessionmaker[AsyncSession](),
         )
 
 
@@ -359,17 +366,16 @@ async def test_reviewed_api_auth_and_synthetic_operator_vertical(
     auth_engine = create_async_engine(f"sqlite+aiosqlite:///{auth_path}")
     try:
         async with auth_engine.begin() as connection:
-            user_table = cast("Table", User.__table__)
+            user_table = User.__table__
+            if not isinstance(user_table, Table):
+                raise TypeError("User table is not a SQLAlchemy Table")
             await connection.run_sync(
                 lambda sync_connection: user_table.create(sync_connection, checkfirst=True)
             )
-        factory = cast(
-            "async_sessionmaker[AsyncSession]",
-            make_async_sessionmaker(
-                auth_engine,
-                class_=_TrackingAsyncSession,
-                expire_on_commit=False,
-            ),
+        factory = make_async_sessionmaker[AsyncSession](
+            auth_engine,
+            class_=_TrackingAsyncSession,
+            expire_on_commit=False,
         )
         async with factory() as session:
             admin = User(
