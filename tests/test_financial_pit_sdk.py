@@ -21,7 +21,7 @@ def test_query_passes_as_of_and_market_and_exposes_pit_metadata():
                     "rows": [{"symbol": "600000", "revision": 1}],
                     "columns": ["symbol", "revision"],
                     "page": 1,
-                    "page_size": 200,
+                    "page_size": 500,
                     "count": 1,
                     "pit": {"as_of": "2024-04-02T00:00:00+00:00", "source": "ths"},
                 },
