@@ -404,6 +404,19 @@ def test_manual_and_backfill_queue_only_safe_receipts(
             {"endpoint": "upstream target jdbc:mysql://readonly:credential-canary@db.invalid/main"}
         ),
         malformed_manual_query(
+            {"endpoint": "jdbc:oracle:thin:readonly/credential-canary@db.invalid:1521/prod"}
+        ),
+        malformed_manual_query(
+            {
+                "endpoint": (
+                    "upstream target jdbc:oracle:thin:readonly/credential-canary"
+                    "@db.invalid:1521/prod"
+                )
+            }
+        ),
+        malformed_manual_query({"endpoint": "jdbc:oracle:thin:@db.invalid:1521/prod"}),
+        malformed_manual_query({"endpoint": "jdbc:sqlite:warehouse.db"}),
+        malformed_manual_query(
             {
                 "endpoint": (
                     "Driver={ODBC Driver 18 for SQL Server};Server=tcp:db.invalid;"
@@ -441,7 +454,7 @@ def test_manual_and_backfill_queue_only_safe_receipts(
 def test_malformed_or_executable_requests_are_rejected_without_persistence(
     cli_setup: tuple[Engine, RunDispatcher, RunService], raw: bytes
 ) -> None:
-    """Reject malformed, executable, or credential-bearing request values."""
+    """Reject malformed, executable, or unsupported connection request values."""
     engine, dispatcher, worker = cli_setup
     code, receipt, text = invoke(raw, cli_app(dispatcher, worker))
     assert code == 2

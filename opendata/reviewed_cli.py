@@ -97,6 +97,7 @@ _CONNECTION_SELECTOR_SUFFIXES = (
     "string",
 )
 _URI_CANDIDATE = re.compile(r"(?i)(?<![A-Z0-9+.-])(?=([A-Z][A-Z0-9+.-]*://[^\s\"'<>;,)}\]]+))")
+_JDBC_CONNECTION_PREFIX = re.compile(r"(?i)(?<![A-Z0-9])jdbc:[A-Z][A-Z0-9+.-]*:")
 _DSN_VALUE = r"(?:\{[^}]*\}|\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*'|[^;,&\s]+)"
 _PASSWORD_ASSIGNMENT = re.compile(
     rf"(?i)(?<![A-Z0-9])(?:pwd|password|passwd|passphrase)\s*=\s*{_DSN_VALUE}"
@@ -402,8 +403,8 @@ def _reject_execution_fields(value: object) -> None:
                 stack.append(child)
         elif isinstance(current, list):
             stack.extend(current)
-        elif isinstance(current, str) and _contains_recognized_connection_credentials(current):
-            raise ValueError("request includes a credential-bearing connection value")
+        elif isinstance(current, str) and _contains_unsupported_connection_value(current):
+            raise ValueError("request includes unsupported connection configuration")
 
 
 def _is_connection_selector(normalized_key: str) -> bool:
@@ -415,8 +416,12 @@ def _is_connection_selector(normalized_key: str) -> bool:
     )
 
 
-def _contains_recognized_connection_credentials(value: str) -> bool:
-    """Detect URI userinfo and common DSN password/user assignments in text."""
+def _contains_unsupported_connection_value(value: str) -> bool:
+    """Detect JDBC connection descriptors and common embedded credentials."""
+    # JDBC connection descriptors are not business query data. Rejecting the
+    # full descriptor avoids depending on every vendor's credential syntax.
+    if _JDBC_CONNECTION_PREFIX.search(value):
+        return True
     if _PASSWORD_ASSIGNMENT.search(value):
         return True
     if _DSN_CONTEXT_ASSIGNMENT.search(value) and _DSN_USER_ASSIGNMENT.search(value):

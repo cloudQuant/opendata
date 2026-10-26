@@ -9,8 +9,9 @@ SPI, and role plan before this command can run.
 JSON schema version 1. Use `-` to read stdin. The parser bounds input to 64 KiB,
 depth 12, and 8,192 JSON nodes; rejects duplicate keys, unknown operation
 fields, symbolic-link files, execution and connection selector keys, URI
-userinfo, recognized credential query parameters, and common DSN credential
-assignments. It never imports application paths from the request, loads
+userinfo, recognized credential query parameters, common DSN credential
+assignments, and all JDBC connection descriptors (with or without embedded
+credentials). It never imports application paths from the request, loads
 dotenv, reads `settings.py`, opens a database, or starts a scheduler by itself.
 
 The trusted launcher must bind the reviewed application statically in code,
