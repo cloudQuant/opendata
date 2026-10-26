@@ -21,9 +21,19 @@ from opendata.api.reviewed_runs import router
 from opendata.core.config import settings
 from opendata.core.security import create_access_token
 from opendata.models.user import User, UserRole
-from opendata.pipeline.run_dispatch import ReviewedTaskCatalog
+from opendata.pipeline.run_dispatch import (
+    DispatchIdentity,
+    DispatchReceipt,
+    ReviewedTaskCatalog,
+    RunDispatcher,
+)
 from opendata.pipeline.run_identity import RunRequest, ScheduleMetadata, TaskDefinition
-from opendata.pipeline.run_ledger import RUN_LEDGER_METADATA, RUN_LEDGER_TABLE
+from opendata.pipeline.run_ledger import (
+    RUN_LEDGER_METADATA,
+    RUN_LEDGER_TABLE,
+    RunLedger,
+    RunRecord,
+)
 from opendata.pipeline.run_service import (
     FetchHandler,
     NormalizedBatch,
@@ -36,7 +46,7 @@ from opendata.pipeline.run_service import (
 from opendata.pipeline.runtime_roles import RuntimeRolePlan
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
+    from collections.abc import AsyncGenerator, Mapping
     from pathlib import Path
 
     import pytest
@@ -405,6 +415,98 @@ async def test_manual_submit_replays_same_identity_and_conflicts_on_payload_drif
     assert _ledger_count(api_harness.metadata_engine) == 1
 
 
+async def test_dispatcher_errors_are_sanitized_and_leave_ledger_unchanged(
+    api_harness: APIHarness,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Translate expected and unexpected dispatch failures without leaking input."""
+
+    def reject_request(
+        _dispatcher: RunDispatcher,
+        _job_id: str,
+        _version: str,
+        _payload: Mapping[str, object],
+        *,
+        dry_run: bool = False,
+    ) -> DispatchReceipt:
+        del dry_run
+        raise ValueError("private credential must not reach the response")
+
+    monkeypatch.setattr(RunDispatcher, "dispatch_manual", reject_request)
+    invalid = await api_harness.client.post(
+        "/api/v1/reviewed/runs",
+        headers=_admin_headers(api_harness),
+        json=_request_body(idempotency_key="dispatch-value-error"),
+    )
+
+    def fail_backend(
+        _dispatcher: RunDispatcher,
+        _job_id: str,
+        _version: str,
+        _payload: Mapping[str, object],
+        *,
+        dry_run: bool = False,
+    ) -> DispatchReceipt:
+        del dry_run
+        raise RuntimeError("private database credential must not reach the response")
+
+    monkeypatch.setattr(RunDispatcher, "dispatch_manual", fail_backend)
+    unavailable = await api_harness.client.post(
+        "/api/v1/reviewed/runs",
+        headers=_admin_headers(api_harness),
+        json=_request_body(idempotency_key="dispatch-runtime-error"),
+    )
+
+    assert invalid.status_code == 422
+    assert invalid.json() == {"detail": "invalid_request"}
+    assert "private credential" not in invalid.text
+    assert unavailable.status_code == 503
+    assert unavailable.json() == {"detail": "reviewed_run_service_unavailable"}
+    assert "private database credential" not in unavailable.text
+    assert _ledger_count(api_harness.metadata_engine) == 0
+
+
+async def test_invalid_dispatch_receipt_returns_safe_unavailable_without_writes(
+    api_harness: APIHarness,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Reject an invalid dry-run receipt instead of exposing or persisting it."""
+    invalid_receipt = DispatchReceipt(
+        identity=DispatchIdentity(
+            run_key="a" * 64,
+            run_type="manual",
+            job_id=ENABLED_JOB_ID,
+            version=JOB_VERSION,
+            request_bytes=1,
+        ),
+        status="dry_run",
+        created_at=None,
+    )
+
+    def return_invalid_receipt(
+        _dispatcher: RunDispatcher,
+        _job_id: str,
+        _version: str,
+        _payload: Mapping[str, object],
+        *,
+        dry_run: bool = False,
+    ) -> DispatchReceipt:
+        del dry_run
+        return invalid_receipt
+
+    monkeypatch.setattr(RunDispatcher, "dispatch_manual", return_invalid_receipt)
+    response = await api_harness.client.post(
+        "/api/v1/reviewed/runs",
+        headers=_admin_headers(api_harness),
+        json=_request_body(idempotency_key="invalid-receipt"),
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "reviewed_run_service_unavailable"}
+    assert "dry_run" not in response.text
+    assert _ledger_count(api_harness.metadata_engine) == 0
+
+
 async def test_unknown_and_disabled_jobs_are_rejected_before_ledger_writes(
     api_harness: APIHarness,
 ) -> None:
@@ -554,10 +656,31 @@ async def test_run_status_redacts_snapshot_and_internal_failure_text(
     assert "lease" not in response.text
 
 
-async def test_cancel_fences_queued_run_and_reports_terminal_replay(
+async def test_ledger_read_failure_returns_safe_unavailable(
+    api_harness: APIHarness,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A ledger exception is translated to a fixed API error."""
+
+    def fail_read(_ledger: RunLedger, _run_key: str) -> RunRecord | None:
+        raise RuntimeError("private ledger connection string")
+
+    monkeypatch.setattr(RunLedger, "get", fail_read)
+    response = await api_harness.client.get(
+        f"/api/v1/reviewed/runs/{'a' * 64}",
+        headers=_admin_headers(api_harness),
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "reviewed_run_service_unavailable"}
+    assert "connection string" not in response.text
+    assert _ledger_count(api_harness.metadata_engine) == 0
+
+
+async def test_cancel_fences_queued_run_and_cancelled_replay_is_stable(
     api_harness: APIHarness,
 ) -> None:
-    """Cancellation is immediate and a repeated cancel reports terminal state."""
+    """Cancellation replay reports the final state without incrementing its fence."""
     submitted = await api_harness.client.post(
         "/api/v1/reviewed/runs",
         headers=_admin_headers(api_harness),
@@ -567,14 +690,101 @@ async def test_cancel_fences_queued_run_and_reports_terminal_replay(
     url = f"/api/v1/reviewed/runs/{run_key}/cancel"
 
     first = await api_harness.client.post(url, headers=_admin_headers(api_harness))
+    first_record = api_harness.runtime.ledger.get(run_key)
+    assert first_record is not None
     replay = await api_harness.client.post(url, headers=_admin_headers(api_harness))
+    replay_record = api_harness.runtime.ledger.get(run_key)
 
     assert first.status_code == 200
     assert first.json()["outcome"] == "cancelled"
     assert first.json()["run"]["status"] == "cancelled"
     assert replay.status_code == 200
-    assert replay.json()["outcome"] == "terminal"
+    assert replay.json()["outcome"] == "cancelled"
     assert replay.json()["run"]["status"] == "cancelled"
+    assert replay_record == first_record
+    assert replay_record is not None
+    assert replay_record.fencing_token == first_record.fencing_token
+
+
+async def test_cancel_missing_run_returns_not_found(
+    api_harness: APIHarness,
+) -> None:
+    """A well-shaped but unknown key returns 404 without creating ledger state."""
+    response = await api_harness.client.post(
+        f"/api/v1/reviewed/runs/{'f' * 64}/cancel",
+        headers=_admin_headers(api_harness),
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "run_not_found"}
+    assert _ledger_count(api_harness.metadata_engine) == 0
+
+
+async def test_cancel_successful_run_reports_terminal_outcome(api_harness: APIHarness) -> None:
+    """A run that succeeded before cancellation remains terminal and unchanged."""
+    submitted = await api_harness.client.post(
+        "/api/v1/reviewed/runs",
+        headers=_admin_headers(api_harness),
+        json=_request_body(idempotency_key="cancel-after-success"),
+    )
+    run_key = submitted.json()["run_key"]
+    now = datetime.now(UTC)
+    claim = api_harness.runtime.ledger.claim("fixture-worker", now, timedelta(seconds=30))
+    assert claim is not None
+    succeeded = api_harness.runtime.ledger.finish(
+        run_key,
+        "fixture-worker",
+        claim.fencing_token,
+        now + timedelta(seconds=1),
+    )
+    assert succeeded is not None
+    assert succeeded.status == "succeeded"
+
+    response = await api_harness.client.post(
+        f"/api/v1/reviewed/runs/{run_key}/cancel",
+        headers=_admin_headers(api_harness),
+    )
+    after = api_harness.runtime.ledger.get(run_key)
+
+    assert response.status_code == 200
+    assert response.json()["outcome"] == "terminal"
+    assert response.json()["run"]["status"] == "succeeded"
+    assert after == succeeded
+
+
+async def test_cancel_backend_failure_leaves_record_unchanged(
+    api_harness: APIHarness,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A failed cancellation is redacted and leaves the persisted row alone."""
+    submitted = await api_harness.client.post(
+        "/api/v1/reviewed/runs",
+        headers=_admin_headers(api_harness),
+        json=_request_body(idempotency_key="cancel-backend-error"),
+    )
+    run_key = submitted.json()["run_key"]
+    before = api_harness.runtime.ledger.get(run_key)
+    assert before is not None
+
+    def fail_cancel(
+        _ledger: RunLedger,
+        _run_key: str,
+        _now: datetime,
+    ) -> RunRecord | None:
+        raise RuntimeError("private fencing token and database secret")
+
+    monkeypatch.setattr(RunLedger, "cancel", fail_cancel)
+    response = await api_harness.client.post(
+        f"/api/v1/reviewed/runs/{run_key}/cancel",
+        headers=_admin_headers(api_harness),
+    )
+    after = api_harness.runtime.ledger.get(run_key)
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "reviewed_run_service_unavailable"}
+    assert "fencing token" not in response.text
+    assert "database secret" not in response.text
+    assert after == before
 
 
 async def test_unknown_and_malformed_run_keys_are_not_found(api_harness: APIHarness) -> None:

@@ -464,7 +464,11 @@ def cancel_reviewed_run(
     _current_admin: CurrentAdmin,
     runtime: Annotated[ReviewedRuntimeAccess, Depends(get_reviewed_runtime)],
 ) -> CancelRunResponse:
-    """Immediately cancel and fence an active run, or report its terminal state."""
+    """Cancel and fence an active run, then describe its resulting ledger state.
+
+    ``cancelled`` describes a cancelled ledger state, including an idempotent
+    replay. ``terminal`` describes a run that already succeeded or failed.
+    """
     _require_run_key(run_key)
     try:
         record = runtime.ledger.cancel(run_key, datetime.now(timezone.utc))
