@@ -11,10 +11,14 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Mapping
 from datetime import timedelta
+from pathlib import Path
+from stat import S_ISREG
 from typing import TYPE_CHECKING, TypeAlias
 
 from pydantic import JsonValue
-from sqlalchemy.engine import Engine
+from sqlalchemy import event
+from sqlalchemy.engine import Connection, Engine
+from sqlalchemy.pool import QueuePool
 
 from opendata.pipeline.process_executor import ReviewedProcessExecutor
 from opendata.pipeline.run_identity import RunRequest
@@ -39,12 +43,57 @@ _MAX_DATABASE_IO_TIMEOUT_SECONDS = 30.0
 _MIN_LEASE_MARGIN_SECONDS = 0.05
 
 
+class _SQLiteConnectionGuard:
+    """Verify every engine checkout still targets the pinned SQLite file."""
+
+    def __init__(
+        self,
+        database_path: Path,
+        device: int,
+        inode: int,
+        maximum_wait_seconds: float,
+    ) -> None:
+        """Capture the physical database identity and connection wait limit."""
+        self._database_path = database_path
+        self._device = device
+        self._inode = inode
+        self._maximum_wait_seconds = maximum_wait_seconds
+
+    def validate(self, connection: Connection) -> None:
+        """Reject a checkout whose file identity or SQLite lock wait drifted."""
+        had_transaction = connection.in_transaction()
+        try:
+            _verify_pool_wait_bound(connection.engine, self._maximum_wait_seconds)
+            _verify_actual_sqlite_connection(
+                connection,
+                expected_path=self._database_path,
+                expected_device=self._device,
+                expected_inode=self._inode,
+                maximum_wait_seconds=self._maximum_wait_seconds,
+            )
+        finally:
+            if not had_transaction and connection.in_transaction():
+                connection.rollback()
+
+    def validate_commit(self, connection: Connection) -> None:
+        """Reject a commit if the database pathname changed during its transaction."""
+        _verify_actual_sqlite_connection(
+            connection,
+            expected_path=self._database_path,
+            expected_device=self._device,
+            expected_inode=self._inode,
+            maximum_wait_seconds=self._maximum_wait_seconds,
+        )
+
+
 class ProcessFetchHandler:
     """Adapt a fixed reviewed process operation to a run fetch handler.
 
     The builder and decoder execute in the parent process and are supplied by
     reviewed application code. Neither the process operation nor its import
-    reference can be selected by data in the run request.
+    reference can be selected by data in the run request. The builder and
+    decoder must remain bounded local conversions; only the registered
+    provider operation runs in the killable child process.
     """
 
     def __init__(
@@ -121,9 +170,11 @@ class PersistentRunWorker:
 
     The supplied engine must point to the same durable warehouse that stores
     facts and must already contain the run-ledger table. This version accepts
-    only file-backed SQLite engines after verifying pool checkout and SQLite
-    lock-wait bounds. MySQL and PostgreSQL require an independently verified
-    driver and statement timeout contract before this facade can accept them.
+    only file-backed SQLite engines that use the standard SQLAlchemy
+    :class:`QueuePool`. It pins the canonical path and physical file identity,
+    then validates the SQLite filename and lock-wait bound on every engine
+    checkout. MySQL and PostgreSQL require an independently verified driver
+    and statement timeout contract before this facade can accept them.
     """
 
     def __init__(
@@ -138,10 +189,12 @@ class PersistentRunWorker:
     ) -> None:
         """Bind durable storage, reviewed jobs, and a validated timing budget.
 
-        ``heartbeat_interval_seconds`` must match the actual interval on every
-        registered :class:`ProcessFetchHandler`. The lease must cover one
-        heartbeat interval, the verified SQLite pool/lock wait bound, and a
-        safety margin. The I/O bound does not cover operating-system disk stalls.
+        Every registered fetch handler must be a
+        :class:`ProcessFetchHandler`; a normal callable cannot be stopped when
+        its lease expires. ``heartbeat_interval_seconds`` must match the actual
+        interval on every process handler. The lease must cover one heartbeat
+        interval, the verified SQLite pool/lock wait bound, and a safety margin.
+        Those checks do not bound operating-system disk stalls or SQL execution.
 
         Args:
             engine: Synchronous engine for the durable warehouse.
@@ -149,7 +202,8 @@ class PersistentRunWorker:
             worker_id: Stable identifier unique to this live worker instance.
             lease_ttl: Maximum time a claim remains owned without renewal.
             heartbeat_interval_seconds: Maximum executor heartbeat interval.
-            database_io_timeout_seconds: Maximum verified SQLite pool/lock wait.
+            database_io_timeout_seconds: Maximum verified QueuePool checkout and
+                SQLite lock wait.
 
         Raises:
             TypeError: If storage or registry dependencies have the wrong type.
@@ -179,13 +233,24 @@ class PersistentRunWorker:
             raise ValueError("lease_ttl is too short for the configured heartbeat and database I/O")
         if engine.dialect.name != "sqlite":
             raise ValueError("persistent worker currently requires verified file-backed SQLite")
-        _verify_sqlite_wait_bounds(engine, database_io_timeout)
         _verify_registry_heartbeat_intervals(registry, heartbeat_interval)
+        database_path, device, inode = _verify_sqlite_wait_bounds(engine, database_io_timeout)
+        guard = _SQLiteConnectionGuard(
+            database_path,
+            device,
+            inode,
+            database_io_timeout,
+        )
+        event.listen(engine, "engine_connect", guard.validate)
+        event.listen(engine, "commit", guard.validate_commit)
 
         self._worker_id = worker_id.strip()
         self._lease_ttl = lease_ttl
+        self._database_io_timeout_seconds = database_io_timeout
+        self._engine = engine
         self._ledger = RunLedger(engine, clock_policy="database")
         self._service = RunService(self._ledger, registry)
+        self._connection_guard = guard
 
     @property
     def ledger(self) -> RunLedger:
@@ -194,10 +259,12 @@ class PersistentRunWorker:
 
     def submit(self, job_id: str, version: str, request: RunRequest) -> RunRecord:
         """Persist one validated request using the reviewed run service."""
+        _verify_pool_wait_bound(self._engine, self._database_io_timeout_seconds)
         return self._service.submit(job_id, version, request)
 
     def run_once(self) -> RunOutcome | None:
         """Claim at most one durable run and execute it to a fenced outcome."""
+        _verify_pool_wait_bound(self._engine, self._database_io_timeout_seconds)
         return self._service.run_once(self._worker_id, self._lease_ttl)
 
 
@@ -223,25 +290,91 @@ def _validate_ttl(value: timedelta) -> float:
     return seconds
 
 
-def _verify_sqlite_wait_bounds(engine: Engine, maximum_wait_seconds: float) -> None:
-    """Require file-backed SQLite with bounded pool checkout and lock waits."""
-    database = engine.url.database
-    if not database or database == ":memory:" or "mode=memory" in database.lower():
-        raise ValueError("persistent worker requires a file-backed SQLite database")
-    try:
-        timeout_method = getattr(engine.pool, "timeout", None)
-        if not callable(timeout_method):
-            raise ValueError("pool timeout is unavailable")
-        pool_timeout = float(timeout_method())
-    except (AttributeError, NotImplementedError, TypeError, ValueError):
-        raise ValueError("SQLite pool checkout timeout could not be verified") from None
-    if not math.isfinite(pool_timeout) or pool_timeout < 0 or pool_timeout > maximum_wait_seconds:
-        raise ValueError("SQLite pool checkout timeout exceeds the configured database I/O bound")
+def _verify_sqlite_wait_bounds(
+    engine: Engine, maximum_wait_seconds: float
+) -> tuple[Path, int, int]:
+    """Pin an absolute SQLite file and verify its first actual checkout."""
+    database_path, expected_device, expected_inode = _canonical_database_identity(engine)
+    _verify_pool_wait_bound(engine, maximum_wait_seconds)
     try:
         with engine.connect() as connection:
-            busy_timeout_ms = connection.exec_driver_sql("PRAGMA busy_timeout").scalar_one()
+            _verify_actual_sqlite_connection(
+                connection,
+                expected_path=database_path,
+                expected_device=expected_device,
+                expected_inode=expected_inode,
+                maximum_wait_seconds=maximum_wait_seconds,
+            )
+    except ValueError:
+        raise
     except Exception:
-        raise ValueError("SQLite busy_timeout could not be verified") from None
+        raise ValueError("SQLite database connection could not be verified") from None
+    return database_path, expected_device, expected_inode
+
+
+def _canonical_database_identity(engine: Engine) -> tuple[Path, int, int]:
+    """Require a canonical absolute URL path and capture its regular-file inode."""
+    database = engine.url.database
+    uri_option = engine.url.query.get("uri", "false")
+    uri_values = uri_option if isinstance(uri_option, tuple) else (uri_option,)
+    uri_enabled = any(str(value).lower() in {"true", "1", "yes"} for value in uri_values)
+    if (
+        not database
+        or database == ":memory:"
+        or database.startswith("file:")
+        or uri_enabled
+        or not Path(database).is_absolute()
+    ):
+        raise ValueError("persistent worker requires a canonical absolute file-backed SQLite path")
+    try:
+        path = Path(database)
+        resolved_path = path.resolve(strict=True)
+        path_stat = path.stat(follow_symlinks=False)
+    except OSError:
+        raise ValueError("SQLite database path must identify an existing regular file") from None
+    if resolved_path != path or not S_ISREG(path_stat.st_mode):
+        raise ValueError("SQLite database path must be canonical and identify a regular file")
+    return path, path_stat.st_dev, path_stat.st_ino
+
+
+def _verify_pool_wait_bound(engine: Engine, maximum_wait_seconds: float) -> None:
+    """Require the documented QueuePool implementation and a finite checkout wait."""
+    if type(engine.pool) is not QueuePool:
+        raise ValueError("persistent worker requires the standard bounded SQLite QueuePool")
+    try:
+        pool_timeout = float(engine.pool.timeout())
+    except (AttributeError, NotImplementedError, TypeError, ValueError):
+        raise ValueError("SQLite QueuePool checkout timeout could not be verified") from None
+    if not math.isfinite(pool_timeout) or pool_timeout < 0 or pool_timeout > maximum_wait_seconds:
+        raise ValueError("SQLite pool checkout timeout exceeds the configured database I/O bound")
+
+
+def _verify_actual_sqlite_connection(
+    connection: Connection,
+    *,
+    expected_path: Path,
+    expected_device: int,
+    expected_inode: int,
+    maximum_wait_seconds: float,
+) -> None:
+    """Verify the checked-out connection's SQLite file and per-connection wait."""
+    try:
+        databases = connection.exec_driver_sql("PRAGMA database_list").all()
+        main_files = [str(row[2]) for row in databases if row[1] == "main"]
+        busy_timeout_ms = connection.exec_driver_sql("PRAGMA busy_timeout").scalar_one()
+        current_stat = expected_path.stat(follow_symlinks=False)
+        current_resolved_path = expected_path.resolve(strict=True)
+    except Exception:
+        raise ValueError("SQLite database connection could not be verified") from None
+    if len(main_files) != 1 or main_files[0] != str(expected_path):
+        raise ValueError("SQLite connection does not target the configured regular database file")
+    if (
+        current_resolved_path != expected_path
+        or not S_ISREG(current_stat.st_mode)
+        or current_stat.st_dev != expected_device
+        or current_stat.st_ino != expected_inode
+    ):
+        raise ValueError("SQLite database file identity changed after worker verification")
     if type(busy_timeout_ms) is not int or busy_timeout_ms < 0:
         raise ValueError("SQLite busy_timeout has an invalid value")
     if busy_timeout_ms / 1_000 > maximum_wait_seconds + 0.001:
@@ -257,7 +390,9 @@ def _verify_registry_heartbeat_intervals(
         raise TypeError("reviewed job registry does not expose its frozen job catalog")
     for job in jobs.values():
         fetcher = getattr(job, "fetch", None)
-        if isinstance(fetcher, ProcessFetchHandler) and not math.isclose(
+        if not isinstance(fetcher, ProcessFetchHandler):
+            raise ValueError("persistent worker requires process-bounded reviewed fetch handlers")
+        if not math.isclose(
             fetcher.heartbeat_interval_seconds,
             configured_interval,
             rel_tol=0.0,

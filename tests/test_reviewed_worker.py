@@ -4,13 +4,25 @@ from __future__ import annotations
 
 import multiprocessing
 import os
+import sqlite3
 import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from sqlalchemy import BigInteger, Column, MetaData, String, Table, create_engine, func, select
+from sqlalchemy import (
+    BigInteger,
+    Column,
+    MetaData,
+    String,
+    Table,
+    create_engine,
+    event,
+    func,
+    select,
+)
+from sqlalchemy.pool import QueuePool, StaticPool
 
 from opendata.pipeline.process_executor import ReviewedProcessExecutor, ReviewedProcessRegistry
 from opendata.pipeline.reviewed_worker import PersistentRunWorker, ProcessFetchHandler
@@ -44,7 +56,10 @@ def fixture_worker_fetch(parameters: dict[str, JsonValue]) -> JsonValue:
     """Return deterministic data or exercise process lifetime controls."""
     marker = parameters.get("started_path")
     if isinstance(marker, str):
-        Path(marker).write_text(str(os.getpid()), encoding="ascii")
+        marker_path = Path(marker)
+        temporary_path = marker_path.with_name(f".{marker_path.name}.{os.getpid()}.tmp")
+        temporary_path.write_text(str(os.getpid()), encoding="ascii")
+        os.replace(temporary_path, marker_path)
     delay = parameters.get("delay_seconds", 0)
     if isinstance(delay, (int, float)):
         time.sleep(float(delay))
@@ -78,9 +93,14 @@ def _make_worker(
     *,
     timeout_seconds: float = 15.0,
     checkpoint_interval_seconds: float = 0.05,
+    database_io_timeout_seconds: float = 0.05,
 ) -> PersistentRunWorker:
     """Construct an isolated worker with a reviewed process-backed fetcher."""
-    engine = _make_engine(database_path)
+    engine = _make_engine(
+        database_path,
+        timeout_seconds=database_io_timeout_seconds,
+        pool_timeout_seconds=database_io_timeout_seconds,
+    )
     fetch = _make_process_fetch_handler(
         timeout_seconds=timeout_seconds,
         checkpoint_interval_seconds=checkpoint_interval_seconds,
@@ -98,7 +118,7 @@ def _make_worker(
         worker_id=worker_id,
         lease_ttl=timedelta(seconds=2),
         heartbeat_interval_seconds=checkpoint_interval_seconds,
-        database_io_timeout_seconds=0.05,
+        database_io_timeout_seconds=database_io_timeout_seconds,
     )
 
 
@@ -193,7 +213,12 @@ def _run_worker_process(
     timeout_seconds: float = 5.0,
 ) -> None:
     """Run one worker in its own process and return only its durable status."""
-    worker = _make_worker(database_path, worker_id, timeout_seconds=timeout_seconds)
+    worker = _make_worker(
+        database_path,
+        worker_id,
+        timeout_seconds=timeout_seconds,
+        database_io_timeout_seconds=0.5,
+    )
     start_event.wait(10)
     outcome = worker.run_once()
     result_queue.put(None if outcome is None else outcome.record.status)
@@ -258,7 +283,7 @@ def test_two_independent_workers_compete_for_one_persistent_run(tmp_path: Path) 
     """Two OS workers race on one queued slot and only one publishes the fact."""
     database_path = tmp_path / "competition.sqlite"
     _setup_database(database_path)
-    submitter = _make_worker(database_path, "submitter")
+    submitter = _make_worker(database_path, "submitter", database_io_timeout_seconds=0.5)
     submitter.submit(
         "fixture-worker-daily",
         "v1",
@@ -374,12 +399,16 @@ def test_worker_rejects_engines_without_verified_sqlite_timeouts(tmp_path: Path)
     with pytest.raises(ValueError, match="file-backed SQLite"):
         PersistentRunWorker(memory_engine, registry, **worker_options)
 
-    oversized_wait_engine = _make_engine(tmp_path / "oversized-wait.sqlite", timeout_seconds=0.1)
+    oversized_wait_path = tmp_path / "oversized-wait.sqlite"
+    oversized_wait_path.touch()
+    oversized_wait_engine = _make_engine(oversized_wait_path, timeout_seconds=0.1)
     with pytest.raises(ValueError, match="exceeds the configured database I/O bound"):
         PersistentRunWorker(oversized_wait_engine, registry, **worker_options)
 
+    oversized_lock_path = tmp_path / "oversized-lock.sqlite"
+    oversized_lock_path.touch()
     oversized_lock_wait_engine = _make_engine(
-        tmp_path / "oversized-lock.sqlite",
+        oversized_lock_path,
         timeout_seconds=0.1,
         pool_timeout_seconds=0.05,
     )
@@ -389,6 +418,139 @@ def test_worker_rejects_engines_without_verified_sqlite_timeouts(tmp_path: Path)
     mysql_engine = create_engine("mysql+pymysql://user:password@localhost/test")
     with pytest.raises(ValueError, match="requires verified file-backed SQLite"):
         PersistentRunWorker(mysql_engine, registry, **worker_options)
+
+    static_pool_path = tmp_path / "static-pool.sqlite"
+    static_pool_path.touch()
+    static_pool_engine = create_engine(
+        f"sqlite:///{static_pool_path}",
+        connect_args={"timeout": 0.05},
+        poolclass=StaticPool,
+    )
+    with pytest.raises(ValueError, match="standard bounded SQLite QueuePool"):
+        PersistentRunWorker(static_pool_engine, registry, **worker_options)
+
+
+def test_worker_checks_actual_database_file_identity_and_rejects_memory_aliases(
+    tmp_path: Path,
+) -> None:
+    """URL claims cannot disguise an in-memory or different SQLite connection."""
+    worker_options = {
+        "worker_id": "identity-worker",
+        "lease_ttl": timedelta(seconds=2),
+        "heartbeat_interval_seconds": 0.05,
+        "database_io_timeout_seconds": 0.05,
+    }
+    registry = ReviewedJobRegistry()
+    claimed_path = tmp_path / "claimed.sqlite"
+    claimed_path.touch()
+    uri_memory_engine = create_engine(
+        "sqlite:///file:review-memory?mode=memory&cache=shared&uri=true",
+        connect_args={"timeout": 0.05, "uri": True, "check_same_thread": False},
+        poolclass=QueuePool,
+        pool_size=1,
+        max_overflow=0,
+        pool_timeout=0.05,
+    )
+    with pytest.raises(ValueError, match="canonical absolute file-backed SQLite path"):
+        PersistentRunWorker(uri_memory_engine, registry, **worker_options)
+
+    creator_memory_engine = create_engine(
+        f"sqlite:///{claimed_path}",
+        creator=lambda: sqlite3.connect(":memory:", timeout=0.05, check_same_thread=False),
+        poolclass=QueuePool,
+        pool_size=1,
+        max_overflow=0,
+        pool_timeout=0.05,
+    )
+    with pytest.raises(ValueError, match="does not target the configured regular database file"):
+        PersistentRunWorker(creator_memory_engine, registry, **worker_options)
+
+    other_path = tmp_path / "other.sqlite"
+    other_path.touch()
+    mismatched_creator_engine = create_engine(
+        f"sqlite:///{claimed_path}",
+        creator=lambda: sqlite3.connect(other_path.as_posix(), timeout=0.05),
+        poolclass=QueuePool,
+        pool_size=1,
+        max_overflow=0,
+        pool_timeout=0.05,
+    )
+    with pytest.raises(ValueError, match="does not target the configured regular database file"):
+        PersistentRunWorker(mismatched_creator_engine, registry, **worker_options)
+
+    symlink_path = tmp_path / "claimed-alias.sqlite"
+    symlink_path.symlink_to(claimed_path)
+    symlink_engine = create_engine(
+        f"sqlite:///{symlink_path}",
+        connect_args={"timeout": 0.05},
+        pool_timeout=0.05,
+    )
+    with pytest.raises(ValueError, match="canonical and identify a regular file"):
+        PersistentRunWorker(symlink_engine, registry, **worker_options)
+
+
+def test_worker_rechecks_busy_timeout_on_each_engine_checkout(tmp_path: Path) -> None:
+    """A later DBAPI checkout cannot silently widen the verified lock wait."""
+    database_path = tmp_path / "changing-timeout.sqlite"
+    _setup_database(database_path)
+    engine = _make_engine(database_path)
+    checkout_count = 0
+
+    def change_busy_timeout(
+        dbapi_connection: sqlite3.Connection, _record: object, _proxy: object
+    ) -> None:
+        nonlocal checkout_count
+        checkout_count += 1
+        timeout_ms = 50 if checkout_count == 1 else 60_000
+        cursor = dbapi_connection.cursor()
+        cursor.execute(f"PRAGMA busy_timeout={timeout_ms}")
+        cursor.close()
+
+    event.listen(engine.pool, "checkout", change_busy_timeout)
+    fetch = _make_process_fetch_handler(timeout_seconds=5, checkpoint_interval_seconds=0.05)
+    job = ReviewedJob(_task(), fetch, _normalize, _publish, reviewed=True)
+    worker = PersistentRunWorker(
+        engine,
+        ReviewedJobRegistry([job]),
+        worker_id="changing-timeout-worker",
+        lease_ttl=timedelta(seconds=2),
+        heartbeat_interval_seconds=0.05,
+        database_io_timeout_seconds=0.05,
+    )
+    with pytest.raises(ValueError, match="busy_timeout exceeds the configured database I/O bound"):
+        worker.run_once()
+    assert checkout_count == 2
+
+
+def test_worker_rejects_pool_file_identity_change_after_construction(tmp_path: Path) -> None:
+    """A pathname replaced after verification fails before a ledger operation."""
+    database_path = tmp_path / "replaced.sqlite"
+    _setup_database(database_path)
+    worker = _make_worker(database_path, "replaced-file-worker")
+    replacement_path = tmp_path / "replacement.sqlite"
+    _setup_database(replacement_path)
+    os.replace(replacement_path, database_path)
+
+    with pytest.raises(ValueError, match="file identity changed"):
+        worker.run_once()
+
+
+def test_worker_checks_file_identity_again_before_database_commit(tmp_path: Path) -> None:
+    """A file replaced after checkout cannot receive a stale-connection commit."""
+    database_path = tmp_path / "commit-replaced.sqlite"
+    replacement_path = tmp_path / "commit-replacement.sqlite"
+    _setup_database(database_path)
+    _setup_database(replacement_path)
+    worker = _make_worker(database_path, "commit-replaced-worker")
+    engine = worker.ledger._engine
+
+    with pytest.raises(ValueError, match="file identity changed"), engine.begin() as connection:
+        connection.execute(
+            WORKER_FACTS.insert().values(business_key="FIXTURE:STALE", close_value=99)
+        )
+        os.replace(replacement_path, database_path)
+
+    assert _count_facts(database_path) == 0
 
 
 def test_worker_rejects_invalid_catalog_and_mismatched_checkpoint_interval(
@@ -426,6 +588,29 @@ def test_worker_rejects_invalid_catalog_and_mismatched_checkpoint_interval(
             heartbeat_interval_seconds=0.1,
             database_io_timeout_seconds=0.05,
         )
+
+
+def test_persistent_worker_rejects_unbounded_fetch_handler(tmp_path: Path) -> None:
+    """Ordinary in-process fetch handlers cannot run outside the lease boundary."""
+    engine = _make_engine(tmp_path / "unbounded-fetch.sqlite")
+    fetch_calls = 0
+
+    def ordinary_fetch(_request: object, _context: object) -> object:
+        nonlocal fetch_calls
+        fetch_calls += 1
+        return {"data": "unbounded"}
+
+    job = ReviewedJob(_task(), ordinary_fetch, _normalize, _publish, reviewed=True)
+    with pytest.raises(ValueError, match="requires process-bounded reviewed fetch handlers"):
+        PersistentRunWorker(
+            engine,
+            ReviewedJobRegistry([job]),
+            worker_id="unbounded-fetch",
+            lease_ttl=timedelta(seconds=2),
+            heartbeat_interval_seconds=0.05,
+            database_io_timeout_seconds=0.05,
+        )
+    assert fetch_calls == 0
 
 
 def test_fetch_adapter_rejects_invalid_bindings_and_context(tmp_path: Path) -> None:
