@@ -282,6 +282,20 @@ class TestInstrumentCaptureSnapshotClient:
         assert snapshot.window.start is None
         assert snapshot.window.end is None
 
+    def test_selected_empty_snapshot_is_accepted(self) -> None:
+        with _client(
+            lambda _: httpx.Response(201, json=_capture_snapshot(record_count=0))
+        ) as client:
+            snapshot = client.create_snapshot(
+                DATASET_ID,
+                expected_identity_semantics=CAPTURE_IDENTITY_SEMANTICS,
+                instrument_id=INSTRUMENT_ID,
+                capture_id=CAPTURE_ID,
+            )
+
+        assert snapshot.record_count == 0
+        assert snapshot.selection == InstrumentCaptureSelection(INSTRUMENT_ID, CAPTURE_ID)
+
     def test_iteration_keeps_the_snapshot_selection_fixed_across_pages(self) -> None:
         requests: list[httpx.Request] = []
 
@@ -351,6 +365,10 @@ class TestInstrumentCaptureSnapshotClient:
             ),
             ({}, "require start_date and end_date"),
             ({"start_date": "2024-01-01"}, "supplied together"),
+            (
+                {"start_date": "2024-01-01", "end_date": "2024-02-01"},
+                "atemporal identity semantics require instrument/capture selection",
+            ),
         ],
     )
     def test_invalid_selector_and_date_combinations_fail_before_transport(
@@ -434,6 +452,27 @@ class TestInstrumentCaptureSnapshotClient:
                 start_date="2024-01-01",
                 end_date="2024-02-01",
                 expected_identity_semantics=legacy["identity_semantics"],
+            )
+
+    def test_empty_atemporal_snapshot_cannot_claim_a_dated_non_capture_scope(self) -> None:
+        unselected = _capture_snapshot(
+            filter_fields=[],
+            record_count=0,
+            window={"start": "2024-01-01", "end": "2024-02-01", "end_exclusive": True},
+        )
+        unselected.pop("selection")
+
+        with (
+            _client(lambda _: httpx.Response(200, json=unselected)) as client,
+            pytest.raises(
+                SnapshotProtocolError,
+                match="atemporal snapshots require the instrument/capture profile",
+            ),
+        ):
+            client.get_snapshot(
+                unselected["snapshot_id"],
+                dataset_id=DATASET_ID,
+                expected_identity_semantics=CAPTURE_IDENTITY_SEMANTICS,
             )
 
     def test_page_rejects_changed_selection_in_metadata_or_row(self) -> None:

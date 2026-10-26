@@ -681,6 +681,8 @@ def _parse_snapshot(payload: object) -> Snapshot:
         raise SnapshotProtocolError("snapshot time_field is absent from its schema")
 
     capture_profile = filter_fields == _INSTRUMENT_CAPTURE_FILTER_FIELDS
+    if temporal_semantics == "none" and not capture_profile:
+        raise SnapshotProtocolError("atemporal snapshots require the instrument/capture profile")
     if capture_profile:
         if (
             record_kind != "table"
@@ -1209,8 +1211,8 @@ class SnapshotClient:
             if start >= end:
                 raise ValueError("start_date must be earlier than the exclusive end_date")
         expected = self._validate_expected_semantics(expected_identity_semantics)
+        expected_semantics = json.loads(expected)
         if selection is not None:
-            expected_semantics = json.loads(expected)
             expected_business_key_fields = expected_semantics["business_key_fields"]
             if (
                 expected_semantics["temporal_semantics"] != "none"
@@ -1223,6 +1225,8 @@ class SnapshotClient:
                 raise ValueError(
                     "instrument/capture selection requires atemporal identity semantics"
                 )
+        elif expected_semantics["temporal_semantics"] == "none":
+            raise ValueError("atemporal identity semantics require instrument/capture selection")
         if type(page_size) is not int or not 1 <= page_size <= MAX_PAGE_SIZE:
             raise ValueError(f"page_size must be an integer between 1 and {MAX_PAGE_SIZE}")
         if publication_id is not None:
