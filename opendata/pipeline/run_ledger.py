@@ -155,13 +155,54 @@ class RunLedger:
     The caller owns table creation and engine lifetime. Instantiate this class
     only after the table exists; the constructor performs no database I/O. The
     engine must target the same database as facts written by ``commit_result``.
+    The default ``caller`` clock policy preserves the same-host/test contract;
+    production workers spread across hosts must select ``database`` so lease
+    decisions use the warehouse server's UTC clock.
     """
 
-    def __init__(self, engine: Engine) -> None:
-        """Create a repository bound to ``engine`` without opening a connection."""
+    def __init__(
+        self,
+        engine: Engine,
+        *,
+        clock_policy: Literal["caller", "database"] = "caller",
+    ) -> None:
+        """Bind an engine and select either caller-host or warehouse-server time.
+
+        ``caller`` preserves the compatibility contract for tests and workers
+        sharing one host clock. Multi-host production workers must select
+        ``database``; that policy never falls back to the local host clock.
+        """
         if not isinstance(engine, Engine):
             raise TypeError("engine must be a synchronous SQLAlchemy Engine")
+        if clock_policy not in {"caller", "database"}:
+            raise ValueError("clock_policy must be 'caller' or 'database'")
+        if clock_policy == "database" and engine.dialect.name not in {
+            "mysql",
+            "postgresql",
+            "sqlite",
+        }:
+            raise ValueError(f"database clock policy is unsupported for {engine.dialect.name!r}")
         self._engine = engine
+        self._clock_policy = clock_policy
+
+    def _timestamp_us(
+        self, connection: Connection, caller_timestamp: datetime | None = None
+    ) -> int:
+        """Read the policy-selected UTC clock on the active warehouse connection."""
+        if self._clock_policy == "database":
+            return _database_clock_us(connection)
+        if caller_timestamp is None:
+            caller_timestamp = _application_utc_now()
+        return _datetime_to_epoch_us(caller_timestamp)
+
+    def _begin_database_write(self, connection: Connection) -> None:
+        """Acquire SQLite's writer lock before reading time for a write transaction."""
+        if self._clock_policy == "database" and connection.dialect.name == "sqlite":
+            connection.exec_driver_sql("BEGIN IMMEDIATE")
+
+    def _validate_timestamp_argument(self, timestamp: datetime) -> None:
+        """Validate API timestamp shape even when database policy ignores its value."""
+        _datetime_to_epoch_us(timestamp)
 
     def enqueue(self, run_key: str, jobsnapshot_json: str) -> RunRecord:
         """Insert a queued run once and return the stored record on retries.
@@ -172,9 +213,10 @@ class RunLedger:
         """
         _validate_run_key(run_key)
         _validate_snapshot(jobsnapshot_json)
-        now_us = _datetime_to_epoch_us(datetime.now(timezone.utc))
         try:
             with self._engine.begin() as connection:
+                self._begin_database_write(connection)
+                now_us = self._timestamp_us(connection)
                 connection.execute(
                     insert(RUN_LEDGER_TABLE).values(
                         run_key=run_key,
@@ -213,17 +255,19 @@ class RunLedger:
         stolen, and an expired worker's token cannot be used after reclamation.
         """
         _validate_worker(worker)
-        now_us = _datetime_to_epoch_us(now)
+        self._validate_timestamp_argument(now)
         ttl_us = _timedelta_to_ttl_us(ttl)
         lease_id = uuid4().hex
-        claimable = or_(
-            RUN_LEDGER_TABLE.c.status == QUEUED,
-            and_(
-                RUN_LEDGER_TABLE.c.status == RUNNING,
-                RUN_LEDGER_TABLE.c.lease_expires_at_us <= now_us,
-            ),
-        )
         with self._engine.begin() as connection:
+            self._begin_database_write(connection)
+            now_us = self._timestamp_us(connection, now)
+            claimable = or_(
+                RUN_LEDGER_TABLE.c.status == QUEUED,
+                and_(
+                    RUN_LEDGER_TABLE.c.status == RUNNING,
+                    RUN_LEDGER_TABLE.c.lease_expires_at_us <= now_us,
+                ),
+            )
             candidate_key = (
                 select(RUN_LEDGER_TABLE.c.run_key)
                 .where(claimable)
@@ -274,14 +318,14 @@ class RunLedger:
         _validate_run_key(run_key)
         _validate_worker(worker)
         _validate_fencing_token(fencing_token)
-        now_us = _datetime_to_epoch_us(now)
+        self._validate_timestamp_argument(now)
         ttl_us = _timedelta_to_ttl_us(ttl)
         return self._leased_transition(
             run_key,
             worker,
             fencing_token,
-            now_us,
-            {
+            now,
+            lambda now_us: {
                 "lease_expires_at_us": now_us + ttl_us,
                 "heartbeat_at_us": now_us,
                 "updated_at_us": now_us,
@@ -295,13 +339,13 @@ class RunLedger:
         _validate_run_key(run_key)
         _validate_worker(worker)
         _validate_fencing_token(fencing_token)
-        now_us = _datetime_to_epoch_us(now)
+        self._validate_timestamp_argument(now)
         return self._leased_transition(
             run_key,
             worker,
             fencing_token,
-            now_us,
-            {
+            now,
+            lambda now_us: {
                 "status": SUCCEEDED,
                 "worker": None,
                 "lease_id": None,
@@ -343,23 +387,28 @@ class RunLedger:
         SQLite acquires its reserved write lock through a conditional update
         before reading the lease; MySQL and PostgreSQL lock the row with
         ``SELECT FOR UPDATE``. This prevents cancellation or lease reclamation
-        from racing the warehouse write. ``clock`` exists for deterministic
-        expiry tests; normal callers should leave it unset so commit-time
-        validation uses the current UTC clock.
+        from racing the warehouse write. Under the ``database`` clock policy,
+        both lease checks use the warehouse's UTC clock and a ``clock`` override
+        is rejected. The override exists only for deterministic tests under the
+        ``caller`` policy.
         """
         _validate_run_key(run_key)
         _validate_worker(worker)
         _validate_fencing_token(fencing_token)
-        now_us = _datetime_to_epoch_us(now)
+        self._validate_timestamp_argument(now)
         if not callable(operation):
             raise TypeError("operation must be callable")
+        if self._clock_policy == "database" and clock is not None:
+            raise ValueError("clock overrides are forbidden with database clock policy")
         if clock is not None and not callable(clock):
             raise TypeError("clock must be callable")
-        commit_clock = clock or (lambda: datetime.now(timezone.utc))
+        commit_clock = clock or _application_utc_now
 
         try:
             with self._engine.begin() as connection:
                 if self._engine.dialect.name == "sqlite":
+                    self._begin_database_write(connection)
+                    now_us = self._timestamp_us(connection, now)
                     # SQLite has no row-level FOR UPDATE. This CAS obtains its
                     # database-wide reserved write lock before user SQL runs.
                     locked = connection.execute(
@@ -392,6 +441,7 @@ class RunLedger:
                         .mappings()
                         .one_or_none()
                     )
+                    now_us = self._timestamp_us(connection, now)
                     if not _row_has_live_lease(locked_row, worker, fencing_token, now_us):
                         return None
 
@@ -408,7 +458,11 @@ class RunLedger:
                 finally:
                     transaction_guard.remove()
                 transaction_guard.raise_if_violated()
-                commit_us = _datetime_to_epoch_us(commit_clock())
+                commit_us = (
+                    self._timestamp_us(connection)
+                    if self._clock_policy == "database"
+                    else _datetime_to_epoch_us(commit_clock())
+                )
                 minimum_commit_us = max(
                     now_us,
                     _datetime_to_epoch_us(before_operation.updated_at),
@@ -472,13 +526,13 @@ class RunLedger:
         _validate_worker(worker)
         _validate_fencing_token(fencing_token)
         _validate_error_text(error_text)
-        now_us = _datetime_to_epoch_us(now)
+        self._validate_timestamp_argument(now)
         return self._leased_transition(
             run_key,
             worker,
             fencing_token,
-            now_us,
-            {
+            now,
+            lambda now_us: {
                 "status": FAILED,
                 "worker": None,
                 "lease_id": None,
@@ -496,8 +550,19 @@ class RunLedger:
         terminal state never moves back to an active state.
         """
         _validate_run_key(run_key)
-        now_us = _datetime_to_epoch_us(now)
+        self._validate_timestamp_argument(now)
         with self._engine.begin() as connection:
+            self._begin_database_write(connection)
+            if self._clock_policy == "database" and connection.dialect.name in {
+                "mysql",
+                "postgresql",
+            }:
+                connection.execute(
+                    select(RUN_LEDGER_TABLE.c.run_key)
+                    .where(RUN_LEDGER_TABLE.c.run_key == run_key)
+                    .with_for_update()
+                ).scalar_one_or_none()
+            now_us = self._timestamp_us(connection, now)
             connection.execute(
                 update(RUN_LEDGER_TABLE)
                 .where(
@@ -530,11 +595,24 @@ class RunLedger:
         run_key: str,
         worker: str,
         fencing_token: int,
-        now_us: int,
-        values: dict[str, object],
+        now: datetime,
+        values: Callable[[int], dict[str, object]],
     ) -> RunRecord | None:
         """Apply one live-lease compare-and-set transition."""
         with self._engine.begin() as connection:
+            self._begin_database_write(connection)
+            if self._clock_policy == "database" and connection.dialect.name in {
+                "mysql",
+                "postgresql",
+            }:
+                locked = connection.execute(
+                    select(RUN_LEDGER_TABLE.c.run_key)
+                    .where(RUN_LEDGER_TABLE.c.run_key == run_key)
+                    .with_for_update()
+                ).scalar_one_or_none()
+                if locked is None:
+                    return None
+            now_us = self._timestamp_us(connection, now)
             result = connection.execute(
                 update(RUN_LEDGER_TABLE)
                 .where(
@@ -546,7 +624,7 @@ class RunLedger:
                         RUN_LEDGER_TABLE.c.lease_expires_at_us > now_us,
                     )
                 )
-                .values(**values)
+                .values(**values(now_us))
             )
             if result.rowcount != 1:
                 return None
@@ -906,6 +984,39 @@ def _datetime_to_epoch_us(value: datetime) -> int:
         raise ValueError("timestamps must use UTC")
     delta = value.astimezone(timezone.utc) - _EPOCH
     return (delta.days * 86_400 + delta.seconds) * _MICROSECONDS_PER_SECOND + delta.microseconds
+
+
+def _application_utc_now() -> datetime:
+    """Read the local host clock for the legacy caller-clock policy only."""
+    return datetime.now(timezone.utc)
+
+
+def _database_clock_us(connection: Connection) -> int:
+    """Read an authoritative UTC timestamp from a supported warehouse dialect."""
+    dialect_name = connection.dialect.name
+    if dialect_name == "mysql":
+        value = connection.exec_driver_sql("SELECT UTC_TIMESTAMP(6)").scalar_one()
+    elif dialect_name == "postgresql":
+        value = connection.exec_driver_sql("SELECT clock_timestamp()").scalar_one()
+    elif dialect_name == "sqlite":
+        value = connection.exec_driver_sql(
+            "SELECT strftime('%Y-%m-%d %H:%M:%f', 'now')"
+        ).scalar_one()
+        if not isinstance(value, str):
+            raise RuntimeError("SQLite database clock returned a non-text timestamp")
+        try:
+            value = datetime.fromisoformat(value).replace(tzinfo=timezone.utc)
+        except ValueError as exc:
+            raise RuntimeError("SQLite database clock returned an invalid timestamp") from exc
+    else:
+        raise RuntimeError(f"database clock is unsupported for {dialect_name!r}")
+
+    if not isinstance(value, datetime):
+        raise RuntimeError(f"{dialect_name} database clock returned an invalid timestamp")
+    if value.tzinfo is None:
+        # MySQL UTC_TIMESTAMP(6) is UTC by definition but drivers return it naive.
+        value = value.replace(tzinfo=timezone.utc)
+    return _datetime_to_epoch_us(value.astimezone(timezone.utc))
 
 
 def _timedelta_to_ttl_us(ttl: timedelta) -> int:
