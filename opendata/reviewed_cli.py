@@ -36,6 +36,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
@@ -68,6 +69,32 @@ _EXECUTION_FIELDS = frozenset(
         "shell",
         "sql",
     }
+)
+_CONNECTION_SELECTOR_ROOTS = (
+    "connection",
+    "database",
+    "db",
+    "conn",
+    "jdbc",
+    "odbc",
+    "sqlalchemy",
+    "mysql",
+    "postgres",
+    "postgresql",
+    "sqlite",
+    "mariadb",
+    "mssql",
+    "oracle",
+)
+_CONNECTION_SELECTOR_SUFFIXES = (
+    "url",
+    "uri",
+    "dsn",
+    "connectionstring",
+    "connstring",
+    "connectstring",
+    "connstr",
+    "string",
 )
 _REQUEST_FIELDS: Mapping[str, frozenset[str]] = {
     "scheduled": frozenset(
@@ -337,7 +364,7 @@ def _validate_json_tree(value: object) -> None:
 
 
 def _reject_execution_fields(value: object) -> None:
-    """Reject arbitrary-code and connection-selector keys at every JSON depth."""
+    """Reject execution selectors and credential-bearing URIs recursively."""
     stack = [value]
     while stack:
         current = stack.pop()
@@ -346,11 +373,34 @@ def _reject_execution_fields(value: object) -> None:
                 normalized = "".join(
                     character for character in key.casefold() if character.isalnum()
                 )
-                if normalized in _EXECUTION_FIELDS:
+                if normalized in _EXECUTION_FIELDS or _is_connection_selector(normalized):
                     raise ValueError("request includes an unsupported execution field")
                 stack.append(child)
         elif isinstance(current, list):
             stack.extend(current)
+        elif isinstance(current, str) and _uri_has_userinfo(current):
+            raise ValueError("request includes a credential-bearing URI")
+
+
+def _is_connection_selector(normalized_key: str) -> bool:
+    """Match common DSN/URL/URI/connection-string aliases after normalization."""
+    return any(
+        normalized_key.startswith(root) and normalized_key.endswith(suffix)
+        for root in _CONNECTION_SELECTOR_ROOTS
+        for suffix in _CONNECTION_SELECTOR_SUFFIXES
+    )
+
+
+def _uri_has_userinfo(value: str) -> bool:
+    """Detect URL userinfo, including usernames with an omitted password."""
+    try:
+        parsed = urlsplit(value)
+    except ValueError:
+        # A malformed authority that still contains userinfo is rejected too;
+        # do not echo the offending text in a validation error or CLI receipt.
+        authority = value.split("://", 1)[-1].split("/", 1)[0]
+        return "@" in authority
+    return bool(parsed.netloc and (parsed.username is not None or parsed.password is not None))
 
 
 def _execute_request(request: _CLIRequest, application: ReviewedCLIApplication) -> _CLIResult:

@@ -371,6 +371,12 @@ def test_manual_and_backfill_queue_only_safe_receipts(
         b'{"schema_version":2,"operation":"manual","job_id":"daily","version":"v1","payload":{}}',
         b'{"schema_version":1,"operation":"unknown","job_id":"daily","version":"v1"}',
         b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"nested":{"dsn":"mysql://private"}}}}',
+        b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"database_url":"mysql://readonly:credential-canary@db.invalid/warehouse"}}}',
+        b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"nested":{"connection_string":"mysql://readonly:credential-canary@db.invalid/warehouse"}}}}',
+        b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"nested":{"DATABASE-URI":"mysql://readonly@db.invalid/warehouse"}}}}',
+        b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"url":"postgresql://readonly:credential-canary@db.invalid/warehouse"}}}',
+        b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"urls":["postgresql://readonly:credential-canary@db.invalid/warehouse"]}}}',
+        b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"url":"mysql://[invalid:credential-canary@db.invalid/warehouse"}}}',
         b'{"schema_version":1,"operation":"manual","job_id":"daily","version":"v1","payload":{"idempotency_key":"x","query":{"commands":[{"func-tion":"bad"}]}}}',
         b'["not","an","object"]',
         b"\xff",
@@ -385,6 +391,7 @@ def test_malformed_or_executable_requests_are_rejected_without_persistence(
     assert code == 2
     assert receipt == {"code": "invalid_request", "status": "rejected"}
     assert "evil" not in text and "bad" not in text
+    assert "credential-canary" not in text
     assert row_count(engine) == 0
 
 
