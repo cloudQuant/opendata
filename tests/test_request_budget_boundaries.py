@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import threading
+import time
 from datetime import datetime, timedelta, timezone, tzinfo
 
 import pytest
@@ -462,7 +463,7 @@ def test_expired_deadline_is_distinct_from_an_invalid_deadline() -> None:
 
 def test_host_slot_callback_failure_releases_the_shared_gate() -> None:
     budget = make_budget(make_grant())
-    scopes = (make_scope(budget),)
+    scopes = (make_scope(budget, deadline=time.monotonic() + 2.0),)
     callback_count = 0
 
     def check_caller_liveness() -> None:
