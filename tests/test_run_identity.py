@@ -519,6 +519,19 @@ def test_malformed_uri_userinfo_is_rejected_without_echoing_values() -> None:
     assert canary not in str(caught.value)
 
 
+def test_malformed_uri_sensitive_query_is_rejected_without_echoing_values() -> None:
+    """Fail closed when a malformed URI candidate contains a credential query."""
+    canary = "credential-canary-malformed-query-918273"
+    with pytest.raises(ValidationError) as caught:
+        RunRequest(
+            run_type="manual",
+            idempotency_key="manual-malformed-query",
+            query={"endpoint": f"https://[::1/?api_key={canary}"},
+        )
+
+    assert canary not in str(caught.value)
+
+
 def test_sensitive_query_key_is_not_echoed_in_validation_error() -> None:
     """Do not copy caller-controlled JSON keys into validation paths or messages."""
     canary = "leaky-canary-918273"

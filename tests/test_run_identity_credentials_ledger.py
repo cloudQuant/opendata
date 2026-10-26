@@ -64,6 +64,7 @@ def run_service(tmp_path):
         {"endpoint": "https://data.example.test/prices?token=credential-canary"},
         {"endpoint": "https://data.example.test/prices?api_key=credential-canary"},
         {"endpoint": "https://readonly:credential-canary@[::1"},
+        {"endpoint": "https://[::1/?api_key=credential-canary"},
         {"sources": [{"endpoint": "jdbc:postgresql://readonly:credential-canary@db.invalid/data"}]},
     ],
 )

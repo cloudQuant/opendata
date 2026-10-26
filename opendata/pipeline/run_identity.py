@@ -507,11 +507,7 @@ def _contains_connection_credentials(value: str) -> bool:
         try:
             parsed = urlsplit(candidate)
         except ValueError:
-            authority = candidate.partition("://")[2]
-            authority = authority.split("/", 1)[0].split("?", 1)[0].split("#", 1)[0]
-            if "@" in authority:
-                return True
-            continue
+            return True
         if not parsed.scheme or not parsed.netloc:
             continue
         if parsed.username is not None or parsed.password is not None:
