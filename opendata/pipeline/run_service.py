@@ -259,6 +259,7 @@ class RunService:
         self._ledger: ResultCommittingLedger = ledger
         self._registry = registry
         self._clock = clock or (lambda: datetime.now(timezone.utc))
+        self._commit_clock = clock
         self._max_records = max_records
         self._max_result_bytes = max_result_bytes
 
@@ -309,7 +310,7 @@ class RunService:
                 fencing_token=record.fencing_token,
                 now=self._now(),
                 operation=publish,
-                clock=self._clock,
+                clock=self._commit_clock,
             )
             if committed is None:
                 return RunOutcome(self._ledger.get(record.run_key), None)

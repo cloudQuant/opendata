@@ -21,10 +21,20 @@ from uuid import uuid4
 import pytest
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
-from sqlalchemy import Column, Integer, MetaData, Table, create_engine, insert, inspect, select
+from sqlalchemy import (
+    Column,
+    Integer,
+    MetaData,
+    Table,
+    create_engine,
+    insert,
+    inspect,
+    select,
+    update,
+)
 from sqlalchemy.engine import make_url
 
-from opendata.pipeline.run_ledger import RUN_LEDGER_METADATA, RunLedger
+from opendata.pipeline.run_ledger import RUN_LEDGER_METADATA, RUN_LEDGER_TABLE, RunLedger
 
 
 @pytest.fixture
@@ -248,6 +258,59 @@ def test_owned_mysql_ledger_exact_identity_and_large_snapshot(owned_mysql):
     assert ledger.get(claim.run_key).worker == "CaseWorker"
 
 
+def test_owned_mysql_database_clock_rejects_forged_worker_expiry(owned_mysql):
+    """A stale worker timestamp cannot extend a warehouse-authoritative lease."""
+    RUN_LEDGER_METADATA.create_all(owned_mysql)
+    ledger = RunLedger(owned_mysql, clock_policy="database")
+    ledger.enqueue("db-clock", '{"dataset":"fixture"}')
+    forged_past = datetime(2000, 1, 1, tzinfo=timezone.utc)
+    forged_future = datetime(2200, 1, 1, tzinfo=timezone.utc)
+    first = ledger.claim("clock-worker-a", forged_past, timedelta(minutes=1))
+    assert first is not None and first.created_at.year > 2000
+    assert first.lease_expires_at.year < 2200
+    renewed = ledger.heartbeat(
+        first.run_key, "clock-worker-a", first.fencing_token, forged_past, timedelta(minutes=1)
+    )
+    assert renewed is not None and renewed.updated_at.year > 2000
+    called = []
+
+    def write_result(_connection):
+        called.append(True)
+
+    with pytest.raises(ValueError, match="clock"):
+        ledger.commit_result(
+            first.run_key,
+            worker="clock-worker-a",
+            fencing_token=first.fencing_token,
+            now=forged_past,
+            operation=write_result,
+            clock=lambda: forged_past,
+        )
+    with owned_mysql.begin() as connection:
+        # Test-owned fault injection establishes expiry without sleeping or
+        # relying on this machine's wall clock.
+        connection.execute(
+            update(RUN_LEDGER_TABLE)
+            .where(RUN_LEDGER_TABLE.c.run_key == first.run_key)
+            .values(lease_expires_at_us=0)
+        )
+    assert (
+        ledger.commit_result(
+            first.run_key,
+            worker="clock-worker-a",
+            fencing_token=first.fencing_token,
+            now=forged_past,
+            operation=write_result,
+        )
+        is None
+    )
+    assert called == []
+    reclaimed = ledger.claim("clock-worker-b", forged_future, timedelta(minutes=1))
+    assert reclaimed is not None
+    assert reclaimed.fencing_token == first.fencing_token + 1
+    assert reclaimed.lease_expires_at.year < 2200
+
+
 def test_owned_mysql_publication_migration_revisions_and_snapshot(owned_mysql):
     """Read fixed snapshots from literal MySQL DDL, retaining 70 KiB rows."""
     from opendata.pipeline.publication_store import (
@@ -387,3 +450,204 @@ def test_owned_mysql_run_and_publication_share_one_fenced_transaction(owned_mysq
     assert completed is not None and completed[0].status == "succeeded"
     assert len(store.list_publications("stock.daily")) == 1
     assert store.list_publications("stock.daily")[0].watermark == {"date": "2026-10-20"}
+
+
+def test_owned_mysql_reviewed_run_to_rest_and_sdk_keeps_revision_snapshot(owned_mysql):
+    """Run the real writer, MySQL, REST serializer, and standalone SDK together.
+
+    Acquisition is a declared synthetic fixture. Authentication is overridden
+    with a scoped service principal; grant checks run normally on every read.
+    This test proves integration, not source fidelity or deployed credentials.
+    """
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from opendata_client.snapshots import SnapshotClient, SnapshotPermissionError
+
+    from opendata.api.dependencies import Principal, get_current_principal
+    from opendata.api.published_access import DatasetGrant, DatasetGrantRegistry
+    from opendata.api.published_data import (
+        get_dataset_contracts,
+        get_dataset_grants,
+        get_publication_store,
+        router,
+    )
+    from opendata.data.dataset_contract_registry import DatasetContractRegistry, canonical_sha256
+    from opendata.data.platform_contracts import DatasetContract, FieldContract, SourceIdentity
+    from opendata.models.user import User, UserRole
+    from opendata.pipeline.contract_publication import ValidatedPublicationWriter
+    from opendata.pipeline.publication_store import PUBLICATION_METADATA, PublicationStore
+    from opendata.pipeline.run_identity import RunRequest, ScheduleMetadata, TaskDefinition
+    from opendata.pipeline.run_service import (
+        NormalizedBatch,
+        NormalizedRecord,
+        ReviewedJob,
+        ReviewedJobRegistry,
+        RunService,
+    )
+
+    RUN_LEDGER_METADATA.create_all(owned_mysql)
+    PUBLICATION_METADATA.create_all(owned_mysql)
+    ledger = RunLedger(owned_mysql, clock_policy="database")
+    store = PublicationStore(owned_mysql, cursor_signing_key=b"owned-chain-signing-key-only-204!!!")
+    contract = DatasetContract(
+        dataset_id="equity.daily",
+        schema_version="1",
+        semantic_version="1.0.0",
+        asset_class="equity",
+        frequency="1d",
+        record_kind="time_series",
+        fields=(
+            FieldContract(name="instrument_id", data_type="string"),
+            FieldContract(name="trade_date", data_type="date"),
+            FieldContract(name="close", data_type="number"),
+        ),
+        business_key=("instrument_id", "trade_date"),
+        ordering=("trade_date", "instrument_id"),
+        temporal_semantics="business_date",
+        time_field="trade_date",
+        source=SourceIdentity(source_id="fixture.alpha", source="synthetic-fixture"),
+        field_units={"close": "CNY/share"},
+        field_currencies={"close": "CNY"},
+        currency="CNY",
+        adjustment_basis="raw",
+        field_adjustments={"close": "raw"},
+        timezone="Asia/Shanghai",
+        pit_policy="unsupported",
+    )
+    contracts = DatasetContractRegistry((contract,))
+    task = TaskDefinition(
+        job_id="owned-synthetic-chain",
+        version="v1",
+        dataset_id=contract.dataset_id,
+        provider=contract.source.source,
+        model="fixture-prices",
+        schedule=ScheduleMetadata(kind="cron", expression="0 16 * * 1-5"),
+        enabled=True,
+    )
+    fixture_values = [(date(2026, 10, 20), 100.5), (date(2026, 10, 21), 101.25)]
+
+    def normalize(_raw, _request, _context):
+        return NormalizedBatch(
+            records=tuple(
+                NormalizedRecord(
+                    business_key=json.dumps(["AAA", day.isoformat()], separators=(",", ":")),
+                    business_date=day,
+                    payload={"instrument_id": "AAA", "trade_date": day.isoformat(), "close": price},
+                )
+                for day, price in fixture_values
+            ),
+            schema_version="1",
+            semantic_version="1.0.0",
+            unit="per-field",
+            adjustment_basis="raw",
+            quality={"status": "unknown", "report_id": None, "issue_count": 0},
+            provenance={"fixture": "synthetic; source verification not performed"},
+        )
+
+    job = ReviewedJob(
+        task=task,
+        reviewed=True,
+        fetch=lambda _request, _context: None,
+        normalize=normalize,
+        publish=ValidatedPublicationWriter(contracts),
+    )
+    service = RunService(ledger, ReviewedJobRegistry((job,)))
+    request = RunRequest(run_type="manual", idempotency_key="owned-synthetic-request-1")
+    queued = service.submit(task.job_id, task.version, request)
+    assert service.submit(task.job_id, task.version, request).run_key == queued.run_key
+    outcome = service.run_once("owned-worker", timedelta(minutes=1))
+    assert outcome is not None and outcome.record.status == "succeeded"
+    assert service.run_once("owned-worker", timedelta(minutes=1)) is None
+    now = datetime.now(timezone.utc)
+    grants = DatasetGrantRegistry(
+        (
+            DatasetGrant(
+                dataset_id=contract.dataset_id,
+                domain="equity",
+                source_id=contract.source.source_id,
+                permitted_operations=("data.read", "snapshot.create", "snapshot.read"),
+                purposes=("research",),
+                valid_from=now - timedelta(minutes=1),
+                valid_until=now + timedelta(hours=1),
+                review_evidence="OWNED-SYNTHETIC-TEST",
+            ),
+        )
+    )
+    principal = Principal(
+        user=User(
+            id=7,
+            username="fixture",
+            email="fixture@example.test",
+            role=UserRole.USER,
+            is_active=True,
+            hashed_password="synthetic-test-only",
+        ),
+        api_key_id=17,
+        scopes=("equity", "data.read", "snapshot.create", "snapshot.read"),
+    )
+    app = FastAPI()
+    app.include_router(router)
+    app.dependency_overrides[get_current_principal] = lambda: principal
+    app.dependency_overrides[get_dataset_contracts] = lambda: contracts
+    app.dependency_overrides[get_dataset_grants] = lambda: grants
+    app.dependency_overrides[get_publication_store] = lambda: store
+    semantics = {
+        "version": 1,
+        "identity_key_encoding": "canonical-json-array-v1",
+        "revision": (
+            "latest non-deleted revision per business_key at the pinned publication sequence"
+        ),
+        "temporal_fields": {
+            "business_date": (
+                "business-date bucket; null ordering last (route rejects null time values)"
+            ),
+            "observed_at": "source observation time",
+            "source_published_at": "source publication time",
+            "available_at": "platform availability time",
+            "event_at": "source event time",
+        },
+        "business_key_fields": ["instrument_id", "trade_date"],
+        "ordering_fields": ["trade_date", "instrument_id"],
+        "storage_order": [
+            {"field": "business_date", "direction": "asc", "nulls": "last", "comparison": "native"},
+            {"field": "business_key", "direction": "asc", "comparison": "binary_lexicographic"},
+        ],
+        "temporal_semantics": "business_date",
+        "time_field": "trade_date",
+    }
+    with (
+        TestClient(app) as http_client,
+        SnapshotClient(
+            "http://test", api_key="owned-synthetic-service", http_client=http_client
+        ) as client,
+    ):
+        snapshot = client.create_snapshot(
+            contract.dataset_id,
+            start_date="2026-10-20",
+            end_date="2026-10-22",
+            page_size=1,
+            expected_identity_semantics=semantics,
+        )
+        assert snapshot.contract_sha256 == canonical_sha256(contract)
+        fixture_values[:] = [(date(2026, 10, 21), 999.0)]
+        service.submit(
+            task.job_id,
+            task.version,
+            RunRequest(run_type="manual", idempotency_key="owned-synthetic-request-2"),
+        )
+        revised = service.run_once("owned-worker", timedelta(minutes=1))
+        assert revised is not None and revised.record.status == "succeeded"
+        fixed_rows = list(client.iter_records(snapshot, expected_identity_semantics=semantics))
+        assert [row["payload"]["close"] for row in fixed_rows] == [100.5, 101.25]
+        latest = client.create_snapshot(
+            contract.dataset_id,
+            start_date="2026-10-20",
+            end_date="2026-10-22",
+            page_size=1,
+            expected_identity_semantics=semantics,
+        )
+        latest_rows = list(client.iter_records(latest, expected_identity_semantics=semantics))
+        assert [row["payload"]["close"] for row in latest_rows] == [100.5, 999.0]
+        app.dependency_overrides[get_dataset_grants] = lambda: DatasetGrantRegistry(())
+        with pytest.raises(SnapshotPermissionError):
+            client.list_records(snapshot, expected_identity_semantics=semantics)
