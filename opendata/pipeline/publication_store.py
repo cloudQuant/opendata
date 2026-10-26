@@ -46,6 +46,12 @@ from sqlalchemy.dialects.mysql import MEDIUMTEXT, VARCHAR
 from sqlalchemy.engine import Connection, Engine, RowMapping
 from sqlalchemy.exc import IntegrityError
 
+from opendata.data.capture_selection import (
+    InstrumentCaptureSelection,
+    InstrumentCaptureSelectionError,
+    validate_selector_pair,
+)
+
 if TYPE_CHECKING:
     from sqlalchemy.sql.selectable import Subquery
 
@@ -153,6 +159,8 @@ PUBLISHED_FACT_VERSIONS = Table(
         "publication_id", String(32), ForeignKey("od_publications.publication_id"), nullable=False
     ),
     Column("publication_sequence", BigInteger, nullable=False),
+    Column("instrument_id", _key_type(MAX_ID_LENGTH), nullable=True),
+    Column("capture_id", _key_type(64), nullable=True),
     Column("business_date", Date, nullable=True),
     Column("event_at", String(40), nullable=True),
     Column("observed_at", String(40), nullable=True),
@@ -162,6 +170,11 @@ PUBLISHED_FACT_VERSIONS = Table(
     Column("record_hash", String(64), nullable=False),
     Column("is_deleted", Boolean, nullable=False, default=False),
     CheckConstraint("revision > 0", name="ck_od_published_fact_revision"),
+    CheckConstraint(
+        "(instrument_id IS NULL AND capture_id IS NULL) OR "
+        "(instrument_id IS NOT NULL AND capture_id IS NOT NULL)",
+        name="ck_od_fact_capture_pair",
+    ),
     Index(
         "ix_od_published_fact_asof",
         "dataset_id",
@@ -175,6 +188,13 @@ PUBLISHED_FACT_VERSIONS = Table(
         "business_date",
         "business_key",
     ),
+    Index(
+        "ix_od_fact_capture_read",
+        "dataset_id",
+        "instrument_id",
+        "capture_id",
+        "publication_sequence",
+    ),
 )
 SNAPSHOTS = Table(
     "od_publication_snapshots",
@@ -186,6 +206,8 @@ SNAPSHOTS = Table(
     ),
     Column("schema_version", String(64), nullable=False),
     Column("publication_sequence", BigInteger, nullable=False),
+    Column("instrument_id", _key_type(MAX_ID_LENGTH), nullable=True),
+    Column("capture_id", _key_type(64), nullable=True),
     Column("start_date", Date, nullable=True),
     Column("end_date", Date, nullable=True),
     Column("page_size", Integer, nullable=False),
@@ -198,6 +220,11 @@ SNAPSHOTS = Table(
     Column("expires_at_us", BigInteger, nullable=False),
     CheckConstraint("page_size > 0", name="ck_od_snapshot_page_size"),
     CheckConstraint("record_count >= 0", name="ck_od_snapshot_record_count"),
+    CheckConstraint(
+        "(instrument_id IS NULL AND capture_id IS NULL) OR "
+        "(instrument_id IS NOT NULL AND capture_id IS NOT NULL)",
+        name="ck_od_snapshot_capture_pair",
+    ),
     Index("ix_od_snapshot_expiry", "expires_at_us"),
 )
 
@@ -208,7 +235,9 @@ class PublishedRecordInput:
 
     ``business_date`` is a date bucket and cannot be a datetime. The three
     timestamps preserve independent event, source-publication, observation, and
-    platform-availability semantics; none is inferred from another.
+    platform-availability semantics; none is inferred from another. Selector
+    metadata is an explicit trusted storage hint and must match the payload.
+    Payload fields alone never materialize indexed selector columns.
     """
 
     business_key: str
@@ -218,6 +247,8 @@ class PublishedRecordInput:
     source_published_at: datetime | None = None
     available_at: datetime | None = None
     event_at: datetime | None = None
+    instrument_id: str | None = None
+    capture_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -261,7 +292,7 @@ class DatasetSummary:
 
 @dataclass(frozen=True, slots=True)
 class SnapshotRecord:
-    """A fixed publication, filter, ordering, scope, and expiry boundary."""
+    """A fixed publication, optional selector, ordering, scope, and expiry boundary."""
 
     snapshot_id: str
     dataset_id: str
@@ -278,6 +309,8 @@ class SnapshotRecord:
     created_at: datetime
     expires_at: datetime
     as_of: datetime
+    instrument_id: str | None = None
+    capture_id: str | None = None
 
     @property
     def selection_hash(self) -> str:
@@ -675,6 +708,8 @@ class PublicationStore:
         page_size: int = 100,
         access_scope: str = "default",
         ttl: timedelta = timedelta(hours=24),
+        instrument_id: str | None = None,
+        capture_id: str | None = None,
     ) -> SnapshotRecord:
         """Pin a publication and compute a content hash for its scoped subset.
 
@@ -683,6 +718,9 @@ class PublicationStore:
         so the hash covers the actual subset rather than publication metadata.
         """
         dataset = _identifier(dataset_id, "dataset_id")
+        selection = _validated_capture_selection(
+            instrument_id, capture_id, error_type=SnapshotError
+        )
         start, end = _validate_date_window(start_date, end_date)
         page = _page_limit(page_size, "page_size", max_value=MAX_PAGE_SIZE)
         scope = _label(access_scope, "access_scope", MAX_ID_LENGTH)
@@ -731,6 +769,8 @@ class PublicationStore:
                 end,
                 scope,
                 page,
+                instrument_id=selection.instrument_id if selection is not None else None,
+                capture_id=selection.capture_id if selection is not None else None,
             )
             selection_hash = _snapshot_selection_hash(
                 dataset,
@@ -739,6 +779,8 @@ class PublicationStore:
                 end,
                 scope,
                 page,
+                instrument_id=selection.instrument_id if selection is not None else None,
+                capture_id=selection.capture_id if selection is not None else None,
             )
             connection.execute(
                 insert(SNAPSHOTS).values(
@@ -747,6 +789,8 @@ class PublicationStore:
                     publication_id=publication.publication_id,
                     schema_version=publication.schema_version,
                     publication_sequence=publication.sequence,
+                    instrument_id=selection.instrument_id if selection is not None else None,
+                    capture_id=selection.capture_id if selection is not None else None,
                     start_date=start,
                     end_date=end,
                     page_size=page,
@@ -857,8 +901,13 @@ class PublicationStore:
         self, snapshot: SnapshotRecord, last_date: date | None, last_key: str
     ) -> str:
         """Create an authenticated continuation token for one snapshot page."""
+        selection = _validated_capture_selection(
+            snapshot.instrument_id,
+            snapshot.capture_id,
+            error_type=SnapshotError,
+        )
         payload = {
-            "version": 1,
+            "version": 2 if selection is not None else 1,
             "snapshot_id": snapshot.snapshot_id,
             "dataset_id": snapshot.dataset_id,
             "publication_id": snapshot.publication_id,
@@ -875,6 +924,9 @@ class PublicationStore:
             "last_business_date": last_date.isoformat() if last_date else None,
             "last_business_key": last_key,
         }
+        if selection is not None:
+            payload["instrument_id"] = selection.instrument_id
+            payload["capture_id"] = selection.capture_id
         encoded = _base64url(_canonical_json(payload).encode("utf-8"))
         signature = _base64url(
             hmac.new(self._cursor_signing_key, encoded.encode("ascii"), hashlib.sha256).digest()
@@ -912,8 +964,13 @@ class PublicationStore:
             raise SnapshotError("cursor payload is invalid") from exc
         if not isinstance(payload, dict):
             raise SnapshotError("cursor payload is invalid")
+        selection = _validated_capture_selection(
+            snapshot.instrument_id,
+            snapshot.capture_id,
+            error_type=SnapshotError,
+        )
         expected_binding = {
-            "version": 1,
+            "version": 2 if selection is not None else 1,
             "snapshot_id": snapshot.snapshot_id,
             "dataset_id": snapshot.dataset_id,
             "publication_id": snapshot.publication_id,
@@ -928,6 +985,9 @@ class PublicationStore:
             "expires_at_us": _datetime_to_us(snapshot.expires_at),
             "sort": "business_date_asc_nulls_last_business_key_asc",
         }
+        if selection is not None:
+            expected_binding["instrument_id"] = selection.instrument_id
+            expected_binding["capture_id"] = selection.capture_id
         if any(payload.get(key) != value for key, value in expected_binding.items()):
             raise SnapshotError("cursor belongs to a different snapshot, window, or page contract")
         last_key = payload.get("last_business_key")
@@ -945,6 +1005,22 @@ class PublicationStore:
 
 def _ranked_visible_facts(snapshot: SnapshotRecord) -> Subquery:
     """Build a latest-revision-as-of query shared by pages and hash snapshots."""
+    selection = _validated_capture_selection(
+        snapshot.instrument_id,
+        snapshot.capture_id,
+        error_type=SnapshotError,
+    )
+    predicates = [
+        PUBLISHED_FACT_VERSIONS.c.dataset_id == snapshot.dataset_id,
+        PUBLISHED_FACT_VERSIONS.c.publication_sequence <= snapshot.publication_sequence,
+    ]
+    if selection is not None:
+        predicates.extend(
+            (
+                PUBLISHED_FACT_VERSIONS.c.instrument_id == selection.instrument_id,
+                PUBLISHED_FACT_VERSIONS.c.capture_id == selection.capture_id,
+            )
+        )
     return (
         select(
             PUBLISHED_FACT_VERSIONS.c.dataset_id,
@@ -952,6 +1028,8 @@ def _ranked_visible_facts(snapshot: SnapshotRecord) -> Subquery:
             PUBLISHED_FACT_VERSIONS.c.revision,
             PUBLISHED_FACT_VERSIONS.c.publication_id,
             PUBLISHED_FACT_VERSIONS.c.publication_sequence,
+            PUBLISHED_FACT_VERSIONS.c.instrument_id,
+            PUBLISHED_FACT_VERSIONS.c.capture_id,
             PUBLISHED_FACT_VERSIONS.c.business_date,
             PUBLISHED_FACT_VERSIONS.c.event_at,
             PUBLISHED_FACT_VERSIONS.c.observed_at,
@@ -973,10 +1051,7 @@ def _ranked_visible_facts(snapshot: SnapshotRecord) -> Subquery:
             )
             .label("row_number"),
         )
-        .where(
-            PUBLISHED_FACT_VERSIONS.c.dataset_id == snapshot.dataset_id,
-            PUBLISHED_FACT_VERSIONS.c.publication_sequence <= snapshot.publication_sequence,
-        )
+        .where(*predicates)
         .subquery("od_snapshot_latest_revision")
     )
 
@@ -989,6 +1064,9 @@ def _snapshot_content_hash(
     end: date | None,
     access_scope: str,
     page_size: int,
+    *,
+    instrument_id: str | None = None,
+    capture_id: str | None = None,
 ) -> tuple[str, int]:
     """Hash every visible key/revision in a scoped half-open window in order."""
     temporary = SnapshotRecord(
@@ -1008,12 +1086,16 @@ def _snapshot_content_hash(
             end,
             access_scope,
             page_size,
+            instrument_id=instrument_id,
+            capture_id=capture_id,
         ),
         content_hash="0" * 64,
         record_count=0,
         created_at=datetime.now(_UTC),
         expires_at=datetime.now(_UTC) + timedelta(seconds=1),
         as_of=publication.published_at,
+        instrument_id=instrument_id,
+        capture_id=capture_id,
     )
     ranked = _ranked_visible_facts(temporary)
     statement = select(
@@ -1049,6 +1131,8 @@ def _snapshot_content_hash(
         end,
         access_scope,
         page_size,
+        instrument_id=instrument_id,
+        capture_id=capture_id,
     )
     digest.update(_canonical_json(header).encode("utf-8"))
     digest.update(b"\n")
@@ -1126,6 +1210,9 @@ def _snapshot_selection_hash(
     end: date | None,
     access_scope: str,
     page_size: int,
+    *,
+    instrument_id: str | None = None,
+    capture_id: str | None = None,
 ) -> str:
     """Hash the immutable selection semantics, including source/schema identity."""
     selection = {
@@ -1142,6 +1229,19 @@ def _snapshot_selection_hash(
         "page_size": page_size,
         "sort": "business_date_asc_nulls_last_business_key_asc",
     }
+    selector = _validated_capture_selection(
+        instrument_id,
+        capture_id,
+        error_type=SnapshotError,
+    )
+    if selector is not None:
+        selection.update(
+            {
+                "selection_version": 2,
+                "instrument_id": selector.instrument_id,
+                "capture_id": selector.capture_id,
+            }
+        )
     return _sha256(_canonical_json(selection).encode("utf-8"))
 
 
@@ -1193,6 +1293,13 @@ def _append_changed_revision(
         .mappings()
         .first()
     )
+    if existing is not None and (
+        existing["instrument_id"],
+        existing["capture_id"],
+    ) != (record["instrument_id"], record["capture_id"]):
+        raise PublicationContractConflictError(
+            "fact selector metadata is immutable for each business key"
+        )
     if existing is not None and existing["record_hash"] == record["record_hash"]:
         return
     revision = int(existing["revision"]) + 1 if existing is not None else 1
@@ -1203,6 +1310,8 @@ def _append_changed_revision(
             revision=revision,
             publication_id=publication_id,
             publication_sequence=sequence,
+            instrument_id=record["instrument_id"],
+            capture_id=record["capture_id"],
             business_date=record["business_date"],
             event_at=record["event_at"],
             observed_at=record["observed_at"],
@@ -1213,6 +1322,19 @@ def _append_changed_revision(
             is_deleted=False,
         )
     )
+
+
+def _validated_capture_selection(
+    instrument_id: object | None,
+    capture_id: object | None,
+    *,
+    error_type: type[ValueError] = ValueError,
+) -> InstrumentCaptureSelection | None:
+    """Validate one paired storage selector with a caller-safe exception type."""
+    try:
+        return validate_selector_pair(instrument_id=instrument_id, capture_id=capture_id)
+    except InstrumentCaptureSelectionError as exc:
+        raise error_type(str(exc)) from None
 
 
 def _normalize_records(records: Iterable[PublishedRecordInput]) -> list[dict[str, Any]]:
@@ -1241,7 +1363,14 @@ def _normalize_records(records: Iterable[PublishedRecordInput]) -> list[dict[str
             isinstance(item.business_date, datetime) or not isinstance(item.business_date, date)
         ):
             raise ValueError(f"records[{index}].business_date must be datetime.date")
+        selection = _validated_capture_selection(item.instrument_id, item.capture_id)
         payload_json = _json_object(item.payload, f"records[{index}].payload", MAX_RECORD_BYTES)
+        payload = json.loads(payload_json)
+        if selection is not None and (
+            payload.get("instrument_id") != selection.instrument_id
+            or payload.get("capture_id") != selection.capture_id
+        ):
+            raise ValueError(f"records[{index}] selector metadata does not match its payload")
         observed_at = _timestamp(item.observed_at, f"records[{index}].observed_at")
         source_published_at = _timestamp(
             item.source_published_at, f"records[{index}].source_published_at"
@@ -1255,8 +1384,13 @@ def _normalize_records(records: Iterable[PublishedRecordInput]) -> list[dict[str
             "observed_at": observed_at,
             "source_published_at": source_published_at,
             "available_at": available_at,
-            "payload": json.loads(payload_json),
+            "payload": payload,
         }
+        if selection is not None:
+            canonical["selection"] = {
+                "instrument_id": selection.instrument_id,
+                "capture_id": selection.capture_id,
+            }
         record_hash = _sha256(_canonical_json(canonical).encode("utf-8"))
         size = len(payload_json.encode("utf-8")) + len(business_key.encode("utf-8")) + 256
         total_bytes += size
@@ -1272,6 +1406,8 @@ def _normalize_records(records: Iterable[PublishedRecordInput]) -> list[dict[str
                 "observed_at": observed_at,
                 "source_published_at": source_published_at,
                 "available_at": available_at,
+                "instrument_id": selection.instrument_id if selection is not None else None,
+                "capture_id": selection.capture_id if selection is not None else None,
                 "record_json": payload_json,
                 "record_hash": record_hash,
                 "canonical": canonical,
@@ -1386,6 +1522,11 @@ def _publication_from_row(row: RowMapping) -> PublicationRecord:
 
 def _snapshot_from_row(row: RowMapping) -> SnapshotRecord:
     """Parse one persisted snapshot row into its public immutable model."""
+    selection = _validated_capture_selection(
+        row["instrument_id"],
+        row["capture_id"],
+        error_type=SnapshotError,
+    )
     return SnapshotRecord(
         snapshot_id=row["snapshot_id"],
         dataset_id=row["dataset_id"],
@@ -1402,6 +1543,8 @@ def _snapshot_from_row(row: RowMapping) -> SnapshotRecord:
         created_at=_us_to_datetime(row["created_at_us"]),
         expires_at=_us_to_datetime(row["expires_at_us"]),
         as_of=_us_to_datetime(row["as_of_us"]),
+        instrument_id=selection.instrument_id if selection is not None else None,
+        capture_id=selection.capture_id if selection is not None else None,
     )
 
 
