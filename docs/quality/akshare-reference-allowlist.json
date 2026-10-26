@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scanner_version": 4,
+  "scanner_version": 5,
   "entries": [
     {
       "path": ".env.example",
@@ -54,6 +54,15 @@
       "reviewed_date": "2026-10-10",
       "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=3==live=3、出现次数 pinned=4==live=4；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增5 删8，其中 0/5 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；AST 臂不适用（该注册不是可解析的 Python 模块）：命中面按品牌行与加载形态行度量；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
       "sha256": "fe4cb19441f825faf62eb01c31acf196b8bb65163991546a4454fb3c8805ed5c",
+      "ast_exceptions": []
+    },
+    {
+      "path": "docs/afi204-migration-catalog.json",
+      "purpose": "AFI-204生成的只读迁移目录与跨表清单，记录历史来源名称和脚本迁移证据；不是运行时模块加载配置。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary; independent wave2 zero-dependency review; receipt /tmp/od204-receipts/wave2-zero-dep-review.json sha256=c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f; catalog bytes from root commit 61afc776",
+      "sha256": "05825d9f8d956489ec5807d557d7bd4ef14c7963b4054527b9456eb7a78ed5c1",
       "ast_exceptions": []
     },
     {
@@ -372,11 +381,11 @@
     },
     {
       "path": "opendata/data/providers/akshare/models/stock_daily.py",
-      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "purpose": "库存档案查询语义已收紧（拒绝qfq/hfq、严格校验并使用不复权输入）；依赖边界仍为仓内vendor，不新增外部SDK加载。 复核范围：opendata/data/providers/akshare/models/stock_daily.py 的当前字节与引用面。",
       "category": "source-adapter",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "f3472b15074f423ac5076c31ff6238b8db5bc1a2c708fa5df156befb2b3b5b2d",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary; independent wave2 zero-dependency review; receipt /tmp/od204-receipts/wave2-zero-dep-review.json sha256=c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f",
+      "sha256": "a076aa747cce25eaff8219df52c182509d39ca6bc52ec4f87357d0e9e93f18a0",
       "ast_exceptions": []
     },
     {
@@ -494,12 +503,74 @@
     },
     {
       "path": "opendata/main.py",
-      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "purpose": "增加仓内api_v2_router挂载；所有akshare/openbb残留均为旧任务关闭/文案，不新增外部SDK导入或动态加载。 复核范围：opendata/main.py 的当前字节与引用面。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "85e1216379de4850d06bc45d446ff4d0b61851196377514400e7058c28e7dbfe",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary; independent wave2 zero-dependency review; receipt /tmp/od204-receipts/wave2-zero-dep-review.json sha256=c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f",
+      "sha256": "ba87561e3a0422979e1ee4a9330ad05119445bf7ca8c64ce2c23b878f6bb6a1e",
       "ast_exceptions": []
+    },
+    {
+      "path": "opendata/migration_catalog.py",
+      "purpose": "只读扫描旧版数据采集源码并输出迁移交叉表；指定的来源根与source_root字段是AST分类元数据，不导入或执行旧版SDK。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary; independent wave2 zero-dependency review; receipt /tmp/od204-receipts/wave2-zero-dep-review.json sha256=c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f",
+      "sha256": "42e435e271d125990ac5592025fc410f51035ea072df00517a09c52cbc10d3ec",
+      "ast_exceptions": [
+        {
+          "kind": "catalog_source_roots_akshare",
+          "scope": "_SOURCE_ROOTS",
+          "callee": "frozenset",
+          "slot": "set-element",
+          "literal": "akshare"
+        },
+        {
+          "kind": "catalog_source_roots_openbb",
+          "scope": "_SOURCE_ROOTS",
+          "callee": "frozenset",
+          "slot": "set-element",
+          "literal": "openbb"
+        },
+        {
+          "kind": "catalog_legacy_call_source_root",
+          "scope": "_collect_legacy_calls",
+          "callee": "LegacyCall",
+          "slot": "keyword:source_root",
+          "literal": "akshare"
+        }
+      ]
+    },
+    {
+      "path": "opendata/migration_inventory.py",
+      "purpose": "只读解析旧版脚本AST并分类直接来源导入；指定provider根与比较值为静态分类元数据，不加载SDK。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary; independent wave2 zero-dependency review; receipt /tmp/od204-receipts/wave2-zero-dep-review.json sha256=c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f",
+      "sha256": "094b101808c97621dd569468ac9ba7e398c1dc058288f308ef0d3ac442c83292",
+      "ast_exceptions": [
+        {
+          "kind": "inventory_provider_roots_akshare",
+          "scope": "_PROVIDER_IMPORT_ROOTS",
+          "callee": "frozenset",
+          "slot": "set-element",
+          "literal": "akshare"
+        },
+        {
+          "kind": "inventory_provider_roots_openbb",
+          "scope": "_PROVIDER_IMPORT_ROOTS",
+          "callee": "frozenset",
+          "slot": "set-element",
+          "literal": "openbb"
+        },
+        {
+          "kind": "inventory_akshare_usage_root",
+          "scope": "_analyze_ast",
+          "callee": "any(item.removeprefix().split())",
+          "slot": "compare:right",
+          "literal": "akshare"
+        }
+      ]
     },
     {
       "path": "opendata/models/data_script.py",
@@ -780,11 +851,11 @@
     },
     {
       "path": "scripts/quality/check_brand.py",
-      "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
+      "purpose": "token路径allowlist调整后原有scan_token(\"akshare\")提示字面量仍仅用于扫描输出；不新增外部SDK导入或动态加载。 复核范围：scripts/quality/check_brand.py 的当前字节与引用面。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "3a534f361553c5faaa84d61032933bc4cbc69d4e1b1aec07369f3ff48daf9e78",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary; independent wave2 zero-dependency review; receipt /tmp/od204-receipts/wave2-zero-dep-review.json sha256=c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f",
+      "sha256": "7cbf155f06b7e75d49a151c60c80b9bbb1db0d10d112de3182924af8df67a8dd",
       "ast_exceptions": []
     },
     {

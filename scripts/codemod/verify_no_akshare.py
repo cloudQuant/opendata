@@ -87,7 +87,7 @@ REFERENCE_POLICY_VERSION = 1
 # Bump when the scan logic changes, so an old reading can never be compared with a new
 # one by accident. Interpreters the baseline has been verified under: CI runs 3.11,
 # development runs 3.13; anything else is an unreviewed parser surface.
-SCANNER_VERSION = 4
+SCANNER_VERSION = 5
 PYTHON_MINORS = ("3.11", "3.13")
 
 REFERENCE_CATEGORIES = frozenset(
@@ -144,6 +144,48 @@ EXPECTED_METADATA_EXCEPTIONS: dict[str, tuple[str, str, str, str, str]] = {
         "__getattr__:FETCHERS",
         "fetchers_for",
         "arg:0",
+        "akshare",
+    ),
+    "catalog_source_roots_akshare": (
+        "opendata/migration_catalog.py",
+        "_SOURCE_ROOTS",
+        "frozenset",
+        "set-element",
+        "akshare",
+    ),
+    "catalog_source_roots_openbb": (
+        "opendata/migration_catalog.py",
+        "_SOURCE_ROOTS",
+        "frozenset",
+        "set-element",
+        "openbb",
+    ),
+    "catalog_legacy_call_source_root": (
+        "opendata/migration_catalog.py",
+        "_collect_legacy_calls",
+        "LegacyCall",
+        "keyword:source_root",
+        "akshare",
+    ),
+    "inventory_provider_roots_akshare": (
+        "opendata/migration_inventory.py",
+        "_PROVIDER_IMPORT_ROOTS",
+        "frozenset",
+        "set-element",
+        "akshare",
+    ),
+    "inventory_provider_roots_openbb": (
+        "opendata/migration_inventory.py",
+        "_PROVIDER_IMPORT_ROOTS",
+        "frozenset",
+        "set-element",
+        "openbb",
+    ),
+    "inventory_akshare_usage_root": (
+        "opendata/migration_inventory.py",
+        "_analyze_ast",
+        "any(item.removeprefix().split())",
+        "compare:right",
         "akshare",
     ),
 }
@@ -825,8 +867,164 @@ def _call_keyword_is(call: ast.Call, keyword_name: str, literal: str) -> ast.Con
     return None
 
 
+def _top_level_assignment(tree: ast.Module, name: str) -> ast.Assign | None:
+    """Find one unannotated, single-target module assignment with this exact name."""
+    matches = [
+        statement
+        for statement in tree.body
+        if isinstance(statement, ast.Assign)
+        and len(statement.targets) == 1
+        and isinstance(statement.targets[0], ast.Name)
+        and statement.targets[0].id == name
+    ]
+    if len(matches) != 1 or not _module_only_binding(tree, name, matches[0]):
+        return None
+    return matches[0]
+
+
+def _classifier_root_sites(tree: ast.Module, binding: str, literal: str) -> list[ast.Constant]:
+    """Find a direct root literal in a module-level ``frozenset({...})`` classifier."""
+    assignment = _top_level_assignment(tree, binding)
+    if assignment is None:
+        return []
+    if any("frozenset" in _scope_bound_names([statement]) for statement in tree.body):
+        return []
+    value = assignment.value
+    if not (
+        isinstance(value, ast.Call)
+        and isinstance(value.func, ast.Name)
+        and value.func.id == "frozenset"
+        and len(value.args) == 1
+        and not value.keywords
+        and isinstance(value.args[0], ast.Set)
+    ):
+        return []
+    return [
+        element
+        for element in value.args[0].elts
+        if isinstance(element, ast.Constant) and element.value == literal
+    ]
+
+
+def _is_inventory_usage_compare(node: ast.Compare) -> bool:
+    """Match the exact legacy-source classifier comparison in the inventory analyzer."""
+    if not (
+        len(node.ops) == 1
+        and isinstance(node.ops[0], ast.Eq)
+        and len(node.comparators) == 1
+        and isinstance(node.comparators[0], ast.Constant)
+        and node.comparators[0].value == "akshare"
+    ):
+        return False
+    left = node.left
+    if not (
+        isinstance(left, ast.Subscript)
+        and isinstance(left.ctx, ast.Load)
+        and isinstance(left.slice, ast.Constant)
+        and left.slice.value == 0
+        and isinstance(left.value, ast.Call)
+        and isinstance(left.value.func, ast.Attribute)
+        and left.value.func.attr == "split"
+        and isinstance(left.value.func.value, ast.Call)
+    ):
+        return False
+    split_call = left.value
+    if not (
+        len(split_call.args) == 1
+        and isinstance(split_call.args[0], ast.Constant)
+        and split_call.args[0].value == "."
+        and len(split_call.keywords) == 1
+        and split_call.keywords[0].arg == "maxsplit"
+        and isinstance(split_call.keywords[0].value, ast.Constant)
+        and split_call.keywords[0].value.value == 1
+    ):
+        return False
+    split_function = split_call.func
+    if not isinstance(split_function, ast.Attribute):
+        return False
+    prefix_candidate = split_function.value
+    if not isinstance(prefix_candidate, ast.Call):
+        return False
+    prefix_call = prefix_candidate
+    return bool(
+        isinstance(prefix_call.func, ast.Attribute)
+        and prefix_call.func.attr == "removeprefix"
+        and isinstance(prefix_call.func.value, ast.Name)
+        and prefix_call.func.value.id == "item"
+        and len(prefix_call.args) == 1
+        and isinstance(prefix_call.args[0], ast.Constant)
+        and prefix_call.args[0].value == "dynamic:"
+        and not prefix_call.keywords
+        and isinstance(left.value.func.value, ast.Call)
+    )
+
+
+def _inventory_usage_root_sites(tree: ast.Module) -> list[ast.Constant]:
+    """Find only the guarded direct-source comparison in top-level ``_analyze_ast``."""
+    functions = _top_level_functions(tree, "_analyze_ast")
+    if (
+        len(functions) != 1
+        or not _module_only_binding(tree, "_analyze_ast", functions[0])
+        or _function_has_shadow(functions[0], "any")
+    ):
+        return []
+    function = functions[0]
+    parents = _parents(tree)
+    sites: list[ast.Constant] = []
+    for node in ast.walk(function):
+        if not isinstance(node, ast.Compare) or not _is_inventory_usage_compare(node):
+            continue
+        generator = parents.get(node)
+        if not (
+            isinstance(generator, ast.GeneratorExp)
+            and generator.elt is node
+            and len(generator.generators) == 1
+        ):
+            continue
+        comprehension = generator.generators[0]
+        if not (
+            isinstance(comprehension.target, ast.Name)
+            and comprehension.target.id == "item"
+            and isinstance(comprehension.iter, ast.Name)
+            and comprehension.iter.id == "direct_imports"
+            and not comprehension.ifs
+            and comprehension.is_async == 0
+        ):
+            continue
+        any_call = parents.get(generator)
+        if not (
+            isinstance(any_call, ast.Call)
+            and isinstance(any_call.func, ast.Name)
+            and any_call.func.id == "any"
+            and any_call.args == [generator]
+            and not any_call.keywords
+        ):
+            continue
+        guard = parents.get(any_call)
+        if not (
+            isinstance(guard, ast.If)
+            and guard.test is any_call
+            and any(
+                isinstance(statement, ast.Assign)
+                and len(statement.targets) == 1
+                and isinstance(statement.targets[0], ast.Attribute)
+                and isinstance(statement.targets[0].value, ast.Name)
+                and statement.targets[0].value.id == "record"
+                and statement.targets[0].attr == "akshare_usage"
+                and isinstance(statement.value, ast.Constant)
+                and statement.value.value == "direct_akshare_import"
+                for statement in guard.body
+            )
+        ):
+            continue
+        comparator = node.comparators[0]
+        if isinstance(comparator, ast.Constant):
+            sites.append(comparator)
+    return sites
+
+
 def _metadata_sites(source: str) -> dict[str, list[ast.Constant]]:
-    """Find the six approved metadata contexts in their exact AST shapes."""
+    """Find approved metadata contexts in their exact AST shapes."""
     tree = ast.parse(source)
     parents = _parents(tree)
     sites: dict[str, list[ast.Constant]] = {kind: [] for kind in EXPECTED_METADATA_EXCEPTIONS}
@@ -944,6 +1142,41 @@ def _metadata_sites(source: str) -> dict[str, list[ast.Constant]]:
             sites["patrol_key_status_label"].extend(
                 key for key in node.keys if isinstance(key, ast.Constant) and key.value == "akshare"
             )
+
+    for root_literal, kind in (
+        ("akshare", "catalog_source_roots_akshare"),
+        ("openbb", "catalog_source_roots_openbb"),
+    ):
+        sites[kind].extend(_classifier_root_sites(tree, "_SOURCE_ROOTS", root_literal))
+    catalog_functions = _top_level_functions(tree, "_collect_legacy_calls")
+    catalog_classes = [
+        statement
+        for statement in tree.body
+        if isinstance(statement, ast.ClassDef) and statement.name == "LegacyCall"
+    ]
+    if (
+        len(catalog_functions) == 1
+        and len(catalog_classes) == 1
+        and _module_only_binding(tree, "_collect_legacy_calls", catalog_functions[0])
+        and _module_only_binding(tree, "LegacyCall", catalog_classes[0])
+        and not _function_has_shadow(catalog_functions[0], "LegacyCall")
+    ):
+        for node in ast.walk(catalog_functions[0]):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "LegacyCall"
+            ):
+                legacy_literal = _call_keyword_is(node, "source_root", "akshare")
+                if legacy_literal is not None:
+                    sites["catalog_legacy_call_source_root"].append(legacy_literal)
+
+    for root_literal, kind in (
+        ("akshare", "inventory_provider_roots_akshare"),
+        ("openbb", "inventory_provider_roots_openbb"),
+    ):
+        sites[kind].extend(_classifier_root_sites(tree, "_PROVIDER_IMPORT_ROOTS", root_literal))
+    sites["inventory_akshare_usage_root"].extend(_inventory_usage_root_sites(tree))
     return sites
 
 
