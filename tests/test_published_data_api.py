@@ -9,9 +9,10 @@ from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
 
 import pytest
+import sqlalchemy
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import create_engine, update
+from sqlalchemy import Engine, create_engine, update
 
 from opendata.api import published_data as published_data_module
 from opendata.api.dependencies import Principal, get_current_principal, get_db
@@ -1189,21 +1190,43 @@ async def test_configured_store_is_disposed_after_a_missing_schema_response(
     app.dependency_overrides.pop(get_publication_store)
     monkeypatch.setattr(published_data_module, "_CONFIGURED_STORE", None)
     monkeypatch.setattr(published_data_module, "_CONFIGURED_ENGINE", None)
+    database_url = f"sqlite:///{tmp_path / 'configured-store.db'}"
+    created_engines: list[Engine] = []
+    disposed_engines: list[Engine] = []
+
+    def create_test_owned_engine(url: str, **kwargs: Any) -> Engine:
+        assert url == database_url
+        engine = sqlalchemy.create_engine(url, **kwargs)
+        created_engines.append(engine)
+        original_dispose = engine.dispose
+
+        def dispose_spy(*args: Any, **dispose_kwargs: Any) -> None:
+            disposed_engines.append(engine)
+            original_dispose(*args, **dispose_kwargs)
+
+        monkeypatch.setattr(engine, "dispose", dispose_spy)
+        return engine
+
+    monkeypatch.setattr(published_data_module, "create_engine", create_test_owned_engine)
     monkeypatch.setattr(
         published_data_module,
         "settings",
         SimpleNamespace(
             model_fields_set={"data_mysql_host", "data_mysql_user", "data_mysql_database"},
-            data_database_url=f"sqlite:///{tmp_path / 'configured-store.db'}",
+            data_database_url=database_url,
         ),
     )
     monkeypatch.setenv("PUBLISHED_DATA_CURSOR_SIGNING_KEY", "x" * 32)
 
     response = await _request(app, "GET", f"/api/v2/datasets/{DATASET_ID}")
     assert response.status_code == 503
+    assert response.json()["error"]["code"] == "published_data_unavailable"
+    assert len(created_engines) == 1
+    configured_engine = created_engines[0]
     close_publication_store()
     assert published_data_module._CONFIGURED_STORE is None
     assert published_data_module._CONFIGURED_ENGINE is None
+    assert disposed_engines == [configured_engine]
 
 
 @pytest.mark.asyncio
