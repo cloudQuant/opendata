@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
@@ -156,6 +155,19 @@ def test_scoped_requests_reject_urls_outside_the_exact_https_origin_before_trans
 def test_post_json_is_snapshotted_and_sent_as_standard_json() -> None:
     body = {"query": {"symbols": ["AAPL"], "limit": 2}}
 
+    class CapturingAdapter(QueuedResponseAdapter):
+        def __init__(self, responses: list[requests.Response]) -> None:
+            super().__init__(responses)
+            self.prepared_bodies: list[bytes | str | None] = []
+
+        def send(
+            self,
+            request: requests.PreparedRequest,
+            **kwargs: object,
+        ) -> requests.Response:
+            self.prepared_bodies.append(request.body)
+            return super().send(request, **kwargs)
+
     class MutatingSession(requests.Session):
         def request(self, method: str, url: str, **kwargs: Any) -> requests.Response:
             body["query"]["symbols"].append("MSFT")
@@ -163,7 +175,7 @@ def test_post_json_is_snapshotted_and_sent_as_standard_json() -> None:
 
     session = MutatingSession()
     session.trust_env = False
-    adapter = QueuedResponseAdapter([make_plain_response(status_code=201)])
+    adapter = CapturingAdapter([make_plain_response(status_code=201)])
     session.mount("https://", adapter)
     client = GovernedHttpClient(
         HttpClientConfig(rate_limit_per_host=None),
@@ -175,9 +187,7 @@ def test_post_json_is_snapshotted_and_sent_as_standard_json() -> None:
 
     assert response.status_code == 201
     assert len(adapter.calls) == 1
-    sent = adapter.calls[0][0].body
-    assert isinstance(sent, bytes)
-    assert json.loads(sent) == {"query": {"symbols": ["AAPL"], "limit": 2}}
+    assert adapter.prepared_bodies == [b'{"query": {"symbols": ["AAPL"], "limit": 2}}']
     assert body["query"]["symbols"] == ["AAPL", "MSFT"]
     session.close()
 
@@ -347,6 +357,8 @@ def test_non_byte_response_chunk_is_classified_and_response_is_closed() -> None:
             yield "not bytes"
 
     response = TextStreamResponse()
+    raw = SyntheticRaw()
+    response.raw = raw
     response.status_code = 200
     response.url = URL
     session, adapter = make_session([response])
@@ -364,6 +376,7 @@ def test_non_byte_response_chunk_is_classified_and_response_is_closed() -> None:
     assert error.value.attempts == 1
     assert len(adapter.calls) == 1
     assert response.close_called
+    assert raw.closed
 
 
 def test_injected_session_bypasses_raw_cache_identity() -> None:
