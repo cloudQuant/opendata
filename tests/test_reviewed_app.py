@@ -21,10 +21,10 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from fastapi import FastAPI
-    from opendata.pipeline.reviewed_runtime import ReviewedRuntime
     from pydantic import JsonValue
     from sqlalchemy.engine import Connection, Engine
 
+    from opendata.pipeline.reviewed_runtime import ReviewedRuntime
     from opendata.pipeline.run_dispatch import ReviewedTaskCatalog
     from opendata.pipeline.run_identity import RunRequest, TaskDefinition
     from opendata.pipeline.run_service import (
@@ -67,7 +67,6 @@ def _make_runtime(
 ) -> ReviewedRuntime:
     """Build a runtime from an explicit Engine and role selection."""
     from opendata.pipeline.reviewed_runtime import build_reviewed_runtime
-
     from opendata.pipeline.run_dispatch import ReviewedTaskCatalog
     from opendata.pipeline.runtime_roles import build_runtime_role_plan
 
@@ -380,7 +379,6 @@ def test_invalid_auth_session_factory_is_rejected_before_app_construction(
 async def test_api_disabled_or_closed_runtime_is_rejected() -> None:
     """The factory requires an open reviewed runtime with its API role enabled."""
     from opendata.pipeline.reviewed_runtime import ReviewedRuntime, build_reviewed_runtime
-
     from opendata.pipeline.run_dispatch import ReviewedTaskCatalog
     from opendata.pipeline.runtime_roles import build_runtime_role_plan
 

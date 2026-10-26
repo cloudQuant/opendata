@@ -7,9 +7,9 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 import pytest
-from opendata.pipeline.reviewed_runtime import ReviewedRuntime, build_reviewed_runtime
 from sqlalchemy import create_engine, event
 
+from opendata.pipeline.reviewed_runtime import ReviewedRuntime, build_reviewed_runtime
 from opendata.pipeline.run_dispatch import ReviewedTaskCatalog
 from opendata.pipeline.runtime_roles import (
     RuntimeRole,
