@@ -7,7 +7,7 @@ import re
 from datetime import date, datetime
 from decimal import Decimal
 from numbers import Real
-from typing import ClassVar, cast
+from typing import ClassVar
 
 import pandas as pd
 from pydantic import field_validator, model_validator
@@ -104,7 +104,7 @@ class StockDailyQuery(QueryParams):
 
 
 class AkshareStockDailyFetcher(Fetcher[StockDailyQuery, pd.DataFrame]):
-    """Fetch Eastmoney daily klines through the self-developed vendored client."""
+    """Fetch Eastmoney daily klines through the governed HTTP client."""
 
     async_mode = "bounded_thread"
 
@@ -143,20 +143,13 @@ class AkshareStockDailyFetcher(Fetcher[StockDailyQuery, pd.DataFrame]):
         Returns:
             The upstream frame with native Chinese column names.
         """
-        import opendata.data.providers.akshare._vendor as opendata_http
+        from opendata.data.providers.akshare.stock_daily_wire import fetch_stock_daily_wire
 
-        return cast(
-            "pd.DataFrame",
-            opendata_http.stock_zh_a_hist(
-                symbol=params.symbol,
-                period="daily",
-                start_date=params.start_date.strftime("%Y%m%d")
-                if params.start_date
-                else "19700101",
-                end_date=params.end_date.strftime("%Y%m%d") if params.end_date else "20500101",
-                adjust="",
-                timeout=ctx.timeout,
-            ),
+        return fetch_stock_daily_wire(
+            params.symbol,
+            start_date=params.start_date.strftime("%Y%m%d") if params.start_date else "19700101",
+            end_date=params.end_date.strftime("%Y%m%d") if params.end_date else "20500101",
+            timeout=ctx.timeout,
         )
 
     def transform_data(self, raw: pd.DataFrame, params: StockDailyQuery) -> FetchResult:
