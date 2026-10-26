@@ -5,14 +5,20 @@ from __future__ import annotations
 import os
 import socket
 import ssl
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
+from hashlib import sha256
 from io import StringIO
 from pathlib import Path
+from threading import Thread
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import pytest
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.x509.oid import ExtendedKeyUsageOID, NameOID
 from sqlalchemy import create_engine, event, inspect
 from sqlalchemy.engine import URL
 
@@ -28,10 +34,13 @@ from opendata.pipeline.reviewed_worker import (
     _guard_mysql_pool_creator,
     _MySQLDriverTimeouts,
     _MySQLServerSchemaIdentity,
+    _MySQLTransportBinding,
     _validated_mysql_identity,
     _validated_mysql_transport,
     _verify_mysql_connection,
     _verify_mysql_transport,
+    _verify_mysql_transport_configuration,
+    _verify_private_unix_socket_identity,
     create_mysql_worker_engine,
 )
 from opendata.pipeline.run_identity import RunRequest, ScheduleMetadata, TaskDefinition
@@ -71,10 +80,10 @@ class _FakeMysqlResult:
 class _FakeMysqlSocket:
     """Expose the current socket timeout as PyMySQL does."""
 
-    def __init__(self, timeout: float) -> None:
+    def __init__(self, timeout: float | None) -> None:
         self._timeout = timeout
 
-    def gettimeout(self) -> float:
+    def gettimeout(self) -> float | None:
         """Return the current socket timeout."""
         return self._timeout
 
@@ -82,21 +91,29 @@ class _FakeMysqlSocket:
 class _FakeMysqlConnection:
     """Minimal PyMySQL connection surface used by identity guard tests."""
 
-    def __init__(self, *, read_timeout: float = 0.5) -> None:
+    def __init__(
+        self,
+        *,
+        read_timeout: float | None = 0.5,
+        socket_timeout: float | None = None,
+    ) -> None:
         self.connection = SimpleNamespace(
             driver_connection=SimpleNamespace(
                 connect_timeout=0.5,
                 _read_timeout=read_timeout,
                 _write_timeout=0.5,
-                _sock=_FakeMysqlSocket(read_timeout),
+                _sock=_FakeMysqlSocket(read_timeout if socket_timeout is None else socket_timeout),
             )
         )
         self.statements: list[str] = []
         self.row = (_SERVER_UUID, _SCHEMA)
+        self.query_error = False
 
     def exec_driver_sql(self, statement: str) -> _FakeMysqlResult:
         """Record SQL and return the synthetic SELECT identity row."""
         self.statements.append(statement)
+        if self.query_error:
+            raise RuntimeError("sensitive query failure")
         return _FakeMysqlResult(self.row)
 
 
@@ -117,6 +134,67 @@ def _offline_url(
         database=schema,
         query=query or {},
     )
+
+
+def _make_tls_server_context(tmp_path: Path, name: str) -> tuple[ssl.SSLContext, str]:
+    """Create a local self-signed TLS server and its PEM trust anchor."""
+    key = ec.generate_private_key(ec.SECP256R1())
+    subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, name)])
+    now = datetime.now(timezone.utc)
+    certificate = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(subject)
+        .public_key(key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(now - timedelta(minutes=1))
+        .not_valid_after(now + timedelta(days=1))
+        .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
+        .add_extension(x509.SubjectAlternativeName([x509.DNSName("localhost")]), critical=False)
+        .add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]), critical=False)
+        .sign(key, hashes.SHA256())
+    )
+    certificate_pem = certificate.public_bytes(serialization.Encoding.PEM).decode("ascii")
+    cert_path = tmp_path / f"{name}.crt"
+    key_path = tmp_path / f"{name}.key"
+    cert_path.write_text(certificate_pem, encoding="ascii")
+    key_path.write_bytes(
+        key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        )
+    )
+    server_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    server_context.load_cert_chain(str(cert_path), str(key_path))
+    return server_context, certificate_pem
+
+
+def _local_tls_handshake(client_context: ssl.SSLContext, server_context: ssl.SSLContext) -> bytes:
+    """Exercise the client context wrapper on a local socketpair only."""
+    client_socket, server_socket = socket.socketpair()
+    client_socket.settimeout(2)
+    server_socket.settimeout(2)
+    server_errors: list[BaseException] = []
+
+    def serve() -> None:
+        try:
+            with server_context.wrap_socket(server_socket, server_side=True):
+                pass
+        except (OSError, ssl.SSLError) as exc:
+            server_errors.append(exc)
+
+    server_thread = Thread(target=serve, daemon=True)
+    server_thread.start()
+    try:
+        with client_context.wrap_socket(client_socket, server_hostname="localhost") as secure:
+            certificate = secure.getpeercert(binary_form=True)
+        assert certificate
+        return certificate
+    finally:
+        client_socket.close()
+        server_thread.join(timeout=3)
+        assert not server_thread.is_alive()
 
 
 def _assert_factory_rejects(url: str | URL, **overrides: object) -> ValueError:
@@ -300,7 +378,7 @@ def test_mysql_transport_rejects_plain_tcp_and_unverified_tls_before_connect(
         symlink.symlink_to(socket_path)
         with pytest.raises(ValueError, match="canonical and identify a socket"):
             _validated_mysql_transport(local_url, None, symlink)
-        private_dir.chmod(0o755)
+        private_dir.chmod(0o750)
         with pytest.raises(ValueError, match="private and owned"):
             _validated_mysql_transport(local_url, None, socket_path)
     finally:
@@ -319,6 +397,11 @@ def test_mysql_unix_transport_guard_checks_active_socket_and_identity(tmp_path: 
         binding = _validated_mysql_transport(
             _offline_url(host="localhost", port=None), None, socket_path
         )
+        socket_mode = socket_path.stat().st_mode & 0o777
+        socket_path.chmod(0o600)
+        with pytest.raises(ValueError, match="identity changed"):
+            _verify_private_unix_socket_identity(binding.unix_socket)  # type: ignore[arg-type]
+        socket_path.chmod(socket_mode)
         fake = _FakeMysqlConnection()
         driver_connection = fake.connection.driver_connection
         driver_connection.unix_socket = str(socket_path)
@@ -367,6 +450,135 @@ def test_mysql_transport_guard_rejects_tls_policy_drift_and_unreadable_objects()
     with pytest.raises(ValueError, match="transport could not be verified") as raised:
         _verify_mysql_transport(BrokenConnection(), secure_binding)  # type: ignore[arg-type]
     assert "secret database detail" not in str(raised.value)
+
+
+def test_mysql_transport_rejects_incomplete_tls_binding_and_unusable_creator() -> None:
+    """Missing TLS state and invalid creator dependencies fail closed."""
+    with pytest.raises(ValueError, match="TLS context binding is incomplete"):
+        _verify_mysql_transport_configuration(_MySQLTransportBinding("tls", None, None))
+
+    context = ssl.create_default_context()
+    binding = _validated_mysql_transport(_offline_url(), context, None)
+    with pytest.raises(TypeError, match="creator must be callable"):
+        _guard_mysql_pool_creator(object(), binding)  # type: ignore[arg-type]
+
+
+def test_mysql_transport_refuses_subclassed_or_preoverridden_tls_context() -> None:
+    """The factory only binds a standard context whose mutators it can freeze."""
+
+    class CustomContext(ssl.SSLContext):
+        pass
+
+    subclass = CustomContext(ssl.PROTOCOL_TLS_CLIENT)
+    with pytest.raises(TypeError, match="standard ssl.SSLContext"):
+        _validated_mysql_transport(_offline_url(), subclass, None)
+
+    overridden = ssl.create_default_context()
+    overridden.load_verify_locations = lambda *_args, **_kwargs: None
+    with pytest.raises(ValueError, match="instance-level method overrides"):
+        _validated_mysql_transport(_offline_url(), overridden, None)
+
+
+def test_tls_context_freezes_trust_mutators_and_detects_trust_drift_before_connect(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Trust changes are blocked or rejected before the physical DB creator runs."""
+    server_one, certificate_one = _make_tls_server_context(tmp_path, "first-trust")
+    _server_two, certificate_two = _make_tls_server_context(tmp_path, "second-trust")
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.load_verify_locations(cadata=certificate_one)
+    monkeypatch.setattr(
+        reviewed_worker_module,
+        "_TLS_CONTEXT_MUTATORS",
+        (*reviewed_worker_module._TLS_CONTEXT_MUTATORS, "not_present_on_this_python"),
+    )
+    binding = _validated_mysql_transport(_offline_url(), context, None)
+    attempts: list[bool] = []
+    creator = _guard_mysql_pool_creator(lambda: attempts.append(True), binding)
+
+    assert binding.ssl_context is context
+    reviewed_peer = _local_tls_handshake(context, server_one)
+    assert binding.tls_context is not None
+    assert binding.tls_context.peer_certificate_sha256 == sha256(reviewed_peer).hexdigest()
+
+    with pytest.raises(ValueError, match="frozen after worker binding"):
+        context.load_verify_locations(cadata=certificate_two)
+    assert attempts == []
+
+    # Even a deliberate base-class call that bypasses the instance guard is
+    # caught by the loaded-anchor fingerprint before a new connection starts.
+    original_trust = ssl.SSLContext.get_ca_certs(context, binary_form=True)
+    ssl.SSLContext.load_verify_locations(context, cadata=certificate_two)
+    # Shadowing the Python-visible getter must not be able to forge the
+    # fingerprint checked by the guarded physical-connection creator.
+    context.get_ca_certs = lambda *, binary_form=False: original_trust if binary_form else []
+    with pytest.raises(ValueError, match="trust material changed"):
+        creator()
+    assert attempts == []
+
+
+def test_tls_peer_certificate_change_fails_after_handshake_before_mysql_auth(
+    tmp_path: Path,
+) -> None:
+    """A newly trusted but different endpoint is rejected before PyMySQL auth."""
+    server_one, certificate_one = _make_tls_server_context(tmp_path, "peer-one")
+    server_two, certificate_two = _make_tls_server_context(tmp_path, "peer-two")
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.load_verify_locations(cadata=certificate_one)
+    context.load_verify_locations(cadata=certificate_two)
+    binding = _validated_mysql_transport(_offline_url(), context, None)
+
+    reviewed_peer = _local_tls_handshake(context, server_one)
+    assert binding.tls_context is not None
+    assert binding.tls_context.peer_certificate_sha256 == sha256(reviewed_peer).hexdigest()
+
+    with pytest.raises(ValueError, match="peer certificate changed"):
+        _local_tls_handshake(context, server_two)
+
+
+def test_tls_untrusted_peer_is_rejected_during_handshake_before_auth(tmp_path: Path) -> None:
+    """A context that cannot validate the peer fails before MySQL authentication."""
+    trusted_server, trusted_certificate = _make_tls_server_context(tmp_path, "trusted-peer")
+    untrusted_server, _untrusted_certificate = _make_tls_server_context(tmp_path, "untrusted-peer")
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.load_verify_locations(cadata=trusted_certificate)
+    _validated_mysql_transport(_offline_url(), context, None)
+
+    assert _local_tls_handshake(context, trusted_server)
+    with pytest.raises(ValueError, match="TLS handshake could not be verified"):
+        _local_tls_handshake(context, untrusted_server)
+
+
+def test_mysql_transport_tls_checkout_checks_peer_and_context_identity(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Checkout verification checks the TLS socket and pinned peer certificate."""
+    server, certificate_pem = _make_tls_server_context(tmp_path, "checkout-peer")
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.load_verify_locations(cadata=certificate_pem)
+    binding = _validated_mysql_transport(_offline_url(), context, None)
+    certificate = _local_tls_handshake(context, server)
+    expected_context = context
+
+    class FakeSecureSocket:
+        context: object = expected_context
+
+        def getpeercert(self, *, binary_form: bool) -> bytes:
+            assert binary_form is True
+            return certificate
+
+    driver_connection = SimpleNamespace(_sock=FakeSecureSocket(), _secure=True)
+    fake_connection = SimpleNamespace(
+        connection=SimpleNamespace(driver_connection=driver_connection)
+    )
+    monkeypatch.setattr(ssl, "SSLSocket", FakeSecureSocket)
+    _verify_mysql_transport(fake_connection, binding)  # type: ignore[arg-type]
+
+    driver_connection._sock.context = object()
+    with pytest.raises(ValueError, match="registered verified TLS context"):
+        _verify_mysql_transport(fake_connection, binding)  # type: ignore[arg-type]
 
 
 def test_mysql_factory_rejects_unsafe_url_target_and_timeout_before_connect() -> None:
@@ -473,6 +685,7 @@ def test_mysql_factory_sanitizes_connection_preflight_and_rejects_wrong_pool(
     monkeypatch.setattr(
         reviewed_worker_module, "create_engine", lambda *_args, **_kwargs: wrong_pool
     )
+    arguments["ssl_context"] = ssl.create_default_context()
     with pytest.raises(ValueError, match="controlled PyMySQL QueuePool"):
         create_mysql_worker_engine(_offline_url(), **arguments)
 
@@ -508,6 +721,39 @@ def test_mysql_connection_guard_rejects_target_and_driver_timeout_drift() -> Non
             _MySQLServerSchemaIdentity(_SERVER_UUID, _SCHEMA),
             _TIMEOUTS,
         )
+    assert wrong_timeout.statements == []
+
+    unbounded_timeout = _FakeMysqlConnection(read_timeout=None)
+    with pytest.raises(ValueError, match="driver timeout changed"):
+        _verify_mysql_connection(
+            unbounded_timeout,  # type: ignore[arg-type]
+            _MySQLServerSchemaIdentity(_SERVER_UUID, _SCHEMA),
+            _TIMEOUTS,
+        )
+    assert unbounded_timeout.statements == []
+
+    class BrokenDriverConnection:
+        @property
+        def connection(self) -> object:
+            raise RuntimeError("sensitive driver detail")
+
+    with pytest.raises(ValueError, match="driver timeout could not be verified") as raised:
+        _verify_mysql_connection(
+            BrokenDriverConnection(),  # type: ignore[arg-type]
+            _MySQLServerSchemaIdentity(_SERVER_UUID, _SCHEMA),
+            _TIMEOUTS,
+        )
+    assert "sensitive driver detail" not in str(raised.value)
+
+    query_failure = _FakeMysqlConnection()
+    query_failure.query_error = True
+    with pytest.raises(ValueError, match="MySQL worker connection could not be verified") as raised:
+        _verify_mysql_connection(
+            query_failure,  # type: ignore[arg-type]
+            _MySQLServerSchemaIdentity(_SERVER_UUID, _SCHEMA),
+            _TIMEOUTS,
+        )
+    assert "sensitive query failure" not in str(raised.value)
 
 
 def test_unregistered_mysql_engine_cannot_be_adopted_without_network() -> None:

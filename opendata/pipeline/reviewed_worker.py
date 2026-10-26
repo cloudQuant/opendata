@@ -16,6 +16,7 @@ import ssl
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import timedelta
+from hashlib import sha256
 from pathlib import Path
 from stat import S_IMODE, S_ISDIR, S_ISREG, S_ISSOCK
 from threading import Lock
@@ -49,6 +50,21 @@ _MIN_NUMBER = 0.01
 _MAX_HEARTBEAT_INTERVAL_SECONDS = 60.0
 _MAX_DATABASE_IO_TIMEOUT_SECONDS = 30.0
 _MIN_LEASE_MARGIN_SECONDS = 0.05
+_TLS_CONTEXT_MUTATORS = (
+    "load_cert_chain",
+    "load_default_certs",
+    "load_dh_params",
+    "load_verify_locations",
+    "set_alpn_protocols",
+    "set_ciphers",
+    "set_default_verify_paths",
+    "set_ecdh_curve",
+    "set_npn_protocols",
+    "set_psk_client_callback",
+    "set_psk_server_callback",
+    "set_servername_callback",
+    "wrap_bio",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,7 +105,7 @@ class _MySQLDriverTimeouts:
 
 @dataclass(frozen=True, slots=True)
 class _UnixSocketIdentity:
-    """Physical identity of a private MySQL socket and its parent directory."""
+    """Physical identity and mode of a private MySQL socket and its parent."""
 
     path: Path
     device: int
@@ -97,7 +113,21 @@ class _UnixSocketIdentity:
     parent: Path
     parent_device: int
     parent_inode: int
+    socket_mode: int
+    parent_mode: int
     owner_user_id: int
+
+
+@dataclass(slots=True)
+class _TLSContextBinding:
+    """Pinned mutable TLS policy, loaded trust anchors, and reviewed peer cert."""
+
+    context: ssl.SSLContext
+    policy_snapshot: tuple[object, ...]
+    trust_store_sha256: str | None = None
+    peer_certificate_sha256: str | None = None
+    first_handshake_pending: bool = True
+    method_guards: dict[str, Callable[..., object]] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,6 +137,7 @@ class _MySQLTransportBinding:
     kind: Literal["tls", "unix_socket"]
     ssl_context: ssl.SSLContext | None
     unix_socket: _UnixSocketIdentity | None
+    tls_context: _TLSContextBinding | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -302,7 +333,17 @@ def create_mysql_worker_engine(
     schema name. The URL's driver and selected schema must match the reviewed
     target, and URL query options are disallowed. TCP requires an explicitly
     supplied :class:`ssl.SSLContext` with certificate and hostname verification
-    enabled. Alternatively, a local ``localhost`` URL may use an explicit
+    enabled. The supplied context is retained to preserve any installed client
+    certificate, its TLS mutator methods are frozen, and its verification
+    policy is checked on every physical connection. During the first preflight
+    handshake the worker binds the loaded trust anchors and peer certificate;
+    later reconnects must match both before PyMySQL sends database
+    authentication. OpenSSL can load ``capath`` entries lazily, so the first
+    handshake establishes the loaded-material snapshot; a later chain or peer
+    change fails closed and requires a freshly reviewed Engine. Alternatively,
+    binding mutates the supplied context in place; it remains frozen if later
+    Engine creation or preflight fails, so use a dedicated context for each
+    factory attempt. A local ``localhost`` URL may use an explicit
     Unix socket inside a private directory owned by the current user. The two
     transport options are mutually exclusive. The factory uses a standard
     one-connection :class:`QueuePool` and PyMySQL's connect, read, and write
@@ -322,7 +363,11 @@ def create_mysql_worker_engine(
         expected_server_uuid: Reviewed canonical MySQL server UUID.
         expected_schema: Reviewed database name, matching the URL schema.
         ssl_context: Required for TCP; must require a trusted certificate and
-            hostname validation. Mutually exclusive with ``unix_socket_path``.
+            hostname validation. The same object is retained to preserve any
+            client certificate, then trust and TLS mutator methods are pinned.
+            Binding freezes this caller-owned object in place even if a later
+            Engine creation or preflight step fails; use a dedicated context
+            for each factory attempt. Mutually exclusive with ``unix_socket_path``.
         unix_socket_path: Explicit private local socket path, for a ``localhost``
             URL only. Mutually exclusive with ``ssl_context``.
         database_io_timeout_seconds: Upper bound used by the worker lease budget.
@@ -870,7 +915,8 @@ def _validated_mysql_transport(
             raise TypeError("ssl_context must be an ssl.SSLContext")
         if ssl_context.verify_mode != ssl.CERT_REQUIRED or ssl_context.check_hostname is not True:
             raise ValueError("MySQL TCP transport requires certificate and hostname verification")
-        return _MySQLTransportBinding("tls", ssl_context, None)
+        tls_binding = _bind_tls_context(ssl_context)
+        return _MySQLTransportBinding("tls", ssl_context, None, tls_binding)
     if unix_socket_path is None:
         raise ValueError(
             "plain MySQL TCP is disabled; provide verified TLS or a private Unix socket"
@@ -884,7 +930,7 @@ def _validated_mysql_transport(
 
 
 def _canonical_private_unix_socket_identity(path: Path) -> _UnixSocketIdentity:
-    """Require an absolute socket in a canonical, owner-controlled directory."""
+    """Require an absolute socket in an owner-only 0700 directory."""
     if not path.is_absolute():
         raise ValueError("MySQL Unix socket path must be absolute")
     try:
@@ -901,12 +947,17 @@ def _canonical_private_unix_socket_identity(path: Path) -> _UnixSocketIdentity:
         or not S_ISDIR(parent_stat.st_mode)
     ):
         raise ValueError("MySQL Unix socket path must be canonical and identify a socket")
+    parent_mode = S_IMODE(parent_stat.st_mode)
+    socket_mode = S_IMODE(socket_stat.st_mode)
     if (
         parent_stat.st_uid != os.getuid()
-        or S_IMODE(parent_stat.st_mode) & 0o027
+        or parent_mode != 0o700
         or socket_stat.st_uid != os.getuid()
     ):
         raise ValueError("MySQL Unix socket directory must be private and owned by this user")
+    # MySQL may create a 0777 socket. The owner-only 0700 parent is the actual
+    # access boundary; pin the socket mode too so replacing or widening it is
+    # detected rather than silently changing the reviewed endpoint.
     return _UnixSocketIdentity(
         path,
         socket_stat.st_dev,
@@ -914,8 +965,132 @@ def _canonical_private_unix_socket_identity(path: Path) -> _UnixSocketIdentity:
         path.parent,
         parent_stat.st_dev,
         parent_stat.st_ino,
+        socket_mode,
+        parent_mode,
         os.getuid(),
     )
+
+
+def _tls_context_policy_snapshot(context: ssl.SSLContext) -> tuple[object, ...]:
+    """Capture mutable SSL verification and transport settings by value."""
+    try:
+        return (
+            context.verify_mode,
+            context.check_hostname,
+            context.verify_flags,
+            context.minimum_version,
+            context.maximum_version,
+            int(context.options),
+            context.hostname_checks_common_name,
+            context.post_handshake_auth,
+            context.keylog_filename,
+            context.sni_callback,
+            context.protocol,
+            context.security_level,
+        )
+    except Exception:
+        raise ValueError("MySQL TLS policy could not be inspected") from None
+
+
+def _tls_trust_store_sha256(context: ssl.SSLContext) -> str:
+    """Fingerprint currently loaded trust anchors with length-delimited DER."""
+    try:
+        # Use the built-in implementation so an instance-level shadow of this
+        # read method cannot forge a stable trust-store fingerprint.
+        certificates = sorted(ssl.SSLContext.get_ca_certs(context, binary_form=True))
+    except Exception:
+        raise ValueError("MySQL TLS trust material could not be inspected") from None
+    digest = sha256()
+    for certificate in certificates:
+        digest.update(len(certificate).to_bytes(4, "big"))
+        digest.update(certificate)
+    return digest.hexdigest()
+
+
+def _bind_tls_context(context: ssl.SSLContext) -> _TLSContextBinding:
+    """Freeze TLS mutator methods while retaining the supplied client context."""
+    if type(context) is not ssl.SSLContext:
+        raise TypeError("ssl_context must be a standard ssl.SSLContext")
+    instance_attributes = getattr(context, "__dict__", {})
+    method_names = (*_TLS_CONTEXT_MUTATORS, "wrap_socket")
+    if any(name in instance_attributes for name in method_names):
+        raise ValueError("MySQL TLS context already has instance-level method overrides")
+
+    binding = _TLSContextBinding(
+        context,
+        _tls_context_policy_snapshot(context),
+        trust_store_sha256=_tls_trust_store_sha256(context),
+    )
+    guards: dict[str, Callable[..., object]] = {}
+
+    for method_name in _TLS_CONTEXT_MUTATORS:
+        original_method = getattr(context, method_name, None)
+        if not callable(original_method):
+            continue
+
+        def reject_mutation(*_args: object, _method: str = method_name, **_kwargs: object) -> None:
+            raise ValueError(f"MySQL TLS context method {_method} is frozen after worker binding")
+
+        context.__dict__[method_name] = reject_mutation
+        guards[method_name] = reject_mutation
+
+    original_wrap_socket: Callable[..., ssl.SSLSocket] = context.wrap_socket
+
+    def guarded_wrap_socket(*args: object, **kwargs: object) -> ssl.SSLSocket:
+        _verify_tls_context_binding(binding)
+        try:
+            wrapped = original_wrap_socket(*args, **kwargs)
+        except Exception:
+            raise ValueError("MySQL TLS handshake could not be verified") from None
+        try:
+            if not isinstance(wrapped, ssl.SSLSocket):
+                raise ValueError("MySQL TLS handshake did not return a verified socket")
+            current_policy = _tls_context_policy_snapshot(context)
+            current_trust = _tls_trust_store_sha256(context)
+            peer_certificate = wrapped.getpeercert(binary_form=True)
+            if current_policy != binding.policy_snapshot or not peer_certificate:
+                raise ValueError("MySQL TLS verification policy changed during handshake")
+            peer_fingerprint = sha256(peer_certificate).hexdigest()
+            if binding.first_handshake_pending:
+                # OpenSSL can load capath entries lazily during a handshake. Bind
+                # the material actually present after the first reviewed preflight.
+                binding.trust_store_sha256 = current_trust
+                binding.peer_certificate_sha256 = peer_fingerprint
+                binding.first_handshake_pending = False
+            elif current_trust != binding.trust_store_sha256:
+                raise ValueError("MySQL TLS trust material changed after worker binding")
+            elif peer_fingerprint != binding.peer_certificate_sha256:
+                raise ValueError("MySQL TLS peer certificate changed after worker binding")
+            return wrapped
+        except ValueError:
+            wrapped.close()
+            raise
+        except Exception:
+            wrapped.close()
+            raise ValueError("MySQL TLS handshake could not be verified") from None
+
+    context.__dict__["wrap_socket"] = guarded_wrap_socket
+    guards["wrap_socket"] = guarded_wrap_socket
+    binding.method_guards = guards
+    return binding
+
+
+def _verify_tls_context_binding(binding: _TLSContextBinding) -> None:
+    """Reject TLS policy, trust-anchor, or reviewed method-guard drift."""
+    context = binding.context
+    guards = binding.method_guards
+    if (
+        guards is None
+        or _tls_context_policy_snapshot(context) != binding.policy_snapshot
+        or context.verify_mode != ssl.CERT_REQUIRED
+        or context.check_hostname is not True
+        or any(getattr(context, name, None) is not guard for name, guard in guards.items())
+    ):
+        raise ValueError("MySQL TLS verification policy changed after Engine creation")
+    if binding.trust_store_sha256 is not None:
+        current_trust = _tls_trust_store_sha256(context)
+        if current_trust != binding.trust_store_sha256:
+            raise ValueError("MySQL TLS trust material changed after worker binding")
 
 
 def _verify_private_unix_socket_identity(expected: _UnixSocketIdentity) -> None:
@@ -929,12 +1104,10 @@ def _verify_mysql_transport_configuration(transport: _MySQLTransportBinding) -> 
     """Recheck mutable TLS policy or socket identity before opening a connection."""
     if transport.kind == "tls":
         context = transport.ssl_context
-        if (
-            context is None
-            or context.verify_mode != ssl.CERT_REQUIRED
-            or not context.check_hostname
-        ):
-            raise ValueError("MySQL TLS verification policy changed after Engine creation")
+        binding = transport.tls_context
+        if context is None or binding is None or binding.context is not context:
+            raise ValueError("MySQL TLS context binding is incomplete")
+        _verify_tls_context_binding(binding)
     elif transport.kind == "unix_socket":
         expected = transport.unix_socket
         if expected is None:  # pragma: no cover - closed union
@@ -966,7 +1139,8 @@ def _verify_mysql_transport(connection: Connection, transport: _MySQLTransportBi
         active_socket = getattr(dbapi_connection, "_sock", None)
         if transport.kind == "tls":
             context = transport.ssl_context
-            if context is None:  # pragma: no cover - checked above
+            binding = transport.tls_context
+            if context is None or binding is None:  # pragma: no cover - checked above
                 raise ValueError("MySQL TLS context binding is incomplete")
             if (
                 not isinstance(active_socket, ssl.SSLSocket)
@@ -976,6 +1150,13 @@ def _verify_mysql_transport(connection: Connection, transport: _MySQLTransportBi
                 raise ValueError(
                     "MySQL connection is not using its registered verified TLS context"
                 )
+            peer_certificate = active_socket.getpeercert(binary_form=True)
+            if (
+                binding.peer_certificate_sha256 is None
+                or not peer_certificate
+                or sha256(peer_certificate).hexdigest() != binding.peer_certificate_sha256
+            ):
+                raise ValueError("MySQL TLS peer certificate does not match its reviewed binding")
         elif transport.kind == "unix_socket":
             expected = transport.unix_socket
             if expected is None:  # pragma: no cover - closed union
@@ -1000,18 +1181,26 @@ def _verify_mysql_connection(
     timeouts: _MySQLDriverTimeouts,
 ) -> None:
     """Read-only verify server/schema identity and actual PyMySQL timeouts."""
+    _verify_mysql_driver_timeouts(connection, timeouts)
     try:
         row = connection.exec_driver_sql("SELECT @@server_uuid, DATABASE()").one()
-        dbapi_connection = connection.connection.driver_connection
-        connect_timeout = getattr(dbapi_connection, "connect_timeout", None)
-        read_timeout = getattr(dbapi_connection, "_read_timeout", None)
-        write_timeout = getattr(dbapi_connection, "_write_timeout", None)
-        socket = getattr(dbapi_connection, "_sock", None)
-        socket_timeout = socket.gettimeout() if socket is not None else None
     except Exception:
         raise ValueError("MySQL worker connection could not be verified") from None
     if str(row[0]).lower() != identity.server_uuid or row[1] != identity.schema:
         raise ValueError("MySQL connection does not match the reviewed server/schema identity")
+
+
+def _verify_mysql_driver_timeouts(connection: Connection, timeouts: _MySQLDriverTimeouts) -> None:
+    """Check bounded PyMySQL timeouts before any SQL can wait on the server."""
+    try:
+        dbapi_connection = connection.connection.driver_connection
+        connect_timeout = getattr(dbapi_connection, "connect_timeout", None)
+        read_timeout = getattr(dbapi_connection, "_read_timeout", None)
+        write_timeout = getattr(dbapi_connection, "_write_timeout", None)
+        active_socket = getattr(dbapi_connection, "_sock", None)
+        socket_timeout = active_socket.gettimeout() if active_socket is not None else None
+    except Exception:
+        raise ValueError("MySQL driver timeout could not be verified") from None
     observed_timeouts = (connect_timeout, read_timeout, write_timeout, socket_timeout)
     expected_timeouts = (timeouts.connect, timeouts.read, timeouts.write, timeouts.read)
     for observed, expected in zip(observed_timeouts, expected_timeouts, strict=True):
