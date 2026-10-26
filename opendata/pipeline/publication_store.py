@@ -321,6 +321,10 @@ class PublicationConflictError(ValueError):
     """Raised when an idempotency key is reused with changed publication input."""
 
 
+class PublicationContractConflictError(ValueError):
+    """Raised when a delta changes a dataset's source or data contract."""
+
+
 class SnapshotError(ValueError):
     """Raised when a snapshot or cursor is malformed or does not match its scope."""
 
@@ -378,6 +382,7 @@ def publish_in_connection(
 
     Raises:
         PublicationConflictError: A retry key has different canonical input.
+        PublicationContractConflictError: Dataset contract metadata changed.
         ValueError: Input is invalid, unbounded, or contains credential material.
     """
     if not isinstance(connection, Connection):
@@ -434,12 +439,41 @@ def publish_in_connection(
         # transaction. All sequence/fact/head changes roll back with it.
         with connection.begin_nested():
             _ensure_head(connection, dataset)
-            head = connection.execute(
-                select(PUBLICATION_HEADS.c.latest_sequence)
-                .where(PUBLICATION_HEADS.c.dataset_id == dataset)
-                .with_for_update()
-            ).scalar_one()
-            sequence = int(head) + 1
+            # The earlier idempotency lookup may establish a MySQL REPEATABLE READ
+            # snapshot. Lock the head as a current read before inspecting its contract.
+            head_row = (
+                connection.execute(
+                    select(PUBLICATION_HEADS)
+                    .where(PUBLICATION_HEADS.c.dataset_id == dataset)
+                    .with_for_update()
+                )
+                .mappings()
+                .one()
+            )
+            sequence = int(head_row["latest_sequence"])
+            latest_publication_id = head_row["latest_publication_id"]
+            if latest_publication_id is not None:
+                # Keep this a locking/current read too; a plain SELECT can see stale
+                # metadata from the transaction's older consistent-read snapshot.
+                latest_publication = (
+                    connection.execute(
+                        select(PUBLICATIONS)
+                        .where(PUBLICATIONS.c.publication_id == latest_publication_id)
+                        .with_for_update()
+                    )
+                    .mappings()
+                    .one()
+                )
+                _require_compatible_publication_contract(
+                    latest_publication,
+                    source_id=source,
+                    schema_version=schema,
+                    semantic_version=semantics,
+                    unit=unit_value,
+                    adjustment_basis=adjustment,
+                    provenance=json.loads(provenance_json),
+                )
+            sequence += 1
             now = datetime.now(_UTC)
             now_us = _datetime_to_us(now)
             publication_id = uuid4().hex
@@ -858,6 +892,14 @@ class PublicationStore:
         if len(pieces) != 2:
             raise SnapshotError("cursor is malformed")
         encoded, signature = pieces
+        base64url_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+        if (
+            not encoded
+            or len(signature) != 43
+            or any(char not in base64url_characters for char in encoded)
+            or any(char not in base64url_characters for char in signature)
+        ):
+            raise SnapshotError("cursor encoding is invalid")
         expected = _base64url(
             hmac.new(self._cursor_signing_key, encoded.encode("ascii"), hashlib.sha256).digest()
         )
@@ -1388,6 +1430,42 @@ def _ensure_same_payload(row: RowMapping, payload_hash: str) -> RowMapping:
             "idempotency_key already exists with a different publication payload"
         )
     return row
+
+
+def _require_compatible_publication_contract(
+    previous: RowMapping,
+    *,
+    source_id: str,
+    schema_version: str,
+    semantic_version: str,
+    unit: str,
+    adjustment_basis: str,
+    provenance: Mapping[str, Any],
+) -> None:
+    """Reject metadata changes that would relabel retained delta facts."""
+    incoming = {
+        "source_id": source_id,
+        "schema_version": schema_version,
+        "semantic_version": semantic_version,
+        "unit": unit,
+        "adjustment_basis": adjustment_basis,
+    }
+    changed = [name for name, value in incoming.items() if previous[name] != value]
+    previous_provenance = json.loads(previous["provenance_json"])
+    if not isinstance(previous_provenance, dict):
+        raise RuntimeError("stored publication provenance must be a JSON object")
+    prior_hash = (
+        "contract_sha256" in previous_provenance,
+        previous_provenance.get("contract_sha256"),
+    )
+    incoming_hash = ("contract_sha256" in provenance, provenance.get("contract_sha256"))
+    if prior_hash != incoming_hash:
+        changed.append("provenance.contract_sha256")
+    if changed:
+        changed_fields = ", ".join(changed)
+        raise PublicationContractConflictError(
+            "dataset publication contract changed: " + changed_fields
+        )
 
 
 def _identifier(value: str, name: str) -> str:

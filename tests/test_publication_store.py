@@ -13,7 +13,7 @@ from threading import Barrier
 from typing import TYPE_CHECKING
 
 import pytest
-from sqlalchemy import create_engine, event, func, select
+from sqlalchemy import create_engine, event, func, insert, select
 from sqlalchemy.dialects.mysql import dialect as mysql_dialect
 from sqlalchemy.engine.result import MappingResult
 from sqlalchemy.schema import CreateTable
@@ -29,6 +29,7 @@ from opendata.pipeline.publication_store import (
     SNAPSHOTS,
     PageSizeLimitError,
     PublicationConflictError,
+    PublicationContractConflictError,
     PublicationStore,
     PublishedRecordInput,
     SnapshotError,
@@ -70,17 +71,28 @@ def publish(
     records: list[PublishedRecordInput],
     *,
     watermark: dict[str, object] | None = None,
+    source_id: str = "provider.alpha",
+    schema_version: str = "2",
+    semantic_version: str = "2.1",
+    unit: str = "CNY/share; shares; CNY",
+    adjustment_basis: str = "unadjusted",
+    quality: dict[str, object] | None = None,
+    provenance: dict[str, object] | None = None,
 ):
     """Publish a standard typed stock-like record delta."""
     return store.publish(
         dataset_id="equity.daily",
-        source_id="provider.alpha",
-        schema_version="2",
-        semantic_version="2.1",
-        unit="CNY/share; shares; CNY",
-        adjustment_basis="unadjusted",
-        quality={"status": "passed", "rejected": 0},
-        provenance={"provider": "alpha", "response_hash": "a" * 64},
+        source_id=source_id,
+        schema_version=schema_version,
+        semantic_version=semantic_version,
+        unit=unit,
+        adjustment_basis=adjustment_basis,
+        quality=quality if quality is not None else {"status": "passed", "rejected": 0},
+        provenance=(
+            provenance
+            if provenance is not None
+            else {"provider": "alpha", "response_hash": "a" * 64}
+        ),
         idempotency_key=key,
         records=records,
         watermark=watermark,
@@ -124,6 +136,98 @@ def test_publish_retry_is_idempotent_and_changed_payload_conflicts(engine: Engin
             [record("600000.SH", date(2026, 10, 23), 12.5)],
             watermark={"date": "2026-10-23"},
         )
+
+
+@pytest.mark.parametrize(
+    ("initial", "changed", "field"),
+    [
+        ({}, {"source_id": "provider.beta"}, "source_id"),
+        ({}, {"schema_version": "3"}, "schema_version"),
+        ({}, {"semantic_version": "3.0"}, "semantic_version"),
+        ({}, {"unit": "USD/share"}, "unit"),
+        ({}, {"adjustment_basis": "split_adjusted"}, "adjustment_basis"),
+        (
+            {"provenance": {"provider": "alpha", "contract_sha256": "a" * 64}},
+            {"provenance": {"provider": "alpha", "contract_sha256": "b" * 64}},
+            "provenance.contract_sha256",
+        ),
+        (
+            {"provenance": {"provider": "alpha"}},
+            {"provenance": {"provider": "alpha", "contract_sha256": "b" * 64}},
+            "provenance.contract_sha256",
+        ),
+    ],
+)
+def test_delta_publication_rejects_dataset_contract_drift(
+    engine: Engine, initial: dict[str, object], changed: dict[str, object], field: str
+) -> None:
+    """Deltas cannot relabel old business-key facts under a changed contract."""
+    store = make_store(engine)
+    day = date(2026, 10, 23)
+    first = publish(store, "contract-v1", [record("600000.SH", day, 10.0)], **initial)
+
+    with pytest.raises(PublicationContractConflictError, match=field.replace(".", r"\.")):
+        publish(store, "contract-drift", [record("600000.SH", day, 11.0)], **changed)
+
+    assert publish(store, "contract-v1", [record("600000.SH", day, 10.0)], **initial) == first
+    assert len(store.list_publications("equity.daily")) == 1
+    page = store.read_page(store.create_snapshot("equity.daily").snapshot_id)
+    assert page.records[0].publication_id == first.publication_id
+    assert page.records[0].payload["close"] == 10.0
+
+
+def test_same_contract_delta_watermark_change_and_historical_retry_are_allowed(
+    engine: Engine,
+) -> None:
+    """Watermarks may advance while contract-compatible deltas and retries remain valid."""
+    store = make_store(engine)
+    day = date(2026, 10, 23)
+    initial_records = [record("600000.SH", day, 10.0), record("600001.SH", day, 20.0)]
+    first = publish(store, "legacy-v1", initial_records, watermark={"business_date": "2026-10-22"})
+    second = publish(
+        store,
+        "legacy-v2",
+        [record("600001.SH", day, 21.0)],
+        watermark={"business_date": "2026-10-23"},
+    )
+    retry = publish(store, "legacy-v1", initial_records, watermark={"business_date": "2026-10-22"})
+
+    assert first.sequence == 1
+    assert second.sequence == 2
+    assert retry == first
+    assert len(store.list_publications("equity.daily")) == 2
+    snapshot = store.create_snapshot("equity.daily")
+    page = store.read_page(snapshot.snapshot_id)
+    assert {row.payload["close"] for row in page.records} == {10.0, 21.0}
+
+
+def test_empty_head_and_watermark_only_changes_do_not_define_the_contract(engine: Engine) -> None:
+    """An empty sequence head may start a contract and later watermark changes remain legal."""
+    store = make_store(engine)
+    with engine.begin() as connection:
+        connection.execute(
+            insert(PUBLICATION_HEADS).values(
+                dataset_id="equity.daily",
+                latest_sequence=0,
+                latest_publication_id=None,
+                watermark_json='{"business_date":"unknown"}',
+                updated_at_us=0,
+            )
+        )
+
+    first = publish(store, "empty-head-v1", [], watermark={"business_date": "2026-10-22"})
+    second = publish(store, "empty-head-v2", [], watermark={"business_date": "2026-10-23"})
+    assert first.sequence == 1
+    assert second.sequence == 2
+    with engine.connect() as connection:
+        head = (
+            connection.execute(
+                select(PUBLICATION_HEADS).where(PUBLICATION_HEADS.c.dataset_id == "equity.daily")
+            )
+            .mappings()
+            .one()
+        )
+    assert json.loads(head["watermark_json"]) == {"business_date": "2026-10-23"}
 
 
 def test_delta_publication_preserves_revisions_and_unchanged_business_keys(engine: Engine) -> None:
@@ -238,6 +342,32 @@ def test_cursor_rejects_tampering_other_snapshot_and_other_scope(engine: Engine)
         )
 
 
+def test_cursor_rejects_unicode_and_padding_as_snapshot_errors(engine: Engine) -> None:
+    """Malformed token bytes never escape the API error boundary as Unicode errors."""
+    store = make_store(engine)
+    publish(
+        store,
+        "malformed-cursor",
+        [record(f"60000{i}.SH", date(2026, 10, 20), 10 + i) for i in range(2)],
+    )
+    snapshot = store.create_snapshot("equity.daily", page_size=1)
+    page = store.read_page(snapshot.snapshot_id)
+    assert page.next_cursor is not None
+    encoded, signature = page.next_cursor.split(".")
+    malformed = (
+        "☃.bad",
+        f"{encoded[:-1]}☃.{signature}",
+        f"{encoded}.{signature[:-1]}☃",
+        f"{encoded}=.{signature}",
+    )
+
+    for cursor in malformed:
+        with pytest.raises(SnapshotError):
+            store.read_page(snapshot.snapshot_id, cursor=cursor)
+    with pytest.raises(SnapshotError):
+        store.read_page(snapshot.snapshot_id, cursor=123)  # type: ignore[arg-type]
+
+
 def test_snapshot_expiry_is_persisted_and_reported(engine: Engine) -> None:
     """Expired snapshots fail closed and TTL has a hard upper bound."""
     store = make_store(engine)
@@ -319,6 +449,45 @@ def test_two_engine_concurrent_publications_advance_unique_dataset_sequences(
             publications = list(executor.map(write, range(2)))
         assert sorted(item.sequence for item in publications) == [1, 2]
         assert len(stores[0].list_publications("equity.daily")) == 2
+    finally:
+        first_engine.dispose()
+        second_engine.dispose()
+
+
+def test_two_engine_concurrent_contract_drift_cannot_bypass_guard(tmp_path: Path) -> None:
+    """A locked current head serializes a compatible delta against a contract change."""
+    db_path = tmp_path / "contract-race.sqlite"
+    first_engine = create_engine(f"sqlite:///{db_path}", connect_args={"timeout": 30})
+    PUBLICATION_METADATA.create_all(first_engine)
+    second_engine = create_engine(f"sqlite:///{db_path}", connect_args={"timeout": 30})
+    stores = (make_store(first_engine), make_store(second_engine))
+    day = date(2026, 10, 23)
+    publish(stores[0], "contract-base", [record("600000.SH", day, 10.0)])
+    barrier = Barrier(2)
+
+    def publish_drift(index: int) -> tuple[str, str | None]:
+        """Race a contract-compatible delta against a changed semantic version."""
+        barrier.wait(timeout=5)
+        try:
+            publication = publish(
+                stores[index],
+                f"contract-candidate-{index}",
+                [record("600000.SH", day, 20.0 + index)],
+                semantic_version="2.1" if index == 0 else "2.2",
+            )
+        except PublicationContractConflictError:
+            return "conflict", None
+        return "published", publication.publication_id
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            outcomes = list(executor.map(publish_drift, range(2)))
+        assert sorted(status for status, _ in outcomes) == ["conflict", "published"]
+        assert len(stores[0].list_publications("equity.daily")) == 2
+        snapshot = stores[0].create_snapshot("equity.daily")
+        page = stores[0].read_page(snapshot.snapshot_id)
+        assert len(page.records) == 1
+        assert page.records[0].payload["close"] == 20.0
     finally:
         first_engine.dispose()
         second_engine.dispose()
