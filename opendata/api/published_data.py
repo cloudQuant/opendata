@@ -39,6 +39,13 @@ from opendata.api.published_access import (
     require_published_access,
 )
 from opendata.core.config import settings
+from opendata.data.capture_selection import (
+    InstrumentCaptureSelection,
+    InstrumentCaptureSelectionError,
+    parse_instrument_capture_selection,
+    selection_profile,
+    validate_selector_pair,
+)
 from opendata.data.dataset_contract_registry import (
     DatasetContractRegistry,
     canonical_sha256,
@@ -234,6 +241,15 @@ class DatasetListResponse(BaseModel):
     count: StrictInt
 
 
+class InstrumentCaptureSelectionResponse(BaseModel):
+    """Exact instrument/capture pair pinned by a selected snapshot."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    instrument_id: str
+    capture_id: str
+
+
 class SnapshotResponse(ContractMetadataResponse):
     """Immutable metadata and boundaries for one fixed publication snapshot."""
 
@@ -245,6 +261,7 @@ class SnapshotResponse(ContractMetadataResponse):
     record_count: StrictInt
     selection_sha256: str
     content_sha256: str
+    selection: InstrumentCaptureSelectionResponse | None = None
 
 
 class PublishedRowResponse(BaseModel):
@@ -354,6 +371,8 @@ class CreateSnapshotRequest(BaseModel):
     start_date: date | None = None
     end_date: date | None = None
     page_size: StrictInt = Field(default=100, ge=1, le=MAX_PAGE_SIZE)
+    instrument_id: str | None = Field(default=None, min_length=1, max_length=128)
+    capture_id: str | None = Field(default=None, min_length=64, max_length=64)
 
     @field_validator("start_date", "end_date", mode="before")
     @classmethod
@@ -645,13 +664,29 @@ async def get_dataset_records(
     publication_id: str | None = Query(default=None, min_length=32, max_length=32),
     snapshot_id: str | None = Query(default=None, min_length=32, max_length=32),
     cursor: str | None = Query(default=None, max_length=8_192),
+    instrument_id: str | None = Query(default=None, min_length=1, max_length=128),
+    capture_id: str | None = Query(default=None, min_length=64, max_length=64),
 ) -> Response:
     """Read a fixed snapshot page, creating the snapshot on the first request."""
     _reject_unknown_query(
-        request, {"start_date", "end_date", "page_size", "publication_id", "snapshot_id", "cursor"}
+        request,
+        {
+            "start_date",
+            "end_date",
+            "page_size",
+            "publication_id",
+            "snapshot_id",
+            "cursor",
+            "instrument_id",
+            "capture_id",
+        },
     )
     _validate_hex_id(publication_id, "publication_id")
     _validate_hex_id(snapshot_id, "snapshot_id")
+    _validate_selection_input(instrument_id=instrument_id, capture_id=capture_id)
+    selector_was_supplied = (
+        "instrument_id" in request.query_params or "capture_id" in request.query_params
+    )
     if start_date is not None and end_date is not None and end_date <= start_date:
         raise _http_problem(
             422, "invalid_request", "Date window must satisfy start_date < end_date"
@@ -668,7 +703,20 @@ async def get_dataset_records(
             raise _service_unavailable()
         publication = await _publication_for_request(store, dataset_id, publication_id, data_access)
         contract, contract_hash = _resolve_contract(contracts, data_access, publication)
+        selection = _request_selection(
+            contract,
+            instrument_id=instrument_id,
+            capture_id=capture_id,
+            required=True,
+            was_supplied=selector_was_supplied,
+        )
         _require_supported_record_contract(contract, start_date, end_date)
+        selection_kwargs: dict[str, object] = {}
+        if selection is not None:
+            selection_kwargs = {
+                "instrument_id": selection.instrument_id,
+                "capture_id": selection.capture_id,
+            }
         snapshot = await asyncio.to_thread(
             store.create_snapshot,
             dataset_id,
@@ -677,9 +725,13 @@ async def get_dataset_records(
             end_date=end_date,
             page_size=page_size or 100,
             access_scope=data_access.binding_sha256,
+            **selection_kwargs,
         )
         publication = await _publication_for_snapshot(store, snapshot, data_access)
         contract, contract_hash = _resolve_contract(contracts, data_access, publication)
+        persisted_selection = _snapshot_selection(contract, snapshot)
+        if persisted_selection != selection:
+            raise _service_unavailable()
         page = await asyncio.to_thread(
             store.read_page,
             snapshot.snapshot_id,
@@ -708,6 +760,13 @@ async def get_dataset_records(
         snapshot = existing_snapshot
         publication = await _publication_for_snapshot(store, snapshot, data_access)
         contract, contract_hash = _resolve_contract(contracts, data_access, publication)
+        selection = _validate_snapshot_selection_request(
+            contract,
+            snapshot,
+            instrument_id=instrument_id,
+            capture_id=capture_id,
+            was_supplied=selector_was_supplied,
+        )
         _require_supported_record_contract(contract, snapshot.start_date, snapshot.end_date)
         page = await asyncio.to_thread(
             store.read_page,
@@ -717,6 +776,7 @@ async def get_dataset_records(
         )
 
     _validate_published_records(contract, page.records)
+    _validate_rows_match_selection(selection, page.records)
     return _success_response(
         _page_payload(
             publication, contract, contract_hash, page.snapshot, page.records, page.next_cursor
@@ -745,12 +805,32 @@ async def create_snapshot(
             "unsupported_header",
             "Idempotency-Key is not supported for snapshot creation",
         )
+    _validate_selection_input(
+        instrument_id=body.instrument_id,
+        capture_id=body.capture_id,
+    )
+    selector_was_supplied = bool(
+        {"instrument_id", "capture_id"}.intersection(body.model_fields_set)
+    )
     context = _require_access(principal, body.dataset_id, "snapshot.create", grants)
     publication = await _publication_for_request(
         store, body.dataset_id, body.publication_id, context
     )
     contract, contract_hash = _resolve_contract(contracts, context, publication)
+    selection = _request_selection(
+        contract,
+        instrument_id=body.instrument_id,
+        capture_id=body.capture_id,
+        required=True,
+        was_supplied=selector_was_supplied,
+    )
     _require_supported_record_contract(contract, body.start_date, body.end_date)
+    selection_kwargs: dict[str, object] = {}
+    if selection is not None:
+        selection_kwargs = {
+            "instrument_id": selection.instrument_id,
+            "capture_id": selection.capture_id,
+        }
     snapshot = await asyncio.to_thread(
         store.create_snapshot,
         body.dataset_id,
@@ -759,9 +839,12 @@ async def create_snapshot(
         end_date=body.end_date,
         page_size=body.page_size,
         access_scope=context.binding_sha256,
+        **selection_kwargs,
     )
     publication = await _publication_for_snapshot(store, snapshot, context)
     contract, contract_hash = _resolve_contract(contracts, context, publication)
+    if _snapshot_selection(contract, snapshot) != selection:
+        raise _service_unavailable()
     return _success_response(
         _snapshot_payload(publication, contract, contract_hash, snapshot), status_code=201
     )
@@ -796,6 +879,7 @@ async def get_snapshot(
         raise _not_found()
     publication = await _publication_for_snapshot(store, snapshot, context)
     contract, contract_hash = _resolve_contract(contracts, context, publication)
+    _snapshot_selection(contract, snapshot)
     return _success_response(_snapshot_payload(publication, contract, contract_hash, snapshot))
 
 
@@ -939,8 +1023,99 @@ def _resolve_contract(
         or contract.adjustment_basis != publication.adjustment_basis
     ):
         raise _service_unavailable()
+    try:
+        selection_profile(contract)
+    except InstrumentCaptureSelectionError:
+        raise _service_unavailable() from None
     _quality_receipt(publication)
     return contract, contract_hash
+
+
+def _validate_selection_input(*, instrument_id: object | None, capture_id: object | None) -> None:
+    """Reject malformed selector syntax before an authorized request reads the store."""
+    try:
+        validate_selector_pair(instrument_id=instrument_id, capture_id=capture_id)
+    except InstrumentCaptureSelectionError:
+        raise _http_problem(
+            422, "invalid_selection", "Instrument/capture selection is invalid"
+        ) from None
+
+
+def _request_selection(
+    contract: DatasetContract,
+    *,
+    instrument_id: object | None,
+    capture_id: object | None,
+    required: bool,
+    was_supplied: bool,
+) -> InstrumentCaptureSelection | None:
+    """Parse request selectors against the exact reviewed contract profile."""
+    try:
+        selection = parse_instrument_capture_selection(
+            contract,
+            instrument_id=instrument_id,
+            capture_id=capture_id,
+            required=required,
+        )
+    except InstrumentCaptureSelectionError:
+        raise _http_problem(
+            422, "invalid_selection", "Instrument/capture selection is invalid"
+        ) from None
+    if was_supplied and selection is None:
+        raise _http_problem(422, "invalid_selection", "Instrument/capture selection is invalid")
+    return selection
+
+
+def _snapshot_selection(
+    contract: DatasetContract, snapshot: SnapshotRecord
+) -> InstrumentCaptureSelection | None:
+    """Validate persisted selectors against the pinned publication contract."""
+    try:
+        return parse_instrument_capture_selection(
+            contract,
+            instrument_id=snapshot.instrument_id,
+            capture_id=snapshot.capture_id,
+            required=True,
+        )
+    except InstrumentCaptureSelectionError:
+        raise _service_unavailable() from None
+
+
+def _validate_snapshot_selection_request(
+    contract: DatasetContract,
+    snapshot: SnapshotRecord,
+    *,
+    instrument_id: str | None,
+    capture_id: str | None,
+    was_supplied: bool,
+) -> InstrumentCaptureSelection | None:
+    """Use the stored snapshot scope and reject any changed repeated selector."""
+    persisted = _snapshot_selection(contract, snapshot)
+    requested = _request_selection(
+        contract,
+        instrument_id=instrument_id,
+        capture_id=capture_id,
+        required=False,
+        was_supplied=was_supplied,
+    )
+    if was_supplied and requested != persisted:
+        raise _http_problem(422, "invalid_selection", "Instrument/capture selection is invalid")
+    return persisted
+
+
+def _validate_rows_match_selection(
+    selection: InstrumentCaptureSelection | None,
+    records: tuple[PublishedRecord, ...],
+) -> None:
+    """Fail closed if any returned row contradicts its persisted capture selector."""
+    if selection is None:
+        return
+    for record in records:
+        if (
+            record.payload.get("instrument_id") != selection.instrument_id
+            or record.payload.get("capture_id") != selection.capture_id
+        ):
+            raise _service_unavailable()
 
 
 def _require_supported_record_contract(
@@ -1234,7 +1409,7 @@ def _snapshot_payload(
     snapshot: SnapshotRecord,
 ) -> dict[str, object]:
     """Project all immutable scope and publication fields for a snapshot."""
-    return {
+    payload: dict[str, object] = {
         **_contract_metadata(publication, contract, contract_hash, as_of=snapshot.as_of),
         "snapshot_id": snapshot.snapshot_id,
         "window": _window(snapshot.start_date, snapshot.end_date),
@@ -1245,6 +1420,14 @@ def _snapshot_payload(
         "selection_sha256": snapshot.selection_sha256,
         "content_sha256": snapshot.content_sha256,
     }
+    if snapshot.instrument_id is not None or snapshot.capture_id is not None:
+        if snapshot.instrument_id is None or snapshot.capture_id is None:
+            raise _service_unavailable()
+        payload["selection"] = {
+            "instrument_id": snapshot.instrument_id,
+            "capture_id": snapshot.capture_id,
+        }
+    return payload
 
 
 def _page_payload(
