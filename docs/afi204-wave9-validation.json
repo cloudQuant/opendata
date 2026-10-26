@@ -1,0 +1,101 @@
+{
+  "archive_note": "Same-host private ignored receipts; not an external backup.",
+  "archive_path": "var/reports/afi204/2026-10-27-wave9",
+  "created_at": "2026-10-26T21:02:18.705083+00:00",
+  "focused_environment": {
+    "status": "PASS",
+    "system_site_packages": false,
+    "upstream_sdks_absent": true
+  },
+  "focused_tests": {
+    "coverage_percent_unrounded": {
+      "opendata/data/providers/sina/financial_statement_contract.py": 95.97315436241611,
+      "opendata/data/providers/sina/financial_statement_parser.py": 93.34719334719335,
+      "opendata/data/providers/sina/financial_statement_wire.py": 90.80459770114942
+    },
+    "python": "3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 16:09:02) [GCC 11.2.0]",
+    "selection": [
+      "tests/test_sina_financial_statement_parser.py",
+      "tests/test_sina_financial_statement_wire.py"
+    ],
+    "status": "PASS"
+  },
+  "initial_test_failure": {
+    "coverage_percent_unrounded": {
+      "opendata/data/providers/sina/financial_statement_contract.py": 95.97315436241611,
+      "opendata/data/providers/sina/financial_statement_parser.py": 88.88888888888889,
+      "opendata/data/providers/sina/financial_statement_wire.py": 90.80459770114942
+    },
+    "note": "Preserved historical failure; not an accepted test result.",
+    "source_commit": "5822b74bfd6516371cd7a2b8a0b9c7715be989f3",
+    "status": "FAIL"
+  },
+  "iteration": 204,
+  "prior_archives_unchanged": {
+    "2026-10-27-wave7": 106,
+    "2026-10-27-wave8": 162
+  },
+  "production_status": "NOT_PRODUCTION_APPROVED",
+  "python310_runtime": "NOT_RUN",
+  "resolver_a2_component": {
+    "complete_resolver_files": 1209,
+    "full_make_gate": "NOT_RUN",
+    "historical_evidence": "OPEN",
+    "historical_note": "149323 historical Ruff findings remain NOT GREEN; inherited missing support/classification and active-evidence gaps stay open. No static policy exclusions or baseline exception changes in this run. Runtime census only increased by four independently reviewed first-party Sina files.",
+    "historical_ruff_findings": 149323,
+    "historical_ruff_status": "NOT_GREEN",
+    "mypy_nonzero_roots": [],
+    "mypy_reported_roots": 791,
+    "status": "PASS"
+  },
+  "scope_limits": [
+    "Offline parser and in-memory transport tests for one recorded Shanghai Sina fzb response only.",
+    "No rights grant, production registration, route, SDK, live request, or activation is approved.",
+    "The fixture does not establish other issuers, source retention, complete history, units, or normalization."
+  ],
+  "secret_scan": {
+    "commits_scanned": 894,
+    "no_leaks_reported": true,
+    "scope": "Existing pinned full-history Gitleaks component; later uncommitted public JSON requires its own scan.",
+    "status": "PASS",
+    "tool_version": "8.30.1"
+  },
+  "snapshot_head": "9ff72ad668ce161f5132bf866b251acd3c80bbba",
+  "source_commits": [
+    {
+      "label": "focused_tests",
+      "source_commit": "9ff72ad668ce161f5132bf866b251acd3c80bbba"
+    },
+    {
+      "label": "scoped_static",
+      "source_commit": "9ff72ad668ce161f5132bf866b251acd3c80bbba"
+    },
+    {
+      "label": "resolver_a2_component",
+      "source_commit": "9ff72ad668ce161f5132bf866b251acd3c80bbba"
+    },
+    {
+      "label": "full_history_secret_scan",
+      "source_commit": "9ff72ad668ce161f5132bf866b251acd3c80bbba"
+    },
+    {
+      "label": "focused_environment",
+      "source_commit": null
+    }
+  ],
+  "static": {
+    "checks": [
+      "bandit",
+      "brand",
+      "format",
+      "mypy",
+      "public-api",
+      "ruff",
+      "zero-dep",
+      "zero-dep-selftest"
+    ],
+    "status": "PASS"
+  },
+  "status": "SCOPED_OFFLINE_SINA_SLICE_VALIDATED",
+  "wave": 9
+}
