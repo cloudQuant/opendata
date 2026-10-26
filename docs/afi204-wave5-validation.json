@@ -1,0 +1,826 @@
+{
+  "afi_code_commit": "b7514d444dbfe109dec96bc603232a2282dfc617",
+  "archive_note": "Same-host ignored evidence archive, not external backup or recovery drill. Scope incidents are separately frozen and are not passing acceptance evidence.",
+  "archive_path": "var/reports/afi204/2026-10-27-wave5",
+  "environment": {
+    "python": "3.13.5",
+    "python310": "AST grammar PASS; runtime matrix NOT_RUN"
+  },
+  "inventory": {
+    "blocked": 1103,
+    "ready_disabled": 0,
+    "real_task_imports_this_wave": 0,
+    "registered_scripts": 1066,
+    "scheduled_tasks": 1103,
+    "source": "Earlier frozen inventory/plan; no new live census or denominator reduction"
+  },
+  "iteration": 204,
+  "opendata_code_commit": "31cfd70ba62dee6e1243d7ea9100a15532e49f95",
+  "private_receipt_sha256": [
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/finalize_wave5.py",
+      "sha256": "a89780891df5ef96fd6c6481879daa472e48175736f4abd0b9a0ac9ca6a08f25"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/review-final-seven.txt",
+      "sha256": "1b271d425419e8bc1744c717f2b537cfadcc532062f5021b4ef67ba47616712f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/run_wave5_checked_tests.py",
+      "sha256": "39c6119204e965135611583f96e5ee19e509511bd9a34863bec20ced9b3a1753"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/run_wave5_static.py",
+      "sha256": "59c6a296ffb46a26de74c7008cc43bb24e9d5361dc58b4bd4960bcfe5734e55c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-afi-combined-command.json",
+      "sha256": "8a2c3d1d26a50d162e2207a6b22a8b3a3fbd3a386a4af7f52d15c2be3e0c0963"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-afi-combined.txt",
+      "sha256": "b7b967bc85f95ccb97b3eab306eeea135602ba035dd13f40951cb17a064d8c5e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-afi-protected-source-before-closeout.json",
+      "sha256": "961fe6f4c26de8565ceed9e40413812df3f436680176658104b026f1d9c7f1a0"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-afi-rest-read-review-fixed.txt",
+      "sha256": "e8f1db7c97cfbd35c2b11a5868d5ec838cfe4254f9ff81b935fde9264137f31c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-afi-rest-read-review.txt",
+      "sha256": "6bae36d57005d2b784b75492c4b14cf47a9130fd282ed2b5e53b5654967b50a7"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-bandit-command.json",
+      "sha256": "9078f08faa5b2fd63d5681a2a7a2b8f74bdc45c6f33d083eff3ecdde0c42dcea"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-bandit.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-combined-fixed-root-command.json",
+      "sha256": "11c90ea76e7aeca7b5a256f09521969be2054d4da466519914d0de9cc35667db"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-combined-fixed-root.txt",
+      "sha256": "319f44cf64643102741fd18832f2bbf479c88e00813da297391b22b602644f0f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-combined-initial-failure/manifest.json",
+      "sha256": "e2b2c229ae4268a8f533b2273db795d35e3f5b9c9d24ed40ffe5a87842c7e6e3"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-combined-initial-failure/wave5-combined-root-command.json",
+      "sha256": "5cd34b47d2375927baa185498763151745e3cf3b579c4f1f63b412eabd18f86f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-combined-initial-failure/wave5-combined-root.txt",
+      "sha256": "b429eb0aa2064ad810bb5934f5821fa609a1b11b38b692eff0f97c5f061833e5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-combined-root-command.json",
+      "sha256": "5cd34b47d2375927baa185498763151745e3cf3b579c4f1f63b412eabd18f86f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-combined-root.txt",
+      "sha256": "b429eb0aa2064ad810bb5934f5821fa609a1b11b38b692eff0f97c5f061833e5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-default-target-guard-review-fixed.txt",
+      "sha256": "9e3216f98dcdfb264aa2c6065313a905033358f9c72cfd2ac5547b978a1945b1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-default-target-guard-review.txt",
+      "sha256": "00a5d422e97d6c7f25dcd0653fca5f2da7babbe87eb924d63da115878792f810"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-bandit-command.json",
+      "sha256": "4b997b0fe6918c5dcd5402f55febb7835332af565b6ab67381b1c60671eedc20"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-bandit.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-format-command.json",
+      "sha256": "cf377b12e720ad8a990dd23066f3910d485d2a939a96411e539120659df162db"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-format.txt",
+      "sha256": "567cf9662cb4d79c3e23b3904f6b02d25d7ae3d1f3da6155dd946d1e871cad4e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-mypy-client-command.json",
+      "sha256": "a975f26c509e3f85c0bc455f00257ad0f1defde7ff7cae18b6196a3f6421aee5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-mypy-client.txt",
+      "sha256": "2f8ff64eefa9722f4e130c2da051e4aedc145f83efdfb11a63fa4a6fa4be12ed"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-mypy-core-command.json",
+      "sha256": "0cfe87a37974b66eba3336009dcfe7c63bd8f13fb8fabcb0cd1efa9070649b36"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-mypy-core.txt",
+      "sha256": "070c9c331a2e491aabe528a802fadba01ab960cc6017b0199149ee76a8b866b5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-named-gates-command.json",
+      "sha256": "c37a34a00b7324d7d13f6a54b055806228a6ae12fffe7dfb2f27d5912477388d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-named-gates.txt",
+      "sha256": "57e519132d0a4ea422a191ff45b8b61d939d4b54ee4a5a2cd8863b92c2a5d7d0"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-reference-reconcile.json",
+      "sha256": "1674b1db9d68c0745d68ce3150c6a61e6e1e5ab62ee325648da5567162e9a28c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-ruff-command.json",
+      "sha256": "659b01a2a317a9bdb6971e019a7cc30cd1e3c6b12dbd974fe387d466f5c4a1b9"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-source-snapshot.json",
+      "sha256": "219a246d774163d31a23d7fa73d5263e893b575d1ea7b1693770fbf49369d4d6"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-whole-a2-command.json",
+      "sha256": "217515cb495295037a6d7f6de5636462a995f86164e695ad6b876181a2b2e219"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-whole-a2-summary.json",
+      "sha256": "e8734841eae08551cda4519b83684fb95c5c2f8210e4bff5f2023dfb13b17a6c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-final-whole-a2.txt",
+      "sha256": "471a2bb3c12cc3b193d2105f3ca451739e52331fb4954c4840eaf95e37446c13"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-fixtures-fixed-root-command.json",
+      "sha256": "9af31014e77d680cb43bdc3f8f6c2d234926cad54aba856f2518d45ded1d5cec"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-fixtures-fixed-root.txt",
+      "sha256": "9079210ab937b63b3e4a44d78e5577cc0319d54220e18e055a7a4ac7abc13afa"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-format-command.json",
+      "sha256": "dc7c06e07dec6fb859f606bc2f3af903795068b198717a6e2923abfbe79ae765"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-format.txt",
+      "sha256": "1b2a949c4425b6097242b1e28a12a597d352c04edc11185a9a3012a5f542e9d6"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-expanded-root-command.json",
+      "sha256": "e672077846d31d82ff42e8c24659230c7450ae50698d4a6c4f97a7d4d55f7d15"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-expanded-root-coverage.ini",
+      "sha256": "7ad1d709a5a83c5e859a3a4337736648d3d30db6dfc533e3f597a5bf8f0e4b43"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-expanded-root-coverage.json",
+      "sha256": "5e7b232a41b0d0afe4cd9d2300f2611d04b5cc030ad11cb6b17a33ef8e573e2e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-expanded-root-coverage.xml",
+      "sha256": "e2b1a083a36041b9425d11f18c553fd7a314a824c8860651f76d09c5d104d72a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-expanded-root-htmlcov.zip",
+      "sha256": "902325fea976ce1b0cf248aabcce0724127135d4c33f12854b9908403759904f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-expanded-root.coverage",
+      "sha256": "b56ab66e12df80fb3a86ce0dfea4680708ea8944d73803ff1292fb817ad80b75"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-expanded-root.txt",
+      "sha256": "b6b7bdcb0569cb06d959c1534b30a3ea6e5dbb7f29ce281f2a743050ebe53b64"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-initial-failure/htmlcov.zip",
+      "sha256": "b1fc438cf13690e2879cf0c8bb7061937667da184bc50bf8b46da576b86f1ce2"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-initial-failure/manifest.json",
+      "sha256": "a63646d5433afd09afa7e64e174aae7c600efe2003bd2e20b2d10ada5b4b7b2c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-initial-failure/wave5-frames-root-command.json",
+      "sha256": "0a760078ebc35006309bf0aaefbd76dbc64b599fc4cd247d5e00bb07fa3689ab"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-initial-failure/wave5-frames-root-coverage.ini",
+      "sha256": "7ad1d709a5a83c5e859a3a4337736648d3d30db6dfc533e3f597a5bf8f0e4b43"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-initial-failure/wave5-frames-root-coverage.json",
+      "sha256": "0c3b902282c9d44aaf8c35d4dbfdcdcbca2d398008b8462d7c1c2773857a1a9f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-initial-failure/wave5-frames-root-coverage.xml",
+      "sha256": "906bb6876fc1c68db6adaff383088a6138f0b5ffc17723143ddf01861af512df"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-initial-failure/wave5-frames-root.coverage",
+      "sha256": "ecd8b9cc471ec2c65683b8fbecdeffb4b6c0b2067016c49507e658a350547b67"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-initial-failure/wave5-frames-root.txt",
+      "sha256": "0bb2efd4f81d6d2ae972739d9df1040a85db08530807afd9a577ac153e8315a3"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-root-command.json",
+      "sha256": "0a760078ebc35006309bf0aaefbd76dbc64b599fc4cd247d5e00bb07fa3689ab"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-root-coverage.ini",
+      "sha256": "7ad1d709a5a83c5e859a3a4337736648d3d30db6dfc533e3f597a5bf8f0e4b43"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-root-coverage.json",
+      "sha256": "0c3b902282c9d44aaf8c35d4dbfdcdcbca2d398008b8462d7c1c2773857a1a9f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-root-coverage.xml",
+      "sha256": "906bb6876fc1c68db6adaff383088a6138f0b5ffc17723143ddf01861af512df"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-root.coverage",
+      "sha256": "ecd8b9cc471ec2c65683b8fbecdeffb4b6c0b2067016c49507e658a350547b67"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-frames-root.txt",
+      "sha256": "0bb2efd4f81d6d2ae972739d9df1040a85db08530807afd9a577ac153e8315a3"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-guard-root-command.json",
+      "sha256": "026374ae3ed76bb40f356c12ac970c5a9685c850cbeac2f356f55028ecca167f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-guard-root.txt",
+      "sha256": "14ce6f3e0f0c8063bf4ee47a818cd266ef1bcafbd086e0e43d61df88e4609a66"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-mypy-client-command.json",
+      "sha256": "5e4b9c6793511421806ac0322217755574f87cb5722e60f8684b3ab47aa95fa5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-mypy-client.txt",
+      "sha256": "2f8ff64eefa9722f4e130c2da051e4aedc145f83efdfb11a63fa4a6fa4be12ed"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-mypy-core-command.json",
+      "sha256": "7cbbe9d48675a027559c880de30a8579646991aacafe6cbb1bafe9708b4b00a5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-mypy-core.txt",
+      "sha256": "070c9c331a2e491aabe528a802fadba01ab960cc6017b0199149ee76a8b866b5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-mysql-drift-schema-log.txt",
+      "sha256": "6de311c38f35cc582611cc013a9b1a443bf06382f7092c5e6c0c2c733f0af0f2"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-mysql-worker-review-fixed.txt",
+      "sha256": "db83e532f35630ef27817725467f627fc478b792af18c4b46a9c57c7c9c72f56"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-mysql-worker-review.txt",
+      "sha256": "f8fabc18a720718e62c8b7de1d857cde678ae623a821daa45ddf100073f1a22f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-mysql-worker-schema-log.txt",
+      "sha256": "ffb0d1ecb7e43b40fb2541236099851dc2419bde9e5d5649a176b410974ec5ad"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-named-gates-command.json",
+      "sha256": "e66afe458dc83e86889975c52fcdfe435bab94edee75cd0e3386b96056d5033c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-named-gates.txt",
+      "sha256": "73b669dc0d2933be49d7500494cb1b94e90a32f60e4614a0194d902c20634e50"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-named-static-command.json",
+      "sha256": "4df70c6cfcf08cad25c4e008443ace8ec7552cae9bdb499e1a935c9150b75cc9"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-named-static.txt",
+      "sha256": "2f0f6c0d69d204a6a6c7aec49082e95d8139033c38fa7de2b5e0cf8fd6c08750"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-owned-mysql-shutdown.json",
+      "sha256": "c614199a0e94ed5a40d8a36e41eed8bd29160b7662401c8e965e87dddd1b7743"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-reference-reconcile.json",
+      "sha256": "d2263bb1e07bdeb7129c65716a1d45078f41dd7b3e6bfbb7671eb036bf81d75b"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-reference-reconcile.py",
+      "sha256": "cf73db0c75612559b726b283764e78f512477f6e75026c0bca5eed12e4173164"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-reference-repin-preflight.json",
+      "sha256": "fa3b769ccdb1f9c5c9da934d6e24ee6c140686ad9dc40b1ef3d4710b31409025"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-ruff-command.json",
+      "sha256": "3d42ea384c11c2b73579389bba289b3144e670e88fc75d3c03c6abc36eed1ac7"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-source-snapshot.json",
+      "sha256": "7bc4a647825019239dc1adc7ce7ec00b04776339afdb4eee973c5e9b0f54ad40"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-test-scope-audit-supplement-20261026T233736+0800.json",
+      "sha256": "2f03c36e26dbe7560b7a2de50e0d074b604a64986308e572e94d86b60593f20e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-test-scope-audit-supplement-20261026T233736+0800.txt",
+      "sha256": "ed2b3de329fd151d5a867f3ed54da1a1c625e4c6b854b51fd2203d5d781ea8a9"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-test-scope-audit.json",
+      "sha256": "0a7fbecaa8e980ccfd0d4fd4ee747cca651b9ad2c27fc1eaad9496b2302d798d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-test-scope-audit.txt",
+      "sha256": "7587780023d02aa10715bd5b8b10080a8797311121ee91698e07a0cca6a31da9"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-thirteen-typing-roots-static.json",
+      "sha256": "48a1223c818026295b259a0308f0242de217cdc772275c6d004c9021e3a9c610"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-typing-casts-review.txt",
+      "sha256": "96c0d8fa07974ae561f4e117c5edd45aa89751e95401716b9db039bc3f50cd11"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-typing-casts-summary.txt",
+      "sha256": "44c3da5cdf0ffef14a0cfa3ee3d2ae13e18ea08e7c4b7daf0c4acef5c66b455a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-typing-frames-review-fixed.txt",
+      "sha256": "b424a9758e41b2aac46efda5e3b6e26166188c6a901a52d2d311fc8816d28032"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-typing-frames-review.txt",
+      "sha256": "e73c989de9671350dd86e430f4a27d5adba704f901af8acccb95ffff55836bc1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-whole-a2-command.json",
+      "sha256": "cae1de1dd5ebd27c5bd08cd094d8fa8b544da051e31eba1b2b366f806adbdd20"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-whole-a2-summary.json",
+      "sha256": "c6faf9fb722847140f65f9532e4390f2e695308d2ac36783476a579f26d8906d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-whole-a2.txt",
+      "sha256": "471a2bb3c12cc3b193d2105f3ca451739e52331fb4954c4840eaf95e37446c13"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-initial-failure/htmlcov.zip",
+      "sha256": "4a39fc74796b44a26bc65c83a6d540475322e07fc7d50b2b24291f35fabe1595"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-initial-failure/manifest.json",
+      "sha256": "e9d0ead7615ea7a0f160b3766a1d2824178df82ae6028cda266e356320cac717"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-initial-failure/wave5-worker-root-command.json",
+      "sha256": "5db5b2af0e429ba43e6a0380d4692771c889fe4112650667ba8c03aa38a23f3d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-initial-failure/wave5-worker-root-coverage.ini",
+      "sha256": "6ff49c94221092a382fe62c7f7af5a9a4aed28eff3c5432b072b9bde3dc731e1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-initial-failure/wave5-worker-root-coverage.json",
+      "sha256": "ce3f287c6702e5ff0b97b429bbf66b6aeccdc038f30ec49c0d8641a2a804222d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-initial-failure/wave5-worker-root-coverage.xml",
+      "sha256": "3c2292d55be72cf0f6916d483b755829e9395cb417063b2f2d009eb287572f39"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-initial-failure/wave5-worker-root-schema-names.txt",
+      "sha256": "b2a6e4fe722b9167c0ce9491c2e9f722937aa387cfa878c5c14c90d71a50593f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-initial-failure/wave5-worker-root.coverage",
+      "sha256": "6cae2f4687df2c023778dd026c7e528b6ef3b8291bf939ef422012de2e47521a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-initial-failure/wave5-worker-root.txt",
+      "sha256": "6696fecc4536e64aa591bfa1b457d4d732686dd3605953109419ad06909641af"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-root-command.json",
+      "sha256": "5db5b2af0e429ba43e6a0380d4692771c889fe4112650667ba8c03aa38a23f3d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-root-coverage.ini",
+      "sha256": "6ff49c94221092a382fe62c7f7af5a9a4aed28eff3c5432b072b9bde3dc731e1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-root-coverage.json",
+      "sha256": "ce3f287c6702e5ff0b97b429bbf66b6aeccdc038f30ec49c0d8641a2a804222d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-root-coverage.xml",
+      "sha256": "3c2292d55be72cf0f6916d483b755829e9395cb417063b2f2d009eb287572f39"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-root-schema-names.txt",
+      "sha256": "b2a6e4fe722b9167c0ce9491c2e9f722937aa387cfa878c5c14c90d71a50593f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-root.coverage",
+      "sha256": "6cae2f4687df2c023778dd026c7e528b6ef3b8291bf939ef422012de2e47521a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-root.coverage.yun.1105536.XtdKWpHx",
+      "sha256": "8f230e2d2928805b62ee4ff427162ae8c6796fd5c16a7ac8a427955b5cfd05aa"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-root.txt",
+      "sha256": "6696fecc4536e64aa591bfa1b457d4d732686dd3605953109419ad06909641af"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-short-root-command.json",
+      "sha256": "78a498e9e1039bb00d65dcab21e3a631697974d2c670ee8812b9c118f4d20e17"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-short-root-coverage.ini",
+      "sha256": "6ff49c94221092a382fe62c7f7af5a9a4aed28eff3c5432b072b9bde3dc731e1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-short-root-coverage.json",
+      "sha256": "36bf887462c6876111673c88dec7eecbda0698d667521dbef2bb4cc8612eeed5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-short-root-coverage.xml",
+      "sha256": "3db4eacb9a7a2139332d8d535136cdfa325d4f737afa976069fb7c5ab78807a1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-short-root-htmlcov.zip",
+      "sha256": "523506605fae8775d81ae76e0b6637e0fbcf2707fccbe8206d73b3a38992ef60"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-short-root-schema-names.txt",
+      "sha256": "a409034175440372abbdb06499ae91c20073084f8848715295b54f4c6b818040"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-short-root.coverage",
+      "sha256": "20d9ebf5660878c1ed9c7ea1923b4aa4e59eb03058a06cb81198aa0bdda60d8e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-short-root.coverage.yun.1112830.XSoQVdex",
+      "sha256": "8f230e2d2928805b62ee4ff427162ae8c6796fd5c16a7ac8a427955b5cfd05aa"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave5/wave5-worker-short-root.txt",
+      "sha256": "e46085cf653a1b0da044f930446624eef0ba6f27a48dec0ca4bd1790837cfd4c"
+    }
+  ],
+  "real_source": {
+    "full_history": "OPEN: per-instrument inception/head/interior/tail evidence required",
+    "rights_retention": "UNKNOWN",
+    "verified": false
+  },
+  "recorded_at": "2026-10-26T16:33:24.828985+00:00",
+  "remaining_limits": [
+    "No OpenBB/AkShare runtime SDK. Self-developed Provider architecture retained.",
+    "No push, dev merge, deployment or production switch. Original AFI dirty203 source protected; code protection does not establish absence of incident database side effects.",
+    "All1103 real task mappings/imports, broad AFI consumers and actual source/license/calendar/lifecycle coverage remain open.",
+    "Main role/CLI/scheduler/admin API/UI integration, global source budgets, raw GC/retention/orphan recovery, external backup/restore, natural cycles and single-writer cutover remain open.",
+    "Wave6 bounded HTTP and stock process transport are separate development slices, not accepted by this wave5 receipt.",
+    "Python3.10 runtime, remote MySQL TLS, remote CI and full make gate not run; historical evidence gaps remain open."
+  ],
+  "schema_version": 1,
+  "source_sha256": {
+    "alembic/versions/2026_10_26-0007_job_definitions.py": "6378f37fb6b919614d49af8dbbeb001b99dcdfbfbafb2b9f134d95d3ff6dfb5d",
+    "alembic_data/versions/20261026-0010_run_ledger.py": "840837f5c6a1ecb9e38955d754acc805aa6f91431f63817f88e663d049b3742d",
+    "alembic_data/versions/20261026-0011_publication_snapshots.py": "69a9203b0a34a1da0b71438d3d310f96c70683c594fecf328a85d1c54d4b08f0",
+    "examples/consumer_handoff.py": "5cb9fb1f047811c5cb222adb4a1f040edb8cec9c8468c934cf6b0ec6e602cf6a",
+    "opendata/api/__init__.py": "cf360233a410eb6baf331e6d5ef7e1f04b8033ec56fb820ad4f036fcb38cfaa5",
+    "opendata/api/published_access.py": "0176fe21ab38b0bdd6e8dd7fe39c30eb0caffe7402653c7d72b4b8a85c62deb0",
+    "opendata/api/published_data.py": "accecc37d3cbd8700dbdae010a471cf004fdc64f38fafc2f1ec5ba94500b7620",
+    "opendata/data/dataset_contract_registry.py": "522e2f798bb04bbe10035698278945867d0aafec6942f5723841cb61d032eb81",
+    "opendata/data/instrument_reference.py": "55cc1e9a1825c1cf811d9c095712aefe9bf92d6465d11a1416f1dea89e22e7ff",
+    "opendata/data/mapping.py": "22ad18f4832892225132eeb0267e1dcfb7b3aa963c2277db6c39c0b4f5a7b0d5",
+    "opendata/data/models/base.py": "22ffac413395ebf1951cf938119ec2476b12d2ffb063c5eeafafd06b49a16ee8",
+    "opendata/data/platform_contracts.py": "c890798e8c217efc6ee86fee236be97688036d30e9ad97cd9c96d3f7d7dd5726",
+    "opendata/data/providers/akshare/models/stock_daily.py": "fc83a9bbf83d13b1f5829bc81202c069356ec60488504631c263a1aeab6b739f",
+    "opendata/data/providers/akshare/stock_daily_wire.py": "7497656eeb141b927ccaabeb62a9425cfa004865c1c333ca7f4dd862a41c083b",
+    "opendata/data/providers/yfinance/models/_sdk.py": "25b640a47101028d1c98982f81aa9b40d26d95fa59bb09436c6ea9e573fbe728",
+    "opendata/data/providers/yfinance/models/iter2.py": "28102f1a36ac3d4ee1964bae6eab4fc3fa28e67416a3a8da65115bcf7a69f338",
+    "opendata/data/providers/yfinance/models/market_iter2.py": "22261ecb551fc96af035107a5dee42ff45253b3c61b7792b375d3972bfc8f8c7",
+    "opendata/data/providers/yfinance/models/stock_daily.py": "589d092c0f8691d16eb7802d8cc9048ceb023ff2d964f3b659f50431f64622a0",
+    "opendata/host_inventory.py": "039e02b8391bfe2f2b291c9950f08ad454db8c02ea83ee86eaafd5806c407a87",
+    "opendata/job_definition_store.py": "37ff470ecbbdbab7301ab527bf49b1ac0dd96af489f9c1b19c0a28cea98276f5",
+    "opendata/main.py": "ba87561e3a0422979e1ee4a9330ad05119445bf7ca8c64ce2c23b878f6bb6a1e",
+    "opendata/migration_apply.py": "dfa9f4053b53e51b0fde7dd56b929264b254eb9b27b6883585112ae61d36e42d",
+    "opendata/migration_catalog.py": "42e435e271d125990ac5592025fc410f51035ea072df00517a09c52cbc10d3ec",
+    "opendata/migration_inventory.py": "094b101808c97621dd569468ac9ba7e398c1dc058288f308ef0d3ac442c83292",
+    "opendata/migration_plan.py": "2549d4d2160c138d05a8a5d88809d99ae917d4aa0fe94fed4a20c3f2c7505a9d",
+    "opendata/pipeline/contract_publication.py": "74dca4fa81a437e28ccf9d02d926e07d323ce5be69fe1b4dc79cbe89ce2c7148",
+    "opendata/pipeline/coverage_service.py": "c0ce9e651ce259586f49c14ee62fb33d81e34a66de8d8e10f00f606765241add",
+    "opendata/pipeline/dump_import.py": "af7ad0442c3b883b4c3bb71f657f69a670ab56d0b5345d5a938a125b4e952063",
+    "opendata/pipeline/dwd_merge.py": "0df781128f1ac5918dc8098fa7b61844a03f74e7002e32eb7d84279ec6118e60",
+    "opendata/pipeline/history_coverage.py": "32da5309b8ce51ac0a67d595a3222e292e9206821021d1d4b369a4bd66950bcd",
+    "opendata/pipeline/process_executor.py": "c2e162975723228cdc83b862f547518b0735de0ba6517774a76112dc91adb131",
+    "opendata/pipeline/process_executor_worker.py": "8d64dc48bc744e79f3d087cbebadc4879122749b71c8bac03ce30391f4f5eb7b",
+    "opendata/pipeline/publication_store.py": "1322f256897f1612dc73868f7f59424f438bbbbeb9daa7cdc47d6fd24b108049",
+    "opendata/pipeline/raw_evidence.py": "3a1f9e74beba5ccb5ff06db4b3e532e51cd7da3284c943dfecd8db7484c37665",
+    "opendata/pipeline/retry.py": "9eda78e0ea9732f5b3ef0a0c299ea520c063a156f9d77a84a77ad35fc4476e38",
+    "opendata/pipeline/reviewed_worker.py": "417745872bf88d4ef718b93f9c1812af0a36cdfe6c2e80ebb11f2b88aa866a5b",
+    "opendata/pipeline/run_dispatch.py": "7b9ebc55e98e1cf4784f553467d3c9a61fd113539d9e3897941ed1b4f71f236b",
+    "opendata/pipeline/run_identity.py": "0f884fb1b3bf51f60de271b62dc969a42fe63d4cc6eac935d6779a0c193c4083",
+    "opendata/pipeline/run_ledger.py": "e59ce21b0cc1d7ee47520042be2f9b85f7955900fd9c77c6927d13bd33430891",
+    "opendata/pipeline/run_service.py": "6bfc5a3f1add383ab89ae75cf929cfbf00fec0da571c43c0c68a165ba7772f27",
+    "opendata/pipeline/runtime_roles.py": "b82a30a60bcadf3019cb3026e235c3634fa41455f5b6582782fc6e9d37a031d0",
+    "opendata/pipeline/stock_daily_job.py": "08848262cb53273aee3f2041c6bab7c3c6e24f74d886498f69d608166abd509c",
+    "opendata/reviewed_cli.py": "795367b2976647b6615471ba0d98e12fcccc29e3afff7edbf7f1a7f2193de349",
+    "opendata/runtime_inventory.py": "4cf91723250ee4d5f27fcae6ed107d0027f8df68ef815605a64c0832491620a5",
+    "opendata_client/opendata_client/__init__.py": "550e287816aec0ac8e702f96919feaee210a30e1d15595f2bdb8cc6d405d9daa",
+    "opendata_client/opendata_client/client.py": "ec817286e0535ca3eaa12af2be9763c2a91a5f562515303242e6d1111c9b6735",
+    "opendata_client/opendata_client/snapshots.py": "bb62147fd604e4587a72652ed11e71c3f564914269823545d229ff9b8566b28d",
+    "scripts/codemod/qfq_chain_checks.py": "2481f5330fc37b53f98ed6d97d660ce30fac4023ed2b19de16bc0f926f1b55a5",
+    "scripts/codemod/verify_no_akshare.py": "c92f70109415f7b0b736460c28e9c0a0bd46345fd150dab447915d3dd89b2cc7",
+    "scripts/ops/build_migration_catalog.py": "a54a8d69828d38069768a9870945b8dc70b497d20e4016b1a7479bb183616c79",
+    "scripts/ops/inventory_host_runtime.py": "0546e5c32c822d23ef3f6421875da4ec4d9b2a1efa744aa462997c99f354e6cf",
+    "scripts/ops/inventory_legacy_runtime.py": "71b50d0c7871ec71607131a9f7bae1008d9811450f6b2a53b7c12400282127ef",
+    "scripts/ops/inventory_legacy_scripts.py": "a7c01a851329f1002c6bef71df6c37ca7c75963af0a5e7d6bb92a47dbba38ce1",
+    "scripts/ops/plan_legacy_migration.py": "4137eae5c9930905316a16647815f5d5f381945864192b3baff09b7d41c29ec2",
+    "scripts/ops/ths_futures_option_cross_check.py": "31448f050fcf9f55eca8bd774972d966d3c20ffcdd889bc41ee6e466a58529f4",
+    "scripts/ops/ths_index_cross_check.py": "637bf270979b0bfe5e4ddf5fcfd98b80b1e31ba4793c195c6e0d95f43e86388e",
+    "scripts/ops/yfinance_overseas_cross_check.py": "f69fdd54489198de4af78ec269022f96d452b3d6d774ef19ad0a2032165179cf",
+    "scripts/quality/check_brand.py": "7cbf155f06b7e75d49a151c60c80b9bbb1db0d10d112de3182924af8df67a8dd",
+    "scripts/quality/check_published_openapi.py": "ec4a3667c6152b6049ec54be74eff29bc4d77a38b4f2e8ba3f2854b8d69643c1",
+    "tests/conftest.py": "49d9dd27abb1cdb79b16eb1bd3dcbdcf45cea276139e4cd7b487ee03311e4dcc",
+    "tests/pipeline/test_reviewed_vertical_flow.py": "d8227e7450e0e7132c504228200e41fa544ca235411cad906da10ff99cabd481",
+    "tests/test_afi204_owned_mysql.py": "80d22760e4daa936654203870da55fd95f94c71e54cb5f6e308ca2c51a1ab74d",
+    "tests/test_api_keys.py": "6db755f4e211ce3d564262e7e51d32c5261bb38a42cebcd61e85fc559d1ad7c3",
+    "tests/test_check_brand.py": "64c7b0a4d0278b14c9ca0429d8ebb388d5d4f901e06338d59d6f6731b82b6dcb",
+    "tests/test_contract_publication.py": "bb9b1d055c846ad21e33057842c5d80483c14176d73302bcaece046f1dd68bb6",
+    "tests/test_coverage_service.py": "4972cf11ec4171c55cdf3317174821df544930687be20eabf57787e910f011d1",
+    "tests/test_dataset_contract_registry.py": "af302e68506b9a3c337026806af0d32be87f3aed69e4768e97e7fd86b0f47529",
+    "tests/test_default_target_guard.py": "9283dad18e51cae1fbe4c729f9d1ca2d255aa23033bb1d06be05eb8328e0e3f5",
+    "tests/test_dwd_merge.py": "fa1188beb53b6f9680baa1308b31b0264ef74e9adb5074ef179ce34db5f47d7e",
+    "tests/test_financial_pit_sdk.py": "dcc3ab3f4fd1bacfbdb6fd28d080cf6bd5b44925ef282fa767b34e1172b2152c",
+    "tests/test_history_coverage.py": "a1df1b1dafb177686a23712e25af1652e72b1fb1e320b1e01cdee281a7ae6c07",
+    "tests/test_host_inventory.py": "72fa11fce338bb193f864cfc7095e9fba0885c05004b515daa34b0628cb17295",
+    "tests/test_instrument_reference.py": "ed5c56f816f10c0ff7ec5ff602808453583dea12e423b513c1a9895b8ca60d65",
+    "tests/test_job_definition_migration.py": "1e8f988284d806dced2033ae314ca335a11276adc9c16d8496b03deb0643d0e2",
+    "tests/test_migration_apply.py": "530a27c09f3c836fc32acd15043b59aacf9bb38c19421308f3f3455233710f89",
+    "tests/test_migration_catalog.py": "403a885bfffbbe2815ad9f65616f5278398bfabfccffc5b41f230ff9b30256a3",
+    "tests/test_migration_inventory.py": "2fc1ddd5769ee4ae3e2f9e7abce7cf3dab4432ab235117bdb2dd843d060e2ca6",
+    "tests/test_migration_plan.py": "cd8b2b0a8334edc9a05ad26ed6e1967e3477663a5abb914459700aea62213f26",
+    "tests/test_opendata_client.py": "f4e9fca81c5f52cfe52c861b564b6063fa1d8c0ce3bd38ace13a689f70c0a526",
+    "tests/test_p0_providers.py": "e1da8251b2291da90f72bb0387723658f69be8b3464cdfed3fa572cbb8596110",
+    "tests/test_platform_contracts.py": "cb9264f5a070a1131c15a97134a8274f2172016dccae305b4f03436835d9fd73",
+    "tests/test_process_executor.py": "c7c5da3a7c2c5c97dd9e1e8147560e7dc32f97c6a67d79b9cdfcc56e817effe7",
+    "tests/test_publication_store.py": "ccd0e02299aa2fb5813e2d84249829633240059322a06b0902254bf26170cf14",
+    "tests/test_published_access.py": "5ca9b7e5d134bd59e2bc594c94d9f3191dc12f252cd1f2dc31db8f151d69cdeb",
+    "tests/test_published_data_api.py": "85f37b398328785b320dd565c5c411a8c889e586d3040e44c9517a9864437248",
+    "tests/test_published_openapi_gate.py": "1c5e69e7df27795f82001f7853ac414b49c7ea611d69090aedaf5b23af0c94eb",
+    "tests/test_raw_evidence.py": "e5c104359f382a3ddb5208affdb6785b26a48433dac0d7834791c5cb0b775bf7",
+    "tests/test_reviewed_cli.py": "e3e1d5d0e256e1b1c18d2071619a33050b3f6e9d45180015954dfaa23112541f",
+    "tests/test_reviewed_run_chain.py": "3c16f80e81c9420e6f071388ced2839cfcc253aa5715a4dd15aba593d0fbcb72",
+    "tests/test_reviewed_worker.py": "d07b776d7b3ed88e9f5eb70f3b870e13338b3b03717893647ffaabbb52108026",
+    "tests/test_reviewed_worker_mysql.py": "ef42ebb1015547a31dd66833e76c5fa3fc768e0d3bd9ec01bae7cce67d80529a",
+    "tests/test_run_dispatch.py": "d2acebf5f89392cfd75d887953fccff55026e0c6632901a327a9c144ea1e7ca7",
+    "tests/test_run_identity.py": "6dcde702c95476fb7e9cff751995e45a28278278f1cea5550bdc933dddac942f",
+    "tests/test_run_identity_credentials_ledger.py": "aa8f734c31e0e676c973c753aa8a9bae6127a6498785f013a678e9d940cc0521",
+    "tests/test_run_identity_ledger_integration.py": "bd89f972ab3d943bc9013ab0e0f403875721d4bb8b6bcc698d979836cdc78a43",
+    "tests/test_run_ledger.py": "e0a074483ef776aadc52e5bdfbb6403d011568fa79007ea6294a61de08308504",
+    "tests/test_run_ledger_atomic.py": "1bd2dd8e8058d333e065b60fa028c07105975b77cb58b4f612f1c8c08a506331",
+    "tests/test_run_ledger_database_clock.py": "102831a38eec70c8080a05c63c81a71aa87d0af35e4ce90c46e0d5325544dade",
+    "tests/test_run_service.py": "c10fb4d3dfbe6030fd279c508dcac72ad058f4c0fa29c315c9df5eff82495c72",
+    "tests/test_runtime_inventory.py": "08993b187bebe5211c80f8b5d6ed848562da9ae04be66d971b7c1d837c7d4dd9",
+    "tests/test_snapshot_client.py": "19ebf1687e8c26892f4815a10609fad5aab927c2b9d41a698c88a923d379e422",
+    "tests/test_stock_daily_job.py": "c86ef80e024418b9afdabef171a2c0305f023b7d8f3f6cbe6a0e5bca577abcd8",
+    "tests/test_stock_daily_migration.py": "2714d4d92f099a3c3a0f9e2540388549d215d1b2ba5aac16515101b470df70e0",
+    "tests/test_upstream_reference_policy.py": "ba5d5cba335ac268ec33219ed42c09588fc223a435612e02220d5d9bf3b7b6b8",
+    "tests/test_yfinance_provider.py": "6436341d98c0a681ded0e2ae826945945d14428b07dca1c977376c53034fb2fb",
+    "tests/test_yfinance_sdk_boundaries.py": "33f90d83a5f3cdf2813ccdde2e4093f4cb8f6b8ffb20955f95d74f19d8e88311"
+  },
+  "status": "SCOPED_CODE_AND_ISOLATED_INTEGRATION_VALIDATED; NOT_PRODUCTION_ACCEPTED",
+  "test_scope_incidents": {
+    "archive": "var/reports/afi204/2026-10-26-wave5-test-scope",
+    "audit_status": "READ_ONLY_AUDIT_FROZEN",
+    "effects": "Two prior unauthorized directory runs: inherited environment and all actual side effects were not captured; rejected default MySQL auth does not prove absence of other service/file writes. No rollback of unknown resources performed. These logs are not passing acceptance evidence.",
+    "file_count": 6,
+    "total_bytes": 530049
+  },
+  "validation": {
+    "a2": {
+      "command_receipt": "var/reports/afi204/2026-10-27-wave5/wave5-final-whole-a2-command.json",
+      "historical_archive_policy": "Existing 2026-10-22 owner ruling excludes333 docs/evidence Python files from static tools; no waiver/rule/scope change this wave",
+      "historical_evidence": "5130 support and16 active evidence gaps remain open",
+      "historical_ruff": "149323 NOT GREEN; retained as historical evidence",
+      "source_commit": "31cfd70ba62dee6e1243d7ea9100a15532e49f95",
+      "status": "PASS",
+      "summary_receipt": "var/reports/afi204/2026-10-27-wave5/wave5-final-whole-a2-summary.json"
+    },
+    "afi": {
+      "files": 7,
+      "scope": "Explicitly enabled ordinary CN stock1d legacy chart REST projection, preserving source grant/principal/budget; other consumers remain open",
+      "tests_passed": 230
+    },
+    "combined": {
+      "command_receipt": "var/reports/afi204/2026-10-27-wave5/wave5-combined-fixed-root-command.json",
+      "coverage": "NOT_MEASURED in this regression; separate exact-target reports below",
+      "deselected": 25,
+      "passed": 2199,
+      "seconds": 109.78,
+      "status": "PASS",
+      "test_file_count": 58,
+      "warnings": 0
+    },
+    "fixture_and_default_guard": {
+      "known_default_engine_targets": 7,
+      "scope": "Two corrected owned-SQLite fixtures plus 20 default-target guard tests; do_connect/checkout/held Connection SQL/pre_ping protection; not a network/filesystem/Python sandbox",
+      "status": "PASS",
+      "tests": 22
+    },
+    "frames": {
+      "e2e_skipped": 1,
+      "files": {
+        "opendata/data/providers/yfinance/models/_sdk.py": {
+          "covered_branches": 98,
+          "covered_lines": 319,
+          "excluded_lines": 0,
+          "missing_branches": 2,
+          "missing_lines": 2,
+          "num_branches": 100,
+          "num_partial_branches": 2,
+          "num_statements": 321,
+          "percent_covered": 99.04988123515439,
+          "percent_covered_display": "99"
+        },
+        "opendata/data/providers/yfinance/models/stock_daily.py": {
+          "covered_branches": 18,
+          "covered_lines": 85,
+          "excluded_lines": 0,
+          "missing_branches": 0,
+          "missing_lines": 0,
+          "num_branches": 18,
+          "num_partial_branches": 0,
+          "num_statements": 85,
+          "percent_covered": 100.0,
+          "percent_covered_display": "100"
+        },
+        "opendata/pipeline/dwd_merge.py": {
+          "covered_branches": 105,
+          "covered_lines": 242,
+          "excluded_lines": 0,
+          "missing_branches": 15,
+          "missing_lines": 23,
+          "num_branches": 120,
+          "num_partial_branches": 15,
+          "num_statements": 265,
+          "percent_covered": 90.12987012987013,
+          "percent_covered_display": "90"
+        }
+      },
+      "input": "Fake SDK and explicitly owned local SQLite; no live upstream acceptance",
+      "source_anchor": {
+        "current_relevant_hashes_match": true,
+        "execution_commit": "cb3fbec5235f557fd212be4b63ceae141cf2859a"
+      },
+      "statement_branch_percent": 95.37953795379538,
+      "tests_passed": 366
+    },
+    "initial_failures": {
+      "combined": "First2197pass25deselected2fixture failures retained; two tests now use explicitly owned SQLite; guards unchanged",
+      "frames": "First six-file coverage86.36% did not meet90%; exact separately reviewed financial_pit test added; first report retained",
+      "worker": "First39pass2fail due AF_UNIX path length; same code/assertions/deadlines with shorter owned basetemp41pass; failure retained"
+    },
+    "named_gates": {
+      "docstrings_and_annotations_percent": 100,
+      "openapi_v1_paths": 140,
+      "openapi_v2_paths": 6,
+      "public_callables": 2488,
+      "runtime_files": 971,
+      "status": "PASS",
+      "targets": [
+        "brand-check",
+        "zero-dep-check",
+        "public-api-quality",
+        "published-openapi-check"
+      ],
+      "upstream_sdk_runtime_findings": 0
+    },
+    "reference_reconciliation": {
+      "ac1_03": {
+        "ast_exception_count": 12,
+        "ast_exception_expected": 12,
+        "bare_token_paths": 1237,
+        "bare_token_unreadable_paths": [],
+        "bare_token_vendored_paths": 327,
+        "buckets": [
+          "opendata/data/providers/akshare/_vendor/",
+          "THIRD_PARTY_NOTICES.md",
+          "LICENSE-AKSHARE",
+          "README.md",
+          "CODE_QUALITY.md",
+          "scripts/codemod/",
+          "tests/",
+          "docs/",
+          "docs/quality/akshare-reference-allowlist.json"
+        ],
+        "hits_covered_by_ac1_buckets": 1145,
+        "invalid_metadata_or_schema": 0,
+        "reference_policy_entries": 93,
+        "reference_policy_problems": [],
+        "remaining_paths_reconciled_by_register": 92,
+        "stale_paths": 0,
+        "stale_sha": 0,
+        "stock_daily_job": {
+          "ast_exceptions": [],
+          "category": "source-adapter",
+          "path": "opendata/pipeline/stock_daily_job.py",
+          "sha256_actual": "08848262cb53273aee3f2041c6bab7c3c6e24f74d886498f69d608166abd509c",
+          "sha256_pinned": "08848262cb53273aee3f2041c6bab7c3c6e24f74d886498f69d608166abd509c",
+          "sha_matches": true
+        },
+        "unregistered_paths": 0
+      },
+      "head": "31cfd70ba62dee6e1243d7ea9100a15532e49f95",
+      "issues": [],
+      "tracked_files": 10699,
+      "zero_dep_baseline": {
+        "files": {
+          "opendata": 643,
+          "opendata/data/providers/akshare/_vendor": 325,
+          "opendata_client": 3
+        },
+        "finding_records": 0,
+        "findings": 0,
+        "scanner_version": 5,
+        "scope": [
+          "opendata",
+          "opendata/data/providers/akshare/_vendor",
+          "opendata_client"
+        ],
+        "total_files": 971
+      }
+    },
+    "static": {
+      "bandit_production_files": 59,
+      "changed_python_files": 106,
+      "production_mypy": "56 core plus3 client files, --follow-imports=silent",
+      "python310_grammar": "PASS",
+      "status": "PASS"
+    },
+    "worker": {
+      "coverage_excluded_lines": 20,
+      "owned_schema_cleanup": {
+        "recorded_names": [
+          "od204_test_f47693ab15b34c1dbc0f74d11782900c",
+          "od204_test_d7d387d9a6554be2bdb161c317e0c3d0",
+          "od204_test_4719beb4a2c042c8b1109f7782d6aa73"
+        ],
+        "remaining_names": []
+      },
+      "owned_server": "STOPPED; identity and shutdown receipt retained",
+      "resource_warnings": 16,
+      "source_anchor": {
+        "current_relevant_hashes_match": true,
+        "execution_commit": "cb3fbec5235f557fd212be4b63ceae141cf2859a"
+      },
+      "statement_branch_percent": 91.24668435013263,
+      "tests_passed": 41,
+      "tls": "Local TLS socketpair and private Unix socket MySQL8.4.0 only; real remote TLS NOT_RUN",
+      "warnings_status": "SQLite ResourceWarnings remain unresolved; no leak-free claim"
+    }
+  },
+  "wave": 5,
+  "whole_make_gate": {
+    "gitleaks_history": "Historical wave4 full-history761commits0leaks; not rerun as wave5 evidence",
+    "reason": "Aggregate reaches directory-wide test-cov; safe static components and explicit tests do not authorize it",
+    "remote_ci": "NOT_RUN",
+    "status": "NOT_RUN"
+  }
+}
