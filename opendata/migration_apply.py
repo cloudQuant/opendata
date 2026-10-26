@@ -12,15 +12,20 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import sqlite3
 import stat as stat_module
 from collections.abc import Mapping
+from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
+from weakref import WeakKeyDictionary
 
 from pydantic import ValidationError
-from sqlalchemy import inspect, text
-from sqlalchemy.engine import Connection, Engine
+from sqlalchemy import create_engine as sqlalchemy_create_engine
+from sqlalchemy import inspect, make_url, text
+from sqlalchemy.engine import URL, Connection, Engine
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.pool import NullPool, Pool
 
 from opendata.job_definition_store import (
     JOB_DEFINITION_TABLE,
@@ -44,10 +49,54 @@ WAREHOUSE_FINGERPRINT_ALGORITHM = "opendata-warehouse-catalog-v1"
 MAX_SQLITE_CATALOG_ROWS = 100_000
 MAX_SQLITE_CATALOG_BYTES = 64 * 1024 * 1024
 _TASK_ID_PATTERN = re.compile(r"^scheduled:[A-Za-z0-9][A-Za-z0-9._:/+\-]{0,127}$")
+_ISOLATED_METADATA_ENGINES: WeakKeyDictionary[Engine, tuple[URL, Pool]] = WeakKeyDictionary()
 
 
 class MigrationApplyError(ValueError):
     """Raised when a reviewed offline plan cannot be safely imported."""
+
+
+def create_isolated_metadata_engine(database_url: str) -> Engine:
+    """Create a trusted, no-pool SQLite engine for isolated import metadata.
+
+    The URL must identify a plain absolute SQLite file with no symlink in any
+    existing path component. The file itself may not exist yet; creating or
+    migrating its schema remains an explicit caller action. This factory uses
+    SQLAlchemy's default SQLite connection creator and ``NullPool``. Do not
+    add custom creators, pool hooks, or replace its pool before importing.
+
+    Args:
+        database_url: Plain ``sqlite:////absolute/path`` URL, without query
+            options or credentials.
+
+    Returns:
+        A caller-owned engine accepted by the isolated prototype importer.
+
+    Raises:
+        MigrationApplyError: If the URL is ambiguous or its path is unsafe.
+    """
+    try:
+        url = make_url(database_url)
+    except (SQLAlchemyError, TypeError, ValueError) as exc:
+        raise MigrationApplyError("metadata_sqlite_url_invalid") from exc
+    if (
+        url.drivername not in {"sqlite", "sqlite+pysqlite"}
+        or url.database is None
+        or url.query
+        or url.host
+        or url.username
+        or url.password
+        or str(url.database).casefold().startswith("file:")
+    ):
+        raise MigrationApplyError("metadata_sqlite_url_options_unsupported")
+    path = Path(url.database)
+    try:
+        _validate_sqlite_path_components(path, allow_missing_final=True)
+    except OSError as exc:
+        raise MigrationApplyError("metadata_sqlite_path_unsafe") from exc
+    engine = sqlalchemy_create_engine(url, poolclass=NullPool)
+    _ISOLATED_METADATA_ENGINES[engine] = (engine.url, engine.pool)
+    return engine
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,11 +125,16 @@ def inspect_warehouse_fingerprint(engine: Engine) -> WarehouseFingerprintObserva
 
     The digest binds the physical database identity to schema objects, columns,
     indexes, constraints, views, and triggers. It reads no business rows and
-    never accepts a caller-provided fingerprint string. MySQL warehouse apply
-    remains blocked until catalog visibility and grants can be proven complete.
+    never accepts a caller-provided fingerprint string. The SQLite file named
+    by ``engine.url`` is opened by this module through a short-lived read-only
+    connection; caller pool connections and custom connection creators are not
+    used. The 64 MiB limit bounds the accepted encoded payload after catalog
+    rows have been materialized, not peak transient memory. MySQL warehouse
+    apply remains blocked until catalog visibility and grants can be proven.
 
     Args:
-        engine: Explicit SQLAlchemy engine connected to the target warehouse.
+        engine: Engine whose plain absolute SQLite URL names the target file.
+            Its caller-owned pool and connection creator are not used.
 
     Returns:
         The target's schema digest and a separate digest of its database identity.
@@ -93,24 +147,25 @@ def inspect_warehouse_fingerprint(engine: Engine) -> WarehouseFingerprintObserva
         raise TypeError("engine must be a synchronous SQLAlchemy Engine")
     if engine.dialect.name != "sqlite":
         raise MigrationApplyError("target_warehouse_catalog_completeness_unproven")
-    expected_file_identity = _sqlite_engine_file_identity(engine)
+    if engine.url.query or engine.url.host or engine.url.username or engine.url.password:
+        raise MigrationApplyError("target_sqlite_url_options_unsupported")
+    target_path, expected_file_identity = _sqlite_engine_file_identity(engine)
     try:
-        with engine.connect() as connection, connection.begin():
-            identity = _database_identity(connection, engine)
-            if (identity["device_id"], identity["inode_id"]) != expected_file_identity:
+        with closing(_open_readonly_sqlite(target_path)) as connection:
+            identity = _sqlite_connection_identity(connection, target_path)
+            if _physical_identity(identity) != expected_file_identity:
                 raise MigrationApplyError("target_warehouse_file_identity_changed")
             catalog = _sqlite_catalog(connection)
-            latest_identity = _database_identity(connection, engine)
-            if (latest_identity["device_id"], latest_identity["inode_id"]) != (
-                identity["device_id"],
-                identity["inode_id"],
-            ):
+            latest_identity = _sqlite_connection_identity(connection, target_path)
+            if _physical_identity(latest_identity) != _physical_identity(identity):
+                raise MigrationApplyError("target_warehouse_file_identity_changed")
+            if _sqlite_engine_file_identity(engine)[1] != _physical_identity(identity):
                 raise MigrationApplyError("target_warehouse_file_identity_changed")
     except MigrationApplyError:
         raise
-    except (SQLAlchemyError, OSError, ValueError, TypeError) as exc:
+    except (SQLAlchemyError, sqlite3.Error, OSError, ValueError, TypeError) as exc:
         raise MigrationApplyError("target_warehouse_catalog_unreadable") from exc
-    if (identity["device_id"], identity["inode_id"]) != _sqlite_engine_file_identity(engine):
+    if _sqlite_engine_file_identity(engine)[1] != _physical_identity(identity):
         raise MigrationApplyError("target_warehouse_file_identity_changed")
 
     encoded = canonical_json_bytes(
@@ -143,13 +198,19 @@ def apply_reviewed_job_definition(
 ) -> MigrationImportResult:
     """Import exactly one reviewed plan entry as a disabled job definition.
 
-    The caller must first create ``od_job_definitions`` on a dedicated,
-    caller-owned control-metadata database. That database may contain only this
-    table. The target must be a separate, pre-existing, absolute SQLite file;
-    MySQL target apply is blocked until complete catalog visibility is proven.
-    Both physical database identities and the target schema are checked. Every
-    JSON input is copied and bounded, all hashes and the complete plan are
-    recomputed, and the target schema is checked again inside the metadata
+    The caller must first create ``od_job_definitions`` on a dedicated SQLite
+    metadata database using :func:`create_isolated_metadata_engine`. That
+    database may contain only this table. The target must be a separate,
+    pre-existing, absolute SQLite file. The target fingerprint describes the
+    physical file named by ``target_engine.url`` and is read through this
+    module's fresh read-only SQLite connection; it does not prove that a
+    caller-supplied custom creator or pool would connect to that same file.
+    The metadata engine must come from the safe factory, which uses the
+    default SQLAlchemy creator and ``NullPool``. MySQL target apply remains
+    blocked until complete catalog visibility is proven.
+
+    Every JSON input is copied and bounded, all hashes and the complete plan
+    are recomputed, and the target schema is checked again inside the metadata
     transaction before it commits.
 
     No input parameter values, executable paths, run rows, checkpoints, or
@@ -494,6 +555,13 @@ def _build_provenance(
         "input_sha256": hash_inputs,
         "plan_sha256": plan_digest,
         "warehouse_fingerprint_algorithm": actual.algorithm,
+        "warehouse_observation_scope": {
+            "subject": "plain_absolute_sqlite_file_named_by_engine_url",
+            "connector": "module_owned_fresh_readonly_sqlite3_connection",
+            "caller_engine_pool_equivalence_verified": False,
+            "caller_custom_creator_equivalence_verified": False,
+            "encoded_catalog_byte_limit": "64MiB_after_materialization_not_peak_memory",
+        },
         "target_database_identity_sha256": actual.database_identity_sha256,
         "metadata_database_identity_sha256": metadata_identity_sha256,
         "review": safe_review,
@@ -543,6 +611,8 @@ def _require_isolated_metadata_schema(engine: Engine) -> None:
     """Require a dedicated prototype metadata database with one table."""
     if engine.dialect.name not in {"sqlite", "mysql"}:
         raise MigrationApplyError("metadata_engine_dialect_unsupported")
+    if engine.dialect.name == "sqlite":
+        _require_sqlite_metadata_engine(engine)
     try:
         inspector = inspect(engine)
         tables = set(inspector.get_table_names())
@@ -586,19 +656,23 @@ def _inspect_database_identity(engine: Engine) -> str:
     """Hash the live metadata database identity without retaining credentials."""
     try:
         expected_file_identity = (
-            _sqlite_engine_file_identity(engine) if engine.dialect.name == "sqlite" else None
+            _sqlite_engine_file_identity(engine)[1] if engine.dialect.name == "sqlite" else None
         )
+        if engine.dialect.name == "sqlite":
+            _require_sqlite_metadata_engine(engine)
         with engine.connect() as connection:
             identity = _database_identity(connection, engine)
+    except MigrationApplyError:
+        raise
     except (SQLAlchemyError, OSError, ValueError, TypeError) as exc:
         raise MigrationApplyError("metadata_database_identity_unreadable") from exc
     if (
         expected_file_identity is not None
-        and (identity["device_id"], identity["inode_id"]) != expected_file_identity
+        and _physical_identity(identity) != expected_file_identity
     ):
         raise MigrationApplyError("metadata_database_identity_changed")
     if expected_file_identity is not None and (
-        _sqlite_engine_file_identity(engine) != expected_file_identity
+        _sqlite_engine_file_identity(engine)[1] != expected_file_identity
     ):
         raise MigrationApplyError("metadata_database_identity_changed")
     return canonical_json_sha256(identity)
@@ -615,23 +689,18 @@ def _database_identity(connection: Connection, engine: Engine) -> dict[str, obje
         filename = str(attached[0][2] or "")
         if not filename or filename.casefold().startswith("file:"):
             raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
-        connected_path = Path(filename).expanduser()
+        connected_path = Path(filename)
         try:
-            connected_stat = connected_path.lstat()
-            configured_device, configured_inode = _sqlite_engine_file_identity(engine)
+            configured_path, configured_identity = _sqlite_engine_file_identity(engine)
+            connected_identity = _sqlite_path_identity(connected_path)
         except OSError as exc:
             raise MigrationApplyError("sqlite_physical_file_identity_unavailable") from exc
-        if (
-            not connected_path.is_absolute()
-            or not stat_module.S_ISREG(connected_stat.st_mode)
-            or connected_stat.st_dev != configured_device
-            or connected_stat.st_ino != configured_inode
-        ):
+        if connected_path != configured_path or connected_identity != configured_identity:
             raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
         return {
             "dialect": "sqlite",
-            "device_id": configured_device,
-            "inode_id": configured_inode,
+            "device_id": configured_identity[0],
+            "inode_id": configured_identity[1],
         }
     if dialect == "mysql":
         row = connection.execute(
@@ -655,35 +724,117 @@ def _database_identity(connection: Connection, engine: Engine) -> dict[str, obje
     raise MigrationApplyError("database_identity_dialect_unsupported")
 
 
-def _sqlite_engine_file_identity(engine: Engine) -> tuple[int, int]:
-    """Require a pre-existing absolute regular SQLite file and return its inode."""
+def _sqlite_engine_file_identity(engine: Engine) -> tuple[Path, tuple[int, int]]:
+    """Require an unambiguous absolute file path and return its physical inode."""
     database = engine.url.database
     if not isinstance(database, str) or not database or database.casefold().startswith("file:"):
         raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
-    path = Path(database).expanduser()
-    if not path.is_absolute():
-        raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
+    path = Path(database)
     try:
-        file_stat = path.lstat()
+        identity = _validate_sqlite_path_components(path, allow_missing_final=False)
     except OSError as exc:
         raise MigrationApplyError("sqlite_physical_file_identity_unavailable") from exc
-    if not stat_module.S_ISREG(file_stat.st_mode):
+    if identity is None:
         raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
-    return file_stat.st_dev, file_stat.st_ino
+    return path, identity
 
 
-def _sqlite_catalog(connection: Connection) -> dict[str, object]:
+def _validate_sqlite_path_components(
+    path: Path, *, allow_missing_final: bool
+) -> tuple[int, int] | None:
+    """Lstat every path component without following links or creating files."""
+    if not path.is_absolute() or any(part in {".", ".."} for part in path.parts):
+        raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
+    parts = path.parts[1:]
+    if not parts:
+        raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
+    current = Path(path.anchor)
+    identity: tuple[int, int] | None = None
+    for index, part in enumerate(parts):
+        current = current / part
+        is_final = index == len(parts) - 1
+        try:
+            component_stat = current.lstat()
+        except FileNotFoundError:
+            if allow_missing_final and is_final:
+                return None
+            raise
+        if stat_module.S_ISLNK(component_stat.st_mode):
+            raise MigrationApplyError("sqlite_path_component_is_symlink")
+        if not is_final and not stat_module.S_ISDIR(component_stat.st_mode):
+            raise MigrationApplyError("sqlite_path_parent_is_not_directory")
+        if is_final:
+            if not stat_module.S_ISREG(component_stat.st_mode):
+                raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
+            identity = component_stat.st_dev, component_stat.st_ino
+    return identity
+
+
+def _sqlite_path_identity(path: Path) -> tuple[int, int]:
+    """Lstat every absolute path component, rejecting symlinks and aliases."""
+    identity = _validate_sqlite_path_components(path, allow_missing_final=False)
+    if identity is None:
+        raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
+    return identity
+
+
+def _open_readonly_sqlite(path: Path) -> sqlite3.Connection:
+    """Open a fresh read-only SQLite connection for a verified plain file."""
+    connection = sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True, timeout=1.0)
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
+def _sqlite_connection_identity(
+    connection: sqlite3.Connection, expected_path: Path
+) -> dict[str, object]:
+    """Bind the fresh SQLite connection's main database path to its live inode."""
+    rows = connection.execute("PRAGMA database_list").fetchall()
+    attached = [row for row in rows if str(row["name"]).casefold() != "temp"]
+    if len(attached) != 1 or str(attached[0]["name"]).casefold() != "main":
+        raise MigrationApplyError("sqlite_attached_databases_are_not_supported")
+    filename = str(attached[0]["file"] or "")
+    if not filename or filename.casefold().startswith("file:"):
+        raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
+    connected_path = Path(filename)
+    try:
+        if connected_path != expected_path:
+            raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
+        device, inode = _sqlite_path_identity(connected_path)
+    except OSError as exc:
+        raise MigrationApplyError("sqlite_physical_file_identity_unavailable") from exc
+    return {"dialect": "sqlite", "device_id": device, "inode_id": inode}
+
+
+def _physical_identity(identity: Mapping[str, object]) -> tuple[int, int]:
+    """Return a checked SQLite device/inode pair from a live identity record."""
+    device = identity.get("device_id")
+    inode = identity.get("inode_id")
+    if type(device) is not int or type(inode) is not int:
+        raise MigrationApplyError("sqlite_physical_file_identity_unavailable")
+    return device, inode
+
+
+def _require_sqlite_null_pool(engine: Engine, *, label: str) -> None:
+    """Reject pooled SQLite metadata engines that could retain a stale file."""
+    if not isinstance(engine.pool, NullPool):
+        raise MigrationApplyError(f"{label}_sqlite_requires_null_pool")
+
+
+def _require_sqlite_metadata_engine(engine: Engine) -> None:
+    """Require the factory-created default-creator SQLite metadata engine."""
+    _require_sqlite_null_pool(engine, label="metadata")
+    trusted = _ISOLATED_METADATA_ENGINES.get(engine)
+    if trusted is None or engine.url != trusted[0] or engine.pool is not trusted[1]:
+        raise MigrationApplyError("metadata_sqlite_engine_must_use_safe_factory")
+
+
+def _sqlite_catalog(connection: sqlite3.Connection) -> dict[str, object]:
     """Fingerprint the SQLite main database's canonical stored schema SQL."""
-    rows = (
-        connection.execute(
-            text(
-                "SELECT type, name, tbl_name, sql FROM main.sqlite_master "
-                "WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name"
-            )
-        )
-        .mappings()
-        .fetchmany(MAX_SQLITE_CATALOG_ROWS + 1)
-    )
+    rows = connection.execute(
+        "SELECT type, name, tbl_name, sql FROM main.sqlite_master "
+        "WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name"
+    ).fetchmany(MAX_SQLITE_CATALOG_ROWS + 1)
     if len(rows) > MAX_SQLITE_CATALOG_ROWS:
         raise MigrationApplyError("target_warehouse_catalog_exceeds_row_limit")
     objects = [

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import os
+import sqlite3
 from types import MappingProxyType, SimpleNamespace
 from typing import TYPE_CHECKING
 
@@ -11,6 +12,7 @@ import pytest
 from sqlalchemy import create_engine, event, text, update
 from sqlalchemy.engine import Connection
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.pool import NullPool, QueuePool
 from sqlalchemy.sql.dml import Insert
 
 import opendata.migration_apply as migration_apply
@@ -24,6 +26,7 @@ from opendata.migration_apply import (
     MigrationApplyError,
     WarehouseFingerprintObservation,
     apply_reviewed_job_definition,
+    create_isolated_metadata_engine,
     inspect_warehouse_fingerprint,
 )
 from opendata.migration_plan import (
@@ -187,7 +190,7 @@ def _inputs() -> tuple[dict, dict, dict, dict]:
 
 
 def _scenario(tmp_path: Path, request: pytest.FixtureRequest):
-    metadata_engine = create_engine(f"sqlite:///{tmp_path / 'control.sqlite'}")
+    metadata_engine = create_isolated_metadata_engine(f"sqlite:///{tmp_path / 'control.sqlite'}")
     target_engine = create_engine(f"sqlite:///{tmp_path / 'warehouse.sqlite'}")
     request.addfinalizer(metadata_engine.dispose)
     request.addfinalizer(target_engine.dispose)
@@ -410,7 +413,7 @@ def test_target_change_during_persist_rolls_back_insert(
     assert JobDefinitionStore(scenario[0]).list_all() == ()
 
 
-def test_read_only_metadata_write_fails_without_partial_row(
+def test_untrusted_metadata_engine_is_rejected_without_partial_row(
     tmp_path: Path, request: pytest.FixtureRequest
 ) -> None:
     scenario = _scenario(tmp_path, request)
@@ -418,13 +421,7 @@ def test_read_only_metadata_write_fails_without_partial_row(
     assert isinstance(metadata_path, str)
     readonly_engine = create_engine(f"sqlite:///{metadata_path}")
     request.addfinalizer(readonly_engine.dispose)
-
-    def enable_query_only(dbapi_connection: SQLite3Connection, connection_record: object) -> None:
-        del connection_record
-        dbapi_connection.execute("PRAGMA query_only=ON")
-
-    event.listen(readonly_engine, "connect", enable_query_only)
-    with pytest.raises(MigrationApplyError, match="metadata_write_failed"):
+    with pytest.raises(MigrationApplyError, match="metadata_sqlite_requires_null_pool"):
         _apply(scenario, metadata_engine=readonly_engine)
     assert JobDefinitionStore(scenario[0]).list_all() == ()
 
@@ -438,7 +435,7 @@ def test_non_isolated_metadata_database_and_same_database_are_rejected(
     with pytest.raises(MigrationApplyError, match="dedicated_to_job_definitions"):
         _apply(scenario)
 
-    same_database_engine = create_engine(f"sqlite:///{tmp_path / 'same.sqlite'}")
+    same_database_engine = create_isolated_metadata_engine(f"sqlite:///{tmp_path / 'same.sqlite'}")
     request.addfinalizer(same_database_engine.dispose)
     JobDefinitionStore(same_database_engine).create_schema()
     same_target = create_engine(f"sqlite:///{tmp_path / 'same.sqlite'}")
@@ -519,7 +516,7 @@ def test_target_fingerprint_rejects_memory_and_unproven_mysql_targets(
         inspect_warehouse_fingerprint(memory_engine)
     from opendata.migration_apply import _inspect_database_identity
 
-    with pytest.raises(MigrationApplyError, match="metadata_database_identity_unreadable"):
+    with pytest.raises(MigrationApplyError, match="physical_file_identity_unavailable"):
         _inspect_database_identity(memory_engine)
 
     file_engine = create_engine("sqlite://")
@@ -543,7 +540,7 @@ def test_fingerprint_does_not_create_a_missing_target_file(
     assert missing_path.exists() is False
 
 
-def test_fingerprint_rejects_attached_sqlite_database(
+def test_fingerprint_observation_does_not_use_caller_attached_databases(
     tmp_path: Path, request: pytest.FixtureRequest
 ) -> None:
     target_path = tmp_path / "attached.sqlite"
@@ -556,8 +553,24 @@ def test_fingerprint_rejects_attached_sqlite_database(
         connection.execute("ATTACH DATABASE ':memory:' AS attached")
 
     event.listen(target, "connect", attach_memory)
-    with pytest.raises(MigrationApplyError, match="attached_databases_are_not_supported"):
-        inspect_warehouse_fingerprint(target)
+    with target.begin() as connection:
+        connection.execute(text("CREATE TABLE warehouse_rows (id INTEGER PRIMARY KEY)"))
+    observation = inspect_warehouse_fingerprint(target)
+    assert len(observation.sha256) == 64
+
+
+def test_fresh_connection_identity_rejects_attached_sqlite_database(
+    tmp_path: Path,
+) -> None:
+    target_path = tmp_path / "attached.sqlite"
+    target_path.write_bytes(b"")
+    connection = migration_apply._open_readonly_sqlite(target_path)
+    try:
+        connection.execute("ATTACH DATABASE ':memory:' AS attached")
+        with pytest.raises(MigrationApplyError, match="attached_databases_are_not_supported"):
+            migration_apply._sqlite_connection_identity(connection, target_path)
+    finally:
+        connection.close()
 
 
 def test_sqlite_aliases_share_physical_database_identity(
@@ -588,8 +601,96 @@ def test_sqlite_symbolic_link_target_is_rejected(
     engine = create_engine(f"sqlite:///{symbolic_link}")
     request.addfinalizer(engine.dispose)
 
-    with pytest.raises(MigrationApplyError, match="physical_file_identity_unavailable"):
+    with pytest.raises(MigrationApplyError, match="path_component_is_symlink"):
         inspect_warehouse_fingerprint(engine)
+
+
+def test_sqlite_symbolic_link_parent_is_rejected(
+    tmp_path: Path, request: pytest.FixtureRequest
+) -> None:
+    real_directory = tmp_path / "real-dir"
+    real_directory.mkdir()
+    database_path = real_directory / "warehouse.sqlite"
+    database_path.write_bytes(b"")
+    alias_directory = tmp_path / "alias-dir"
+    alias_directory.symlink_to(real_directory, target_is_directory=True)
+    engine = create_engine(f"sqlite:///{alias_directory / 'warehouse.sqlite'}")
+    request.addfinalizer(engine.dispose)
+
+    with pytest.raises(MigrationApplyError, match="path_component_is_symlink"):
+        inspect_warehouse_fingerprint(engine)
+
+
+def test_warmed_pooled_engine_does_not_fingerprint_stale_database_after_replace(
+    tmp_path: Path, request: pytest.FixtureRequest
+) -> None:
+    target_path = tmp_path / "warehouse.sqlite"
+    replacement_path = tmp_path / "replacement.sqlite"
+    stale_engine = create_engine(f"sqlite:///{target_path}", poolclass=QueuePool)
+    request.addfinalizer(stale_engine.dispose)
+    with stale_engine.begin() as connection:
+        connection.execute(text("CREATE TABLE old_schema (id INTEGER PRIMARY KEY)"))
+    stale_fingerprint = inspect_warehouse_fingerprint(stale_engine)
+    with stale_engine.connect() as connection:
+        assert (
+            connection.exec_driver_sql(
+                "SELECT name FROM sqlite_master WHERE name='old_schema'"
+            ).scalar_one_or_none()
+            == "old_schema"
+        )
+
+    replacement_engine = create_engine(f"sqlite:///{replacement_path}", poolclass=NullPool)
+    request.addfinalizer(replacement_engine.dispose)
+    with replacement_engine.begin() as connection:
+        connection.execute(text("CREATE TABLE new_schema (id INTEGER PRIMARY KEY)"))
+    os.replace(replacement_path, target_path)
+
+    # The caller's QueuePool retains the unlinked original database handle.
+    with stale_engine.connect() as stale_connection:
+        assert (
+            stale_connection.exec_driver_sql(
+                "SELECT name FROM sqlite_master WHERE name='old_schema'"
+            ).scalar_one_or_none()
+            == "old_schema"
+        )
+        assert (
+            stale_connection.exec_driver_sql(
+                "SELECT name FROM sqlite_master WHERE name='new_schema'"
+            ).scalar_one_or_none()
+            is None
+        )
+
+    observed = inspect_warehouse_fingerprint(stale_engine)
+    fresh_engine = create_engine(f"sqlite:///{target_path}", poolclass=NullPool)
+    request.addfinalizer(fresh_engine.dispose)
+    fresh_observed = inspect_warehouse_fingerprint(fresh_engine)
+    assert observed == fresh_observed
+    assert observed.sha256 != stale_fingerprint.sha256
+
+
+def test_readonly_fingerprint_connection_cannot_write(
+    tmp_path: Path,
+) -> None:
+    database_path = tmp_path / "readonly.sqlite"
+    database_path.write_bytes(b"")
+    connection = migration_apply._open_readonly_sqlite(database_path)
+    try:
+        with pytest.raises(sqlite3.OperationalError, match="readonly"):
+            connection.execute("CREATE TABLE forbidden (id INTEGER)")
+    finally:
+        connection.close()
+
+
+def test_isolated_metadata_engine_factory_uses_null_pool_without_io(
+    tmp_path: Path,
+) -> None:
+    metadata_path = tmp_path / "factory-control.sqlite"
+    engine = create_isolated_metadata_engine(f"sqlite:///{metadata_path}")
+    try:
+        assert isinstance(engine.pool, NullPool)
+        assert metadata_path.exists() is False
+    finally:
+        engine.dispose()
 
 
 def test_definition_store_rejects_identity_collision_and_bounds_listing(
@@ -996,7 +1097,7 @@ def test_metadata_schema_requires_the_unique_identity_index(
 ) -> None:
     from opendata.migration_apply import _require_isolated_metadata_schema
 
-    metadata = create_engine(f"sqlite:///{tmp_path / 'missing-index.sqlite'}")
+    metadata = create_isolated_metadata_engine(f"sqlite:///{tmp_path / 'missing-index.sqlite'}")
     request.addfinalizer(metadata.dispose)
     JobDefinitionStore(metadata).create_schema()
     with metadata.begin() as connection:
