@@ -49,6 +49,12 @@ from opendata.pipeline.raw_evidence_reader import (
     RawEvidenceReadResult,
     RawResponseArtifactReader,
 )
+from opendata.pipeline.run_ledger import (
+    RUN_LEDGER_METADATA,
+    RunLeaseExpiredError,
+    RunLedger,
+    RunRecord,
+)
 
 if TYPE_CHECKING:
     import sqlite3
@@ -2120,5 +2126,167 @@ def test_mysql_archive_acceptance_same_capture_conflict_waits_for_lock(
                 "links": len(fixture.result.observations),
                 "quarantine": 0,
             }
+    finally:
+        engine.dispose()
+
+
+def _claim_synthetic_archive_run(engine: Engine) -> tuple[RunLedger, RunRecord]:
+    """Create a test-only ledger row with a live fenced lease on this temp DB."""
+    RUN_LEDGER_METADATA.create_all(engine)
+    ledger = RunLedger(engine)
+    run_key = "synthetic-financial-archive-run"
+    ledger.enqueue(run_key, '{"kind":"synthetic_archive_test"}')
+    claimed_at = datetime.now(timezone.utc)
+    claim = ledger.claim("synthetic-archive-worker", claimed_at, timedelta(seconds=60))
+    assert claim is not None
+    assert claim.lease_expires_at is not None
+    return ledger, claim
+
+
+def _archive_counts_with_quarantine(fixture: _Fixture) -> dict[str, int]:
+    """Return expected row counts for the explicitly synthetic response fixture."""
+    assert fixture.result.quarantined_rows
+    return {
+        _CAPTURES: 1,
+        _OBSERVATIONS: len(fixture.result.observations),
+        _LINKS: len(fixture.result.observations),
+        _QUARANTINE: len(fixture.result.quarantined_rows),
+    }
+
+
+def _persist_synthetic_archive_callback(
+    connection: Connection,
+    fixture: _Fixture,
+) -> FinancialObservationStoreReceipt:
+    """Persist only pre-prepared synthetic fixture scalars through the supplied connection."""
+    return persist_prepared_financial_observation_capture(
+        connection,
+        prepared=fixture.prepared,
+    )
+
+
+def test_run_ledger_commit_result_atomically_persists_synthetic_financial_capture(
+    tmp_path: Path,
+) -> None:
+    """Commit synthetic archive tables and run success under one live lease.
+
+    The input is locally generated Fuyao-shaped JSON. It is not an upstream
+    response and does not establish Fuyao provider or data-quality acceptance.
+    """
+    engine = _engine(tmp_path)
+    fixture = _fixture(tmp_path / "synthetic-raw", include_quarantined_row=True)
+    expected_counts = _archive_counts_with_quarantine(fixture)
+    ledger, claim = _claim_synthetic_archive_run(engine)
+    try:
+        assert claim.lease_expires_at is not None
+        commit_result = ledger.commit_result(
+            claim.run_key,
+            worker="synthetic-archive-worker",
+            fencing_token=claim.fencing_token,
+            now=claim.updated_at,
+            operation=lambda connection: _persist_synthetic_archive_callback(connection, fixture),
+            clock=lambda: claim.updated_at + timedelta(seconds=1),
+        )
+        assert commit_result is not None
+        committed, receipt = commit_result
+        assert committed.status == "succeeded"
+        assert committed.fencing_token == claim.fencing_token
+        assert receipt.capture_id == fixture.prepared._capture_id
+        assert receipt.inserted_capture is True
+        assert receipt.inserted_observations == expected_counts[_OBSERVATIONS]
+        assert receipt.inserted_links == expected_counts[_LINKS]
+        assert receipt.inserted_quarantine_rows == expected_counts[_QUARANTINE]
+        with engine.connect() as observer:
+            assert _counts(observer) == expected_counts
+        committed_state = ledger.get(claim.run_key)
+        assert committed_state is not None
+        assert committed_state.status == "succeeded"
+    finally:
+        engine.dispose()
+
+
+def test_run_ledger_callback_error_rolls_back_synthetic_archive_and_run_success(
+    tmp_path: Path,
+) -> None:
+    """Roll back archive rows when the SQL callback fails after inserting them."""
+    engine = _engine(tmp_path)
+    fixture = _fixture(tmp_path / "synthetic-raw", include_quarantined_row=True)
+    ledger, claim = _claim_synthetic_archive_run(engine)
+
+    def persist_then_fail(connection: Connection) -> None:
+        _persist_synthetic_archive_callback(connection, fixture)
+        raise RuntimeError("synthetic callback failure")
+
+    try:
+        with pytest.raises(RuntimeError, match="synthetic callback failure"):
+            ledger.commit_result(
+                claim.run_key,
+                worker="synthetic-archive-worker",
+                fencing_token=claim.fencing_token,
+                now=claim.updated_at,
+                operation=persist_then_fail,
+                clock=lambda: claim.updated_at + timedelta(seconds=1),
+            )
+        with engine.connect() as observer:
+            assert _counts(observer) == {
+                _CAPTURES: 0,
+                _OBSERVATIONS: 0,
+                _LINKS: 0,
+                _QUARANTINE: 0,
+            }
+        current = ledger.get(claim.run_key)
+        assert current is not None
+        assert current.status == "running"
+        assert current.fencing_token == claim.fencing_token
+        assert current.worker == "synthetic-archive-worker"
+    finally:
+        engine.dispose()
+
+
+def test_run_ledger_expired_commit_clock_rolls_back_synthetic_archive_and_run_success(
+    tmp_path: Path,
+) -> None:
+    """Roll back archive rows when the lease expires after callback SQL completes."""
+    engine = _engine(tmp_path)
+    fixture = _fixture(tmp_path / "synthetic-raw", include_quarantined_row=True)
+    ledger, claim = _claim_synthetic_archive_run(engine)
+    assert claim.lease_expires_at is not None
+    receipts: list[FinancialObservationStoreReceipt] = []
+
+    def persist_and_record_receipt(connection: Connection) -> FinancialObservationStoreReceipt:
+        receipt = _persist_synthetic_archive_callback(connection, fixture)
+        receipts.append(receipt)
+        return receipt
+
+    try:
+        with pytest.raises(RunLeaseExpiredError, match="lease expired"):
+            ledger.commit_result(
+                claim.run_key,
+                worker="synthetic-archive-worker",
+                fencing_token=claim.fencing_token,
+                now=claim.updated_at,
+                operation=persist_and_record_receipt,
+                clock=lambda: claim.lease_expires_at,
+            )
+        assert len(receipts) == 1
+        assert receipts[0].capture_id == fixture.prepared._capture_id
+        assert receipts[0].inserted_capture is True
+        assert receipts[0].inserted_observations == len(fixture.result.observations)
+        assert receipts[0].inserted_links == len(fixture.result.observations)
+        assert receipts[0].inserted_quarantine_rows == len(fixture.result.quarantined_rows)
+        with engine.connect() as observer:
+            assert _counts(observer) == {
+                _CAPTURES: 0,
+                _OBSERVATIONS: 0,
+                _LINKS: 0,
+                _QUARANTINE: 0,
+            }
+        current = ledger.get(claim.run_key)
+        assert current is not None
+        assert current.status == "running"
+        assert current.fencing_token == claim.fencing_token
+        assert current.worker == "synthetic-archive-worker"
+        assert current.lease_id == claim.lease_id
+        assert current.lease_expires_at == claim.lease_expires_at
     finally:
         engine.dispose()
