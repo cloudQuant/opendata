@@ -19,7 +19,7 @@
 | `opendata.pipeline.raw_evidence` | 流式body SHA、独立capture manifest、私有权限、原子no-clobber、拒绝symlink/FIFO | 崩溃遗留暂存/孤立对象的受控回收与保留策略执行尚未实现 |
 | `opendata.pipeline.run_dispatch` | scheduled/manual/backfill统一入队、dry-run、APScheduler真实计划槽回执 | CLI和SQLite worker已有显式SPI联调；生产scheduler启动、管理员API及systemd尚未接线 |
 | `opendata.migration_plan` / `host_inventory` | 离线输入hash/目标指纹/审核mapping预演；固定只读命令及有界主机采集 | dry-run不apply；proc关联不等于writer身份，缺权限/截断保留UNKNOWN/PARTIAL |
-| `opendata.data.instrument_reference` / `pipeline.coverage_service` | 版本化生命周期、别名、日历证据与publication绑定的coverage | 限期或复用别名须as_of；证据为显式注入，尚无真实主数据持久化或coverage REST接线 |
+| `opendata.data.instrument_reference` / `pipeline.coverage_service` / `data.coverage_evidence_registry` | 版本化生命周期、日历证据、精确publication pin与coverage REST接线 | 限期或复用别名须as_of；证据由部署侧显式注入，目前仅允许四个单标的THS指数数据集；没有真实证据时维持UNKNOWN |
 | `opendata.pipeline.stock_daily_job` | 默认disabled、明确合成响应、原始证据和请求范围校验、标准化 | 不是实际HTTP源worker；source verified仍False |
 | `opendata.pipeline.reviewed_worker` | 自有SQLite Engine、真实受控子进程fetch、lease/heartbeat与fenced发布 | 拒绝外部Engine、换库和fork复用；MySQL worker、全局并发和OS硬资源上限尚未实现 |
 | `opendata.reviewed_cli` / `pipeline.runtime_roles` | 有界JSON、统一提交、显式worker SPI及角色互斥规划 | 未配置入口exit78；不加载默认DB或改变main legacy启动，实际服务部署另验 |
@@ -98,7 +98,7 @@ python scripts/ops/plan_legacy_migration.py \
 
 ## 第四批运行切片
 
-`tests/pipeline/test_reviewed_vertical_flow.py` 将CLI提交和worker-once SPI显式绑定到同一SQLite ledger，经真实Popen传递合成JSON。父进程调用股票任务工厂捕获raw证据、normalize并fenced发布，再通过实际v2路由读取固定publication，最后以独立fixture日历/生命周期计算coverage。坏响应失败后facts、publication head和watermark保持原值。该测试不是源站验证，也没有将coverage服务接到线上coverage路由。
+`tests/pipeline/test_reviewed_vertical_flow.py` 将CLI提交和worker-once SPI显式绑定到同一SQLite ledger，经真实Popen传递合成JSON。父进程调用股票任务工厂捕获raw证据、normalize并fenced发布，再通过实际v2路由读取固定publication，最后以独立fixture日历/生命周期计算coverage。坏响应失败后facts、publication head和watermark保持原值。该测试不是源站验证；coverage REST的publication pin、symbol边界和超限拒绝另由使用合成发布与fixture evidence的隔离API测试覆盖，不证明真实源数据完整。
 
 worker只接受 `create_worker_engine` 创建并预热、绑定物理文件和创建PID的Engine；普通外部Engine、内存库、文件替换及fork继承均拒绝。fetch必须是 `ProcessFetchHandler`，可信父端builder/decoder/normalize/publish仍需有界；SQLite busy/pool timeout不等于磁盘或任意SQL的硬截止时间。
 
@@ -112,9 +112,11 @@ metadata `0007` 正确继承0006，提供与store相同的冻结DDL。隔离SQLi
 
 ## v2 运行配置与边界
 
-新路由在实际应用挂载为 `/api/v2`，保留v1兼容入口；机器契约见 [afi204-v2-openapi.json](afi204-v2-openapi.json)。服务端必须显式配置warehouse身份、`PUBLISHED_DATASET_CONTRACTS_FILE`、`PUBLISHED_DATASET_GRANTS_FILE` 和至少32字节的 `PUBLISHED_DATA_CURSOR_SIGNING_KEY`。缺配置、缺迁移、合同hash不匹配或权限不足均fail-closed，不自动建表或回落到上游数据源。
+新路由在实际应用挂载为 `/api/v2`，保留v1兼容入口；机器契约见 [afi204-v2-openapi.json](afi204-v2-openapi.json)。服务端必须显式配置warehouse身份、`PUBLISHED_DATASET_CONTRACTS_FILE`、`PUBLISHED_DATASET_GRANTS_FILE` 和至少32字节的 `PUBLISHED_DATA_CURSOR_SIGNING_KEY`。`PUBLISHED_DATASET_COVERAGE_EVIDENCE_FILE` 是可选的operator-owned JSON路径；未配置或entries为空时coverage保持UNKNOWN。缺其他必需配置、缺迁移、合同hash不匹配或权限不足均fail-closed，不自动建表或回落到上游数据源。
 
-v2当前提供6条路径：datasets列表/详情/records/coverage，以及snapshot创建/读取。支持有完整半开日期窗口的业务日期时间序列；不支持intraday/event窗口、严格PIT、通用筛选/投影或导出。coverage没有独立证据时返回UNKNOWN。创建snapshot的POST不提供幂等键合同，因此SDK不自动重试该POST；每次分页重新验证权限。
+v2当前提供6条路径：datasets列表/详情/records/coverage，以及snapshot创建/读取。支持有完整半开日期窗口的业务日期时间序列；不支持intraday/event窗口、严格PIT、通用筛选/投影或导出。coverage可用`publication_id`选择固定publication；缺少与精确dataset/source/publication三元组匹配的独立证据时返回UNKNOWN。coverage证据文件仅接受四个单标的THS指数数据集，并绑定唯一生命周期、日历、publication scan范围，以及schema 2的先验`visible_record_set` pin。API会在单一一致性快照中读取publication与该序号下完整可见集合，重新归一化每条fact并核验持久`record_hash`，再按`visible-record-set-v1`重算完整集合摘要；只有算法、摘要、行数、publication序号及合同SHA-256全部和事先注入的operator pin相同，才继续coverage评估。单标的链要求每条可见fact的payload `symbol`一致；超出100,000条或64MiB、不能保证一致快照、记录hash损坏或pin不匹配时均fail-closed，不截断，也不返回COMPLETE。旧schema 1可以读取以兼容配置迁移，但缺完整集合pin时恒为UNKNOWN。响应带有`operator-attestation-sha256`和记录集pin引用；持有原配置时摘要可识别/校验当次语义内容是否一致，但不能从摘要重建配置。该hash是内容指纹，不是签名或真实性证明。
+
+schema 2中的`visible_record_set.sha256`必须在目标publication被评估之前，由受控的独立发布/验收流程从可信的发布输入或独立核验的归档中产生并审核；不能把API首次扫描待验数据库得到的digest复制进sidecar来自我认证。API运行身份只读该sidecar，配置写入权与数据库写权限应分离，并保留按digest可查的已审批配置版本或审计记录。`visible-record-set-v1`摘要使用canonical JSON UTF-8、每个JSON对象后附换行；header绑定dataset/source/publication ID及sequence、schema/semantic/unit/adjustment、合同hash、算法版本、排序版本和可见行数；记录按business_date NULLS LAST、日期、UTF-8 business_key排序，每行绑定business_key、revision、business_date、来源publication ID/sequence和使用`normalize-records-canonical-v1`重算的record hash。摘要用于检测已批准pin与数据库可见集合不一致；它本身不证明operator审批、源端真实完整，也无法防止同一恶意方同时修改数据库、sidecar和程序。当前历史断言使用Asia/Shanghai业务日：`status_as_of`、请求/扫描起点和实际观察日期不得晚于今日；半开请求/扫描终点最多到明日（以覆盖今日），超前边界返回UNKNOWN。日历可定义未来交易日，但不能据此把未来日期当作已观察历史。生产启用COMPLETE仍需真实独立来源材料、配置审批/权限隔离及恢复审计证据。代码只检查配置结构和精确绑定，不验证引用资料真实性或签名，也不抓取或推断生命周期、交易日历、上市日期或publication完整性。签名/外部审批接口仍是生产门槛。当前只读coverage扫描在SQLite建立显式读事务，在PostgreSQL/MySQL使用事务级REPEATABLE READ；MySQL还要求publication/facts表为事务表，未知或不支持的方言拒绝评估。AFI #68已允许`observed`为`requested`范围内较窄的真实观察区间，因此周末/休市边界不再要求两者完全相等。当前真实数据quality仍为UNKNOWN，指数采集任务也未审核并启用，不能用于生产；此外OD的`COMPLETE`代表从有独立证据的生命周期起点覆盖至请求终点，局部窗口即使内部无缺口也可能被报告为`PARTIAL`，AFI会保守拒绝这类请求。当前仍不能宣称端到端生产可用。创建snapshot的POST不提供幂等键合同，因此SDK不自动重试该POST；每次分页重新验证权限。
 
 每行保留origin publication ID/sequence；它可以早于快照边界。客户端检查sequence不超出固定快照，同序号时ID精确一致。不能将所有行重标成最新publication来隐藏继承血缘。同步快照上限100,000条、page读取预算8MiB，超限报错，不截断为“完整”。
 
@@ -152,6 +154,8 @@ python -m pytest -o addopts='' -q \
 调用者提供dataset/source/series、请求范围、独立起点证据、带身份/版本/覆盖范围的可信日历以及实际观察日期。评估器输出head/interior/tail、重复/意外日期及覆盖状态。
 
 日历范围未知或截断、独立起点未知时不能得到完整历史认证。源保留边界只限制尚缺失的日期，已经归档的早期真实记录仍可计入覆盖。snapshot-only必须有匹配的归档范围与证据，单日快照也不能自动证明历史。输出的COMPLETE只说明输入证据支持的日粒度键覆盖，不证明字段值正确、许可有效或源端真实完整；这些需要独立DQ和真实来源验证。
+
+REST层通过`PUBLISHED_DATASET_COVERAGE_EVIDENCE_FILE`加载严格JSON registry。schema 2 entry必须绑定dataset、`ths.index_daily`来源和32位publication ID，提供唯一规范instrument lifecycle、完整日历片段、半开publication scan范围，以及`visible_record_set`对象（算法、SHA-256、可见行数、publication sequence、合同SHA-256）。旧schema 1可解析但缺少完整集合pin，结果保持UNKNOWN。此文件是可信operator attestation，而非密码学验证：响应中的`operator-attestation-sha256`可标识当次证据内容，但代码只检查结构和pin，证据引用的真实性、来源和审批由独立部署流程负责；服务进程应只读该文件，修改权限应受限于独立审批人员，且不得由API首次扫描目标数据库后生成或更新该pin。它不会从当前行数或最早/最新观察日推断历史边界；新publication不会继承旧publication的coverage证据。没有真实独立证据的环境不要创建entry，留空或schema 1会让结果保持UNKNOWN。即使evidence entry存在，coverage读取仍要求dataset的`coverage.read`授权，并扫描、重新核验该publication sequence下完整可见的fact revision集合及每行record hash；超限、内容变动或无法保证一致读取均返回UNKNOWN。
 
 ## 下一波接线顺序
 

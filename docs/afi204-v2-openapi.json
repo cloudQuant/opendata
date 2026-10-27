@@ -1936,7 +1936,7 @@
     },
     "/api/v2/datasets/{dataset_id}/coverage": {
       "get": {
-        "description": "Return UNKNOWN until independent dataset-specific coverage evidence exists.",
+        "description": "Return evidence-bound coverage for an exact, pinned single-index series.",
         "operationId": "get_dataset_coverage_api_v2_datasets__dataset_id__coverage_get",
         "parameters": [
           {
@@ -1980,6 +1980,24 @@
                 }
               ],
               "title": "End Date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "publication_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 32,
+                  "minLength": 32,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Publication Id"
             }
           },
           {

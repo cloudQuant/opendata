@@ -94,6 +94,84 @@ def _contract() -> dict[str, Any]:
     }
 
 
+def _coverage_contract() -> dict[str, Any]:
+    """Build the frozen v2 coverage operation before its optional publication pin."""
+    document = _contract()
+    document["paths"]["/api/v2/datasets/{dataset_id}/coverage"] = {
+        "get": {
+            "operationId": "getDatasetCoverage",
+            "parameters": [
+                {
+                    "name": "dataset_id",
+                    "in": "path",
+                    "required": True,
+                    "schema": {"type": "string"},
+                },
+                {
+                    "name": "start_date",
+                    "in": "query",
+                    "required": False,
+                    "schema": {
+                        "anyOf": [
+                            {"format": "date", "type": "string"},
+                            {"type": "null"},
+                        ],
+                        "title": "Start Date",
+                    },
+                },
+                {
+                    "name": "end_date",
+                    "in": "query",
+                    "required": False,
+                    "schema": {
+                        "anyOf": [
+                            {"format": "date", "type": "string"},
+                            {"type": "null"},
+                        ],
+                        "title": "End Date",
+                    },
+                },
+                {
+                    "name": "X-API-Key",
+                    "in": "header",
+                    "required": False,
+                    "schema": {
+                        "anyOf": [{"type": "string"}, {"type": "null"}],
+                        "title": "X-Api-Key",
+                    },
+                },
+            ],
+            "responses": {"200": {"description": "Success"}},
+        }
+    }
+    return document
+
+
+def _publication_id_parameter() -> dict[str, Any]:
+    """Return the one optional query parameter permitted by the coverage gate."""
+    return {
+        "in": "query",
+        "name": "publication_id",
+        "required": False,
+        "schema": {
+            "anyOf": [
+                {"maxLength": 32, "minLength": 32, "type": "string"},
+                {"type": "null"},
+            ],
+            "title": "Publication Id",
+        },
+    }
+
+
+def _coverage_contract_with_publication_pin() -> dict[str, Any]:
+    """Build the updated frozen coverage operation after its publication pin was accepted."""
+    document = _coverage_contract()
+    document["paths"]["/api/v2/datasets/{dataset_id}/coverage"]["get"]["parameters"].insert(
+        3, _publication_id_parameter()
+    )
+    return document
+
+
 def _compare(candidate: dict[str, Any]) -> list[str]:
     """Compare a fixture against itself as a frozen v2 contract."""
     return compare_contracts(_contract(), candidate, "v2")
@@ -171,6 +249,49 @@ def test_new_required_parameter_and_tightened_parameter_schema_are_blocked() -> 
     candidate = _contract()
     candidate["paths"]["/api/v2/items"]["get"]["parameters"][0]["schema"]["minimum"] = 10
     assert any("contract value changed" in issue for issue in _compare(candidate))
+
+
+def test_coverage_allows_only_the_optional_exact_publication_pin() -> None:
+    """The publication selector is additive only on its one reviewed operation."""
+    baseline = _coverage_contract()
+    candidate = deepcopy(baseline)
+    candidate["paths"]["/api/v2/datasets/{dataset_id}/coverage"]["get"]["parameters"].insert(
+        3, _publication_id_parameter()
+    )
+    assert compare_contracts(baseline, candidate, "v2") == []
+
+
+def test_coverage_publication_pin_removal_is_blocked_after_freezing() -> None:
+    """Once frozen into the baseline, the publication selector cannot disappear."""
+    baseline = _coverage_contract_with_publication_pin()
+    candidate = deepcopy(baseline)
+    candidate["paths"]["/api/v2/datasets/{dataset_id}/coverage"]["get"]["parameters"].pop(3)
+    assert any("parameters" in issue for issue in compare_contracts(baseline, candidate, "v2"))
+
+
+@pytest.mark.parametrize("mutation", ("required", "type"))
+def test_coverage_publication_pin_drift_is_blocked(mutation: str) -> None:
+    """Removing existing coverage inputs or tightening the pin cannot pass."""
+    baseline = _coverage_contract()
+    candidate = deepcopy(baseline)
+    parameters = candidate["paths"]["/api/v2/datasets/{dataset_id}/coverage"]["get"]["parameters"]
+    parameters.insert(3, _publication_id_parameter())
+    if mutation == "required":
+        parameters[3]["required"] = True
+    else:
+        parameters[3]["schema"]["anyOf"][0]["type"] = "integer"
+    assert any("parameters" in issue for issue in compare_contracts(baseline, candidate, "v2"))
+
+
+def test_coverage_publication_pin_is_blocked_on_any_other_route() -> None:
+    """The route-specific allowance cannot become a general parameter exception."""
+    baseline = _coverage_contract()
+    candidate = deepcopy(baseline)
+    candidate["paths"]["/api/v2/status"]["get"]["parameters"] = [_publication_id_parameter()]
+    assert any(
+        "/api/v2/status.get.parameters" in issue
+        for issue in compare_contracts(baseline, candidate, "v2")
+    )
 
 
 def test_response_status_removal_and_required_field_addition_are_blocked() -> None:

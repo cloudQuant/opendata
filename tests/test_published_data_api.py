@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import replace
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
 
@@ -21,16 +21,32 @@ from opendata.api.published_data import (
     MAX_RESPONSE_BYTES,
     close_publication_store,
     get_dataset_contracts,
+    get_dataset_coverage_evidence_registry_loader,
     get_dataset_grants,
     get_publication_store,
     router,
+)
+from opendata.data.coverage_evidence_registry import (
+    DatasetCoverageEvidence,
+    DatasetCoverageEvidenceRegistry,
+    VisibleRecordSetPin,
 )
 from opendata.data.dataset_contract_registry import (
     DatasetContractRegistry,
     canonical_sha256,
 )
+from opendata.data.instrument_reference import (
+    InstrumentLifecycle,
+    InstrumentReferenceRegistry,
+)
 from opendata.data.platform_contracts import DatasetContract, FieldContract, SourceIdentity
+from opendata.data.providers.ths.index_daily_publication import (
+    INDEX_SOURCE_ID,
+    INDEX_SYMBOL_BY_DATASET_ID,
+    build_index_daily_contract,
+)
 from opendata.models.user import User, UserRole
+from opendata.pipeline.coverage_service import CalendarEvidence
 from opendata.pipeline.publication_store import (
     PUBLICATION_METADATA,
     SNAPSHOTS,
@@ -166,6 +182,139 @@ def _canonical_business_key(values: tuple[str, ...]) -> str:
     return json.dumps(values, ensure_ascii=False, separators=(",", ":"))
 
 
+def _index_record(symbol: str, trade_date: date, close: float) -> PublishedRecordInput:
+    """Build one synthetic THS index row for an isolated API test."""
+    trade_date_text = trade_date.isoformat()
+    return PublishedRecordInput(
+        business_key=_canonical_business_key((symbol, trade_date_text)),
+        business_date=trade_date,
+        payload={
+            "symbol": symbol,
+            "trade_date": trade_date_text,
+            "open": close,
+            "high": close,
+            "low": close,
+            "close": close,
+            "volume": 10.0,
+        },
+    )
+
+
+def _index_coverage_evidence(
+    publication_id: str,
+    *,
+    start: date,
+    end_exclusive: date,
+    open_dates: tuple[date, ...],
+    dataset_id: str = "cn.csi300.index.daily",
+    visible_record_set: VisibleRecordSetPin | None = None,
+) -> DatasetCoverageEvidence:
+    """Bind synthetic calendar and lifecycle evidence to one whitelisted THS index."""
+    symbol = INDEX_SYMBOL_BY_DATASET_ID[dataset_id]
+    lifecycle = InstrumentLifecycle(
+        dataset_id=dataset_id,
+        source_id=INDEX_SOURCE_ID,
+        instrument_id=symbol,
+        lifecycle_version="fixture-lifecycle-v1",
+        status="active",
+        status_as_of=end_exclusive - timedelta(days=1),
+        status_evidence_ref="docs/evidence/coverage/fixture-status.json",
+        known_start_date=start,
+        start_boundary_unknown=False,
+        start_evidence_ref="docs/evidence/coverage/fixture-listing.json",
+    )
+    registry = InstrumentReferenceRegistry(
+        registry_version="fixture-index-reference-v1",
+        evidence_ref="docs/evidence/coverage/fixture-instrument-registry.json",
+        lifecycles=(lifecycle,),
+    )
+    calendar = CalendarEvidence(
+        dataset_id=dataset_id,
+        source_id=INDEX_SOURCE_ID,
+        instrument_id=symbol,
+        calendar_id="fixture-sse-calendar",
+        calendar_version="fixture-calendar-v1",
+        evidence_ref="docs/evidence/coverage/fixture-calendar.json",
+        covered_from=start,
+        covered_through=end_exclusive - timedelta(days=1),
+        open_dates=open_dates,
+        daily_classification_complete=True,
+    )
+    return DatasetCoverageEvidence(
+        dataset_id=dataset_id,
+        source_id=INDEX_SOURCE_ID,
+        publication_id=publication_id,
+        instrument_identifier=symbol,
+        instrument_registry=registry,
+        calendar=calendar,
+        publication_scope_start=start,
+        publication_scope_end_exclusive=end_exclusive,
+        publication_scope_evidence_ref="docs/evidence/coverage/fixture-publication-scan.json",
+        visible_record_set=visible_record_set,
+    )
+
+
+def _visible_record_set_pin(
+    store: PublicationStore,
+    publication_id: str,
+    contract: DatasetContract,
+) -> VisibleRecordSetPin:
+    """Build fixture evidence from the store's verified full-visible-set scan."""
+    record_set = store.read_coverage_record_set(
+        contract.dataset_id,
+        publication_id,
+        contract_sha256=canonical_sha256(contract),
+    )
+    assert record_set is not None
+    return VisibleRecordSetPin(
+        algorithm=record_set.algorithm,
+        sha256=record_set.sha256,
+        record_count=record_set.record_count,
+        publication_sequence=record_set.publication_sequence,
+        contract_sha256=record_set.contract_sha256,
+    )
+
+
+def _publish_index_contract(
+    store: PublicationStore,
+    records: tuple[PublishedRecordInput, ...],
+    *,
+    idempotency_key: str,
+    dataset_id: str = "cn.csi300.index.daily",
+) -> tuple[Any, DatasetContract]:
+    """Publish one synthetic whitelisted index batch under its exact contract."""
+    symbol = INDEX_SYMBOL_BY_DATASET_ID[dataset_id]
+    contract = build_index_daily_contract(symbol)
+    publication = store.publish(
+        dataset_id=contract.dataset_id,
+        source_id=INDEX_SOURCE_ID,
+        schema_version=contract.schema_version,
+        semantic_version=contract.semantic_version,
+        unit="native",
+        adjustment_basis=contract.adjustment_basis,
+        quality={"status": "passed", "report_id": "DQ-COVERAGE-TEST", "issue_count": 0},
+        provenance={"contract_sha256": canonical_sha256(contract)},
+        idempotency_key=idempotency_key,
+        records=records,
+    )
+    return publication, contract
+
+
+def _make_index_app(
+    store: PublicationStore,
+    contract: DatasetContract,
+    evidence: DatasetCoverageEvidenceRegistry,
+) -> FastAPI:
+    """Mount one whitelisted THS index contract with explicit coverage access."""
+    grants = DatasetGrantRegistry((_grant(contract.dataset_id, INDEX_SOURCE_ID),))
+    return _make_app(
+        store,
+        grants,
+        DatasetContractRegistry((contract,)),
+        coverage_evidence=evidence,
+    )
+
+
 def _grant(dataset_id: str = DATASET_ID, source_id: str = SOURCE_ID) -> DatasetGrant:
     """Create an explicit fixture grant for one published dataset identity."""
     return DatasetGrant(
@@ -218,6 +367,7 @@ def _make_app(
     contracts: DatasetContractRegistry,
     *,
     principal: Principal | None = None,
+    coverage_evidence: DatasetCoverageEvidenceRegistry | None = None,
 ) -> FastAPI:
     """Mount only the v2 API and override its server-side dependencies."""
     user = User(
@@ -235,6 +385,9 @@ def _make_app(
     app.dependency_overrides[get_dataset_grants] = lambda: grants
     app.dependency_overrides[get_dataset_contracts] = lambda: contracts
     app.dependency_overrides[get_publication_store] = lambda: store
+    app.dependency_overrides[get_dataset_coverage_evidence_registry_loader] = (
+        lambda: lambda: coverage_evidence or DatasetCoverageEvidenceRegistry.empty()
+    )
     return app
 
 
@@ -981,6 +1134,286 @@ async def test_coverage_remains_unknown_and_does_not_infer_completeness_from_row
 
 
 @pytest.mark.asyncio
+async def test_coverage_evaluates_only_the_exact_evidenced_publication_pin(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+) -> None:
+    """A reviewed evidence bundle cannot float forward to later publications."""
+    _, store, _ = published_api
+    start = date(2026, 10, 21)
+    end_exclusive = date(2026, 10, 23)
+    first, contract = _publish_index_contract(
+        store,
+        (
+            _index_record("000300.SH", start, 4_000.0),
+            _index_record("000300.SH", end_exclusive - timedelta(days=1), 4_010.0),
+        ),
+        idempotency_key="coverage-index-first-pin",
+    )
+    second, _ = _publish_index_contract(
+        store,
+        (_index_record("000300.SH", end_exclusive - timedelta(days=1), 4_011.0),),
+        idempotency_key="coverage-index-second-pin",
+    )
+    visible_record_set = _visible_record_set_pin(store, first.publication_id, contract)
+    evidence = _index_coverage_evidence(
+        first.publication_id,
+        start=start,
+        end_exclusive=end_exclusive,
+        open_dates=(start, end_exclusive - timedelta(days=1)),
+        visible_record_set=visible_record_set,
+    )
+    app = _make_index_app(
+        store,
+        contract,
+        DatasetCoverageEvidenceRegistry((evidence,)),
+    )
+
+    pinned = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{contract.dataset_id}/coverage",
+        params={
+            "publication_id": first.publication_id,
+            "start_date": start.isoformat(),
+            "end_date": end_exclusive.isoformat(),
+        },
+    )
+    newer_pin = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{contract.dataset_id}/coverage",
+        params={
+            "publication_id": second.publication_id,
+            "start_date": start.isoformat(),
+            "end_date": end_exclusive.isoformat(),
+        },
+    )
+    current = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{contract.dataset_id}/coverage",
+        params={"start_date": start.isoformat(), "end_date": end_exclusive.isoformat()},
+    )
+
+    assert pinned.status_code == 200
+    assert pinned.json()["coverage"]["status"] == "complete"
+    assert pinned.json()["publication_id"] == first.publication_id
+    assert (
+        f"operator-attestation-sha256:{evidence.evidence_sha256}"
+        in pinned.json()["coverage"]["evidence_refs"]
+    )
+    record_set = _visible_record_set_pin(store, first.publication_id, contract)
+    assert (
+        f"{record_set.algorithm}:sha256:{record_set.sha256}"
+        in pinned.json()["coverage"]["evidence_refs"]
+    )
+    assert (
+        f"publication-sequence:{record_set.publication_sequence}"
+        in pinned.json()["coverage"]["evidence_refs"]
+    )
+    assert (
+        f"visible-record-count:{record_set.record_count}"
+        in pinned.json()["coverage"]["evidence_refs"]
+    )
+    assert (
+        f"contract-sha256:{record_set.contract_sha256}"
+        in pinned.json()["coverage"]["evidence_refs"]
+    )
+    assert newer_pin.status_code == 200
+    assert newer_pin.json()["coverage"]["status"] == "unknown"
+    assert newer_pin.json()["publication_id"] == second.publication_id
+    assert current.status_code == 200
+    assert current.json()["coverage"]["status"] == "unknown"
+    assert current.json()["publication_id"] == second.publication_id
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("dataset_id", tuple(INDEX_SYMBOL_BY_DATASET_ID))
+async def test_coverage_supports_each_trusted_single_index_dataset(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+    dataset_id: str,
+) -> None:
+    """All four separate THS index contracts use the symbol-only identity path."""
+    _, store, _ = published_api
+    day = date(2026, 10, 21)
+    end_exclusive = day + timedelta(days=1)
+    symbol = INDEX_SYMBOL_BY_DATASET_ID[dataset_id]
+    publication, contract = _publish_index_contract(
+        store,
+        (_index_record(symbol, day, 4_000.0),),
+        idempotency_key=f"coverage-index-{dataset_id}",
+        dataset_id=dataset_id,
+    )
+    evidence = _index_coverage_evidence(
+        publication.publication_id,
+        start=day,
+        end_exclusive=end_exclusive,
+        open_dates=(day,),
+        dataset_id=dataset_id,
+        visible_record_set=_visible_record_set_pin(store, publication.publication_id, contract),
+    )
+    app = _make_index_app(
+        store,
+        contract,
+        DatasetCoverageEvidenceRegistry((evidence,)),
+    )
+
+    response = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{dataset_id}/coverage",
+        params={
+            "publication_id": publication.publication_id,
+            "start_date": day.isoformat(),
+            "end_date": end_exclusive.isoformat(),
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["coverage"]["status"] == "complete"
+
+
+@pytest.mark.asyncio
+async def test_coverage_reports_partial_for_an_evidenced_missing_open_date(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+) -> None:
+    """A real calendar gap is surfaced as PARTIAL with its half-open missing range."""
+    _, store, _ = published_api
+    start = date(2026, 10, 21)
+    next_open_day = date(2026, 10, 22)
+    end_exclusive = date(2026, 10, 23)
+    publication, contract = _publish_index_contract(
+        store,
+        (_index_record("000300.SH", start, 4_000.0),),
+        idempotency_key="coverage-index-partial-gap",
+    )
+    evidence = _index_coverage_evidence(
+        publication.publication_id,
+        start=start,
+        end_exclusive=end_exclusive,
+        open_dates=(start, next_open_day),
+        visible_record_set=_visible_record_set_pin(store, publication.publication_id, contract),
+    )
+    app = _make_index_app(
+        store,
+        contract,
+        DatasetCoverageEvidenceRegistry((evidence,)),
+    )
+
+    response = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{contract.dataset_id}/coverage",
+        params={
+            "publication_id": publication.publication_id,
+            "start_date": start.isoformat(),
+            "end_date": end_exclusive.isoformat(),
+        },
+    )
+
+    assert response.status_code == 200
+    coverage = response.json()["coverage"]
+    assert coverage["status"] == "partial"
+    assert coverage["missing_ranges"] == [
+        {"start": next_open_day.isoformat(), "end": end_exclusive.isoformat()}
+    ]
+
+
+@pytest.mark.asyncio
+async def test_coverage_keeps_wrong_symbol_facts_unknown(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+) -> None:
+    """A dataset allowlist cannot hide an out-of-scope symbol in visible facts."""
+    _, store, _ = published_api
+    start = date(2026, 10, 21)
+    end_exclusive = date(2026, 10, 22)
+    publication, contract = _publish_index_contract(
+        store,
+        (
+            _index_record("000300.SH", start, 4_000.0),
+            _index_record("000905.SH", start, 5_000.0),
+        ),
+        idempotency_key="coverage-index-cross-symbol",
+    )
+    evidence = _index_coverage_evidence(
+        publication.publication_id,
+        start=start,
+        end_exclusive=end_exclusive,
+        open_dates=(start,),
+        visible_record_set=_visible_record_set_pin(store, publication.publication_id, contract),
+    )
+    app = _make_index_app(
+        store,
+        contract,
+        DatasetCoverageEvidenceRegistry((evidence,)),
+    )
+
+    response = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{contract.dataset_id}/coverage",
+        params={
+            "publication_id": publication.publication_id,
+            "start_date": start.isoformat(),
+            "end_date": end_exclusive.isoformat(),
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["coverage"]["status"] == "unknown"
+    assert "outside the single-index scope" in response.json()["coverage"]["limitation"]
+
+
+@pytest.mark.asyncio
+async def test_coverage_scan_limit_returns_unknown_without_truncation(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A capped scan is rejected instead of being evaluated as complete."""
+    _, store, _ = published_api
+    start = date(2026, 10, 21)
+    end_exclusive = date(2026, 10, 23)
+    publication, contract = _publish_index_contract(
+        store,
+        (
+            _index_record("000300.SH", start, 4_000.0),
+            _index_record("000300.SH", end_exclusive - timedelta(days=1), 4_010.0),
+        ),
+        idempotency_key="coverage-index-over-limit",
+    )
+    evidence = _index_coverage_evidence(
+        publication.publication_id,
+        start=start,
+        end_exclusive=end_exclusive,
+        open_dates=(start, end_exclusive - timedelta(days=1)),
+        visible_record_set=_visible_record_set_pin(store, publication.publication_id, contract),
+    )
+    app = _make_index_app(
+        store,
+        contract,
+        DatasetCoverageEvidenceRegistry((evidence,)),
+    )
+    monkeypatch.setattr(published_data_module, "MAX_COVERAGE_RECORDS", 1)
+
+    response = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{contract.dataset_id}/coverage",
+        params={
+            "publication_id": publication.publication_id,
+            "start_date": start.isoformat(),
+            "end_date": end_exclusive.isoformat(),
+        },
+    )
+
+    assert response.status_code == 200
+    coverage = response.json()["coverage"]
+    assert coverage["status"] == "unknown"
+    assert coverage["observed"] is None
+    assert "no truncated or inconsistent result was evaluated" in coverage["limitation"]
+
+
+@pytest.mark.asyncio
 async def test_api_key_without_exact_operation_and_domain_is_denied_before_store_reads(
     published_api: tuple[FastAPI, PublicationStore, DatasetContract],
 ) -> None:
@@ -1020,6 +1453,21 @@ async def test_api_key_without_exact_operation_and_domain_is_denied_before_store
     assert response.status_code == 403
     assert response.json()["error"]["message"] == "Dataset is unavailable"
 
+    def fail_if_evidence_is_loaded() -> DatasetCoverageEvidenceRegistry:
+        raise AssertionError("unauthorized coverage request loaded operator evidence")
+
+    app.dependency_overrides[get_dataset_coverage_evidence_registry_loader] = (
+        lambda: fail_if_evidence_is_loaded
+    )
+    coverage_response = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{DATASET_ID}/coverage",
+        params={"start_date": START_DATE.isoformat(), "end_date": END_DATE.isoformat()},
+    )
+    assert coverage_response.status_code == 403
+    assert coverage_response.json()["error"]["message"] == "Dataset is unavailable"
+
 
 @pytest.mark.asyncio
 async def test_missing_warehouse_schema_returns_sanitized_503(
@@ -1052,6 +1500,31 @@ async def test_missing_warehouse_schema_returns_sanitized_503(
     assert response.json()["error"]["code"] == "published_data_unavailable"
     assert str(tmp_path) not in response.text
     blank_engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_invalid_coverage_evidence_configuration_returns_sanitized_503(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+) -> None:
+    """An authorized read fails closed when its optional operator file is malformed."""
+    app, _, _ = published_api
+    app.dependency_overrides.pop(get_dataset_coverage_evidence_registry_loader)
+    invalid_file = tmp_path / "coverage-evidence.json"
+    invalid_file.write_text("{invalid", encoding="utf-8")
+    monkeypatch.setenv("PUBLISHED_DATASET_COVERAGE_EVIDENCE_FILE", str(invalid_file))
+
+    response = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{DATASET_ID}/coverage",
+        params={"start_date": START_DATE.isoformat(), "end_date": END_DATE.isoformat()},
+    )
+
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "published_data_unavailable"
+    assert str(tmp_path) not in response.text
 
 
 @pytest.mark.asyncio
@@ -1275,6 +1748,18 @@ async def test_openapi_declares_success_and_error_payloads(
     } <= set(page)
     row = schema["components"]["schemas"]["PublishedRowResponse"]["properties"]
     assert "publication_sequence" in row
+    coverage_parameters = schema["paths"]["/api/v2/datasets/{dataset_id}/coverage"]["get"][
+        "parameters"
+    ]
+    publication_parameter = next(
+        item for item in coverage_parameters if item["name"] == "publication_id"
+    )
+    assert publication_parameter["required"] is False
+    assert publication_parameter["schema"]["anyOf"][0] == {
+        "maxLength": 32,
+        "minLength": 32,
+        "type": "string",
+    }
 
 
 @pytest.mark.asyncio
