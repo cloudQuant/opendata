@@ -17,12 +17,15 @@ import tempfile
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from pathlib import Path, PurePosixPath
 from typing import NoReturn
+from uuid import UUID
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 PLAN_SCHEMA_VERSION = "1.0"
-SUPPORTED_RUNTIME_SCHEMA_VERSION = "1.0"
+SUPPORTED_RUNTIME_SCHEMA_VERSION = "1.1"
+SUPPORTED_RUNTIME_SCHEMA_VERSIONS = frozenset({"1.0", SUPPORTED_RUNTIME_SCHEMA_VERSION})
 SUPPORTED_CATALOG_SCHEMA_VERSION = "1.1"
 MAX_INPUT_BYTES = 32 * 1024 * 1024
 MAX_JSON_NODES = 1_000_000
@@ -153,6 +156,11 @@ def build_migration_plan(
 
     runtime, catalog, tasks, scripts, static_files, integrity_issues = _read_snapshots(
         runtime_inventory, static_catalog
+    )
+    runtime_schema_version = runtime.get("schema_version")
+    runtime_identity_evidence_valid = (
+        runtime_schema_version == SUPPORTED_RUNTIME_SCHEMA_VERSION
+        and _runtime_v11_identity_evidence_valid(runtime)
     )
     mapping_rows, mapping_global_issues = _read_mapping(
         reviewed_mapping,
@@ -306,6 +314,26 @@ def build_migration_plan(
             issue.startswith(("runtime_", "static_", "catalog_")) for issue in global_blockers
         ),
     }
+    plan_inputs: JsonObject = {
+        "runtime_inventory_sha256": inventory_hash,
+        "runtime_inventory_schema_version": runtime.get("schema_version"),
+        "static_catalog_sha256": catalog_hash,
+        "static_catalog_schema_version": catalog.get("schema_version"),
+        "reviewed_mapping_sha256": mapping_hash,
+        "target_allowlist_sha256": allowlist_hash,
+        "target_warehouse_fingerprint_sha256": (
+            warehouse_fingerprint.sha256 if warehouse_fingerprint is not None else None
+        ),
+        "target_warehouse_fingerprint_allowlisted": fingerprint_allowed,
+        "hash_semantics": INPUT_HASH_SEMANTICS,
+    }
+    if runtime_schema_version == SUPPORTED_RUNTIME_SCHEMA_VERSION:
+        plan_inputs["runtime_inventory_identity_evidence_status"] = (
+            "STRUCTURALLY_PRESENT_UNVERIFIED"
+            if runtime_identity_evidence_valid
+            else "INVALID_OR_INCOMPLETE"
+        )
+
     plan: JsonObject = {
         "schema_version": PLAN_SCHEMA_VERSION,
         "plan_mode": "OFFLINE_DRY_RUN",
@@ -313,19 +341,7 @@ def build_migration_plan(
         "execution_supported": False,
         "enabled_jobs_created": False,
         "parameter_hash_semantics": TASK_PARAMETER_HASH_SEMANTICS,
-        "inputs": {
-            "runtime_inventory_sha256": inventory_hash,
-            "runtime_inventory_schema_version": runtime.get("schema_version"),
-            "static_catalog_sha256": catalog_hash,
-            "static_catalog_schema_version": catalog.get("schema_version"),
-            "reviewed_mapping_sha256": mapping_hash,
-            "target_allowlist_sha256": allowlist_hash,
-            "target_warehouse_fingerprint_sha256": (
-                warehouse_fingerprint.sha256 if warehouse_fingerprint is not None else None
-            ),
-            "target_warehouse_fingerprint_allowlisted": fingerprint_allowed,
-            "hash_semantics": INPUT_HASH_SEMANTICS,
-        },
+        "inputs": plan_inputs,
         "integrity_issues": global_blockers,
         "summary": summary,
         "tasks": jobs,
@@ -416,6 +432,141 @@ def write_plan_new_file(
     return target
 
 
+def _runtime_v11_identity_evidence_valid(runtime_inventory: Mapping[str, object]) -> bool:
+    """Check the declared v1.1 identity evidence shape without authenticating it.
+
+    The inventory is an operator-provided JSON snapshot. These checks prevent a
+    v1.1 report from silently falling back to the less-specific v1.0 contract;
+    they do not prove that the report or the database identities are genuine.
+    """
+    if runtime_inventory.get("schema_version") != SUPPORTED_RUNTIME_SCHEMA_VERSION:
+        return False
+    if not _is_sha256(runtime_inventory.get("identity_pin_sha256")):
+        return False
+
+    readonly = runtime_inventory.get("readonly_transaction")
+    if not isinstance(readonly, Mapping) or any(
+        readonly.get(key) is not True for key in ("metadata_confirmed", "warehouse_confirmed")
+    ):
+        return False
+
+    endpoints = runtime_inventory.get("endpoints")
+    if not isinstance(endpoints, Mapping) or set(endpoints) != {"metadata", "warehouse"}:
+        return False
+    expected_databases = {
+        "metadata": "ai_for_investor",
+        "warehouse": "akshare_data",
+    }
+    endpoint_fields = {
+        "requested_database",
+        "observed_database",
+        "endpoint_fingerprint",
+        "read_only_confirmed",
+        "snapshot_isolation",
+        "snapshot_captured_at_utc",
+        "server_identity",
+        "server_uuid_pin_matched",
+    }
+    identity_fields = {
+        "database_name",
+        "server_uuid",
+        "server_hostname",
+        "server_port",
+        "server_version",
+        "server_version_comment",
+    }
+    for role, expected_database in expected_databases.items():
+        endpoint = endpoints.get(role)
+        if not isinstance(endpoint, Mapping) or set(endpoint) != endpoint_fields:
+            return False
+        if (
+            endpoint.get("requested_database") != expected_database
+            or endpoint.get("observed_database") != expected_database
+            or not _is_sha256(endpoint.get("endpoint_fingerprint"))
+            or endpoint.get("read_only_confirmed") is not True
+            or endpoint.get("snapshot_isolation") != "repeatable-read"
+            or not _is_utc_timestamp(endpoint.get("snapshot_captured_at_utc"))
+            or endpoint.get("server_uuid_pin_matched") is not True
+        ):
+            return False
+        identity = endpoint.get("server_identity")
+        if not isinstance(identity, Mapping) or set(identity) != identity_fields:
+            return False
+        server_uuid = identity.get("server_uuid")
+        try:
+            canonical_server_uuid = isinstance(server_uuid, str) and str(UUID(server_uuid)) == (
+                server_uuid
+            )
+        except (AttributeError, TypeError, ValueError):
+            canonical_server_uuid = False
+        server_port = identity.get("server_port")
+        version_comment = identity.get("server_version_comment")
+        if (
+            identity.get("database_name") != expected_database
+            or not canonical_server_uuid
+            or not _nonempty_string(identity.get("server_hostname"), max_length=255)
+            or not _valid_server_port(server_port)
+            or not _nonempty_string(identity.get("server_version"), max_length=128)
+            or not isinstance(version_comment, str)
+            or len(version_comment) > 256
+        ):
+            return False
+
+    engine_check = runtime_inventory.get("runtime_table_engine_check")
+    if not isinstance(engine_check, Mapping) or set(engine_check) != {
+        "status",
+        "check",
+        "source",
+        "database",
+        "tables",
+    }:
+        return False
+    if (
+        engine_check.get("status") != "VERIFIED"
+        or engine_check.get("check") != "BOTH_SCHEDULER_TABLES_ARE_BASE_INNODB"
+        or engine_check.get("source") != "information_schema.TABLES"
+        or engine_check.get("database") != "ai_for_investor"
+    ):
+        return False
+    tables = engine_check.get("tables")
+    if not isinstance(tables, Mapping) or set(tables) != {
+        "ak_scheduled_tasks",
+        "ak_data_scripts",
+    }:
+        return False
+    for table in tables.values():
+        if (
+            not isinstance(table, Mapping)
+            or set(table) != {"table_type", "engine"}
+            or table.get("table_type") != "BASE TABLE"
+            or not isinstance(table.get("engine"), str)
+            or table["engine"].casefold() != "innodb"
+        ):
+            return False
+    return True
+
+
+def _is_utc_timestamp(value: object) -> bool:
+    """Return whether one timestamp is ISO-8601 with an explicit UTC offset."""
+    if not isinstance(value, str):
+        return False
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return parsed.tzinfo is not None and parsed.utcoffset() == timedelta(0)
+
+
+def _nonempty_string(value: object, *, max_length: int) -> bool:
+    """Check a bounded non-blank string without copying it into the plan."""
+    return isinstance(value, str) and bool(value.strip()) and len(value) <= max_length
+
+
+def _valid_server_port(value: object) -> bool:
+    """Check a non-boolean TCP port reported as part of the MySQL identity."""
+    return type(value) is int and 1 <= value <= 65535
+
+
 def _read_snapshots(
     runtime_inventory: Mapping[str, object], static_catalog: Mapping[str, object]
 ) -> tuple[
@@ -427,7 +578,11 @@ def _read_snapshots(
     list[str],
 ]:
     """Validate input snapshot shapes and compute two-way runtime/catalog joins."""
-    if runtime_inventory.get("schema_version") != SUPPORTED_RUNTIME_SCHEMA_VERSION:
+    runtime_schema_version = runtime_inventory.get("schema_version")
+    if (
+        not isinstance(runtime_schema_version, str)
+        or runtime_schema_version not in SUPPORTED_RUNTIME_SCHEMA_VERSIONS
+    ):
         raise MigrationPlanError("unsupported_runtime_inventory_schema")
     if static_catalog.get("schema_version") != SUPPORTED_CATALOG_SCHEMA_VERSION:
         raise MigrationPlanError("unsupported_static_catalog_schema")
@@ -465,6 +620,11 @@ def _read_snapshots(
         or readonly.get("warehouse_confirmed") is not True
     ):
         blockers.append("runtime_snapshot_not_read_only_confirmed")
+    if (
+        runtime_schema_version == SUPPORTED_RUNTIME_SCHEMA_VERSION
+        and not _runtime_v11_identity_evidence_valid(runtime_inventory)
+    ):
+        blockers.append("runtime_v11_identity_evidence_invalid")
 
     scheduled_by_id: dict[str, Mapping[str, object]] = {}
     for record in scheduled_records:

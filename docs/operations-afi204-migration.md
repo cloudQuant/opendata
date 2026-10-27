@@ -52,6 +52,24 @@ python scripts/ops/inventory_legacy_scripts.py \
 
 源码扫描1,066个文件，集合及SHA-256与起始CSV一致，语法/文件系统错误为0；来源验证状态保持 `NOT_VERIFIED`。第二批真实只读数据库确认1,103个任务、1,066条脚本注册，1,056个静态入口均有运行态映射；脱敏摘要见 [afi204-runtime-inventory.json](afi204-runtime-inventory.json)。第三批只读主机报告见 [afi204-host-inventory.json](afi204-host-inventory.json)：20个项目关联unit中12个active；3次show失败使systemd整体UNKNOWN。77个项目路径关联进程仍全部未分类，不能当成77个采集器；checkpoint扫描有界且PARTIAL。动态服务调用和实际writer绑定仍需核对。
 
+### Runtime inventory 的 MySQL 身份与快照前置条件
+
+`scripts/ops/inventory_legacy_runtime.py` 的 CLI 每次都必须提供 operator 审核的身份 pin 文件，例如 `--identity-file /secure/local/afi204-database-identities.json`；该 CLI 只连接 MySQL。直接调用 `build_runtime_inventory` 时，MySQL 目标也必须提供 identity pin；仅隔离测试可显式开启 SQLite API 模式。文件使用 schema version `1`，包含 `metadata` 与 `warehouse` 两项；每项仅包含固定数据库名（`ai_for_investor` / `akshare_data`）和规范小写 `server_uuid`。它与含数据库 URL 的 `.env` 分开保存。pin 必须从可独立信任的实例记录核验后填写；首次盘点观察到的 UUID 不能自动成为信任基准。pin 文件检查依赖 POSIX 的 `O_NOFOLLOW` 和 effective UID 接口；若平台不支持则失败关闭。`O_NOFOLLOW` 只保护最终路径组件，中间目录组件里的符号链接仍会被跟随。程序要求最终文件是普通文件、由 root 或当前用户所有、不可被 group/other 写入，且没有执行或特殊权限位；它不解析 ACL，也不验证目录链。操作员必须保护所有父目录及其 ACL，避免目录替换、硬链接滥用和同 UID 进程篡改；root、文件所有者及能改写父目录的主体都属于运维信任边界。pin 文件没有数字签名，SHA-256 只记录本次读取字节的内容摘要，不提供来源认证或信任证明。盘点会在只读事务内、读取业务表前确认当前 `DATABASE()` 和 `@@server_uuid` 与 pin 相符，并在本地报告中记录实际实例信息及 pin 文件 SHA-256。UUID 是实例标识，不是认证凭据；报告仍含运行清单明细，应留在受限的本地目录。
+
+运行时还必须选择已核实为服务实际配置来源的 URL 文件或显式 URL，例如：
+
+```bash
+python scripts/ops/inventory_legacy_runtime.py \
+  --env-file /secure/local/verified-service-database.env \
+  --identity-file /secure/local/afi204-database-identities.json \
+  --source-root /home/yun/Documents/ai-for-investor \
+  --output /secure/local/afi204-runtime-inventory.json
+```
+
+示例路径不是默认配置；在运行前必须独立确认 URL 文件与服务实际连接配置一致。工具对 `.env` 只读取最多 1 MiB 的一份 UTF-8 内容，用这一份受控读取同时解析两个 URL 并计算报告中的 `env_file_sha256`；允许其他合法 dotenv 键，但不会使用或输出它们。两个目标 URL 键各自只能定义一次；重复目标键或任何格式错误的行都会失败关闭。解析不执行变量插值。显式 URL 模式没有文件摘要。该 SHA 只绑定报告到解析过的字节，不证明文件路径、来源或 URL 与运行服务配置相同，也不是签名。身份文件只绑定身份，不应放入 DSN、密码或其他凭据。
+
+读取调度记录前，`ak_scheduled_tasks` 和 `ak_data_scripts` 必须都恰好对应一张 `BASE TABLE` 且使用 InnoDB。任一缺失、视图、重复元数据或非 InnoDB 引擎都会终止盘点，不读取这两张表的行。成功的 MySQL 报告在顶层 `runtime_table_engine_check` 记录 `status: VERIFIED`、检查名称、`information_schema.TABLES` 来源、metadata 数据库名，以及两表观察到的 `table_type` 和 `engine`；只有两次 metadata 查询均成功并通过检查后才会产生此证据。SQLite 报告将该字段置为 `null`，不会声称做过 InnoDB 检查。InnoDB + 同一 MySQL `REPEATABLE READ` 一致性只读事务为两张表的行读取提供同库快照。盘点期间必须冻结 metadata 与 warehouse 两个库中所有相关对象的 DDL：不仅是这两张调度表，也包括 warehouse 的表、列和索引。warehouse schema 通过多次独立的 `information_schema` 查询收集，metadata 的表定义也分别查询；事务不能保证这些数据字典查询构成原子目录快照，DDL 并发可能让报告混合不同结构时点。即使 DDL 冻结，metadata 与 warehouse 仍使用不同连接和事务，不构成跨库原子快照。SQLite 仅供显式隔离测试使用，不需要 MySQL UUID 或 InnoDB 检查。
+
 ## 运行身份与账本
 
 `build_run_identity(TaskDefinition, RunRequest)` 输出：

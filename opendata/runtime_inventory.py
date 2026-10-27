@@ -10,23 +10,28 @@ for isolated tests.
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
+import io
 import json
+import os
 import re
+import stat
 import sys
 from collections.abc import Iterator, Mapping, Sequence
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from pathlib import Path, PurePosixPath
+from uuid import UUID
 
 from sqlalchemy import Column, Engine, MetaData, Table, create_engine, select, text
 from sqlalchemy.engine import URL, Connection, make_url
 from sqlalchemy.pool import NullPool
 from sqlalchemy.sql.sqltypes import NullType
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 METADATA_DATABASE = "ai_for_investor"
 WAREHOUSE_DATABASE = "akshare_data"
 APPROVED_HOST = "127.0.0.1"
@@ -35,6 +40,8 @@ TASK_TABLE = "ak_scheduled_tasks"
 SCRIPT_TABLE = "ak_data_scripts"
 MAX_TASK_ROWS = 100_000
 MAX_PARAMETER_BYTES = 1_048_576
+MAX_ENV_FILE_BYTES = 1_048_576
+MAX_IDENTITY_PIN_BYTES = 4_096
 
 _TASK_COLUMN_ALIASES: dict[str, tuple[str, ...]] = {
     "id": ("id",),
@@ -243,6 +250,127 @@ def _driver_flag_is_true(value: object) -> bool:
     return isinstance(value, str) and value.casefold() in {"1", "on", "true"}
 
 
+def _normalize_server_uuid(value: object, *, error_code: str) -> str:
+    """Validate a MySQL UUID and return its lowercase canonical spelling."""
+    if not isinstance(value, str):
+        raise RuntimeInventoryError(error_code)
+    try:
+        normalized = str(UUID(value))
+    except (AttributeError, TypeError, ValueError):
+        raise RuntimeInventoryError(error_code) from None
+    return normalized
+
+
+def _validate_expected_server_uuids(
+    pins: Mapping[str, str] | None,
+) -> dict[str, str] | None:
+    """Validate the complete role-to-UUID pin mapping before any connection."""
+    if pins is None:
+        return None
+    if not isinstance(pins, Mapping) or set(pins) != {"metadata", "warehouse"}:
+        raise RuntimeInventoryError("mysql_identity_pins_invalid")
+    result: dict[str, str] = {}
+    for role in ("metadata", "warehouse"):
+        value = pins[role]
+        normalized = _normalize_server_uuid(value, error_code="mysql_identity_pins_invalid")
+        if value != normalized:
+            raise RuntimeInventoryError("mysql_identity_pins_invalid")
+        result[role] = normalized
+    return result
+
+
+def _reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Decode one JSON object while rejecting ambiguous duplicate keys."""
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise RuntimeInventoryError("identity_pin_duplicate_json_key")
+        result[key] = value
+    return result
+
+
+def _identity_file_stat(descriptor: int) -> os.stat_result:
+    """Return metadata for an already-open identity pin file descriptor."""
+    return os.fstat(descriptor)
+
+
+def _identity_file_effective_uid() -> int:
+    """Return the effective POSIX UID trusted to own a pin file."""
+    return os.geteuid()
+
+
+def _safe_identity_pins(identity_file: Path) -> tuple[dict[str, str], str]:
+    """Read one protected operator-reviewed UUID pin file without following links."""
+    nofollow = getattr(os, "O_NOFOLLOW", None)
+    if nofollow is None or not hasattr(os, "geteuid"):
+        raise RuntimeInventoryError("identity_pin_file_security_checks_unavailable")
+    descriptor: int | None = None
+    try:
+        flags = os.O_RDONLY | os.O_NONBLOCK | nofollow | getattr(os, "O_CLOEXEC", 0)
+        descriptor = os.open(identity_file.expanduser(), flags)
+        file_stat = _identity_file_stat(descriptor)
+        if not stat.S_ISREG(file_stat.st_mode):
+            raise RuntimeInventoryError("identity_pin_file_not_regular")
+        if file_stat.st_uid not in {0, _identity_file_effective_uid()}:
+            raise RuntimeInventoryError("identity_pin_file_owner_not_trusted")
+        if file_stat.st_mode & (stat.S_IWGRP | stat.S_IWOTH):
+            raise RuntimeInventoryError("identity_pin_file_writable_by_group_or_other")
+        executable_or_special = (
+            stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_ISUID | stat.S_ISGID | stat.S_ISVTX
+        )
+        if file_stat.st_mode & executable_or_special:
+            raise RuntimeInventoryError("identity_pin_file_permissions_not_trusted")
+        with os.fdopen(descriptor, "rb") as stream:
+            descriptor = None
+            content = stream.read(MAX_IDENTITY_PIN_BYTES + 1)
+    except RuntimeInventoryError:
+        raise
+    except OSError as exc:
+        if exc.errno == errno.ELOOP:
+            raise RuntimeInventoryError("identity_pin_file_symlink_rejected") from exc
+        raise RuntimeInventoryError("identity_pin_file_unreadable") from exc
+    finally:
+        if descriptor is not None:
+            with suppress(OSError):
+                os.close(descriptor)
+    if len(content) > MAX_IDENTITY_PIN_BYTES:
+        raise RuntimeInventoryError("identity_pin_file_exceeds_limit")
+    try:
+        document = json.loads(
+            content.decode("utf-8"), object_pairs_hook=_reject_duplicate_json_keys
+        )
+    except RuntimeInventoryError:
+        raise
+    except (UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
+        raise RuntimeInventoryError("identity_pin_file_invalid") from exc
+    if not isinstance(document, dict) or set(document) != {
+        "schema_version",
+        "metadata",
+        "warehouse",
+    }:
+        raise RuntimeInventoryError("identity_pin_file_invalid")
+    if type(document["schema_version"]) is not int or document["schema_version"] != 1:
+        raise RuntimeInventoryError("identity_pin_file_invalid")
+
+    expected_databases = {"metadata": METADATA_DATABASE, "warehouse": WAREHOUSE_DATABASE}
+    pins: dict[str, str] = {}
+    for role, database in expected_databases.items():
+        entry = document[role]
+        if not isinstance(entry, dict) or set(entry) != {"database", "server_uuid"}:
+            raise RuntimeInventoryError("identity_pin_file_invalid")
+        server_uuid = entry["server_uuid"]
+        if entry["database"] != database or not isinstance(server_uuid, str):
+            raise RuntimeInventoryError("identity_pin_file_invalid")
+        pins[role] = server_uuid
+    try:
+        validated = _validate_expected_server_uuids(pins)
+    except RuntimeInventoryError as exc:
+        raise RuntimeInventoryError("identity_pin_file_invalid") from exc
+    if validated is None:
+        raise RuntimeInventoryError("identity_pin_file_invalid")
+    return validated, hashlib.sha256(content).hexdigest()
+
+
 def _configure_mysql_readonly(connection: Connection) -> None:
     """Set and verify a repeatable-read, read-only transaction before queries."""
     raw = connection.connection.driver_connection
@@ -289,8 +417,17 @@ def _readonly_snapshot(
     engine: Engine,
     *,
     expected_database: str | None,
-) -> Iterator[tuple[Connection, str, str, str]]:
+    expected_server_uuid: str | None = None,
+) -> Iterator[tuple[Connection, str, str, str, dict[str, object] | None]]:
     """Yield an asserted read-only transaction and its backend evidence."""
+    if engine.dialect.name == "mysql":
+        if expected_server_uuid is None:
+            raise RuntimeInventoryError("mysql_expected_server_uuid_missing")
+        normalized_expected_uuid = _normalize_server_uuid(
+            expected_server_uuid, error_code="mysql_identity_pins_invalid"
+        )
+        if normalized_expected_uuid != expected_server_uuid:
+            raise RuntimeInventoryError("mysql_identity_pins_invalid")
     try:
         with engine.connect() as connection:
             backend = engine.dialect.name
@@ -309,14 +446,48 @@ def _readonly_snapshot(
                 isolation = str(state[1]).replace("_", "-").casefold()
                 if isolation != "repeatable-read":
                     raise RuntimeInventoryError("mysql_snapshot_isolation_not_confirmed")
+                if expected_server_uuid is None:
+                    raise RuntimeInventoryError("mysql_expected_server_uuid_missing")
+                identity_row = connection.execute(
+                    text(
+                        "SELECT DATABASE(), @@server_uuid, @@hostname, @@port, @@version, "
+                        "@@version_comment"
+                    )
+                ).one_or_none()
+                if identity_row is None:
+                    raise RuntimeInventoryError("mysql_server_identity_missing")
+                identity_database = identity_row[0]
+                if not isinstance(identity_database, str) or not identity_database:
+                    raise RuntimeInventoryError("mysql_database_identity_missing")
+                if identity_database != observed or (
+                    expected_database and identity_database != expected_database
+                ):
+                    raise RuntimeInventoryError("mysql_observed_database_mismatch")
+                observed_uuid = _normalize_server_uuid(
+                    identity_row[1], error_code="mysql_server_uuid_unavailable"
+                )
+                if observed_uuid != expected_server_uuid:
+                    raise RuntimeInventoryError("mysql_server_uuid_mismatch")
+                try:
+                    server_port = int(identity_row[3])
+                except (TypeError, ValueError, OverflowError):
+                    raise RuntimeInventoryError("mysql_server_identity_invalid") from None
+                identity = {
+                    "database_name": identity_database,
+                    "server_uuid": observed_uuid,
+                    "server_hostname": str(identity_row[2]),
+                    "server_port": server_port,
+                    "server_version": str(identity_row[4]),
+                    "server_version_comment": str(identity_row[5]),
+                }
                 captured_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-                yield connection, observed, isolation, captured_at
+                yield connection, observed, isolation, captured_at, identity
             elif backend == "sqlite":
                 _configure_sqlite_readonly(connection)
                 connection.exec_driver_sql("BEGIN")
                 observed = "sqlite-test-only"
                 captured_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-                yield connection, observed, "sqlite-readonly", captured_at
+                yield connection, observed, "sqlite-readonly", captured_at, None
             else:
                 raise RuntimeInventoryError("database_backend_not_supported")
     except RuntimeInventoryError:
@@ -668,6 +839,38 @@ def _table_exists(columns: Sequence[dict[str, object]]) -> bool:
     return bool(columns)
 
 
+def _require_innodb_runtime_tables(connection: Connection, database: str) -> dict[str, object]:
+    """Require and report both scheduler tables as base InnoDB tables."""
+    tables: dict[str, dict[str, str]] = {}
+    for table in (TASK_TABLE, SCRIPT_TABLE):
+        rows = list(
+            connection.execute(
+                text(
+                    "SELECT TABLE_NAME, TABLE_TYPE, ENGINE "
+                    "FROM information_schema.TABLES "
+                    "WHERE TABLE_SCHEMA = :schema AND TABLE_NAME = :table"
+                ),
+                {"schema": database, "table": table},
+            ).mappings()
+        )
+        if len(rows) != 1:
+            raise RuntimeInventoryError(f"metadata_runtime_table_metadata_missing:{table}")
+        row = rows[0]
+        if row["TABLE_NAME"] != table or row["TABLE_TYPE"] != "BASE TABLE":
+            raise RuntimeInventoryError(f"metadata_runtime_table_not_base_table:{table}")
+        engine = row["ENGINE"]
+        if not isinstance(engine, str) or engine.casefold() != "innodb":
+            raise RuntimeInventoryError(f"metadata_runtime_table_not_innodb:{table}")
+        tables[table] = {"table_type": "BASE TABLE", "engine": engine}
+    return {
+        "status": "VERIFIED",
+        "check": "BOTH_SCHEDULER_TABLES_ARE_BASE_INNODB",
+        "source": "information_schema.TABLES",
+        "database": database,
+        "tables": tables,
+    }
+
+
 def _metadata_inventory(
     connection: Connection,
     *,
@@ -678,7 +881,9 @@ def _metadata_inventory(
     if connection.dialect.name == "sqlite":
         task_columns = _sqlite_table_columns(connection, TASK_TABLE)
         script_columns = _sqlite_table_columns(connection, SCRIPT_TABLE)
+        runtime_table_engine_check = None
     else:
+        runtime_table_engine_check = _require_innodb_runtime_tables(connection, database)
         task_columns = _table_columns(connection, database, TASK_TABLE)
         script_columns = _table_columns(connection, database, SCRIPT_TABLE)
     if not _table_exists(task_columns) or not _table_exists(script_columns):
@@ -762,6 +967,7 @@ def _metadata_inventory(
     unresolved_scripts = sum(row.get("source_path") is None for row in scripts)
     return {
         "database": database,
+        "runtime_table_engine_check": runtime_table_engine_check,
         "tables": {
             TASK_TABLE: {"columns": task_columns},
             SCRIPT_TABLE: {"columns": script_columns},
@@ -801,24 +1007,61 @@ def _nested_exact_count(source: Mapping[str, object], section_key: str, count_ke
     return _exact_count(section.get(count_key), f"{section_key}.{count_key}")
 
 
-def _safe_env_urls(env_file: Path) -> tuple[str, str, str]:
-    """Read only the two approved connection keys and hash the dotenv file."""
+def _read_env_file_bytes(env_file: Path) -> bytes:
+    """Read one regular dotenv file descriptor with a fixed byte bound."""
+    descriptor: int | None = None
     try:
-        from dotenv import dotenv_values
-
-        values = dotenv_values(env_file, interpolate=False)
-    except Exception as exc:
+        flags = os.O_RDONLY | os.O_NONBLOCK | getattr(os, "O_CLOEXEC", 0)
+        descriptor = os.open(env_file.expanduser(), flags)
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise RuntimeInventoryError("dotenv_file_not_regular")
+        with os.fdopen(descriptor, "rb") as stream:
+            descriptor = None
+            content = stream.read(MAX_ENV_FILE_BYTES + 1)
+    except RuntimeInventoryError:
+        raise
+    except OSError as exc:
         raise RuntimeInventoryError("dotenv_file_unreadable") from exc
+    finally:
+        if descriptor is not None:
+            with suppress(OSError):
+                os.close(descriptor)
+    return content
+
+
+def _safe_env_urls(env_file: Path) -> tuple[str, str, str]:
+    """Parse approved URL keys and hash the same bounded dotenv bytes."""
+    content = _read_env_file_bytes(env_file)
+    if len(content) > MAX_ENV_FILE_BYTES:
+        raise RuntimeInventoryError("dotenv_file_exceeds_limit")
+    try:
+        decoded = content.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise RuntimeInventoryError("dotenv_file_invalid_encoding") from exc
+    try:
+        from dotenv.parser import parse_stream
+
+        values: dict[str, str | None] = {}
+        for binding in parse_stream(io.StringIO(decoded)):
+            if binding.error:
+                raise RuntimeInventoryError("dotenv_file_invalid")
+            key = binding.key
+            if key not in {"DATABASE_URL", "AKSHARE_DATA_DATABASE_URL"}:
+                continue
+            if key in values:
+                raise RuntimeInventoryError("dotenv_target_key_duplicate")
+            values[key] = binding.value
+    except RuntimeInventoryError:
+        raise
+    except Exception as exc:
+        raise RuntimeInventoryError("dotenv_file_invalid") from exc
     metadata_url = values.get("DATABASE_URL")
     warehouse_url = values.get("AKSHARE_DATA_DATABASE_URL")
     if not isinstance(metadata_url, str) or not metadata_url.strip():
         raise RuntimeInventoryError("dotenv_missing_DATABASE_URL")
     if not isinstance(warehouse_url, str) or not warehouse_url.strip():
         raise RuntimeInventoryError("dotenv_missing_AKSHARE_DATA_DATABASE_URL")
-    try:
-        file_hash = hashlib.sha256(env_file.read_bytes()).hexdigest()
-    except OSError as exc:
-        raise RuntimeInventoryError("dotenv_file_unreadable") from exc
+    file_hash = hashlib.sha256(content).hexdigest()
     return metadata_url, warehouse_url, file_hash
 
 
@@ -842,19 +1085,23 @@ def _file_hash(path: Path, label: str) -> str:
 
 def build_runtime_inventory(
     *,
-    metadata_url: str,
-    warehouse_url: str,
     source_root: Path,
-    env_file_sha256: str | None = None,
+    metadata_url: str | None = None,
+    warehouse_url: str | None = None,
+    env_file: Path | None = None,
+    identity_file: Path | None = None,
     allow_sqlite_for_tests: bool = False,
 ) -> dict[str, object]:
     """Inventory scheduler records and warehouse schema under read-only guards.
 
     Args:
+        source_root: AFI repository root used only to resolve source paths.
         metadata_url: Explicit URL for the approved ``ai_for_investor`` endpoint.
         warehouse_url: Explicit URL for the approved ``akshare_data`` endpoint.
-        source_root: AFI repository root used only to resolve source paths.
-        env_file_sha256: Optional hash of the dotenv file from which URLs came.
+        env_file: Alternative to explicit URLs; parsed URLs and reported SHA-256
+            are bound to one bounded read of this dotenv file.
+        identity_file: Protected operator-reviewed MySQL UUID pin file. Its UUIDs
+            and reported SHA-256 are parsed from the same securely opened bytes.
         allow_sqlite_for_tests: Permit SQLite URLs for isolated test fixtures only.
 
     Returns:
@@ -868,6 +1115,23 @@ def build_runtime_inventory(
     root = source_root.expanduser().resolve(strict=True)
     if not root.is_dir():
         raise RuntimeInventoryError("source_root_not_a_directory")
+    if env_file is not None:
+        if metadata_url is not None or warehouse_url is not None:
+            raise RuntimeInventoryError("database_url_source_conflict")
+        metadata_url, warehouse_url, env_file_sha256 = _safe_env_urls(env_file)
+    else:
+        env_file_sha256 = None
+        if (
+            not isinstance(metadata_url, str)
+            or not metadata_url.strip()
+            or not isinstance(warehouse_url, str)
+            or not warehouse_url.strip()
+        ):
+            raise RuntimeInventoryError("database_urls_required")
+    validated_server_uuids: dict[str, str] | None = None
+    identity_pin_sha256: str | None = None
+    if identity_file is not None:
+        validated_server_uuids, identity_pin_sha256 = _safe_identity_pins(identity_file)
     endpoints = (
         (ApprovedEndpoint("metadata", METADATA_DATABASE), metadata_url),
         (ApprovedEndpoint("warehouse", WAREHOUSE_DATABASE), warehouse_url),
@@ -875,6 +1139,7 @@ def build_runtime_inventory(
     endpoint_evidence: dict[str, dict[str, object]] = {}
     engines: dict[str, Engine] = {}
     parsed_urls: dict[str, URL] = {}
+    expected_uuids_by_role: dict[str, str | None] = {}
     try:
         for endpoint, raw_url in endpoints:
             try:
@@ -884,6 +1149,12 @@ def build_runtime_inventory(
                     endpoint,
                     allow_sqlite_for_tests=allow_sqlite_for_tests,
                 )
+                if normalized.get_backend_name() == "mysql":
+                    if validated_server_uuids is None:
+                        raise RuntimeInventoryError("mysql_identity_pins_required")
+                    expected_server_uuid = validated_server_uuids[endpoint.role]
+                else:
+                    expected_server_uuid = None
                 options: dict[str, object] = {
                     "poolclass": NullPool,
                     "hide_parameters": True,
@@ -910,13 +1181,15 @@ def build_runtime_inventory(
                 ) from exc
             engines[endpoint.role] = engine
             parsed_urls[endpoint.role] = parsed
+            expected_uuids_by_role[endpoint.role] = expected_server_uuid
 
         metadata_endpoint = ApprovedEndpoint("metadata", METADATA_DATABASE)
         metadata_engine = engines["metadata"]
         with _readonly_snapshot(
             metadata_engine,
             expected_database=metadata_endpoint.database,
-        ) as (connection, observed_database, isolation, captured_at):
+            expected_server_uuid=expected_uuids_by_role["metadata"],
+        ) as (connection, observed_database, isolation, captured_at, server_identity):
             metadata = _metadata_inventory(
                 connection,
                 database=observed_database,
@@ -931,6 +1204,8 @@ def build_runtime_inventory(
             "read_only_confirmed": True,
             "snapshot_isolation": isolation,
             "snapshot_captured_at_utc": captured_at,
+            "server_identity": server_identity,
+            "server_uuid_pin_matched": True if server_identity is not None else None,
         }
 
         warehouse_endpoint = ApprovedEndpoint("warehouse", WAREHOUSE_DATABASE)
@@ -938,7 +1213,8 @@ def build_runtime_inventory(
         with _readonly_snapshot(
             warehouse_engine,
             expected_database=warehouse_endpoint.database,
-        ) as (connection, observed_database, isolation, captured_at):
+            expected_server_uuid=expected_uuids_by_role["warehouse"],
+        ) as (connection, observed_database, isolation, captured_at, server_identity):
             warehouse = _warehouse_schema(connection, observed_database)
         endpoint_evidence["warehouse"] = {
             "requested_database": warehouse_endpoint.database,
@@ -949,6 +1225,8 @@ def build_runtime_inventory(
             "read_only_confirmed": True,
             "snapshot_isolation": isolation,
             "snapshot_captured_at_utc": captured_at,
+            "server_identity": server_identity,
+            "server_uuid_pin_matched": True if server_identity is not None else None,
         }
     finally:
         for engine in engines.values():
@@ -956,6 +1234,7 @@ def build_runtime_inventory(
 
     generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     task_map = metadata.pop("task_map_tasks")
+    runtime_table_engine_check = metadata.pop("runtime_table_engine_check")
     counts: dict[str, object] = {
         "scheduled_task_rows_exact": _nested_exact_count(
             metadata, "scheduled_tasks", "row_count_exact"
@@ -982,6 +1261,7 @@ def build_runtime_inventory(
         "source_root": root.as_posix(),
         "code_sha256": _code_hashes(),
         "env_file_sha256": env_file_sha256,
+        "identity_pin_sha256": identity_pin_sha256,
         "readonly_transaction": {
             "statement": (
                 "SET SESSION TRANSACTION READ ONLY; START TRANSACTION WITH CONSISTENT SNAPSHOT"
@@ -994,6 +1274,7 @@ def build_runtime_inventory(
             ),
         },
         "endpoints": endpoint_evidence,
+        "runtime_table_engine_check": runtime_table_engine_check,
         "metadata": metadata,
         "warehouse_schema": warehouse,
         "tasks": task_map,
@@ -1037,6 +1318,12 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     source.add_argument("--env-file", type=Path, help="Read only the two approved DB URL keys")
     source.add_argument("--metadata-url", help="Explicit ai_for_investor MySQL URL")
     parser.add_argument("--warehouse-url", help="Explicit akshare_data MySQL URL")
+    parser.add_argument(
+        "--identity-file",
+        type=Path,
+        required=True,
+        help="Required for every CLI run: separate operator-reviewed MySQL server UUID pins",
+    )
     parser.add_argument("--source-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -1049,18 +1336,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Run the guarded runtime inventory and return a fail-closed exit code."""
     args = _parse_args(argv)
     try:
-        env_hash = None
         if args.env_file is not None:
-            metadata_url, warehouse_url, env_hash = _safe_env_urls(args.env_file)
+            report = build_runtime_inventory(
+                source_root=args.source_root,
+                env_file=args.env_file,
+                identity_file=args.identity_file,
+            )
         else:
-            metadata_url = args.metadata_url
-            warehouse_url = args.warehouse_url
-        report = build_runtime_inventory(
-            metadata_url=metadata_url,
-            warehouse_url=warehouse_url,
-            source_root=args.source_root,
-            env_file_sha256=env_hash,
-        )
+            report = build_runtime_inventory(
+                metadata_url=args.metadata_url,
+                warehouse_url=args.warehouse_url,
+                source_root=args.source_root,
+                identity_file=args.identity_file,
+            )
         _write_report(args.output, report)
         summary = report["counts"]
         print(json.dumps(summary, ensure_ascii=False, sort_keys=True))

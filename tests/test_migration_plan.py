@@ -179,6 +179,53 @@ def _inputs(static_status: str = "READY_FOR_ADAPTER") -> tuple[dict, dict, dict,
     return inventory, catalog, mapping, allowlist
 
 
+def _v11_inputs() -> tuple[dict, dict, dict, dict]:
+    """Create a synthetic v1.1 report with the declared production evidence shape."""
+    inventory, catalog, mapping, allowlist = _inputs()
+    inventory["schema_version"] = "1.1"
+    inventory["identity_pin_sha256"] = "a" * 64
+    inventory["runtime_table_engine_check"] = {
+        "status": "VERIFIED",
+        "check": "BOTH_SCHEDULER_TABLES_ARE_BASE_INNODB",
+        "source": "information_schema.TABLES",
+        "database": "ai_for_investor",
+        "tables": {
+            "ak_scheduled_tasks": {"table_type": "BASE TABLE", "engine": "InnoDB"},
+            "ak_data_scripts": {"table_type": "BASE TABLE", "engine": "InnoDB"},
+        },
+    }
+    inventory["endpoints"] = {
+        "metadata": _v11_endpoint(
+            database="ai_for_investor", server_uuid="11111111-1111-4111-8111-111111111111"
+        ),
+        "warehouse": _v11_endpoint(
+            database="akshare_data", server_uuid="22222222-2222-4222-8222-222222222222"
+        ),
+    }
+    mapping["inputs"]["runtime_inventory_sha256"] = canonical_json_sha256(inventory)
+    return inventory, catalog, mapping, allowlist
+
+
+def _v11_endpoint(*, database: str, server_uuid: str) -> dict:
+    return {
+        "requested_database": database,
+        "observed_database": database,
+        "endpoint_fingerprint": "b" * 64,
+        "read_only_confirmed": True,
+        "snapshot_isolation": "repeatable-read",
+        "snapshot_captured_at_utc": "2026-10-28T01:02:03+00:00",
+        "server_identity": {
+            "database_name": database,
+            "server_uuid": server_uuid,
+            "server_hostname": "mysql-test",
+            "server_port": 3306,
+            "server_version": "8.4.0",
+            "server_version_comment": "synthetic test fixture",
+        },
+        "server_uuid_pin_matched": True,
+    }
+
+
 def _build(
     inventory: dict,
     catalog: dict,
@@ -204,6 +251,20 @@ def test_reviewed_matching_inputs_remain_disabled_and_plan_hash_is_stable() -> N
     assert plan["enabled_jobs_created"] is False
     assert plan["tasks"][0]["enabled"] is False
     assert plan["tasks"][0]["disposition"] == "READY_DISABLED"
+    assert plan["inputs"]["runtime_inventory_schema_version"] == "1.0"
+    assert "runtime_inventory_identity_evidence_status" not in plan["inputs"]
+    assert "runtime_inventory_refresh_required" not in plan["inputs"]
+    assert set(plan["inputs"]) == {
+        "runtime_inventory_sha256",
+        "runtime_inventory_schema_version",
+        "static_catalog_sha256",
+        "static_catalog_schema_version",
+        "reviewed_mapping_sha256",
+        "target_allowlist_sha256",
+        "target_warehouse_fingerprint_sha256",
+        "target_warehouse_fingerprint_allowlisted",
+        "hash_semantics",
+    }
     assert plan["tasks"][0]["params_sha256"] == _combined_hash()
     assert plan["tasks"][0]["task_params_sha256"] == TASK_PARAMS_HASH
     assert plan["tasks"][0]["script_params_sha256"] == SCRIPT_PARAMS_HASH
@@ -211,6 +272,101 @@ def test_reviewed_matching_inputs_remain_disabled_and_plan_hash_is_stable() -> N
     expected = dict(plan)
     expected.pop("plan_sha256")
     assert plan["plan_sha256"] == canonical_json_sha256(expected)
+
+
+def test_runtime_v11_requires_structural_identity_evidence_and_stays_unverified() -> None:
+    inventory, catalog, mapping, allowlist = _v11_inputs()
+
+    plan = _build(inventory, catalog, mapping, allowlist)
+
+    assert plan["plan_status"] == "READY_DISABLED"
+    assert plan["inputs"]["runtime_inventory_schema_version"] == "1.1"
+    assert (
+        plan["inputs"]["runtime_inventory_identity_evidence_status"]
+        == "STRUCTURALLY_PRESENT_UNVERIFIED"
+    )
+    assert plan["integrity_issues"] == []
+    assert plan["tasks"][0]["enabled"] is False
+
+
+def test_runtime_v11_incomplete_identity_evidence_blocks_without_copying_claims() -> None:
+    inventory, catalog, mapping, allowlist = _v11_inputs()
+    inventory["identity_pin_sha256"] = None
+    inventory["endpoints"]["warehouse"]["server_uuid_pin_matched"] = False
+    inventory["runtime_table_engine_check"]["tables"]["ak_scheduled_tasks"]["engine"] = "MyISAM"
+    mapping["inputs"]["runtime_inventory_sha256"] = canonical_json_sha256(inventory)
+
+    plan = _build(inventory, catalog, mapping, allowlist)
+    rendered = render_plan(plan)
+
+    assert "runtime_v11_identity_evidence_invalid" in plan["integrity_issues"]
+    assert "runtime_v11_identity_evidence_invalid" in plan["tasks"][0]["blocked_reasons"]
+    assert plan["inputs"]["runtime_inventory_identity_evidence_status"] == "INVALID_OR_INCOMPLETE"
+    assert plan["tasks"][0]["enabled"] is False
+    assert "11111111-1111-4111-8111-111111111111" not in rendered
+
+
+def test_runtime_v11_requires_matching_metadata_server_uuid_pin() -> None:
+    inventory, catalog, mapping, allowlist = _v11_inputs()
+    inventory["endpoints"]["metadata"]["server_uuid_pin_matched"] = False
+    mapping["inputs"]["runtime_inventory_sha256"] = canonical_json_sha256(inventory)
+
+    plan = _build(inventory, catalog, mapping, allowlist)
+
+    assert "runtime_v11_identity_evidence_invalid" in plan["integrity_issues"]
+    assert plan["inputs"]["runtime_inventory_identity_evidence_status"] == "INVALID_OR_INCOMPLETE"
+    assert plan["tasks"][0]["enabled"] is False
+
+
+def test_runtime_v11_requires_canonical_pin_digest() -> None:
+    inventory, catalog, mapping, allowlist = _v11_inputs()
+    inventory["identity_pin_sha256"] = "A" * 64
+    mapping["inputs"]["runtime_inventory_sha256"] = canonical_json_sha256(inventory)
+
+    plan = _build(inventory, catalog, mapping, allowlist)
+
+    assert "runtime_v11_identity_evidence_invalid" in plan["integrity_issues"]
+    assert plan["inputs"]["runtime_inventory_identity_evidence_status"] == "INVALID_OR_INCOMPLETE"
+    assert plan["tasks"][0]["enabled"] is False
+
+
+def test_runtime_v11_requires_explicit_source_scheduler_engine_evidence() -> None:
+    inventory, catalog, mapping, allowlist = _v11_inputs()
+    inventory["runtime_table_engine_check"]["tables"]["ak_data_scripts"]["engine"] = "MyISAM"
+    mapping["inputs"]["runtime_inventory_sha256"] = canonical_json_sha256(inventory)
+
+    plan = _build(inventory, catalog, mapping, allowlist)
+
+    assert "runtime_v11_identity_evidence_invalid" in plan["integrity_issues"]
+    assert plan["inputs"]["runtime_inventory_identity_evidence_status"] == "INVALID_OR_INCOMPLETE"
+    assert plan["tasks"][0]["enabled"] is False
+
+
+def test_runtime_v11_sqlite_test_only_identity_cannot_pass_as_production_evidence() -> None:
+    inventory, catalog, mapping, allowlist = _v11_inputs()
+    inventory["identity_pin_sha256"] = None
+    inventory["runtime_table_engine_check"] = None
+    inventory["endpoints"]["metadata"]["server_identity"] = None
+    inventory["endpoints"]["metadata"]["server_uuid_pin_matched"] = None
+    mapping["inputs"]["runtime_inventory_sha256"] = canonical_json_sha256(inventory)
+
+    plan = _build(inventory, catalog, mapping, allowlist)
+
+    assert "runtime_v11_identity_evidence_invalid" in plan["integrity_issues"]
+    assert plan["inputs"]["runtime_inventory_identity_evidence_status"] == "INVALID_OR_INCOMPLETE"
+    assert plan["tasks"][0]["enabled"] is False
+
+
+def test_runtime_v11_missing_endpoint_role_blocks_without_legacy_fallback() -> None:
+    inventory, catalog, mapping, allowlist = _v11_inputs()
+    del inventory["endpoints"]["warehouse"]
+    mapping["inputs"]["runtime_inventory_sha256"] = canonical_json_sha256(inventory)
+
+    plan = _build(inventory, catalog, mapping, allowlist)
+
+    assert "runtime_v11_identity_evidence_invalid" in plan["integrity_issues"]
+    assert plan["inputs"]["runtime_inventory_identity_evidence_status"] == "INVALID_OR_INCOMPLETE"
+    assert plan["tasks"][0]["enabled"] is False
 
 
 @pytest.mark.parametrize(
@@ -550,7 +706,7 @@ def test_json_loader_reports_missing_input_and_tree_validator_rejects_non_json_v
 @pytest.mark.parametrize(
     ("mutate", "expected"),
     [
-        (lambda inv, cat: inv.update(schema_version="9.0"), "unsupported_runtime_inventory_schema"),
+        (lambda inv, cat: inv.update(schema_version="1.2"), "unsupported_runtime_inventory_schema"),
         (lambda inv, cat: cat.update(schema_version="9.0"), "unsupported_static_catalog_schema"),
         (lambda inv, cat: inv.update(tasks="bad"), "runtime_inventory.tasks_invalid_or_too_large"),
         (lambda inv, cat: inv.update(metadata=[]), "runtime_inventory.metadata_must_be_object"),
