@@ -75,7 +75,8 @@ SOURCE_COLUMNS = (
     "换手率",
 )
 TARGET_KEY = ("股票代码", "日期")
-OPTIONAL_FLOAT_FIELDS = frozenset({"振幅", "涨跌幅", "涨跌额"})
+TURNOVER_AMOUNT_INDEX = SOURCE_COLUMNS.index("成交额")
+OPTIONAL_FLOAT_FIELDS = frozenset({"成交额", "振幅", "涨跌幅", "涨跌额"})
 _NUMERIC_TEXT = re.compile(r"^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$")
 _STOCK_CODE = re.compile(r"^[0-9]{6}$")
 _ISO_DATE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
@@ -102,7 +103,7 @@ TARGET_COLUMN_TYPES: dict[str, tuple[str, bool]] = {
     "最高": ("double", False),
     "最低": ("double", False),
     "成交量": ("double", False),
-    "成交额": ("double", False),
+    "成交额": ("double", True),
     "振幅": ("double", True),
     "涨跌幅": ("double", True),
     "涨跌额": ("double", True),
@@ -561,6 +562,20 @@ def _exact_row_count(connection: Connection, table: str) -> int:
     return int(connection.execute(statement).scalar_one())
 
 
+def _exact_turnover_amount_null_count(connection: Connection, table: str) -> int:
+    """Count missing turnover values in one of the two fixed migration tables."""
+    if table == SOURCE_TABLE:
+        statement = text("SELECT COUNT(*) FROM `STOCK_ZH_A_HIST` WHERE `成交额` IS NULL")
+    elif table == TARGET_TABLE:
+        statement = text("SELECT COUNT(*) FROM `ods_stock_daily_akshare` WHERE `成交额` IS NULL")
+    else:
+        raise TransferError("null_count_table_not_allowed")
+    count = connection.execute(statement).scalar_one()
+    if type(count) is not int or count < 0:
+        raise TransferError("turnover_amount_null_count_invalid")
+    return count
+
+
 def _new_engine(url: URL) -> Engine:
     """Create a quiet synchronous MySQL engine with parameter hiding enabled."""
     return create_engine(url, pool_pre_ping=True, hide_parameters=True)
@@ -589,7 +604,7 @@ def _target_table() -> Table:
         Column("最高", Float(), nullable=False),
         Column("最低", Float(), nullable=False),
         Column("成交量", Float(), nullable=False),
-        Column("成交额", Float(), nullable=False),
+        Column("成交额", Float(), nullable=True),
         Column("振幅", Float(), nullable=True),
         Column("涨跌幅", Float(), nullable=True),
         Column("涨跌额", Float(), nullable=True),
@@ -624,7 +639,7 @@ def _stream_source(
     batch_id: str,
     source_count: int,
     progress: Callable[[int, int], None],
-) -> tuple[int, int, str]:
+) -> tuple[int, int, str, int]:
     """Stream, validate, hash, and batch-insert all source rows."""
     selected = ", ".join(f"`{column}`" for column in SOURCE_COLUMNS)
     statement = text(
@@ -638,6 +653,7 @@ def _stream_source(
     digest = hashlib.sha256()
     rows_read = 0
     rows_inserted = 0
+    turnover_amount_null_rows = 0
     previous_key: tuple[str, date] | None = None
     batch: list[dict[str, object]] = []
     try:
@@ -659,6 +675,8 @@ def _stream_source(
                         raise TransferError("source_business_key_not_unique_or_sorted")
                     previous_key = key
                     _update_row_digest(digest, normalized)
+                    if normalized[TURNOVER_AMOUNT_INDEX] is None:
+                        turnover_amount_null_rows += 1
                     batch_row = dict(zip(SOURCE_COLUMNS, normalized, strict=True))
                     batch_row.update(
                         _source=SOURCE,
@@ -680,7 +698,7 @@ def _stream_source(
         result.close()
     if rows_read != source_count:
         raise TransferError("source_stream_count_mismatch")
-    return rows_read, rows_inserted, digest.hexdigest()
+    return rows_read, rows_inserted, digest.hexdigest(), turnover_amount_null_rows
 
 
 def _stream_target_hash(
@@ -689,7 +707,7 @@ def _stream_target_hash(
     fetched_at: datetime,
     batch_id: str,
     target_count: int,
-) -> tuple[int, str]:
+) -> tuple[int, str, int]:
     """Read and hash every target row in key order, checking transfer metadata."""
     raw_columns = ", ".join(f"`{column}`" for column in SOURCE_COLUMNS)
     statement = text(
@@ -702,6 +720,7 @@ def _stream_target_hash(
     ).execute(statement)
     digest = hashlib.sha256()
     count = 0
+    turnover_amount_null_rows = 0
     previous_key: tuple[str, date] | None = None
     try:
         while True:
@@ -728,12 +747,14 @@ def _stream_target_hash(
                 ):
                     raise TransferError("target_transfer_metadata_mismatch")
                 _update_row_digest(digest, normalized)
+                if normalized[TURNOVER_AMOUNT_INDEX] is None:
+                    turnover_amount_null_rows += 1
                 count += 1
     finally:
         result.close()
     if count != target_count:
         raise TransferError("target_stream_count_mismatch")
-    return count, digest.hexdigest()
+    return count, digest.hexdigest(), turnover_amount_null_rows
 
 
 def _perform_apply(state: dict[str, object], source_url: URL, target_url: URL) -> None:
@@ -771,18 +792,27 @@ def _perform_apply(state: dict[str, object], source_url: URL, target_url: URL) -
         with _readonly_source_snapshot(source_engine) as source_connection:
             source_columns = _source_schema(source_connection)
             source_count = _exact_row_count(source_connection, SOURCE_TABLE)
+            source_turnover_amount_null_rows = _exact_turnover_amount_null_count(
+                source_connection, SOURCE_TABLE
+            )
             state["source_columns"] = {
                 name: {"column_type": column_type, "nullable": nullable}
                 for name, (column_type, nullable) in source_columns.items()
             }
             state["source_rows"] = source_count
+            state["source_turnover_amount_null_rows"] = source_turnover_amount_null_rows
             if source_count != EXPECTED_SOURCE_ROWS:
                 raise TransferError("source_row_count_differs_from_reviewed_snapshot")
             fetched_at = datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0)
             batch_id = str(uuid4())
             state["fetched_at_utc"] = fetched_at.replace(tzinfo=timezone.utc).isoformat()
             state["batch_id"] = batch_id
-            rows_read, rows_inserted, source_digest = _stream_source(
+            (
+                rows_read,
+                rows_inserted,
+                source_digest,
+                streamed_turnover_amount_null_rows,
+            ) = _stream_source(
                 source_connection,
                 target_engine,
                 _target_table(),
@@ -799,6 +829,8 @@ def _perform_apply(state: dict[str, object], source_url: URL, target_url: URL) -
                 rows_inserted=rows_inserted,
                 source_sha256=source_digest,
             )
+            if streamed_turnover_amount_null_rows != source_turnover_amount_null_rows:
+                raise TransferError("source_turnover_amount_null_count_mismatch")
         if rows_read != source_count or rows_inserted != source_count:
             raise TransferError("source_target_insert_count_mismatch")
 
@@ -807,7 +839,7 @@ def _perform_apply(state: dict[str, object], source_url: URL, target_url: URL) -
             state["target_rows_after"] = target_after
             if target_after != source_count:
                 raise TransferError("target_final_count_mismatch")
-            target_rows, target_digest = _stream_target_hash(
+            target_rows, target_digest, target_turnover_amount_null_rows = _stream_target_hash(
                 target_connection,
                 fetched_at=fetched_at,
                 batch_id=batch_id,
@@ -816,6 +848,9 @@ def _perform_apply(state: dict[str, object], source_url: URL, target_url: URL) -
             target_connection.commit()
         state["target_sha256"] = target_digest
         state["target_rows_hashed"] = target_rows
+        state["target_turnover_amount_null_rows"] = target_turnover_amount_null_rows
+        if target_turnover_amount_null_rows != source_turnover_amount_null_rows:
+            raise TransferError("source_target_turnover_amount_null_count_mismatch")
         if source_digest != target_digest:
             raise TransferError("source_target_full_hash_mismatch")
         with target_engine.connect() as final_connection:
@@ -851,9 +886,11 @@ def _empty_state(*, apply: bool) -> dict[str, object]:
             "date": "strict YYYY-MM-DD text to DATE",
             "volume": "BIGINT to exactly representable DOUBLE; no unit scaling",
             "turnover_rate": "strict finite decimal text to DOUBLE",
+            "turnover_amount": "preserve NULL as missing; preserve numeric zero; no imputation",
             "auxiliary_metrics": "preserve NULL; finite numeric values to DOUBLE",
         },
         "source_rows": None,
+        "source_turnover_amount_null_rows": None,
         "source_columns": {},
         "source_endpoint": None,
         "target_schema": None,
@@ -862,6 +899,7 @@ def _empty_state(*, apply: bool) -> dict[str, object]:
         "target_rows_before": None,
         "target_rows_after": None,
         "target_rows_hashed": 0,
+        "target_turnover_amount_null_rows": None,
         "target_columns": [],
         "target_primary_key": [],
         "target_partitions": [],
