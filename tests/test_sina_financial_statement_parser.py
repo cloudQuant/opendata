@@ -21,7 +21,10 @@ from opendata.data.providers.sina.financial_statement_contract import (
     SinaFzbQuery,
     SinaFzbWireError,
 )
-from opendata.data.providers.sina.financial_statement_parser import parse_sina_fzb_response
+from opendata.data.providers.sina.financial_statement_parser import (
+    _parse_sina_fzb_response,
+    parse_sina_fzb_response,
+)
 
 _CAPTURE_PATH = (
     Path(__file__).resolve().parent / "fixtures/upstream/financial_statement/responses.json.gz"
@@ -594,3 +597,23 @@ def test_identity_like_report_metadata_is_not_recursively_promoted() -> None:
     _first_report_wire(document)["source"] = "descriptive report metadata"
     report = parse_sina_fzb_response(_encode(document), query=_QUERY)[0]
     assert dict(report.report_metadata)["source"] == "descriptive report metadata"
+
+
+def test_object_hook_propagates_lease_loss_instead_of_invalid_json() -> None:
+    """A lease error raised while constructing a decoded object keeps its identity."""
+    body = b'{"result":{"status":{"code":0}}}'
+    expected = ValueError("lease lost in object_pairs_hook")
+    checkpoint_calls = 0
+
+    def checkpoint() -> None:
+        nonlocal checkpoint_calls
+        checkpoint_calls += 1
+        if checkpoint_calls == 2:
+            raise expected
+
+    with pytest.raises(ValueError) as raised:
+        _parse_sina_fzb_response(body, query=_QUERY, checkpoint=checkpoint)
+
+    assert raised.value is expected
+    assert checkpoint_calls == 2
+    assert not isinstance(raised.value, SinaFzbWireError)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import importlib.util
 import json
 import os
@@ -47,6 +48,20 @@ def _crash_without_response(_parameters: dict[str, object]) -> dict[str, object]
 
 def _return_large_value(_parameters: dict[str, object]) -> str:
     return "x" * 10_000
+
+
+def _return_synthetic_four_mib_base64_body(_parameters: dict[str, object]) -> dict[str, object]:
+    """Return a deterministic synthetic payload exercising Base64 IPC expansion."""
+    raw_body = b"\x00" * (4 * 1024 * 1024)
+    return {"body_b64": base64.b64encode(raw_body).decode("ascii")}
+
+
+def _return_default_text_cap_plus_one(_parameters: dict[str, object]) -> str:
+    return "x" * (process_executor_module.MAX_JSON_TEXT_BYTES + 1)
+
+
+def _return_result_text_cap_plus_one(_parameters: dict[str, object]) -> str:
+    return "x" * (process_executor_module.MAX_RESULT_TEXT_BYTES + 1)
 
 
 def _return_secret_like_value(_parameters: dict[str, object]) -> dict[str, object]:
@@ -338,6 +353,35 @@ def test_registered_spawned_handler_round_trips_only_bounded_json() -> None:
     assert result.stderr_discarded_bytes == 0
     assert result.stdout_truncated is False
     assert result.stderr_truncated is False
+
+
+def test_worker_command_uses_isolated_no_bytecode_flags(monkeypatch) -> None:
+    context = _FakeContext(
+        [
+            _message(type="ready", isolated=False),
+            _message(
+                type="result",
+                ok=True,
+                value={"ok": True},
+                stdout_bytes=0,
+                stderr_bytes=0,
+                stdout_truncated=False,
+                stderr_truncated=False,
+            ),
+        ]
+    )
+    _patch_context(monkeypatch, context)
+
+    result = ReviewedProcessExecutor(_registry(echo=_echo)).run("echo", {}, timeout_seconds=1)
+
+    assert result.value == {"ok": True}
+    assert context.command is not None
+    assert context.command[0] == sys.executable
+    assert context.command[1:3] == ["-I", "-B"]
+    assert context.command[3] == str(process_executor_module._WORKER_SCRIPT)
+    assert context.command_thread is not None
+    context.command_thread.join(timeout=1)
+    assert not context.command_thread.is_alive()
 
 
 def test_fixed_worker_helper_validates_descriptor_and_dispatches(monkeypatch) -> None:
@@ -642,6 +686,65 @@ def test_oversized_result_fails_closed_without_partial_value() -> None:
         executor.run("large", {}, timeout_seconds=5)
 
 
+def test_default_result_text_cap_remains_four_mib() -> None:
+    executor = ReviewedProcessExecutor(_registry(large=_return_default_text_cap_plus_one))
+
+    with pytest.raises(ProcessExecutionHandlerError, match="process_result_limit_exceeded"):
+        executor.run("large", {}, timeout_seconds=10)
+
+
+def test_eight_mib_result_text_cap_accepts_four_mib_raw_base64_payload() -> None:
+    executor = ReviewedProcessExecutor(
+        _registry(synthetic_base64=_return_synthetic_four_mib_base64_body),
+        max_result_text_bytes=process_executor_module.MAX_RESULT_TEXT_BYTES,
+    )
+
+    result = executor.run("synthetic_base64", {}, timeout_seconds=20)
+
+    assert isinstance(result.value, dict)
+    body_b64 = result.value["body_b64"]
+    assert isinstance(body_b64, str)
+    expected = base64.b64encode(b"\x00" * (4 * 1024 * 1024)).decode("ascii")
+    assert len(body_b64) == 5_592_408
+    assert body_b64 == expected
+
+
+def test_eight_mib_result_text_cap_rejects_cap_plus_one_without_partial_value() -> None:
+    executor = ReviewedProcessExecutor(
+        _registry(large=_return_result_text_cap_plus_one),
+        max_result_text_bytes=process_executor_module.MAX_RESULT_TEXT_BYTES,
+    )
+
+    with pytest.raises(ProcessExecutionHandlerError, match="process_result_limit_exceeded"):
+        executor.run("large", {}, timeout_seconds=20)
+
+
+def test_eight_mib_text_cap_does_not_widen_result_value_byte_cap() -> None:
+    executor = ReviewedProcessExecutor(
+        _registry(large=_return_large_value),
+        max_result_bytes=1_024,
+        max_result_text_bytes=process_executor_module.MAX_RESULT_TEXT_BYTES,
+    )
+
+    with pytest.raises(ProcessExecutionHandlerError, match="process_result_limit_exceeded"):
+        executor.run("large", {}, timeout_seconds=10)
+
+
+def test_larger_result_text_cap_does_not_widen_input_text_limit() -> None:
+    executor = ReviewedProcessExecutor(
+        _registry(echo=_echo),
+        max_parameter_bytes=process_executor_module.MAX_PARAMETER_BYTES,
+        max_result_text_bytes=process_executor_module.MAX_RESULT_TEXT_BYTES,
+    )
+
+    with pytest.raises(ValueError, match="process_parameters_invalid"):
+        executor.run(
+            "echo",
+            {"text": "x" * (process_executor_module.MAX_JSON_TEXT_BYTES + 1)},
+            timeout_seconds=5,
+        )
+
+
 def test_secret_like_return_is_rejected_without_disclosing_the_value() -> None:
     executor = ReviewedProcessExecutor(_registry(secret=_return_secret_like_value))
 
@@ -697,6 +800,13 @@ def test_successful_worker_does_not_leave_a_background_descendant(tmp_path: Path
     [
         ({"max_parameter_bytes": 0}, "max_parameter_bytes"),
         ({"max_result_bytes": True}, "max_result_bytes"),
+        ({"max_result_text_bytes": True}, "max_result_text_bytes"),
+        ({"max_result_text_bytes": 0}, "max_result_text_bytes"),
+        (
+            {"max_result_text_bytes": process_executor_module.MAX_RESULT_TEXT_BYTES + 1},
+            "max_result_text_bytes",
+        ),
+        ({"max_result_text_bytes": "large"}, "max_result_text_bytes"),
         ({"stdout_limit_bytes": 16_385}, "stdout_limit_bytes"),
         ({"stderr_limit_bytes": -1}, "stderr_limit_bytes"),
         ({"poll_interval_seconds": float("nan")}, "poll_interval_seconds"),
@@ -722,6 +832,17 @@ def test_executor_rejects_non_registry_and_non_callable_parent_hooks() -> None:
         executor.run("echo", {}, timeout_seconds=5, checkpoint=cast("object", 1))
     with pytest.raises(TypeError, match="cancelled"):
         executor.run("echo", {}, timeout_seconds=5, cancelled=cast("object", 1))
+
+
+def test_executor_rejects_integer_subclass_for_result_text_limit() -> None:
+    class IntegerSubclass(int):
+        pass
+
+    with pytest.raises(ValueError, match="max_result_text_bytes must be an integer"):
+        ReviewedProcessExecutor(
+            _registry(echo=_echo),
+            max_result_text_bytes=IntegerSubclass(1024),
+        )
 
 
 @pytest.mark.parametrize(

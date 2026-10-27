@@ -1040,3 +1040,42 @@ def test_source_row_limit_is_enforced_before_any_batch_is_returned() -> None:
     assert len(rows) == MAX_SINA_FZB_ROWS_PER_REPORT + 1
 
     _assert_publication_error("limit_exceeded", body=_encode_document(document))
+
+
+def test_private_serializer_propagates_lease_loss_after_parse(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A renewal failure inside report serialization is not converted to bad input."""
+    reports = _parsed_reports()
+
+    def parsed_response(
+        body: bytes,
+        *,
+        query: SinaFzbQuery,
+        checkpoint: object,
+    ) -> tuple[SinaFzbReport, ...]:
+        assert body == b"serializer-checkpoint-input"
+        assert query == _QUERY
+        assert callable(checkpoint)
+        return reports
+
+    monkeypatch.setattr(publication, "_parse_sina_fzb_response", parsed_response)
+    expected = ValueError("lease lost during report serialization")
+    calls = 0
+
+    def lose_lease() -> None:
+        nonlocal calls
+        calls += 1
+        raise expected
+
+    with pytest.raises(ValueError) as raised:
+        publication._serialize_sina_fzb_response(
+            b"serializer-checkpoint-input",
+            query=_QUERY,
+            retrieved_at_utc=_RETRIEVED_AT,
+            capture_id=_CAPTURE_ID,
+            checkpoint=lose_lease,
+        )
+
+    assert raised.value is expected
+    assert calls == 1

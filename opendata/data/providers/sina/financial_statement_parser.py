@@ -7,7 +7,7 @@ import math
 import re
 from dataclasses import replace
 from datetime import date, datetime
-from typing import NoReturn
+from typing import TYPE_CHECKING, NoReturn
 from zoneinfo import ZoneInfo
 
 from opendata.data.providers.sina.financial_statement_contract import (
@@ -37,6 +37,9 @@ from opendata.data.providers.sina.financial_statement_contract import (
     SinaFzbWireErrorCode,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 __all__ = ["parse_sina_fzb_response"]
 
 _DATE_PATTERN = re.compile(r"[0-9]{8}\Z")
@@ -57,6 +60,10 @@ class _DepthLimitExceededError(ValueError):
     """Internal signal for excessive JSON structural nesting."""
 
 
+class _CheckpointAbortedError(Exception):
+    """Keep checkpoint failures distinct from JSON decoder validation errors."""
+
+
 def parse_sina_fzb_response(body: bytes, *, query: SinaFzbQuery) -> tuple[SinaFzbReport, ...]:
     """Parse one complete Sina balance-sheet response without normalizing values.
 
@@ -72,6 +79,16 @@ def parse_sina_fzb_response(body: bytes, *, query: SinaFzbQuery) -> tuple[SinaFz
         SinaFzbWireError: If the query, JSON, envelope, identity, values,
             dates, duplicate rows, or configured response bounds are invalid.
     """
+    return _parse_sina_fzb_response(body, query=query, checkpoint=None)
+
+
+def _parse_sina_fzb_response(
+    body: bytes,
+    *,
+    query: SinaFzbQuery,
+    checkpoint: Callable[[], None] | None,
+) -> tuple[SinaFzbReport, ...]:
+    """Parse one response while periodically yielding to its owning run lease."""
     _validate_query(query)
     if type(body) is not bytes:
         _raise_wire("invalid_json")
@@ -80,31 +97,57 @@ def parse_sina_fzb_response(body: bytes, *, query: SinaFzbQuery) -> tuple[SinaFz
 
     try:
         text = body.decode("utf-8", errors="strict")
-        _check_json_depth(text)
-        document: object = json.loads(
+    except UnicodeDecodeError:
+        _raise_wire("invalid_json")
+    try:
+        _check_json_depth(text, checkpoint=checkpoint)
+    except _DepthLimitExceededError:
+        _raise_wire("limit_exceeded")
+
+    def cooperative_checkpoint() -> None:
+        if checkpoint is None:
+            return
+        try:
+            checkpoint()
+        except Exception as exc:
+            raise _CheckpointAbortedError from exc
+
+    def object_hook(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        return _object_without_duplicate_keys(pairs, checkpoint=cooperative_checkpoint)
+
+    document: object
+    checkpoint_error: Exception | None = None
+    try:
+        document = json.loads(
             text,
-            object_pairs_hook=_object_without_duplicate_keys,
+            object_pairs_hook=object_hook,
             parse_float=_finite_json_float,
             parse_constant=_reject_json_constant,
         )
-    except _DepthLimitExceededError:
-        _raise_wire("limit_exceeded")
-    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError, TypeError, ValueError):
+    except _CheckpointAbortedError as exc:
+        if exc.__cause__ is None:
+            raise
+        if not isinstance(exc.__cause__, Exception):
+            raise
+        checkpoint_error = exc.__cause__
+    except (json.JSONDecodeError, RecursionError, TypeError, ValueError):
         _raise_wire("invalid_json")
+    if checkpoint_error is not None:
+        raise checkpoint_error
 
-    root = _as_json_object(document)
+    root = _as_json_object(document, checkpoint=checkpoint)
     if root is None or set(root) != {"result"}:
         _raise_wire("invalid_envelope")
-    result = _as_json_object(root["result"])
+    result = _as_json_object(root["result"], checkpoint=checkpoint)
     if result is None or set(result) != {"status", "data"}:
         _raise_wire("invalid_envelope")
-    status = _as_json_object(result["status"])
+    status = _as_json_object(result["status"], checkpoint=checkpoint)
     if status is None or set(status) != {"code"}:
         _raise_wire("invalid_envelope")
     if type(status["code"]) is not int or status["code"] != 0:
         _raise_wire("invalid_envelope")
 
-    data = _as_json_object(result["data"])
+    data = _as_json_object(result["data"], checkpoint=checkpoint)
     if data is None or not _DATA_REQUIRED_FIELDS.issubset(data):
         _raise_wire("invalid_envelope")
     if set(data) - _DATA_REQUIRED_FIELDS - _DATA_ECHO_FIELDS:
@@ -113,7 +156,7 @@ def parse_sina_fzb_response(body: bytes, *, query: SinaFzbQuery) -> tuple[SinaFz
     paper_code = _paper_code(query.symbol)
     _validate_identity_echoes(data, paper_code=paper_code)
     period_entries = _as_json_list(data["report_date"])
-    report_list = _as_json_object(data["report_list"])
+    report_list = _as_json_object(data["report_list"], checkpoint=checkpoint)
     if report_list is None:
         _raise_wire("invalid_envelope")
     report_count = _report_count(data["report_count"])
@@ -125,7 +168,9 @@ def parse_sina_fzb_response(body: bytes, *, query: SinaFzbQuery) -> tuple[SinaFz
     ordered_periods: list[tuple[str, date, tuple[tuple[str, JsonScalar], ...]]] = []
     seen_dates: set[date] = set()
     for period_value in period_entries:
-        period = _as_json_object(period_value)
+        if checkpoint is not None:
+            checkpoint()
+        period = _as_json_object(period_value, checkpoint=checkpoint)
         if period is None or "date_value" not in period:
             _raise_wire("invalid_envelope")
         date_value = _required_string(period, "date_value", code="invalid_date")
@@ -133,11 +178,13 @@ def parse_sina_fzb_response(body: bytes, *, query: SinaFzbQuery) -> tuple[SinaFz
         if report_period in seen_dates:
             _raise_wire("invalid_identity")
         seen_dates.add(report_period)
-        period_metadata = _metadata(period, excluded=_PERIOD_PROMOTED_FIELDS)
+        period_metadata = _metadata(period, excluded=_PERIOD_PROMOTED_FIELDS, checkpoint=checkpoint)
         ordered_periods.append((date_value, report_period, period_metadata))
 
     report_keys: set[str] = set()
     for key in report_list:
+        if checkpoint is not None:
+            checkpoint()
         if _DATE_PATTERN.fullmatch(key) is None:
             _raise_wire("invalid_date")
         _parse_yyyymmdd(key)
@@ -149,8 +196,10 @@ def parse_sina_fzb_response(body: bytes, *, query: SinaFzbQuery) -> tuple[SinaFz
     total_rows = 0
     reports: list[SinaFzbReport] = []
     for date_value, report_period, period_metadata in ordered_periods:
+        if checkpoint is not None:
+            checkpoint()
         report_value = report_list[date_value]
-        report = _as_json_object(report_value)
+        report = _as_json_object(report_value, checkpoint=checkpoint)
         if report is None:
             _raise_wire("invalid_envelope")
         published_text = _required_string(report, "publish_date", code="invalid_date")
@@ -168,8 +217,8 @@ def parse_sina_fzb_response(body: bytes, *, query: SinaFzbQuery) -> tuple[SinaFz
         if total_rows > MAX_SINA_FZB_TOTAL_ROWS:
             _raise_wire("limit_exceeded")
 
-        entries = _parse_entries(raw_rows)
-        report_metadata = _metadata(report, excluded=_REPORT_PROMOTED_FIELDS)
+        entries = _parse_entries(raw_rows, checkpoint=checkpoint)
+        report_metadata = _metadata(report, excluded=_REPORT_PROMOTED_FIELDS, checkpoint=checkpoint)
         reports.append(
             SinaFzbReport(
                 symbol=query.symbol,
@@ -219,7 +268,9 @@ def _validate_identity_echoes(data: dict[str, object], *, paper_code: str) -> No
                 _raise_wire("invalid_identity")
 
 
-def _parse_entries(raw_rows: list[object]) -> tuple[SinaFzbEntry, ...]:
+def _parse_entries(
+    raw_rows: list[object], *, checkpoint: Callable[[], None] | None = None
+) -> tuple[SinaFzbEntry, ...]:
     """Parse source rows, preserving ordered exact-duplicate ordinals."""
     entries: list[SinaFzbEntry] = []
     item_positions: dict[str, int] = {}
@@ -228,7 +279,9 @@ def _parse_entries(raw_rows: list[object]) -> tuple[SinaFzbEntry, ...]:
     marker_fingerprints: dict[SinaFzbGroupNo, bytes] = {}
 
     for ordinal, raw_value in enumerate(raw_rows):
-        row = _as_json_object(raw_value)
+        if checkpoint is not None:
+            checkpoint()
+        row = _as_json_object(raw_value, checkpoint=checkpoint)
         if row is None:
             _raise_wire("invalid_envelope")
         item_field = _required_string(row, "item_field", code="invalid_value")
@@ -238,7 +291,7 @@ def _parse_entries(raw_rows: list[object]) -> tuple[SinaFzbEntry, ...]:
         item_value = row["item_value"]
         if item_value is not None and type(item_value) is not str:
             _raise_wire("invalid_value")
-        fingerprint = _canonical_row_fingerprint(row)
+        fingerprint = _canonical_row_fingerprint(row, checkpoint=checkpoint)
         if item_field == "":
             _group_marker(
                 row,
@@ -249,12 +302,13 @@ def _parse_entries(raw_rows: list[object]) -> tuple[SinaFzbEntry, ...]:
                 entries=entries,
                 positions=marker_positions,
                 fingerprints=marker_fingerprints,
+                checkpoint=checkpoint,
             )
             continue
         if not item_field.strip():
             _raise_wire("invalid_value")
 
-        source_metadata = _metadata(row, excluded=_ROW_PROMOTED_FIELDS)
+        source_metadata = _metadata(row, excluded=_ROW_PROMOTED_FIELDS, checkpoint=checkpoint)
         previous_position = item_positions.get(item_field)
         if previous_position is not None:
             if item_fingerprints[item_field] != fingerprint:
@@ -294,6 +348,7 @@ def _group_marker(
     entries: list[SinaFzbEntry],
     positions: dict[SinaFzbGroupNo, int],
     fingerprints: dict[SinaFzbGroupNo, bytes],
+    checkpoint: Callable[[], None] | None = None,
 ) -> None:
     """Parse only exact recorded source group-heading rows."""
     if item_value != "":
@@ -319,7 +374,7 @@ def _group_marker(
         or row.get("item_tongbi") != SINA_FZB_GROUP_ITEM_TONGBI
     ):
         _raise_wire("invalid_value")
-    source_metadata = _metadata(row, excluded=_ROW_PROMOTED_FIELDS)
+    source_metadata = _metadata(row, excluded=_ROW_PROMOTED_FIELDS, checkpoint=checkpoint)
     previous_position = positions.get(group_number)
     if previous_position is not None:
         if fingerprints[group_number] != fingerprint:
@@ -356,11 +411,16 @@ def _value_state(value: str | None) -> SinaFzbValueState:
 
 
 def _metadata(
-    row: dict[str, object], *, excluded: frozenset[str]
+    row: dict[str, object],
+    *,
+    excluded: frozenset[str],
+    checkpoint: Callable[[], None] | None = None,
 ) -> tuple[tuple[str, JsonScalar], ...]:
     """Return sorted scalar metadata without coercing source types."""
     values: list[tuple[str, JsonScalar]] = []
     for key, value in row.items():
+        if checkpoint is not None:
+            checkpoint()
         _validate_utf8_text(key, code="invalid_value")
         if key in excluded:
             continue
@@ -386,19 +446,35 @@ def _json_scalar(value: object) -> JsonScalar:
     _raise_wire("invalid_envelope")
 
 
-def _canonical_row_fingerprint(row: dict[str, object]) -> bytes:
-    """Serialize a full raw row canonically for type-sensitive duplicate checks."""
+def _canonical_row_fingerprint(
+    row: dict[str, object], *, checkpoint: Callable[[], None] | None = None
+) -> bytes:
+    """Serialize one raw row canonically and yield between encoder chunks."""
     try:
-        canonical = json.dumps(
-            row,
+        encoder = json.JSONEncoder(
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),
             allow_nan=False,
         )
-        return canonical.encode("utf-8", errors="strict")
     except (TypeError, ValueError, UnicodeEncodeError):
         _raise_wire("invalid_value")
+    iterator = encoder.iterencode(row)
+    chunks: list[bytes] = []
+    while True:
+        try:
+            text_chunk = next(iterator)
+        except StopIteration:
+            break
+        except (TypeError, ValueError, UnicodeEncodeError):
+            _raise_wire("invalid_value")
+        try:
+            chunks.append(text_chunk.encode("utf-8", errors="strict"))
+        except UnicodeEncodeError:
+            _raise_wire("invalid_value")
+        if checkpoint is not None:
+            checkpoint()
+    return b"".join(chunks)
 
 
 def _strict_decimal_date(value: object, *, code: SinaFzbWireErrorCode) -> str:
@@ -466,12 +542,16 @@ def _validate_utf8_text(value: str, *, code: SinaFzbWireErrorCode) -> None:
         _raise_wire(code)
 
 
-def _as_json_object(value: object) -> dict[str, object] | None:
+def _as_json_object(
+    value: object, *, checkpoint: Callable[[], None] | None = None
+) -> dict[str, object] | None:
     """Narrow an arbitrary JSON value to an object with exact string keys."""
     if type(value) is not dict:
         return None
     result: dict[str, object] = {}
     for key, item in value.items():
+        if checkpoint is not None:
+            checkpoint()
         if type(key) is not str:
             return None
         _validate_utf8_text(key, code="invalid_json")
@@ -486,10 +566,14 @@ def _as_json_list(value: object) -> list[object]:
     return value
 
 
-def _object_without_duplicate_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+def _object_without_duplicate_keys(
+    pairs: list[tuple[str, object]], *, checkpoint: Callable[[], None] | None = None
+) -> dict[str, object]:
     """Construct a JSON object while refusing ambiguous repeated keys."""
     result: dict[str, object] = {}
     for key, value in pairs:
+        if checkpoint is not None:
+            checkpoint()
         if key in result:
             raise _DuplicateJsonKeyError
         result[key] = value
@@ -510,12 +594,14 @@ def _reject_json_constant(token: str) -> NoReturn:
     raise ValueError
 
 
-def _check_json_depth(text: str) -> None:
+def _check_json_depth(text: str, *, checkpoint: Callable[[], None] | None = None) -> None:
     """Bound JSON structural nesting without counting brackets inside strings."""
     depth = 0
     in_string = False
     escaped = False
-    for character in text:
+    for index, character in enumerate(text):
+        if checkpoint is not None and index % 4096 == 0:
+            checkpoint()
         if in_string:
             if escaped:
                 escaped = False

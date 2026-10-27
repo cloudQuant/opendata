@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING, Protocol, TypeAlias
 from pydantic import JsonValue
 
 from opendata.pipeline.run_identity import RunRequest, TaskDefinition, build_run_identity
+from opendata.utils.cooperative_checkpoint import _CooperativeCheckpoint
 
 if TYPE_CHECKING:  # pragma: no cover
     from sqlalchemy.engine import Connection
@@ -217,10 +218,28 @@ class RunExecutionContext:
     worker: str
     fencing_token: int
     _checkpoint: Callable[[], None]
+    _cooperative_checkpoint: _CooperativeCheckpoint | None = None
+
+    def __post_init__(self) -> None:
+        """Bind a local fallback throttle for contexts built outside RunService."""
+        if self._cooperative_checkpoint is None:
+            # Standalone contexts have no TTL; production contexts inject ttl/5 below.
+            object.__setattr__(
+                self,
+                "_cooperative_checkpoint",
+                _CooperativeCheckpoint(self._checkpoint, interval_seconds=0.2, immediate=False),
+            )
 
     def checkpoint(self) -> None:
         """Renew the current lease or stop processing if ownership was lost."""
         self._checkpoint()
+        if self._cooperative_checkpoint is not None:
+            self._cooperative_checkpoint.mark_renewed()
+
+    def checkpoint_cooperatively(self) -> None:
+        """Renew the lease when cooperative CPU work reaches its safe cadence."""
+        if self._cooperative_checkpoint is not None:
+            self._cooperative_checkpoint()
 
 
 @dataclass(frozen=True, slots=True)
@@ -291,7 +310,9 @@ class RunService:
             context.checkpoint()
             raw = job.fetch(request, context)
             context.checkpoint()
-            batch = self._validate_batch(job.normalize(raw, request, context))
+            batch = job.normalize(raw, request, context)
+            context.checkpoint()
+            batch = self._validate_batch(batch, checkpoint=context.checkpoint_cooperatively)
             context.checkpoint()
 
             def publish(connection: Connection) -> PublicationReceipt:
@@ -365,6 +386,12 @@ class RunService:
             worker=worker,
             fencing_token=record.fencing_token,
             _checkpoint=checkpoint,
+            _cooperative_checkpoint=_CooperativeCheckpoint(
+                checkpoint,
+                # Keep heartbeat work to at most one fifth of the active lease.
+                interval_seconds=min(0.25, ttl.total_seconds() / 5),
+                immediate=False,
+            ),
         )
 
     def _resolve_snapshot(self, record: RunRecord) -> tuple[ReviewedJob, RunRequest]:
@@ -391,7 +418,12 @@ class RunService:
         request = _request_from_snapshot(snapshot, record.run_key)
         return job, request
 
-    def _validate_batch(self, batch: NormalizedBatch) -> NormalizedBatch:
+    def _validate_batch(
+        self,
+        batch: NormalizedBatch,
+        *,
+        checkpoint: Callable[[], None] | None = None,
+    ) -> NormalizedBatch:
         """Copy and enforce record, field, credential, and encoded-size bounds."""
         if not isinstance(batch, NormalizedBatch):
             raise _ResultInvalidError("normalized_batch_invalid")
@@ -408,10 +440,14 @@ class RunService:
         if batch.watermark is not None and not isinstance(batch.watermark, Mapping):
             raise _ResultInvalidError("result_watermark_invalid")
         node_count = [0]
-        safe_quality = _validate_json_object(batch.quality, "quality", node_count)
-        safe_provenance = _validate_json_object(batch.provenance, "provenance", node_count)
+        safe_quality = _validate_json_object(
+            batch.quality, "quality", node_count, checkpoint=checkpoint
+        )
+        safe_provenance = _validate_json_object(
+            batch.provenance, "provenance", node_count, checkpoint=checkpoint
+        )
         safe_watermark = (
-            _validate_json_object(batch.watermark, "watermark", node_count)
+            _validate_json_object(batch.watermark, "watermark", node_count, checkpoint=checkpoint)
             if batch.watermark is not None
             else None
         )
@@ -430,6 +466,8 @@ class RunService:
         encoded_records: list[JsonValue] = []
         safe_records: list[NormalizedRecord] = []
         for index, row in enumerate(batch.records):
+            if checkpoint is not None:
+                checkpoint()
             if not isinstance(row, NormalizedRecord):
                 raise _ResultInvalidError("normalized_record_invalid")
             _validate_text(row.business_key, "business_key", max_length=512)
@@ -441,7 +479,12 @@ class RunService:
                 _validate_optional_datetime(getattr(row, field_name), field_name)
             if not isinstance(row.payload, Mapping):
                 raise _ResultInvalidError("record_payload_invalid")
-            payload = _validate_json_object(row.payload, f"records[{index}].payload", node_count)
+            payload = _validate_json_object(
+                row.payload,
+                f"records[{index}].payload",
+                node_count,
+                checkpoint=checkpoint,
+            )
             encoded_records.append(
                 {
                     "business_key": row.business_key,
@@ -467,17 +510,8 @@ class RunService:
                 )
             )
         result["records"] = encoded_records
-        try:
-            encoded = json.dumps(
-                result,
-                sort_keys=True,
-                separators=(",", ":"),
-                ensure_ascii=False,
-                allow_nan=False,
-            ).encode("utf-8")
-        except (TypeError, ValueError, UnicodeEncodeError) as exc:
-            raise _ResultInvalidError("result_not_json_serializable") from exc
-        if len(encoded) > self._max_result_bytes:
+        encoded_size = _result_json_size(result, checkpoint=checkpoint)
+        if encoded_size > self._max_result_bytes:
             raise _ResultInvalidError("result_size_limit_exceeded")
         return NormalizedBatch(
             records=tuple(safe_records),
@@ -724,13 +758,19 @@ def _expected_run_key(snapshot: dict[str, object], request_digest: str) -> str:
 
 
 def _validate_json_object(
-    value: Mapping[str, object], field: str, node_count: list[int]
+    value: Mapping[str, object],
+    field: str,
+    node_count: list[int],
+    *,
+    checkpoint: Callable[[], None] | None = None,
 ) -> dict[str, JsonValue]:
     """Copy a bounded JSON object while rejecting likely credentials."""
     if not isinstance(value, Mapping):
         raise _ResultInvalidError(f"{field}_invalid")
     result: dict[str, JsonValue] = {}
     for key, nested in value.items():
+        if checkpoint is not None:
+            checkpoint()
         if (
             not isinstance(key, str)
             or not key
@@ -741,12 +781,23 @@ def _validate_json_object(
         normalized_key = key.casefold().replace("_", "").replace("-", "")
         if any(marker in normalized_key for marker in _SECRET_KEY_MARKERS):
             raise _ResultInvalidError("credential_field_in_result")
-        result[key] = _validate_json_value(nested, f"{field}.{key}", 0, node_count)
+        result[key] = _validate_json_value(
+            nested, f"{field}.{key}", 0, node_count, checkpoint=checkpoint
+        )
     return result
 
 
-def _validate_json_value(value: object, path: str, depth: int, node_count: list[int]) -> JsonValue:
+def _validate_json_value(
+    value: object,
+    path: str,
+    depth: int,
+    node_count: list[int],
+    *,
+    checkpoint: Callable[[], None] | None = None,
+) -> JsonValue:
     """Copy JSON values with bounded shape, strings, and credential checks."""
+    if checkpoint is not None:
+        checkpoint()
     node_count[0] += 1
     if node_count[0] > MAX_RESULT_NODES or depth > MAX_RESULT_DEPTH:
         raise _ResultInvalidError("result_structure_limit_exceeded")
@@ -767,15 +818,25 @@ def _validate_json_value(value: object, path: str, depth: int, node_count: list[
     if type(value) is list or isinstance(value, tuple):
         if len(value) > MAX_RESULT_RECORDS:
             raise _ResultInvalidError("result_array_limit_exceeded")
-        return [
-            _validate_json_value(item, f"{path}[{index}]", depth + 1, node_count)
-            for index, item in enumerate(value)
-        ]
+        copied: list[JsonValue] = []
+        for index, item in enumerate(value):
+            copied.append(
+                _validate_json_value(
+                    item,
+                    f"{path}[{index}]",
+                    depth + 1,
+                    node_count,
+                    checkpoint=checkpoint,
+                )
+            )
+        return copied
     if isinstance(value, Mapping):
         if len(value) > MAX_RESULT_RECORDS:
             raise _ResultInvalidError("result_object_limit_exceeded")
         nested: dict[str, JsonValue] = {}
         for key, item in value.items():
+            if checkpoint is not None:
+                checkpoint()
             if (
                 not isinstance(key, str)
                 or not key
@@ -786,9 +847,41 @@ def _validate_json_value(value: object, path: str, depth: int, node_count: list[
             normalized_key = key.casefold().replace("_", "").replace("-", "")
             if any(marker in normalized_key for marker in _SECRET_KEY_MARKERS):
                 raise _ResultInvalidError("credential_field_in_result")
-            nested[key] = _validate_json_value(item, f"{path}.{key}", depth + 1, node_count)
+            nested[key] = _validate_json_value(
+                item,
+                f"{path}.{key}",
+                depth + 1,
+                node_count,
+                checkpoint=checkpoint,
+            )
         return nested
     raise _ResultInvalidError("result_value_type_unsupported")
+
+
+def _result_json_size(value: object, *, checkpoint: Callable[[], None] | None = None) -> int:
+    """Measure canonical result JSON incrementally so large batches can renew leases."""
+    encoder = json.JSONEncoder(
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    )
+    iterator = encoder.iterencode(value)
+    size = 0
+    while True:
+        try:
+            text_chunk = next(iterator)
+        except StopIteration:
+            break
+        except (TypeError, ValueError) as exc:
+            raise _ResultInvalidError("result_not_json_serializable") from exc
+        try:
+            size += len(text_chunk.encode("utf-8"))
+        except UnicodeEncodeError as exc:
+            raise _ResultInvalidError("result_not_json_serializable") from exc
+        if checkpoint is not None:
+            checkpoint()
+    return size
 
 
 def _validate_text(value: object, field: str, *, max_length: int = 256) -> None:
