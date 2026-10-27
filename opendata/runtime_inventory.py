@@ -198,7 +198,8 @@ def _validate_endpoint(
     *,
     allow_sqlite_for_tests: bool = False,
 ) -> URL:
-    """Reject any MySQL endpoint outside the two known local databases."""
+    """Reject unapproved endpoint identities and driver query parameters."""
+    _validate_endpoint_query(url)
     normalized = _sync_mysql_url(url)
     if normalized.get_backend_name() == "sqlite":
         if allow_sqlite_for_tests:
@@ -213,6 +214,24 @@ def _validate_endpoint(
     ):
         raise RuntimeInventoryError(f"{endpoint.role}_endpoint_not_approved")
     return normalized
+
+
+def _validate_endpoint_query(url: URL) -> None:
+    """Allow no driver query options except one exact MySQL charset setting.
+
+    SQLAlchemy forwards URL query options to database drivers. Some drivers
+    accept connection-target options such as ``host``, ``port``, ``database``
+    or ``unix_socket`` there, which could override the identity checked below.
+    The only supported option is a single scalar ``charset=utf8mb4`` value.
+    """
+    query = url.query
+    if not query:
+        return
+    if len(query) != 1 or "charset" not in query:
+        raise RuntimeInventoryError("endpoint_query_not_approved")
+    charset = query["charset"]
+    if not isinstance(charset, str) or charset != "utf8mb4":
+        raise RuntimeInventoryError("endpoint_query_not_approved")
 
 
 def _driver_flag_is_true(value: object) -> bool:

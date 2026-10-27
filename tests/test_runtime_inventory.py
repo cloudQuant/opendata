@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
-from datetime import date
+from contextlib import nullcontext
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
@@ -21,12 +23,18 @@ from opendata.runtime_inventory import (
     _configure_sqlite_readonly,
     _driver_flag_is_true,
     _exact_count,
+    _file_hash,
+    _metadata_inventory,
     _nested_exact_count,
     _parameter_summary,
+    _parse_args,
     _read_rows,
+    _readonly_snapshot,
+    _report_scalar,
     _resolve_columns,
     _safe_env_urls,
     _source_path,
+    _sqlite_warehouse_schema,
     _sync_mysql_url,
     _task_map_rows,
     _validate_endpoint,
@@ -237,6 +245,47 @@ def test_wrong_mysql_database_is_rejected_before_connecting() -> None:
         )
 
 
+def test_mysql_endpoint_accepts_only_empty_query_or_one_utf8mb4_charset() -> None:
+    """A single known encoding option is the only accepted MySQL URL query."""
+    endpoint = ApprovedEndpoint("metadata", METADATA_DATABASE)
+    base = f"mysql+pymysql://reader:private-password@127.0.0.1:3306/{METADATA_DATABASE}"
+
+    assert _validate_endpoint(make_url(base), endpoint).database == METADATA_DATABASE
+    assert (
+        _validate_endpoint(make_url(f"{base}?charset=utf8mb4"), endpoint).query["charset"]
+        == "utf8mb4"
+    )
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "unix_socket=%2Fprivate%2Fmysql.sock",
+        "host=attacker.example",
+        "port=3307",
+        "database=other_database",
+        "ssl_ca=%2Fprivate%2Fca.pem",
+        "charset=UTF8MB4",
+        "charset=utf8mb4&charset=utf8mb4",
+        "unix_socket=%2Fprivate%2Fmysql.sock&unix_socket=%2Fother%2Fmysql.sock",
+        "charset=utf8mb4&host=attacker.example",
+    ],
+)
+def test_mysql_endpoint_rejects_query_overrides_without_disclosing_values(query: str) -> None:
+    """Driver target overrides and all non-allowlisted query values fail closed."""
+    endpoint = ApprovedEndpoint("metadata", METADATA_DATABASE)
+    raw_url = f"mysql+pymysql://reader:private-password@127.0.0.1:3306/{METADATA_DATABASE}?{query}"
+
+    with pytest.raises(RuntimeInventoryError) as error:
+        _validate_endpoint(make_url(raw_url), endpoint)
+
+    assert str(error.value) == "endpoint_query_not_approved"
+    assert "private-password" not in str(error.value)
+    assert "attacker.example" not in str(error.value)
+    assert "mysql.sock" not in str(error.value)
+    assert "other_database" not in str(error.value)
+
+
 def test_parameter_summary_hashes_values_and_flags_credentials_without_returning_them(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -275,6 +324,24 @@ def test_parameter_summary_rejects_excessive_depth_and_marks_non_string_keys() -
         nested = [nested]
     with pytest.raises(RuntimeInventoryError, match="depth_exceeded"):
         _parameter_summary(nested)
+
+
+def test_report_scalar_projects_supported_driver_values_to_safe_json_scalars() -> None:
+    """Warehouse scalar normalization keeps exact dates and hashes raw byte values."""
+    binary_value = b"private source bytes"
+    assert _report_scalar(None) is None
+    assert _report_scalar("known") == "known"
+    assert _report_scalar(17) == 17
+    assert _report_scalar(date(2026, 10, 28)) == "2026-10-28"
+    assert _report_scalar(datetime(2026, 10, 28, tzinfo=timezone.utc)) == (
+        "2026-10-28T00:00:00+00:00"
+    )
+    assert _report_scalar(Decimal("12.50")) == "12.50"
+    assert _report_scalar(binary_value) == {
+        "binary_sha256": hashlib.sha256(binary_value).hexdigest(),
+        "byte_length": len(binary_value),
+    }
+    assert binary_value.decode() not in json.dumps(_report_scalar(binary_value))
 
 
 def test_mysql_url_normalization_and_database_identity_fail_closed() -> None:
@@ -370,6 +437,14 @@ def test_sqlite_readonly_guard_and_schema_column_resolution_fail_closed() -> Non
 
     with pytest.raises(RuntimeInventoryError, match="sqlite_readonly_not_confirmed"):
         _configure_sqlite_readonly(BadConnection())  # type: ignore[arg-type]
+
+    class BrokenConnection:
+        def exec_driver_sql(self, _statement: str) -> object:
+            raise OSError("private SQLite path")
+
+    with pytest.raises(RuntimeInventoryError, match="sqlite_readonly_setup_failed"):
+        _configure_sqlite_readonly(BrokenConnection())  # type: ignore[arg-type]
+
     with pytest.raises(RuntimeInventoryError, match="required_table_columns_missing"):
         _resolve_columns(
             {"id"}, {"id": ("id",), "script_id": ("script_id",)}, required={"script_id"}
@@ -385,11 +460,45 @@ def test_sqlite_readonly_guard_and_schema_column_resolution_fail_closed() -> Non
         _nested_exact_count({}, "missing", "count")
 
 
+def test_readonly_snapshot_blocks_sqlite_writes_and_unknown_backends() -> None:
+    """Scratch snapshots reject writes and fail closed for unsupported engines."""
+    engine = create_engine("sqlite://")
+    try:
+        with engine.begin() as connection:
+            connection.execute(text("CREATE TABLE read_only_probe (value INTEGER)"))
+            connection.execute(text("INSERT INTO read_only_probe VALUES (1)"))
+
+        with (
+            pytest.raises(RuntimeInventoryError, match="readonly_database_inventory_failed"),
+            _readonly_snapshot(engine, expected_database=None) as (connection, *_),
+        ):
+            connection.execute(text("INSERT INTO read_only_probe VALUES (2)"))
+
+        with engine.connect() as connection:
+            count = connection.execute(text("SELECT count(*) FROM read_only_probe")).scalar_one()
+            assert count == 1
+    finally:
+        engine.dispose()
+
+    class UnsupportedEngine:
+        dialect = type("Dialect", (), {"name": "oracle"})()
+
+        def connect(self) -> object:
+            return nullcontext(object())
+
+    with (
+        pytest.raises(RuntimeInventoryError, match="database_backend_not_supported"),
+        _readonly_snapshot(UnsupportedEngine(), expected_database=None),  # type: ignore[arg-type]
+    ):
+        raise AssertionError("unsupported backend must not yield a connection")
+
+
 def test_row_reader_and_source_path_mapping_keep_unknowns_explicit(tmp_path: Path) -> None:
     """Invalid identifiers fail, while supported module spellings map exactly."""
     source_root = tmp_path / "afi"
     source_root.mkdir()
     assert _source_path(None, source_root=source_root) == (None, "MODULE_PATH_MISSING")
+    assert _source_path("  ", source_root=source_root) == (None, "MODULE_PATH_MISSING")
     assert _source_path("../outside.py", source_root=source_root) == (
         None,
         "MODULE_PATH_TRAVERSAL_REJECTED",
@@ -407,6 +516,14 @@ def test_row_reader_and_source_path_mapping_keep_unknowns_explicit(tmp_path: Pat
     )
     assert candidate == "src/backend/app/data_fetch/scripts/stocks/history.py"
     assert status == "PATH_CANDIDATE"
+    assert _source_path(r"data_fetch\scripts\stocks\history.py", source_root=source_root) == (
+        "src/backend/app/data_fetch/scripts/stocks/history.py",
+        "PATH_CANDIDATE",
+    )
+    assert _source_path("src/backend/app/data_fetch/scripts", source_root=source_root) == (
+        None,
+        "MODULE_NOT_A_SCRIPT_FILE",
+    )
 
     engine = create_engine("sqlite://")
     try:
@@ -443,6 +560,102 @@ def test_row_reader_and_source_path_mapping_keep_unknowns_explicit(tmp_path: Pat
                 )
     finally:
         engine.dispose()
+
+
+def test_row_reader_enforces_its_configured_safety_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The deterministic row cap fails closed instead of truncating inventory data."""
+    from opendata import runtime_inventory
+
+    engine = create_engine(f"sqlite:///{tmp_path / 'bounded.sqlite'}")
+    try:
+        with engine.begin() as connection:
+            connection.execute(text("CREATE TABLE sample (id INTEGER PRIMARY KEY)"))
+            connection.execute(text("INSERT INTO sample VALUES (1), (2)"))
+        monkeypatch.setattr(runtime_inventory, "MAX_TASK_ROWS", 1)
+        with (
+            engine.connect() as connection,
+            pytest.raises(RuntimeInventoryError, match="legacy_table_row_limit_exceeded"),
+        ):
+            _read_rows(
+                connection,
+                table="sample",
+                resolved={"id": "id"},
+                order_by="id",
+            )
+    finally:
+        engine.dispose()
+
+
+def test_sqlite_schema_inventory_preserves_index_shape_and_rejects_unsafe_names() -> None:
+    """SQLite schema inspection reports keys and refuses unsafe table or index names."""
+    engine = create_engine("sqlite://")
+    try:
+        with engine.begin() as connection:
+            connection.execute(
+                text("CREATE TABLE sample (id INTEGER PRIMARY KEY, value TEXT NOT NULL)")
+            )
+            connection.execute(text("CREATE UNIQUE INDEX ix_sample_value ON sample(value)"))
+
+        with engine.connect() as connection:
+            schema = _sqlite_warehouse_schema(connection)
+        assert schema["table_count"] == 1
+        table = schema["tables"][0]
+        assert table["primary_key_columns"] == ["id"]
+        assert table["indexes"] == [
+            {"name": "ix_sample_value", "unique": True, "type": "BTREE", "columns": ["value"]}
+        ]
+
+        with engine.begin() as connection:
+            connection.execute(text('CREATE INDEX "unsafe index" ON sample(value)'))
+        with (
+            engine.connect() as connection,
+            pytest.raises(RuntimeInventoryError, match="invalid_test_schema_index_name"),
+        ):
+            _sqlite_warehouse_schema(connection)
+
+        with engine.begin() as connection:
+            connection.execute(text('DROP INDEX "unsafe index"'))
+            connection.execute(text('CREATE TABLE "unsafe table" (id INTEGER PRIMARY KEY)'))
+        with (
+            engine.connect() as connection,
+            pytest.raises(RuntimeInventoryError, match="invalid_test_schema_table_name"),
+        ):
+            _sqlite_warehouse_schema(connection)
+    finally:
+        engine.dispose()
+
+
+def test_metadata_inventory_rejects_missing_legacy_tables(tmp_path: Path) -> None:
+    """An empty scratch schema cannot be reported as a valid scheduler inventory."""
+    engine = create_engine("sqlite://")
+    try:
+        with (
+            engine.connect() as connection,
+            pytest.raises(RuntimeInventoryError, match="expected_legacy_runtime_tables_missing"),
+        ):
+            _metadata_inventory(
+                connection,
+                database="sqlite-test-only",
+                source_root=tmp_path,
+            )
+    finally:
+        engine.dispose()
+
+
+def test_source_path_rejects_symlinks_that_escape_the_afi_root(tmp_path: Path) -> None:
+    """A known namespace cannot resolve through a symlink outside the source tree."""
+    source_root = tmp_path / "afi"
+    script_dir = source_root / "src/backend/app/data_fetch/scripts/stocks"
+    script_dir.mkdir(parents=True)
+    outside = tmp_path / "outside.py"
+    outside.write_text("def fetch_data():\n    return []\n", encoding="utf-8")
+    (script_dir / "escaped.py").symlink_to(outside)
+
+    assert _source_path(
+        "src/backend/app/data_fetch/scripts/stocks/escaped.py", source_root=source_root
+    ) == (None, "MODULE_PATH_OUTSIDE_SOURCE_ROOT")
 
 
 def test_task_map_retains_scripts_without_tasks_and_unresolved_task_references() -> None:
@@ -486,6 +699,13 @@ def test_dotenv_missing_keys_and_main_error_output_are_sanitized(
     empty_env.write_text("UNRELATED_SECRET=do-not-print\n", encoding="utf-8")
     with pytest.raises(RuntimeInventoryError, match="dotenv_missing_DATABASE_URL"):
         _safe_env_urls(empty_env)
+    metadata_only_env = tmp_path / ".metadata-only.env"
+    metadata_only_env.write_text(
+        "DATABASE_URL=mysql+pymysql://reader:private@127.0.0.1:3306/ai_for_investor\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(RuntimeInventoryError, match="dotenv_missing_AKSHARE_DATA_DATABASE_URL"):
+        _safe_env_urls(metadata_only_env)
 
     source_root = tmp_path / "afi"
     source_root.mkdir()
@@ -510,3 +730,109 @@ def test_dotenv_missing_keys_and_main_error_output_are_sanitized(
     assert exit_code == 1
     assert "unexpected internal error" in captured.err
     assert "do-not-print" not in captured.err
+
+
+def test_cli_env_file_path_writes_a_redacted_report_without_opening_databases(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The CLI can persist a safe summary after its inventory result is supplied."""
+    from opendata import runtime_inventory
+
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "DATABASE_URL=mysql+pymysql://reader:private@127.0.0.1:3306/ai_for_investor\n"
+        "AKSHARE_DATA_DATABASE_URL=mysql+pymysql://reader:private@127.0.0.1:3306/akshare_data\n",
+        encoding="utf-8",
+    )
+    source_root = tmp_path / "afi"
+    source_root.mkdir()
+    output = tmp_path / "reports" / "runtime.json"
+    report = {"counts": {"scheduled_tasks": 2, "warehouse_tables": 1}}
+    observed: dict[str, object] = {}
+
+    def supplied_inventory(**kwargs: object) -> dict[str, object]:
+        observed.update(kwargs)
+        return report
+
+    monkeypatch.setattr(runtime_inventory, "build_runtime_inventory", supplied_inventory)
+    exit_code = main(
+        [
+            "--env-file",
+            str(env_file),
+            "--source-root",
+            str(source_root),
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert exit_code == 0
+    assert observed == {
+        "metadata_url": "mysql+pymysql://reader:private@127.0.0.1:3306/ai_for_investor",
+        "warehouse_url": "mysql+pymysql://reader:private@127.0.0.1:3306/akshare_data",
+        "source_root": source_root,
+        "env_file_sha256": hashlib.sha256(env_file.read_bytes()).hexdigest(),
+    }
+    assert json.loads(output.read_text(encoding="utf-8")) == report
+    captured = capsys.readouterr()
+    assert captured.out == json.dumps(report["counts"], ensure_ascii=False, sort_keys=True) + "\n"
+    assert captured.err == ""
+    assert "private" not in output.read_text(encoding="utf-8") + captured.out + captured.err
+
+
+def test_cli_requires_warehouse_url_for_explicit_metadata_url(tmp_path: Path) -> None:
+    """Argument validation rejects incomplete connection configuration preflight."""
+    with pytest.raises(SystemExit) as error:
+        _parse_args(
+            [
+                "--metadata-url",
+                "mysql+pymysql://reader:private@127.0.0.1:3306/ai_for_investor",
+                "--source-root",
+                str(tmp_path),
+                "--output",
+                str(tmp_path / "report.json"),
+            ]
+        )
+    assert error.value.code == 2
+
+
+def test_cli_reports_expected_inventory_errors_without_raw_details(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Expected endpoint or schema errors retain their safe code at the CLI boundary."""
+    from opendata import runtime_inventory
+
+    source_root = tmp_path / "afi"
+    source_root.mkdir()
+
+    def fail_closed(**_kwargs: object) -> dict[str, object]:
+        raise RuntimeInventoryError("endpoint_query_not_approved")
+
+    monkeypatch.setattr(runtime_inventory, "build_runtime_inventory", fail_closed)
+    exit_code = main(
+        [
+            "--metadata-url",
+            "mysql+pymysql://reader:private@127.0.0.1:3306/ai_for_investor",
+            "--warehouse-url",
+            "mysql+pymysql://reader:private@127.0.0.1:3306/akshare_data",
+            "--source-root",
+            str(source_root),
+            "--output",
+            str(tmp_path / "rejected.json"),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert captured.err == "runtime inventory failed: endpoint_query_not_approved\n"
+    assert "private" not in captured.err
+    assert captured.out == ""
+
+
+def test_file_hash_failure_reports_only_the_logical_label(tmp_path: Path) -> None:
+    """A missing evidence file does not expose its absolute path in diagnostics."""
+    missing = tmp_path / "private" / "missing-source.py"
+    with pytest.raises(RuntimeInventoryError) as error:
+        _file_hash(missing, "runtime_inventory_module")
+    assert str(error.value) == "code_hash_unavailable:runtime_inventory_module"
+    assert str(missing) not in str(error.value)
