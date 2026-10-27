@@ -5,10 +5,12 @@ from __future__ import annotations
 import json
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
+from unittest.mock import Mock
 
 import pytest
 from sqlalchemy import create_engine, select
 
+import opendata.pipeline.contract_publication as contract_publication
 from opendata.data.dataset_contract_registry import (
     DatasetContractNotFoundError,
     DatasetContractRegistry,
@@ -336,6 +338,169 @@ def test_contract_errors_fail_the_run_without_creating_publications(
         with engine.connect() as connection:
             publications = connection.execute(select(PUBLICATIONS)).all()
         assert publications == []
+    finally:
+        engine.dispose()
+
+
+@pytest.mark.parametrize(
+    "conflicting_close",
+    [None, 99.99],
+    ids=["same-value", "conflicting-value"],
+)
+def test_writer_rejects_duplicate_canonical_business_keys_before_publication(
+    conflicting_close: float | None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    contract = equity_contract()
+    first = make_batch().records[0]
+    second_payload = dict(first.payload)
+    if conflicting_close is not None:
+        second_payload["close"] = conflicting_close
+    second = replace(first, payload=second_payload)
+    batch = replace(make_batch(), records=(first, second))
+    publisher = Mock()
+    monkeypatch.setattr(contract_publication, "publish_in_connection", publisher)
+    engine, _ledger = setup_engine()
+    writer = ValidatedPublicationWriter(DatasetContractRegistry([contract]))
+    try:
+        with engine.begin() as connection:
+            with pytest.raises(
+                ContractPublicationError,
+                match="^batch contains duplicate business keys$",
+            ) as error:
+                writer(
+                    connection,
+                    make_task(),
+                    RunRequest(run_type="manual", idempotency_key="duplicate-business-key"),
+                    batch,
+                    "duplicate-business-key",
+                )
+
+            assert KEY not in str(error.value)
+            assert connection.execute(select(PUBLICATIONS)).all() == []
+            assert connection.execute(select(PUBLISHED_FACT_VERSIONS)).all() == []
+            assert connection.execute(select(PUBLICATION_HEADS)).all() == []
+
+        publisher.assert_not_called()
+    finally:
+        engine.dispose()
+
+
+def test_writer_rejects_datetime_keys_that_normalize_to_the_same_instant(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    contract = DatasetContract(
+        dataset_id="company_filings",
+        schema_version="1.0.0",
+        semantic_version="filing-events-v1",
+        asset_class="financial",
+        frequency="irregular",
+        record_kind="event",
+        fields=(
+            FieldContract(name="filing_id", data_type="string"),
+            FieldContract(name="event_time", data_type="datetime"),
+            FieldContract(name="amount", data_type="number"),
+        ),
+        business_key=("filing_id", "event_time"),
+        ordering=("event_time", "filing_id"),
+        time_field="event_time",
+        temporal_semantics="event_time",
+        source=SourceIdentity(source_id="company_filings", source="sec"),
+        field_units={"amount": "USD"},
+        adjustment_basis="not_applicable",
+        field_adjustments={"amount": "not_applicable"},
+        timezone="UTC",
+        pit_policy="supported",
+    )
+    utc_payload = {
+        "filing_id": "filing-1",
+        "event_time": "2026-10-26T02:00:00Z",
+        "amount": 125.5,
+    }
+    offset_payload = {
+        "filing_id": "filing-1",
+        "event_time": "2026-10-26T04:00:00+02:00",
+        "amount": 127.0,
+    }
+    canonical_key = _contract_business_key(contract, utc_payload)
+    assert _contract_business_key(contract, offset_payload) == canonical_key
+    batch = NormalizedBatch(
+        records=(
+            NormalizedRecord(
+                business_key=canonical_key,
+                payload=utc_payload,
+                event_at=NOW,
+            ),
+            NormalizedRecord(
+                business_key=canonical_key,
+                payload=offset_payload,
+                event_at=NOW,
+            ),
+        ),
+        schema_version="1.0.0",
+        semantic_version="filing-events-v1",
+        unit="per-field",
+        adjustment_basis="not_applicable",
+        quality={},
+        provenance={"adapter": "sec-filings-v1"},
+    )
+    publisher = Mock()
+    monkeypatch.setattr(contract_publication, "publish_in_connection", publisher)
+    engine, _ledger = setup_engine()
+    writer = ValidatedPublicationWriter(DatasetContractRegistry([contract]))
+    try:
+        with engine.begin() as connection:
+            with pytest.raises(
+                ContractPublicationError,
+                match="^batch contains duplicate business keys$",
+            ):
+                writer(
+                    connection,
+                    make_task(provider="sec", dataset_id="company_filings"),
+                    RunRequest(run_type="manual", idempotency_key="duplicate-normalized-time"),
+                    batch,
+                    "duplicate-normalized-time",
+                )
+
+            assert connection.execute(select(PUBLICATIONS)).all() == []
+            assert connection.execute(select(PUBLISHED_FACT_VERSIONS)).all() == []
+            assert connection.execute(select(PUBLICATION_HEADS)).all() == []
+
+        publisher.assert_not_called()
+    finally:
+        engine.dispose()
+
+
+def test_run_service_fails_conflicting_duplicate_batch_without_partial_publication() -> None:
+    contract = equity_contract()
+    first = make_batch().records[0]
+    conflicting_payload = dict(first.payload)
+    conflicting_payload["close"] = 99.99
+    conflicting = replace(first, payload=conflicting_payload)
+    batch = replace(make_batch(), records=(first, conflicting))
+    engine, ledger, service = make_service(contract, batch=batch)
+    try:
+        submitted = service.submit(
+            "stock-daily",
+            "v1",
+            RunRequest(run_type="manual", idempotency_key="duplicate-business-key-run"),
+        )
+        outcome = service.run_once("worker-a", TTL)
+
+        assert outcome is not None and outcome.record is not None
+        assert outcome.record.run_key == submitted.run_key
+        assert outcome.record.status == "failed"
+        assert outcome.publication is None
+        stored_run = ledger.get(submitted.run_key)
+        assert stored_run is not None and stored_run.status == "failed"
+        with engine.connect() as connection:
+            publications = connection.execute(select(PUBLICATIONS)).all()
+            facts = connection.execute(select(PUBLISHED_FACT_VERSIONS)).all()
+            heads = connection.execute(select(PUBLICATION_HEADS)).all()
+
+        assert publications == []
+        assert facts == []
+        assert heads == []
     finally:
         engine.dispose()
 
