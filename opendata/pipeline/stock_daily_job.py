@@ -42,6 +42,7 @@ from opendata.data.providers.akshare.stock_daily_wire import (
     STOCK_DAILY_PROCESS_OPERATION_ID,
     STOCK_DAILY_PROCESS_STARTUP_MARGIN_SECONDS,
     STOCK_DAILY_PROCESS_TIMEOUT_SECONDS,
+    _market_for_symbol,
     parse_stock_daily_wire,
 )
 from opendata.pipeline.contract_publication import ValidatedPublicationWriter
@@ -61,13 +62,13 @@ from opendata.pipeline.run_service import (
 )
 
 if TYPE_CHECKING:  # pragma: no cover
-    from collections.abc import Callable
     from pathlib import Path
 
     from pydantic import JsonValue
 
     from opendata.pipeline.process_executor import ReviewedProcessExecutor
     from opendata.pipeline.reviewed_worker import ProcessFetchHandler
+    from opendata.pipeline.run_service import FetchHandler
 
 MAX_MANIFEST_BYTES = 16 * 1024
 _QUALITY_REPORT_ID = "stock-daily-offline-normalization-v1"
@@ -243,7 +244,7 @@ def build_stock_daily_job(
         operation_id=_OPERATION_ID,
     )
 
-    fetch_handler: Callable[[RunRequest, RunExecutionContext], object]
+    fetch_handler: FetchHandler
     if process_source is not None:
         # Keep ProcessFetchHandler as the exact job fetch handler so the
         # PersistentRunWorker can verify and use its child heartbeat interval.
@@ -300,7 +301,7 @@ def build_stock_daily_job(
             expected_source=source_identity,
             expected_request_summary_sha256=request_hash,
         )
-        expected_market_code = 1 if query.symbol.startswith("6") else 0
+        expected_market_code = _market_for_symbol(query.symbol)
         source_frame = parse_stock_daily_wire(
             body,
             symbol=query.symbol,

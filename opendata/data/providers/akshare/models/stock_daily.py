@@ -20,6 +20,7 @@ from opendata.data.providers.akshare._source import SOURCE
 _REQUIRED_COLUMNS = ("日期", "股票代码", "开盘", "收盘", "最高", "最低", "成交量", "成交额")
 _SYMBOL_PATTERN = re.compile(r"(?:(SH|SZ|BJ)(\d{6})|(\d{6})(?:\.(SH|SZ|BJ))?)", re.IGNORECASE)
 _DATE_PATTERN = re.compile(r"(?:\d{4}-\d{2}-\d{2}|\d{8})")
+_BSE_ROUTE_UNVERIFIED = "STOCK_DAILY_BSE_ROUTE_UNVERIFIED"
 
 
 class StockDailyQuery(QueryParams):
@@ -237,7 +238,8 @@ class AkshareStockDailyFetcher(Fetcher[StockDailyQuery, pd.DataFrame]):
 
         if not bars:
             raise ValueError("Eastmoney returned no stock history rows")
-        return sorted(bars, key=lambda bar: bar.trade_date)
+        sorted_bars: list[Bar] = sorted(bars, key=lambda bar: bar.trade_date)
+        return sorted_bars
 
 
 def _normalize_symbol(value: object) -> str:
@@ -269,6 +271,8 @@ def _normalize_symbol(value: object) -> str:
             f"symbol {value!r} carries exchange {supplied_exchange.upper()} "
             f"but code {code} belongs to {expected_exchange}"
         )
+    if expected_exchange == "BJ":
+        raise ValueError(_BSE_ROUTE_UNVERIFIED)
     return code
 
 

@@ -107,6 +107,100 @@ def test_query_rejects_invalid_or_conflicting_instrument_symbols(symbol: str) ->
         AkshareStockDailyFetcher().transform_query(symbol=symbol)
 
 
+@pytest.mark.parametrize(
+    "symbol",
+    [
+        "920000",
+        "920000.BJ",
+        "BJ920000",
+        "430000",
+        "430000.BJ",
+        "830000",
+        "830000.BJ",
+    ],
+)
+def test_query_rejects_bse_daily_route_without_upstream_route_evidence(symbol: str) -> None:
+    """Recognized BSE symbols fail closed before this SH/SZ-only daily route."""
+    with pytest.raises(ValidationError, match="STOCK_DAILY_BSE_ROUTE_UNVERIFIED"):
+        AkshareStockDailyFetcher().transform_query(symbol=symbol)
+
+
+@pytest.mark.parametrize(
+    ("symbol", "market"),
+    [("600519", 1), ("000001", 0), ("300001", 0)],
+)
+def test_supported_sh_sz_secids_keep_the_existing_market_mapping(symbol: str, market: int) -> None:
+    """The fail-closed BSE guard preserves the existing SH/SZ secid mapping."""
+    assert stock_daily_wire._market_for_symbol(symbol) == market
+
+
+@pytest.mark.parametrize("symbol", ["920000", "430000", "830000"])
+def test_every_recognized_bse_prefix_fails_closed_at_the_wire(symbol: str) -> None:
+    """No recognized BSE code family falls through to the Shenzhen market code."""
+    with pytest.raises(ValueError, match="STOCK_DAILY_BSE_ROUTE_UNVERIFIED"):
+        stock_daily_wire._market_for_symbol(symbol)
+
+
+@pytest.mark.parametrize("symbol", ["100001", "930000", ""])
+def test_unknown_daily_symbol_prefix_does_not_default_to_shenzhen(symbol: str) -> None:
+    """Only the explicitly reviewed SH and SZ code families receive secid values."""
+    with pytest.raises(ValueError, match="stock_daily_symbol_invalid"):
+        stock_daily_wire._market_for_symbol(symbol)
+
+
+@pytest.mark.parametrize(
+    ("symbol", "canonical_symbol", "market"),
+    [
+        ("600519.SH", "600519", 1),
+        ("000001.SZ", "000001", 0),
+        ("300001.SZ", "300001", 0),
+    ],
+)
+def test_sh_sz_suffix_inputs_keep_their_canonical_symbols_and_routes(
+    symbol: str,
+    canonical_symbol: str,
+    market: int,
+) -> None:
+    """Explicit SH/SZ suffixes retain their prior canonical code and market."""
+    params = AkshareStockDailyFetcher().transform_query(symbol=symbol)
+
+    assert params.symbol == canonical_symbol
+    assert stock_daily_wire._market_for_symbol(params.symbol) == market
+
+
+def test_bse_wire_route_fails_before_http_client_resolution(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A direct wire caller cannot route a BSE code through the SZ market code."""
+    monkeypatch.setattr(
+        stock_daily_wire,
+        "get_shared_http_client",
+        lambda: pytest.fail("unverified BSE routes must stop before client resolution"),
+    )
+
+    with pytest.raises(ValueError, match="STOCK_DAILY_BSE_ROUTE_UNVERIFIED"):
+        stock_daily_wire.fetch_stock_daily_wire(
+            "920000", start_date="20260101", end_date="20260102", timeout=1.0
+        )
+
+
+def test_bse_wire_parser_fails_before_interpreting_payload() -> None:
+    """The parser cannot bless a BSE symbol by echoing the locally derived market 0."""
+    with pytest.raises(ValueError, match="STOCK_DAILY_BSE_ROUTE_UNVERIFIED"):
+        stock_daily_wire.parse_stock_daily_wire(b"{}", symbol="920000", expected_market=0)
+
+
+@pytest.mark.parametrize("expected_market", [0, True])
+def test_wire_parser_rejects_a_market_code_that_does_not_match_sh_symbol(
+    expected_market: int | bool,
+) -> None:
+    """A caller cannot normalize an SH code under a different or boolean market code."""
+    with pytest.raises(ValueError, match="supported symbol route"):
+        stock_daily_wire.parse_stock_daily_wire(
+            b"{}", symbol="600519", expected_market=expected_market
+        )
+
+
 def test_normalizer_rejects_response_for_another_instrument() -> None:
     """Do not relabel a provider row to the requested symbol."""
     frame = _synthetic_eastmoney_frame()
@@ -346,6 +440,48 @@ def test_query_rejects_reversed_date_window() -> None:
         AkshareStockDailyFetcher().transform_query(
             symbol="600519", start_date="20240103", end_date="20240102"
         )
+
+
+@pytest.mark.parametrize(
+    ("query", "message"),
+    [
+        ({"symbol": 600519}, "symbol must be a six-digit A-share code"),
+        ({"symbol": "600519", "source": None}, "source must identify the akshare provider"),
+        ({"symbol": "600519", "source": "openbb"}, "unsupported stock_daily source"),
+        ({"symbol": "600519", "market": 1}, "supports market='cn' only"),
+        ({"symbol": "600519", "market": "us"}, "supports market='cn' only"),
+        ({"symbol": "600519", "adjust": None}, "unadjusted price-basis string"),
+        ({"symbol": "600519", "adjust": "split"}, "unsupported stock price adjustment"),
+        ({"symbol": "600519", "start_date": 20240102}, "dates must be date objects"),
+        ({"symbol": "600519", "start_date": "2024/01/02"}, "dates must use YYYY-MM-DD"),
+        ({"symbol": "600519", "start_date": "2024-02-30"}, "valid business date"),
+    ],
+)
+def test_query_rejects_invalid_field_types_and_unsupported_values(
+    query: dict[str, object], message: str
+) -> None:
+    """Reject malformed identities, routing fields, price bases, and date boundaries."""
+    with pytest.raises(ValidationError, match=message):
+        AkshareStockDailyFetcher().transform_query(**query)
+
+
+def test_query_normalizes_supported_optional_fields_and_date_objects() -> None:
+    """Keep valid source aliases, CN identity, raw basis, and date objects canonical."""
+    params = AkshareStockDailyFetcher().transform_query(
+        symbol="600519.SH",
+        source=" AUTO ",
+        market=None,
+        adjust=" NONE ",
+        start_date=date(2024, 1, 2),
+        end_date=None,
+    )
+
+    assert params.symbol == "600519"
+    assert params.source == "auto"
+    assert params.market is None
+    assert params.adjust == ""
+    assert params.start_date == date(2024, 1, 2)
+    assert params.end_date is None
 
 
 @pytest.mark.parametrize("field", ["开盘", "收盘", "最高", "最低", "成交量", "成交额"])
