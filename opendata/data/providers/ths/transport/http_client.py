@@ -17,7 +17,7 @@ import time
 import uuid
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 
@@ -86,11 +86,15 @@ class FuyaoHttpResponse:
         status_code: HTTP 状态码。
         envelope: 解析后的信封。
         elapsed_seconds: 耗时。
+        raw_content: HTTPX 已缓冲并解压的实体 body bytes，而非线上压缩 wire bytes。
+            HTTPX 在本模块应用体积上限前已完成 buffering。该字段随成功结果返回，
+            本模块不会把响应体写入日志或持久化。
     """
 
     status_code: int
     envelope: FuyaoEnvelope
     elapsed_seconds: float
+    raw_content: bytes = field(default=b"", repr=False, compare=False)
 
 
 @dataclass(frozen=True)
@@ -756,6 +760,7 @@ class FuyaoHttpClient:
                 status_code=response.status_code,
                 envelope=parse_envelope(payload),
                 elapsed_seconds=elapsed,
+                raw_content=content,
             )
         raise error_for_transport("http", detail=str(response.status_code))
 
