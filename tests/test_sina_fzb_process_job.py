@@ -205,6 +205,7 @@ def _make_worker(
     operation_id: str = FIXTURE_OPERATION_ID,
     process_handler: object = fixture_sina_fzb_capture,
     process_timeout_seconds: float = 15.0,
+    lease_ttl: timedelta = timedelta(seconds=2),
 ) -> tuple[PersistentRunWorker, Engine]:
     """Build a real worker and source-specific fenced writer on owned SQLite."""
     bootstrap_engine = create_engine(f"sqlite:///{database_path}")
@@ -238,7 +239,7 @@ def _make_worker(
         worker_engine,
         ReviewedJobRegistry([job]),
         worker_id="w12-offline-worker",
-        lease_ttl=timedelta(seconds=2),
+        lease_ttl=lease_ttl,
         heartbeat_interval_seconds=0.05,
         database_io_timeout_seconds=database_timeout,
     )
@@ -891,7 +892,10 @@ def test_real_popen_fixture_worker_publishes_two_isolated_captures_and_scoped_pa
     assert len(base64.b64encode(body)) <= 5_592_408
     database_path = tmp_path / "sina-process-publication.sqlite"
     database_path.touch()
-    worker, worker_engine = _make_worker(database_path)
+    worker, worker_engine = _make_worker(
+        database_path,
+        lease_ttl=timedelta(seconds=60),
+    )
     store = PublicationStore(worker_engine, cursor_signing_key=SIGNING_KEY)
     task = _enabled_test_task()
     request_a = _manual_request(SYMBOL, "capture-a")
