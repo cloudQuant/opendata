@@ -24,13 +24,14 @@ from typing import ClassVar
 
 from opendata.data.capability import Capability
 from opendata.data.models import FinancialStatement
-from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
+from opendata.data.protocol import FetchContext, Fetcher, QueryParams
 from opendata.data.providers.ths._source import SOURCE
 from opendata.data.providers.ths.models._client import (
     ThsProviderError,
     client,
     resolve_code,
 )
+from opendata.data.source_attempt_gate import SourceAttemptGate
 
 #: 中文披露名 → 契约 ``statement_type`` 取值；入库一律用右列。
 _STATEMENT_ALIASES: dict[str, str] = {
@@ -78,6 +79,19 @@ class ThsFinancialStatementFetcher(
         verified=True,
     )
 
+    def __init__(self, *, source_attempt_gate: SourceAttemptGate | None = None) -> None:
+        """Create the financial fetcher with an optional trusted send gate.
+
+        ``LazyFetcherBinding`` continues constructing this class with no
+        arguments, which leaves the existing registry path unchanged. A
+        controlled service may inject an explicit gate and establish the
+        matching ``SourceAttemptBinding`` in trusted request-scope context;
+        API fields never select either value.
+        """
+        if source_attempt_gate is not None and type(source_attempt_gate) is not SourceAttemptGate:
+            raise TypeError("source_attempt_gate must be a SourceAttemptGate or None")
+        self._source_attempt_gate = source_attempt_gate
+
     def transform_query(self, **kwargs: object) -> ThsFinancialStatementQuery:
         """Build and validate the query (the validate stage).
 
@@ -124,7 +138,15 @@ class ThsFinancialStatementFetcher(
         """
         from opendata.data.providers.ths.endpoints import fetch_financial_statements
 
-        with client(timeout_seconds=ctx.timeout) as active:
+        active_client = (
+            client(timeout_seconds=ctx.timeout)
+            if self._source_attempt_gate is None
+            else client(
+                timeout_seconds=ctx.timeout,
+                source_attempt_gate=self._source_attempt_gate,
+            )
+        )
+        with active_client as active:
             code = resolve_code(active, params.symbol)
             return fetch_financial_statements(
                 active,
@@ -137,7 +159,7 @@ class ThsFinancialStatementFetcher(
 
     def transform_data(
         self, raw: tuple[FinancialStatement, ...], params: ThsFinancialStatementQuery
-    ) -> FetchResult:
+    ) -> tuple[FinancialStatement, ...]:
         """Check row identity and order the series (the normalize stage).
 
         Args:
