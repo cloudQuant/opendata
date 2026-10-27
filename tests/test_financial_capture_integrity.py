@@ -543,7 +543,7 @@ def test_scope_dump_error_is_sanitized(tmp_path: Path, monkeypatch: pytest.Monke
             pytest.raises(
                 FinancialCaptureIntegrityInputError,
                 match="scope identity is invalid",
-            ),
+            ) as error,
         ):
             audit_financial_capture_integrity(
                 connection,
@@ -551,6 +551,7 @@ def test_scope_dump_error_is_sanitized(tmp_path: Path, monkeypatch: pytest.Monke
                 scopes=(_SCOPE,),
                 captured_at_not_after=datetime.now(timezone.utc),
             )
+        assert "private source details" not in str(error.value)
     finally:
         engine.dispose()
 
@@ -566,7 +567,7 @@ def test_invalid_bound_timezone_errors_are_sanitized(tmp_path: Path) -> None:
             pytest.raises(
                 FinancialCaptureIntegrityInputError,
                 match="timezone-aware UTC datetime",
-            ),
+            ) as error,
         ):
             audit_financial_capture_integrity(
                 connection,
@@ -574,6 +575,7 @@ def test_invalid_bound_timezone_errors_are_sanitized(tmp_path: Path) -> None:
                 scopes=(_SCOPE,),
                 captured_at_not_after=bound,
             )
+        assert "private timezone detail" not in str(error.value)
     finally:
         engine.dispose()
 
