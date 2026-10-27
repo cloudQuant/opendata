@@ -28,8 +28,22 @@ authorizes their modification.
 
 ## Parallel changes
 
-Use independent branches and worktrees with exclusive file ownership. The
-integration owner serializes shared contracts, migration numbering, quality
-manifests and merges. In delegated work, the integration owner must approve the
-exact local test command before execution; other agents may prepare tests and run
-explicit static checks. Preserve unrelated changes and frozen evidence archives.
+Use the main checkout based on `dev` for daily development. Parallel agents may
+share that checkout with exclusive file ownership; the integration owner
+serializes shared contracts, migration numbering, quality manifests, Git writes
+and PR merges. Create an additional worktree only when explicitly requested or
+when a concrete isolation need justifies it. Deliver changes through PRs to `dev`.
+In delegated work, the integration owner must approve the exact local test
+command before execution; other agents may prepare tests and run explicit static
+checks. Preserve unrelated changes and frozen evidence archives.
+
+## Review and merge scope
+
+PR authors may self-review any PR. Record the decision and acceptance evidence
+against the exact current head SHA, using a COMMENT review when GitHub does not
+allow a native self-approval. A new head requires a new review. Do not represent a
+self-review as an independent approval.
+
+Only merge code whose stated acceptance scope has passed. Keep unaccepted or
+failed work recoverable outside `dev`. A maintainer decision to defer CI repairs
+does not turn failed checks, skipped tests or production acceptance into passes.
